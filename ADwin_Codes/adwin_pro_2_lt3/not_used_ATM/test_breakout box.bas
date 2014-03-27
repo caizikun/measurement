@@ -26,7 +26,7 @@ EVENT:
   FOR i = 0 TO 15
     P2_DIGOUT(DIO_MODULE,i, set)   'This sets the digital output with channelnr to the value given by set
   NEXT i
-    P2_DIGOUT(DIO_MODULE,0, 1)
+  P2_DIGOUT(DIO_MODULE,0, 1)
   
   
   END   
