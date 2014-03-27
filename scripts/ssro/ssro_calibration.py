@@ -1,21 +1,19 @@
 """
-LT1/2 script for adwin ssro.
+LT2 script for adwin ssro.
 """
-import numpy as np
 import qt
-import measurement.lib.config.adwins as adwins_cfg
-import measurement.lib.measurement2.measurement as m2
+#reload all parameters and modules
+execfile(qt.reload_current_setup)
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
 
-# import the measurement parameters
-SAMPLE_CFG = qt.cfgman['protocols']['current']
+SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def ssrocalibration(name):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.cfgman['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
     # parameters
     m.params['SSRO_repetitions'] = 5000
@@ -47,4 +45,3 @@ def ssrocalibration(name):
 
 if __name__ == '__main__':
     ssrocalibration(SAMPLE_CFG)
-
