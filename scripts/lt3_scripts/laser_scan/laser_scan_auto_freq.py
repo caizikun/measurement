@@ -514,25 +514,29 @@ def gate_scan_with_c_optimize():
         qt.get_setup_instrument('GreenAOM').set_power(0e-6)
         repeated_red_scans(gate_scan=True, gate_range=(0,-1200),pts=19)
 
-def single_scan():
+def single_scan(name):
     m = Scan()
+    m.name=name
+    do_MW=True
+    if do_MW:
+        m.mw.set_power(-12)
+        m.mw.set_frequency(2.8357e9)
+        m.mw.set_iq('off')
+        m.mw.set_pulm('off')
+        m.mw.set_status('on')
 
-    #m.mw.set_power(-7)
-    #m.mw.set_frequency(2.8265e9)
-    #m.mw.set_iq('off')
-    #m.mw.set_pulm('off')
-    #m.mw.set_status('on')
-
-    m.red_scan(70, 82, voltage_step=0.01, integration_time_ms=20, power = 15e-9)
+    m.red_scan(67, 85, voltage_step=0.01, integration_time_ms=20, power = 3e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(62, 77, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
-    #m.mw.set_status('off')
+    if do_MW:
+        m.mw.set_status('off')
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.5e-6)
-    single_scan()
+    qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
+
+    single_scan('Gretel_SIL12_MM')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
     # repeated_red_scans()
