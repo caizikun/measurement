@@ -3,20 +3,10 @@ This is modified version of the ElectronT1 class from PULSAR.PY
 Work in progress
 File made by Adriaan Rol
 '''
-
-
-import msvcrt
 import numpy as np
 import qt
-import hdf5_data as h5
-import logging
-
-import measurement.lib.measurement2.measurement as m2
-from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-# from measurement.lib.measurement2.adwin_ssro.pulsar import PulsarMeasurement
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
-
 
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
@@ -111,12 +101,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 tau_shortened = minimum_AWG_elementsize - element_duration_without_edge
                 tau_shortened = np.ceil(tau_shortened/(4e-9))*(4e-9)
             tau_cut = tau - tau_shortened - fast_pi_duration/2.0
-
-            # print 'tau =' +str(tau)
-            # print 'tau_pulse = ' +str(pulse_tau)
-            # print 'tau shortened= ' + str(tau_shortened)
-            # print 'fast_pi_duration = '+ str(fast_pi_duration)
-            # print ' tau_cut='+ str(tau_cut)
             # Make the delay pulses
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length = pulse_tau, amplitude = 0.)
@@ -283,9 +267,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ### single elements (trigger, connecting elements or single pulses) 
             ######################
             if np.size(Lst_lst_els[ind]) ==1:
-                # print "Lst_lst_els == 1"
                 e =Lst_lst_els[ind][0]
-                if ind == 0:
+                if e.name == 'MBI CNOT':
+                    seq.append(name=str(e.name+Lst_lst_els[ind+1][0].name), wfname=e.name, trigger_wait=True,repetitions = rep, goto_target =str(e.name+Lst_lst_els[ind+1][0].name), jump_target = Lst_lst_els[ind+1][0].name)
+                elif ind == 1:
                     seq.append(name=e.name, wfname=e.name,
                         trigger_wait=True,repetitions = rep)
                 elif e.name == 'ADwin_trigger':
@@ -391,12 +376,18 @@ class SimpleDecoupling(DynamicalDecoupling):
         tau_list = self.params['tau_list']
         N = self.params['Number_of_pulses']
 
-        #Generation of initial trigger pulse element 
+
+        ############################################
+        #Generation of trigger and MBI element
+        ############################################# 
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
             length = 5e-6, amplitude = 2)
         Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
             global_time = True)
         Trig_element.append(Trig)
+
+        mbi_elt = self._MBI_element()
+
 
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
@@ -425,11 +416,12 @@ class SimpleDecoupling(DynamicalDecoupling):
             #very sequence specific
             ########################################
             list_of_list_of_elements = []
+            list_of_list_of_elements.append([mbi_elt])
             list_of_list_of_elements.append(initial_pi_2)
             list_of_list_of_elements.append(list_of_decoupling_elements)
             list_of_list_of_elements.append(final_pi_2)
             list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1]+ [list_of_decoupling_reps]+[1,1]
+            list_of_repetitions = [1,1]+ [list_of_decoupling_reps]+[1,1]
 
             #######
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)
