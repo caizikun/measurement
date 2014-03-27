@@ -17,7 +17,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 #Asummes a cylindrical magnet
 cfg['magnet']={
 
-'nm_per_step'       :   1.,     #Z-movement     
+'nm_per_step'       :   1.,     #Z-movement
 'radius'            :   5.,     #millimeters
 'thickness'         :   4.,     #millimeters
 'strength_constant' :   1.3}    #Tesla
@@ -109,8 +109,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 2.014001e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.741205e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 2.00567e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.747403e9            #Electron spin ms=+1 frequency
 
 mw_freq  = 3.65e9    #MW source frequency
 mw_power = 23        #MW power
@@ -121,7 +121,7 @@ N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.195e6        #calibrated 20140320/181319
 
 cfg['samples']['Hans_sil1'] = {
-'mw_frq'        :       mw_freq, 
+'mw_frq'        :       mw_freq,
 'mw_power'      :       mw_power,
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
@@ -188,7 +188,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_MBI,
 'AWG_MBI_MW_pulse_amp'      :   0.03,
 'AWG_MBI_MW_pulse_duration' :   2500e-9}
-   
+
 #    ### Corpse pulses ###
 # cfg.set(branch+'CORPSE_pi2_amp',0.4)
 # CORPSE_frq = 8.15e6
@@ -199,13 +199,13 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 # cfg.set(branch+'CORPSE_pi2_24p3_duration', 24.3/CORPSE_frq/360.)
 # cfg.set(branch+'CORPSE_pi2_m318p6_duration', 318.6/CORPSE_frq/360.)
 # cfg.set(branch+'CORPSE_pi2_384p3_duration',  384.3/CORPSE_frq/360.)
-    
-    ###########    
+
+    ###########
     ### MBI ###
     ###########
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
-    
+
     #Spin pump before MBI
 'Ex_SP_amplitude'           :           10e-9,
 'SP_E_duration'             :           300,
@@ -228,7 +228,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9}
 
-    
+
 
 
 
@@ -254,7 +254,7 @@ N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.195e6        #calibrated 20140320/181319
 
 cfg['samples']['Hans_sil4'] = {
-'mw_frq'        :       mw_freq, 
+'mw_frq'        :       mw_freq,
 'mw_power'      :       mw_power,
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
@@ -321,7 +321,7 @@ cfg['protocols']['Hans_sil4']['pulses'] ={
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_MBI,
 'AWG_MBI_MW_pulse_amp'      :   0.03,
 'AWG_MBI_MW_pulse_duration' :   2500e-9}
-   
+
 #    ### Corpse pulses ###
 # cfg.set(branch+'CORPSE_pi2_amp',0.4)
 # CORPSE_frq = 8.15e6
@@ -332,13 +332,13 @@ cfg['protocols']['Hans_sil4']['pulses'] ={
 # cfg.set(branch+'CORPSE_pi2_24p3_duration', 24.3/CORPSE_frq/360.)
 # cfg.set(branch+'CORPSE_pi2_m318p6_duration', 318.6/CORPSE_frq/360.)
 # cfg.set(branch+'CORPSE_pi2_384p3_duration',  384.3/CORPSE_frq/360.)
-    
-    ###########    
+
+    ###########
     ### MBI ###
     ###########
 
 cfg['protocols']['Hans_sil4']['AdwinSSRO+MBI'] ={
-    
+
     #Spin pump before MBI
 'Ex_SP_amplitude'           :           10e-9,
 'SP_E_duration'             :           300,

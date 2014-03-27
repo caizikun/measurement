@@ -23,13 +23,13 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    pump_on_Ex = True
+    pump_on_Ex = False
     if pump_on_Ex:
         m.params['SP_duration'] = 300
         m.params['A_SP_amplitude'] = 0.
         m.params['Ex_SP_amplitude'] = 10e-9
 
-    m.params['pts'] = 21
+    m.params['pts'] = 61
     pts = m.params['pts']
     m.params['repetitions'] = 1000
 
@@ -40,7 +40,7 @@ def erabi(name):
     m.params['MW_pulse_frequency'] = m.params['ms-1_cntr_frq'] - m.params['mw_frq']
     m.params['mw_power'] = 23
 
-    m.params['MW_pulse_durations'] =  np.linspace(0, 600, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 25, pts) * 1e-9
     #m.params['MW_pulse_durations'] =  80e-9*np.ones(pts)#np.linspace(0, 200, pts) * 1e-9
 
     m.params['MW_pulse_amplitudes'] = np.ones(pts) *1
@@ -76,7 +76,7 @@ def erabi_p1(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
 
-    pump_on_Ex = True
+    pump_on_Ex = False
     if pump_on_Ex:
         m.params['SP_duration'] = 300
         m.params['A_SP_amplitude'] = 0.
@@ -122,7 +122,6 @@ def erabi_p1(name):
 
 
 if __name__ == '__main__':
-    # erabi(SAMPLE+'_'+'find_high_rabi_sil1')
     erabi(SAMPLE+'_'+'Rabi-1')
     cont = raw_input ('Do the fitting for ms=-1... Continue with ms=+1 y/n?')
     if cont =='y':
