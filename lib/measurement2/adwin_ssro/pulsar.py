@@ -130,7 +130,7 @@ class ElectronRabi(PulsarMeasurement):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
 
-                
+
         PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True):
@@ -235,6 +235,9 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
         # program the AWG
         qt.pulsar.program_sequence(seq)
 
+        #For faster uploading, use:
+        #qt.pulsar.program_awg(seq,*elements)
+
         # some debugging:
         # elements[-1].print_overview()
 class ElectronRamsey(PulsarMeasurement):
@@ -256,10 +259,10 @@ class ElectronRamsey(PulsarMeasurement):
             frequency = self.params['MW_pulse_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])
         ##This is a temp solution, I cant find the awgchannels def for lt3 -Machiel
-        qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
+        qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
             high=2.0, low=0, offset=0., delay=0., active=True)
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = self.params['AWG_to_adwin_ttl_trigger_duration'], 
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 200e-9, amplitude = 0.)
@@ -280,14 +283,14 @@ class ElectronRamsey(PulsarMeasurement):
                 length=self.params['pi2_lengths'][i]))
 
             if (self.params['evolution_times'][i]>1e-6):
-                
+
                 elements.append(e)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-                
+
                 e = element.Element('ElectronRamsey_wait_pt-%d' % i, pulsar=qt.pulsar,
                     global_time = True)
-                
+
                 e.append(T_us)
                 N=int(self.params['evolution_times'][i]*1e6)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=False,repetitions=N)
@@ -298,7 +301,7 @@ class ElectronRamsey(PulsarMeasurement):
                 e = element.Element('ElectronRamsey_second_pi2_pt-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
 
-            else:   
+            else:
                 e.append(pulse.cp(T,
                     length = self.params['evolution_times'][i]))
 
@@ -316,11 +319,11 @@ class ElectronRamsey(PulsarMeasurement):
                 seq.append(name=e.name, wfname=e.name, trigger_wait=False)
             else:
                 seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-            
+
         # upload the waveforms to the AWG
         if upload:
             qt.pulsar.program_awg(seq,*elements)
-        
+
 
 class ElectronT1(PulsarMeasurement):
 
@@ -413,7 +416,7 @@ class ElectronT1(PulsarMeasurement):
         # upload the waveforms to the AWG
         if upload:
             qt.pulsar.program_awg(seq,*list_of_elements)
-        
+
 
 
 class RepElectronRamseys(ElectronRamsey):
