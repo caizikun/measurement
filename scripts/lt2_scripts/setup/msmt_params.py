@@ -109,8 +109,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 2.00567e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.747403e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 2.005144e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.749905e9            #Electron spin ms=+1 frequency
 
 mw_freq  = 3.65e9    #MW source frequency
 mw_power = 23        #MW power
@@ -167,38 +167,38 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
 f_mod_0     = cfg['samples']['Hans_sil1']['ms+1_cntr_frq'] - cfg['samples']['Hans_sil1']['mw_frq']
 N_hf_split  = cfg['samples']['Hans_sil1']['N_HF_frq']
 f_MBI = f_mod_0 - N_hf_split
-
+CORPSE_frq=  5.4e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   110e-9,
+'fast_pi_duration'          :   0*110e-9,
 'fast_pi_amp'               :   0.857767, #140324
 'fast_pi_mod_frq'           :   f_MBI,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   60e-9,
-'fast_pi2_amp'              :   0.777847, #140324
+'fast_pi2_amp'              :   0,#0.777847, #140324
 'fast_pi2_mod_frq'          :   f_MBI,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_MBI,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_MBI,
 'AWG_MBI_MW_pulse_amp'      :   0.03,
-'AWG_MBI_MW_pulse_duration' :   2500e-9}
+'AWG_MBI_MW_pulse_duration' :   2500e-9,
 
 #    ### Corpse pulses ###
-# cfg.set(branch+'CORPSE_pi2_amp',0.4)
-# CORPSE_frq = 8.15e6
-# cfg.set(branch+'CORPSE_pi_60_duration', 1./CORPSE_frq/6.)
-# cfg.set(branch+'CORPSE_pi_m300_duration', 5./CORPSE_frq/6.)
-# cfg.set(branch+'CORPSE_pi_420_duration',  7./CORPSE_frq/6.)
-
-# cfg.set(branch+'CORPSE_pi2_24p3_duration', 24.3/CORPSE_frq/360.)
-# cfg.set(branch+'CORPSE_pi2_m318p6_duration', 318.6/CORPSE_frq/360.)
-# cfg.set(branch+'CORPSE_pi2_384p3_duration',  384.3/CORPSE_frq/360.)
+'CORPSE_pi2_amp'    :           1,
+'CORPSE_frq'  :  5.4e6,
+'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
+ 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+ 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+ 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+ 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+ 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
+    }
 
     ###########
     ### MBI ###

@@ -1,7 +1,8 @@
-import os 
+import os
+import qt
 
 qt.current_setup = "lt2"
-qt.reload_current_setup = "lt2_scripts/setup_lt2.py"
+qt.reload_current_setup = r'D:/measuring/measurement/scripts/lt2_scripts/setup_lt2.py'
 
 qt.get_setup_instrument = lambda x: qt.instruments[x] \
     if qt.config['instance_name'][-3:] == qt.current_setup \

@@ -28,15 +28,15 @@ def SimpleDecoupling(name):
         #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
 
-
     #######
     pts = 11
     f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])/m.params['g_factor']*1.07e3
 
-    tau_larmor = 1/f_larmor
-    tau_larmor = 1.504e-6  #Dirty fix for length of string being to long in AWG
+    # tau_larmor = 1/f_larmor
+    # tau_larmor = 2.9999e-6  #Dirty fix for length of string being to long in AWG
+    tau_larmor = 1e-6
     print 'tau_larmor = %s' %tau_larmor
-    tau_list = np.linspace(tau_larmor,2*pts*tau_larmor,pts)
+    tau_list = np.linspace(tau_larmor/2.0,pts*tau_larmor/2.0,pts)
     # tau_list =np.linspace(5e-7,50e-7,pts)
 
     #######

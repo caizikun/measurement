@@ -1,6 +1,6 @@
 '''
 This is modified version of the ElectronT1 class from PULSAR.PY
-Work in progress
+Work in progress CHANGE LOCATION
 File made by Adriaan Rol
 '''
 import numpy as np
@@ -230,7 +230,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 PM_channel='MW_pulsemod',
                 frequency = self.params['MW_modulation_frequency'],
                 PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi2_duration'], 
+                length = self.params['fast_pi2_duration'],
                 amplitude = self.params['fast_pi2_amp'])
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
@@ -258,13 +258,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         seq = pulsar.Sequence('Decoupling Sequence')
         list_of_elements=[]
-        #Lst_lst_els means list of list of elements 
+        #Lst_lst_els means list of list of elements
         for ind, rep in enumerate(list_of_repetitions):
-        
-            list_of_elements.extend(Lst_lst_els[ind]) #this converts the list_of_list to an 
+
+            list_of_elements.extend(Lst_lst_els[ind]) #this converts the list_of_list to an
 
             ######################
-            ### single elements (trigger, connecting elements or single pulses) 
+            ### single elements (trigger, connecting elements or single pulses)
             ######################
             if np.size(Lst_lst_els[ind]) ==1:
                 e =Lst_lst_els[ind][0]
@@ -279,9 +279,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 else:
                     seq.append(name=e.name, wfname=e.name,
                         trigger_wait=False,repetitions = rep)
-            
+
             ######################
-            ### XY4 elements 
+            ### XY4 elements
             ######################
             elif np.size(Lst_lst_els[ind]) == 3: #XY4 decoupling elements
                 # print "lengt of list of list  == 3"
@@ -291,9 +291,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     trigger_wait=False,repetitions = rep/2-1)
                 seq.append(name=Lst_lst_els[ind][2].name, wfname=Lst_lst_els[ind][2].name,
                     trigger_wait=False,repetitions = 1)
-            
+
             ######################
-            ### XY8 elements 
+            ### XY8 elements
             ######################
             elif np.size(Lst_lst_els[ind]) == 4: #XY8 Decoupling -a-b-(c^2-b^2)^(N/8-1)-c-d-
                 # print "Lst_lst_els == 4"
@@ -379,7 +379,7 @@ class SimpleDecoupling(DynamicalDecoupling):
 
         ############################################
         #Generation of trigger and MBI element
-        ############################################# 
+        #############################################
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
             length = 5e-6, amplitude = 2)
         Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
@@ -391,28 +391,28 @@ class SimpleDecoupling(DynamicalDecoupling):
 
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
-        i = 0 
+        i = 0
         for tau in tau_list:
             prefix = 'electron'
-            ## Generate the decoupling elements 
+            ## Generate the decoupling elements
             list_of_decoupling_elements, list_of_decoupling_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix)
-            #Generate the start and end pulse 
+            #Generate the start and end pulse
             Gate_type = self.params['Initial_Pulse']
-            time_before_initial_pulse = max(1e-6 - tau_cut + 36e-9,44e-9)  #statement makes sure that time before initial pulse is not negative 
+            time_before_initial_pulse = max(1e-6 - tau_cut + 36e-9,44e-9)  #statement makes sure that time before initial pulse is not negative
             time_after_initial_pulse = tau_cut
 
             prefix = 'initial'
             initial_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau)
 
             Gate_type = self.params['Final_Pulse']
-            time_before_final_pulse = tau_cut 
+            time_before_final_pulse = tau_cut
             time_after_final_pulse = time_before_initial_pulse
 
             prefix = 'final'
             final_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau)
 
             ########################################
-            #Combine all the elements to a sequence 
+            #Combine all the elements to a sequence
             #very sequence specific
             ########################################
             list_of_list_of_elements = []
@@ -429,11 +429,11 @@ class SimpleDecoupling(DynamicalDecoupling):
             list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions)
 
 
-            if i ==0: 
+            if i ==0:
                 i=1
                 combined_list_of_elements.extend(list_of_elements)
             else:
-                combined_list_of_elements.extend(list_of_elements[:-1]) 
+                combined_list_of_elements.extend(list_of_elements[:-1])
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
