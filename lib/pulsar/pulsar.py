@@ -136,11 +136,12 @@ class Pulsar:
 
     def activate_channels(self, channels='all'):
         ids = self.get_used_channel_ids()
-        
+        #print ids
         for id in ids:
             output = False
             names = self.get_channel_names_by_id(id)
             for sid in names:
+                #print sid
                 if names[sid] == None:
                     continue
 
@@ -223,7 +224,7 @@ class Pulsar:
 
             # upload to AWG
             self.AWG.send_waveform(chan_wfs[id], chan_wfs[id+'_marker1'],
-                chan_wfs[id+'_marker2'], wfname, self.clock)
+                chan_wfs[id+'_marker2'], wfname, self.clock)#here is wehere gijs' code comes in!
             self.AWG.import_waveform_file(wfname, wfname, type='wfm')
 
         _t = time.time() - _t0
@@ -295,6 +296,170 @@ class Pulsar:
             self.AWG.set_sqel_goto_target_index(idx, 1)
 
         # turn on the channel output
+        self.activate_channels(channels)
+
+        # setting jump modes and loading the djump table
+        if sequence.djump_table != None and self.AWG_type not in ['opt09']:
+            raise Exception('The AWG configured does not support dynamic jumping')
+
+        if self.AWG_type in ['opt09']: 
+            if sequence.djump_table != None:
+                self.AWG.set_event_jump_mode('DJUM')
+                print 'AWG set to dynamical jump'
+
+                for i in range(16):
+                    self.AWG.set_djump_def(i, 0)
+
+                for i in sequence.djump_table.keys():
+                    el_idx = sequence.element_index(sequence.djump_table[i])
+                    self.AWG.set_djump_def(i, el_idx)
+
+            else:
+                self.AWG.set_event_jump_mode('EJUM')
+                print 'AWG set to event jump'
+
+        if start:
+            self.AWG.start()
+
+        _t = time.time() - _t0
+        print " finished in %.2f seconds." % _t
+        print 
+
+    def program_awg(self, sequence, *elements, **kw):
+
+
+        """
+        Upload a single file to the AWG (.awg) which contains all waveforms AND sequence information (i.e. nr of repetitions, event jumps etc)
+        this should combine two functions previously known as pulsar.upload_sequence and pulsar.program_sequence. Advantage is that it's much faster,
+        since sequence information is sent to the AWG in a single file.
+
+        """
+        verbose=False#kw.pop('verbose',False), 
+        channels=kw.pop('channels','all')
+        loop=kw.pop('loop',True)
+        start=kw.pop('start',False)
+        elt_cnt = len(elements)
+        chan_ids = self.get_used_channel_ids()
+        packed_waveforms={}
+
+        # order the waveforms according to physical AWG channels and 
+        # make empty sequences where necessary
+        for i,element in enumerate(elements):
+            if verbose:
+                print "%d / %d: %s (%d samples)... " % \
+                    (i+1,elt_cnt, element.name, element.samples())
+
+            if verbose:
+                print "Generate/upload '%s' (%d samples)... " \
+                    % (element.name, element.samples()),
+            _t0 = time.time()
+
+            tvals, wfs = element.normalized_waveforms()
+            for id in chan_ids:
+                wfname = element.name + '_%s' % id
+                
+                # determine if we actually want to upload this channel
+                upload = False
+                if channels == 'all':
+                    upload = True
+                else:
+                    for c in channels:
+                        if self.channels[c]['id'][:3] == id:
+                            upload = True
+                    if not upload:
+                        continue
+
+                chan_wfs = {id : None, id+'_marker1' : None, 
+                    id+'_marker2' : None }
+                grp = self.get_channel_names_by_id(id)
+
+                for sid in grp:
+                    if grp[sid] != None and grp[sid] in wfs:
+                        chan_wfs[sid] = wfs[grp[sid]]
+                    else:
+                        chan_wfs[sid] = np.zeros(element.samples())
+
+                # Create wform files
+                packed_waveforms[wfname]=self.AWG.pack_waveform(chan_wfs[id],chan_wfs[id+'_marker1'],chan_wfs[id+'_marker2'])
+
+                #self.AWG.send_waveform(chan_wfs[id], chan_wfs[id+'_marker1'],
+                #    chan_wfs[id+'_marker2'], wfname, self.clock)#here is wehere gijs' code comes in!
+                #self.AWG.import_waveform_file(wfname, wfname, type='wfm')
+
+        _t = time.time() - _t0
+        
+        if verbose:
+            print "finished in %.2f seconds." % _t
+
+        #sequence programming ----------------------------------------------------------
+
+        _t0 = time.time()
+        
+        print "Programming '%s' (%d element(s))..." \
+            % (sequence.name, sequence.element_count()),
+
+        # determine which channels are involved in the sequence
+        if channels  == 'all':
+            chan_ids = self.get_used_channel_ids()
+        else:
+            chan_ids = []
+            for c in channels:
+                if self.channels[c]['id'][:3] not in chan_ids:
+                    chan_ids.append(self.channels[c]['id'][:3])
+
+        # this clears all element properties so we're sure not to
+        # keep any jumping, goto, etc. properties
+        self.AWG.set_sq_length(0) #neccesary?
+
+        #Create lists with sequence information:
+        #wfname_l = list of waveform names [[wf1_ch1,wf2_ch1..],[wf1_ch2,wf2_ch2..],...]
+        #nrep_l = list specifying the number of reps for each seq element
+        #wait_l = idem for wait_trigger_state
+        #goto_l = idem for goto_state (goto is the element where it hops to in case the element is finished)
+        
+        wfname_l=[]
+        nrep_l=[]
+        wait_l=[]
+        goto_l=[]
+        logic_jump_l=[]
+
+        for id in chan_ids:
+        # set all the waveforms
+            el_wfnames=[]
+            #add all wf names of channel
+            for elt in sequence.elements:
+                el_wfnames.append(elt['wfname'] + '_%s' % id) #  should the name include id nr?
+
+            wfname_l.append(el_wfnames)
+
+        for elt in sequence.elements:
+
+            nrep_l.append(elt['repetitions'])
+            if elt['goto_target'] != None:
+                goto_l.append(elt['goto_target'])
+            else:
+                goto_l.append(0)
+            if elt['jump_target'] != None:
+                logic_jump_l.append(elt['jump_target'])
+            else:
+                logic_jump_l.append(0)
+            if elt['trigger_wait']:
+                wait_l.append(1)
+            else:
+                wait_l.append(0)
+                
+        #print 'lengths', len(wfname_l), len(nrep_l),len(goto_l),len(logic_jump_l)
+        if loop:
+            goto_l[-1]=1
+        
+        filename = sequence.name+'_FILE.AWG'
+        awg_file=self.AWG.generate_awg_file(packed_waveforms,np.array(wfname_l),nrep_l, wait_l, goto_l, logic_jump_l, self.clock)
+        self.AWG.send_awg_file(filename,awg_file)
+        self.AWG.load_awg_file(filename)
+
+        # turn on the channel output
+        self.AWG.set_event_jump_timing(self.event_jump_timing)
+        self.setup_channels()
         self.activate_channels(channels)
 
         # setting jump modes and loading the djump table

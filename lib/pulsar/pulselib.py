@@ -352,6 +352,7 @@ class EOMAOMPulse(pulse.Pulse):
         self.eom_comp_pulse_amplitude  = kw.pop('eom_comp_pulse_amplitude',self.eom_pulse_amplitude)
         self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
         self.aom_risetime              = kw.pop('aom_risetime'            ,23e-9)
+        self.aom_amplitude             = kw.pop('aom_amplitude'           ,1.0)
         self.aom_on                    = kw.pop('aom_on'                  ,True)
 
         self.start_offset   = self.eom_off_duration
@@ -370,7 +371,8 @@ class EOMAOMPulse(pulse.Pulse):
         self.eom_comp_pulse_amplitude  = kw.pop('eom_comp_pulse_amplitude',self.eom_pulse_amplitude)
         self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
         self.aom_risetime              = kw.pop('aom_risetime'            ,self.aom_risetime)
-        self.aom_on                    = kw.pop('aom_on'                  ,True)
+        self.aom_amplitude             = kw.pop('aom_amplitude'           ,self.aom_amplitude )
+        self.aom_on                    = kw.pop('aom_on'                  ,self.aom_on )
         
         self.start_offset   = self.eom_off_duration
         self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration        
@@ -440,7 +442,7 @@ class EOMAOMPulse(pulse.Pulse):
                             self.eom_pulse_duration + self.aom_risetime, 
                                 pulsar.SIGNIFICANT_DIGITS))[0][-1]
 
-            wf[pulse_start:pulse_stop] += 1*self.aom_on 
+            wf[pulse_start:pulse_stop] += self.aom_amplitude*self.aom_on 
             
         return wf
 
