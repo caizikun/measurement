@@ -301,7 +301,7 @@ class laser_reject0r_v2(Instrument):
 
                 if(y>y1): break
                 y1=y
-                qt.msleep(0.4)
+                qt.msleep(0.1)
                 i=i+1
                 #print i
             if i>2: break
