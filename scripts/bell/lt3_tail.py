@@ -129,15 +129,14 @@ def tail_lt3(name):
     #EOM pulse ----------------------------------
     m.params['use_short_eom_pulse']=False
     qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 175e-9)
-    #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
     m.params['eom_pulse_duration']        = np.ones(pts)* 2e-9
     m.params['EOM_trigger_length']        = 20e-9
-    m.params['eom_off_amplitude']         = np.ones(pts)* -0.05# calibration from 6-03-2014
-    m.params['eom_pulse_amplitude']       = np.ones(pts)* 1.5# np.linspace(1.4, 2.0, pts) # calibration to be done!
+    m.params['eom_off_amplitude']         = np.ones(pts)* -0.07 # calibration from 19-03-2014
+    m.params['eom_pulse_amplitude']       = np.ones(pts)* 2.0 # calibration from 19-03-2014# 
     m.params['eom_off_duration']          = 200e-9
     m.params['eom_overshoot_duration1']   = 10e-9
-    m.params['eom_overshoot1']            = 0#-0.03   *2
+    m.params['eom_overshoot1']            = -0.03 # calibration from 19-03-2014# 
     m.params['eom_overshoot_duration2']   = 4e-9
     m.params['eom_overshoot2']            = 0#-0.03   *2
     m.params['eom_comp_pulse_amplitude']  = m.params['eom_pulse_amplitude']
@@ -161,10 +160,6 @@ def tail_lt3(name):
     m.params['opt_pi_pulses'] = 1
     m.params_lt3['MW_during_LDE'] = 0
     m.params['trigger_wait'] = 1
-    qt.instruments['AWG'].set_runmode('CONT')
-    qt.instruments['AWG'].get_runmode()
-    qt.instruments['AWG'].get_runmode()
-    qt.instruments['AWG'].get_runmode()
     m.autoconfig()
     m.generate_sequence()
     m.setup(mw=m.params_lt3['MW_during_LDE'])#XX, pq_calibrate=False)
