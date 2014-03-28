@@ -17,7 +17,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 #Asummes a cylindrical magnet
 cfg['magnet']={
 
-'nm_per_step'       :   1.,     #Z-movement
+'nm_per_step'       :   127.,     #Z-movement
 'radius'            :   5.,     #millimeters
 'thickness'         :   4.,     #millimeters
 'strength_constant' :   1.3}    #Tesla
