@@ -4,7 +4,7 @@
 ### path to a desired magnetic field.
 
 ### Import the config manager and NV parameters
-import qt
+import qt  
 import numpy as np
 cfg = qt.cfgman
 execfile("lt2_scripts/setup/msmt_params.py")
@@ -55,10 +55,25 @@ def get_B_field(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
     Bx = (abs(msm1_f**2 - (ZFS-g_factor*Bz)**2 )**0.5)/g_factor
     return (Bz, Bx)
 
-def get_magnet_position(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
+def get_magnet_position(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1,ms = 'plus',solve_by = 'list'):
     ''' determines the magnet position (mm) for given msm1_freq 
-    and msp1_freq (GHz)'''    
-    pass
+    or msp1_freq (GHz) 
+    JULIA:  I am not sure yet what will be the best solution: try by measurement'''
+    if ms is 'plus':
+        B_field = convert_f_to_Bz(freq=current_f_msp1)
+    if ms is 'minus':
+        B_field = convert_f_to_Bz(freq=current_f_msp1)
+    if solve_by == 'list':
+        d = np.linspace(10.4,9.4,10**5+1) # ! this is the right domain for B around 300 G
+        B_field_difference = np.zeros(len(d))
+        for j in [int(i) for i in np.linspace(0,len(d)-1,len(d))]:
+            B_field_difference[j] = abs(B_field-get_field_at_position(d[j]))
+        B_field_difference = np.array(B_field_difference).tolist()
+        j_index = B_field_difference.index(min(B_field_difference))
+        position = d[j_index]
+    if solve_by == 'eqn':
+        position = 22.2464-0.0763*B_field+1.511e-4*B_field**2-1.1023e-7*B_field**3
+    return position
 
 def get_field_at_position(distance):
     ''' returns the field (G) at input distance (mm)'''    
