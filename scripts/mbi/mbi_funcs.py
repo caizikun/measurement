@@ -1,9 +1,6 @@
 import qt
 import numpy as np
 
-#reload all parameters and modules
-execfile(qt.reload_current_setup)
-
 from measurement.lib.measurement2.adwin_ssro import ssro, pulsar_mbi_espin
 
 SAMPLE = qt.exp_params['samples']['current']

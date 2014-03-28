@@ -12,7 +12,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
     This is a general class for decoupling gate sequences used in addressing Carbon -13 atoms
-    It is a child of PulsarMeasurment
+    It is a child of PulsarMeasurment.MBI
     '''
     mprefix = 'DecouplingSequence'
 

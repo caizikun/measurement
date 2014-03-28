@@ -1,5 +1,5 @@
 """
-LT2 script for adwin ssro.
+script for adwin ssro calibration.
 """
 import qt
 #reload all parameters and modules

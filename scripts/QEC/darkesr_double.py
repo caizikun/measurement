@@ -7,11 +7,11 @@ import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-import measurement.lib.config.adwins as adwins_cfg
-import measurement.lib.measurement2.measurement as m2
+#import measurement.lib.config.adwins as adwins_cfg
+#import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
-from measurement.lib.measurement2.adwin_ssro import ssro
+#from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 SAMPLE= qt.exp_params['samples']['current']
@@ -26,7 +26,9 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+    #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+    m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] -43e6
+
     m.params['mw_power'] = 20
     m.params['repetitions'] = 3000
 
@@ -51,8 +53,8 @@ def darkesrp1(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    #m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
-    m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
+    m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
+
 
     m.params['mw_power'] = 20
     m.params['repetitions'] = 3000
@@ -70,7 +72,7 @@ def darkesrp1(name):
     m.finish()
 
 if __name__ == '__main__':
-    darkesr(SAMPLE_CFG)
-    cont = raw_input ('Do the fitting for ms=-1... Continue with ms=+1 y/n?')
+    darkesrp1(SAMPLE_CFG)
+    cont = raw_input ('Do the fitting for ms=-1... Continue with ms=-1 y/n?')
     if cont =='y':
-        darkesrp1(SAMPLE_CFG)
+        darkesr(SAMPLE_CFG)
