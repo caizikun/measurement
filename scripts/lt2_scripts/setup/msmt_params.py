@@ -1,5 +1,3 @@
-#import types
-#import qt
 
 cfg={}
 
@@ -109,8 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 2.005144e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.749905e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.998395e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.757348e9            #Electron spin ms=+1 frequency
 
 mw_freq  = 3.65e9    #MW source frequency
 mw_power = 23        #MW power
@@ -146,7 +144,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'CR_probe':      1000,
 'CR_repump':     1000,
 'Ex_CR_amplitude':  5e-9,
-'Ex_RO_amplitude':  25e-9,
+'Ex_RO_amplitude':  40e-9,
 'Ex_SP_amplitude':  0e-9,
 'SP_duration'        : 100,
 'SP_filter_duration' : 0 }
@@ -307,12 +305,12 @@ cfg['protocols']['Hans_sil4']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   110e-9,
+'fast_pi_duration'          :   110e-9,   #should be divisible by 2
 'fast_pi_amp'               :   0.857767, #140324
 'fast_pi_mod_frq'           :   f_MBI,
 
     ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   60e-9,
+'fast_pi2_duration'         :   60e-9,    #should be divisible by 2
 'fast_pi2_amp'              :   0.777847, #140324
 'fast_pi2_mod_frq'          :   f_MBI,
 

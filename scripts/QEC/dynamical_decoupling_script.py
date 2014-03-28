@@ -23,7 +23,7 @@ def SimpleDecoupling(name):
     funcs.prepare(m)
 
     '''set experimental parameters'''
-        #Spin pumping and readout
+        #Repetitions of each data point
     m.params['reps_per_ROsequence'] = 300
         #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
