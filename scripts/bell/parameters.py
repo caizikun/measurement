@@ -97,7 +97,7 @@ params_lt3['Ey_CR_amplitude'] = 5e-9#10e-9#6e-9
 params_lt3['A_CR_amplitude'] =5e-9#10e-9#16e-9              
 params_lt3['Ey_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 10e-9             
-params_lt3['Ey_RO_amplitude'] = 10e-9
+params_lt3['Ey_RO_amplitude'] = 5e-9
 params_lt3['A_RO_amplitude'] = 0
 params_lt3['repump_amplitude'] = 200e-6 
 

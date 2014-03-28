@@ -165,7 +165,7 @@ EVENT:
          
         IF (wait_for_AWG_done > 0) THEN 
           IF (AWG_done = 0) THEN
-            IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_channel) > 0) THEN
+            IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN
               AWG_done = 1
               IF (sequence_wait_time > 0) THEN
                 aux_timer = timer

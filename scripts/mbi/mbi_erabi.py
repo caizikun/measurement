@@ -2,6 +2,7 @@ import qt
 import numpy as np
 from measurement.lib.measurement2.adwin_ssro import pulsar_mbi_espin
 
+execfile(qt.reload_current_setup)
 import measurement.scripts.mbi.mbi_funcs as funcs
 reload(funcs)
 
@@ -12,7 +13,7 @@ def run(name):
     print 'MBI threshold =' + str(m.params['MBI_threshold'])
     print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     print 'SSRO_duration =' + str(m.params['SSRO_duration'])
-    
+
     pts = 31
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 300
@@ -21,7 +22,7 @@ def run(name):
 
     # MW pulses
     m.params['MW_pulse_durations']  = np.linspace(0,400e-9,pts) + 10e-9 #why this +10 here?
-    m.params['MW_pulse_amps']       = np.ones(pts) * 1
+    m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
     m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
 
     print m.params['MW_pulse_mod_frqs']

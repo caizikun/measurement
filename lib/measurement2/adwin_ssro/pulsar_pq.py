@@ -43,6 +43,11 @@ class PQPulsarMeasurement(PulsarMeasurement):
         t_ofl = 0
         t_lastsync = 0
         last_sync_number = 0
+
+        MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
+        MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
+        T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
+        T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
     
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
@@ -83,7 +88,8 @@ class PQPulsarMeasurement(PulsarMeasurement):
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                            np.uint64(self.params['MIN_SYNC_BIN']), np.uint64(self.params['MAX_SYNC_BIN']))
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,)
+                                                #T2_WRAPAROUND,T2_TIMEFACTOR)
 
                 if newlength > 0:
 
@@ -141,3 +147,91 @@ class PQPulsarMeasurement(PulsarMeasurement):
         channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)
         special = np.bitwise_and(np.right_shift(data, 31), 1)
         return event_time, channel, special
+
+class PQPulsarMeasurementIntegrated(PQPulsarMeasurement):
+    mprefix = 'PQPulsarMeasurementIntegrated'
+
+    def __init__(self, name):
+        PQPulsarMeasurement.__init__(self, name)
+        self.params['measurement_type'] = self.mprefix
+
+    def run(self, autoconfig=True, setup=True):
+        if autoconfig:
+            self.autoconfig()
+            
+        if setup:
+            self.setup()
+
+
+        rawdata_idx = 1
+        t_ofl = 0
+        t_lastsync = 0
+        last_sync_number = 0
+    
+
+        MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
+        MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
+        T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
+        T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
+
+        hist_length = np.uint64(self.params['MAX_SYNC_BIN'] - self.params['MIN_SYNC_BIN'])
+        sweep_length = np.uint64(self.params['pts'])
+        syncs_per_sweep = np.uint64(self.params['syncs_per_sweep'])
+
+        hist0 = np.zeros((hist_length,sweep_length), dtype='u1')
+        hist1 = np.zeros((hist_length,sweep_length), dtype='u1')
+
+        self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
+        qt.msleep(.5)
+        self.start_adwin_process(stop_processes=['counter'])
+        qt.msleep(.5)
+        self.start_keystroke_monitor('abort',timer=False)
+
+        while(self.PQ_ins.get_MeasRunning() and self.adwin_process_running()):
+
+            self._keystroke_check('abort')
+            if self.keystroke('abort') in ['q','Q']:
+                print 'aborted.'
+                self.stop_keystroke_monitor('abort')
+                break
+            reps_completed = self.adwin_var('completed_reps')
+            if reps_completed > 0 and np.mod(reps_completed,100)==0:           
+                print('completed %s / %s readout repetitions' % \
+                        (reps_completed, self.params['SSRO_repetitions']))
+
+            _length, _data = self.PQ_ins.get_TTTR_Data()
+                
+            if _length > 0:
+                _t, _c, _s = self._PQ_decode(_data[:_length])
+                
+                hist0, hist1, \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools.LDE_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
+                            t_lastsync, last_sync_number,
+                            syncs_per_sweep, sweep_length, 
+                            MIN_SYNC_BIN, MAX_SYNC_BIN,
+                            T2_WRAPAROUND,T2_TIMEFACTOR)
+
+        self.PQ_ins.StopMeas()
+
+
+        try:
+            self.stop_keystroke_monitor('abort')
+        except KeyError:
+            pass # means it's already stopped
+        
+        self.stop_adwin_process()
+        reps_completed = self.adwin_var('completed_reps')
+        print('Total completed %s / %s readout repetitions' % \
+                (reps_completed, self.params['SSRO_repetitions']))
+
+
+        dset_hist0 = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
+            (hist_length,sweep_length), 'u1', maxshape=(None,None))
+        dset_hist1 = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
+            (hist_length,sweep_length), 'u1', maxshape=(None,None))
+        dset_hist0[:,:] = hist0
+        dset_hist1[:,:] = hist1
+        self.h5data.flush()
+
+

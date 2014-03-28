@@ -28,6 +28,8 @@ MEASCTRL_SINGLESHOT_CTC     = 0 # default
 MEASCTRL_C1_GATE		        = 1
 MEASCTRL_C1_START_CTC_STOP  = 2
 MEASCTRL_C1_START_C2_STOP   = 3
+T2_WRAPAROUND               = 33552000 
+T2_TIMEFACTOR               = 2
 
 #continuous mode only
 MEASCTRL_CONT_EXTTRIG       = 5
@@ -149,6 +151,8 @@ class HydraHarp_HH400(Instrument): #1
         self.add_parameter('Channel', flags = Instrument.FLAG_SET, type=types.IntType)
         self.add_parameter('Binning', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=0, maxval=MAXBINSTEPS-1)
+        self.add_parameter('T2_WRAPAROUND', flags = Instrument.FLAG_GET, type=types.IntType)
+        self.add_parameter('T2_TIMEFACTOR', flags = Instrument.FLAG_GET, type=types.IntType)
         
         self.add_function('start_histogram_mode')
         self.add_function('start_T2_mode')
@@ -235,6 +239,11 @@ class HydraHarp_HH400(Instrument): #1
         else:
             print('Error: Module Index out of range')
 
+    def _do_get_T2_WRAPAROUND(self):
+        return T2_WRAPAROUND
+
+    def _do_get_T2_TIMEFACTOR(self):
+        return T2_TIMEFACTOR
 
     def _do_set_Channel(self,val):
 	if val < self.NumOfInputChannels:

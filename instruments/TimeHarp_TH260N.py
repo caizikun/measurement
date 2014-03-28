@@ -29,6 +29,8 @@ MEASCTRL_SINGLESHOT_CTC     = 0 # default
 MEASCTRL_C1_GATE		        = 1
 MEASCTRL_C1_START_CTC_STOP  = 2
 MEASCTRL_C1_START_C2_STOP   = 3
+T2_WRAPAROUND               = 33554432 #=2**25
+T2_TIMEFACTOR               = 1
 
 #continuous mode only
 MEASCTRL_CONT_EXTTRIG       = 5
@@ -144,6 +146,8 @@ class TimeHarp_TH260N(Instrument): #1
         self.add_parameter('Channel', flags = Instrument.FLAG_SET, type=types.IntType)
         self.add_parameter('Binning', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=0, maxval=MAXBINSTEPS-1)
+        self.add_parameter('T2_WRAPAROUND', flags = Instrument.FLAG_GET, type=types.IntType)
+        self.add_parameter('T2_TIMEFACTOR', flags = Instrument.FLAG_GET, type=types.IntType)
         
         self.add_function('start_histogram_mode')
         self.add_function('start_T2_mode')
@@ -213,6 +217,12 @@ class TimeHarp_TH260N(Instrument): #1
 
     def _do_set_DeviceIndex(self,val):
         self.DevIdx = val
+
+    def _do_get_T2_WRAPAROUND(self):
+        return T2_WRAPAROUND
+
+    def _do_get_T2_TIMEFACTOR(self):
+        return T2_TIMEFACTOR
 
 
     def _do_set_Channel(self,val):
