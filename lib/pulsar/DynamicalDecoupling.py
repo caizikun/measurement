@@ -17,15 +17,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     mprefix = 'DecouplingSequence'
 
     def autoconfig(self):
-        self.params['wait_for_AWG_done'] = 1
+        self.params['wait_for_AWG_done'] = 0
         pulsar_msmt.MBI.autoconfig(self)
 
     def retrieve_resonant_carbon_conditions(self,GateName):
         '''
-        This function retrieves the corresponding tau and N values from the cfg_man
+        This function retrieves the corresponding tau and N values from the cfg
         aswell as the order of the resonance k that is required to calculate phase differences
 
-        Currently This function just returns some fixed values. Ideally it should get them from the cfg_man where they are set in the experiment
+        Currently This function just returns some fixed values. Ideally it should get them from the cfg where they are set in the experiment
         '''
         if GateName == 'StdDecoupling':
             tau = self.params['tau']
@@ -380,8 +380,9 @@ class SimpleDecoupling(DynamicalDecoupling):
         ############################################
         #Generation of trigger and MBI element
         #############################################
+        ##maybe put the trigger pulse in a funvtion to remove clutter.
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
-            length = 5e-6, amplitude = 2)
+            length = 10e-6, amplitude = 2)
         Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
             global_time = True)
         Trig_element.append(Trig)
@@ -421,7 +422,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             list_of_list_of_elements.append(list_of_decoupling_elements)
             list_of_list_of_elements.append(final_pi_2)
             list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1,1]+ [list_of_decoupling_reps]+[1,1]
+            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
 
             #######
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)
@@ -429,7 +430,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions)
 
 
-            if i ==0:
+            if i == 0:
                 i=1
                 combined_list_of_elements.extend(list_of_elements)
             else:

@@ -15,7 +15,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 #Asummes a cylindrical magnet
 cfg['magnet']={
 
-'nm_per_step'       :   1.,     #Z-movement
+'nm_per_step'       :   127.,   #Z-movement, for 35 V and 200 Hz
 'radius'            :   5.,     #millimeters
 'thickness'         :   4.,     #millimeters
 'strength_constant' :   1.3}    #Tesla
@@ -172,13 +172,13 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   0*110e-9,
+'fast_pi_duration'          :   122e-9,
 'fast_pi_amp'               :   0.857767, #140324
 'fast_pi_mod_frq'           :   f_MBI,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   60e-9,
-'fast_pi2_amp'              :   0,#0.777847, #140324
+'fast_pi2_amp'              :   0.777847, #140324
 'fast_pi2_mod_frq'          :   f_MBI,
 
     ### MBI pulses ###

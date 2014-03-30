@@ -1,26 +1,29 @@
 ### A module for performing magnetic field calculations.
-### Examples are conversions between fields and frequencies, 
-### determining the magnet position and calculating the magnet 
+### Examples are conversions between fields and frequencies,
+### determining the magnet position and calculating the magnet
 ### path to a desired magnetic field.
 
 ### Import the config manager and NV parameters
-import qt  
+import qt
 import numpy as np
-cfg = qt.cfgman
-execfile("lt2_scripts/setup/msmt_params.py")
-current_NV  = cfg.get('samples/current')
+
+#reload all parameters and modules
+execfile(qt.reload_current_setup)
+
+current_NV= qt.exp_params['samples']['current']
+current_prot = qt.exp_params['protocols']['current']
 
 ### Import the NV and current esr parameters
-ZFS         = cfg.get('samples/' + current_NV + '/zero_field_splitting')
-g_factor    = cfg.get('samples/' + current_NV + '/g_factor')
-current_f_msm1 = cfg.get('samples/' + current_NV + '/ms-1_cntr_frq')
-current_f_msp1 = cfg.get('samples/' + current_NV + '/ms+1_cntr_frq')
+ZFS         = qt.exp_params['samples'][current_NV]['zero_field_splitting']
+g_factor    = qt.exp_params['samples'][current_NV]['g_factor']
+current_f_msm1 = qt.exp_params['samples'][current_NV]['ms-1_cntr_frq']
+current_f_msp1 = qt.exp_params['samples'][current_NV]['ms+1_cntr_frq']
 
 ### Import the magnet parameters
-nm_per_step         = cfg.get('magnet/'+'nm_per_step')          
-radius              = cfg.get('magnet/'+'radius')      
-thickness           = cfg.get('magnet/'+'thickness')             
-strength_constant   = cfg.get('magnet/'+'strength_constant')    
+nm_per_step         = qt.exp_params['magnet']['nm_per_step']
+radius              = qt.exp_params['magnet']['radius']
+thickness           = qt.exp_params['magnet']['thickness']
+strength_constant   = qt.exp_params['magnet']['strength_constant']
 
 ### Simple conversions
 def convert_Bz_to_f(B_field):
@@ -28,12 +31,12 @@ def convert_Bz_to_f(B_field):
     for a given B_field input. Assumes the field is along Z
     '''
     freq_msm1 = ZFS - B_field * g_factor
-    freq_msp1 = ZFS + B_field * g_factor    
+    freq_msp1 = ZFS + B_field * g_factor
     return freq_msm1, freq_msp1
 
 def convert_f_to_Bz(freq=current_f_msm1):
     ''' Calculates the B_field (z-component only)
-    for a given frequency (either ms=-1 or ms=+1). 
+    for a given frequency (either ms=-1 or ms=+1).
     Assumes a field along Z'''
 
     B_field = abs(ZFS-freq)/g_factor
@@ -46,9 +49,9 @@ def calc_ZFS(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
 
 ### Get the field vector values and magnet position
 def get_B_field(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
-    ''' Returns the (Bz_field, Bx_field) for given given 
+    ''' Returns the (Bz_field, Bx_field) for given given
     ms=-1 and ms=0 frequencies (GHz)
-    ''' 
+    '''
     msm1_f = msm1_freq*1e9
     msp1_f = msp1_freq*1e9
     Bz = (msp1_f**2 - msm1_f**2)/(4.*ZFS*g_factor)
@@ -56,8 +59,8 @@ def get_B_field(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
     return (Bz, Bx)
 
 def get_magnet_position(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1,ms = 'plus',solve_by = 'list'):
-    ''' determines the magnet position (mm) for given msm1_freq 
-    or msp1_freq (GHz) 
+    ''' determines the magnet position (mm) for given msm1_freq
+    or msp1_freq (GHz)
     JULIA:  I am not sure yet what will be the best solution: try by measurement'''
     if ms is 'plus':
         B_field = convert_f_to_Bz(freq=current_f_msp1)
@@ -76,13 +79,13 @@ def get_magnet_position(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1,ms = 
     return position
 
 def get_field_at_position(distance):
-    ''' returns the field (G) at input distance (mm)'''    
+    ''' returns the field (G) at input distance (mm)'''
     B_field = 1e4* strength_constant/2. * ( (thickness+distance)/(radius**2 +(thickness+distance)**2)**0.5 \
             - distance/(radius**2 + distance**2)**0.5)
     return B_field
 
 def get_field_gradient(distance):
-    ''' returns the field (G) at input distance (mm)'''    
+    ''' returns the field (G) at input distance (mm)'''
     return B_field
 
 def get_all(freq_ms_m1, freq_ms_p1):
