@@ -11,9 +11,9 @@ mw_power = -3        #in dBm
 green_power = 10e-6  #10e-6
 int_time = 25        # in ms
 reps = 10
-#center_f =  2.088 # in GHz #Ms = -1
-center_f =   2.008# in GHz #Ms = +1
-range_f  =  0.020 # in GHz
+center_f =  1.998 # in GHz #Ms = -1
+#center_f =   3.757# in GHz #Ms = +1
+range_f  =  0.030 # in GHz
 
 #generate list of frequencies
 f_list = linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)

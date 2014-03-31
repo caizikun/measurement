@@ -16,9 +16,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     '''
     mprefix = 'DecouplingSequence'
 
-    def autoconfig(self):
-        self.params['wait_for_AWG_done'] = 0
-        pulsar_msmt.MBI.autoconfig(self)
+    #def autoconfig(self):
+    #    self.params['wait_for_AWG_done'] = 0
+    #    pulsar_msmt.MBI.autoconfig(self)
 
     def retrieve_resonant_carbon_conditions(self,GateName):
         '''

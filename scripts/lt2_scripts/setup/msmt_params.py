@@ -107,8 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 1.998395e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.757348e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.987368e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.767798e9            #Electron spin ms=+1 frequency
 
 mw_freq  = 3.65e9    #MW source frequency
 mw_power = 23        #MW power
