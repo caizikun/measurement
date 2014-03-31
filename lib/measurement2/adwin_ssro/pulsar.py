@@ -222,19 +222,20 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
                 phase = self.params['CORPSE_pi2_phases2'][i]))
 
             elements.append(e)
-
+        return_e=e
         # create a sequence from the pulses
         seq = pulsar.Sequence('ElectronRamsey sequence')
         for e in elements:
+            print e.print_overview()
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
         # upload the waveforms to the AWG
-        if upload:
+        #if upload:
             qt.pulsar.upload(*elements)
 
         # program the AWG
         qt.pulsar.program_sequence(seq)
-
+        return return_e.normalized_waveforms()
         #For faster uploading, use:
         #qt.pulsar.program_awg(seq,*elements)
 
