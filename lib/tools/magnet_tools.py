@@ -10,7 +10,7 @@ import numpy as np
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-current_NV= qt.exp_params['samples']['current']
+current_NV = qt.exp_params['samples']['current']
 current_prot = qt.exp_params['protocols']['current']
 
 ### Import the NV and current esr parameters
@@ -84,27 +84,45 @@ def get_field_at_position(distance):
             - distance/(radius**2 + distance**2)**0.5)
     return B_field
 
+def get_freq_at_position(distance):
+    ''' returns the freq (GHz) at input distance (mm)'''
+    B_field = get_field_at_position(distance)
+    Frequency = convert_Bz_to_f(B_field)
+    return B_field
+
 def get_field_gradient(distance):
     ''' returns the field (G) at input distance (mm)'''
     return B_field
 
-def get_all(freq_ms_m1, freq_ms_p1):
+def get_all(freq_ms_m1=current_f_msm1, freq_ms_p1=current_f_msp1):
     '''function that returns all the magnetic field and magnet properties
-    for the given ms=-1 and ms=0 frequencies'''
-    pass
+    for the given or current ms=-1 and ms=+1 frequencies'''
+    print 'Given ms-1 transition frequency = '+str(freq_ms_m1*1e-9) +' GHz'
+    print 'Given ms+1 transition frequency = '+str(freq_ms_p1**1e-9) + ' GHz'
+    calculated_ZFS = calc_ZFS(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
+    print 'Zero-field splitting ='str(calculated_ZFS*1e-9) + ' GHz'
+    calculated_B_field = get_B_field(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
+    print 'Current B field = 'str(calculated_B_field)+ ' G'
+    calculated_position = get_magnet_position(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1,ms = 'plus',solve_by = 'list')
+    print 'Current distance between magnet and NV centre = '+ str(calculated_position)+ ' mm'
 
-### Detemrine where to move
+### Determine where to move
 
-def steps_to_frequency():
+def steps_to_frequency(freq=current_f_msp1, freq_id = ideal_f_msp1, ms = 'plus'):
+    '''determine the steps needed to go to a certain frequency (freq_id)'''
+
+    position = mt.get_magnet_position(msp1_freq=freq,ms = ms,solve_by = 'list')
+    position_ideal = mt.get_magnet_position(msp1_freq=freq_id,ms = ms,solve_by = 'list')
+    d_position_nm = (position - position_ideal)*1e6
+    d_steps = d_position_nm/nm_per_step
+    return d_steps
+
+def steps_to_field(B_field,frequency = freq_msp1):
     '''determine the steps needed to go to a certain frequency
     or field'''
-
-def steps_to_field():
-    '''determine the steps needed to go to a certain frequency
-    or field'''
-
-
-
+    freq_msm1, freq_msp1 = convert_Bz_to_f(B_field)
+    d_steps = steps_to_frequency(freq=frequency, ms = 'plus')
+    return d_steps
 
 
 
