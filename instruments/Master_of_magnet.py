@@ -137,10 +137,10 @@ class Master_of_magnet(Instrument):
         elif int(steps) > 0: 
             self._anc_ins.StepUp(axis_number, steps)
             freq = self.get_frequency(axis)
-            #time.sleep(int(steps)/freq + 0.5)
+            qt.msleep(int(steps)/freq + 1)
         elif int(steps) < 0: 
             self._anc_ins.StepDown(axis_number, abs(int(steps)))
-            #time.sleep(abs(int(steps))/freq + 0.5)
+            qt.msleep(abs(int(steps))/freq + 1)
         else:
             print 'Error: invalid input'
     

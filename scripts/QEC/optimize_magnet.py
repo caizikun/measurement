@@ -7,6 +7,7 @@ import numpy as np
 import qt
 import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
+import msvcrt
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
