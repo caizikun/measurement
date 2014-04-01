@@ -123,9 +123,9 @@ if __name__ == '__main__':
         d_steps.append(steps_to_frequency(freq=f0_temp*1e6, ms = 'plus'))
         print 'move magnet in Z with '+ str(d_steps) + ' steps'
 
-        Master_of_magnet.step('Z_axis',d_steps[iterations]) # position further than ideal position -> go closer
+        #Master_of_magnet.step('Z_axis',d_steps[iterations]) # position further than ideal position -> go closer
         
-        qt.msleep(5) # because QTlab does not know that the magnet is still stepping
+        #qt.msleep(5) # because QTlab does not know that the magnet is still stepping
 
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(5e-6) 
