@@ -85,7 +85,12 @@ params_lt1['N_RO_SP_amplitude'] = params_lt1['A_SP_amplitude']
 params_lt1['N_RO_SP_duration'] = 15e-6  #Bas asks: is this an adwin par?
 params_lt1['N_RO_repetitions'] = 2 # THIS IS COMPILED INTO THE ADWIN CODE!
 
-
+params_lt3['pi2_pulse_phase'] = 0 #Y
+params_lt3['DD_pi_phases'] = [90,0,90] ## THIS DEFINES THE XYX SEQUENCE
+params_lt3['CORPSE_pi2_wait_length']= 1300e-9
+params_lt3['first_C_revival'] = 106.579e-6/2. #C revival after CORPSE_pi2_wait_length 
+params_lt3['dd_extra_t_between_pi_pulses'] = -0.111e-6#0.470e-6
+params_lt3['dd_spin_echo_time'] = -83.5e-9
 
 #################################################################################################################
 #LT2 RO CR SP

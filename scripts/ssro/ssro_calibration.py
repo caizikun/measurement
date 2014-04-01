@@ -3,7 +3,7 @@ LT2 script for adwin ssro.
 """
 import qt
 #reload all parameters and modules
-execfile(qt.reload_current_setup)
+#execfile(qt.reload_current_setup)
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
@@ -29,7 +29,7 @@ def ssrocalibration(name):
 
     
     # ms = 0 calibration
-    m.params['SP_duration']=50
+    m.params['SP_duration']=100
     m.params['Ex_SP_amplitude'] = 0.
     m.run()
     m.save('ms0')

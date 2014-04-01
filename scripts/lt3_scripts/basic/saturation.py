@@ -6,7 +6,7 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Gretel_Sil1_PSB_SM'
+name = 'Gretel_Sil2_PSB_SM'
 steps=17
 max_power=200e-6       #[w]
 counter=1    #number of counter

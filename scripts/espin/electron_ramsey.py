@@ -1,16 +1,19 @@
 import qt
 import numpy as np
-from measurement.lib.measurement2.adwin_ssro import pulsar
+execfile(qt.reload_current_setup)
+from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 from measurement.scripts.espin import espin_funcs as funcs
 reload(funcs)
+
+
 
 name = 'sil10_Gretel_no_time_for_decoherence'
 SAMPLE = qt.cfgman['samples']['current']
 SAMPLE_CFG = qt.cfgman['protocols']['current']
 
 def electronramseyCORPSE(name):
-    m = pulsar.electronramseyCORPSE(name)
+    m = pulsar_msmt.electronramseyCORPSE(name)
     funcs.prepare(m)
 
     pts = 21
@@ -33,7 +36,7 @@ def electronramseyCORPSE(name):
     funcs.finish(m)
 
 def electronramsey(name):
-    m = pulsar.ElectronRamsey(name)
+    m = pulsar_msmt.ElectronRamsey(name)
     #funcs.prepare(m)
     m.params.from_dict(qt.cfgman.get('samples/'+SAMPLE))
     m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])
@@ -44,11 +47,11 @@ def electronramsey(name):
     m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
-    pts = 31
+    pts = 51
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
     #m.params['wait_for_AWG_done']=1
-    m.params['evolution_times'] = np.linspace(0,1*(pts-1)*1/m.params['N_HF_frq'],pts)
+    m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
 
     # MW pulses
     m.params['detuning']  = 0.0e6
@@ -60,7 +63,7 @@ def electronramsey(name):
     m.params['pi2_amps'] = np.ones(pts)*1
     m.params['pi2_phases1'] = np.ones(pts) * 0
     m.params['pi2_phases2'] = np.ones(pts) * 0#360 * m.params['evolution_times'] * m.params['detuning']
-    m.params['pi2_lengths'] = np.ones(pts) * 21e-9
+    m.params['pi2_lengths'] = np.ones(pts) * 16e-9
     #m.params['pi2_lengths'] = np.linspace(15,30,pts)*1e-9
 
     # for the autoanalysis
@@ -70,5 +73,5 @@ def electronramsey(name):
     funcs.finish(m)
 
 if __name__ == '__main__':
-    electronramseyCORPSE(name)
+    electronramsey(name)
 

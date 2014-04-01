@@ -26,13 +26,7 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    m.params['mw_power'] = 23
-    #m.params['SP_duration'] = 300
-    #m.params['A_SP_amplitude'] = 0.
-    #m.params['Ex_SP_amplitude'] = 10e-9
-
-
-    m.params['pts'] = 21
+    m.params['pts'] = 16
     pts = m.params['pts']
     m.params['repetitions'] = 1000
 
@@ -47,10 +41,10 @@ def erabi(name):
     m.params['MW_pulse_frequency'] = m.params['ms-1_cntr_frq'] - m.params['mw_frq']
     print m.params['ms-1_cntr_frq']
 
-    m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(1, 1e4, pts) * 1e-9
     #m.params['MW_pulse_durations'] =  80e-9*np.ones(pts)#np.linspace(0, 200, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts) *1
+    m.params['MW_pulse_amplitudes'] = np.ones(pts) *1.0
     #m.params['MW_pulse_amplitudes'] = np.linspace(0,1.,pts)#0.55*np.ones(pts)
 
     # for autoanalysis

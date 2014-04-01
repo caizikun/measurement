@@ -7,7 +7,7 @@ import msvcrt
 
 name='ESR_SIL1_Hans_LT2'
 steps    = 501        #101
-mw_power = -3        #in dBm
+mw_power = -5        #in dBm
 green_power = 10e-6  #10e-6
 int_time = 25        # in ms
 reps = 10
