@@ -28,9 +28,9 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
             self.mwsrc.set_power(self.params['mw_power'])
             self.mwsrc.set_status('on')
 
-        self.awg.set_runmode('SEQ')
         self.awg.start()
-
+        if not wait_for_awg:
+            print 'NOT WAIING FOR AWG!!!!'
         if wait_for_awg:
             i=0
             awg_ready = False
@@ -40,10 +40,13 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
                 try:
                     if self.awg.get_state() == 'Waiting for trigger':
+                        qt.msleep(1)
                         awg_ready = True
+                        print 'AWG Ready!'
                 except:
                     print 'waiting for awg: usually means awg is still busy and doesnt respond'
                     print 'waiting', i, '/ 40'
+                    self.awg.clear_visa()
                     i=i+1
 
                 qt.msleep(0.5)
@@ -56,6 +59,24 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def stop_sequence(self):
         self.awg.stop()
+
+    def save(self,**kw):
+        ssro.IntegratedSSRO.save(self, **kw)
+    
+        grp=self.h5basegroup.create_group('pulsar_settings')
+        pulsar = kw.pop('pulsar', qt.pulsar)
+        
+        for k in pulsar.channels:
+            grpc=grp.create_group(k)
+            for ck in pulsar.channels[k]:
+                grpc.attrs[ck] = pulsar.channels[k][ck]
+        
+        grpa=grp.create_group('AWG_sequence_cfg')
+        for k in pulsar.AWG_sequence_cfg:
+            grpa.attrs[k] = pulsar.AWG_sequence_cfg[k]
+    
+    
+        self.h5data.flush()
 
     def finish(self,**kw):
         ssro.IntegratedSSRO.finish(self,**kw)
@@ -114,10 +135,11 @@ class DarkESR(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.upload(*elements)
+            #qt.pulsar.upload(*elements)
+            qt.pulsar.program_awg(seq,*elements)
 
         # program the AWG
-        qt.pulsar.program_sequence(seq)
+        #qt.pulsar.program_sequence(seq)
 
         # some debugging:
         # elements[-1].print_overview()
@@ -167,10 +189,11 @@ class ElectronRabi(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.upload(*elements)
+            qt.pulsar.program_awg(seq,*elements)
+            #qt.pulsar.upload(*elements)
 
         # program the AWG
-        qt.pulsar.program_sequence(seq)
+        #qt.pulsar.program_sequence(seq)
 
         # some debugging:
         # elements[-1].print_overview()

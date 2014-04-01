@@ -37,6 +37,11 @@ class Tektronix_AWG5014_09(awg_ins.Tektronix_AWG5014):
     def __init__(self, name, address, reset=False, clock=1e9, numpoints=1000):
         awg_ins.Tektronix_AWG5014.__init__(self, name, address, reset=reset, clock=clock, numpoints=numpoints)
        
+        awg_ins.Tektronix_AWG5014.AWG_FILE_FORMAT_HEAD.update({
+                'EVENT_JUMP_MODE'           :   'h',#EVENT JUMP | DYNAMIC JUMP
+                'TABLE_JUMP_STROBE'         :   'h',#On | off
+                'TABLE_JUMP_DEFINITION'     :   'l'*16 #
+        })
         self.add_function('set_sequence_jump_mode')
         self.add_function('get_sequence_jump_mode')
         self.add_function('set_djump_def')
