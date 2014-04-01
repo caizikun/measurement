@@ -9,12 +9,6 @@ import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-#import measurement.lib.config.adwins as adwins_cfg
-#import measurement.lib.measurement2.measurement as m2 #Commented out because linter says it is unused
-
-# import the msmt class
-#from measurement.lib.measurement2.adwin_ssro import ssro
-#from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 import measurement.lib.pulsar.DynamicalDecoupling as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
@@ -26,49 +20,41 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def SimpleDecoupling(name):
 
     m = DD.SimpleDecoupling(name)
-    funcs.prepare(m) 
+    funcs.prepare(m)
 
     '''set experimental parameters'''
-        #Spin pumping and readout
-    m.params['SP_duration'] = 250
-    m.params['Ex_RO_amplitude'] = 8e-9 #10e-9
-    m.params['A_SP_amplitude'] = 40e-9
-    m.params['Ex_SP_amplitude'] = 0.
+        #Repetitions of each data
     m.params['reps_per_ROsequence'] = 300
-
-
-        #Set sequence wait time for AWG triggering (After AWG trigger? Tim)
+        #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
 
+    #######
+    pts = 11
+    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])/m.params['g_factor']*1.07e3
+    tau_larmor = 1/f_larmor
+    print 'tau_larmor = %s' %tau_larmor
+    tau_larmor = 2.999e-6  #Dirty fix for length of string being to long in AWG
+    tau_list = np.linspace(tau_larmor,pts*tau_larmor,pts)
+    # tau_list =np.linspace(5e-7,50e-7,pts)
 
     #######
 
-
-    #######
-
-        #Plot parameters
-    pts = 3
-    m.params['pts'] = pts#len(m.params['sweep_pts']) 
+    m.params['pts'] = pts#len(m.params['sweep_pts'])
     m.params['sweep_name'] = 'tau (us)'
-    m.params['sweep_pts'] =np.linspace(2.975e-6,10.0*2.975e-6,pts) # m.params['tau_list']*1e6  #np.linspace(1,10,10)#
-    
+    m.params['sweep_pts'] =tau_list*1e6 # m.params['tau_list']*1e6  #np.linspace(1,10,10)#
+
     m.autoconfig()
 
+    m.params['sequence_wait_time'] =  (tau_larmor*4*pts)*1e6+20
     #Decoupling specific parameters
-    m.params['Number_of_pulses'] = 16
-    m.params['tau_list'] = np.linspace(2.975e-6,10.0*2.975e-6,pts) #Larmor period for B =314G
+    m.params['Number_of_pulses'] = 4
+    m.params['tau_list'] = tau_list #Larmor period for B =314G
     m.params['Initial_Pulse'] ='pi/2'
     m.params['Final_Pulse'] ='pi/2'
 
-
-
-    '''generate sequence'''
-    m.generate_sequence(upload=True)
-
-
-    # m.run()
-    # m.save('ms0')
-    # m.finish()
+    funcs.finish(m, debug=True)
 
 if __name__ == '__main__':
     SimpleDecoupling(SAMPLE+'_'+'')
+
+

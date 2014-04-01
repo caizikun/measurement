@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD276629  TUD276629\localadmin
 '<Header End>
 ' this program implements CR check and N times |SP - AWG sequence - integrated SSRO |
 ' controlled by ADwin Pro
@@ -55,6 +55,7 @@ DIM first AS LONG
 DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
 DIM counts AS LONG
+DIM wait_time_between_msmnts AS LONG
 
 INIT:  
   init_CR()
@@ -109,6 +110,8 @@ INIT:
   
   Par_73 = repetition_counter
   Par_74 = mode
+  
+  wait_time_between_msmnts = 7000
 
 
 EVENT:
@@ -122,11 +125,17 @@ EVENT:
       CASE 0 'CR check
        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
-          mode = 2
-          timer = -1
+          mode = 9
+          timer = -wait_time_between_msmnts
           first = 0
         ENDIF
-
+        
+      CASE 9
+        IF (timer = 0) THEN
+          mode =2
+          timer=-1
+        ENDIF
+      
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
@@ -206,8 +215,8 @@ EVENT:
             sweep_index = 1
           endif
           
-          mode = 2 
-          timer = -1
+          mode = 9 
+          timer = -wait_time_between_msmnts
           wait_after_pulse = wait_after_pulse_duration
           inc(repetition_counter)
           Par_73 = repetition_counter
