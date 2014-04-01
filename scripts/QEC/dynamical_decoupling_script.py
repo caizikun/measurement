@@ -26,7 +26,7 @@ def SimpleDecoupling(name):
     m.params['reps_per_ROsequence'] = 300 #Repetitions of each data point
     #m.params['sequence_wait_time'] = 0    #Set sequence wait time for AWG triggering
 
-    pts = 6
+    pts = 8
     m.params['pts'] = pts#len(m.params['sweep_pts'])
 
     m.params['Initial_Pulse'] ='pi/2'
@@ -41,11 +41,11 @@ def SimpleDecoupling(name):
     m.params['Number_of_pulses'] = 32*np.ones(pts).astype(int)
 
     tau_list = np.ones(pts)*tau_larmor# np.linspace(tau_larmor,pts*tau_larmor,pts)
-    m.params['Number_of_pulses'] =  [4,8,16,32,64,128] #32*np.ones(pts).astype(int)
+    m.params['Number_of_pulses'] =  [4,8,16,32,64,128,256,512] #32*np.ones(pts).astype(int)
     #######
 
     m.params['sweep_name'] = 'Numberof pulses'#total evolution time (us)'
-    m.params['sweep_pts']  = ['4','8','16','32','64','128'] #2*m.params['Number_of_pulses'][0]*tau_list*1e6 # m.params['tau_list']*1e6
+    m.params['sweep_pts']  = ['4','8','16','32','64','128','256','512'] #2*m.params['Number_of_pulses'][0]*tau_list*1e6 # m.params['tau_list']*1e6
 
     m.autoconfig()
 

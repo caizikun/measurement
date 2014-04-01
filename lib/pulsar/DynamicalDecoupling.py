@@ -389,9 +389,9 @@ class SimpleDecoupling(DynamicalDecoupling):
             list_of_list_of_elements.append([mbi_elt])
             list_of_list_of_elements.append(initial_pi_2)
             list_of_list_of_elements.append(list_of_decoupling_elements)
-            list_of_list_of_elements.append(final_pi_2)
+            # list_of_list_of_elements.append(final_pi_2)
             list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
+            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1]
 
             #######
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)

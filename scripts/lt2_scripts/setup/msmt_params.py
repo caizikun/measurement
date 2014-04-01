@@ -180,8 +180,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   96e-9,#60e-9,
-'fast_pi2_amp'              :   0*0.785698,#0*0.777847, #140324
+'fast_pi2_duration'         :   190e-9,#96e-9,#60e-9,
+'fast_pi2_amp'              :   0.800284,#0*0.785698,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
