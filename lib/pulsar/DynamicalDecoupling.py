@@ -442,10 +442,11 @@ class SimpleDecoupling(DynamicalDecoupling):
 
         if upload:
             print 'uploading list of elements'
-            qt.pulsar.upload(*combined_list_of_elements)
+            #qt.pulsar.upload(*combined_list_of_elements)
             # program the AWG
             print ' uploading sequence'
-            qt.pulsar.program_sequence(combined_seq)
+            #qt.pulsar.program_sequence(combined_seq)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements)
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
