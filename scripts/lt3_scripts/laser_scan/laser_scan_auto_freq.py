@@ -56,7 +56,7 @@ class LaserFrequencyScan:
         success = False
 
         set_power(power)
-
+        cur_f = self.get_frequency(wm_channel)
         while ((v < self.max_v - 0.3) and (v > self.min_v + 0.3)):
             if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 break
@@ -198,10 +198,12 @@ class Scan(LaserFrequencyScan):
         self.set_gate_voltage = lambda x: qt.get_setup_instrument('ivvi').set_dac2(x)
 
     def yellow_scan(self, start_f, stop_f, power=0.5e-9, **kw):
+        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-521.22)*1000.
         voltage_step = kw.pop('voltage_step', 0.01)
 
         self.single_line_scan(start_f, stop_f,
             voltage_step = voltage_step, 
+            oltage_step_scan=0.02,
             integration_time_ms=50, 
             power=power,
             suffix = 'yellow', 
@@ -212,9 +214,11 @@ class Scan(LaserFrequencyScan):
             set_power = self.set_yellow_power,
             **kw)
 
-    def yellow_ionization_scan(self, start_f, stop_f, power=70e-9, **kw):
+    def yellow_ionization_scan(self, start_f, stop_f, power=50e-9, **kw):
+        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-521.22)*1000.
         self.single_line_scan(start_f, stop_f,
-            voltage_step=0.03, integration_time_ms=5, power=power,
+            voltage_step=0.02, integration_time_ms=5, power=power,
+            voltage_step_scan=0.02,
             suffix = 'yellow', 
             set_voltage = self.set_yellow_laser_voltage,
             get_voltage = self.get_yellow_laser_voltage,
@@ -224,12 +228,14 @@ class Scan(LaserFrequencyScan):
             save = False)
 
     def red_scan(self, start_f, stop_f, power=0.5e-9, **kw):
+        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         voltage_step = kw.pop('voltage_step', 0.005)
         integration_time_ms = kw.pop('integration_time_ms', 50)
         
         self.single_line_scan(start_f, stop_f, voltage_step, integration_time_ms, power, **kw)\
 
-    def red_ionization_scan(self, start_f, stop_f, power=14e-9, **kw):
+    def red_ionization_scan(self, start_f, stop_f, power=30e-9, **kw):
+        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         voltage_step = kw.pop('voltage_step', 0.04)
         integration_time_ms = kw.pop('integration_time_ms', 20)
         _save=kw.pop('save', False)        
@@ -237,6 +243,7 @@ class Scan(LaserFrequencyScan):
         self.single_line_scan(start_f, stop_f, voltage_step, integration_time_ms, power, 
             save=False, **kw)    
         MatisseAOM.turn_off()
+
     def yellow_red(self, y_start, y_stop, y_step ,y_power, r_start, r_stop, r_step, r_int, r_power, **kw):
         red_data = kw.pop('red_data', None)
         yellow_data = kw.pop('yellow_data', None)
@@ -519,15 +526,15 @@ def single_scan(name):
     m.name=name
     do_MW=True
     if do_MW:
-        m.mw.set_power(-12)
-        m.mw.set_frequency(2.8357e9)
+        m.mw.set_power(-14)
+        m.mw.set_frequency(2.8360e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(67, 85, voltage_step=0.01, integration_time_ms=20, power = 3e-9)
-    #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
-    #m.yellow_scan(62, 77, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
+    #m.red_scan(40, 80, voltage_step=0.02, integration_time_ms=20, power = 0.5e-9)
+    #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
+    m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     if do_MW:
@@ -536,7 +543,7 @@ def single_scan(name):
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
 
-    single_scan('Gretel_SIL12_MM')
+    single_scan('Gretel_SIL2_SM_green_during')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
     # repeated_red_scans()
