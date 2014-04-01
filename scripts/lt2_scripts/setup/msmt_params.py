@@ -107,19 +107,22 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 1.987368e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.767798e9            #Electron spin ms=+1 frequency
-
-mw_freq  = 3.65e9    #MW source frequency
-mw_power = 23        #MW power
-
+f_msm1_cntr = 1.995075e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.760085e9            #Electron spin ms=+1 frequency
 zero_field_splitting = 2.87747e9    # As measured by Julia on 20140227 2.87747(5)e9
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.195e6        #calibrated 20140320/181319
 
+mw_mod_frequency = 250e6
+
+mw_freq  = f_msp1_cntr - mw_mod_frequency
+mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq
+mw_power = 23                               #MW power
+
 cfg['samples']['Hans_sil1'] = {
-'mw_frq'        :       mw_freq,
+'mw_mod_freq'   :       mw_mod_frequency,
+'mw_frq'        :       mw_freq_MBI,
 'mw_power'      :       mw_power,
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
@@ -162,9 +165,9 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
     ########################
 
 #f_0 = cfg['samples']['Hans_sil1']['ms-1_cntr_frq'] - cfg.get['samples']['Hans_sil1']['mw_frq']
-f_mod_0     = cfg['samples']['Hans_sil1']['ms+1_cntr_frq'] - cfg['samples']['Hans_sil1']['mw_frq']
-N_hf_split  = cfg['samples']['Hans_sil1']['N_HF_frq']
-f_MBI = f_mod_0 - N_hf_split
+#f_mod_0     = cfg['samples']['Hans_sil1']['ms+1_cntr_frq'] - cfg['samples']['Hans_sil1']['mw_frq']
+f_mod_0     = cfg['samples']['Hans_sil1']['mw_mod_freq']
+
 CORPSE_frq=  5.4e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
@@ -172,18 +175,18 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   122e-9,
-'fast_pi_amp'               :   0.857767, #140324
-'fast_pi_mod_frq'           :   f_MBI,
+'fast_pi_duration'          :   190e-9,     #136e-9,
+'fast_pi_amp'               :   0.800284,  #140324
+'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   60e-9,
-'fast_pi2_amp'              :   0.777847, #140324
-'fast_pi2_mod_frq'          :   f_MBI,
+'fast_pi2_duration'         :   96e-9,#60e-9,
+'fast_pi2_amp'              :   0.785698,#0*0.777847, #140324
+'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
-'AWG_MBI_MW_pulse_mod_frq'  :   f_MBI,
-'AWG_MBI_MW_pulse_ssbmod_frq':  f_MBI,
+'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
+'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
 'AWG_MBI_MW_pulse_amp'      :   0.03,
 'AWG_MBI_MW_pulse_duration' :   2500e-9,
 

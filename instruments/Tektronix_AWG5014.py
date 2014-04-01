@@ -49,6 +49,71 @@ class Tektronix_AWG5014(Instrument):
     28-11-2008 ''  '' : Added some functionality to manipulate and manoeuvre through the folders on the AWG 
     '''
 
+    AWG_FILE_FORMAT_HEAD = {
+        'SAMPLING_RATE'             :   'd',    #d
+        'REPETITION_RATE'           :   'd',    # # NAME?
+        'HOLD_REPETITION_RATE'      :   'h',    # True | False
+        'CLOCK_SOURCE'              :   'h',    # Internal | External
+        'REFERENCE_SOURCE'          :   'h',    # Internal | External
+        'EXTERNAL_REFERENCE_TYPE'   :   'h',    # Fixed | Variable
+        'REFERENCE_CLOCK_FREQUENCY_SELECTION':'h',
+        'REFERENCE_MULTIPLIER_RATE' :   'h',    # 
+        'DIVIDER_RATE'              :   'h',   # 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256
+        'TRIGGER_SOURCE'            :   'h',    # Internal | External
+        'INTERNAL_TRIGGER_RATE'     :   'd',    # 
+        'TRIGGER_INPUT_IMPEDANCE'   :   'h',    # 50 ohm | 1 kohm
+        'TRIGGER_INPUT_SLOPE'       :   'h',    # Positive | Negative
+        'TRIGGER_INPUT_POLARITY'    :   'h',    # Positive | Negative
+        'TRIGGER_INPUT_THRESHOLD'   :   'd',    # 
+        'EVENT_INPUT_IMPEDANCE'     :   'h',    # 50 ohm | 1 kohm
+        'EVENT_INPUT_POLARITY'      :   'h',    # Positive | Negative
+        'EVENT_INPUT_THRESHOLD'     :   'd',
+        'JUMP_TIMING'               :   'h',    # Sync | Async
+        'INTERLEAVE'                :   'h',    # On | Off: This setting is stronger than .
+        'ZEROING'                   :   'h',    # On | Off
+        'COUPLING'                  :   'h',    # The Off | Pair | All setting is weaker than .
+        'RUN_MODE'                  :   'h',    # Continuous | Triggered | Gated | Sequence
+        'WAIT_VALUE'                :   'h',    # First | Last
+        'RUN_STATE'                 :   'h',    # On | Off
+        'INTERLEAVE_ADJ_PHASE'      :   'd',
+        'INTERLEAVE_ADJ_AMPLITUDE'  :   'd',
+    }
+    AWG_FILE_FORMAT_CHANNEL = {
+        'OUTPUT_WAVEFORM_NAME_N'    :   's', # Include NULL.(Output Waveform Name for Non-Sequence mode)
+        'CHANNEL_STATE_N'           :   'h', # On | Off
+        'ANALOG_DIRECT_OUTPUT_N'    :   'h', # On | Off
+        'ANALOG_FILTER_N'           :   'h', # Enum type.
+        'ANALOG_METHOD_N'           :   'h', # Amplitude/Offset, High/Low
+        'ANALOG_AMPLITUDE_N'        :   'd', # When the Input Method is High/Low, it is skipped.
+        'ANALOG_OFFSET_N'           :   'd', # When the Input Method is High/Low, it is skipped.
+        'ANALOG_HIGH_N'             :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'ANALOG_LOW_N'              :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'MARKER1_SKEW_N'            :   'd',
+        'MARKER1_METHOD_N'          :   'h', # Amplitude/Offset, High/Low
+        'MARKER1_AMPLITUDE_N'       :   'd', # When the Input Method is High/Low, it is skipped.
+        'MARKER1_OFFSET_N'          :   'd', # When the Input Method is High/Low, it is skipped.
+        'MARKER1_HIGH_N'            :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'MARKER1_LOW_N'             :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'MARKER2_SKEW_N'            :   'd',
+        'MARKER2_METHOD_N'          :   'h', # Amplitude/Offset, High/Low
+        'MARKER2_AMPLITUDE_N'       :   'd', # When the Input Method is High/Low, it is skipped.
+        'MARKER2_OFFSET_N'          :   'd', # When the Input Method is High/Low, it is skipped.
+        'MARKER2_HIGH_N'            :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'MARKER2_LOW_N'             :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'DIGITAL_METHOD_N'          :   'h', # Amplitude/Offset, High/Low
+        'DIGITAL_AMPLITUDE_N'       :   'd', # When the Input Method is High/Low, it is skipped.
+        'DIGITAL_OFFSET_N'          :   'd', # When the Input Method is High/Low, it is skipped.
+        'DIGITAL_HIGH_N'            :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'DIGITAL_LOW_N'             :   'd', # When the Input Method is Amplitude/Offset, it is skipped.
+        'EXTERNAL_ADD_N'            :   'h', # AWG5000 only
+        'PHASE_DELAY_INPUT_METHOD_N':   'h', # Phase/DelayInme/DelayInints
+        'PHASE_N'                   :   'd', # When the Input Method is not Phase, it is skipped.
+        'DELAY_IN_TIME_N'           :   'd', # When the Input Method is not DelayInTime, it is skipped.
+        'DELAY_IN_POINTS_N'         :   'd', # When the Input Method is not DelayInPoint, it is skipped.
+        'CHANNEL_SKEW_N'            :   'd',
+        'DC_OUTPUT_LEVEL_N'         :   'd', #V
+    }
+
     def __init__(self, name, address, reset=False, clock=1e9, numpoints=1000):
         '''
         Initializes the AWG5014.
@@ -67,7 +132,7 @@ class Tektronix_AWG5014(Instrument):
 
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address, timeout=4)
+        self._visainstrument = visa.instrument(self._address, timeout=8)
         self._values = {}
         self._values['files'] = {}
         self._clock = clock
@@ -116,7 +181,7 @@ class Tektronix_AWG5014(Instrument):
             flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET,
             channels=(1, 2, 3, 4), minval=0, maxval=1, units='ns', channel_prefix='ch%d_')
         self.add_parameter('status', type=types.StringType,
-            flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET,
+            flags=Instrument.FLAG_GETSET,#BASH | Instrument.FLAG_GET_AFTER_SET,
             channels=(1, 2, 3, 4),channel_prefix='ch%d_')
 
         # Add functions
@@ -170,7 +235,7 @@ class Tektronix_AWG5014(Instrument):
             try:
                 self._visainstrument.read()
             except(visa.VisaIOError):
-                print 'reset complete'
+                #print 'reset complete'
                 break
 
     def reset(self):
@@ -613,6 +678,16 @@ class Tektronix_AWG5014(Instrument):
     def _pack_record(self,name,value,dtype):
         '''
         packs awg_file record structure: '<I(lenname)I(lendat)s[data of dtype]'
+        The file record format is as follows:
+
+        Record Name Size
+        (32-bit unsigned integer)
+        Record Data Size
+        (32-bit unsigned integer)
+        Record Name (ASCII)
+        (Include NULL.)
+        Record Data
+ 
         '''
         #print name,dtype
     
@@ -635,7 +710,8 @@ class Tektronix_AWG5014(Instrument):
         #print lendat
         return struct.pack('<II',len(name+'\x00'),lendat) + name + '\x00' + dat
 
-    def generate_awg_file(self,packed_waveforms,wfname_l, nrep, trig_wait, goto_state, jump_to, clock):
+    def generate_awg_file(self, 
+        packed_waveforms,wfname_l, nrep, trig_wait, goto_state, jump_to, channel_cfg, sequence_cfg):
         '''
         packed_waveforms: dictionary containing packed waveforms with keys wfname_l and delay_labs
         wfname_l: array of waveform names array([[segm1_ch1,segm2_ch1..],[segm1_ch2,segm2_ch2..],...])
@@ -643,88 +719,64 @@ class Tektronix_AWG5014(Instrument):
         wait_l: list of len(segments) specifying triger wait state (0,1)
         goto_l: list of len(segments) specifying goto state (0,65536, 0 means next)
         logic_jump_l: list of len(segments) specifying logic jump (0 = off)
+        channel_cfg: dictionary of valid channel configuration records 
+        sequence_cfg: dictionary of valid head configuration records (see AWG_FILE_FORMAT_HEAD)
         
-        filestructure:
-        if True:
-            MAGIC
-            VERSION
-            SAMPLING_RATE
-            RUN_MODE
-            RUN_STATE
-            CHANNEL_STATE_1
-            CHANNEL_STATE_2
-            CHANNEL_STATE_3
-            CHANNEL_STATE_4
-
-            WAVEFORM_NAME_N
-            WAVEFORM_TYPE_N
-            WAVEFORM_LENGTH_N
-            WAVEFORM_TIMESTAMP_N
-            WAVEFORM_DATA_N
-
-            SEQUENCE_WAIT_M
-            SEQUENCE_LOOP_M
-            SEQUENCE_JUMP_M
-            SEQUENCE_GOTO_M
-            SEQUENCE_WAVEFORM_NAME_CH_1_M
-            SEQUENCE_WAVEFORM_NAME_CH_2_M
-            SEQUENCE_WAVEFORM_NAME_CH_3_M
-            SEQUENCE_WAVEFORM_NAME_CH_4_M
+        for info on filestructure and valid record names, see AWG Help, File and Record Format
+        
         '''
         wfname_l      
         timetuple = tuple(np.array(localtime())[[0,1,8,2,3,4,5,6,7]])
-        timestamp = struct.pack('8h',*timetuple[:-1])
-        chstate = []
-        for wfch in wfname_l[0]:
-            if wfch is None:
-                chstate+=[0]
+
+        #general settings
+        head_str = StringIO()
+        head_str.write(self._pack_record('MAGIC',5000,'h')+\
+                       self._pack_record('VERSION',1,'h'))
+        for k in sequence_cfg.keys():
+            if k in self.AWG_FILE_FORMAT_HEAD:
+                head_str.write(self._pack_record(k,sequence_cfg[k],self.AWG_FILE_FORMAT_HEAD[k]))
             else:
-                chstate+=[0]
-        head = self._pack_record('MAGIC',5000,'h')+\
-                    self._pack_record('VERSION',1,'h')+\
-                    self._pack_record('SAMPLING_RATE',clock,'d')+\
-                    self._pack_record('REFERENCE_SOURCE',1,'h')+\
-                    self._pack_record('TRIGGER_INPUT_THRESHOLD',1.0,'d')+\
-                    self._pack_record('RUN_MODE',4,'h')+\
-                    self._pack_record('RUN_STATE',0,'h')+\
-                    self._pack_record('CHANNEL_STATE_1',1,'h')+\
-                    self._pack_record('MARKER1_METHOD_1',2,'h')+\
-                    self._pack_record('MARKER2_METHOD_1',2,'h')+\
-                    self._pack_record('CHANNEL_STATE_2',1,'h')+\
-                    self._pack_record('MARKER1_METHOD_2',2,'h')+\
-                    self._pack_record('MARKER2_METHOD_2',2,'h')+\
-                    self._pack_record('CHANNEL_STATE_3',1,'h')+\
-                    self._pack_record('MARKER1_METHOD_3',2,'h')+\
-                    self._pack_record('MARKER2_METHOD_3',2,'h')+\
-                    self._pack_record('CHANNEL_STATE_4',1,'h')+\
-                    self._pack_record('MARKER1_METHOD_4',2,'h')+\
-                    self._pack_record('MARKER2_METHOD_4',2,'h')
-        
+                logging.warning('AWG: ' + k + ' not recognized as valid AWG setting')
+        #head_str.write(self._pack_record('EVENT_JUMP_MODE',2,'h'))
+        #head_str.write(self._pack_record('TABLE_JUMP_STROBE',1,'h'))
+        #head_str.write(self._pack_record('TABLE_JUMP_DEFINITION',[2,3],'ll'))
+        #'EVENT_JUMP_MODE'           :   'h',#EVENT JUMP | DYNAMIC JUMP
+        #'TABLE_JUMP_STROBE'         :   'h',#On
+        #'TABLE_JUMP_DEFINITION'     :   'l' # 
+        #channel settings
+        ch_record_str = StringIO()
+        for k in channel_cfg.keys():
+            ch_k = k[:-1] + 'N'
+            if ch_k in self.AWG_FILE_FORMAT_CHANNEL:
+                ch_record_str.write(self._pack_record(k,channel_cfg[k],self.AWG_FILE_FORMAT_CHANNEL[ch_k]))
+            else:
+                logging.warning('AWG: ' + k + ' not recognized as valid AWG channel setting')
+        #waveforms
         ii=21
-        record_str = StringIO()
-        
+        wf_record_str = StringIO()
         wlist = packed_waveforms.keys()
         wlist.sort()
         for wf in wlist:
             wfdat = packed_waveforms[wf]
             lenwfdat = len(wfdat)
             #print 'WAVEFORM_NAME_%s: '%ii, wf, 'len: ',len(wfdat)
-            record_str.write(self._pack_record('WAVEFORM_NAME_%s'%ii, wf+'\x00','%ss'%len(wf+'\x00'))+\
-                        self._pack_record('WAVEFORM_TYPE_%s'%ii, 1,'h')+\
-                        self._pack_record('WAVEFORM_LENGTH_%s'%ii,lenwfdat,'l')+\
-                        self._pack_record('WAVEFORM_TIMESTAMP_%s'%ii, timetuple[:-1],'8H')+\
-                        self._pack_record('WAVEFORM_DATA_%s'%ii, wfdat,'%sH'%lenwfdat))
+            wf_record_str.write(
+                    self._pack_record('WAVEFORM_NAME_%s'%ii, wf+'\x00','%ss'%len(wf+'\x00'))+\
+                    self._pack_record('WAVEFORM_TYPE_%s'%ii, 1,'h')+\
+                    self._pack_record('WAVEFORM_LENGTH_%s'%ii,lenwfdat,'l')+\
+                    self._pack_record('WAVEFORM_TIMESTAMP_%s'%ii, timetuple[:-1],'8H')+\
+                    self._pack_record('WAVEFORM_DATA_%s'%ii, wfdat,'%sH'%lenwfdat))
             ii+=1
-        kk=1
         
+        #sequence
+        kk=1
         seq_record_str = StringIO()
         for segment in wfname_l.transpose():
             seq_record_str.write(
                     self._pack_record('SEQUENCE_WAIT_%s'%kk, trig_wait[kk-1],'h')+\
-                            self._pack_record('SEQUENCE_LOOP_%s'%kk, int(nrep[kk-1]),'l')+\
-                            self._pack_record('SEQUENCE_JUMP_%s'%kk, jump_to[kk-1],'h')+\
-                            self._pack_record('SEQUENCE_GOTO_%s'%kk, goto_state[kk-1],'h')
-                            )
+                    self._pack_record('SEQUENCE_LOOP_%s'%kk, int(nrep[kk-1]),'l')+\
+                    self._pack_record('SEQUENCE_JUMP_%s'%kk, jump_to[kk-1],'h')+\
+                    self._pack_record('SEQUENCE_GOTO_%s'%kk, goto_state[kk-1],'h'))
             for wfname in segment:
                 
                 if wfname is not None:
@@ -736,7 +788,7 @@ class Tektronix_AWG5014(Instrument):
                             )
             kk+=1
 
-        return head+record_str.getvalue()+seq_record_str.getvalue()
+        return head_str.getvalue() + ch_record_str.getvalue() + wf_record_str.getvalue() + seq_record_str.getvalue()
 
     def send_awg_file(self,filename, awg_file):
         #print self._visainstrument.ask('MMEMory:CDIRectory?')
@@ -757,11 +809,96 @@ class Tektronix_AWG5014(Instrument):
         '''
         wflen = len(wf)
         packed_wf = np.zeros(wflen,dtype=np.uint16)
-        packed_wf +=wf*8191+8191+16384*m1+32768*m2
+        packed_wf +=np.round(wf*8191)+8191+np.round(16384*m1)+np.round(32768*m2)
         return packed_wf
 
-#AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
+#END AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
+#WAVEFORM FILE FUNCTIONS------------------------------------------------------------------------------------------------
 
+    # Send waveform to the device
+    def send_waveform(self,w,m1,m2,filename,clock=1e9):
+        '''
+        Sends a complete waveform. All parameters need to be specified.
+        See also: resend_waveform()
+
+        Input:
+            w (float[numpoints]) : waveform
+            m1 (int[numpoints])  : marker1
+            m2 (int[numpoints])  : marker2
+            filename (string)    : filename
+            clock (int)          : frequency (Hz)
+
+        Output:
+            None
+        '''
+        logging.debug(__name__ + ' : Sending waveform %s to instrument' % filename)
+        # Check for errors
+        dim = len(w)
+
+        if (not((len(w)==len(m1)) and ((len(m1)==len(m2))))):
+            return 'error'
+
+        self._values['files'][filename]={}
+        self._values['files'][filename]['w']=w
+        self._values['files'][filename]['m1']=m1
+        self._values['files'][filename]['m2']=m2
+        self._values['files'][filename]['clock']=clock
+        self._values['files'][filename]['numpoints']=len(w)
+
+        m = m1 + numpy.multiply(m2,2)
+        ws = ''
+        #this is probalbly verry slow and memmory consuming!
+        for i in range(0,len(w)):
+            ws = ws + struct.pack('<fB',w[i],int(numpy.round(m[i],0)))
+
+        s1 = 'MMEM:DATA "%s",' % filename
+        s3 = 'MAGIC 1000\n'
+        s5 = ws
+        s6 = 'CLOCK %.10e\n' % clock
+
+        s4 = '#' + str(len(str(len(s5)))) + str(len(s5))
+        lenlen=str(len(str(len(s6) + len(s5) + len(s4) + len(s3))))
+        s2 = '#' + lenlen + str(len(s6) + len(s5) + len(s4) + len(s3))
+
+        mes = s1 + s2 + s3 + s4 + s5 + s6
+
+        self._visainstrument.write(mes)
+
+    def resend_waveform(self, channel, w=[], m1=[], m2=[], clock=[]):
+        '''
+        Resends the last sent waveform for the designated channel
+        Overwrites only the parameters specified
+
+        Input: (mandatory)
+            channel (int) : 1 to 4, the number of the designated channel
+
+        Input: (optional)
+            w (float[numpoints]) : waveform
+            m1 (int[numpoints])  : marker1
+            m2 (int[numpoints])  : marker2
+            clock (int) : frequency
+
+        Output:
+            None
+        '''
+        filename = self._values['recent_channel_%s' %channel]['filename']
+        logging.debug(__name__ + ' : Resending %s to channel %s' % (filename, channel))
+
+
+        if (w==[]):
+            w = self._values['recent_channel_%s' %channel]['w']
+        if (m1==[]):
+            m1 = self._values['recent_channel_%s' %channel]['m1']
+        if (m2==[]):
+            m2 = self._values['recent_channel_%s' %channel]['m2']
+        if (clock==[]):
+            clock = self._values['recent_channel_%s' %channel]['clock']
+
+        if not ( (len(w) == self._numpoints) and (len(m1) == self._numpoints) and (len(m2) == self._numpoints)):
+            logging.error(__name__ + ' : one (or more) lengths of waveforms do not match with numpoints')
+
+        self.send_waveform(w,m1,m2,filename,clock)
+        self.set_filename(filename, channel)
         
     def set_filename(self, name, channel):
         '''
@@ -849,7 +986,7 @@ class Tektronix_AWG5014(Instrument):
         else:
             logging.warning(__name__  + ' : Verkeerde lengte %s ipv %s'
                 %(self._values['files'][name]['numpoints'], self._numpoints))
-
+#END WAVEFORM FILE FUNCTIONS------------------------------------------------------------------------------------------------
     def _do_get_amplitude(self, channel):
         '''
         Reads the amplitude of the designated channel from the instrument
@@ -1124,90 +1261,6 @@ class Tektronix_AWG5014(Instrument):
     def get_filenames(self):
         logging.debug(__name__ + ' : Read filenames from instrument')
         return self._visainstrument.ask('MMEM:CAT?')
-
-    # Send waveform to the device
-    def send_waveform(self,w,m1,m2,filename,clock=1e9):
-        '''
-        Sends a complete waveform. All parameters need to be specified.
-        See also: resend_waveform()
-
-        Input:
-            w (float[numpoints]) : waveform
-            m1 (int[numpoints])  : marker1
-            m2 (int[numpoints])  : marker2
-            filename (string)    : filename
-            clock (int)          : frequency (Hz)
-
-        Output:
-            None
-        '''
-        logging.debug(__name__ + ' : Sending waveform %s to instrument' % filename)
-        # Check for errors
-        dim = len(w)
-
-        if (not((len(w)==len(m1)) and ((len(m1)==len(m2))))):
-            return 'error'
-
-        self._values['files'][filename]={}
-        self._values['files'][filename]['w']=w
-        self._values['files'][filename]['m1']=m1
-        self._values['files'][filename]['m2']=m2
-        self._values['files'][filename]['clock']=clock
-        self._values['files'][filename]['numpoints']=len(w)
-
-        m = m1 + numpy.multiply(m2,2)
-        ws = ''
-        for i in range(0,len(w)):
-            ws = ws + struct.pack('<fB',w[i],int(numpy.round(m[i],0)))
-
-        s1 = 'MMEM:DATA "%s",' % filename
-        s3 = 'MAGIC 1000\n'
-        s5 = ws
-        s6 = 'CLOCK %.10e\n' % clock
-
-        s4 = '#' + str(len(str(len(s5)))) + str(len(s5))
-        lenlen=str(len(str(len(s6) + len(s5) + len(s4) + len(s3))))
-        s2 = '#' + lenlen + str(len(s6) + len(s5) + len(s4) + len(s3))
-
-        mes = s1 + s2 + s3 + s4 + s5 + s6
-
-        self._visainstrument.write(mes)
-
-    def resend_waveform(self, channel, w=[], m1=[], m2=[], clock=[]):
-        '''
-        Resends the last sent waveform for the designated channel
-        Overwrites only the parameters specified
-
-        Input: (mandatory)
-            channel (int) : 1 to 4, the number of the designated channel
-
-        Input: (optional)
-            w (float[numpoints]) : waveform
-            m1 (int[numpoints])  : marker1
-            m2 (int[numpoints])  : marker2
-            clock (int) : frequency
-
-        Output:
-            None
-        '''
-        filename = self._values['recent_channel_%s' %channel]['filename']
-        logging.debug(__name__ + ' : Resending %s to channel %s' % (filename, channel))
-
-
-        if (w==[]):
-            w = self._values['recent_channel_%s' %channel]['w']
-        if (m1==[]):
-            m1 = self._values['recent_channel_%s' %channel]['m1']
-        if (m2==[]):
-            m2 = self._values['recent_channel_%s' %channel]['m2']
-        if (clock==[]):
-            clock = self._values['recent_channel_%s' %channel]['clock']
-
-        if not ( (len(w) == self._numpoints) and (len(m1) == self._numpoints) and (len(m2) == self._numpoints)):
-            logging.error(__name__ + ' : one (or more) lengths of waveforms do not match with numpoints')
-
-        self.send_waveform(w,m1,m2,filename,clock)
-        self.set_filename(filename, channel)
 
     def set_DC_out(self, DC_channel_number, Voltage):
         self._visainstrument.write('AWGControl:DC%s:VOLTage:OFFSet %sV'%(DC_channel_number, Voltage))

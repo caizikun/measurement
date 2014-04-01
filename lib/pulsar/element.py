@@ -284,7 +284,9 @@ class Element:
 
     def waveforms(self):
         """
-        Returns the waveforms for all used channels.
+        Returns the waveforms for all used channels. 
+        Trunctates/clips (channel-imposed) all values 
+        that are out of bounds
         """
         tvals, wfs = self.ideal_waveforms()
         for wf in wfs:

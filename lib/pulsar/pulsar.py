@@ -1,8 +1,8 @@
 # this module contains the sequencer and sequence classes
 
-# TODO this would be nice to have also accessible from clients. 
+# TODO this would be nice to have also accessible from clients.
 # should therefore be a SharedObject
-# TODO in principle that could be generalized for other 
+# TODO in principle that could be generalized for other
 # sequencing hardware i guess
 
 import time
@@ -10,7 +10,7 @@ import numpy as np
 import logging
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
-# value. this might require correct rounding -- the pulses are typically specified on short time 
+# value. this might require correct rounding -- the pulses are typically specified on short time
 # scales, but the time unit we use is seconds. therefore we need a suitably chosen digit on which
 # to round. 9 would round a pulse to 1 ns precision. 11 is 10 ps, and therefore probably beyond
 # the lifetime of this code (no 10ps AWG available yet :))
@@ -24,17 +24,17 @@ class Pulsar:
     AWG = None
     AWG_type = 'regular' # other option at this point is 'opt09'
     clock = 1e9
-    event_jump_timing = 'SYNC' #async jumping: 'ASYN'
-    channel_ids = ['ch1', 'ch1_marker1', 'ch1_marker2', 
+    channel_ids = ['ch1', 'ch1_marker1', 'ch1_marker2',
         'ch2', 'ch2_marker1', 'ch2_marker2',
-        'ch3', 'ch3_marker1', 'ch3_marker2', 
+        'ch3', 'ch3_marker1', 'ch3_marker2',
         'ch3', 'ch3_marker1', 'ch3_marker2' ]
+    AWG_sequence_cfg={}
 
     def __init__(self):
         self.channels = {}
 
     ### channel handling
-    def define_channel(self, id, name, type, delay, offset, 
+    def define_channel(self, id, name, type, delay, offset,
             high, low, active):
 
         _doubles = []
@@ -45,7 +45,7 @@ class Pulsar:
                 _doubles.append(c)
         for c in _doubles:
             del self.channels[c]
-        
+
         self.channels[name] = {
             'id' : id,
             'type' : type,
@@ -64,7 +64,7 @@ class Pulsar:
 
     def get_channel_names_by_id(self, id):
         chans = {id : None, id+'_marker1' : None, id+'_marker2' : None}
-        
+
         for c in self.channels:
             if self.channels[c]['id'] in chans:
                 chans[self.channels[c]['id']] = c
@@ -84,13 +84,13 @@ class Pulsar:
         for c in self.channels:
             if self.channels[c]['active'] and \
                 self.channels[c]['id'] not in chans:
-                
+
                 if all_subchannels:
                     [ chans.append(id) for id in \
                         self.get_subchannels(self.channels[c]['id'])]
                 else:
                     chans.append(self.channels[c]['id'])
-        
+
         return chans
 
     def get_used_channel_ids(self):
@@ -103,7 +103,7 @@ class Pulsar:
                 chans.append(self.channels[c]['id'][:3])
 
         return chans
-    
+
     def setup_channels(self, output=False, reset_unused=True):
         for n in self.channel_ids:
             getattr(self.AWG, 'set_%s_status' % n[:3])('off')
@@ -154,6 +154,32 @@ class Pulsar:
             if output:
                 getattr(self.AWG, 'set_%s_status' % id)('on')
 
+    def get_awg_channel_cfg(self):
+        channel_cfg={}
+
+        for c in self.channels:
+            n = self.channels[c]['id']
+            if self.channels[c]['type'] == 'analog':
+                channel_cfg['ANALOG_METHOD_%s' %n[-1]] = 1
+                a = self.channels[c]['high'] - self.channels[c]['low']
+                o = (self.channels[c]['high'] + self.channels[c]['low'])/2.
+                channel_cfg['ANALOG_AMPLITUDE_%s' %n[-1]] = a
+                channel_cfg['ANALOG_OFFSET_%s' %n[-1]] = o
+            elif self.channels[c]['type'] == 'marker':
+                channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
+                channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
+                channel_cfg['MARKER%s_LOW_%s'%(n[-1],n[2])] = self.channels[c]['low']
+                channel_cfg['MARKER%s_HIGH_%s'%(n[-1],n[2])] = self.channels[c]['high']
+            #elif self.channels[c]['type'] == 'dc':
+            #    channel_cfg['DC_OUTPUT_LEVEL_%s'%n[-1]] = self.channels[c]['level']
+
+            # activate the used channels
+            if  self.channels[c]['active']:
+                channel_cfg['CHANNEL_STATE_%s' %n[-1]] = 1
+            else:
+                channel_cfg['CHANNEL_STATE_%s' %n[-1]] = 0
+        return channel_cfg
+
 
     ### waveform/file handling
     def delete_all_waveforms(self):
@@ -172,7 +198,7 @@ class Pulsar:
 
         if verbose:
             "Generate/upload %d elements: " % elt_cnt
-        
+
         for i,e in enumerate(elements):
             if verbose:
                 print "%d / %d: %s (%d samples)... " % \
@@ -183,9 +209,9 @@ class Pulsar:
         _t = time.time() - _t0
         if verbose:
             print "Upload finished in %.2f seconds." % _t
-            print 
+            print
 
-    
+
     def upload_element(self, element, verbose=True, channels='all'):
         if verbose:
             print "Generate/upload '%s' (%d samples)... " \
@@ -196,11 +222,11 @@ class Pulsar:
         tvals, wfs = element.normalized_waveforms()
         chan_ids = self.get_used_channel_ids()
 
-        # order the waveforms according to physical AWG channels and 
+        # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for id in chan_ids:
             wfname = element.name + '_%s' % id
-            
+
             # determine if we actually want to upload this channel
             upload = False
             if channels == 'all':
@@ -212,7 +238,7 @@ class Pulsar:
                 if not upload:
                     continue
 
-            chan_wfs = {id : None, id+'_marker1' : None, 
+            chan_wfs = {id : None, id+'_marker1' : None,
                 id+'_marker2' : None }
             grp = self.get_channel_names_by_id(id)
 
@@ -228,16 +254,16 @@ class Pulsar:
             self.AWG.import_waveform_file(wfname, wfname, type='wfm')
 
         _t = time.time() - _t0
-        
+
         if verbose:
             print "finished in %.2f seconds." % _t
 
     ### sequence handling
-    def program_sequence(self, sequence, channels='all', loop=True, 
+    def program_sequence(self, sequence, channels='all', loop=True,
             start=False):
-        
+
         _t0 = time.time()
-        
+
         print "Programming '%s' (%d element(s))..." \
             % (sequence.name, sequence.element_count()),
 
@@ -253,7 +279,8 @@ class Pulsar:
         # prepare the awg
         self.AWG.stop()
         self.AWG.set_runmode('SEQ')
-        self.AWG.set_event_jump_timing(self.event_jump_timing)
+
+        self.AWG.set_event_jump_timing('SYNC' if self.AWG_sequence_cfg['JUMP_TIMING'] == 1 else 'ASYNC')
         self.setup_channels()
 
         # this clears all element properties so we're sure not to
@@ -276,7 +303,7 @@ class Pulsar:
 
             if elt['goto_target'] != None:
                 self.AWG.set_sqel_goto_state(idx, '1')
-                self.AWG.set_sqel_goto_target_index(idx, 
+                self.AWG.set_sqel_goto_target_index(idx,
                     sequence.element_index(elt['goto_target']))
             # else:
             #    self.AWG.set_sqel_goto_state(idx, '0')
@@ -302,7 +329,7 @@ class Pulsar:
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
             raise Exception('The AWG configured does not support dynamic jumping')
 
-        if self.AWG_type in ['opt09']: 
+        if self.AWG_type in ['opt09']:
             if sequence.djump_table != None:
                 self.AWG.set_event_jump_mode('DJUM')
                 print 'AWG set to dynamical jump'
@@ -323,7 +350,7 @@ class Pulsar:
 
         _t = time.time() - _t0
         print " finished in %.2f seconds." % _t
-        print 
+        print
 
     def program_awg(self, sequence, *elements, **kw):
 
@@ -334,15 +361,14 @@ class Pulsar:
         since sequence information is sent to the AWG in a single file.
 
         """
-        verbose=False#kw.pop('verbose',False), 
+        verbose=False#kw.pop('verbose',False),
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
-        start=kw.pop('start',False)
         elt_cnt = len(elements)
         chan_ids = self.get_used_channel_ids()
         packed_waveforms={}
 
-        # order the waveforms according to physical AWG channels and 
+        # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for i,element in enumerate(elements):
             if verbose:
@@ -357,7 +383,7 @@ class Pulsar:
             tvals, wfs = element.normalized_waveforms()
             for id in chan_ids:
                 wfname = element.name + '_%s' % id
-                
+
                 # determine if we actually want to upload this channel
                 upload = False
                 if channels == 'all':
@@ -369,7 +395,7 @@ class Pulsar:
                     if not upload:
                         continue
 
-                chan_wfs = {id : None, id+'_marker1' : None, 
+                chan_wfs = {id : None, id+'_marker1' : None,
                     id+'_marker2' : None }
                 grp = self.get_channel_names_by_id(id)
 
@@ -382,20 +408,17 @@ class Pulsar:
                 # Create wform files
                 packed_waveforms[wfname]=self.AWG.pack_waveform(chan_wfs[id],chan_wfs[id+'_marker1'],chan_wfs[id+'_marker2'])
 
-                #self.AWG.send_waveform(chan_wfs[id], chan_wfs[id+'_marker1'],
-                #    chan_wfs[id+'_marker2'], wfname, self.clock)#here is wehere gijs' code comes in!
-                #self.AWG.import_waveform_file(wfname, wfname, type='wfm')
 
         _t = time.time() - _t0
-        
+
         if verbose:
             print "finished in %.2f seconds." % _t
 
         #sequence programming ----------------------------------------------------------
 
         _t0 = time.time()
-        
-        print "Programming '%s' (%d element(s))..." \
+
+        print "Programming '%s' (%d element(s))...\n" \
             % (sequence.name, sequence.element_count()),
 
         # determine which channels are involved in the sequence
@@ -407,16 +430,12 @@ class Pulsar:
                 if self.channels[c]['id'][:3] not in chan_ids:
                     chan_ids.append(self.channels[c]['id'][:3])
 
-        # this clears all element properties so we're sure not to
-        # keep any jumping, goto, etc. properties
-        self.AWG.set_sq_length(0) #neccesary?
-
         #Create lists with sequence information:
         #wfname_l = list of waveform names [[wf1_ch1,wf2_ch1..],[wf1_ch2,wf2_ch2..],...]
         #nrep_l = list specifying the number of reps for each seq element
         #wait_l = idem for wait_trigger_state
         #goto_l = idem for goto_state (goto is the element where it hops to in case the element is finished)
-        
+
         wfname_l=[]
         nrep_l=[]
         wait_l=[]
@@ -436,58 +455,58 @@ class Pulsar:
 
             nrep_l.append(elt['repetitions'])
             if elt['goto_target'] != None:
-                goto_l.append(elt['goto_target'])
+                goto_l.append(sequence.element_index(elt['goto_target']))
             else:
                 goto_l.append(0)
             if elt['jump_target'] != None:
-                logic_jump_l.append(elt['jump_target'])
+                logic_jump_l.append(sequence.element_index(elt['jump_target']))
             else:
                 logic_jump_l.append(0)
             if elt['trigger_wait']:
                 wait_l.append(1)
             else:
                 wait_l.append(0)
-                
+
         #print 'lengths', len(wfname_l), len(nrep_l),len(goto_l),len(logic_jump_l)
+        #print goto_l, logic_jump_l
         if loop:
             goto_l[-1]=1
-        
-        filename = sequence.name+'_FILE.AWG'
-        awg_file=self.AWG.generate_awg_file(packed_waveforms,np.array(wfname_l),nrep_l, wait_l, goto_l, logic_jump_l, self.clock)
-        self.AWG.send_awg_file(filename,awg_file)
-        self.AWG.load_awg_file(filename)
 
-        # turn on the channel output
-        self.AWG.set_event_jump_timing(self.event_jump_timing)
-        self.setup_channels()
-        self.activate_channels(channels)
-
-        # setting jump modes and loading the djump table
+         # setting jump modes and loading the djump table
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
             raise Exception('The AWG configured does not support dynamic jumping')
 
-        if self.AWG_type in ['opt09']: 
+        if self.AWG_type in ['opt09']:
             if sequence.djump_table != None:
-                self.AWG.set_event_jump_mode('DJUM')
+                #self.AWG.set_event_jump_mode('DJUM')
+                self.AWG_sequence_cfg['EVENT_JUMP_MODE'] = 2 #DYNAMIC JUMP
                 print 'AWG set to dynamical jump'
-
-                for i in range(16):
-                    self.AWG.set_djump_def(i, 0)
-
+                awg_djump_table = np.zeros(16, dtype='l')
                 for i in sequence.djump_table.keys():
                     el_idx = sequence.element_index(sequence.djump_table[i])
-                    self.AWG.set_djump_def(i, el_idx)
+                    awg_djump_table[i] = el_idx
+                self.AWG_sequence_cfg['TABLE_JUMP_DEFINITION'] = awg_djump_table
 
             else:
-                self.AWG.set_event_jump_mode('EJUM')
-                print 'AWG set to event jump'
+                self.AWG_sequence_cfg['EVENT_JUMP_MODE'] = 1 #EVENT JUMP
+       #       print 'AWG set to event jump'
 
-        if start:
-            self.AWG.start()
+        filename = sequence.name+'_FILE.AWG'
+        awg_file=self.AWG.generate_awg_file(packed_waveforms,
+                                            np.array(wfname_l),
+                                            nrep_l, wait_l, goto_l, logic_jump_l,
+                                            self.get_awg_channel_cfg(),
+                                            self.AWG_sequence_cfg)
+
+        self.AWG.send_awg_file(filename,awg_file)
+        self.AWG.load_awg_file(filename)
+        self.activate_channels(channels)
+
+
 
         _t = time.time() - _t0
         print " finished in %.2f seconds." % _t
-        print 
+        print
 
 class Sequence:
     """
@@ -507,9 +526,9 @@ class Sequence:
 
         self.djump_table = None
 
-    def _make_element_spec(self, name, wfname, repetitions, goto_target, 
+    def _make_element_spec(self, name, wfname, repetitions, goto_target,
             jump_target, trigger_wait):
-        
+
         elt = {
             'name' : name,
             'wfname' : wfname,
@@ -520,9 +539,9 @@ class Sequence:
             }
         return elt
 
-    def insert_element(self, name, wfname, pos=None, repetitions=1, 
+    def insert_element(self, name, wfname, pos=None, repetitions=1,
             goto_target=None, jump_target=None, trigger_wait=False):
-        
+
         for elt in self.elements:
             if elt['name'] == name:
                 print 'Sequence names must be unique. Not added.'
@@ -538,7 +557,7 @@ class Sequence:
 
     def append(self, name, wfname, **kw):
         '''
-        Takes name wfname and other arguments as input. Does not take an element as input 
+        Takes name wfname and other arguments as input. Does not take an element as input
         '''
         self.insert_element(name, wfname, pos=len(self.elements), **kw)
 
@@ -547,7 +566,7 @@ class Sequence:
 
     def element_index(self, name, start_idx=1):
         names = [self.elements[i]['name'] for i in range(len(self.elements))]
-        return names.index(name)+start_idx 
+        return names.index(name)+start_idx
 
     def set_djump(self, state):
         if state==True:
@@ -565,7 +584,7 @@ class Sequence:
 
     def append_element(self, element, pos = None):
         '''
-        Differs from normal append that it takes an element as input and not the arguments to make an element  
+        Differs from normal append that it takes an element as input and not the arguments to make an element
         '''
         for elt in self.elements:
             if elt['name'] == element['name']:

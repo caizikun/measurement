@@ -3,7 +3,7 @@ import numpy as np
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
-import espin_funcs as funcs
+from measurement.scripts.espin import espin_funcs as funcs
 reload(funcs)
 
 
@@ -56,8 +56,9 @@ class CORPSEPiCalibration(pulsar_msmt.PulsarMeasurement):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(sync_elt, wait_1us, *elts)
-        qt.pulsar.program_sequence(seq)
+            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
+            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
+        #qt.pulsar.program_sequence(seq)
 
 # class CORPSEPiCalibration
 
@@ -135,9 +136,12 @@ class CORPSEPi2Calibration(pulsar_msmt.PulsarMeasurement):
             seq.append(name='syncb-{}'.format(i),
                 wfname = sync_elt.name)
 
+        # program AWG
         if upload:
-            qt.pulsar.upload(sync_elt, wait_1us, *elts)
-        qt.pulsar.program_sequence(seq)
+            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
+            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
+        #qt.pulsar.program_sequence(seq)
+
 
 class CORPSECalibration(pulsar_msmt.PulsarMeasurement):
     """
@@ -208,16 +212,16 @@ def sweep_amplitude(name):
     m.params['sweep_name'] = 'CORPSE amplitude (V)'
     m.params['sweep_pts'] = m.params['CORPSE_pi_sweep_amps']
     
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
-def lt1_hans1_calibrate_msm1_pi(name='hans1_msm1_pi'):
+def calibrate_msm1_pi(name):
     m = CORPSEPiCalibration(name)
     funcs.prepare(m)
 
     pts = 11
     CORPSE_frq = 6.5e6
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    m.params['CORPSE_pi_amp'] = m.params['msm1_CORPSE_pi_amp']
+    m.params['CORPSE_pi_amp'] = 0.5#m.params['msm1_CORPSE_pi_amp']
     m.params['CORPSE_pi_60_duration'] = 1./CORPSE_frq/6.
     m.params['CORPSE_pi_m300_duration'] = 5./CORPSE_frq/6.
     m.params['CORPSE_pi_420_duration'] = 7./CORPSE_frq/6.
@@ -228,7 +232,7 @@ def lt1_hans1_calibrate_msm1_pi(name='hans1_msm1_pi'):
 
     # sweep params
     m.params['CORPSE_pi_sweep_amps'] = np.linspace(0.7, 0.9, pts)
-    m.params['multiplicity'] = 11
+    m.params['multiplicity'] = 1
     m.params['delay_reps'] = 15
 
     # for the autoanalysis
@@ -268,4 +272,4 @@ def lt1_hans1_calibrate_msm1_pi(name='hans1_msm1_pi'):
 
 if __name__ == '__main__':
     #sweep_amplitude('sil4_test')
-    lt1_hans1_calibrate_msm1_pi()
+    calibrate_msm1_pi('test')

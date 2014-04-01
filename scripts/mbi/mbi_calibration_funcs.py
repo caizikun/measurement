@@ -79,7 +79,7 @@ def cal_fast_pi(name, mult=1):
 
     # hard pi pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi_duration']*(np.ones(pts))
-    m.params['MW_pulse_amps'] = np.linspace(0.8,0.9,pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.78,0.82,pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -104,7 +104,7 @@ def cal_fast_pi2(name,  mult=1):
 
     # pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
-    m.params['MW_pulse_amps'] = np.linspace(0.74, 0.82, pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.75, 0.85, pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 

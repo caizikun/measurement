@@ -29,13 +29,14 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
     m.params['ssmod_detuning'] = 43e6
-    m.params['mw_frq']       = 2.009150e9 - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
-    m.params['mw_power']     = 20
-    m.params['repetitions']  = 3000
-    m.params['range']        = 6.5e6
-    m.params['pts'] = 41
-    m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.03
+    m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
+    m.params['repetitions']  = 1000
+    m.params['range']        = 0.1e6
+    m.params['pts'] = 101
+    m.params['pulse_length'] = 70e-6
+    m.params['ssbmod_amplitude'] = 0.01
+
+    m.params['Ex_SP_amplitude']=0
 
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
@@ -59,7 +60,7 @@ def darkesrp1(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
     m.params['ssmod_detuning'] = 43e6
-    m.params['mw_frq']         = 3.7466e9 - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
+    m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     m.params['mw_power'] = 20
     m.params['repetitions'] = 3000
     m.params['range']        = 6.5e6
@@ -78,5 +79,5 @@ def darkesrp1(name):
 
 if __name__ == '__main__':
     darkesr(SAMPLE_CFG)
-    raw_input ('Do the fitting...')
-    darkesrp1(SAMPLE_CFG)
+    #raw_input ('Do the fitting...')
+    #darkesrp1(SAMPLE_CFG)
