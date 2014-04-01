@@ -56,21 +56,23 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
-            frequency = self.params['MW_modulation_frequency'],
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
             length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase = self.params['X_phase'])
+            amplitude = self.params['fast_pi_amp'])
+            # phase =  0)#self.params['X_phase'])
+        #X = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+        #        length = pulse_tau, amplitude = 0.)
 
 
         Y = pulselib.MW_IQmod_pulse('electron Y-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
-            frequency = self.params['MW_modulation_frequency'],
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
             length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase = self.params['Y_phase'])
+            amplitude = self.params['fast_pi_amp'])
+            # phase = 0)#self.params['Y_phase'])
 
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
         # would be cleaner to also have AWG quantization =4e-9 as a variable but not done for readability
@@ -217,7 +219,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Generates an element that connects to decoupling elements
         It can be at the start, the end or between sequence elements
-
         '''
 
         if Gate_type == 'pi/2': # NB!!!!! Pi-pulse duration/2.0  needs to be replaced by pi2pulse duration which does not yet exist in msmt_params (loads of different ones)
@@ -228,7 +229,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
                 I_channel='MW_Imod', Q_channel='MW_Qmod',
                 PM_channel='MW_pulsemod',
-                frequency = self.params['MW_modulation_frequency'],
+                frequency = self.params['fast_pi2_mod_frq'],
                 PM_risetime = self.params['MW_pulse_mod_risetime'],
                 length = self.params['fast_pi2_duration'],
                 amplitude = self.params['fast_pi2_amp'])
@@ -428,6 +429,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)
             #######
             list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions)
+
 
 
             if i == 0:

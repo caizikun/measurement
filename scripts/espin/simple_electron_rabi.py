@@ -32,7 +32,7 @@ def erabi(name):
     #m.params['Ex_SP_amplitude'] = 10e-9
 
 
-    m.params['pts'] = 30
+    m.params['pts'] = 51
     pts = m.params['pts']
     m.params['repetitions'] = 1000
 
