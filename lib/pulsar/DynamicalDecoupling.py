@@ -221,8 +221,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         It can be at the start, the end or between sequence elements
         '''
 
-        if Gate_type == 'pi/2': # NB!!!!! Pi-pulse duration/2.0  needs to be replaced by pi2pulse duration which does not yet exist in msmt_params (loads of different ones)
-
+        if Gate_type == 'pi/2':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -238,14 +237,35 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_after_pulse, amplitude = 0.)
 
-
-                        #Pi-pulse element/waveform
             e = element.Element('%s Pi_2_pulse, tau = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e.append(T_before_p)
             e.append(pulse.cp(X))
             e.append(T_after_p)
             return [e]
+
+            if Gate_type == 'pi':
+                time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
+                time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
+
+                X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    PM_channel='MW_pulsemod',
+                    frequency = self.params['fast_pi_mod_frq'],
+                    PM_risetime = self.params['MW_pulse_mod_risetime'],
+                    length = self.params['fast_pi_duration'],
+                    amplitude = self.params['fast_pi_amp'])
+                T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                    length = time_before_pulse, amplitude = 0.)
+                T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                    length = time_after_pulse, amplitude = 0.)
+
+                e = element.Element('%s Pi_pulse, tau = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                        global_time = True)
+                e.append(T_before_p)
+                e.append(pulse.cp(X))
+                e.append(T_after_p)
+                return [e]
 
         else:
             print 'this is not programmed yet '
@@ -372,14 +392,14 @@ class SimpleDecoupling(DynamicalDecoupling):
             time_after_initial_pulse = tau_cut
 
             prefix = 'initial'
-            initial_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
+            initial_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
 
             Gate_type = self.params['Final_Pulse']
             time_before_final_pulse = tau_cut
             time_after_final_pulse = time_before_initial_pulse
 
             prefix = 'final'
-            final_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
+            final_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
 
             ########################################
             #Combine all the elements to a sequence
@@ -387,9 +407,9 @@ class SimpleDecoupling(DynamicalDecoupling):
             ########################################
             list_of_list_of_elements = []
             list_of_list_of_elements.append([mbi_elt])
-            list_of_list_of_elements.append(initial_pi_2)
+            list_of_list_of_elements.append(initial_pulse)
             list_of_list_of_elements.append(list_of_decoupling_elements)
-            list_of_list_of_elements.append(final_pi_2)
+            list_of_list_of_elements.append(final_pulse)
             list_of_list_of_elements.append([Trig_element])
             list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
 

@@ -17,35 +17,40 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling(name):
+def SimpleDecoupling(name, sweep = 'N'):
 
     m = DD.SimpleDecoupling(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 300 #Repetitions of each data point
-    #m.params['sequence_wait_time'] = 0    #Set sequence wait time for AWG triggering
-
     pts = 6
-    m.params['pts'] = pts#len(m.params['sweep_pts'])
+    m.params['reps_per_ROsequence'] = 300 #Repetitions of each data point
 
     m.params['Initial_Pulse'] ='pi/2'
     m.params['Final_Pulse'] ='pi/2'
+    m.params['pts'] = pts
 
+    ##### Calculate tau larmor
     f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])/m.params['g_factor']*1.07e3
-    tau_larmor = 1/f_larmor
+    tau_larmor = round(1/f_larmor,9) #rounds to ns
     print 'tau_larmor = %s' %tau_larmor
-    tau_larmor = 2.964e-6  #Dirty fix for length of string being to long in AWG
 
-    tau_list = np.linspace(tau_larmor,pts*tau_larmor,pts)
-    m.params['Number_of_pulses'] = 32*np.ones(pts).astype(int)
+    if sweep == 'N':
+        tau_list = np.ones(pts)*tau_larmor# np.linspace(tau_larmor,pts*tau_larmor,pts)
+        Number_of_pulses = [4,8,16,32,64,128]
 
-    tau_list = np.ones(pts)*tau_larmor# np.linspace(tau_larmor,pts*tau_larmor,pts)
-    m.params['Number_of_pulses'] =  [4,8,16,32,64,128] #32*np.ones(pts).astype(int)
-    #######
+        m.params['tau_list'] = tau_list
+        m.params['Number_of_pulses'] = Number_of_pulses
+        m.params['sweep_pts'] = [str(n) for n in Number_of_pulses]
+        m.params['sweep_name'] = 'Numberof pulses'
 
-    m.params['sweep_name'] = 'Numberof pulses'#total evolution time (us)'
-    m.params['sweep_pts']  = ['4','8','16','32','64','128'] #2*m.params['Number_of_pulses'][0]*tau_list*1e6 # m.params['tau_list']*1e6
+    if sweep == 'tau':
+        tau_list = np.linspace(tau_larmor,pts*tau_larmor,pts)
+        Number_of_pulses = 32
+        m.params['Number_of_pulses'] = Number_of_pulses*np.ones(pts).astype(int)
+        m.params['tau_list'] = tau_list
+        m.params['sweep_pts'] = [str(tau) for tau in tau_list]
+        m.params['sweep_name'] = 'tau (us)'
 
     m.autoconfig()
 
