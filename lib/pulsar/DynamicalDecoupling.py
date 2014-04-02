@@ -285,7 +285,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_after_p)
             return [e]
 
-            if Gate_type == 'pi':
+            elif Gate_type == 'pi':
                 time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
                 time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
@@ -301,11 +301,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                     length = time_after_pulse, amplitude = 0.)
 
-                e = element.Element('%s Pi_pulse, tau = %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                e = element.Element('%s Pi_pulse_tau_%s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                         global_time = True)
                 e.append(T_before_p)
                 e.append(pulse.cp(X))
                 e.append(T_after_p)
+                return [e]
+
+            elif Gate_type == 'Wait':
+                T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                    length = time_before_pulse+time_after_pulse, amplitude = 0.)
+                e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                        global_time = True)
+                e.append(T_wait)
                 return [e]
 
         else:
