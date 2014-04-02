@@ -83,5 +83,5 @@ qt.pulsar.AWG_sequence_cfg={
         'EVENT_INPUT_THRESHOLD'     :   1.4,  #V
         'JUMP_TIMING'               :   1,    # Sync | Async
         'RUN_MODE'                  :   4,    # Continuous | Triggered | Gated | Sequence
-        'RUN_STATE'                 :   2,    # On | Off
+        'RUN_STATE'                 :   0,    # On | Off
 }

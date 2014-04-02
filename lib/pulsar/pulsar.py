@@ -8,6 +8,7 @@
 import time
 import numpy as np
 import logging
+import qt
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
@@ -361,7 +362,9 @@ class Pulsar:
         since sequence information is sent to the AWG in a single file.
 
         """
-        verbose=False#kw.pop('verbose',False),
+        verbose=kw.pop('verbose',False)
+
+        debug=kw.pop('debug', False)
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
         elt_cnt = len(elements)
@@ -371,7 +374,7 @@ class Pulsar:
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for i,element in enumerate(elements):
-            if verbose:
+            if verbose==True:
                 print "%d / %d: %s (%d samples)... " % \
                     (i+1,elt_cnt, element.name, element.samples())
 
@@ -467,8 +470,6 @@ class Pulsar:
             else:
                 wait_l.append(0)
 
-        #print 'lengths', len(wfname_l), len(nrep_l),len(goto_l),len(logic_jump_l)
-        #print goto_l, logic_jump_l
         if loop:
             goto_l[-1]=1
 
@@ -490,6 +491,10 @@ class Pulsar:
             else:
                 self.AWG_sequence_cfg['EVENT_JUMP_MODE'] = 1 #EVENT JUMP
        #       print 'AWG set to event jump'
+        if debug==True:
+            self.check_sequence_consistency(packed_waveforms,
+                                            wfname_l,
+                                            nrep_l, wait_l, goto_l, logic_jump_l)
 
         filename = sequence.name+'_FILE.AWG'
         awg_file=self.AWG.generate_awg_file(packed_waveforms,
@@ -499,7 +504,9 @@ class Pulsar:
                                             self.AWG_sequence_cfg)
 
         self.AWG.send_awg_file(filename,awg_file)
+        #qt.msleep(2)
         self.AWG.load_awg_file(filename)
+        #qt.msleep(1)
         self.activate_channels(channels)
 
 
@@ -507,6 +514,21 @@ class Pulsar:
         _t = time.time() - _t0
         print " finished in %.2f seconds." % _t
         print
+
+    def check_sequence_consistency(self, packed_waveforms,
+                                            wfname_l,
+                                            nrep_l, wait_l, goto_l, logic_jump_l):
+        if not len(wfname_l[0])==len(wfname_l[1])==len(wfname_l[2])==len(wfname_l[3])==len(nrep_l)==len(wait_l)==len(goto_l)==len(logic_jump_l):
+            raise Exception('pulsar: sequence list of elements/properties has unequal length')
+
+        ch=0
+        for ch_wf in wfname_l:
+            ch+=1
+            el=0
+            for wfname in ch_wf:
+                el+=1
+                if wfname not in packed_waveforms.keys():
+                    raise Exception('pulsar: waveform name '+ wfname + ' , in position ' + str(el) + ' , channel ' + str(ch) + ' does not exist in waveform dictionary')
 
 class Sequence:
     """

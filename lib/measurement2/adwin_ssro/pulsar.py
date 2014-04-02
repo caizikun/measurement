@@ -43,6 +43,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
                         qt.msleep(1)
                         awg_ready = True
                         print 'AWG Ready!'
+                    else:
+                        print 'AWG not in wait for trigger state but in state:', self.awg.get_state()
                 except:
                     print 'waiting for awg: usually means awg is still busy and doesnt respond'
                     print 'waiting', i, '/ 40'
@@ -62,20 +64,20 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def save(self,**kw):
         ssro.IntegratedSSRO.save(self, **kw)
-    
+
         grp=self.h5basegroup.create_group('pulsar_settings')
         pulsar = kw.pop('pulsar', qt.pulsar)
-        
+
         for k in pulsar.channels:
             grpc=grp.create_group(k)
             for ck in pulsar.channels[k]:
                 grpc.attrs[ck] = pulsar.channels[k][ck]
-        
+
         grpa=grp.create_group('AWG_sequence_cfg')
         for k in pulsar.AWG_sequence_cfg:
             grpa.attrs[k] = pulsar.AWG_sequence_cfg[k]
-    
-    
+
+
         self.h5data.flush()
 
     def finish(self,**kw):

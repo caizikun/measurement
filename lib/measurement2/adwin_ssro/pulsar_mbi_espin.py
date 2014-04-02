@@ -8,7 +8,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 class ElectronRabi(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug=False):
         # MBI element
         mbi_elt = self._MBI_element()
 
@@ -57,7 +57,7 @@ class ElectronRabi(pulsar_msmt.MBI):
         # program AWG
         if upload:
             #qt.pulsar.upload(mbi_elt, *elts)
-            qt.pulsar.program_awg(seq, mbi_elt, *elts )
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
         #qt.pulsar.program_sequence(seq)
 
 

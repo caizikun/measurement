@@ -22,7 +22,7 @@ def finish(m, upload=True, debug=False):
     m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
     m.params['send_AWG_start'] = [1]
     m.params['sequence_wait_time'] = [0]
-    m.generate_sequence(upload=upload)
+    m.generate_sequence(upload=upload, debug=debug)
 
     if not debug:
         m.run(setup=True, autoconfig=False)
