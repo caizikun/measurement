@@ -1,5 +1,5 @@
 '''
-This is modified version of the ElectronT1 class from PULSAR.PY
+This is based on the ElectronT1 class from PULSAR.PY
 Work in progress CHANGE LOCATION
 File made by Adriaan Rol
 '''
@@ -43,16 +43,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_decoupling_sequence_elements(self,tau,N,prefix):
         '''
         This function takes the wait time and the number of pulse-blocks(repetitions) as input
-        It returns the start middle and end elements aswell as the total time and time cut of at the edges
-        It creates three elements:
-        tau_start - Pi - tau
-        tau-pi-tau-tau-pi-tau
-        tau-pi-tau_end
-
-        2*tau = tau_cut +tau_shortened+ fast_pi_duration + tau_pulse
+        It returns the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         '''
         #Generate the basic pulses
-        # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
@@ -61,9 +54,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             length = self.params['fast_pi_duration'],
             amplitude = self.params['fast_pi_amp'],
             phase =  self.params['X_phase'])
-        #X = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
-        #        length = pulse_tau, amplitude = 0.)
-
 
         Y = pulselib.MW_IQmod_pulse('electron Y-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
@@ -75,9 +65,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             phase = self.params['Y_phase'])
 
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
-        # would be cleaner to also have AWG quantization =4e-9 as a variable but not done for readability
         fast_pi_duration = self.params['fast_pi_duration']
         pulse_tau = tau - fast_pi_duration/2.0 #To correct for pulse duration
+        tau_prnt = tau*1e3 #Converts tau to ns for printing (removes the dot)
+        n_wait_reps = 0 #this is the default value. Script returns this unless overwritten (as is the case for tau>2e-6)
 
         # initial checks to see if sequence is possible
         if N%2!=0:
@@ -90,12 +81,69 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             Requires more coding to implement
             '''
             return
-        #Next part of the if statements checks what type of
-        elif N%8 == 0:
-            #Generate XY8 Decoupling sequence
+        ###########################
+        ## Genereate the pulse elements #
+        ###########################
+        elif tau> 2e-6:
+            #######################
+            ## XYn with repeating T elt #
+            #######################
 
-            #Calculate time to be cut
-            #DOUBLE CHECK, NOW JUST MODIFIED OLD CODE TEST THIS!!!!
+            #calculate durations
+            n_wait_reps, tau_remaind = divmod(2*pulse_tau,1e-6)
+            n_wait_reps = n_wait_reps -2
+            T_shortened = tau_remaind/2.0
+            T = 1e-6 + tau_remaind/2.0
+            Tus =1e-6
+            #correct for part that is cut of when combining to sequence
+            if n_wait_reps %2 == 0 :
+                tau_cut =1e-6
+            else:
+                tau_cut = 2e-6
+
+            # combine the pulses to elements/waveforms and add to list of elements
+            list_of_elements = []
+            e_X_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_start.append(T_shortened)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T)
+
+            e_X =  element.Element('X rep %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X.append(T)
+            e_X.append(pulse.cp(X))
+            e_X.append(T)
+
+            e_Y =  element.Element('Y rep  %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_Y.append(T)
+            e_Y.append(pulse.cp(Y))
+            e_Y.append(T)
+
+            final_x_list = 0,1,3,6
+            if N%8 in final_x_list:
+                final_pulse = X
+                P_type = 'X'
+            else:
+                final_pulse = Y
+                P_type = 'Y'
+
+            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(P_type,prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_end.append(T)
+            e_end.append(pulse.cp(final_pulse))
+            e_end.append(T_shortened)
+            list_of_elements.append(e_end)
+
+            T_us_rep = element.Element('us Rep elt %s DD_El_tau_N_%s_%s'%(prefix,tau,N),pulsar=qt.pulsar, global_time =True)
+            T_us_rep.append(Tus)
+            list_of_elements.append(T_us_rep)
+
+        elif N%8 == 0:
+            ########
+            ## XY8 ##
+            ########
             element_duration_without_edge = 3*tau + fast_pi_duration/2.0
             if element_duration_without_edge  > (minimum_AWG_elementsize+36e-9): #+20 ns is to make sure that elements always have a minimal size
                 tau_shortened = np.ceil((element_duration_without_edge+ 36e-9)/4e-9)*4e-9 -element_duration_without_edge
@@ -113,8 +161,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             #Combine pulses to elements/waveforms and add to list of elements
             list_of_elements = []
-            e_XY_start = element.Element('XY Initial %s XY8-DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if thgenerate_decoupling_sequence_elementse name here is correct.
+            e_XY_start = element.Element('XY Initial %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_XY_start.append(T_before_p)
             e_XY_start.append(pulse.cp(X))
             e_XY_start.append(T)
@@ -123,9 +171,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY_start.append(T)
             list_of_elements.append(e_XY_start)
 
-            #Currently middle is XY2 with an if statement based on the value of N this can be optimised
-            e_XY = element.Element('XY Rep %s XY8-DD_El, tau,N= %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_XY = element.Element('XY Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_XY.append(T)
             e_XY.append(pulse.cp(X))
             e_XY.append(T)
@@ -134,9 +181,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY.append(T)
             list_of_elements.append(e_XY)
 
-            #Currently middle is XY2 with an if statement based on the value of N this can be optimised
-            e_YX = element.Element('YX Rep %s XY8-DD_El, tau,N= %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_YX = element.Element('YX Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_YX.append(T)
             e_YX.append(pulse.cp(Y))
             e_YX.append(T)
@@ -145,8 +191,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_YX.append(T)
             list_of_elements.append(e_YX)
 
-            e_YX_end = element.Element('YX Final %s XY-8 DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_YX_end = element.Element('YX Final %s XY-8 DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_YX_end.append(T)
             e_YX_end.append(pulse.cp(Y))
             e_YX_end.append(T)
@@ -156,9 +202,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             list_of_elements.append(e_YX_end)
 
         else:
-            #Generate an XY4 (+XY) decoupling sequence
-
-            # Calculate the time to be cut
+            ########
+            ## XY4 ##
+            ########
             element_duration_without_edge = tau + fast_pi_duration/2.0
             if element_duration_without_edge  > (minimum_AWG_elementsize+36e-9): #+20 ns is to make sure that elements always have a minimal size
                 tau_shortened = np.ceil((element_duration_without_edge+ 36e-9)/4e-9)*4e-9 -element_duration_without_edge
@@ -167,11 +213,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 tau_shortened = np.ceil(tau_shortened/(4e-9))*(4e-9)
             tau_cut = tau - tau_shortened - fast_pi_duration/2.0
 
-            # print 'tau =' +str(tau)
-            # print 'tau_pulse = ' +str(pulse_tau)
-            # print 'tau shortened= ' + str(tau_shortened)
-            # print 'fast_pi_duration = '+ str(fast_pi_duration)
-            # Make the delay pulses
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length = pulse_tau, amplitude = 0.)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -181,15 +222,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             #Combine pulses to elements/waveforms and add to list of elements
             list_of_elements = []
-            e_start = element.Element('X Initial %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_start.append(T_before_p)
             e_start.append(pulse.cp(X))
             e_start.append(T)
             list_of_elements.append(e_start)
             #Currently middle is XY2 with an if statement based on the value of N this can be optimised
-            e_middle = element.Element('YX Rep %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_middle = element.Element('YX Rep %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_middle.append(T)
             e_middle.append(pulse.cp(Y))
             e_middle.append(T)
@@ -197,8 +238,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_middle.append(pulse.cp(X))
             e_middle.append(T)
             list_of_elements.append(e_middle)
-            e_end = element.Element('Y Final %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                    global_time = True)# Not sure if the name here is correct.
+            e_end = element.Element('Y Final %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(Y))
             e_end.append(T_after_p)
@@ -207,7 +248,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         total_sequence_time=2*tau*N - 2* tau_cut
         Number_of_pulses  = N
 
-        return [list_of_elements, Number_of_pulses, tau_cut, total_sequence_time]
+        return [list_of_elements, Number_of_pulses, n_wait_reps,tau_cut, total_sequence_time]
 
     def Determine_length_and_type_of_Connection_elements(self,GateSequence,TotalsequenceTimes,tau_cut) :
         '''
@@ -221,8 +262,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         It can be at the start, the end or between sequence elements
         '''
 
-        if Gate_type == 'pi/2': # NB!!!!! Pi-pulse duration/2.0  needs to be replaced by pi2pulse duration which does not yet exist in msmt_params (loads of different ones)
-
+        if Gate_type == 'pi/2':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -238,20 +278,49 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_after_pulse, amplitude = 0.)
 
-
-                        #Pi-pulse element/waveform
-            e = element.Element('%s Pi_2_pulse, tau = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e = element.Element('%s Pi_2_pulse_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e.append(T_before_p)
             e.append(pulse.cp(X))
             e.append(T_after_p)
             return [e]
 
+        elif Gate_type == 'pi':
+            time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
+            time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
+
+            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi_duration'],
+                amplitude = self.params['fast_pi_amp'])
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse, amplitude = 0.)
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_after_pulse, amplitude = 0.)
+
+            e = element.Element('%s Pi_pulse_tau_%s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_before_p)
+            e.append(pulse.cp(X))
+            e.append(T_after_p)
+            return [e]
+
+        elif Gate_type == 'Wait':
+            T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse+time_after_pulse, amplitude = 0.)
+            e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_wait)
+            return [e]
+
         else:
             print 'this is not programmed yet '
             return
 
-    def combine_to_sequence(self,Lst_lst_els,list_of_repetitions):
+    def combine_to_sequence(self,Lst_lst_els,list_of_repetitions,):
         '''
         Combines all the generated elements to a sequence for the AWG
         Needs to be changed to handle the dynamical decoupling elements
@@ -295,9 +364,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             ######################
             ### XY8 elements
+            #-a-b-(c^2-b^2)^(N/8-1)-c-d-
             ######################
-            elif np.size(Lst_lst_els[ind]) == 4: #XY8 Decoupling -a-b-(c^2-b^2)^(N/8-1)-c-d-
-                # print "Lst_lst_els == 4"
+            elif np.size(Lst_lst_els[ind]) == 4:
                 a = Lst_lst_els[ind][0]
                 b= Lst_lst_els[ind][1]
                 c = Lst_lst_els[ind][2]
@@ -315,6 +384,43 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     trigger_wait=False,repetitions = 1)
                 seq.append(name=d.name, wfname=d.name,
                     trigger_wait=False,repetitions = 1)
+
+                ######################
+                ### XYn, tau > 2 mus
+                # t^n a t^n b t^n
+                ######################
+            elif np.size(Lst_lst_els[ind]) == 5:
+                wait_reps = list_of_repetitions[ind]
+                st = Lst_lst_els[ind][0]
+                x = Lst_lst_els[ind][1]
+                y = Lst_lst_els[ind][2]
+                fin = Lst_lst_els[ind][3]
+                t = Lst_lst_els[ind][4]
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps//2)#floor divisor
+                seq.append(name=st.name, wfname=st.name,
+                    trigger_wait=False,repetitions = 1)
+                pulse_ct = 1
+
+                x_list = [0,2,5,7]
+                while pulse_ct < (rep-1):
+                    seq.append(name=t.name, wfname=t.name,
+                        trigger_wait=False,repetitions = wait_reps)
+                    if pulse_ct%8 in x_list:
+                        seq.append(name=x.name, wfname=x.name,
+                            trigger_wait=False,repetitions = 1)
+                    else:
+                        seq.append(name=y.name, wfname=y.name,
+                            trigger_wait=False,repetitions = 1)
+                    pulse_ct +=1
+
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps)
+                seq.append(name=fin.name, wfname=fin.name,
+                    trigger_wait=False,repetitions = 1)
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps//2) #floor divisor
+
             else:
                 print 'Size of element not understood Error!'
                 return
@@ -365,21 +471,21 @@ class SimpleDecoupling(DynamicalDecoupling):
             tau = tau_list[pt]
             prefix = 'electron'
             ## Generate the decoupling elements
-            list_of_decoupling_elements, list_of_decoupling_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix)
+            list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix)
             #Generate the start and end pulse
             Gate_type = self.params['Initial_Pulse']
             time_before_initial_pulse = max(1e-6 - tau_cut + 36e-9,44e-9)  #statement makes sure that time before initial pulse is not negative
             time_after_initial_pulse = tau_cut
 
             prefix = 'initial'
-            initial_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
+            initial_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
 
             Gate_type = self.params['Final_Pulse']
             time_before_final_pulse = tau_cut
             time_after_final_pulse = time_before_initial_pulse
 
             prefix = 'final'
-            final_pi_2 = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
+            final_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
 
             ########################################
             #Combine all the elements to a sequence
@@ -387,16 +493,18 @@ class SimpleDecoupling(DynamicalDecoupling):
             ########################################
             list_of_list_of_elements = []
             list_of_list_of_elements.append([mbi_elt])
-            list_of_list_of_elements.append(initial_pi_2)
+            list_of_list_of_elements.append(initial_pulse)
             list_of_list_of_elements.append(list_of_decoupling_elements)
-            # list_of_list_of_elements.append(final_pi_2)
+            list_of_list_of_elements.append(final_pulse)
             list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1]
+            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
+            list_of_wait_reps =[]
+            list_of_wait_reps = [0,0]+[n_wait_reps] +[0,0]
 
             #######
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)
             #######
-            list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions)
+            list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
 
 
 
