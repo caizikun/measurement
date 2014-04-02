@@ -1,5 +1,5 @@
 '''
-This is modified version of the ElectronT1 class from PULSAR.PY
+This is based on the ElectronT1 class from PULSAR.PY
 Work in progress CHANGE LOCATION
 File made by Adriaan Rol
 '''
@@ -67,7 +67,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
         fast_pi_duration = self.params['fast_pi_duration']
         pulse_tau = tau - fast_pi_duration/2.0 #To correct for pulse duration
-
+        tau_prnt = tau*1e3 #Converts tau to ns for printing (removes the dot)
         n_wait_reps = 0 #this is the default value. Script returns this unless overwritten (as is the case for tau>2e-6)
 
         # initial checks to see if sequence is possible
@@ -103,19 +103,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             # combine the pulses to elements/waveforms and add to list of elements
             list_of_elements = []
-            e_X_start = element.Element('X Initial %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_X_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_X_start.append(T_shortened)
             e_X_start.append(pulse.cp(X))
             e_X_start.append(T)
 
-            e_X =  element.Element('X rep %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_X =  element.Element('X rep %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_X.append(T)
             e_X.append(pulse.cp(X))
             e_X.append(T)
 
-            e_Y =  element.Element('Y rep  %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_Y =  element.Element('Y rep  %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_Y.append(T)
             e_Y.append(pulse.cp(Y))
@@ -129,14 +129,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 final_pulse = Y
                 P_type = 'Y'
 
-            e_end = element.Element('%s Final %s DD_El, tau,N = %s,%s' %(P_type,prefix,tau,N),  pulsar=qt.pulsar,
+            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(P_type,prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(final_pulse))
             e_end.append(T_shortened)
             list_of_elements.append(e_end)
 
-            T_us_rep = element.Element('us Rep elt %s DD_El, tau,N =%s,%s'%(prefix,tau,N),pulsar=qt.pulsar, global_time =True)
+            T_us_rep = element.Element('us Rep elt %s DD_El_tau_N_%s_%s'%(prefix,tau,N),pulsar=qt.pulsar, global_time =True)
             T_us_rep.append(Tus)
             list_of_elements.append(T_us_rep)
 
@@ -161,7 +161,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             #Combine pulses to elements/waveforms and add to list of elements
             list_of_elements = []
-            e_XY_start = element.Element('XY Initial %s XY8-DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_XY_start = element.Element('XY Initial %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_XY_start.append(T_before_p)
             e_XY_start.append(pulse.cp(X))
@@ -171,7 +171,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY_start.append(T)
             list_of_elements.append(e_XY_start)
 
-            e_XY = element.Element('XY Rep %s XY8-DD_El, tau,N= %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_XY = element.Element('XY Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_XY.append(T)
             e_XY.append(pulse.cp(X))
@@ -181,7 +181,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY.append(T)
             list_of_elements.append(e_XY)
 
-            e_YX = element.Element('YX Rep %s XY8-DD_El, tau,N= %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_YX = element.Element('YX Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_YX.append(T)
             e_YX.append(pulse.cp(Y))
@@ -191,7 +191,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_YX.append(T)
             list_of_elements.append(e_YX)
 
-            e_YX_end = element.Element('YX Final %s XY-8 DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_YX_end = element.Element('YX Final %s XY-8 DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_YX_end.append(T)
             e_YX_end.append(pulse.cp(Y))
@@ -222,14 +222,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             #Combine pulses to elements/waveforms and add to list of elements
             list_of_elements = []
-            e_start = element.Element('X Initial %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_start.append(T_before_p)
             e_start.append(pulse.cp(X))
             e_start.append(T)
             list_of_elements.append(e_start)
             #Currently middle is XY2 with an if statement based on the value of N this can be optimised
-            e_middle = element.Element('YX Rep %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_middle = element.Element('YX Rep %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_middle.append(T)
             e_middle.append(pulse.cp(Y))
@@ -238,7 +238,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_middle.append(pulse.cp(X))
             e_middle.append(T)
             list_of_elements.append(e_middle)
-            e_end = element.Element('Y Final %s DD_El, tau,N = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e_end = element.Element('Y Final %s DD_El_tau_N_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(Y))
@@ -278,7 +278,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_after_pulse, amplitude = 0.)
 
-            e = element.Element('%s Pi_2_pulse, tau = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+            e = element.Element('%s Pi_2_pulse_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                     global_time = True)
             e.append(T_before_p)
             e.append(pulse.cp(X))
@@ -301,7 +301,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                     length = time_after_pulse, amplitude = 0.)
 
-                e = element.Element('%s Pi_pulse, tau = %s,%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                e = element.Element('%s Pi_pulse, tau = %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
                         global_time = True)
                 e.append(T_before_p)
                 e.append(pulse.cp(X))
@@ -381,37 +381,37 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 ### XYn, tau > 2 mus
                 # t^n a t^n b t^n
                 ######################
-                elif np.size(Lst_els[ind]) == 5:
-                    wait_reps = list_of_repetitions[ind]
-                    st = Lst_lst_els[ind][0]
-                    x = Lst_lst_els[ind][1]
-                    y = Lst_lst_els[ind][2]
-                    fin = Lst_lst_els[ind][3]
-                    t = Lst_lst_els[ind][4]
-                    seq.append(name=t.name, wfname=t.name,
-                        trigger_wait=False,repetitions = wait_reps//2)#floor divisor
-                    seq.append(name=st.name, wfname=st.name,
-                        trigger_wait=False,repetitions = 1)
-                    pulse_ct = 1
+            elif np.size(Lst_lst_els[ind]) == 5:
+                wait_reps = list_of_repetitions[ind]
+                st = Lst_lst_els[ind][0]
+                x = Lst_lst_els[ind][1]
+                y = Lst_lst_els[ind][2]
+                fin = Lst_lst_els[ind][3]
+                t = Lst_lst_els[ind][4]
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps//2)#floor divisor
+                seq.append(name=st.name, wfname=st.name,
+                    trigger_wait=False,repetitions = 1)
+                pulse_ct = 1
 
-                    x_list = [0,2,5,7]
-                    while pulse_ct < (rep-1):
-                        seq.append(name=t.name, wfname=t.name,
-                            trigger_wait=False,repetitions = wait_reps)
-                        if pulse_ct%8 in x_list:
-                            seq.append(name=x.name, wfname=x.name,
-                                trigger_wait=False,repetitions = 1)
-                        else:
-                            seq.append(name=y.name, wfname=y.name,
-                                trigger_wait=False,repetitions = 1)
-                        pulse_ct +=1
-
+                x_list = [0,2,5,7]
+                while pulse_ct < (rep-1):
                     seq.append(name=t.name, wfname=t.name,
                         trigger_wait=False,repetitions = wait_reps)
-                    seq.append(name=fin.name, wfname=fin.name,
-                        trigger_wait=False,repetitions = 1)
-                    seq.append(name=t.name, wfname=t.name,
-                        trigger_wait=False,repetitions = wait_reps//2) #floor divisor
+                    if pulse_ct%8 in x_list:
+                        seq.append(name=x.name, wfname=x.name,
+                            trigger_wait=False,repetitions = 1)
+                    else:
+                        seq.append(name=y.name, wfname=y.name,
+                            trigger_wait=False,repetitions = 1)
+                    pulse_ct +=1
+
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps)
+                seq.append(name=fin.name, wfname=fin.name,
+                    trigger_wait=False,repetitions = 1)
+                seq.append(name=t.name, wfname=t.name,
+                    trigger_wait=False,repetitions = wait_reps//2) #floor divisor
 
             else:
                 print 'Size of element not understood Error!'
