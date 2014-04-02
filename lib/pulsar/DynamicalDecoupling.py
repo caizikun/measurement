@@ -285,36 +285,36 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_after_p)
             return [e]
 
-            elif Gate_type == 'pi':
-                time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
-                time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
+        elif Gate_type == 'pi':
+            time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
+            time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
-                X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
-                    I_channel='MW_Imod', Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    frequency = self.params['fast_pi_mod_frq'],
-                    PM_risetime = self.params['MW_pulse_mod_risetime'],
-                    length = self.params['fast_pi_duration'],
-                    amplitude = self.params['fast_pi_amp'])
-                T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
-                    length = time_before_pulse, amplitude = 0.)
-                T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
-                    length = time_after_pulse, amplitude = 0.)
+            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi_duration'],
+                amplitude = self.params['fast_pi_amp'])
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse, amplitude = 0.)
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_after_pulse, amplitude = 0.)
 
-                e = element.Element('%s Pi_pulse_tau_%s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                        global_time = True)
-                e.append(T_before_p)
-                e.append(pulse.cp(X))
-                e.append(T_after_p)
-                return [e]
+            e = element.Element('%s Pi_pulse_tau_%s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_before_p)
+            e.append(pulse.cp(X))
+            e.append(T_after_p)
+            return [e]
 
-            elif Gate_type == 'Wait':
-                T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
-                    length = time_before_pulse+time_after_pulse, amplitude = 0.)
-                e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
-                        global_time = True)
-                e.append(T_wait)
-                return [e]
+        elif Gate_type == 'Wait':
+            T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse+time_after_pulse, amplitude = 0.)
+            e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_wait)
+            return [e]
 
         else:
             print 'this is not programmed yet '
