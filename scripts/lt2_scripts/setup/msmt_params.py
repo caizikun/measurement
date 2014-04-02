@@ -127,7 +127,8 @@ cfg['samples']['Hans_sil1'] = {
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
 'zero_field_splitting': zero_field_splitting,
-'g_factor'      :       2.8e6, #2.8 MHz/Gauss
+'g_factor'      :       2.8025e6, #Hz/Gauss
+'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq}
 
@@ -181,7 +182,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   96e-9,#60e-9,
-'fast_pi2_amp'              :   0*0.785698,#0*0.777847, #140324
+'fast_pi2_amp'              :   0.785698,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
