@@ -107,8 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 1.995075e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.760085e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.999840e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.755300e9            #Electron spin ms=+1 frequency
 zero_field_splitting = 2.87747e9    # As measured by Julia on 20140227 2.87747(5)e9
 
 N_frq    = 7.13429e6        #not calibrated
@@ -180,8 +180,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   190e-9,#96e-9,#60e-9,
-'fast_pi2_amp'              :   0.800284,#0*0.785698,#0*0.777847, #140324
+'fast_pi2_duration'         :   96e-9,#60e-9,
+'fast_pi2_amp'              :   0*0.785698,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###

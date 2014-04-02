@@ -36,7 +36,7 @@ def darkesr(name):
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 6.5e6
     m.params['pts'] = 41
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.03
+    m.params['ssbmod_amplitude'] = 0.05
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -73,7 +73,7 @@ def darkesrp1(name):
     m.finish()
 
 if __name__ == '__main__':
-    darkesrp1(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)
     cont = raw_input ('Do the fitting for ms=-1... Continue with ms=-1 y/n?')
     if cont =='y':
         darkesr(SAMPLE_CFG)

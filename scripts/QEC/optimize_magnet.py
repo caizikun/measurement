@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
 
         # Step the magnet
-        d_steps.append(mt.steps_to_frequency(freq=f0_temp*1e6,freq_id=current_f_msp1, ms = 'plus'))
+        d_steps.append(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))
         print 'move magnet in Z with '+ str(d_steps) + ' steps'
 
         #Master_of_magnet.step('Z_axis',d_steps[iterations]) # position further than ideal position -> go closer
