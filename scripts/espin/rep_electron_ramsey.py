@@ -1,4 +1,5 @@
-# one CR check followed by N ramseys
+# one CR check followed by N ramseys. 
+# sequence: CR - |SP - AWG_ramsey - SSRO - SP_repump - delay_time - |^N
 import qt
 import numpy as np
 #reload all parameters and modules
@@ -58,20 +59,26 @@ def repelectronramseyCORPSE(name):
     m = pulsar_msmt.RepElectronRamseysCORPSE(name)
     funcs.prepare(m)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    m.params['MW_pulse_frequency']=100e6
+    m.params['wait_after_pulse_duration']=2
+    m.params['wait_after_RO_pulse_duration']=2
+    
+    # should make a separate protocol for this!
     m.params['SP_duration']=10
     m.params['A_SP_amplitude'] = 50e-9
     m.params['SSRO_duration']=10
+    m.params['SP_repump_duration']=10
+    m.params['repump_E'] = 0
+    m.params['repump_A'] = 1
+    m.params['wait_time_between_msmnts']=  1 
 
-    pts = 1
-
+"""
     m.params['pi2_amps'] = np.ones(pts)*0
     m.params['pi2_phases1'] = np.ones(pts) * 0
     m.params['pi2_phases2'] = np.ones(pts) * 0
     m.params['pi2_lengths'] = np.ones(pts) * 0
+"""
 
-    m.params['MW_pulse_frequency']=100e6
-    m.params['wait_after_pulse_duration']=2
-    m.params['wait_after_RO_pulse_duration']=2
 
     pts = 1
     m.params['pts'] = pts

@@ -322,7 +322,7 @@ config['adwin_lt1_processes'] = {
                     'RO_data' : 25,
                     }, 
                 },
-                # one CR check followed by multiple times SP-AWG seg-SSRO
+                # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
         'ssro_multiple_RO' : {
                 'index' : 9,
                 'file' : 'integrated_ssro_multiple_RO_lt1.TB9',
@@ -339,7 +339,10 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
-                    ['sweep_length'                ,   1], 
+                    ['SP_repump_duration'          ,   1], 
+                    ['wait_time_between_msmnts'    ,   1], 
+		    ['repump_E'    		   ,   0],
+		    ['repump_A'    		   ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -347,7 +350,7 @@ config['adwin_lt1_processes'] = {
                     ['Ex_SP_voltage'        , 0.8],
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
-                    ['A_RO_voltage'         , 0.8],
+                    ['A_RO_voltage'         , 0.8],		    
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -813,7 +816,7 @@ config['adwin_lt2_processes'] = {
                     'RO_data' : 25,
                     }, 
                 },
-                # one CR check followed by multiple times SP-AWG seg-SSRO
+                # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delay
         'ssro_multiple_RO' : {
                 'index' : 9,
                 'file' : 'integrated_ssro_multiple_RO_lt2.TB9',
@@ -830,7 +833,10 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
-                    ['sweep_length'                ,   1],
+                    ['SP_repump_duration'          ,   1], 
+                    ['wait_time_between_msmnts'    ,   1], 
+		    ['repump_E'    		   ,   0],
+		    ['repump_A'    		   ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
