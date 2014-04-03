@@ -1,6 +1,5 @@
 '''
-This is based on the ElectronT1 class from PULSAR.PY
-Work in progress CHANGE LOCATION
+Work in progress
 File made by Adriaan Rol
 '''
 import numpy as np
