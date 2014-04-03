@@ -1,6 +1,6 @@
 """
 Made by Adriaan Rol
-spin echo measurement based on the SimpleDecoupling measurement class
+spin echo measurement script based on the SimpleDecoupling measurement class
 """
 import numpy as np
 import qt
@@ -46,6 +46,6 @@ def spin_echo(name):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    spin_echo(SAMPLE+'_'+'')
+    spin_echo(SAMPLE+'_spin_echo_'+'')
 
 
