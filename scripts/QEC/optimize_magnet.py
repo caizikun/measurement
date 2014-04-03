@@ -18,7 +18,7 @@ from analysis.lib.fitting import dark_esr_auto_analysis
 
 # import magnet tools and master of magnet
 from measurement.lib.tools import magnet_tools as mt
-from measurement.instruments import Master_of_magnet
+mom = qt.instruments['master_of_magnet']
 reload(mt)
 
 execfile(qt.reload_current_setup)
@@ -49,11 +49,11 @@ def darkesr(name):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 2000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 5e6
-    m.params['pts'] = 41#101
+    m.params['ssbmod_frq_start'] = 43e6 - 6.5e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + 6.5e6
+    m.params['pts'] = 41
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.05
 
@@ -78,7 +78,7 @@ def darkesr_auto(name,upload=False):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 3000
+    m.params['repetitions'] = 2000
 
     m.params['ssbmod_frq_start'] = 43e6 - 6.5e6
     m.params['ssbmod_frq_stop'] = 43e6 + 6.5e6
@@ -93,8 +93,6 @@ def darkesr_auto(name,upload=False):
     m.finish()
 
 if __name__ == '__main__':
-
-
 
     #create the lists to save the data to
     d_steps = []
@@ -116,23 +114,31 @@ if __name__ == '__main__':
     B_field_measured.append(mt.convert_f_to_Bz(freq=f0_temp*1e9))
 
     print 'Measured frequency = ' +str(f0_temp)+' GHz, so '+str(abs(f0_temp*1e6-current_f_msp1*1e-3))+' kHz away from wanted frequency'
-    print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' kHz away from wanted frequency'
+    print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' G away from wanted frequency'
+
+    print B_error_range
+    print B_field_ideal
+    print B_field_measured
 
     # start loop to optimize the field if field is out of set range
-    while B_field_measured > B_field_ideal+B_error_range or B_field_measured < B_field_ideal-B_error_range:
+    while abs(B_field_measured[iterations]-B_field_ideal) > B_error_range:
 
         # Step the magnet
-        d_steps.append(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))
+        d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))))
+
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
-        if d_steps[iterations] > 1000:
-            print 'd_steps>+/-1000, step only 1000 steps!'
+        if abs(d_steps[iterations]) > 100:
+            print 'd_steps>+/-100, step only 100 steps!'
             if d_steps[iterations] > 0:
-                Master_of_magnet.step('Z_axis',1000) 
+                mom.step('Z_axis',100)
             if d_steps[iterations] < 0:
-                Master_of_magnet.step('Z_axis',-1000)
+                mom.step('Z_axis',-100)
+        elif d_steps[iterations]==0:
+            print 'Steps = 0 optimization converted'
+            break
         else:
-            Master_of_magnet.step('Z_axis',d_steps[iterations]) 
+            mom.step('Z_axis',d_steps[iterations])
 
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(5e-6)
@@ -145,12 +151,12 @@ if __name__ == '__main__':
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
-        iterations = iterations + 1
+        iterations += 1
         #do dESR without reloading to the AWG, smaller domain
         if iterations ==1:
-            Darkesr_auto(SAMPLE_CFG, upload = True)
+            darkesr_auto(SAMPLE_CFG, upload = True)
         else:
-             Darkesr_auto(SAMPLE_CFG, upload = False)
+            darkesr_auto(SAMPLE_CFG, upload = False)
 
 
         #Determine frequency and B-field again --> this fit programme returns in MHz, needs input GHz
@@ -165,7 +171,7 @@ if __name__ == '__main__':
 
     total_d_steps = np.sum(d_steps)
     #create a file to save data to --> what is a good way to save this?
-    d = qt.Data(name=magnet_optimization_overview)
+    d = qt.Data(name='magnet_optimization_overview')
     d.add_coordinate('iteration')
     d.add_value('frequency [GHz]')
     d.add_value('frequency error [GHz]')

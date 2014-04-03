@@ -137,11 +137,11 @@ class DarkESR(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
+            qt.pulsar.upload(*elements)
+            #qt.pulsar.program_awg(seq,*elements)
 
         # program the AWG
-        #qt.pulsar.program_sequence(seq)
+        qt.pulsar.program_sequence(seq)
 
         # some debugging:
         # elements[-1].print_overview()
