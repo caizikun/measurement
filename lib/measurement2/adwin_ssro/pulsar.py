@@ -207,8 +207,8 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
+        print self.params['A_SP_repump_voltage']
         PulsarMeasurement.autoconfig(self)
-
 
     def generate_sequence(self, upload=True):
 
@@ -256,13 +256,13 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         #if upload:
-            qt.pulsar.upload(*elements)
+        #    qt.pulsar.upload(*elements)
 
         # program the AWG
-        qt.pulsar.program_sequence(seq)
-        return return_e.normalized_waveforms()
+        #qt.pulsar.program_sequence(seq)
+        #return return_e.normalized_waveforms()
         #For faster uploading, use:
-        #qt.pulsar.program_awg(seq,*elements)
+        qt.pulsar.program_awg(seq,*elements)
 
         # some debugging:
         # elements[-1].print_overview()
@@ -313,7 +313,6 @@ class ElectronRamsey(PulsarMeasurement):
                 elements.append(e)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-
                 e = element.Element('ElectronRamsey_wait_pt-%d' % i, pulsar=qt.pulsar,
                     global_time = True)
 
@@ -321,6 +320,7 @@ class ElectronRamsey(PulsarMeasurement):
                 N=int(self.params['evolution_times'][i]*1e6)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=False,repetitions=N)
 
+                #I would think this pulse should be in the next element! - Machiel
                 e.append(pulse.cp(T,
                     length = self.params['evolution_times'][i]-(N*1e-6)))
                 elements.append(e)
@@ -471,7 +471,9 @@ class RepElectronRamseysCORPSE(ElectronRamseyCORPSE):
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
-            int(np.ceil(np.max(self.params['evolution_times'])*1e3)+1)
+            int(np.ceil(np.max(self.params['evolution_times'])*1e3)+2)
+        self.params['A_SP_repump_voltage']=self.A_aom.power_to_voltage(self.params['A_SP_repump_amplitude'])
+        print 'HERE!!!'
         PulsarMeasurement.autoconfig(self)
 
     def save(self, name='ssro'):

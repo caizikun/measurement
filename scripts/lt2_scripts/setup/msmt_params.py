@@ -108,11 +108,11 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 f_msm1_cntr = 1.999840e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.755300e9            #Electron spin ms=+1 frequency
+f_msp1_cntr = 3.755309e9            #Electron spin ms=+1 frequency
 zero_field_splitting = 2.87747e9    # As measured by Julia on 20140227 2.87747(5)e9
 
 N_frq    = 7.13429e6        #not calibrated
-N_HF_frq = 2.195e6        #calibrated 20140320/181319
+N_HF_frq = 2.187e6        #calibrated 20140320/181319
 
 mw_mod_frequency = 250e6
 
@@ -169,7 +169,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
 #f_mod_0     = cfg['samples']['Hans_sil1']['ms+1_cntr_frq'] - cfg['samples']['Hans_sil1']['mw_frq']
 f_mod_0     = cfg['samples']['Hans_sil1']['mw_mod_freq']
 
-CORPSE_frq=  5.4e6
+CORPSE_frq=  5.305e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
 'X_phase'                   :   90,
@@ -193,7 +193,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
 #    ### Corpse pulses ###
 'CORPSE_pi2_amp'    :           1,
-'CORPSE_frq'  :  5.4e6,
+'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
  'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
  'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
@@ -232,7 +232,36 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
 
 
+###############################
+### Rep Ramsey Magnetometry####
+###############################
+CORPSE_frq=  5.305e6
+MW_mod_magnetometry=43e6
 
+cfg['protocols']['Hans_sil1']['Magnetometry'] ={
+'MW_modulation_frequency'   :   MW_mod_magnetometry,
+'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry,
+
+### Laser duration and powers etc ###
+'SSRO_duration'     :  10,
+'Ex_RO_amplitude':  20e-9,
+'Ex_SP_amplitude'  : 60e-9,
+'A_SP_amplitude': 50e-9,
+'A_SP_repump_amplitude':.5e-9,
+'SP_duration': 10, #!!!! 10
+'SP_repump_duration': 100,
+'wait_after_RO_pulse_duration':2,
+'wait_after_pulse_duration':2,
+'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
+#    ### Corpse pulses ###
+'CORPSE_pi2_amp'    :           1,
+'CORPSE_frq'  :  CORPSE_frq,
+'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
+ 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+ 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+ 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+ 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+ 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.}
 
 
 

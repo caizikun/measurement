@@ -20,23 +20,26 @@ def ssrocalibration(name):
     m.params['SSRO_duration']       = 100
     m.params['SSRO_stop_after_first_photon']= 0
 
-   
+
     m.params['CR_preselect']    = 1000
     m.params['CR_repump']       = 1000
     m.params['CR_probe']        = 1000
 
-    e_sp = m.params['Ex_SP_amplitude']
+    e_sp = 60e-9
+    a_sp=  50e-9
 
-    
+
     # ms = 0 calibration
-    m.params['SP_duration']=100
+    m.params['SP_duration']=10
     m.params['Ex_SP_amplitude'] = 0.
+    m.params['A_SP_amplitude'] = a_sp
+    m.params['Ex_RO_amplitude'] = 20e-9
     m.run()
     m.save('ms0')
 
     # ms = 1 calibration
-    m.params['SP_duration']=250
-    m.params['A_SP_amplitude'] = 0.
+    m.params['SP_duration']=100
+    m.params['A_SP_amplitude'] = 0
     m.params['Ex_SP_amplitude'] = e_sp
     m.run()
     m.save('ms1')

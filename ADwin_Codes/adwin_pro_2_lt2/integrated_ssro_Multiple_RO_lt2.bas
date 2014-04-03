@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD202825  DASTUD\machielblok
+' Info_Last_Save                 = TUD276629  TUD276629\localadmin
 '<Header End>
-' this program implements CR check and N times |SP - AWG sequence - integrated SSRO - SP_repump - delay|
+' this program implements CR check and N times |SP - AWG sequence - integrated SSRO - SP_repump - delay|^N
 ' controlled by ADwin Pro
 '
 ' protocol:
@@ -46,7 +46,7 @@ DIM SSRO_repetitions, SSRO_duration, SSRO_stop_after_first_photon AS LONG ' stop
 DIM cycle_duration AS LONG
 DIM wait_after_pulse, wait_after_pulse_duration AS LONG
 
-DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage,A_SP_repump_voltage AS FLOAT
 
 DIM timer, aux_timer, mode, i, sweep_index,sweep_length AS LONG
 DIM AWG_done AS LONG
@@ -79,7 +79,7 @@ INIT:
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
-
+  A_SP_repump_voltage          = DATA_21[5]
   par_80 = SSRO_stop_after_first_photon
   
   FOR i = 1 TO max_SP_bins
@@ -114,7 +114,8 @@ INIT:
   
   Par_73 = repetition_counter
   Par_74 = mode
-  
+  PAR_64=0
+  PAR_65=0
 
 
 EVENT:
@@ -231,15 +232,14 @@ EVENT:
         
         IF (timer = 0) THEN
           IF (repump_E>0) THEN
+            PAR_64=1
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           endif
           IF (repump_A>0) THEN
-            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768)   ' turn on A laser
+            PAR_65=1
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_repump_voltage+32768)   ' turn on A laser
           endif
           
-        else
-          P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
         Endif
 
         IF (timer = SP_repump_duration) THEN
