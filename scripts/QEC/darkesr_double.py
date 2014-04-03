@@ -73,7 +73,7 @@ def darkesrp1(name):
     m.finish()
 
 if __name__ == '__main__':
-    #darkesrp1(SAMPLE_CFG)
+    darkesrp1(SAMPLE_CFG)
     cont = raw_input ('Do the fitting for ms=-1... Continue with ms=-1 y/n?')
     if cont =='y':
         darkesr(SAMPLE_CFG)

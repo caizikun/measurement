@@ -107,8 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 
 
 
-f_msm1_cntr = 1.999840e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.755309e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = 2.001883e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.753185e9            #Electron spin ms=+1 frequency
 zero_field_splitting = 2.87747e9    # As measured by Julia on 20140227 2.87747(5)e9
 
 N_frq    = 7.13429e6        #not calibrated
