@@ -51,7 +51,7 @@ def darkesr(name):
     m.params['mw_power'] = 20
     m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## fist time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## first time we choose a quite large domain to find the three dips (15)
     m.params['ssbmod_frq_stop'] = 43e6 + 5e6
     m.params['pts'] = 41#101
     m.params['pulse_length'] = 2e-6
@@ -115,20 +115,24 @@ if __name__ == '__main__':
     u_f0.append(u_f0_temp)
     B_field_measured.append(mt.convert_f_to_Bz(freq=f0_temp*1e9))
 
-    print 'Measured frequency = ' +str(f0_temp)+' GHz'
-    print 'Measured B-field = '+str(B_field_measured[iterations])+' G'
+    print 'Measured frequency = ' +str(f0_temp)+' GHz, so '+str(abs(f0_temp*1e6-current_f_msp1*1e-3))+' kHz away from wanted frequency'
+    print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' kHz away from wanted frequency'
 
     # start loop to optimize the field if field is out of set range
     while B_field_measured > B_field_ideal+B_error_range or B_field_measured < B_field_ideal-B_error_range:
 
-
         # Step the magnet
         d_steps.append(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))
-        print 'move magnet in Z with '+ str(d_steps) + ' steps'
+        print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
-        #Master_of_magnet.step('Z_axis',d_steps[iterations]) # position further than ideal position -> go closer
-
-        #qt.msleep(5) # because QTlab does not know that the magnet is still stepping
+        if d_steps[iterations] > 1000:
+            print 'd_steps>+/-1000, step only 1000 steps!'
+            if d_steps[iterations] > 0:
+                Master_of_magnet.step('Z_axis',1000) 
+            if d_steps[iterations] < 0:
+                Master_of_magnet.step('Z_axis',-1000)
+        else:
+            Master_of_magnet.step('Z_axis',d_steps[iterations]) 
 
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(5e-6)
@@ -155,14 +159,11 @@ if __name__ == '__main__':
         u_f0.append(u_f0_temp)
         B_field_measured.append(mt.convert_f_to_Bz(freq=f0_temp*1e9))
 
-        print 'Measured frequency = ' +str(f0_temp)+' GHz'
-        print 'Measured B-field = '+str(B_field_measured[iterations])+' G'
-
+        print 'Measured frequency = ' +str(f0_temp)+' GHz, so '+str(abs(f0_temp*1e6-current_f_msp1*1e-3))+' kHz away from wanted frequency'
+        print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' kHz away from wanted frequency'
 
 
     total_d_steps = np.sum(d_steps)
-
-
     #create a file to save data to --> what is a good way to save this?
     d = qt.Data(name=magnet_optimization_overview)
     d.add_coordinate('iteration')
@@ -175,7 +176,5 @@ if __name__ == '__main__':
     d.add_data_point(iterations, f0,u_f0,B_field_measured,d_steps)
     d.close_file()
 
-    print 'B_field optimized, stepped: '+ str(total_d_steps) + ' in '+str(iterations) +' iterations in Z direction'
+    print 'Bz field optimized, stepped the magnet '+ str(total_d_steps) + ' in '+str(iterations) +' iterations in Z direction'
 
-
-## I'm more in favour of keeping the same freq domain for the auto msmt

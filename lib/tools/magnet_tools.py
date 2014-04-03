@@ -7,7 +7,7 @@
 import qt
 import numpy as np
 
-#reload all parameters and modules
+reload all parameters and modules
 execfile(qt.reload_current_setup)
 
 current_NV = qt.exp_params['samples']['current']
@@ -53,31 +53,27 @@ def get_B_field(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
     ''' Returns the (Bz_field, Bx_field) for given given
     ms=-1 and ms=0 frequencies (GHz)
     '''
-    msm1_f = msm1_freq*1e9
-    msp1_f = msp1_freq*1e9
+    msm1_f = msm1_freq
+    msp1_f = msp1_freq
     Bz = (msp1_f**2 - msm1_f**2)/(4.*ZFS*g_factor)
     Bx = (abs(msm1_f**2 - (ZFS-g_factor*Bz)**2 )**0.5)/g_factor
     return (Bz, Bx)
 
-def get_magnet_position(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1,ms = 'plus',solve_by = 'list'):
+def get_magnet_position(msm1_freq=current_f_msm1,msp1_freq = current_f_msp1,ms = 'plus',solve_by = 'list'):
     ''' determines the magnet position (mm) for given msm1_freq
     or msp1_freq (GHz)
     JULIA:  I am not sure yet what will be the best solution: try by measurement'''
-    if ms is 'plus':
-        B_field = convert_f_to_Bz(freq=current_f_msp1)
     if ms is 'minus':
-        B_field = convert_f_to_Bz(freq=current_f_msm1)
+        B_field = convert_f_to_Bz(freq=msm1_freq)
+    if ms is 'plus':
+        B_field = convert_f_to_Bz(freq=msp1_freq)
     if solve_by == 'list':
-        d = np.linspace(10.4,9.4,100+1) # ! this is the right domain for B around 300 G
+        d = np.linspace(10.4,9.4,10**4+1) # ! this is the right domain for B around 300 G
         B_field_difference = np.zeros(len(d))
         for j in [int(i) for i in np.linspace(0,len(d)-1,len(d))]:
             B_field_difference[j] = abs(B_field-get_field_at_position(d[j]))
-
         B_field_difference = np.array(B_field_difference).tolist()
-        print B_field_difference
         j_index = B_field_difference.index(min(B_field_difference))
-        print j_index
-
         position = d[j_index]
     if solve_by == 'eqn':
         position = 22.2464-0.0763*B_field+1.511e-4*B_field**2-1.1023e-7*B_field**3
@@ -97,13 +93,13 @@ def get_freq_at_position(distance):
 
 def get_field_gradient(distance):
     ''' returns the field (G) at input distance (mm)'''
-    return B_field
+    pass
 
 def get_all(freq_ms_m1=current_f_msm1, freq_ms_p1=current_f_msp1):
     '''function that returns all the magnetic field and magnet properties
     for the given or current ms=-1 and ms=+1 frequencies'''
     print 'Given ms-1 transition frequency = '+str(freq_ms_m1*1e-9) +' GHz'
-    print 'Given ms+1 transition frequency = '+str(freq_ms_p1**1e-9) + ' GHz'
+    print 'Given ms+1 transition frequency = '+str(freq_ms_p1*1e-9) + ' GHz'
     calculated_ZFS = calc_ZFS(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
     print 'Zero-field splitting ='+ str(calculated_ZFS*1e-9) + ' GHz'
     calculated_B_field = get_B_field(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
@@ -117,9 +113,9 @@ def steps_to_frequency(freq,freq_id, ms = 'plus'):
     '''determine the steps needed to go to a certain frequency (freq_id)'''
 
     position = get_magnet_position(msp1_freq=freq,ms = ms,solve_by = 'list')
-    print position
+    print 'Magnet distance to NV: ' +str(position)
     position_ideal = get_magnet_position(msp1_freq=freq_id,ms = ms,solve_by = 'list')
-    print position_ideal
+    print 'Wanted magnet distance to NV: '+ str(position_ideal)
     d_position_nm = (position - position_ideal)*1e6
     d_steps = d_position_nm/nm_per_step
     return d_steps
