@@ -6,17 +6,17 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Gretel_Sil2_PSB_SM'
+name = 'Fritz_SIL5_ZPL_TH'
 steps=17
 max_power=200e-6       #[w]
-counter=1    #number of counter
-TH_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=2.0          #delta x position of background [um]
-bg_y=-2.0             #delta y position of background [um]
+counter=2    #number of counter
+PQ_count=True    # counting with the HH, assumes apd on channel 0
+bg_x=1.5          #delta x position of background [um]
+bg_y=1.5            #delta y position of background [um]
 
 #instruments
-if TH_count:
-    current_HH_400=qt.instruments['TH_260N']
+if PQ_count:
+    current_PQ_ins=qt.instruments['TH_260N']
 
 current_aom = qt.instruments['GreenAOM']
 current_mos = qt.instruments['master_of_space']
@@ -41,7 +41,7 @@ for i,pwr in enumerate(x):
     if not TH_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:
-        y_NV[i] = current_HH_400.get_CountRate0()
+        y_NV[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
     print 'step %s, counts %s'%(i,y_NV[i])
         
 current_mos.set_x(current_x + bg_x)
@@ -56,7 +56,7 @@ if not br:
         if not TH_count:
             y_BG[i] = current_adwin.get_countrates()[counter-1]
         else:
-            y_BG[i] = current_HH_400.get_CountRate0()
+            y_BG[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
         print 'step %s, counts %s'%(i,y_BG[i])
        
  

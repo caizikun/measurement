@@ -98,7 +98,7 @@ params_lt3['dd_spin_echo_time'] = -83.5e-9
 
 params_lt3['SSRO_lt3_duration'] = 23
 
-params_lt3['Ey_CR_amplitude'] = 5e-9#10e-9#6e-9             
+params_lt3['Ey_CR_amplitude'] = 2e-9#10e-9#6e-9             
 params_lt3['A_CR_amplitude'] =5e-9#10e-9#16e-9              
 params_lt3['Ey_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 10e-9             
@@ -217,7 +217,7 @@ params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params['LDE_SP_duration']             = 5e-6
 params['LDE_SP_duration_yellow']      = 3e-6
-params['wait_after_sp']               = 500e-9 #this should be large enough, so that the MW puls fits
+params['wait_after_sp']               = 105e-9 #this should be large enough, so that the MW puls fits
 params['LDE_element_length']          = 8e-6 # 9e-6 for TPQI with 5 pulses
 
 
