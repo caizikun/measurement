@@ -612,34 +612,50 @@ class SimpleDecoupling(DynamicalDecoupling):
             prefix = 'electron'
             ## Generate the decoupling elements
             list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix)
-            #Generate the start and end pulse
-            Gate_type = self.params['Initial_Pulse']
-            time_before_initial_pulse = max(1e-6 - tau_cut + 36e-9,44e-9)  #statement makes sure that time before initial pulse is not negative
-            time_after_initial_pulse = tau_cut
 
-            prefix = 'initial'
-            initial_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
+            if np.size(list_of_decoupling_elements ==1):#Size of 1 corresponds to the 'one-piece' decoupling sequence
+                ###########################################
+                ####   Final and initial pulses included in element####
+                ###########################################
+                list_of_list_of_elements = []
+                list_of_list_of_elements.append([mbi_elt])
+                list_of_list_of_elements.append(list_of_decoupling_elements)
+                list_of_list_of_elements.append([Trig_element])
+                list_of_repetitions = [1,1,1]
+                list_of_wait_reps =[]
+                list_of_wait_reps = [0,0,0]
 
-            Gate_type = self.params['Final_Pulse']
-            time_before_final_pulse = tau_cut
-            time_after_final_pulse = time_before_initial_pulse
+                list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
 
-            prefix = 'final'
-            final_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
+            else:
+                #Generate the start and end pulse
+                Gate_type = self.params['Initial_Pulse']
+                time_before_initial_pulse = max(1e-6 - tau_cut + 36e-9,44e-9)  #statement makes sure that time before initial pulse is not negative
+                time_after_initial_pulse = tau_cut
 
-            ########################################
-            #Combine all the elements to a sequence
-            #very sequence specific
-            ########################################
-            list_of_list_of_elements = []
-            list_of_list_of_elements.append([mbi_elt])
-            list_of_list_of_elements.append(initial_pulse)
-            list_of_list_of_elements.append(list_of_decoupling_elements)
-            list_of_list_of_elements.append(final_pulse)
-            list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
-            list_of_wait_reps =[]
-            list_of_wait_reps = [0,0]+[n_wait_reps] +[0,0]
+                prefix = 'initial'
+                initial_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_initial_pulse,time_after_initial_pulse, Gate_type,prefix,tau,N)
+
+                Gate_type = self.params['Final_Pulse']
+                time_before_final_pulse = tau_cut
+                time_after_final_pulse = time_before_initial_pulse
+
+                prefix = 'final'
+                final_pulse = DynamicalDecoupling.generate_connection_element(self,time_before_final_pulse,time_after_final_pulse, Gate_type,prefix,tau,N)
+
+                ########################################
+                #Combine all the elements to a sequence
+                #very sequence specific
+                ########################################
+                list_of_list_of_elements = []
+                list_of_list_of_elements.append([mbi_elt])
+                list_of_list_of_elements.append(initial_pulse)
+                list_of_list_of_elements.append(list_of_decoupling_elements)
+                list_of_list_of_elements.append(final_pulse)
+                list_of_list_of_elements.append([Trig_element])
+                list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1,1]
+                list_of_wait_reps =[]
+                list_of_wait_reps = [0,0]+[n_wait_reps] +[0,0]
 
             #######
             #The combine to sequence takes a list_of_list_of_elements as input and returns it as a normal list and a sequence (example [[pi/2],[a,b,c,d],[pi/2],[trig]] and [1,16,1,1] as inputs returns the normal list of elements and the sequence)
@@ -667,60 +683,60 @@ class SimpleDecoupling(DynamicalDecoupling):
 
 class FingerprintDecoupling(DynamicalDecoupling):
         def generate_sequence(self,upload=True, debug=False):
-        '''
-        Specialised class for decoupling at very short (tau<0.5us) times.
-        '''
-        pts = self.params['pts']
-        tau_list= self.parmas['tau_list']
-        Number_of_pulses = self.params['Number_of_pulses']
-        ############################################
-        #Generation of trigger and MBI element
-        #############################################
-        Trig = pulse.SquarePulse(channel = 'adwin_sync',
-            length = 10e-6, amplitude = 2)
-        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
-            global_time = True)
-        Trig_element.append(Trig)
+            '''
+            Specialised class for decoupling at very short (tau<0.5us) times.
+            '''
+            pts = self.params['pts']
+            tau_list= self.parmas['tau_list']
+            Number_of_pulses = self.params['Number_of_pulses']
+            ############################################
+            #Generation of trigger and MBI element
+            #############################################
+            Trig = pulse.SquarePulse(channel = 'adwin_sync',
+                length = 10e-6, amplitude = 2)
+            Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
+                global_time = True)
+            Trig_element.append(Trig)
 
-        mbi_elt = self._MBI_element()
+            mbi_elt = self._MBI_element()
 
-        combined_list_of_elements =[]
-        combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
-        i = 0
-        for pt in range(pts):
-            N = Number_of_pulses[pt]
-            tau = tau_list[pt]
-            prefix = 'fingerprint'
-            ## Generate the decoupling elements
-            list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix,scheme='single_block')
+            combined_list_of_elements =[]
+            combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
+            i = 0
+            for pt in range(pts):
+                N = Number_of_pulses[pt]
+                tau = tau_list[pt]
+                prefix = 'fingerprint'
+                ## Generate the decoupling elements
+                list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix,scheme='single_block')
 
-            ########################################
-            #Combine all the elements to a sequence
-            #very sequence specific
-            ########################################
-            list_of_list_of_elements = []
-            list_of_list_of_elements.append([mbi_elt])
-            list_of_list_of_elements.append(list_of_decoupling_elements)
-            list_of_list_of_elements.append([Trig_element])
-            list_of_repetitions = [1,1,1]
-            list_of_wait_reps =[]
-            list_of_wait_reps = [0,0,0]
+                ########################################
+                #Combine all the elements to a sequence
+                #very sequence specific
+                ########################################
+                list_of_list_of_elements = []
+                list_of_list_of_elements.append([mbi_elt])
+                list_of_list_of_elements.append(list_of_decoupling_elements)
+                list_of_list_of_elements.append([Trig_element])
+                list_of_repetitions = [1,1,1]
+                list_of_wait_reps =[]
+                list_of_wait_reps = [0,0,0]
 
-            list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
+                list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
 
-            if i == 0:
-                i=1
-                combined_list_of_elements.extend(list_of_elements)
+                if i == 0:
+                    i=1
+                    combined_list_of_elements.extend(list_of_elements)
+                else:
+                    combined_list_of_elements.extend(list_of_elements[:-1])
+                for seq_el in seq.elements:
+                    combined_seq.append_element(seq_el)
+
+            if upload:
+                print 'uploading list of elements'
+                qt.pulsar.upload(*combined_list_of_elements)
+                print ' uploading sequence'
+                qt.pulsar.program_sequence(combined_seq)
+                # qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
             else:
-                combined_list_of_elements.extend(list_of_elements[:-1])
-            for seq_el in seq.elements:
-                combined_seq.append_element(seq_el)
-
-        if upload:
-            print 'uploading list of elements'
-            qt.pulsar.upload(*combined_list_of_elements)
-            print ' uploading sequence'
-            qt.pulsar.program_sequence(combined_seq)
-            # qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-        else:
-            print 'upload = false, no sequence uploaded to AWG'
+                print 'upload = false, no sequence uploaded to AWG'
