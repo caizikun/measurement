@@ -5,9 +5,9 @@ import msvcrt
 ### Inputs ###
 ##############
 
-name='ESR_SIL1_Hans_LT2'
+name='ESR_SIL1_Fritz_LT3'
 steps    = 51        #101
-mw_power = -3        #in dBm
+mw_power = -7        #in dBm
 green_power = 10e-6  #10e-6
 int_time = 25        # in ms
 reps = 10

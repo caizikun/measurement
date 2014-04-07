@@ -1,6 +1,6 @@
 cfg={}
 sample_name = 'Fritz'
-sil_name = 'SIL5'
+sil_name = 'SIL1'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -97,16 +97,16 @@ cfg['samples'][sample_name] = {
 'N_HF_frq'      :       N_HF_frq}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 15e-9,
+		'A_CR_amplitude':				 5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 5e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9,
-		'Ex_RO_amplitude':				 0.5e-9,
-		'Ex_SP_amplitude':				 0.5e-9,
+		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_RO_amplitude':				 1.5e-9,
+		'Ex_SP_amplitude':				 1.5e-9,
 		'SP_duration':					 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,

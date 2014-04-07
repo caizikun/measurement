@@ -29,13 +29,13 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
     m.params['ssmod_detuning'] = 43e6
-    m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
-    m.params['repetitions']  = 1000
-    m.params['range']        = 0.1e6
-    m.params['pts'] = 101
-    m.params['pulse_length'] = 70e-6
-    m.params['ssbmod_amplitude'] = 0.01
-
+    m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
+    m.params['repetitions']  = 2000
+    m.params['range']        = 5e6
+    m.params['pts'] = 201
+    m.params['pulse_length'] = 1.5e-6
+    m.params['ssbmod_amplitude'] = 0.05
+    
     m.params['Ex_SP_amplitude']=0
 
 

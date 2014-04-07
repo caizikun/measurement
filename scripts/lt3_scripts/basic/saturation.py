@@ -6,10 +6,10 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Fritz_SIL5_ZPL_TH'
+name = 'Fritz_SIL1_PSB_MM_TH'
 steps=17
-max_power=200e-6       #[w]
-counter=2    #number of counter
+max_power=20e-6       #[w]
+counter=1    #number of counter
 PQ_count=True    # counting with the HH, assumes apd on channel 0
 bg_x=1.5          #delta x position of background [um]
 bg_y=1.5            #delta y position of background [um]
@@ -38,7 +38,7 @@ for i,pwr in enumerate(x):
         break
     current_aom.set_power(pwr)
     time.sleep(1)
-    if not TH_count:
+    if not PQ_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:
         y_NV[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
@@ -53,7 +53,7 @@ if not br:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         current_aom.set_power(pwr)
         time.sleep(1)
-        if not TH_count:
+        if not PQ_count:
             y_BG[i] = current_adwin.get_countrates()[counter-1]
         else:
             y_BG[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
