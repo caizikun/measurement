@@ -39,10 +39,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
         return tau, N
 
-    def generate_decoupling_sequence_elements(self,tau,N,prefix):
+    def generate_decoupling_sequence_elements(self,tau,N,prefix,scheme = 'auto'):
         '''
         This function takes the wait time and the number of pulse-blocks(repetitions) as input
         It returns the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
+        scheme selects the decoupling scheme
         '''
         #Generate the basic pulses
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
@@ -62,6 +63,26 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             length = self.params['fast_pi_duration'],
             amplitude = self.params['fast_pi_amp'],
             phase = self.params['Y_phase'])
+
+        #############################################
+        ## Select scheme for generating decoupling elements  ##
+        #############################################
+        if scheme == 'auto':
+            if tau>2e-6 and tau :
+                scheme = 'repeating_T_elt'
+            elif tau<= elf.params['fast_pi_duration']+20e-9:
+                print 'Error! tau too small: Pulses will overlap!'
+                return
+            elif tau<0.5e-6:
+                scheme = 'single_block'
+            elif N%8:
+                scheme = 'XY8'
+            elif N%2:
+                scheme = 'XY4'
+        else:
+            scheme = scheme
+
+
 
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
         fast_pi_duration = self.params['fast_pi_duration']
@@ -83,7 +104,69 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ###########################
         ## Genereate the pulse elements #
         ###########################
-        elif tau> 2e-6:
+
+        ###########################
+        ##### Single Block Scheme #####
+        ###########################
+        if scheme == 'single_block':
+
+            tau_cut = 0
+
+            if self.params['Initial_Pulse'] =='-x':
+                initial_phase = self.params['X_phase'] +180
+            else:
+                initial_phase = self.params['X_phase']
+            if self.params['Final_Pulse'] =='-x':
+                final_phase = self.params['X_phase'] +180
+            else:
+                initial_phase = self.params['X_phase']
+
+            pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0
+
+
+            initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase=initial_phase)
+            final_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase=final_phase)
+            T_around_pi2 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau_pi2',
+                length = pulse_tau_pi2, amplitude = 0.)
+            T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = pulse_tau, amplitude = 0.)
+
+            list_of_elements = []
+            x_list = [0,2,5,7]
+
+            decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
+            decoupling_elt.append(T_around_pi2)
+            decoupling_elt.append(initial_pulse)
+            decoupling_elt.append(T_around_pi2)
+            decoupling_elt.append(T)
+            for n in range(N) :
+                if n%8 in x_list:
+                    decoupling_elt.append(X)
+                    decoupling_elt.append(T)
+                else:
+                    decoupling_elt.append(Y)
+                    decoupling_elt.append(T)
+            decoupling_elt.append(T_around_pi2)
+            decoupling_elt.append(final_pulse)
+            decoupling_elt.append(T_around_pi2)
+
+
+
+        if scheme == 'repeating_T_elt':
             print 'Using repeating delay elements XY decoupling method'
             #######################
             ## XYn with repeating T elt #
@@ -153,7 +236,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             T_us_rep.append(Tus)
             list_of_elements.append(T_us_rep)
 
-        elif N%8 == 0:
+        elif scheme == 'XY8':
             print 'Using non-repeating delay elements XY8 decoupling method'
             ########
             ## XY8 ##
@@ -215,7 +298,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_YX_end.append(T_after_p)
             list_of_elements.append(e_YX_end)
 
-        else:
+        elif scheme == 'XY4':
             ########
             ## XY4 ##
             ########
@@ -259,7 +342,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_end.append(pulse.cp(Y))
             e_end.append(T_after_p)
             list_of_elements.append(e_end)
-
+        else:
+            print 'Error!: no existing scheme for generating decoupling elements selected.'
+            return
         total_sequence_time=2*tau*N - 2* tau_cut
         Number_of_pulses  = N
 
@@ -562,8 +647,6 @@ class SimpleDecoupling(DynamicalDecoupling):
 
             list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
 
-
-
             if i == 0:
                 i=1
                 combined_list_of_elements.extend(list_of_elements)
@@ -582,3 +665,62 @@ class SimpleDecoupling(DynamicalDecoupling):
             print 'upload = false, no sequence uploaded to AWG'
 
 
+class FingerprintDecoupling(DynamicalDecoupling):
+        def generate_sequence(self,upload=True, debug=False):
+        '''
+        Specialised class for decoupling at very short (tau<0.5us) times.
+        '''
+        pts = self.params['pts']
+        tau_list= self.parmas['tau_list']
+        Number_of_pulses = self.params['Number_of_pulses']
+        ############################################
+        #Generation of trigger and MBI element
+        #############################################
+        Trig = pulse.SquarePulse(channel = 'adwin_sync',
+            length = 10e-6, amplitude = 2)
+        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
+            global_time = True)
+        Trig_element.append(Trig)
+
+        mbi_elt = self._MBI_element()
+
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
+        i = 0
+        for pt in range(pts):
+            N = Number_of_pulses[pt]
+            tau = tau_list[pt]
+            prefix = 'fingerprint'
+            ## Generate the decoupling elements
+            list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix,scheme='single_block')
+
+            ########################################
+            #Combine all the elements to a sequence
+            #very sequence specific
+            ########################################
+            list_of_list_of_elements = []
+            list_of_list_of_elements.append([mbi_elt])
+            list_of_list_of_elements.append(list_of_decoupling_elements)
+            list_of_list_of_elements.append([Trig_element])
+            list_of_repetitions = [1,1,1]
+            list_of_wait_reps =[]
+            list_of_wait_reps = [0,0,0]
+
+            list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
+
+            if i == 0:
+                i=1
+                combined_list_of_elements.extend(list_of_elements)
+            else:
+                combined_list_of_elements.extend(list_of_elements[:-1])
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print 'uploading list of elements'
+            qt.pulsar.upload(*combined_list_of_elements)
+            print ' uploading sequence'
+            qt.pulsar.program_sequence(combined_seq)
+            # qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
