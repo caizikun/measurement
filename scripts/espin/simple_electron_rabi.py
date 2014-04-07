@@ -35,11 +35,10 @@ def erabi(name):
     m.params['Ex_SP_amplitude']=0
 
 
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq'] -43e6      #for ms=-1
+    m.params['mw_frq'] = m.params['ms+1_cntr_frq'] -43e6      #for ms=-1
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
-    m.params['MW_pulse_frequency'] = m.params['ms-1_cntr_frq'] - m.params['mw_frq']
-    print m.params['ms-1_cntr_frq']
+    m.params['MW_pulse_frequency'] = 43e6
 
     m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
     #m.params['MW_pulse_durations'] =  80e-9*np.ones(pts)#np.linspace(0, 200, pts) * 1e-9
@@ -56,7 +55,7 @@ def erabi(name):
 
     m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
 
-   
+
     m.autoconfig() #Redundant because executed in m.run()? Tim
     m.generate_sequence(upload=True)
     m.run(autoconfig=False)

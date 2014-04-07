@@ -393,6 +393,8 @@ if __name__ == '__main__':
     #calibrate the position of first Carbon revival.
     #dd_sweep_free_ev_time(name)
 
+    dd_sweep_free_ev_time(name)
+
     #calibrate the extra time between pi pulses (on top of free evolution time)
     #dd_sweep_t_between_pi_pulses(name)
 
@@ -415,4 +417,4 @@ if __name__ == '__main__':
     #t2_xy4(name)
 
     #zerothrevival(name)
-    dd_sweep_free_ev_time(name)
+    #dd_sweep_free_ev_time(name)

@@ -14,22 +14,35 @@ def run(name):
     print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 31
+    pts = 61
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 300
-    m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
-    m.params['MW_pulse_delays'] = np.ones(pts) * 2000e-9
 
+    if 1:
+        m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
+        m.params['MW_pulse_delays'] = np.ones(pts) * 2000e-9
     # MW pulses
-    m.params['MW_pulse_durations']  = np.linspace(0,400e-9,pts) + 10e-9 #why this +10 here?
+        m.params['MW_pulse_durations']  = np.linspace(0,2100e-9,pts) + 10e-9 #why this +10 here?
+        m.params['sweep_name'] = 'MW pulse duration (ns)'
+        m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
+
+
+    if 0:
+        m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)*4
+        tau_larmor = 2.999e-6
+        m.params['MW_pulse_delays'] = 2 * np.linspace(tau_larmor,pts*tau_larmor,pts)
+        m.params['MW_pulse_durations']  = np.ones(pts)* m.params['fast_pi_duration']#why this +10 here?
+        m.params['sweep_name'] = 'MW_pulse_delays'
+        m.params['sweep_pts']  = m.params['MW_pulse_delays'] * 1e9
+
+
     m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
     m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
 
     print m.params['MW_pulse_mod_frqs']
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'MW pulse duration (ns)'
-    m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
+
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':

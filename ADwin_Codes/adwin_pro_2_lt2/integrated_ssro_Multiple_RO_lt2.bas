@@ -10,7 +10,7 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD276629  TUD276629\localadmin
 '<Header End>
-' this program implements CR check and N times |SP - AWG sequence - integrated SSRO |
+' this program implements CR check and N times |SP - AWG sequence - integrated SSRO - SP_repump - delay|^N
 ' controlled by ADwin Pro
 '
 ' protocol:
@@ -41,12 +41,12 @@ DIM DATA_25[max_repetitions] AS LONG AT DRAM_EXTERN    ' SSRO counts
 DIM AWG_start_DO_channel, AWG_done_DI_channel AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
 DIM sequence_wait_time AS LONG
-DIM SP_duration AS LONG
+DIM SP_duration, SP_repump_duration,repump_E,repump_A AS LONG
 DIM SSRO_repetitions, SSRO_duration, SSRO_stop_after_first_photon AS LONG ' stop_after.. for dynamical-stop RO, not used atm.
 DIM cycle_duration AS LONG
 DIM wait_after_pulse, wait_after_pulse_duration AS LONG
 
-DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage,A_SP_repump_voltage AS FLOAT
 
 DIM timer, aux_timer, mode, i, sweep_index,sweep_length AS LONG
 DIM AWG_done AS LONG
@@ -70,12 +70,16 @@ INIT:
   SSRO_duration                = DATA_20[9] 
   SSRO_stop_after_first_photon = DATA_20[10] ' for dynamical-stop RO, not used atm
   cycle_duration               = DATA_20[11] '(in processor clock cycles, 3.333ns)
-  'sweep_length                 = DATA_20[12]
+  SP_repump_duration           = DATA_20[12]
+  wait_time_between_msmnts     = DATA_20[13]
+  repump_E                     = DATA_20[14]
+  repump_A                     = DATA_20[15]
   
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
+  A_SP_repump_voltage          = DATA_21[5]
   par_80 = SSRO_stop_after_first_photon
   
   FOR i = 1 TO max_SP_bins
@@ -110,8 +114,8 @@ INIT:
   
   Par_73 = repetition_counter
   Par_74 = mode
-  
-  wait_time_between_msmnts = 7000
+  PAR_64=0
+  PAR_65=0
 
 
 EVENT:
@@ -125,21 +129,15 @@ EVENT:
       CASE 0 'CR check
        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
-          mode = 9
-          timer = -wait_time_between_msmnts
+          mode = 2
+          timer = -1
           first = 0
         ENDIF
-        
-      CASE 9
-        IF (timer = 0) THEN
-          mode =2
-          timer=-1
-        ENDIF
+               
       
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768)   ' turn on A laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' turn on A laser         
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
         else
@@ -151,9 +149,8 @@ EVENT:
 
         IF (timer = SP_duration) THEN
           P2_CNT_ENABLE(CTR_MODULE,0)
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser                
-          
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+                       
           IF ((send_AWG_start > 0) or (sequence_wait_time > 0)) THEN
             mode = 3
           ELSE
@@ -214,9 +211,13 @@ EVENT:
           if (sweep_index > sweep_length) then
             sweep_index = 1
           endif
+          IF ((repump_E<1) AND (repump_A<1))THEN  'skip SP_repump if we dont want it
+            mode=9
+          ELSE  
+            mode = 8 
+          ENDIF
           
-          mode = 9 
-          timer = -wait_time_between_msmnts
+          timer = -1
           wait_after_pulse = wait_after_pulse_duration
           inc(repetition_counter)
           Par_73 = repetition_counter
@@ -226,6 +227,33 @@ EVENT:
           first = 1
 
         ENDIF
+        
+      CASE 8 ' repump SP after readout
+        
+        IF (timer = 0) THEN
+          IF (repump_E>0) THEN
+            PAR_64=1
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
+          endif
+          IF (repump_A>0) THEN
+            PAR_65=1
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_repump_voltage+32768)   ' turn on A laser
+          endif
+          
+        Endif
+
+        IF (timer = SP_repump_duration) THEN
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser                
+          timer = -wait_time_between_msmnts
+          mode = 9
+        ENDIF
+      
+      CASE 9 ' delay time
+        IF (timer = 0) THEN
+          mode =2
+          timer=-1
+        ENDIF  
     ENDSELECT
     
     Inc(timer)

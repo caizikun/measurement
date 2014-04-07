@@ -8,7 +8,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 class ElectronRabi(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug=False):
         # MBI element
         mbi_elt = self._MBI_element()
 
@@ -17,13 +17,13 @@ class ElectronRabi(pulsar_msmt.MBI):
             length = 100e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod', 
+            I_channel = 'MW_Imod',
             Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = self.params['AWG_to_adwin_ttl_trigger_duration'], 
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
 
         # electron manipulation elements
@@ -32,7 +32,7 @@ class ElectronRabi(pulsar_msmt.MBI):
             e = element.Element('ERabi_pt-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
             e.append(T)
-            
+
             for j in range(self.params['MW_pulse_multiplicities'][i]):
                 e.append(
                     pulse.cp(X,
@@ -48,16 +48,17 @@ class ElectronRabi(pulsar_msmt.MBI):
         # sequence
         seq = pulsar.Sequence('MBI Electron Rabi sequence')
         for i,e in enumerate(elts):
-            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name, 
-                trigger_wait = True, goto_target = 'MBI-%d' % i, 
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
                 jump_target = e.name)
-            seq.append(name = e.name, wfname = e.name, 
+            seq.append(name = e.name, wfname = e.name,
                 trigger_wait = True)
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, *elts)
-        qt.pulsar.program_sequence(seq)
+            #qt.pulsar.upload(mbi_elt, *elts)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+        #qt.pulsar.program_sequence(seq)
 
 
 class ElectronRamsey(pulsar_msmt.MBI):
@@ -72,13 +73,13 @@ class ElectronRamsey(pulsar_msmt.MBI):
             length = 10e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod', 
+            I_channel = 'MW_Imod',
             Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'])
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = self.params['AWG_to_adwin_ttl_trigger_duration'], 
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
 
         # electron manipulation elements
@@ -87,7 +88,7 @@ class ElectronRamsey(pulsar_msmt.MBI):
             e = element.Element('ERamsey_pt-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
             e.append(T)
-        
+
             e.append(
                 pulse.cp(X,
                     frequency = self.params['MW_pulse_mod_frqs'][i],
@@ -99,7 +100,7 @@ class ElectronRamsey(pulsar_msmt.MBI):
                 pulse.cp(T, length=self.params['MW_pulse_delays'][i]))
 
             e.append(
-                pulse.cp(X, 
+                pulse.cp(X,
                     frequency = self.params['MW_pulse_mod_frqs'][i],
                     amplitude = self.params['MW_pulse_amps'][i],
                     length = self.params['MW_pulse_durations'][i],
@@ -111,10 +112,10 @@ class ElectronRamsey(pulsar_msmt.MBI):
         # sequence
         seq = pulsar.Sequence('MBI Electron Rabi sequence')
         for i,e in enumerate(elts):
-            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name, 
-                trigger_wait = True, goto_target = 'MBI-%d' % i, 
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
                 jump_target = e.name)
-            seq.append(name = e.name, wfname = e.name, 
+            seq.append(name = e.name, wfname = e.name,
                 trigger_wait = True)
 
         # program AWG
@@ -134,13 +135,13 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
             length = 10e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod', 
+            I_channel = 'MW_Imod',
             Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = self.params['AWG_to_adwin_ttl_trigger_duration'], 
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
 
         # electron manipulation elements
@@ -166,16 +167,16 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
         # sequence
         seq = pulsar.Sequence('MBI Electron Rabi sequence')
         for i,e in enumerate(pulse_elts):
-            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name, 
-                trigger_wait = True, goto_target = 'MBI-%d' % i, 
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
                 jump_target = e.name+'-0')
-            
+
             if self.params['MW_pulse_multiplicities'][i] == 0:
                 seq.append(name = e.name+'-0', wfname = wait_elt.name,
                     trigger_wait = True)
-            else:            
+            else:
                 for j in range(self.params['MW_pulse_multiplicities'][i]):
-                    seq.append(name = e.name+'-%d' % j, wfname = e.name, 
+                    seq.append(name = e.name+'-%d' % j, wfname = e.name,
                         trigger_wait = (j==0) )
                     seq.append(name = 'wait-%d-%d' % (i,j), wfname=wait_elt.name,
                         repetitions = int(self.params['MW_pulse_delays'][i]/1e-6))

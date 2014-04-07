@@ -23,6 +23,6 @@ def finish(m, upload=True, debug=False, **kw):
     m.generate_sequence(upload=upload, **kw)
 
     if not debug:
-        m.run()
+        m.run(autoconfig=False)
         m.save()
         m.finish()

@@ -43,6 +43,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
                         qt.msleep(1)
                         awg_ready = True
                         print 'AWG Ready!'
+                    else:
+                        print 'AWG not in wait for trigger state but in state:', self.awg.get_state()
                 except:
                     print 'waiting for awg: usually means awg is still busy and doesnt respond'
                     print 'waiting', i, '/ 40'
@@ -62,20 +64,20 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def save(self,**kw):
         ssro.IntegratedSSRO.save(self, **kw)
-    
+
         grp=self.h5basegroup.create_group('pulsar_settings')
         pulsar = kw.pop('pulsar', qt.pulsar)
-        
+
         for k in pulsar.channels:
             grpc=grp.create_group(k)
             for ck in pulsar.channels[k]:
                 grpc.attrs[ck] = pulsar.channels[k][ck]
-        
+
         grpa=grp.create_group('AWG_sequence_cfg')
         for k in pulsar.AWG_sequence_cfg:
             grpa.attrs[k] = pulsar.AWG_sequence_cfg[k]
-    
-    
+
+
         self.h5data.flush()
 
     def finish(self,**kw):
@@ -135,11 +137,11 @@ class DarkESR(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
+            qt.pulsar.upload(*elements)
+            #qt.pulsar.program_awg(seq,*elements)
 
         # program the AWG
-        #qt.pulsar.program_sequence(seq)
+        qt.pulsar.program_sequence(seq)
 
         # some debugging:
         # elements[-1].print_overview()
@@ -205,8 +207,8 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
+        print self.params['A_SP_repump_voltage']
         PulsarMeasurement.autoconfig(self)
-
 
     def generate_sequence(self, upload=True):
 
@@ -254,13 +256,13 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         #if upload:
-            qt.pulsar.upload(*elements)
+        #    qt.pulsar.upload(*elements)
 
         # program the AWG
-        qt.pulsar.program_sequence(seq)
-        return return_e.normalized_waveforms()
+        #qt.pulsar.program_sequence(seq)
+        #return return_e.normalized_waveforms()
         #For faster uploading, use:
-        #qt.pulsar.program_awg(seq,*elements)
+        qt.pulsar.program_awg(seq,*elements)
 
         # some debugging:
         # elements[-1].print_overview()
@@ -311,7 +313,6 @@ class ElectronRamsey(PulsarMeasurement):
                 elements.append(e)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-
                 e = element.Element('ElectronRamsey_wait_pt-%d' % i, pulsar=qt.pulsar,
                     global_time = True)
 
@@ -319,6 +320,7 @@ class ElectronRamsey(PulsarMeasurement):
                 N=int(self.params['evolution_times'][i]*1e6)
                 seq.append(name=e.name, wfname=e.name, trigger_wait=False,repetitions=N)
 
+                #I would think this pulse should be in the next element! - Machiel
                 e.append(pulse.cp(T,
                     length = self.params['evolution_times'][i]-(N*1e-6)))
                 elements.append(e)
@@ -469,7 +471,9 @@ class RepElectronRamseysCORPSE(ElectronRamseyCORPSE):
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
-            int(np.ceil(np.max(self.params['evolution_times'])*1e3)+1)
+            int(np.ceil(np.max(self.params['evolution_times'])*1e3)+2)
+        self.params['A_SP_repump_voltage']=self.A_aom.power_to_voltage(self.params['A_SP_repump_amplitude'])
+        print 'HERE!!!'
         PulsarMeasurement.autoconfig(self)
 
     def save(self, name='ssro'):
