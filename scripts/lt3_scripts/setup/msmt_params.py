@@ -1,6 +1,6 @@
 cfg={}
 sample_name = 'Fritz'
-sil_name = 'SIL1'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -52,7 +52,7 @@ else:
     cfg['protocols']['AdwinSSRO']['CR_repump']        =  cfg['protocols']['AdwinSSRO']['green_CR_repump']
 
 ### General settings for AdwinSSRO+espin
-mw_frq = 2.8124e9
+mw_frq = 2.807e9
 cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_frq':                                  mw_frq, 
 		'mw_power':                                20,#-20,
@@ -84,8 +84,8 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.8087e9# +/-   0.00000018            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3e9 #not calib       #Electron spin ms=+1 frequency
+f_msm1_cntr = 2.810e9# +/-   0.00000018            #Electron spin ms=-1 frquency
+f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.195e6        #calibrated 20140320/181319
@@ -104,9 +104,9 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
-		'Ex_RO_amplitude':				 1.5e-9,
-		'Ex_SP_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 5e-9,
+		'Ex_RO_amplitude':				 5e-9,
+		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
