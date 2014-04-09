@@ -67,10 +67,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         #############################################
         ## Select scheme for generating decoupling elements  ##
         #############################################
-        if scheme == 'auto':
-            if N == -1:
-                scheme = 'calibration_NO_Pulses':
-            elif tau>2e-6 and tau :
+        if N == -1:
+            ##### This is a calibration measurement and should override the scheme for other settings
+            scheme = 'calibration_NO_Pulses'
+        elif scheme == 'auto':
+            if tau>2e-6 and tau :
                 scheme = 'repeating_T_elt'
             elif tau<= self.params['fast_pi_duration']+20e-9:
                 print 'Error! tau too small: Pulses will overlap!'
@@ -85,7 +86,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             scheme = scheme
 
 
-
+        tau_cut = 0 #initial value unless overwritten
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
         fast_pi_duration = self.params['fast_pi_duration']
         pulse_tau = tau - fast_pi_duration/2.0 #To correct for pulse duration
@@ -106,11 +107,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ###########################
         ## Genereate the pulse elements #
         ###########################
-
+        list_of_elements = []
         ###########################
         ##### Single Block Scheme #####
         ###########################
         if scheme == 'single_block':
+            print 'using single block'
             tau_cut = 0
 
             if self.params['Initial_Pulse'] =='-x':
@@ -146,7 +148,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length = pulse_tau, amplitude = 0.)
 
-            list_of_elements = []
             x_list = [0,2,5,7]
 
             decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
@@ -199,7 +200,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 # print tau_cut
 
             # combine the pulses to elements/waveforms and add to list of elements
-            list_of_elements = []
             e_X_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_X_start.append(T_shortened)
@@ -261,7 +261,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length = tau_shortened, amplitude = 0.)
 
             #Combine pulses to elements/waveforms and add to list of elements
-            list_of_elements = []
             e_XY_start = element.Element('XY Initial %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_XY_start.append(T_before_p)
@@ -323,7 +322,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length = tau_shortened, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
 
             #Combine pulses to elements/waveforms and add to list of elements
-            list_of_elements = []
             e_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_start.append(T_before_p)
@@ -357,7 +355,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             '''
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length = 1e-6, amplitude = 0.)
-            list_of_elements.append(T)
+            wait = element.Element('NO_Pulse_Calibration_N_%s' %(N),  pulsar=qt.pulsar,
+                    global_time = True)
+            wait.append(T)
+            list_of_elements.append(wait)
 
         else:
             print 'Scheme = '+scheme
