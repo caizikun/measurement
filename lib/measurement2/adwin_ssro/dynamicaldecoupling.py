@@ -70,7 +70,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         if scheme == 'auto':
             if tau>2e-6 and tau :
                 scheme = 'repeating_T_elt'
-            elif tau<= elf.params['fast_pi_duration']+20e-9:
+            elif tau<= self.params['fast_pi_duration']+20e-9:
                 print 'Error! tau too small: Pulses will overlap!'
                 return
             elif tau<0.5e-6:
