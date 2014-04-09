@@ -5,7 +5,9 @@ import numpy as np
 import qt
 
 import measurement.lib.measurement2.measurement as m2
+reload(m2)
 import measurement.lib.measurement2.pq.pq_measurement as pq
+reload(pq)
 
 
 class Remote_PQ_Measurement(pq.PQMeasurement):
@@ -13,6 +15,7 @@ class Remote_PQ_Measurement(pq.PQMeasurement):
 
     def autoconfig(self):
         remote_params = remote_measurement_helper.get_measurement_params()
+        print remote_params
         for k in remote_params:
             self.params[k] = remote_params[k]
     
@@ -43,8 +46,11 @@ def remote_HH_measurement(name):
     m.params['MIN_SYNC_BIN']        =   0 
     m.params['MAX_SYNC_BIN']        =   1000 
     m.params['measurement_time']    =   1200 #sec
+    m.params['measurement_abort_check_interval']    = 1. #sec
     m.run()
     m.finish()
 
 if __name__ == '__main__':
+    print 'Starting'
     remote_HH_measurement('test')
+    print 'Finished'
