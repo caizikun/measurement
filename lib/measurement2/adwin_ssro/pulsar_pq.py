@@ -36,10 +36,9 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
         return self.adwin_process_running()
 
     def print_measurement_progress(self):
-        reps_completed = self.adwin_var('completed_reps')
-        if reps_completed > 0 and np.mod(reps_completed,100)==0:           
-            print('completed %s / %s readout repetitions' % \
-                    (reps_completed, self.params['SSRO_repetitions']))
+        reps_completed = self.adwin_var('completed_reps')    
+        print('completed %s / %s readout repetitions' % \
+                (reps_completed, self.params['SSRO_repetitions']))
 
     def stop_measurement_process(self):
         self.stop_adwin_process()

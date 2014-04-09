@@ -1,12 +1,13 @@
 """
-Generic measurement class for measurements with Picoquant TTTR measurements as main loop
+Measurement class for measurements with Picoquant TTTR measurements as main loop
 Bas Hensen 2014
 
 """
 
 import numpy as np
 import qt
-from measurement.lib.measurement2 import measurement as m2
+import measurement.lib.measurement2.measurement as m2
+import time
 
 from measurement.lib.cython.PQ_T2_tools import T2_tools
 
@@ -72,17 +73,21 @@ class PQMeasurement(m2.Measurement):
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
-        
-        while(self.PQ_ins.get_MeasRunning() and self.measurement_process_running()):
+        _timer=time.time() 
+        while(self.PQ_ins.get_MeasRunning()):
+            if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+                if not self.measurement_process_running():
+                    break
+                self._keystroke_check('abort')
+                if self.keystroke('abort') in ['q','Q']:
+                    print 'aborted.'
+                    self.stop_keystroke_monitor('abort')
+                    break
+                    
+                self.print_measurement_progress()
 
-            self._keystroke_check('abort')
-            if self.keystroke('abort') in ['q','Q']:
-                print 'aborted.'
-                self.stop_keystroke_monitor('abort')
-                break
+                _timer=time.time()
 
-            self.print_measurement_progress()
-           
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
