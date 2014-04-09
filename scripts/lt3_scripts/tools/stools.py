@@ -149,7 +149,10 @@ def set_lt1_optimization_powers():
 def turn_on_lt3_pulse_path():
     qt.instruments['PMServo'].move_in()
     p=pulse.SinePulse(channel='EOM_Matisse', name='pp', length=100e-6, frequency=1/(100e-6), amplitude = 1.8)
-    qt.pulsar.set_channel_opt('EOM_AOM_Matisse', 'low', 1.0)
+    opt = 'offset' if qt.pulsar.channels['EOM_AOM_Matisse']['type']=='analog' else 'low'
+
+    qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 1.0)
+
     e=element.Element('Sinde', pulsar=qt.pulsar)
     e.append(p)
     e.print_overview()
@@ -167,5 +170,5 @@ def turn_on_lt3_pulse_path():
         qt.msleep(0.1)
     qt.instruments['AWG'].stop()
     qt.instruments['AWG'].set_runmode('CONT')
-    qt.pulsar.set_channel_opt('EOM_AOM_Matisse', 'low', 0.0)
+    qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 0.0)
 

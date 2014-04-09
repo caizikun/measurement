@@ -3,7 +3,7 @@ LT2 script for adwin ssro.
 """
 import qt
 #reload all parameters and modules
-#execfile(qt.reload_current_setup)
+execfile(qt.reload_current_setup)
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
