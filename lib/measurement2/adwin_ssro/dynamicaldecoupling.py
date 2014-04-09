@@ -68,7 +68,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ## Select scheme for generating decoupling elements  ##
         #############################################
         if scheme == 'auto':
-            if tau>2e-6 and tau :
+            if N == -1:
+                scheme = 'calibration_NO_Pulses':
+            elif tau>2e-6 and tau :
                 scheme = 'repeating_T_elt'
             elif tau<= self.params['fast_pi_duration']+20e-9:
                 print 'Error! tau too small: Pulses will overlap!'
@@ -344,6 +346,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_end.append(pulse.cp(Y))
             e_end.append(T_after_p)
             list_of_elements.append(e_end)
+
+        elif scheme == 'calibration_NO_Pulses':
+            ######################
+            ## Calibration NO Pulse ###
+            ######################
+            '''
+            Pulse scheme specifically created for calibration
+            Applies no pulses but instead waits for 1us
+            '''
+            T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = 1e-6, amplitude = 0.)
+            list_of_elements.append(T)
+
         else:
             print 'Scheme = '+scheme
             print 'Error!: selected scheme does not exist for generating decoupling elements.'
