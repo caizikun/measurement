@@ -78,7 +78,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif N%8:
                 scheme = 'XY8'
             elif N%2:
-                scheme = 'XY4'
+                scheme = 'XY4' #Might be outdated in functionality
         else:
             scheme = scheme
 
@@ -109,7 +109,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ##### Single Block Scheme #####
         ###########################
         if scheme == 'single_block':
-
             tau_cut = 0
 
             if self.params['Initial_Pulse'] =='-x':
@@ -152,21 +151,24 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
-            decoupling_elt.append(T)
             for n in range(N) :
+                if n !=0:
+                    decoupling_elt.append(T)
                 if n%8 in x_list:
                     decoupling_elt.append(X)
-                    decoupling_elt.append(T)
                 else:
                     decoupling_elt.append(Y)
+                if n !=N:
                     decoupling_elt.append(T)
+
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(final_pulse)
             decoupling_elt.append(T_around_pi2)
+            list_of_elements.append(decoupling_elt)
 
 
 
-        if scheme == 'repeating_T_elt':
+        elif scheme == 'repeating_T_elt':
             print 'Using repeating delay elements XY decoupling method'
             #######################
             ## XYn with repeating T elt #
@@ -189,10 +191,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #correct for part that is cut of when combining to sequence
             if n_wait_reps %2 == 0:
                 tau_cut =1e-6
-                print tau_cut
+                # print tau_cut
             else:
                 tau_cut = 1.5e-6
-                print tau_cut
+                # print tau_cut
 
             # combine the pulses to elements/waveforms and add to list of elements
             list_of_elements = []
@@ -343,7 +345,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_end.append(T_after_p)
             list_of_elements.append(e_end)
         else:
-            print 'Error!: no existing scheme for generating decoupling elements selected.'
+            print 'Scheme = '+scheme
+            print 'Error!: selected scheme does not exist for generating decoupling elements.'
+
             return
         total_sequence_time=2*tau*N - 2* tau_cut
         Number_of_pulses  = N
@@ -529,7 +533,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 pulse_ct = 0
                 red_wait_reps = wait_reps//2
                 if red_wait_reps != 0:
-                    seq.append(name=t.name+str(pulse_ct), wfname=t.name,
+                    seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
                         trigger_wait=False,repetitions = red_wait_reps)#floor divisor
                 seq.append(name=st.name, wfname=st.name,
                     trigger_wait=False,repetitions = 1)
@@ -538,7 +542,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #Repeating centre elements
                 x_list = [0,2,5,7]
                 while pulse_ct < (rep-1):
-                    seq.append(name=t.name+str(pulse_ct), wfname=t.name,
+                    seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
                         trigger_wait=False,repetitions = wait_reps)
                     if pulse_ct%8 in x_list:
                         seq.append(name=x.name+str(pulse_ct), wfname=x.name,
@@ -550,18 +554,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #Final elements
                 if rep == 1:
                     if red_wait_reps!=0 and red_wait_reps!=1 :
-                        seq.append(name=t.name, wfname=t.name,
+                        seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
                            trigger_wait=False,repetitions = red_wait_reps-1) #floor divisor
                 else:
-                    seq.append(name=t.name+str(pulse_ct), wfname=t.name,
+                    seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
                         trigger_wait=False,repetitions = wait_reps)
                     seq.append(name=fin.name, wfname=fin.name,
                         trigger_wait=False,repetitions = 1)
                     if red_wait_reps!=0:
-                        seq.append(name=t.name, wfname=t.name,
+                        seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
                            trigger_wait=False,repetitions = red_wait_reps) #floor divisor
 
             else:
+                print Lst_lst_els[ind]
                 print 'Size of element not understood Error!'
                 return
         return list_of_elements, seq
@@ -588,7 +593,7 @@ class SimpleDecoupling(DynamicalDecoupling):
         pts = self.params['pts']
         tau_list = self.params['tau_list']
         Number_of_pulses = self.params['Number_of_pulses']
-
+        scheme = self.params['Decoupling_sequence_scheme']
 
         ############################################
         #Generation of trigger and MBI element
@@ -611,9 +616,9 @@ class SimpleDecoupling(DynamicalDecoupling):
             tau = tau_list[pt]
             prefix = 'electron'
             ## Generate the decoupling elements
-            list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix)
+            list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix,scheme)
 
-            if np.size(list_of_decoupling_elements ==1):#Size of 1 corresponds to the 'one-piece' decoupling sequence
+            if np.size(list_of_decoupling_elements) ==1:#Size of 1 corresponds to the 'one-piece' decoupling sequence
                 ###########################################
                 ####   Final and initial pulses included in element####
                 ###########################################
