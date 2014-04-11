@@ -229,7 +229,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 final_pulse = Y
                 P_type = 'Y'
-            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(P_type,prefix,tau,N),  pulsar=qt.pulsar,
+            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(P_type,prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(final_pulse))
@@ -591,7 +591,7 @@ class AdvancedDecouplingSequence(DynamicalDecoupling):
     '''
     The advanced decoupling sequence is a child class of the more general decoupling gate sequence class
     It contains a specific gate sequence with feedback loops and other stuff
-    !NB: It is currently EMPTY
+    !NB: this is currently EMPTY
     '''
     pass
 
@@ -694,70 +694,9 @@ class SimpleDecoupling(DynamicalDecoupling):
 
         if upload:
             print 'uploading list of elements'
-            #qt.pulsar.upload(*combined_list_of_elements)
+            qt.pulsar.upload(*combined_list_of_elements)
             print ' uploading sequence'
-            #qt.pulsar.program_sequence(combined_seq)
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+            qt.pulsar.program_sequence(combined_seq)
+            # qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
-
-
-class FingerprintDecoupling(DynamicalDecoupling):
-        def generate_sequence(self,upload=True, debug=False):
-            '''
-            Specialised class for decoupling at very short (tau<0.5us) times.
-            '''
-            pts = self.params['pts']
-            tau_list= self.parmas['tau_list']
-            Number_of_pulses = self.params['Number_of_pulses']
-            ############################################
-            #Generation of trigger and MBI element
-            #############################################
-            Trig = pulse.SquarePulse(channel = 'adwin_sync',
-                length = 10e-6, amplitude = 2)
-            Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
-                global_time = True)
-            Trig_element.append(Trig)
-
-            mbi_elt = self._MBI_element()
-
-            combined_list_of_elements =[]
-            combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
-            i = 0
-            for pt in range(pts):
-                N = Number_of_pulses[pt]
-                tau = tau_list[pt]
-                prefix = 'fingerprint'
-                ## Generate the decoupling elements
-                list_of_decoupling_elements, list_of_decoupling_reps, n_wait_reps, tau_cut, total_decoupling_time = DynamicalDecoupling.generate_decoupling_sequence_elements(self,tau,N,prefix,scheme='single_block')
-
-                ########################################
-                #Combine all the elements to a sequence
-                #very sequence specific
-                ########################################
-                list_of_list_of_elements = []
-                list_of_list_of_elements.append([mbi_elt])
-                list_of_list_of_elements.append(list_of_decoupling_elements)
-                list_of_list_of_elements.append([Trig_element])
-                list_of_repetitions = [1,1,1]
-                list_of_wait_reps =[]
-                list_of_wait_reps = [0,0,0]
-
-                list_of_elements, seq = DynamicalDecoupling.combine_to_sequence(self,list_of_list_of_elements,list_of_repetitions,list_of_wait_reps)
-
-                if i == 0:
-                    i=1
-                    combined_list_of_elements.extend(list_of_elements)
-                else:
-                    combined_list_of_elements.extend(list_of_elements[:-1])
-                for seq_el in seq.elements:
-                    combined_seq.append_element(seq_el)
-
-            if upload:
-                print 'uploading list of elements'
-                #qt.pulsar.upload(*combined_list_of_elements)
-                print ' uploading sequence'
-                #qt.pulsar.program_sequence(combined_seq)
-                qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-            else:
-                print 'upload = false, no sequence uploaded to AWG'

@@ -45,7 +45,7 @@ def pulse_defs_lt3(msmt):
 
     ### LDE attempt
     msmt.TH_sync = pulse.SquarePulse(channel = 'TH_sync', length = 50e-9, amplitude = 1.0)
-    msmt.eom_trigger = pulse.SquarePulse(channel = 'EOM_trigger', length = msmt.params['EOM_trigger_length'], amplitude = 1.5)
+    #msmt.eom_trigger = pulse.SquarePulse(channel = 'EOM_trigger', length = msmt.params['EOM_trigger_length'], amplitude = 1.5)
     msmt.SP_pulse = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
     # msmt.yellow_pulse = pulse.SquarePulse(channel = 'AOM_Yellow', amplitude = 1.0)
     msmt.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = 1.0, 
@@ -316,10 +316,7 @@ def _lt3_LDE_element(msmt, **kw):
     # variable parameters
     name = kw.pop('name', 'LDE_LT3')
     pi2_pulse_phase = kw.pop('pi2_pulse_phase', 0)
-
     eom_pulse = kw.pop('eom_pulse', None)#pulse.cp(msmt.eom_aom_pulse, aom_on=msmt.params_lt3['eom_aom_on']))
-    eom_compensation_pulse = kw.pop('eom_compensation_pulse', None)
-    aom_pulse = kw.pop('aom_pulse', None)
 
     ###
     e = element.Element(name, 
@@ -359,31 +356,7 @@ def _lt3_LDE_element(msmt, **kw):
             start = start,
             refpulse = refpulse,
             refpoint = refpoint,)
-        e.add(msmt.eom_trigger,
-            name = name+'_trigger', 
-            start = start,
-            refpulse = refpulse,
-            refpoint = refpoint,
-            refpoint_new = 'end')
-        #e.add(msmt.eom_trigger,
-        #    name = name+'_trigger2', 
-        #    start = start,
-        #    refpulse = refpulse,
-        #    refpoint = refpoint,
-        #    refpoint_new = 'start'
-        #    )
-        if not eom_compensation_pulse == None:
-            e.add(eom_compensation_pulse,        
-            name = name+'comp', 
-            start = start+10e-9+msmt.params['eom_off_duration'],
-            refpulse = refpulse,
-            refpoint = 'end',)
-        if not aom_pulse == None:
-            e.add(aom_pulse,        
-            name = name+'aom', 
-            start = start,
-            refpulse = refpulse,
-            refpoint = refpoint,)
+
     #4 MW pi/2
     if msmt.params_lt3['MW_during_LDE'] == 1 :
         e.add(pulse.cp(msmt.CORPSE_pi2, 

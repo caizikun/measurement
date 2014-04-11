@@ -38,13 +38,13 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
 #    high=2.0, low=0, offset=0., delay=0., active=True)
     
 #EOM
-qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
-    low=-2.0, offset=0., delay=172e-9, active=True)
+qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=3.0,
+    low=-1.0, offset=0., delay=172e-9, active=True)
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
     high=1.0, low=-1.0, offset=0.0, delay=617e-9, active=True) #617 ns for normal pulses
 qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
-     high=0.2, low=-1.3, offset=-1.3, delay=172e-9, active=True)
+     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0., delay=466e-9, active=True)
@@ -76,5 +76,5 @@ qt.pulsar.AWG_sequence_cfg={
         'EVENT_INPUT_THRESHOLD'     :   1.0,  #V
         'JUMP_TIMING'               :   1,    # Sync | Async
         'RUN_MODE'                  :   4,    # Continuous | Triggered | Gated | Sequence
-        'RUN_STATE'                 :   2,    # On | Off
+        'RUN_STATE'                 :   0,    # On | Off
 }
