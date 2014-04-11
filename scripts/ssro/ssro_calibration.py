@@ -26,6 +26,7 @@ def ssrocalibration(name):
     m.params['CR_probe']        = 1000
 
     e_sp = 60e-9
+    e_ro=20e-9
     a_sp=  50e-9
 
 
@@ -33,7 +34,8 @@ def ssrocalibration(name):
     m.params['SP_duration']=10
     m.params['Ex_SP_amplitude'] = 0.
     m.params['A_SP_amplitude'] = a_sp
-    m.params['Ex_RO_amplitude'] = 20e-9
+    m.params['Ex_RO_amplitude'] = e_ro
+    m.params['A_RO_amplitude'] = 0e-9
     m.run()
     m.save('ms0')
 
@@ -41,6 +43,7 @@ def ssrocalibration(name):
     m.params['SP_duration']=100
     m.params['A_SP_amplitude'] = 0
     m.params['Ex_SP_amplitude'] = e_sp
+    m.params['A_RO_amplitude'] = 0e-9
     m.run()
     m.save('ms1')
 

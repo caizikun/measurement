@@ -18,7 +18,7 @@ ZFS         = qt.exp_params['samples'][current_NV]['zero_field_splitting']
 g_factor    = qt.exp_params['samples'][current_NV]['g_factor']
 current_f_msm1 = qt.exp_params['samples'][current_NV]['ms-1_cntr_frq']
 current_f_msp1 = qt.exp_params['samples'][current_NV]['ms+1_cntr_frq']
-current_B_field = convert_f_to_Bz(freq=current_f_msm1)
+current_B_field =  abs(ZFS-current_f_msp1)/g_factor
 
 ### Import the magnet parameters
 nm_per_step         = qt.exp_params['magnet']['nm_per_step']
@@ -101,8 +101,9 @@ def get_all(freq_ms_m1=current_f_msm1, freq_ms_p1=current_f_msp1):
     for the given or current ms=-1 and ms=+1 frequencies'''
     print 'Given ms-1 transition frequency = '+str(freq_ms_m1*1e-9) +' GHz'
     print 'Given ms+1 transition frequency = '+str(freq_ms_p1*1e-9) + ' GHz'
-    calculated_ZFS = calc_ZFS(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
-    print 'Zero-field splitting ='+ str(calculated_ZFS*1e-9) + ' GHz'
+    average_frq = calc_ZFS(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
+    print '(f_ms=-1 + f_ms=+1)/2 = ' + str(average_frq*1e-9) + ' GHz'
+    print 'Zero field splitting  = ' + str(ZFS*1e-9) + ' GHz'
     calculated_B_field = get_B_field(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
     print 'Current B field = '+str(calculated_B_field)+ ' G'
     calculated_position = get_magnet_position(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1,ms = 'plus',solve_by = 'list')
