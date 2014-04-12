@@ -31,14 +31,12 @@ def darkesr(name):
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
     m.params['repetitions']  = 1000
-    m.params['range']        = 8e6
+    m.params['range']        = 6e6
     m.params['pts'] = 100
-    m.params['pulse_length'] = 1.6e-6
-    m.params['ssbmod_amplitude'] = 0.9 #0.05
+    m.params['pulse_length'] = 2538e-9
+    m.params['ssbmod_amplitude'] = 0.02
     
     m.params['Ex_SP_amplitude']=0
-
-
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']

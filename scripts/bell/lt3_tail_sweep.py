@@ -1,12 +1,13 @@
 """
-LT3 script for adwin ssro.
+LT3 script for Measuring a tail with a picoquant time correlator
 """
 
-#reload all parameters and modules
-execfile(qt.reload_current_setup)
 
 import numpy as np
 import qt
+#reload all parameters and modules
+execfile(qt.reload_current_setup)
+
 import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
@@ -371,8 +372,9 @@ def tail_lt3(name):
         m.params[k] = bparams.params_lt3[k]
 
     m.params_lt3=m.params
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+PQ'])
+    SAMPLE_CFG = qt.exp_params['protocols']['current']
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+PQ'])
     m.params['Ex_CR_amplitude']= m.params['Ey_CR_amplitude']
     m.params['Ex_SP_amplitude']= m.params['Ey_SP_amplitude']
     m.params['Ex_RO_amplitude']=m.params['Ey_RO_amplitude']

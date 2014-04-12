@@ -44,7 +44,7 @@ def pulse_defs_lt3(msmt):
         length = 5e-6, amplitude = 2) #only used for calibrations!!
 
     ### LDE attempt
-    msmt.TH_sync = pulse.SquarePulse(channel = 'TH_sync', length = 50e-9, amplitude = 1.0)
+    msmt.TH_sync = pulse.SquarePulse(channel = 'PQ_sync', length = 50e-9, amplitude = 1.0)
     #msmt.eom_trigger = pulse.SquarePulse(channel = 'EOM_trigger', length = msmt.params['EOM_trigger_length'], amplitude = 1.5)
     msmt.SP_pulse = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
     # msmt.yellow_pulse = pulse.SquarePulse(channel = 'AOM_Yellow', amplitude = 1.0)
