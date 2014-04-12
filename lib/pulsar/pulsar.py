@@ -566,6 +566,8 @@ class Sequence:
 
         for elt in self.elements:
             if elt['name'] == name:
+                print 'insert_element'
+                print name
                 print 'Sequence names must be unique. Not added.'
                 return False
 
@@ -610,6 +612,8 @@ class Sequence:
         '''
         for elt in self.elements:
             if elt['name'] == element['name']:
+                print 'append_element'
+                print element['name']
                 print 'Sequence names must be unique. Not added.'
                 return False
         if pos == None:

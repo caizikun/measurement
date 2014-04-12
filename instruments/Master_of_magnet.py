@@ -137,6 +137,8 @@ class Master_of_magnet(Instrument):
         elif int(steps) > 0:
             self._anc_ins.StepUp(axis_number, steps)
             freq = self.get_frequency(axis)
+            print freq
+            print freq
             #qt.msleep(int(steps)/freq + 1) # needs to first convert strings into numbers
         elif int(steps) < 0:
             self._anc_ins.StepDown(axis_number, abs(int(steps)))

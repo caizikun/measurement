@@ -34,7 +34,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         if wait_for_awg:
             i=0
             awg_ready = False
-            while not awg_ready and i<40:
+            while not awg_ready and i<100:
+
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'x')):
                     raise Exception('User abort while waiting for AWG')
 
@@ -47,7 +48,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
                         print 'AWG not in wait for trigger state but in state:', self.awg.get_state()
                 except:
                     print 'waiting for awg: usually means awg is still busy and doesnt respond'
-                    print 'waiting', i, '/ 40'
+                    print 'waiting', i, '/ 100'
                     self.awg.clear_visa()
                     i=i+1
 
@@ -137,7 +138,7 @@ class DarkESR(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-           # qt.pulsar.upload(*elements)
+            #qt.pulsar.upload(*elements)
             qt.pulsar.program_awg(seq,*elements)
 
         # program the AWG

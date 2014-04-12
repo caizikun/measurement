@@ -49,11 +49,11 @@ def darkesr(name):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 6.5e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 6.5e6
-    m.params['pts'] = 41
+    m.params['ssbmod_frq_start'] = 43e6 - 10e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + 10e6
+    m.params['pts'] = 101
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.05
 
@@ -78,11 +78,11 @@ def darkesr_auto(name,upload=False):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 6.5e6
-    m.params['ssbmod_frq_stop'] = 43e6 + 6.5e6
-    m.params['pts'] = 41
+    m.params['ssbmod_frq_start'] = 43e6 - 6e6
+    m.params['ssbmod_frq_stop'] = 43e6 + 6e6
+    m.params['pts'] = 61
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.05
 
@@ -140,6 +140,8 @@ if __name__ == '__main__':
         else:
             mom.step('Z_axis',d_steps[iterations])
 
+        qt.msleep(5)
+
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(5e-6)
         optimiz0r.optimize(dims=['x','y','z','x','y'])
@@ -147,7 +149,7 @@ if __name__ == '__main__':
         # Make sure you can always stop the optimization process --> keep an eye on the optimization because this
         # can cause crosstalk
         print 'press q to stop measurement loop (check if optimize worked!)'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
