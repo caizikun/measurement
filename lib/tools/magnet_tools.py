@@ -4,27 +4,27 @@
 ### path to a desired magnetic field.
 
 ### Import the config manager and NV parameters
-#import qt
+import qt
 import numpy as np
 
 # reload all parameters and modules
-#execfile(qt.reload_current_setup)
+execfile(qt.reload_current_setup)
 
-#current_NV = qt.exp_params['samples']['current']
-#current_prot = qt.exp_params['protocols']['current']
+current_NV = qt.exp_params['samples']['current']
+current_prot = qt.exp_params['protocols']['current']
 
 ### Import the NV and current esr parameters
-ZFS         = 2.87747e9#qt.exp_params['samples'][current_NV]['zero_field_splitting']
-g_factor    = 2.8025e6#qt.exp_params['samples'][current_NV]['g_factor']
-current_f_msm1 = 2.001883e9#qt.exp_params['samples'][current_NV]['ms-1_cntr_frq']
-current_f_msp1 = 3.753185e9#qt.exp_params['samples'][current_NV]['ms+1_cntr_frq']
+ZFS         = qt.exp_params['samples'][current_NV]['zero_field_splitting']
+g_factor    = qt.exp_params['samples'][current_NV]['g_factor']
+current_f_msm1 = qt.exp_params['samples'][current_NV]['ms-1_cntr_frq']
+current_f_msp1 = qt.exp_params['samples'][current_NV]['ms+1_cntr_frq']
 current_B_field =  abs(ZFS-current_f_msp1)/g_factor
 
 ### Import the magnet parameters
-nm_per_step         = 250#qt.exp_params['magnet']['nm_per_step']
-radius              = 5#qt.exp_params['magnet']['radius']
-thickness           = 4#qt.exp_params['magnet']['thickness']
-strength_constant   = 1.3#qt.exp_params['magnet']['strength_constant']
+nm_per_step         = qt.exp_params['magnet']['nm_per_step']
+radius              = qt.exp_params['magnet']['radius']
+thickness           = qt.exp_params['magnet']['thickness']
+strength_constant   = qt.exp_params['magnet']['strength_constant']
 
 
 ### Simple conversions

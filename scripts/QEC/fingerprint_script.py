@@ -15,14 +15,14 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def fingerprint(name):
 
-    m = DD.SimpleDecoupling(name)
+    m = DD.FingerprintDecoupling(name)
     funcs.prepare(m)
     #############
     # Parameters for Fingerprint
     #############
     pts = 201
-    tau_start = 2e-6  #!!! Measurement class has minimal tau of 4us
-    tau_final = 4e-6
+    tau_start = .05e-6  #!!! Measurement class has minimal tau of 4us
+    tau_final = 2e-6
     m.params['reps_per_ROsequence'] = 200 #Repetitions of each data point
 
 

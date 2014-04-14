@@ -21,8 +21,10 @@ qt.exp_params=mcfg.cfg
 
 ####
 print 'configure the setup-specific hardware...'
-# set all the static variables for lt2
+# set all the static variables for lt3
 execfile(os.path.join(qt.config['startdir'],'lt3_scripts/setup/sequence.py'))
 
-# set all the static variables for lt2
+# set all the static variables for lt3
 execfile(os.path.join(qt.config['startdir'],'lt3_scripts/setup/lt3_statics.py'))
+
+PMServo.move_out()

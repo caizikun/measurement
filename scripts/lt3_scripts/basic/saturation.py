@@ -8,7 +8,7 @@ import msvcrt
 #measurement parameters
 name = 'Fritz_SIL1_PSB_MM_TH'
 steps=17
-max_power=20e-6       #[w]
+max_power=100e-6       #[w]
 counter=1    #number of counter
 PQ_count=True    # counting with the HH, assumes apd on channel 0
 bg_x=1.5          #delta x position of background [um]

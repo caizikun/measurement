@@ -28,7 +28,7 @@ qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=240e-9, active=True)
 
 #TH
-qt.pulsar.define_channel(id='ch3_marker1', name='TH_sync', type='marker', 
+qt.pulsar.define_channel(id='ch3_marker1', name='PQ_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)   
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
@@ -36,12 +36,13 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
-    
+qt.pulsar.define_channel(id='ch3', name='AOM_Matisse', type='analog', high=3.0,
+    low=-1.0, offset=0., delay=500-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=3.0,
     low=-1.0, offset=0., delay=172e-9, active=True)
 #AOMs
-qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
+qt.pulsar.define_channel(id='ch4_marker1', name='EOM_AOM_Matisse', type='marker', 
     high=1.0, low=-1.0, offset=0.0, delay=617e-9, active=True) #617 ns for normal pulses
 qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
      high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)

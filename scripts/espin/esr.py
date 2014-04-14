@@ -1,22 +1,24 @@
 import qt
 import msvcrt
+import numpy as np
+
+execfile(qt.reload_current_setup)
 
 ##############
 ### Inputs ###
 ##############
 
-name='ESR_SIL1_Fritz_LT3'
-steps    = 51        #101
-mw_power = -7        #in dBm
+name='ESR_SIL1_Hans_LT2'
+steps    = 101        #101
+mw_power = -3        #in dBm
 green_power = 10e-6  #10e-6
 int_time = 25        # in ms
-reps = 10
-center_f =  1.998 # in GHz #Ms = -1
-#center_f =   3.757# in GHz #Ms = +1
-range_f  =  0.030 # in GHz
+reps = 20
+center_f =   qt.exp_params['samples']['Hans_sil1']['ms-1_cntr_frq']*1e-9 # in GHz
+range_f  =  0.050 # in GHz
 
 #generate list of frequencies
-f_list = linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
+f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
 ins_smb = qt.instruments['SMB100']
@@ -47,7 +49,7 @@ ins_smb.set_status('on')
 
 qt.msleep(0.2)
 #ins_counters.set_is_running(0)
-total_cnts = zeros(steps)
+total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
 stop_scan=False
 for cur_rep in range(reps):
@@ -82,4 +84,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-GreenAOM.set_power(30e-6)
+ins_aom.set_power(30e-6)

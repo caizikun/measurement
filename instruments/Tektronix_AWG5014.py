@@ -219,7 +219,7 @@ class Tektronix_AWG5014(Instrument):
         self.add_function('generate_awg_file')
         self.add_function('send_awg_file')
         self.add_function('load_awg_file')
-        self.add_function('ask_awg_file')
+        self.add_function('get_error')
         self.add_function('pack_waveform')
         self.add_function('clear_visa')
 
@@ -805,10 +805,10 @@ class Tektronix_AWG5014(Instrument):
         print s
         self._visainstrument.write(s)
 
-    def ask_awg_file(self):
+    def get_error(self):
         #print self._visainstrument.ask('AWGControl:SNAMe?')
         print self._visainstrument.ask('SYSTEM:ERROR:NEXT?')
-        self._visainstrument.write('*CLS')
+        #self._visainstrument.write('*CLS')
     def pack_waveform(self,wf,m1,m2):
         '''
         packs analog waveform in 14 bit integer, and two bits for m1 and m2 in a single 16 bit integer
