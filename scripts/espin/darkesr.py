@@ -34,7 +34,7 @@ def darkesr(name):
     m.params['range']        = 8e6
     m.params['pts'] = 100
     m.params['pulse_length'] = 1.6e-6
-    m.params['ssbmod_amplitude'] = 0.9 #0.05
+    m.params['ssbmod_amplitude'] = 0.05
     
     m.params['Ex_SP_amplitude']=0
 
