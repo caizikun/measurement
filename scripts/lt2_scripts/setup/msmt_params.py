@@ -56,6 +56,7 @@ cfg['protocols']['AdwinSSRO']={
 'CR_probe_max_time'         :       1000000}
 
 yellow=False
+
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -160,7 +161,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'Ex_CR_amplitude':  5e-9,
 'Ex_RO_amplitude':  50e-9,
 'Ex_SP_amplitude':  0e-9,
-'SP_duration'        : 300,
+'SP_duration'        : 30,
 'SP_filter_duration' : 0 }
 
 
