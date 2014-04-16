@@ -6,13 +6,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Fritz_SIL1_PSB_MM_TH'
-steps=17
-max_power=100e-6       #[w]
-counter=1    #number of counter
+name = 'The111no2_SIL5_ZPL_TH'
+steps=21
+max_power=230e-6       #[w]
+counter=2    #number of counter
 PQ_count=True    # counting with the HH, assumes apd on channel 0
-bg_x=1.5          #delta x position of background [um]
-bg_y=1.5            #delta y position of background [um]
+bg_x=-2.5          #delta x position of background [um]
+bg_y=-2.5            #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -76,7 +76,7 @@ plt.add_data(dat, coorddim=0, valdim=2)
 fd = zeros(len(x_axis))    
 if type(fitres) != type(False):
     fd = fitres['fitfunc'](x_axis)
-    plt.set_plottitle('Saturation counts: {:d}, saturation power: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
+    plt.set_plottitle(dat.get_time_name()+', Sat. cts: {:d}, sat. pwr: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
 else:
     print 'could not fit calibration curve!'
 
