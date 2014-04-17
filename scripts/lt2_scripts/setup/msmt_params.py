@@ -95,9 +95,6 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'repump_N_randomize_amplitude'          :    20e-9}
 
 
-
-
-
 #################
 ### Hans sil1 ###
 #################
@@ -110,7 +107,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 
-f_msm1_cntr = 2.024997e9          #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.024994e9          #Electron spin ms=-1 frquency
 ### Do not change the +1 frq anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 
@@ -119,13 +116,13 @@ zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 an
 #As measured by Tim & Julia on 20140403 2.877480(5)e9
 
 N_frq    = 7.13429e6        #not calibrated
-N_HF_frq = 2.19200e6        #calibrated 20140320/181319
+N_HF_frq = 2.196e6        #calibrated 20140320/181319
 
 mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
 mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq
-mw_power = 23                               #MW power
+mw_power = 20                               #MW power
 
 cfg['samples']['Hans_sil1'] = {
 'mw_mod_freq'   :       mw_mod_frequency,
@@ -138,9 +135,14 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :       6.522e-6,
-'C2_Ren_tau'    :       6.624e-6,
-'C3_Ren_tau'    :       8.84e-6}  #8.826e-6 #NOTE: possibly not really another C13
+'C1_Ren_tau'    :        6.522e-6,
+#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
+#'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
+# 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
+'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
+'C3_Ren_tau'    :       8.840e-6}  #resonance k=
+#'C3_Ren_tau'    :       12.080e-6}  #resonance k=8
+
 
 
     #######################
@@ -159,9 +161,9 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'CR_probe':      1000,
 'CR_repump':     1000,
 'Ex_CR_amplitude':  5e-9,
-'Ex_RO_amplitude':  50e-9,
+'Ex_RO_amplitude':  8e-9,
 'Ex_SP_amplitude':  0e-9,
-'SP_duration'        : 30,
+'SP_duration'        : 300,
 'SP_filter_duration' : 0 }
 
 
@@ -187,20 +189,20 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   160e-9,     #136e-9,
-'fast_pi_amp'               :   0.836741,  #140324
+'fast_pi_duration'          :   140e-9,    
+'fast_pi_amp'               :   0.854090,  
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   80e-9,#60e-9,
-'fast_pi2_amp'              :   0.844675,#0*0.777847, #140324
+'fast_pi2_duration'         :   72e-9,#60e-9,
+'fast_pi2_amp'              :   0.822801,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
-'AWG_MBI_MW_pulse_amp'      :   0.015,
-'AWG_MBI_MW_pulse_duration' :   3500e-9,
+'AWG_MBI_MW_pulse_amp'      :   0.0248,
+'AWG_MBI_MW_pulse_duration' :   4000e-9,
 
 #    ### Corpse pulses ###
 'CORPSE_pi2_amp'    :           1,

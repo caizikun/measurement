@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277459  TUD277459\localadmin
 '<Header End>
 '#INCLUDE ADwinPro_All.inc
 '#INCLUDE .\configuration.inc
@@ -40,7 +40,7 @@ DIM DATA_44[10000] AS FLOAT
 DIM DATA_45[4] AS LONG
 
 'Singleshot adwin:
-DIM DATA_19[1000] AS FLOAT AT EM_LOCAL 
+'DIM DATA_19[1000] AS FLOAT AT EM_LOCAL 
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
 DIM DATA_30[100] AS LONG

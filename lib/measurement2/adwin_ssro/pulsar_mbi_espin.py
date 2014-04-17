@@ -56,9 +56,9 @@ class ElectronRabi(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, *elts)
-            #qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
-        qt.pulsar.program_sequence(seq)
+            #qt.pulsar.upload(mbi_elt, *elts)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+        #qt.pulsar.program_sequence(seq)
 
 
 class ElectronRamsey(pulsar_msmt.MBI):

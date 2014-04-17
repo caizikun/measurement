@@ -26,7 +26,7 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    #m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['mw_mod_freq'] #MW source frequency
+    # m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['mw_mod_freq'] #MW source frequency
     m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - m.params['mw_mod_freq']
 
     m.params['mw_power'] = 20
@@ -36,7 +36,7 @@ def darkesr(name):
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 6e6
     m.params['pts'] = 61
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.05
+    m.params['ssbmod_amplitude'] = 0.03
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -58,13 +58,13 @@ def darkesrp1(name):
 
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 10e6
-    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 10e6
-    m.params['pts'] = 51
+    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
+    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
+    m.params['pts'] = 101
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.05
+    m.params['ssbmod_amplitude'] = 0.03
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -77,3 +77,4 @@ if __name__ == '__main__':
     cont = raw_input ('Do the fitting for ms=+1... Continue with ms=-1 y/n?')
     if cont =='y':
         darkesr(SAMPLE_CFG)
+
