@@ -1,6 +1,6 @@
-# optimizer for LT2
+# Convex optimizor
 #
-# author: wolfgang <w dot pfaff at tudelft dot nl>
+# author: Bas Hensen 2013
 
 from instrument import Instrument
 import types

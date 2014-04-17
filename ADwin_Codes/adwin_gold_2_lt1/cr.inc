@@ -1,5 +1,5 @@
 '<ADbasic Header, Headerversion 001.001>
-' Foldings                       = 170
+' Foldings                       = 171
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -64,7 +64,7 @@ SUB init_CR()
   total_repump_counts = 0
   CR_failed           = 0
   repumps             = 0
-  cr_wait_after_pulse    = 0
+  cr_wait_after_pulse = 0
   cr_mode = 0
   cr_timer = 0
   
@@ -147,6 +147,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
               DATA_23[repetition_index] = cr_counts
+              first_cr = 0
             ENDIF
                       
             IF (cr_counts < current_cr_threshold) THEN

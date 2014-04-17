@@ -6,17 +6,17 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = '111no2_Sil2_PSB'
-steps=31
-max_power=500e-6       #[w]
-counter=1    #number of counter
-PH_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=1.5          #delta x position of background [um]
-bg_y=0             #delta y position of background [um]
+name = 'The111no2_SIL5_ZPL_TH'
+steps=21
+max_power=230e-6       #[w]
+counter=2    #number of counter
+PQ_count=True    # counting with the HH, assumes apd on channel 0
+bg_x=-2.5          #delta x position of background [um]
+bg_y=-2.5            #delta y position of background [um]
 
 #instruments
-if PH_count:
-    current_HH_400=qt.instruments['PH_300']
+if PQ_count:
+    current_PQ_ins=qt.instruments['TH_260N']
 
 current_aom = qt.instruments['GreenAOM']
 current_mos = qt.instruments['master_of_space']
@@ -31,31 +31,33 @@ current_y = current_mos.get_y()
 
 current_aom.set_power(0)
 time.sleep(1)
-
+br=False
 for i,pwr in enumerate(x):
-    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+        br = True
+        break
     current_aom.set_power(pwr)
     time.sleep(1)
-    if not PH_count:
+    if not PQ_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:
-        y_NV[i] = current_HH_400.get_CountRate0()
+        y_NV[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
     print 'step %s, counts %s'%(i,y_NV[i])
         
 current_mos.set_x(current_x + bg_x)
 current_mos.set_y(current_y + bg_y)
 current_aom.set_power(0)
 time.sleep(1)
-
-for i,pwr in enumerate(x):
-    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-    current_aom.set_power(pwr)
-    time.sleep(1)
-    if not PH_count:
-        y_BG[i] = current_adwin.get_countrates()[counter-1]
-    else:
-        y_BG[i] = current_HH_400.get_CountRate0()
-    print 'step %s, counts %s'%(i,y_BG[i])
+if not br:
+    for i,pwr in enumerate(x):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
+        current_aom.set_power(pwr)
+        time.sleep(1)
+        if not PQ_count:
+            y_BG[i] = current_adwin.get_countrates()[counter-1]
+        else:
+            y_BG[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
+        print 'step %s, counts %s'%(i,y_BG[i])
        
  
 x_axis = x*1e6
@@ -74,7 +76,7 @@ plt.add_data(dat, coorddim=0, valdim=2)
 fd = zeros(len(x_axis))    
 if type(fitres) != type(False):
     fd = fitres['fitfunc'](x_axis)
-    plt.set_plottitle('Saturation counts: {:d}, saturation power: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
+    plt.set_plottitle(dat.get_time_name()+', Sat. cts: {:d}, sat. pwr: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
 else:
     print 'could not fit calibration curve!'
 

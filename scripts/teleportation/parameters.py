@@ -273,7 +273,7 @@ params_lt2['teleportation_repetitions'] = -1
 ########
 ## parameters (for now) only used in calibration scripts
 ########
-CALIBRATION = False
+CALIBRATION = True
 
 if CALIBRATION == True:
     print 'calibration settings loaded'

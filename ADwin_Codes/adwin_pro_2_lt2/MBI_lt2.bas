@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD276629  TUD276629\localadmin
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -22,7 +22,7 @@
 '   4 : A-pumping
 '   5 : wait for AWG
 '   6 : spin-readout
-'
+'   7 : nuclear spin randomize
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -36,12 +36,13 @@
 'init
 DIM DATA_20[100] AS LONG                           ' integer parameters
 DIM DATA_21[100] AS FLOAT                          ' float parameters
-DIM DATA_33[max_sequences] AS LONG                ' A SP durations
+DIM DATA_33[max_sequences] AS LONG                ' A SP after MBI durations
 DIM DATA_34[max_sequences] AS LONG                ' E RO durations
-DIM DATA_35[max_sequences] AS FLOAT               ' A SP voltages
+DIM DATA_35[max_sequences] AS FLOAT               ' A SP after MBI voltages
 DIM DATA_36[max_sequences] AS FLOAT               ' E RO voltages
 DIM DATA_37[max_sequences] AS LONG                ' send AWG start
 DIM DATA_38[max_sequences] AS LONG                ' sequence wait times
+DIM DATA_39[max_sequences] AS FLOAT               ' E SP after MBI voltages
 
 'return
 DIM DATA_24[max_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle
@@ -49,9 +50,9 @@ DIM DATA_25[max_repetitions] AS LONG ' number of cycles before success
 DIM DATA_27[max_repetitions] AS LONG ' SSRO counts
 DIM DATA_28[max_repetitions] AS LONG ' time needed until mbi success (in process cycles)
 
-DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_event_jump_DO_channel AS LONG
+DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
-DIM A_SP_duration, SP_E_duration, SP_filter_duration, MBI_duration AS LONG
+DIM SP_duration, SP_E_duration, SP_filter_duration, MBI_duration AS LONG
 DIM sequence_wait_time, wait_after_pulse_duration AS LONG
 DIM RO_repetitions, RO_duration AS LONG
 DIM cycle_duration AS LONG
@@ -61,7 +62,7 @@ DIM MBI_threshold AS LONG
 DIM nr_of_ROsequences AS LONG
 DIM wait_after_RO_pulse_duration AS LONG
 
-DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM E_SP_voltage, A_SP_voltage_after_MBI, E_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM E_MBI_voltage AS FLOAT
 dim E_N_randomize_voltage, A_N_randomize_voltage, repump_N_randomize_voltage AS FLOAT
 
@@ -90,7 +91,7 @@ INIT:
   init_CR()
   AWG_start_DO_channel         = DATA_20[1]
   AWG_done_DI_channel          = DATA_20[2]
-  SP_E_duration                = DATA_20[3]
+  SP_E_duration                = DATA_20[3] 'E spin pumping duration before MBI
   wait_after_pulse_duration    = DATA_20[4]
   RO_repetitions               = DATA_20[5]
   sweep_length                 = DATA_20[6] ' not used? -machiel 23-12-'13
@@ -103,7 +104,7 @@ INIT:
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
   
-  E_SP_voltage                 = DATA_21[1]
+  E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
@@ -129,6 +130,8 @@ INIT:
   next_MBI_stop = -2
   current_MBI_attempt = 1
   next_MBI_laser_stop = -2
+  
+  AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
       
   P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
   P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
@@ -163,7 +166,7 @@ INIT:
 EVENT:
  
   awg_in_was_hi = awg_in_is_hi
-  awg_in_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_channel)
+  awg_in_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
   
   if ((awg_in_was_hi = 0) and (awg_in_is_hi > 0)) then
     awg_in_switched_to_hi = 1
@@ -171,7 +174,7 @@ EVENT:
     awg_in_switched_to_hi = 0
   endif
     
-  PAR_77 = mode
+  PAR_77 = mode        
   
   if(trying_mbi > 0) then
     inc(mbi_timer)
@@ -193,7 +196,7 @@ EVENT:
       
       CASE 2    ' E spin pumping
         
-        ' turn on both lasers and start counting
+        ' turn on one laser and start counting
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
@@ -234,7 +237,7 @@ EVENT:
        
           ' make sure we don't accidentally think we're done before getting the trigger
           next_MBI_stop = -2
-        
+          
         else
           ' we expect a trigger from the AWG once it has done the MW pulse
           ' as soon as we assume the AWG has done the MW pulse, we turn on the E-laser,
@@ -292,16 +295,18 @@ EVENT:
         ENDIF
         
       CASE 4    ' A laser spin pumping
-        A_SP_voltage = DATA_35[ROseq_cntr]
-        A_SP_duration = DATA_33[ROseq_cntr]
+        A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
+        E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]
+        SP_duration = DATA_33[ROseq_cntr]
        
         ' turn on A laser; we don't need to count here for the moment
         IF (timer = 0) THEN
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768)
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_MBI+32768) ' turn on A laser, for spin pumping after MBI
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_MBI+32768) ' turn on E laser, for spin pumping after MBI
         ELSE 
           
           ' when we're done, turn off the laser and proceed to the sequence
-          IF (timer = A_SP_duration) THEN
+          IF (timer = SP_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             wait_time = wait_after_pulse_duration

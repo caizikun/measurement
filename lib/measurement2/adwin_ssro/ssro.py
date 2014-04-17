@@ -131,6 +131,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             
         if setup:
             self.setup()
+        print self.adwin_process
         self.start_adwin_process(stop_processes=['counter'])
         qt.msleep(1)
         self.start_keystroke_monitor('abort',timer=False)
