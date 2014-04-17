@@ -20,14 +20,14 @@ def ssrocalibration(name):
     # parameters
     m.params['SSRO_repetitions'] = 5000
 
-    m.params['A_CR_amplitude'] = 5e-9 #5e-9
-    m.params['E_CR_amplitude'] = 5e-9 #5e-9
+    m.params['A_CR_amplitude'] = 10e-9 #5e-9
+    m.params['E_CR_amplitude'] = 10e-9 #5e-9
 
     m.params['SSRO_duration'] = 50
 
     # ms = 0 calibration
     m.params['SP_duration'] = 50
-    m.params['A_SP_amplitude'] = 5e-9
+    m.params['A_SP_amplitude'] = 10e-9
     m.params['Ex_SP_amplitude'] = 0.
     m.params['Ex_RO_amplitude'] = 5e-9 #10e-9
 

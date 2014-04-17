@@ -15,7 +15,7 @@
 #DEFINE max_repump_duration 2000
 #DEFINE position_scan_length 100
 #DEFINE pos_mod_min_dac 1
-#DEFINE pos_mod_max_dac 3
+#DEFINE pos_mod_max_dac 2
 #DEFINE pos_mod_min_dac_v 0.0
 #DEFINE pos_mod_max_dac_v 10.0
 
@@ -128,7 +128,7 @@ SUB init_CR()
 
   FPar_78 = 0.0                   ' current repump modulation error signal
   FPar_79 = 0.0                   ' current CR modulation error signal
-  par_64 = 0                      ' 
+  par_64 = 0                      ' current pos_mod_DAC_channel 
   FPar_64 = 0.0                   ' current position modulation error signal
   
   'control pars
@@ -168,7 +168,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               IF (pos_mod_DAC_channel < pos_mod_max_dac) THEN
                 INC(pos_mod_DAC_channel)
               ELSE
-                pos_mod_DAC_channel = pos_mod_min_dac
+                pos_mod_DAC_channel = Par_64
                 PAR_65 = 0 'pos_mod_activated = 0
               ENDIF
               pos_mod_control_offset = DATA_16[pos_mod_DAC_channel]
@@ -212,7 +212,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             inc(par_71)
             '------------repump modulation control
             cr_old_counts = 0
-            cr_i=2
+            cr_i=0
             repump_mod_control_amp = -1.0*repump_mod_control_amp
             '--------------------------------
           ELSE
@@ -252,7 +252,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
                 DAC(repump_mod_DAC_channel, 3277*(repump_mod_control_amp*repump_mod_control+repump_mod_control_offset)+32768) ' put current voltage on freq mod aom
               ELSE
                 cr_counts = CNT_READ(counter_channel)
-                FPar_78=FPar_78*0.9999+repump_mod_control*(cr_counts-cr_old_counts)
+                FPar_78=FPar_78*0.9999+repump_mod_control*repump_mod_control_amp*(cr_counts-cr_old_counts)
                 cr_old_counts=cr_counts
               ENDIF
               DEC(cr_i)
@@ -273,8 +273,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           INC(PAR_72)
           '------------cr modulation control
           cr_old_counts = 0
-          cr_mod_control_amp = -1.0*cr_mod_control_amp
-          cr_i=2
+          'cr_mod_control_amp = -1.0*cr_mod_control_amp
+          cr_i=0
           '-------
         ELSE 
           
@@ -319,7 +319,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
                 DAC(cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
               ELSE
                 cr_counts = CNT_READ(counter_channel)
-                FPar_79 = FPar_79*0.99999+cr_mod_control*(cr_counts-cr_old_counts)
+                FPar_79 = FPar_79*0.999999+cr_mod_control*(cr_counts-cr_old_counts)
                 cr_old_counts=cr_counts
               ENDIF
               DEC(cr_i)

@@ -23,7 +23,7 @@
 '
 
 #INCLUDE ADwinGoldII.inc
-#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      1000000

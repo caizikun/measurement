@@ -2,12 +2,12 @@ config = {}
 config['adwin_lt1_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
-        'atto_z' : 8,
+        'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
         'green_aom': 4,
         'gate' : 5, #not yet connected
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
-        'yellow_aom' : 3, 
+        'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
         }
 
 config['adwin_lt1_dios'] = {
@@ -251,7 +251,7 @@ config['adwin_lt1_processes'] = {
         'singleshot' : {
                 'index' : 9,
                 'file' : 'singleshot_lt1.tb9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
                     'ssro_counts' : 74,

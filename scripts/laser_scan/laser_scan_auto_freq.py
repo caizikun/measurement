@@ -523,9 +523,9 @@ def single_scan():
     m.mw.set_iq('off')
     m.mw.set_pulm('off')
     m.mw.set_status('on')
-    #m.red_scan(74, 90, voltage_step=0.01, integration_time_ms=20, power = 3e-9)
-    #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
-    m.yellow_scan(62, 77, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
+    #m.red_scan(50, 70, voltage_step=0.015, integration_time_ms=20, power = 5e-9)
+    #m.yellow_red(40, 60, 0.02, 0.5e-9, 55, 75, 0.015, 20, 5e-9)
+    m.yellow_scan(20, 35, power = 5e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     m.mw.set_status('off')
