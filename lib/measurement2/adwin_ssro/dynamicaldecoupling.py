@@ -67,7 +67,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         #############################################
         ## Select scheme for generating decoupling elements  ##
         #############################################
-        if N == -1:
+        if N == 0:
             ##### This is a calibration measurement and should override the scheme for other settings
             scheme = 'calibration_NO_Pulses'
         elif scheme == 'auto':
@@ -694,9 +694,9 @@ class SimpleDecoupling(DynamicalDecoupling):
 
         if upload:
             print 'uploading list of elements'
-            qt.pulsar.upload(*combined_list_of_elements)
+            # qt.pulsar.upload(*combined_list_of_elements)
             print ' uploading sequence'
-            qt.pulsar.program_sequence(combined_seq)
-            # qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+            # qt.pulsar.program_sequence(combined_seq)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'

@@ -71,6 +71,20 @@ config['light'] = {
             'cable_delay' : 163, },
 
         }
+config['awg_FPGA_test'] = {
+        'clock' : {
+             'AWG_channel' : 'ch2',
+             'high' : 3.5,
+             'low' : 0,
+             'cable_delay' : 0,
+             },
+        'gate' : {
+            'AWG_channel' : 'ch4m1',
+            'high' : 3.5,
+            'low' : 0,
+            'cable_delay': 0,
+            }
+         }
 
 ### DEPRECATED!
 ### For newer scripts this is now in the config manager
