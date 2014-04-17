@@ -33,6 +33,12 @@ qt.pulsar.define_channel(id='ch3_marker1', name='PQ_sync', type='marker',
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch2_marker2', name='scope_sync', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+qt.pulsar.define_channel(id='ch1_marker2', name='scope_pulse', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+qt.pulsar.define_channel(id='ch1_marker2', name='awg_lt1_trigger', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
