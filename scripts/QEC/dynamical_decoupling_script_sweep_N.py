@@ -25,7 +25,7 @@ def SimpleDecoupling(name):
     m.params['reps_per_ROsequence'] = 1000
     Number_of_pulses =np.array(range(0,80,4)).astype(int) # np.linspace(304,408,7).astype(int)
     pts = len(Number_of_pulses)
-    tau_list = np.ones(pts)*8.640e-6 #qt.exp_params['samples'][SAMPLE]['C3_Ren_tau']
+    tau_list = np.ones(pts)*qt.exp_params['samples'][SAMPLE]['C3_Ren_tau']
     print 'tau_list =' + str(tau_list)
 
     #inital and final pulse

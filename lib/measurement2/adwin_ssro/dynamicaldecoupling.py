@@ -2,6 +2,7 @@
 Work in progress
 File made by Adriaan Rol
 '''
+from decimal import Decimal
 import numpy as np
 import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
@@ -178,7 +179,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #######################
 
             #calculate durations
-            n_wait_reps, tau_remaind = divmod(2*pulse_tau,1e-6)
+            n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function 
+            tau_remaind = tau_remaind *1e-9
             n_wait_reps = n_wait_reps -2
             tau_shortened = tau_remaind/2.0
             t_around_pulse = 1e-6 + tau_remaind/2.0
@@ -194,10 +196,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #correct for part that is cut of when combining to sequence
             if n_wait_reps %2 == 0:
                 tau_cut =1e-6
-                # print tau_cut
             else:
                 tau_cut = 1.5e-6
-                # print tau_cut
+
 
             # combine the pulses to elements/waveforms and add to list of elements
             e_X_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,

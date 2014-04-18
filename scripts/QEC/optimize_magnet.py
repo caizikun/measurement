@@ -154,11 +154,9 @@ if __name__ == '__main__':
             break
 
         iterations += 1
-        #do dESR without reloading to the AWG, smaller domain
-        if iterations ==1:
-            darkesr_auto(SAMPLE_CFG, upload = True)
-        else:
-            darkesr_auto(SAMPLE_CFG, upload = False)
+        #do dESR without reloading to the AWG, smaller domain, Note by TIM: setting upload to False is a bug
+        darkesr_auto(SAMPLE_CFG, upload = True)
+        
 
 
         #Determine frequency and B-field again --> this fit programme returns in MHz, needs input GHz

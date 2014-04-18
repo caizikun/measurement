@@ -32,7 +32,7 @@ def SimpleDecoupling(name):
     #start   = 12.45e-6
     #end     = 12.55e-6
     #tau_list = np.linspace(start, end, pts)
-    tau_list = np.array(range(8600,9000,10))*1e-9
+    tau_list = np.array(range(2200,2600,10))*1e-9
 
     print tau_list
 
