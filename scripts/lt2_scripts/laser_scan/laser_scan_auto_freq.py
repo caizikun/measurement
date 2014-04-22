@@ -7,7 +7,7 @@ import numpy as np
 execfile(qt.reload_current_setup)
 
 import measurement.lib.config.adwins as adwins_cfg
-from measurement.lib.config import experiment_lt2 as lt2_cfg
+#from measurement.lib.config import experiment_lt2 as lt2_cfg
 
 class LaserFrequencyScan:
 
@@ -393,7 +393,7 @@ if __name__=='__main__':
 
     #for ii in range(10):
     stools.turn_off_all_lt2_lasers()
-    red_laser_scan('Hans_sil4_line_scan_2MW_0green')
+    red_laser_scan('Hans_sil1_line_scan_green')
         #yellow_laser_scan('yellow_1nW')
 
 

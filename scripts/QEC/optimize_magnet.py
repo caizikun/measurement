@@ -51,9 +51,9 @@ def darkesr(name):
     m.params['mw_power'] = 20
     m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 15e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 15e6
-    m.params['pts'] = 101
+    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + 5e6
+    m.params['pts'] = 81
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.03
 

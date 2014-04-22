@@ -49,7 +49,7 @@ cfg['protocols']['AdwinSSRO']={
 'Ex_off_voltage'            :       0.,
 'A_off_voltage'             :       -0.0,
 'repump_off_voltage'        :       0,
-'yellow_repump_amplitude'   :       50e-9,
+'yellow_repump_amplitude'   :       100e-9,
 'yellow_repump_duration'    :       500,
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
@@ -107,7 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 
-f_msm1_cntr = 2.024994e9          #Electron spin ms=-1 frquency
+f_msm1_cntr =   2.024932e9          #Electron spin ms=-1 frquency
+                 
 ### Do not change the +1 frq anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 
@@ -153,14 +154,14 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 3e-9,
+'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 10e-9,
 'CR_duration' :  50,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,
+'Ex_CR_amplitude':  5e-9,#5nW
 'Ex_RO_amplitude':  8e-9,
 'Ex_SP_amplitude':  0e-9,
 'SP_duration'        : 300,
@@ -172,7 +173,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
     ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 10}
+'SSRO_duration' : 14}
 
     ########################
     ### Pulse parameters ###
@@ -226,7 +227,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           300,
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           2e-9,
+'Ex_MBI_amplitude'          :           4e-9,
 'MBI_duration'              :           4,
 
     #Repump after succesfull MBI
