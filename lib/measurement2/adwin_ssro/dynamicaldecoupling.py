@@ -1,5 +1,5 @@
 '''
-Work in progress
+Measurement class
 File made by Adriaan Rol
 '''
 from decimal import Decimal
