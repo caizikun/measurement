@@ -2,7 +2,6 @@
 Measurement class
 File made by Adriaan Rol
 '''
-from decimal import Decimal
 import numpy as np
 import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
@@ -179,7 +178,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #######################
 
             #calculate durations
-            n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function 
+            n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function
             tau_remaind = tau_remaind *1e-9
             n_wait_reps = n_wait_reps -2
             tau_shortened = tau_remaind/2.0
@@ -588,12 +587,25 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 return
         return list_of_elements, seq
 
-class AdvancedDecouplingSequence(DynamicalDecoupling):
+    def _Trigger_element(self):
+        '''
+        Trigger element that is used in different measurement child classes
+        '''
+        Trig = pulse.SquarePulse(channel = 'adwin_sync',
+            length = 10e-6, amplitude = 2)
+        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
+            global_time = True)
+        Trig_element.append(Trig)
+        return Trig_element
+
+
+
+class NuclearRamsey(DynamicalDecoupling):
     '''
-    The advanced decoupling sequence is a child class of the more general decoupling gate sequence class
-    It contains a specific gate sequence with feedback loops and other stuff
-    !NB: this is currently EMPTY
+    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
     '''
+
+
     pass
 
 class SimpleDecoupling(DynamicalDecoupling):
@@ -615,13 +627,7 @@ class SimpleDecoupling(DynamicalDecoupling):
         ############################################
         #Generation of trigger and MBI element
         #############################################
-        ##maybe put the trigger pulse in a funvtion to remove clutter.
-        Trig = pulse.SquarePulse(channel = 'adwin_sync',
-            length = 10e-6, amplitude = 2)
-        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
-            global_time = True)
-        Trig_element.append(Trig)
-
+        Trig_element = self._Trigger_element()
         mbi_elt = self._MBI_element()
 
 
