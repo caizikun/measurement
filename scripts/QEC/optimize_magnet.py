@@ -51,11 +51,11 @@ def darkesr(name):
     m.params['mw_power'] = 20
     m.params['repetitions'] = 1000
 
-    m.params['ssbmod_frq_start'] = 43e6 - 10e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 10e6
-    m.params['pts'] = 101
+    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + 5e6
+    m.params['pts'] = 81
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.05
+    m.params['ssbmod_amplitude'] = 0.03
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -84,7 +84,7 @@ def darkesr_auto(name,upload=False):
     m.params['ssbmod_frq_stop'] = 43e6 + 6e6
     m.params['pts'] = 61
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.05
+    m.params['ssbmod_amplitude'] = 0.03
 
     m.autoconfig()
     m.generate_sequence(upload=upload)
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     B_field_measured = []
 
     # start: define B-field and position by first ESR measurement
-
+    
     darkesr(SAMPLE_CFG+'_magnet_optimization')
 
     # do the fitting  --> this fit programme returns in MHz, needs input GHz ! guess center freq can be gone!
@@ -154,11 +154,9 @@ if __name__ == '__main__':
             break
 
         iterations += 1
-        #do dESR without reloading to the AWG, smaller domain
-        if iterations ==1:
-            darkesr_auto(SAMPLE_CFG, upload = True)
-        else:
-            darkesr_auto(SAMPLE_CFG, upload = False)
+        #do dESR without reloading to the AWG, smaller domain, Note by TIM: setting upload to False is a bug
+        darkesr_auto(SAMPLE_CFG, upload = True)
+        
 
 
         #Determine frequency and B-field again --> this fit programme returns in MHz, needs input GHz

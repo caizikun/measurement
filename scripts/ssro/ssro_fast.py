@@ -13,7 +13,7 @@ import msvcrt
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
-class Fast_SSRO(pulsar_pq.PQPulsarMeasurement):
+class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
 	def autoconfig(self, **kw):
         pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
@@ -45,9 +45,9 @@ class Fast_SSRO(pulsar_pq.PQPulsarMeasurement):
 		SP_A_pulse 		= 		pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
 		SP_E_pulse		=       pulse.SquarePulse(channel = 'AOM_Matisse',  amplitude = 1.0)
 		RO_pulse 		= 		pulse.SquarePulse(channel = 'AOM_Matisse',  amplitude = 1.0)
-		T 				=		pulse.SquarePulse(channel = 'AOM_Newfocus', length = 100e-9, amplitude = 0)
+		T 				=		pulse.SquarePulse(channel = 'AOM_Newfocus', length = self.params['wait_length'], amplitude = 0)
 		adwin_trigger_pulse = 	pulse.SquarePulse(channel = 'adwin_sync',   length = 5e-6,   amplitude = 2)
-        PQ_trigger 		=		pulse.SquarePulse(channel = 'PQ_sync', length = 50e-9, amplitude = 1.0)
+        PQ_sync 		=		pulse.SquarePulse(channel = 'PQ_sync', length = self.params['pq_sync_length'], amplitude = 1.0)
 
         elements = [] 
 
@@ -55,11 +55,12 @@ class Fast_SSRO(pulsar_pq.PQPulsarMeasurement):
     	finished_element.append(adwin_trigger_pulsee)
         elements.append(finished_element)
 
-		seq = pulsar.Sequence('Fast_SSRO')
+		seq = pulsar.Sequence('FastSSRO')
 
         for i in range(self.params['pts']/2):
             e0 =  element.Element('SSRO-ms0-{}'.format(i), pulsar = qt.pulsar)
-            e0.append(PQ_trigger)  
+            e0.append(T)
+            e0.append(PQ_sync)  
             e0.append(pulse.cp(SP_A_pulse, length=self.params['A_SP_durations_AWG'][i]))
             e0.append(T)
             e0.append(RO_pulse, length=self.params['E_RO_durations_AWG'][i],
@@ -70,7 +71,8 @@ class Fast_SSRO(pulsar_pq.PQPulsarMeasurement):
             seq.append(name='finished-ms0-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
 
             e1 =  element.Element('SSRO-ms1-{}'.format(i), pulsar = qt.pulsar)
-            e1.append(PQ_trigger)  
+            e1.append(T)
+            e1.append(PQ_sync)  
             e1.append(pulse.cp(SP_E_pulse, length=self.params['E_SP_durations_AWG'][i], 
             		amplitude=self.params['E_SP_voltages_AWG'][i]))
             e1.append(T)
@@ -88,7 +90,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def fast_ssro_calibration(name):
 
-	m = Fast_SSRO('FastSSROCalibration_'+name)
+	m = FastSSRO('FastSSROCalibration_'+name)
 
 	m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
 	m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+PQ'])
@@ -99,6 +101,8 @@ def fast_ssro_calibration(name):
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 1000
 
+    m.params['wait_length']	= 100e-9
+    m.params['pq_sync_length']	= 50e-9
 	m.params['E_RO_amplitudes_AWG']	=	np.linspace(0,2,pts)*m.params['Ex_RO_amplitude']
 	m.params['E_RO_durations_AWG']	=	np.ones(pts)*100e-6
 
@@ -106,6 +110,9 @@ def fast_ssro_calibration(name):
 	m.params['A_SP_amplitude_AWG']	=	m.params['A_SP_amplitude']
 	m.params['A_SP_durations_AWG']	=	np.ones(pts)*m.params['SP_duration']*1e-6
 	m.params['E_SP_durations_AWG']	=	np.ones(pts)*m.params['SP_duration']*1e-6
+
+	m.params['sweep_name'] = 'Readout power [nW]'
+    m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
 	
 	m.params['SP_duration'] = 1
 	m.params['A_SP_amplitude'] = 0

@@ -28,6 +28,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
             self.mwsrc.set_power(self.params['mw_power'])
             self.mwsrc.set_status('on')
 
+        print 'AWG state before start'
+        print self.awg.get_state()    
         self.awg.start()
         if not wait_for_awg:
             print 'NOT WAIING FOR AWG!!!!'
@@ -35,6 +37,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
             i=0
             awg_ready = False
             while not awg_ready and i<100:
+                #print '( not awg_ready and i < 100 ) == True'
+                #print 'awg state: '+str(self.awg.get_state()) 
 
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'x')):
                     raise Exception('User abort while waiting for AWG')

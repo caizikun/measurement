@@ -10,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_CR_counts      500
 
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
@@ -18,8 +18,8 @@ DIM DATA_31[100] AS FLOAT              ' CR float parameters
 
 'return
 'used in cr.inc
-DIM DATA_22[max_repetitions] AS LONG  ' CR counts before sequence
-DIM DATA_23[max_repetitions] AS LONG ' CR counts after sequence
+DIM DATA_22[max_CR_coutns] AS LONG  ' CR counts before sequence
+DIM DATA_23[max_CR_coutns] AS LONG ' CR counts after sequence
 DIM DATA_26[max_stat] AS LONG         ' statistics
 
 DIM cr_mode, cr_timer, cr_i AS LONG
@@ -52,7 +52,7 @@ SUB init_CR()
   E_off_voltage                = DATA_31[5]
   A_off_voltage                = DATA_31[6]
   
-  FOR cr_i = 1 TO max_repetitions
+  FOR cr_i = 1 TO max_CR_counts
     DATA_22[i] = 0
     DATA_23[i] = 0
   NEXT cr_i
@@ -146,7 +146,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             PAR_70 = PAR_70 + cr_counts
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
-              DATA_23[repetition_index] = cr_counts
+              cr_i = MAX_LONG(cr_counts+1,max_CR_counts)
+              INC(DATA_23[cr_i])
               first_cr=0
             ENDIF
                       
@@ -157,7 +158,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             ELSE
               cr_mode = 1
               CR_check = 1
-              DATA_22[repetition_index+1] = cr_counts  ' CR before nEt SSRO sequence
+              cr_i = MAX_LONG(cr_counts+1,max_CR_counts)
+              INC(DATA_22[cr_i])' CR before nEt SSRO sequence
               current_cr_threshold = CR_probe
             ENDIF
             

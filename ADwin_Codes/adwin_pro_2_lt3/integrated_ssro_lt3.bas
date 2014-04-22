@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -27,6 +27,7 @@
 
 #DEFINE max_SP_bins        500
 #DEFINE max_stat            10
+#DEFINE max_sweep           50000
 
 'init
 DIM DATA_20[100] AS LONG
@@ -34,7 +35,7 @@ DIM DATA_21[100] AS FLOAT
 
 'return
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts 
-DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
+DIM DATA_25[max_sweep] AS LONG  ' SSRO counts spin readout
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG

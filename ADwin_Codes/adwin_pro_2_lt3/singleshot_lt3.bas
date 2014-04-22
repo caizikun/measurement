@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -75,11 +75,6 @@ INIT:
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
-  
-  FOR i = 1 TO SSRO_repetitions
-    DATA_22[i] = 0
-    DATA_23[i] = 0
-  NEXT i
   
   FOR i = 1 TO max_SP_bins
     DATA_24[i] = 0

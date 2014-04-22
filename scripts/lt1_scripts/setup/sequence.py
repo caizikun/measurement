@@ -48,5 +48,5 @@ qt.pulsar.set_channel_opt('YellowAOM','low', qt.instruments['YellowAOM'].get_sec
 #    high=0.4, low=0, offset=0., delay=750e-9, active=True)
 
 # Trigger AWG LT2
-qt.pulsar.define_channel(id='ch3_marker1', name='AWG_LT2_trigger', type='marker', 
+qt.pulsar.define_channel(id='ch3_marker1', name='scope_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)

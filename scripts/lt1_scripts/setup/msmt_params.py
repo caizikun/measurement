@@ -9,8 +9,8 @@ cfg.add_cfg('protocols')
 cfg.add_cfg('samples')
 cfg.add_cfg('setup')
 
-cfg['samples']['current'] = 'hans-sil13'
-cfg['protocols']['current'] = 'hans-sil13-default'
+cfg['samples']['current'] = 'the111-1-sil9'
+cfg['protocols']['current'] = 'the111-1-sil9-default'
 
 print 'updating msmt params for {}'.format(cfg['samples']['current'])
 
@@ -52,27 +52,10 @@ print 'updating msmt params for {}'.format(cfg['samples']['current'])
 ### HANS/4
 ##############################################################################
 
-# branch='samples/hans-sil4/'
-
-# f_msm1_cntr = 2.826455e9
-# N_frq = 7.13377e6
-# N_HF_frq = 2.19290e6
-# cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
-# cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
-# cfg.set(branch+'N_HF_frq', N_HF_frq)
-# mw0 = 2.8e9
-# f0 = f_msm1_cntr - mw0
-# Nsplit = N_HF_frq
-# finit = f0 - Nsplit
-# fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
-# cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
-# cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
-# cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
-
-branch='samples/hans-sil4/'
-
-f_msm1_cntr = 2.827962e9
-N_frq = 7.13456e6
+branch='samples/the111-1-sil9/'
+#branch='samples/hans-sil4/'
+f_msm1_cntr = 2.826455e9
+N_frq = 7.13377e6
 N_HF_frq = 2.19290e6
 cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
 cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
@@ -85,6 +68,22 @@ fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
 cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
 cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
 cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
+#branch='samples/hans-sil4/'
+#
+#f_msm1_cntr = 2.827962e9
+#N_frq = 7.13456e6
+#N_HF_frq = 2.19290e6
+#cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
+#cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
+#cfg.set(branch+'N_HF_frq', N_HF_frq)
+#mw0 = 2.8e9
+#f0 = f_msm1_cntr - mw0
+#Nsplit = N_HF_frq
+#finit = f0 - Nsplit
+#fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
+#cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
+#cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
+#cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
 
 ##############################################################################
 ##############################################################################
@@ -167,15 +166,15 @@ cfg.set(branch+        'yellow_N_randomize_amplitude',             0e-9)
 ##############################################################################
 ##############################################################################
 
-##############################################################################
-### HANS/13 --- SSRO
-##############################################################################
 
-branch='protocols/hans-sil13-default/AdwinSSRO/'  
+#############################################################################
+## the 111/1 SIL9 --- SSRO
+#############################################################################
+branch='protocols/the111-1-sil9-default/AdwinSSRO/'  
 cfg.set(branch+        'A_CR_amplitude',            10e-9)
 cfg.set(branch+        'A_RO_amplitude',            0.)
 cfg.set(branch+        'A_SP_amplitude',            10e-9)
-cfg.set(branch+        'CR_duration',               50)
+cfg.set(branch+        'CR_duration',               100)
 cfg.set(branch+        'CR_preselect',              1000)
 cfg.set(branch+        'CR_probe',                  20)
 cfg.set(branch+        'CR_repump',                 1000)
@@ -188,8 +187,32 @@ cfg.set(branch+        'SSRO_duration',             25)
 cfg.set(branch+        'SSRO_repetitions',          5000)
 cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
 
-cfg.set('protocols/hans-sil1-default/AdwinSSRO-integrated/SSRO_duration', 25)
+cfg.set('protocols/the111-1-sil9-default/AdwinSSRO-integrated/SSRO_duration', 25)
 
+
+##############################################################################
+### HANS/13 --- SSRO
+##############################################################################
+
+#branch='protocols/hans-sil13-default/AdwinSSRO/'  
+#cfg.set(branch+        'A_CR_amplitude',            10e-9)
+#cfg.set(branch+        'A_RO_amplitude',            0.)
+#cfg.set(branch+        'A_SP_amplitude',            10e-9)
+#cfg.set(branch+        'CR_duration',               50)
+#cfg.set(branch+        'CR_preselect',              1000)
+#cfg.set(branch+        'CR_probe',                  20)
+#cfg.set(branch+        'CR_repump',                 1000)
+#cfg.set(branch+        'Ex_CR_amplitude',           10e-9)
+#cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
+#cfg.set(branch+        'Ex_SP_amplitude',           0.)
+#cfg.set(branch+        'SP_duration',               100)
+#cfg.set(branch+        'SP_filter_duration',        0)
+#cfg.set(branch+        'SSRO_duration',             25)
+#cfg.set(branch+        'SSRO_repetitions',          5000)
+#cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
+#
+#cfg.set('protocols/hans-sil1-default/AdwinSSRO-integrated/SSRO_duration', 25)
+#
 
 ###############################################################################
 #### HANS/1 --- SSRO
