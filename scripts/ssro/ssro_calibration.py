@@ -25,7 +25,7 @@ def ssrocalibration(name):
     m.params['CR_repump']       = 1000
     m.params['CR_probe']        = 1000
 
-    e_sp = 8e-9 #60e-9
+    e_sp = 30e-9 #60e-9
     a_sp=  10e-9
 
     #m.params['green_rempump_duration']=150

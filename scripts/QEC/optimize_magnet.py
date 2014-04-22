@@ -20,6 +20,7 @@ from analysis.lib.fitting import dark_esr_auto_analysis
 from measurement.lib.tools import magnet_tools as mt
 mom = qt.instruments['master_of_magnet']
 reload(mt)
+reload(dark_esr_auto_analysis)
 
 execfile(qt.reload_current_setup)
 
@@ -49,11 +50,11 @@ def darkesr(name):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 100
 
-    m.params['ssbmod_frq_start'] = 43e6 - 5e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 5e6
-    m.params['pts'] = 81
+    m.params['ssbmod_frq_start'] = 43e6 - 10e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + 10e6
+    m.params['pts'] = 11
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.03
 
