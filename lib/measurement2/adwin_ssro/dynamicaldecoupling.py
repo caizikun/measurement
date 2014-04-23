@@ -81,7 +81,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         These are: the AWG_elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
-        tau = DecouplingGate.tau,N,prefix
+        tau = DecouplingGate.tau
         N = DecouplingGate.N
         DecouplingGate.reps = N # Overwrites reps parameter that is used in sequencing
         prefix = DecouplingGate.prefix
@@ -440,7 +440,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         x_list = [0,2,5,7]
 
-        decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
+        decoupling_elt = element.Element('%s _tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
 
         decoupling_elt.append(T_initial)
         for n in range(N) :
@@ -801,7 +801,7 @@ class NuclearRamsey(DynamicalDecoupling):
 
         ###########################################
         #####    Generating the sequence elements      ######
-        #    ---|pi/2| - |CNOT| - |Rz| - |CNOT| - |pi/2| ---
+        #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
         ###########################################
         initial_Pi2 = DecouplingGate('initial_pi2','electron_Gate')
         Ren_CNOT = DecouplingGate('Ren_CNOT', 'Carbon_Gate')
@@ -811,7 +811,6 @@ class NuclearRamsey(DynamicalDecoupling):
         ############
         gate_seq = [initial_Pi2,Ren_CNOT,Rz,Ren_CNOT,final_Pi2]
         ############
-
 
         Ren_CNOT.N = self.params['CNOT_Ren_N']
         Ren_CNOT.tau = self.params['C_Ren_tau']
@@ -840,6 +839,9 @@ class NuclearRamsey(DynamicalDecoupling):
         Rz.prefix = 'phase_gate'
         Rz.N = 8
         Rz.tau = .2e-6
+        Rz.time_before_pulse = .1e-6
+        Rz.time_after_pulse = .1e-6
+
         #determine_tau_N_connection_gate(Rz)
         generate_phase_gate(Rz)
         #some function that creates a single element
