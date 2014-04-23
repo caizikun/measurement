@@ -7,10 +7,10 @@ import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
-class DecouplingGate(self,name,Gate_type):
-    def __init__:
+class DecouplingGate(object):
+    def __init__(self,name,Gate_type):
         self.name = name
-        self.Gate_type = Gate_type
+        self.Gate_type = Gate_type # can be electron, carbon or connection
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
@@ -23,36 +23,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     '''
     mprefix = 'DecouplingSequence'
 
-    #def autoconfig(self):
-    #    self.params['wait_for_AWG_done'] = 0
-    #    pulsar_msmt.MBI.autoconfig(self)
-
-    def retrieve_resonant_carbon_conditions(self,GateName):
+    def generate_decoupling_sequence_elements(self,DecouplingGate,scheme = 'auto'):
         '''
-        This function retrieves the corresponding tau and N values from the cfg
-        aswell as the order of the resonance k that is required to calculate phase differences
-
-        Currently This function just returns some fixed values. Ideally it should get them from the cfg where they are set in the experiment
-        '''
-        if GateName == 'StdDecoupling':
-            tau = self.params['tau']
-            N = self.params['Number_of_pulses']
-        elif GateName == 'Carbon1' :
-            tau = self.params['tau_C1'] #From the measurement script would be better if it comes from config file
-            N = self.params['N_C1']
-
-        else:
-            print 'Gate not in database'
-            print GateName
-            return
-        return tau, N
-
-    def generate_decoupling_sequence_elements(self,tau,N,prefix,scheme = 'auto'):
-        '''
-        This function takes the wait time and the number of pulse-blocks(repetitions) as input
-        It returns the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
+        This function takes a carbon (decoupling) gate as input, the gate must have tau and N as paramters
+        It returns the object with the parameters relevant to make an AWG sequence of it. These are: the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
+        tau = DecouplingGate.tau,N,prefix
+        N = DecouplingGate.N
+        prefix = DecouplingGate.prefix
+
         #Generate the basic X and Y pulses
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
@@ -81,7 +61,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         elif scheme == 'auto':
             if tau>2e-6 and tau :           ## ERROR?
                 scheme = 'repeating_T_elt'
-            elif tau<= self.params['fast_pi_duration']+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?  
+            elif tau<= self.params['fast_pi_duration']+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?
                 print 'Error! tau too small: Pulses will overlap!' ## ADD return "minimum tau = X" This should also be more general
                 return
             elif tau<0.5e-6:
@@ -136,8 +116,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 initial_phase = self.params['X_phase']
 
             pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
-            if pulse_tau_pi2 < 31e-9: 
-                print 'tau to short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9) 
+            if pulse_tau_pi2 < 31e-9:
+                print 'tau to short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9)
 
 
             initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
@@ -164,7 +144,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             x_list = [0,2,5,7]
 
             decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
-            
+
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
@@ -382,7 +362,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         total_sequence_time=2*tau*N - 2* tau_cut
         Number_of_pulses  = N
 
-        return [list_of_elements, Number_of_pulses, n_wait_reps,tau_cut, total_sequence_time]
+        ##########################################
+        # adding all the relevant parameters to the object  ##
+        ##########################################
+        DecouplingGate.total_sequence_time = total_sequence_time
+        DecouplingGate.n_wait_reps= n_wait_reps
+        DecouplingGate.tau_cut = tau_cut
+        DecouplingGate.total_sequence_time = total_sequence_time
+        return DecouplingGate
 
     def Determine_length_and_type_of_Connection_elements(self,GateSequence,TotalsequenceTimes,tau_cut) :
         '''
@@ -637,20 +624,23 @@ class NuclearRamsey(DynamicalDecoupling):
         #---|pi/2| - |CNOT| - |Rz| - |CNOT| - |pi/2| ----
         #      ----      -----      ---     -----      ---
         ###########################################
-        initial_Pi2 = DecouplingGate('initial_pi2','connection_elt')
+        initial_Pi2 = DecouplingGate('initial_pi2','electron_Gate')
         Ren_CNOT = DecouplingGate('Ren_CNOT', 'Carbon_Gate')
-        Rz = DecouplingGate('Rz')
-        final_Pi2 = DecouplingGate('final_pi2','connection_elt')
+        Rz = DecouplingGate('Rz','connection_element')
+        final_Pi2 = DecouplingGate('final_pi2','electron_Gate')
 
         Ren_CNOT.N = self.params['CNOT_Ren_N']
         Ren_CNOT.tau = self.params['C_Ren_tau']
-        Rz.tau =
+
+
 
 
         prefix = 'CNOT'
         Ren_CNOT.elements, Ren_CNOT.reps, Ren_CNOT.wait_reps, Ren_CNOT.tau_cut, Ren_CNOT.duration = DynamicalDecoupling.generate_decoupling_sequence_elements(self,C_Ren_tau,CNOT_Ren_N,prefix,scheme='auto') #using auto scheme for now, this should always work
         ## Potential issue, reusing element might cause name conflicts
         # times from CNOT gate are needed as input for next elements
+
+
 
 
 
