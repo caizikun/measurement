@@ -25,6 +25,34 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     '''
     mprefix = 'DecouplingSequence'
 
+    def _X_elt(self):
+        '''
+        Trigger element that is used in different measurement child classes
+        '''
+        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['X_phase'])
+        return X
+
+    def _Y_elt(self):
+        '''
+        Trigger element that is used in different measurement child classes
+        '''
+        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['X_phase'])
+        return X
+
     def generate_decoupling_sequence_elements(self,DecouplingGate,scheme = 'auto'):
         '''
         This function takes a carbon (decoupling) gate as input, the gate must have tau and N as paramters
@@ -38,23 +66,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         prefix = DecouplingGate.prefix
 
         #Generate the basic X and Y pulses
-        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['X_phase'])
+        X = self._X_elt()
 
-        Y = pulselib.MW_IQmod_pulse('electron Y-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase = self.params['Y_phase'])
+        Y = self._Y_elt()
 
         #######################################################
         ## Select scheme for generating decoupling elements  ##
@@ -106,7 +120,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ###########################
         ##### Single Block Scheme #####
         ###########################
-        if scheme == 'single_block_with_pi':
+        if scheme == 'single_block':
             print 'using single block'
             tau_cut = 0
 
@@ -369,6 +383,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ##########################################
         # adding all the relevant parameters to the object  ##
         ##########################################
+        DecouplingGate.elements = list_of_elements
         DecouplingGate.total_sequence_time = total_sequence_time
         DecouplingGate.n_wait_reps= n_wait_reps
         DecouplingGate.tau_cut = tau_cut
@@ -383,8 +398,55 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def generate_connection_element(self,DecouplingGate):
         '''
-
+        Creates a single element that does only decoupling
+        requires DecouplingGate to have the following attributes
+        N, prefix, tau, time_before_pulse, time_after_pulse
         '''
+
+        N = DecouplingGate.N
+        prefix = DecouplingGate.prefix
+
+        tau = DecouplingGate.tau
+        tau_prnt = int(tau*1e9)
+
+        time_before_pulse = DecouplingGate.time_before_pulse
+        time_after_pulse = DecouplingGate.time_after_pulse
+
+        pulse_tau= tau-self.params['fast_pi_duration']/2.0
+        init_pulse_T= time_before_pulse-self.params['fast_pi_duration']/2.0
+        fin_pulse_T= time_after_pulse-self.params['fast_pi_duration']/2.0
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+            length = pulse_tau, amplitude = 0.)
+        T_inital = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
+            length = init_pulse_T, amplitude = 0.)
+        T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
+            length = fin_pulse_T, amplitude = 0.)
+
+        x_list = [0,2,5,7]
+
+        decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
+
+        decoupling_elt.append(T_initial)
+        for n in range(N) :
+            if n !=0:
+                decoupling_elt.append(T)
+            if n%8 in x_list:
+                decoupling_elt.append(X)
+            else:
+                decoupling_elt.append(Y)
+            if n !=N-1:
+                decoupling_elt.append(T)
+        decoupling_elt.append(T_final)
+        list_of_elements.append(decoupling_elt)
+
+        DecouplingGate.elements = list_of_elements
+
+
+
+
+
+
 
     def generate_electron_gate_element(self,DecouplingGate):
         '''
@@ -495,6 +557,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def combine_to_sequence(self,Lst_lst_els,list_of_repetitions,list_of_wait_reps):
         '''
+        !NB Depreciated, delete if combine_to_awg_sequence is working properly
+
         Combines all the generated elements to a sequence for the AWG
         Needs to be changed to handle the dynamical decoupling elements
 
@@ -761,7 +825,7 @@ class NuclearRamsey(DynamicalDecoupling):
         ###########################################
         initial_Pi2 = DecouplingGate('initial_pi2','electron_Gate')
         Ren_CNOT = DecouplingGate('Ren_CNOT', 'Carbon_Gate')
-        Rz = DecouplingGate('Rz','connection_element')
+        Rz = DecouplingGate('Rz','Connection_element')
         final_Pi2 = DecouplingGate('final_pi2','electron_Gate')
 
         ############
