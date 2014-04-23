@@ -107,9 +107,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 
-f_msm1_cntr =   2.024932e9          #Electron spin ms=-1 frquency
-                 
-### Do not change the +1 frq anymore!
+f_msm1_cntr =   2.025058e9          #Electron spin ms=-1 frquency
+### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 
 
@@ -191,7 +190,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.854090,  
+'fast_pi_amp'               :   0.848492,   
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
@@ -227,7 +226,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           300,
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           4e-9,
+'Ex_MBI_amplitude'          :           2e-9,
 'MBI_duration'              :           4,
 
     #Repump after succesfull MBI

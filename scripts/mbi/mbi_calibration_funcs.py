@@ -180,5 +180,5 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    cal_fast_pi2(SAMPLE_CFG,mult=22)
+    cal_fast_pi(SAMPLE_CFG,mult=21)
     #cal_pi2pi_pi(SAMPLE_CFG, 5)

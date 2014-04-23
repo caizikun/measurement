@@ -25,12 +25,12 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['reps_per_ROsequence'] = 500 
         m.params['Initial_Pulse'] ='x'
         m.params['Final_Pulse'] ='-x'
-        m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
+        m.params['Decoupling_sequence_scheme'] = 'single_block'
 
         Number_of_pulses = N 
-        pts = 51
-        start    = 2.0e-6  + (kk+start_point)     * (pts-1)*step_size 
-        end      = 2.0e-6  + (kk+1+start_point) * (pts-1)*step_size
+        pts = 81
+        start    = 0.2e-6  + (kk+start_point)     * (pts-1)*step_size 
+        end      = 0.2e-6  + (kk+1+start_point)   * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
 
         ### Start measurement ###
@@ -64,8 +64,8 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['E_RO_durations'] = [m.params['SSRO_duration']]
         m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
         m.generate_sequence(upload=True, debug=False)
-        m.run(setup=True, autoconfig=False)
-        m.save(msmt_name)
+        #m.run(setup=True, autoconfig=False)
+        #m.save(msmt_name)
 
             ### Option to stop the measurement cleanly
         print 'press q now to cleanly exit measurement loop'
@@ -81,6 +81,10 @@ if __name__ == '__main__':
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point = 90, tot = 90)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, tot = 140)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
+    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
 
+
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 10e-9,  start_point = 0, tot = 1)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point = 0, tot = 1)
+    
 

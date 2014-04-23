@@ -3,6 +3,7 @@ Script for a loop of N sweeps for different tau
 """
 import numpy as np
 import qt
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -15,15 +16,15 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def SimpleDecoupling(name,tau,N_step,N_init,N_finish,pts_per_run=11):
-m = DD.SimpleDecoupling(name)
+    m = DD.SimpleDecoupling(name)
 
-    total_pts = (N_finish-N_start)/N_step+1
+    total_pts = (N_finish-N_init)/N_step+1
     print 'Running measurement for tau is: '+str(tau*1e6)
 
     for kk in range(total_pts/pts_per_run):
         
         ### Set experimental parameters ###
-        m.params['reps_per_ROsequence'] = 500 
+        m.params['reps_per_ROsequence'] = 1250 
         m.params['Initial_Pulse'] ='x'
         m.params['Final_Pulse'] ='-x'
         m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
@@ -36,7 +37,7 @@ m = DD.SimpleDecoupling(name)
         ### Start measurement ###
 
             ### Measurement name
-        msmt_name = 'measurement_for_tau_'+str(tau*1e9)+'_' + str(kk)
+        msmt_name = 'measurement'+ str(kk)
         
             ### Optimize position
         qt.msleep(2)
@@ -55,9 +56,9 @@ m = DD.SimpleDecoupling(name)
         m.params['sweep_pts']        = N_list
         m.params['sweep_name']       = 'N'
 
-        print 'run = ' + str(kk) + ' of ' + str(tot) ' for this tau'
+        print 'run = ' + str(kk) + ' of ' + str(total_pts/pts_per_run) + ' for this tau'
         print m.params['sweep_pts']
-        print N_list
+        
 
             ### Run experiment            
         m.autoconfig()
@@ -84,9 +85,9 @@ if __name__ == '__main__':
                 17.378,9.854,11.370,12.888,15.920,22.570,24.132,30.354,11.701,14.820,24.172,27.294,30.412,16.500]
     N_steps_list = [4,4,4,4,8,8,8,8,8,4,4,4,4,4,4,8,8,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,8,8,8,8,16,16,16,16,16,16,16,16,16]
     
-    for jj in range(tau_list):
+    for jj in range(len(tau_list)):
 
-        SimpleDecoupling(SAMPLE+'_Sweep_N_',tau_list[jj]*1e-6,N_steps_list[jj],0,320,pts_per_run=11))
+        SimpleDecoupling(SAMPLE +' _Sweep_N_' +str(int(tau_list[jj]*1e3)) , tau_list[jj]*1e-6, N_steps_list[jj], 0, 320, pts_per_run=11)
         
         print 'press q now to cleanly exit the tau sweep measurement loop'
 

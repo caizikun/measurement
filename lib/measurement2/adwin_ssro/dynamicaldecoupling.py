@@ -45,7 +45,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         It returns the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
-        #Generate the basic pulses
+        #Generate the basic X and Y pulses
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
@@ -64,27 +64,30 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             amplitude = self.params['fast_pi_amp'],
             phase = self.params['Y_phase'])
 
-        #############################################
+        #######################################################
         ## Select scheme for generating decoupling elements  ##
-        #############################################
+        #######################################################
         if N == 0:
-            ##### This is a calibration measurement and should override the scheme for other settings
+            ### For N==0, select a different scheme without pulses
             scheme = 'calibration_NO_Pulses'
         elif scheme == 'auto':
-            if tau>2e-6 and tau :
+            if tau>2e-6 and tau :           ## ERROR?
                 scheme = 'repeating_T_elt'
-            elif tau<= self.params['fast_pi_duration']+20e-9:
-                print 'Error! tau too small: Pulses will overlap!'
+            elif tau<= self.params['fast_pi_duration']+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?  
+                print 'Error! tau too small: Pulses will overlap!' ## ADD return "minimum tau = X" This should also be more general
                 return
             elif tau<0.5e-6:
                 scheme = 'single_block'
-            elif N%8:
+            elif N%8:           ## ERROR? Should be N%8 == 0: ?
                 scheme = 'XY8'
-            elif N%2:
+            elif N%2:           ## ERROR?
                 scheme = 'XY4' #Might be outdated in functionality
         else:
             scheme = scheme
 
+        ###################
+        ## Set paramters ##
+        ###################
 
         tau_cut = 0 #initial value unless overwritten
         minimum_AWG_elementsize = 1e-6 #AWG elements/waveforms have to be 1 mu s
@@ -99,11 +102,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         if pulse_tau<0:
             print 'Error: tau is smaller than pi-pulse duration. Cannot generate decoupling element'
             return
-        elif tau <0.5e-6:
-            print '''Error: total element duration smaller than 1 mu s.
-            Requires more coding to implement
-            '''
-            return
+        #elif tau <0.5e-6:
+        #    print '''Error: total element duration smaller than 1 mu s.
+        #    Requires more coding to implement
+        #    '''
+        #    return
         ###########################
         ## Genereate the pulse elements #
         ###########################
@@ -124,7 +127,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 initial_phase = self.params['X_phase']
 
-            pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0
+            pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
+            if pulse_tau_pi2 < 31e-9: 
+                print 'tau to short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9) 
 
 
             initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
@@ -151,6 +156,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             x_list = [0,2,5,7]
 
             decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
+            
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
@@ -161,7 +167,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     decoupling_elt.append(X)
                 else:
                     decoupling_elt.append(Y)
-                if n !=N:
+                if n !=N-1:
                     decoupling_elt.append(T)
 
             decoupling_elt.append(T_around_pi2)
@@ -629,7 +635,6 @@ class SimpleDecoupling(DynamicalDecoupling):
         #############################################
         Trig_element = self._Trigger_element()
         mbi_elt = self._MBI_element()
-
 
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')

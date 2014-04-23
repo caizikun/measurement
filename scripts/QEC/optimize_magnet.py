@@ -50,11 +50,11 @@ def darkesr(name):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 100
+    m.params['repetitions'] = 1000
 
     m.params['ssbmod_frq_start'] = 43e6 - 10e6 ## first time we choose a quite large domain to find the three dips (15)
     m.params['ssbmod_frq_stop'] = 43e6 + 10e6
-    m.params['pts'] = 11
+    m.params['pts'] = 101
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.03
 
@@ -133,8 +133,10 @@ if __name__ == '__main__':
             print 'd_steps>+/-100, step only 100 steps!'
             if d_steps[iterations] > 0:
                 mom.step('Z_axis',100)
+                d_steps[iterations] = 100
             if d_steps[iterations] < 0:
                 mom.step('Z_axis',-100)
+                d_steps[iterations] = -100
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
