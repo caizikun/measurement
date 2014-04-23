@@ -7,6 +7,14 @@ import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
+class DecouplingGate(self,name,Gate_type):
+    def __init__:
+        self.name = name
+        self.Gate_type = Gate_type
+        # self.elements = elements
+        # self. repetitions = repetitions
+        # self.wait_reps = wait_reps
+
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
@@ -610,9 +618,73 @@ class NuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
     '''
+    def generate_sequence(self, upload= True, debug = False):
+        pts = self.params['pts']
+        free_evolution_time = self.param['free_evolution_time']
+        Ren_Z_tau = self.params['Ren_Z_tau']  #a short tau that decouples the electron while letting the carbons evolve freely.
+        dec_tau = self.params['off_res_decoupl_tau']
+
+        #Generation of trigger and MBI element
+        Trig_element = self._Trigger_element()
+        mbi_elt = self._MBI_element()
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
+        ##############################
+        # Generating the sequence elements #
+        ##############################
+        ### This is the simple variety. Does not yet contain DD wait element
+        #      ----     ------    ---     -----      ---
+        #---|pi/2| - |CNOT| - |Rz| - |CNOT| - |pi/2| ----
+        #      ----      -----      ---     -----      ---
+        ###########################################
+        initial_Pi2 = DecouplingGate('initial_pi2','connection_elt')
+        Ren_CNOT = DecouplingGate('Ren_CNOT', 'Carbon_Gate')
+        Rz = DecouplingGate('Rz')
+        final_Pi2 = DecouplingGate('final_pi2','connection_elt')
+
+        Ren_CNOT.N = self.params['CNOT_Ren_N']
+        Ren_CNOT.tau = self.params['C_Ren_tau']
+        Rz.tau =
 
 
-    pass
+        prefix = 'CNOT'
+        Ren_CNOT.elements, Ren_CNOT.reps, Ren_CNOT.wait_reps, Ren_CNOT.tau_cut, Ren_CNOT.duration = DynamicalDecoupling.generate_decoupling_sequence_elements(self,C_Ren_tau,CNOT_Ren_N,prefix,scheme='auto') #using auto scheme for now, this should always work
+        ## Potential issue, reusing element might cause name conflicts
+        # times from CNOT gate are needed as input for next elements
+
+
+
+
+
+
+
+        ########################################
+        #Combine all the elements to a sequence
+        #very sequence specific
+        ########################################
+        list_of_list_of_elements = []
+        list_of_list_of_elements.append([mbi_elt])
+        list_of_list_of_elements.append(initial_pulse)
+        list_of_list_of_elements.append(CNOT_gate)
+        list_of_list_of_elements.append(Phase_Gate)
+        ist_of_list_of_elements.append(CNOT_gate)
+        list_of_list_of_elements.append(final_pulse)
+        list_of_list_of_elements.append([Trig_element])
+        list_of_repetitions = [1,1]+[list_of_decoupling_reps]+[1]+[list_of_decoupling_reps]+[1,1]
+        list_of_wait_reps =[]
+        list_of_wait_reps = [0,0]+[n_wait_reps] +[0]+[n_wait_reps]+[0,0]
+
+
+        # if upload:
+        #     print 'uploading list of elements'
+        #     # qt.pulsar.upload(*combined_list_of_elements)
+        #     print ' uploading sequence'
+        #     # qt.pulsar.program_sequence(combined_seq)
+        #     qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+        # else:
+        #     print 'upload = false, no sequence uploaded to AWG'
+
+
 
 class SimpleDecoupling(DynamicalDecoupling):
     '''
@@ -630,9 +702,7 @@ class SimpleDecoupling(DynamicalDecoupling):
         Number_of_pulses = self.params['Number_of_pulses']
         scheme = self.params['Decoupling_sequence_scheme']
 
-        ############################################
         #Generation of trigger and MBI element
-        #############################################
         Trig_element = self._Trigger_element()
         mbi_elt = self._MBI_element()
 
