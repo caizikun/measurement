@@ -25,6 +25,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     '''
     mprefix = 'DecouplingSequence'
 
+
     def _X_elt(self):
         '''
         Trigger element that is used in different measurement child classes
@@ -52,6 +53,26 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             amplitude = self.params['fast_pi_amp'],
             phase =  self.params['X_phase'])
         return X
+
+    def _Trigger_element(self):
+        '''
+        Trigger element that is used in different measurement child classes
+        '''
+        Trig = pulse.SquarePulse(channel = 'adwin_sync',
+            length = 10e-6, amplitude = 2)
+        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
+            global_time = True)
+        Trig_element.append(Trig)
+        return Trig_element
+
+    #functions for determining timing and what kind of elements to generate
+    def Determine_length_and_type_of_Connection_elements(self,GateSequence) :
+        '''
+        Empty function, needs to be able to determine the length and type of glue gates in the future
+        '''
+        pass
+
+    #functions for making the elements
 
     def generate_decoupling_sequence_elements(self,DecouplingGate,scheme = 'auto'):
         '''
@@ -390,12 +411,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         DecouplingGate.total_sequence_time = total_sequence_time
         return DecouplingGate
 
-    def Determine_length_and_type_of_Connection_elements(self,GateSequence) :
-        '''
-        Empty function, needs to be able to determine the length and type of glue gates in the future
-        '''
-        pass
-
     def generate_connection_element(self,DecouplingGate):
         '''
         Creates a single element that does only decoupling
@@ -441,12 +456,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         list_of_elements.append(decoupling_elt)
 
         DecouplingGate.elements = list_of_elements
-
-
-
-
-
-
 
     def generate_electron_gate_element(self,DecouplingGate):
         '''
@@ -536,25 +545,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         DecouplingGate.elements = [e]
 
-    def generate_wait_element(self,DecouplingGate):
-        '''
-        Generates an element that connects to decoupling elements
-        It can be at the start, the end or between sequence elements
-        time_before_pulse,time_after_pulse, Gate_type,prefix,tau,N
-        '''
-        time_before_pulse = DecouplingGate.time_before_pulse
-        time_after_pulse = DecouplingGate.time_after_pulse
-        Gate = DecouplingGate.Gate
-        prefix = DecouplingGate.prefix
-
-        T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
-            length = time_before_pulse+time_after_pulse, amplitude = 0.)
-        e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
-                global_time = True)
-        e.append(T_wait)
-        return [e]
-
-
+    #functions for making sequences out of elements
     def combine_to_sequence(self,Lst_lst_els,list_of_repetitions,list_of_wait_reps):
         '''
         !NB Depreciated, delete if combine_to_awg_sequence is working properly
@@ -677,17 +668,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 print 'Size of element not understood Error!'
                 return
         return list_of_elements, seq
-
-    def _Trigger_element(self):
-        '''
-        Trigger element that is used in different measurement child classes
-        '''
-        Trig = pulse.SquarePulse(channel = 'adwin_sync',
-            length = 10e-6, amplitude = 2)
-        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
-            global_time = True)
-        Trig_element.append(Trig)
-        return Trig_element
 
     def combine_to_AWG_sequence(self,gate_seq):
         '''
