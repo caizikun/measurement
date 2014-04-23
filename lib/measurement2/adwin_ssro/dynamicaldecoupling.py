@@ -11,6 +11,7 @@ class DecouplingGate(object):
     def __init__(self,name,Gate_type):
         self.name = name
         self.Gate_type = Gate_type # can be electron, carbon or connection
+        self.phase = 0 #default phase at which the gate should start
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
@@ -26,7 +27,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_decoupling_sequence_elements(self,DecouplingGate,scheme = 'auto'):
         '''
         This function takes a carbon (decoupling) gate as input, the gate must have tau and N as paramters
-        It returns the object with the parameters relevant to make an AWG sequence of it. These are: the elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
+        It returns the object with the parameters relevant to make an AWG sequence added to it.
+        These are: the AWG_elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
         tau = DecouplingGate.tau,N,prefix
@@ -377,13 +379,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         pass
 
-    def generate_connection_element(self,time_before_pulse,time_after_pulse, Gate_type,prefix,tau,N):
+    def generate_electron_gate_element(self,DecouplingGate):
         '''
         Generates an element that connects to decoupling elements
         It can be at the start, the end or between sequence elements
+        time_before_pulse,time_after_pulse, Gate_type,prefix,tau,N
         '''
+        time_before_pulse = DecouplingGate.time_before_pulse
+        time_after_pulse = DecouplingGate.time_after_pulse
+        Gate = DecouplingGate.Gate
+        prefix = DecouplingGate.prefix
+
         tau_prnt = int(tau*1e9)
-        if Gate_type == 'x':
+        if gate == 'x':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -406,9 +414,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_before_p)
             e.append(pulse.cp(X))
             e.append(T_after_p)
-            return [e]
 
-        if Gate_type == '-x':
+
+        elif gate == '-x':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -430,11 +438,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_before_p)
             e.append(pulse.cp(X))
             e.append(T_after_p)
-            return [e]
 
-
-
-        elif Gate_type == 'pi':
+        elif gate == 'pi':
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
@@ -455,9 +460,25 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_before_p)
             e.append(pulse.cp(X))
             e.append(T_after_p)
-            return [e]
 
-        elif Gate_type == 'Wait':
+        else:
+            print 'this is not programmed yet '
+            return
+
+        DecouplingGate.elements = [e]
+
+    def generate_wait_element(self,DecouplingGate):
+        '''
+        Generates an element that connects to decoupling elements
+        It can be at the start, the end or between sequence elements
+        time_before_pulse,time_after_pulse, Gate_type,prefix,tau,N
+        '''
+        time_before_pulse = DecouplingGate.time_before_pulse
+        time_after_pulse = DecouplingGate.time_after_pulse
+        Gate = DecouplingGate.Gate
+        prefix = DecouplingGate.prefix
+
+        elif gate == 'Wait':
             T_wait = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse+time_after_pulse, amplitude = 0.)
             e = element.Element('%s delay_at_tau_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
@@ -465,9 +486,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_wait)
             return [e]
 
-        else:
-            print 'this is not programmed yet '
-            return
+
 
     def combine_to_sequence(self,Lst_lst_els,list_of_repetitions,list_of_wait_reps):
         '''
@@ -614,8 +633,11 @@ class NuclearRamsey(DynamicalDecoupling):
         #Generation of trigger and MBI element
         Trig_element = self._Trigger_element()
         mbi_elt = self._MBI_element()
+
+        #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
+
         ##############################
         # Generating the sequence elements #
         ##############################
@@ -631,12 +653,27 @@ class NuclearRamsey(DynamicalDecoupling):
 
         Ren_CNOT.N = self.params['CNOT_Ren_N']
         Ren_CNOT.tau = self.params['C_Ren_tau']
+        Ren_CNOT.prefix = 'CNOT'
+
+        #Generate sequence elements for all Carbon gates
+        generate_decoupling_sequence_elements(Ren_CNOT) #Ren_CNOT = gen... should not be neccesarry. Good to test
+
+        #Use information about duration of carbon gates to calculate
+        #use function for this in more fancy meass class
+        initial_Pi2.time_before_pulse =max(1e-6 - Ren_CNOT.tau_cut + 36e-9,44e-9)
+        initial_Pi2.time_after_pulse = Ren_CNOT.tau_cut
+        initial_Pi2.prefix = 'init_pi2'
+        final_Pi2.time_before_pulse =Ren_CNOT.tau_cut
+        final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
+        final_Pi2.prefix = 'fin_pi2'
+        #Generate the start and end pulse
+        generate_connection_element(initial_Pi2)
+        generate_connection_element(final_Pi2)
 
 
 
 
-        prefix = 'CNOT'
-        Ren_CNOT.elements, Ren_CNOT.reps, Ren_CNOT.wait_reps, Ren_CNOT.tau_cut, Ren_CNOT.duration = DynamicalDecoupling.generate_decoupling_sequence_elements(self,C_Ren_tau,CNOT_Ren_N,prefix,scheme='auto') #using auto scheme for now, this should always work
+
         ## Potential issue, reusing element might cause name conflicts
         # times from CNOT gate are needed as input for next elements
 
