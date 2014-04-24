@@ -26,6 +26,7 @@ reload(mt)
 axis = 'x_axis'
 scan_range = 2000
 no_of_steps = 20
+no_of_rounds = 4
 
 execfile(qt.reload_current_setup)
 
@@ -124,8 +125,9 @@ if __name__ == '__main__':
             qt.msleep(1)
             GreenAOM.set_power(5e-6)
             counters.set_is_running(True)
-            ## put something in that reads counts!!!!
-            if counts < 2e4:
+            int_time = 100   #(ms)
+            counts = ins_adwin.measure_counts(int_time)[counter-1]
+            if counts < 2e3:
                 optimiz0r.optimize(dims=['x','y','z','x','y'])
 
         optimiz0r.optimize(dims=['x','y','z','x','y'])
