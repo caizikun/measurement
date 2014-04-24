@@ -1,7 +1,6 @@
 """
 Script for a simple Decoupling sequence
 Based on Electron T1 script
-Made by Adriaan Rol
 """
 import numpy as np
 import qt
@@ -27,12 +26,12 @@ def SimpleDecoupling(name):
     m.params['Final_Pulse'] ='-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    Number_of_pulses = 48 #256
+    Number_of_pulses = 16 #256
     pts = 26 # 51
     #start   = 12.45e-6
     #end     = 12.55e-6
     #tau_list = np.linspace(start, end, pts)
-    tau_list = np.array(range(2200,2600,10))*1e-9
+    tau_list = np.array(range(2200,2600,100))*1e-9
 
     print tau_list
 
@@ -43,7 +42,7 @@ def SimpleDecoupling(name):
     m.params['sweep_name']       = 'tau (us)'
 
     m.autoconfig()
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':
     SimpleDecoupling(SAMPLE)
