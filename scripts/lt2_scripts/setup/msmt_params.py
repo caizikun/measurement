@@ -107,7 +107,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 
-f_msm1_cntr =   2.025058e9          #Electron spin ms=-1 frquency
+f_msm1_cntr =   2.025091e9          #Electron spin ms=-1 frquency
 ### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 

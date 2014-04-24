@@ -22,15 +22,15 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
     for kk in range(tot):
         
         ### Set experimental parameters ###
-        m.params['reps_per_ROsequence'] = 500 
+        m.params['reps_per_ROsequence'] = 2000 
         m.params['Initial_Pulse'] ='x'
         m.params['Final_Pulse'] ='-x'
-        m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
+        m.params['Decoupling_sequence_scheme'] = 'single_block'
 
         Number_of_pulses = N 
-        pts = 51
-        start    = 2.0e-6  + (kk+start_point)     * (pts-1)*step_size 
-        end      = 2.0e-6  + (kk+1+start_point) * (pts-1)*step_size
+        pts = 81
+        start    = 0.13e-6  + (kk+start_point)     * (pts-1)*step_size 
+        end      = 0.13e-6  + (kk+1+start_point)   * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
 
         ### Start measurement ###
@@ -39,13 +39,13 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         msmt_name = 'measurement' + str(kk)
         
             ### Optimize position
-        qt.msleep(2)
+        '''qt.msleep(2)
         if mod(kk,2)==0:
             AWG.clear_visa()
             stools.turn_off_all_lt2_lasers()
             qt.msleep(1)
             GreenAOM.set_power(5e-6)
-            optimiz0r.optimize(dims=['x','y','z','x','y'])
+            optimiz0r.optimize(dims=['x','y','z','x','y'])'''
 
             ### Define and print parameters
         funcs.prepare(m)
@@ -81,6 +81,9 @@ if __name__ == '__main__':
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point = 90, tot = 90)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, tot = 140)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
+    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
 
+    #SimpleDecoupling('Fingerprint_Short_Tau_' + SAMPLE +'_N_' + str(32), N=32, step_size = 10e-9, start_point = 0, tot = 1)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=128*4, step_size = 4e-9,  start_point = 0, tot = 1)
+    
 

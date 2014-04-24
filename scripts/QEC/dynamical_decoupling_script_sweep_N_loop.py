@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     for jj in range(len(tau_list)):
 
-        SimpleDecoupling(SAMPLE +' _Sweep_N_' +str(int(tau_list[jj]*1e3)) , tau_list[jj]*1e-6, N_steps_list[jj], 0, 320, pts_per_run=11)
+        SimpleDecoupling(SAMPLE +'_Sweep_N_' +str(int(tau_list[jj]*1e3)) , tau_list[jj]*1e-6, N_steps_list[jj], 0, 320, pts_per_run=11)
         
         print 'press q now to cleanly exit the tau sweep measurement loop'
 
@@ -95,3 +95,4 @@ if __name__ == '__main__':
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
+#tims list [15.310]
