@@ -5,30 +5,28 @@ Important: choose the right domain for the range of positions in get_magnet_posi
 """
 import numpy as np
 import qt
-import measurement.lib.config.adwins as adwins_cfg
-import measurement.lib.measurement2.measurement as m2
 import msvcrt
 
+#import measurement.lib.config.adwins as adwins_cfg
+#import measurement.lib.measurement2.measurement as m2
+
 # import the msmt class
-from measurement.lib.measurement2.adwin_ssro import ssro
+#from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 # import the dESR fit
-from analysis.lib.fitting import dark_esr_auto_analysis
+from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 
 # import magnet tools and master of magnet
-from measurement.lib.tools import magnet_tools as mt
+from measurement.lib.tools import magnet_tools as mt; reload(mt)
 mom = qt.instruments['master_of_magnet']
 reload(mt)
-reload(dark_esr_auto_analysis)
 
 execfile(qt.reload_current_setup)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
-
 nm_per_step = qt.exp_params['magnet']['nm_per_step']
-
 current_f_msp1 = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']
 
 # Define the wanted magnet position
@@ -36,7 +34,7 @@ B_field_ideal = mt.convert_f_to_Bz(freq=current_f_msp1)
 position_ideal = mt.get_magnet_position(msp1_freq=current_f_msp1,ms = 'plus',solve_by = 'list')
 B_error_range = 2e-3 # allowed error in B_field (it was 7mG in RT experiment, can be changed)
 
-def darkesr(name):
+def darkesr(name, range_MHz, pts):
 
     m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -45,50 +43,20 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-
     m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 500
 
-    m.params['ssbmod_frq_start'] = 43e6 - 10e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + 10e6
-    m.params['pts'] = 101
+    m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
+    m.params['pts'] = pts
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.03
 
     m.autoconfig()
     m.generate_sequence(upload=True)
-    m.run()
-    m.save()
-    m.finish()
-
-# as long as you are in similar frequency range the freq does not need
-# to be changed: do not need to reload the measurement to the AWG
-def darkesr_auto(name,upload=False):
-
-    m = pulsar_msmt.DarkESR(name)
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-
-    m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
-    #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
-
-    m.params['mw_power'] = 20
-    m.params['repetitions'] = 1000
-
-    m.params['ssbmod_frq_start'] = 43e6 - 6e6
-    m.params['ssbmod_frq_stop'] = 43e6 + 6e6
-    m.params['pts'] = 61
-    m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.03
-
-    m.autoconfig()
-    m.generate_sequence(upload=upload)
     m.run()
     m.save()
     m.finish()
@@ -102,11 +70,10 @@ if __name__ == '__main__':
     B_field_measured = []
 
     # start: define B-field and position by first ESR measurement
-    
-    darkesr(SAMPLE_CFG+'_magnet_optimization')
+    darkesr(SAMPLE_CFG+'_magnet_optimization', 10, 101)
 
     # do the fitting  --> this fit programme returns in MHz, needs input GHz ! guess center freq can be gone!
-    f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9,qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
 
     # start to list all the measured values
     iterations = 0
@@ -157,8 +124,8 @@ if __name__ == '__main__':
             break
 
         iterations += 1
-        #do dESR without reloading to the AWG, smaller domain, Note by TIM: setting upload to False is a bug
-        darkesr_auto(SAMPLE_CFG, upload = True)
+        #do dESR
+        darkesr(SAMPLE_CFG, 6, 81)
         
 
 

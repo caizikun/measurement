@@ -107,7 +107,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 
-f_msm1_cntr =   2.025091e9          #Electron spin ms=-1 frquency
+f_msm1_cntr =   2.024939e9-200e3          #Electron spin ms=-1 frquency
 ### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 
@@ -150,7 +150,7 @@ cfg['samples']['Hans_sil1'] = {
     #######################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
-'SSRO_repetitions'  : 10000,
+'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
 'A_CR_amplitude': 3e-9,#3nW
@@ -161,7 +161,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'CR_probe':      1000,
 'CR_repump':     1000,
 'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude':  8e-9,
+'Ex_RO_amplitude':  16e-9,
 'Ex_SP_amplitude':  0e-9,
 'SP_duration'        : 300,
 'SP_filter_duration' : 0 }
