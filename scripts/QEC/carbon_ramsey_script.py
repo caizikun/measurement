@@ -32,7 +32,7 @@ def Carbon_Ramsey(name):
     m.params['sweep_pts']        =self.params['free_evolution_time']*1e6
     m.params['sweep_name']       = 'Free evolution time (us)'
 
-    m.params['CNOT_Ren_N'] = 16 # Currently arbitrary self.params['C1_Ren_N']
+    m.params['C_Ren_N'] = 16 # Currently arbitrary self.params['C1_Ren_N']
     m.params['C_Ren_tau'] = self.params['C1_Ren_tau']
 
 

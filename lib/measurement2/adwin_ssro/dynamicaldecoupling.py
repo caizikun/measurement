@@ -696,7 +696,7 @@ class NuclearRamsey(DynamicalDecoupling):
     '''
     def generate_sequence(self, upload= True, debug = False):
         pts = self.params['pts']
-        free_evolution_times = self.param['free_evolution_times']
+        free_evolution_time = self.param['free_evolution_times']
 
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
@@ -709,30 +709,30 @@ class NuclearRamsey(DynamicalDecoupling):
             #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
             ###########################################
             initial_Pi2 = Gate('initial_pi2','electron_Gate')
-            Ren_CNOT = Gate('Ren_CNOT', 'Carbon_Gate')
+            Ren = Gate('Ren', 'Carbon_Gate')
             Rz = Gate('Rz','Connection_element')
             final_Pi2 = Gate('final_pi2','electron_Gate')
 
             ############
-            gate_seq = [initial_Pi2,Ren_CNOT,Rz,Ren_CNOT,final_Pi2]
+            gate_seq = [initial_Pi2,Ren,Rz,Ren,final_Pi2]
             ############
 
-            Ren_CNOT.N = self.params['CNOT_Ren_N']
-            Ren_CNOT.tau = self.params['C_Ren_tau']
-            Ren_Cnot.scheme = self.params['Decoupling_sequence_scheme']
-            Ren_CNOT.prefix = 'CNOT'
+            Ren.N = self.params['C_Ren_N']
+            Ren.tau = self.params['C_Ren_tau']
+            Ren.scheme = self.params['Decoupling_sequence_scheme']
+            Ren.prefix = 'Ren'
 
             #Generate sequence elements for all Carbon gates
-            self.generate_decoupling_sequence_elements(Ren_CNOT)
+            self.generate_decoupling_sequence_elements(Ren)
 
             #Use information about duration of carbon gates to calculate
             #use function for this in more fancy meass class
-            initial_Pi2.time_before_pulse =max(1e-6 - Ren_CNOT.tau_cut + 36e-9,44e-9)
-            initial_Pi2.time_after_pulse = Ren_CNOT.tau_cut
+            initial_Pi2.time_before_pulse =max(1e-6 - Ren.tau_cut + 36e-9,44e-9)
+            initial_Pi2.time_after_pulse = Ren.tau_cut
             initial_Pi2.Gate = self.params['Initial_Pulse']
             initial_Pi2.prefix = 'init_pi2'+str(pt)
 
-            final_Pi2.time_before_pulse =Ren_CNOT.tau_cut
+            final_Pi2.time_before_pulse =Ren.tau_cut
             final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
             final_Pi2.Gate = self.params['Final_Pulse']
             final_Pi2.prefix = 'fin_pi2'+str(pt)
@@ -744,24 +744,22 @@ class NuclearRamsey(DynamicalDecoupling):
             # Generate Rz element (now we explicitly set tau, N and time before and after final)
             Rz.prefix = 'phase_gate'+str(pt)
             Rz.dec_duration = self.param['free_evolution_time'][pt]
-            Rz.tau_cut_before = Ren_CNOT.tau_cut
-            Rz.tau_cut_after = Ren_CNOT.tau_cut
+            Rz.tau_cut_before = Ren.tau_cut
+            Rz.tau_cut_after = Ren.tau_cut
 
             self.determine_connection_element_parameters(Rz)
             self.generate_connection_element(Rz)
 
-        ## Combine to AWG sequence that can be uploaded #
-        list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
+            # Combine to AWG sequence that can be uploaded #
+            list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
 
         ##########################################
         # Combine make final sequence for all loops
-        # combined_list_of_elements.extend(list_of_elements)
-        # for seq_el in seq.elements:
-        #     combined_seq.append_element(seq_el)
+        combined_list_of_elements.extend(list_of_elements)
+        for seq_el in seq.elements:
+            combined_seq.append_element(seq_el)
 
-        #
-        combined_list_of_elements =list_of_elements
-        combined_seq = seq
+
 
 
         if upload:
@@ -786,7 +784,6 @@ class SimpleDecoupling(DynamicalDecoupling):
         pts = self.params['pts']
         tau_list = self.params['tau_list']
         Number_of_pulses = self.params['Number_of_pulses']
-        scheme = self.params['Decoupling_sequence_scheme']
 
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
@@ -809,7 +806,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             simple_el_dec.N = Number_of_pulses[pt]
             simple_el_dec.tau = tau_list[pt]
             simple_el_dec.prefix = 'electron'
-            simple_el_dec.scheme = scheme
+            simple_el_dec.scheme = self.params['Decoupling_sequence_scheme']
 
             ## Generate the decoupling elements
             self.generate_decoupling_sequence_elements(simple_el_dec)
