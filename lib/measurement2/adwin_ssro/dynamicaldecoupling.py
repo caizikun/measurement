@@ -7,7 +7,7 @@ import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
-class DecouplingGate(object):
+class Gate(object):
     def __init__(self,name,Gate_type):
         self.name = name
         self.Gate_type = Gate_type # can be electron, carbon or connection
@@ -68,26 +68,56 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return Trig_element
 
     #functions for determining timing and what kind of elements to generate
-    def Determine_length_and_type_of_Connection_elements(self,GateSequence) :
+    def determine_length_and_type_of_Connection_elements(self,GateSequence) :
         '''
         Empty function, needs to be able to determine the length and type of glue gates in the future
         '''
         pass
 
+    def determine_connection_element_parameters(self,Gate):
+        '''
+        Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
+        '''
+        dec_duration = Gate.dec_duration
+        if (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
+            print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us', %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
+
+        #These lines must be added to measurement params
+        self.params['min_dec_tau']
+        self.params['max_dec_tau']
+        # Pulses must be multiple of
+        self.params['dec_pulse_multiple']
+
+
+        for k in range(10):
+            tau =dec_duration/(k*self.params['dec_pulse_multiple'])
+            if self.params['min_dec_tau']:
+                print 'Error: decoupling tau: (%s) smaller than minimum value(%s)' %(tau,self.params['min_dec_tau'] )
+                break
+            elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
+                Gate.tau = tau
+                Gate.N = int(k*self.params['dec_pulse_multiple'])
+                print 'found the following decoupling tau: %s' %(tau)
+                break
+
+
+        return Gate
+
+
     #functions for making the elements
 
-    def generate_decoupling_sequence_elements(self,DecouplingGate):
+    def generate_decoupling_sequence_elements(self,Gate):
         '''
         This function takes a carbon (decoupling) gate as input, the gate must have tau and N as paramters
         It returns the object with the parameters relevant to make an AWG sequence added to it.
         These are: the AWG_elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
-        tau = DecouplingGate.tau
-        N = DecouplingGate.N
-        DecouplingGate.reps = N # Overwrites reps parameter that is used in sequencing
-        prefix = DecouplingGate.prefix
-        scheme = DecouplingGate.scheme 
+        tau = Gate.tau
+        N = Gate.N
+        Gate.reps = N # Overwrites reps parameter that is used in sequencing
+        prefix = Gate.prefix
+        scheme = Gate.scheme
 
         #Generate the basic X and Y pulses
         X = self._X_elt()
@@ -408,69 +438,65 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ##########################################
         # adding all the relevant parameters to the object  ##
         ##########################################
-        DecouplingGate.elements = list_of_elements
-        DecouplingGate.total_sequence_time = total_sequence_time
-        DecouplingGate.n_wait_reps= n_wait_reps
-        DecouplingGate.tau_cut = tau_cut
-        DecouplingGate.total_sequence_time = total_sequence_time
-        return DecouplingGate
+        Gate.elements = list_of_elements
+        Gate.total_sequence_time = total_sequence_time
+        Gate.n_wait_reps= n_wait_reps
+        Gate.tau_cut = tau_cut
+        Gate.total_sequence_time = total_sequence_time
+        return Gate
 
-    def generate_connection_element(self,DecouplingGate):
+    def generate_connection_element(self,Gate):
         '''
         Creates a single element that does only decoupling
-        requires DecouplingGate to have the following attributes
-        N, prefix, tau, time_before_pulse, time_after_pulse
+        requires Gate to have the following attributes
+        N, prefix, tau, tau_cut_before, tau_cut_after
         '''
 
-        N = DecouplingGate.N
-        prefix = DecouplingGate.prefix
+        N = Gate.N
+        prefix = Gate.prefix
 
-        tau = DecouplingGate.tau
+        tau = Gate.tau
         tau_prnt = int(tau*1e9)
 
-        time_before_pulse = DecouplingGate.time_before_pulse
-        time_after_pulse = DecouplingGate.time_after_pulse
-
+        tau_cut_before = Gate.tau_cut_before
+        tau_cut_after = Gate.tau_cut_after
         pulse_tau= tau-self.params['fast_pi_duration']/2.0
-        init_pulse_T= time_before_pulse-self.params['fast_pi_duration']/2.0
-        fin_pulse_T= time_after_pulse-self.params['fast_pi_duration']/2.0
+
 
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
             length = pulse_tau, amplitude = 0.)
         T_inital = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
-            length = init_pulse_T, amplitude = 0.)
+            length = tau_cut_before, amplitude = 0.)
         T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
-            length = fin_pulse_T, amplitude = 0.)
+            length = tau_cut_after, amplitude = 0.)
+        #######################################
+        # _______________(____|____)^N_____________
+        # |tau_cut_before(|tau|pi|tau|)^N|tau_cut_after|
+        #######################################
 
         x_list = [0,2,5,7]
-
         decoupling_elt = element.Element('%s _tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
-
         decoupling_elt.append(T_initial)
         for n in range(N) :
-            if n !=0:
-                decoupling_elt.append(T)
+            decoupling_elt.append(T)
             if n%8 in x_list:
                 decoupling_elt.append(X)
             else:
                 decoupling_elt.append(Y)
-            if n !=N-1:
-                decoupling_elt.append(T)
+            decoupling_elt.append(T)
         decoupling_elt.append(T_final)
-        list_of_elements.append(decoupling_elt)
+        Gate.elements = [decoupling_elt]
 
-        DecouplingGate.elements = list_of_elements
-
-    def generate_electron_gate_element(self,DecouplingGate):
+    def generate_electron_gate_element(self,Gate):
         '''
         Generates an element that connects to decoupling elements
         It can be at the start, the end or between sequence elements
         time_before_pulse,time_after_pulse, Gate_type,prefix,tau,N
         '''
-        time_before_pulse = DecouplingGate.time_before_pulse
-        time_after_pulse = DecouplingGate.time_after_pulse
-        Gate = DecouplingGate.Gate
-        prefix = DecouplingGate.prefix
+        time_before_pulse = Gate.time_before_pulse
+        time_after_pulse = Gate.time_after_pulse
+        Gate = Gate.Gate
+        prefix = Gate.prefix
 
         if Gate == 'x':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
@@ -546,7 +572,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             print 'this is not programmed yet '
             return
 
-        DecouplingGate.elements = [e]
+        Gate.elements = [e]
 
     #function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq):
@@ -667,87 +693,80 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return list_of_elements, seq
 
 
-
-
 class NuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
     '''
     def generate_sequence(self, upload= True, debug = False):
         pts = self.params['pts']
-        free_evolution_time = self.param['free_evolution_time']
+        free_evolution_time = self.param['free_evolution_times']
 
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Nuclear Ramsey Sequence')
 
-        ###########################################
-        #####    Generating the sequence elements      ######
-        #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
-        ###########################################
-        initial_Pi2 = DecouplingGate('initial_pi2','electron_Gate')
-        Ren_CNOT = DecouplingGate('Ren_CNOT', 'Carbon_Gate')
-        Rz = DecouplingGate('Rz','Connection_element')
-        final_Pi2 = DecouplingGate('final_pi2','electron_Gate')
+        for pt in range[pts]:
 
-        ############
-        gate_seq = [initial_Pi2,Ren_CNOT,Rz,Ren_CNOT,final_Pi2]
-        ############
+            ###########################################
+            #####    Generating the sequence elements      ######
+            #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
+            ###########################################
+            initial_Pi2 = Gate('initial_pi2','electron_Gate')
+            Ren = Gate('Ren', 'Carbon_Gate')
+            Rz = Gate('Rz','Connection_element')
+            final_Pi2 = Gate('final_pi2','electron_Gate')
 
-        Ren_CNOT.N = self.params['CNOT_Ren_N']
-        Ren_CNOT.tau = self.params['C_Ren_tau']
-        Ren_CNOT.prefix = 'CNOT'
+            ############
+            gate_seq = [initial_Pi2,Ren,Rz,Ren,final_Pi2]
+            ############
 
-        #Generate sequence elements for all Carbon gates
-        generate_decoupling_sequence_elements(Ren_CNOT) #Ren_CNOT = gen... should not be neccesarry. Good to test
+            Ren.N = self.params['C_Ren_N']
+            Ren.tau = self.params['C_Ren_tau']
+            Ren.scheme = self.params['Decoupling_sequence_scheme']
+            Ren.prefix = 'Ren'
 
-        #Use information about duration of carbon gates to calculate
-        #use function for this in more fancy meass class
-        initial_Pi2.time_before_pulse =max(1e-6 - Ren_CNOT.tau_cut + 36e-9,44e-9)
-        initial_Pi2.time_after_pulse = Ren_CNOT.tau_cut
-        initial_Pi2.Gate = self.params['Initial_Pulse']
-        initial_Pi2.prefix = 'init_pi2'
+            #Generate sequence elements for all Carbon gates
+            self.generate_decoupling_sequence_elements(Ren)
 
-        final_Pi2.time_before_pulse =Ren_CNOT.tau_cut
-        final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-        final_Pi2.Gate = self.params['Final_Pulse']
-        final_Pi2.prefix = 'fin_pi2'
+            #Use information about duration of carbon gates to calculate
+            #use function for this in more fancy meass class
+            initial_Pi2.time_before_pulse =max(1e-6 - Ren.tau_cut + 36e-9,44e-9)
+            initial_Pi2.time_after_pulse = Ren.tau_cut
+            initial_Pi2.Gate = self.params['Initial_Pulse']
+            initial_Pi2.prefix = 'init_pi2'+str(pt)
 
-        #Generate the start and end pulse
-        generate_electron_gate_element(initial_Pi2)
-        generate_electron_gate_element(final_Pi2)
+            final_Pi2.time_before_pulse =Ren.tau_cut
+            final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
+            final_Pi2.Gate = self.params['Final_Pulse']
+            final_Pi2.prefix = 'fin_pi2'+str(pt)
 
-        # Generate Rz element (now we explicitly set tau, N and time before and after final)
-        Rz.prefix = 'phase_gate'
-        Rz.N = 8
-        Rz.tau = .2e-6
-        Rz.time_before_pulse = .1e-6
-        Rz.time_after_pulse = .1e-6
+            #Generate the start and end pulse
+            self.generate_electron_gate_element(initial_Pi2)
+            self.generate_electron_gate_element(final_Pi2)
 
-        #determine_tau_N_connection_gate(Rz)
-        generate_phase_gate(Rz)
-        #some function that creates a single element
+            # Generate Rz element (now we explicitly set tau, N and time before and after final)
+            Rz.prefix = 'phase_gate'+str(pt)
+            Rz.dec_duration = self.param['free_evolution_time'][pt]
+            Rz.tau_cut_before = Ren.tau_cut
+            Rz.tau_cut_after = Ren.tau_cut
 
+            self.determine_connection_element_parameters(Rz)
+            self.generate_connection_element(Rz)
 
-        ## Combine to AWG sequence that can be uploaded #
-        list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
+            # Combine to AWG sequence that can be uploaded #
+            list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
 
         ##########################################
         # Combine make final sequence for all loops
-        # combined_list_of_elements.extend(list_of_elements)
-        # for seq_el in seq.elements:
-        #     combined_seq.append_element(seq_el)
+        combined_list_of_elements.extend(list_of_elements)
+        for seq_el in seq.elements:
+            combined_seq.append_element(seq_el)
 
-        #
-        combined_list_of_elements =list_of_elements
-        combined_seq = seq
+
 
 
         if upload:
-            print 'uploading list of elements'
-            # qt.pulsar.upload(*combined_list_of_elements)
             print ' uploading sequence'
-            # qt.pulsar.program_sequence(combined_seq)
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
@@ -768,7 +787,6 @@ class SimpleDecoupling(DynamicalDecoupling):
         pts = self.params['pts']
         tau_list = self.params['tau_list']
         Number_of_pulses = self.params['Number_of_pulses']
-        scheme = self.params['Decoupling_sequence_scheme']
 
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
@@ -781,9 +799,9 @@ class SimpleDecoupling(DynamicalDecoupling):
             #####    Generating the sequence elements      ######
             #               ---|pi/2| - |DD| - |pi/2| ---
             ###########################################
-            initial_Pi2 = DecouplingGate('initial_pi2','electron_Gate')
-            simple_el_dec = DecouplingGate('electron_decoupling', 'Carbon_Gate')
-            final_Pi2 = DecouplingGate('final_pi2','electron_Gate')
+            initial_Pi2 = Gate('initial_pi2','electron_Gate')
+            simple_el_dec = Gate('electron_decoupling', 'Carbon_Gate')
+            final_Pi2 = Gate('final_pi2','electron_Gate')
 
             gate_seq = [initial_Pi2,simple_el_dec,final_Pi2]
             #############
@@ -791,7 +809,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             simple_el_dec.N = Number_of_pulses[pt]
             simple_el_dec.tau = tau_list[pt]
             simple_el_dec.prefix = 'electron'
-            simple_el_dec.scheme = scheme 
+            simple_el_dec.scheme = self.params['Decoupling_sequence_scheme']
 
             ## Generate the decoupling elements
             self.generate_decoupling_sequence_elements(simple_el_dec)
@@ -804,7 +822,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 initial_Pi2.Gate = self.params['Initial_Pulse']
                 initial_Pi2.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
                 initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
-                initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming 
+                initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming
 
 
                 final_Pi2.time_before_pulse =simple_el_dec.tau_cut
@@ -819,13 +837,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
 
-            #NEED TO understand this line. something with the Trigger element and MBI_elt only being uploaded once
-            
-            # if i == 0:
-                # i=1
             combined_list_of_elements.extend(list_of_elements)
-            # else:
-            #     combined_list_of_elements.extend(list_of_elements[:-1])
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
