@@ -78,6 +78,27 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
         '''
+        dec_duration = Gate.dec_duration
+        if (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
+            print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us', %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
+
+        #These lines must be added to measurement params
+        self.params['min_dec_tau']
+        self.params['max_dec_tau']
+        # Pulses must be multiple of
+        self.params['dec_pulse_multiple']
+
+        k = 0
+        for k in range(10):
+            tau =dec_duration/(k*self.params['dec_pulse_multiple'])
+            if self.params['min_dec_tau']:
+                print 'Error: decoupling tau: (%s) smaller than minimum value(%s)' %(tau,self.params['min_dec_tau'] )
+                break
+            elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
+                Gate.tau = tau
+                Gate.N = int(k*self.params['dec_pulse_multiple'])
+
+        return Gate
 
 
     #functions for making the elements
@@ -425,7 +446,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Creates a single element that does only decoupling
         requires Gate to have the following attributes
-        N, prefix, tau, time_before_pulse, time_after_pulse
+        N, prefix, tau, tau_cut_before, tau_cut_after
         '''
 
         N = Gate.N
@@ -462,7 +483,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             decoupling_elt.append(T)
         decoupling_elt.append(T_final)
         Gate.elements = [decoupling_elt]
-
 
     def generate_electron_gate_element(self,Gate):
         '''
@@ -676,59 +696,59 @@ class NuclearRamsey(DynamicalDecoupling):
     '''
     def generate_sequence(self, upload= True, debug = False):
         pts = self.params['pts']
-        free_evolution_time = self.param['free_evolution_time']
+        free_evolution_times = self.param['free_evolution_times']
 
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Nuclear Ramsey Sequence')
 
-        ###########################################
-        #####    Generating the sequence elements      ######
-        #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
-        ###########################################
-        initial_Pi2 = Gate('initial_pi2','electron_Gate')
-        Ren_CNOT = Gate('Ren_CNOT', 'Carbon_Gate')
-        Rz = Gate('Rz','Connection_element')
-        final_Pi2 = Gate('final_pi2','electron_Gate')
+        for pt in range[pts]:
 
-        ############
-        gate_seq = [initial_Pi2,Ren_CNOT,Rz,Ren_CNOT,final_Pi2]
-        ############
+            ###########################################
+            #####    Generating the sequence elements      ######
+            #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
+            ###########################################
+            initial_Pi2 = Gate('initial_pi2','electron_Gate')
+            Ren_CNOT = Gate('Ren_CNOT', 'Carbon_Gate')
+            Rz = Gate('Rz','Connection_element')
+            final_Pi2 = Gate('final_pi2','electron_Gate')
 
-        Ren_CNOT.N = self.params['CNOT_Ren_N']
-        Ren_CNOT.tau = self.params['C_Ren_tau']
-        Ren_CNOT.prefix = 'CNOT'
+            ############
+            gate_seq = [initial_Pi2,Ren_CNOT,Rz,Ren_CNOT,final_Pi2]
+            ############
 
-        #Generate sequence elements for all Carbon gates
-        generate_decoupling_sequence_elements(Ren_CNOT)
+            Ren_CNOT.N = self.params['CNOT_Ren_N']
+            Ren_CNOT.tau = self.params['C_Ren_tau']
+            Ren_Cnot.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_CNOT.prefix = 'CNOT'
 
-        #Use information about duration of carbon gates to calculate
-        #use function for this in more fancy meass class
-        initial_Pi2.time_before_pulse =max(1e-6 - Ren_CNOT.tau_cut + 36e-9,44e-9)
-        initial_Pi2.time_after_pulse = Ren_CNOT.tau_cut
-        initial_Pi2.Gate = self.params['Initial_Pulse']
-        initial_Pi2.prefix = 'init_pi2'
+            #Generate sequence elements for all Carbon gates
+            self.generate_decoupling_sequence_elements(Ren_CNOT)
 
-        final_Pi2.time_before_pulse =Ren_CNOT.tau_cut
-        final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-        final_Pi2.Gate = self.params['Final_Pulse']
-        final_Pi2.prefix = 'fin_pi2'
+            #Use information about duration of carbon gates to calculate
+            #use function for this in more fancy meass class
+            initial_Pi2.time_before_pulse =max(1e-6 - Ren_CNOT.tau_cut + 36e-9,44e-9)
+            initial_Pi2.time_after_pulse = Ren_CNOT.tau_cut
+            initial_Pi2.Gate = self.params['Initial_Pulse']
+            initial_Pi2.prefix = 'init_pi2'+str(pt)
 
-        #Generate the start and end pulse
-        generate_electron_gate_element(initial_Pi2)
-        generate_electron_gate_element(final_Pi2)
+            final_Pi2.time_before_pulse =Ren_CNOT.tau_cut
+            final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
+            final_Pi2.Gate = self.params['Final_Pulse']
+            final_Pi2.prefix = 'fin_pi2'+str(pt)
 
-        # Generate Rz element (now we explicitly set tau, N and time before and after final)
-        Rz.prefix = 'phase_gate'
-        Rz.N = 8
-        Rz.tau = .2e-6
-        Rz.time_before_pulse = .1e-6
-        Rz.time_after_pulse = .1e-6
+            #Generate the start and end pulse
+            self.generate_electron_gate_element(initial_Pi2)
+            self.generate_electron_gate_element(final_Pi2)
 
-        #determine_tau_N_connection_gate(Rz)
-        generate_phase_gate(Rz)
-        #some function that creates a single element
+            # Generate Rz element (now we explicitly set tau, N and time before and after final)
+            Rz.prefix = 'phase_gate'+str(pt)
+            Rz.dec_duration = self.param['free_evolution_time'][pt]
+            Rz.tau_cut_before = Ren_CNOT.tau_cut
+            Rz.tau_cut_after = Ren_CNOT.tau_cut
 
+            self.determine_connection_element_parameters(Rz)
+            self.generate_connection_element(Rz)
 
         ## Combine to AWG sequence that can be uploaded #
         list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
@@ -745,10 +765,7 @@ class NuclearRamsey(DynamicalDecoupling):
 
 
         if upload:
-            print 'uploading list of elements'
-            # qt.pulsar.upload(*combined_list_of_elements)
             print ' uploading sequence'
-            # qt.pulsar.program_sequence(combined_seq)
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
@@ -820,13 +837,7 @@ class SimpleDecoupling(DynamicalDecoupling):
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
 
-            #NEED TO understand this line. something with the Trigger element and MBI_elt only being uploaded once
-
-            # if i == 0:
-                # i=1
             combined_list_of_elements.extend(list_of_elements)
-            # else:
-            #     combined_list_of_elements.extend(list_of_elements[:-1])
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
