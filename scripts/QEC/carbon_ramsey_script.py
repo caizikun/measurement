@@ -41,7 +41,7 @@ def Carbon_Ramsey(name):
     #############################
     m.params['min_dec_tau'] = 40e-9 + m.params['fast_pi_duration']
     m.params['max_dec_tau'] = 0.4e-6 #Based on simulation for fingerprint at low tau
-    m.params['dec_pulse_multiple'] = 4 #lowest multiple of 4 pulses
+    m.params['dec_pulse_multiple'] = 4#lowest multiple of 4 pulses
 
 
 

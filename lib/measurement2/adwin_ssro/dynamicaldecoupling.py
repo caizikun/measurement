@@ -88,7 +88,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # Pulses must be multiple of
         self.params['dec_pulse_multiple']
 
-        k = 0
+
         for k in range(10):
             tau =dec_duration/(k*self.params['dec_pulse_multiple'])
             if self.params['min_dec_tau']:
