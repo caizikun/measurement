@@ -97,6 +97,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
                 Gate.tau = tau
                 Gate.N = int(k*self.params['dec_pulse_multiple'])
+                print 'found the following decoupling tau: %s' %(tau)
+                break
+
 
         return Gate
 
