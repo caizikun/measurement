@@ -46,7 +46,7 @@ def Carbon_Ramsey(name):
 
 
     m.autoconfig()
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':
     Carbon_Ramsey(SAMPLE)

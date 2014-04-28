@@ -1,7 +1,7 @@
 """
 Script for optimizing the magnet position in Z-direction.
 Important: choose the right domain for the range of positions in get_magnet_position in magnet tools!
-
+At the moment this only optimizes the Z position on the ms=+1 transition
 """
 import numpy as np
 import qt
@@ -34,7 +34,7 @@ B_field_ideal = mt.convert_f_to_Bz(freq=current_f_msp1)
 position_ideal = mt.get_magnet_position(msp1_freq=current_f_msp1,ms = 'plus',solve_by = 'list')
 B_error_range = 2e-3 # allowed error in B_field (it was 7mG in RT experiment, can be changed)
 
-def darkesr(name, range_MHz, pts):
+def darkesr(name, range_MHz, pts, reps):
 
     m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -47,7 +47,7 @@ def darkesr(name, range_MHz, pts):
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = reps
 
     m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
@@ -61,7 +61,20 @@ def darkesr(name, range_MHz, pts):
     m.save()
     m.finish()
 
+######################
+### Run experiment ###
+######################
+
 if __name__ == '__main__':
+
+    ## Input parameters ##
+    init_range   = 6     #Common: 10 MHz
+    init_pts     = 81    #Common: 121
+    init_reps    = 500   #Common: 500
+
+    repeat_range = 6
+    repeat_pts   = 81
+    repeat_reps  = 1000
 
     #create the lists to save the data to
     d_steps = []
@@ -69,8 +82,11 @@ if __name__ == '__main__':
     u_f0 = []
     B_field_measured = []
 
+    #turn on magnet stepping in Z
+    mom.set_mode('Z_axis', 'stp')
+
     # start: define B-field and position by first ESR measurement
-    darkesr(SAMPLE_CFG+'_magnet_optimization', 10, 101)
+    darkesr(SAMPLE_CFG+'_magnet_optimization', range_MHz=init_range, pts=init_pts, reps=init_reps)
 
     # do the fitting  --> this fit programme returns in MHz, needs input GHz ! guess center freq can be gone!
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
@@ -93,43 +109,38 @@ if __name__ == '__main__':
 
         # Step the magnet
         d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))))
-
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
-        if abs(d_steps[iterations]) > 100:
-            print 'd_steps>+/-100, step only 100 steps!'
+        if abs(d_steps[iterations]) > 250:
+            print 'd_steps>+/-100, step only 250 steps!'
             if d_steps[iterations] > 0:
-                mom.step('Z_axis',100)
-                d_steps[iterations] = 100
+                mom.step('Z_axis',250)
+                d_steps[iterations] = 250
             if d_steps[iterations] < 0:
-                mom.step('Z_axis',-100)
-                d_steps[iterations] = -100
+                mom.step('Z_axis',-250)
+                d_steps[iterations] = -250
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
         else:
             mom.step('Z_axis',d_steps[iterations])
 
-        qt.msleep(5)
-
+        qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(5e-6)
-        optimiz0r.optimize(dims=['x','y','z','x','y'])
+        optimiz0r.optimize(dims=['x','y','z'])
 
-        # Make sure you can always stop the optimization process --> keep an eye on the optimization because this
-        # can cause crosstalk
+        # To cleanly exit the optimization
         print 'press q to stop measurement loop (check if optimize worked!)'
-        qt.msleep(5)
+        qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
         iterations += 1
         #do dESR
-        darkesr(SAMPLE_CFG, 6, 81)
+        darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps)
         
-
-
-        #Determine frequency and B-field again --> this fit programme returns in MHz, needs input GHz
+        #Determine frequency and B-field --> this fit programme returns in MHz, needs input GHz
         f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9,qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
         f0.append(f0_temp)
         u_f0.append(u_f0_temp)
@@ -137,6 +148,8 @@ if __name__ == '__main__':
 
         print 'Measured frequency = ' +str(f0_temp)+' GHz, so '+str(abs(f0_temp*1e6-current_f_msp1*1e-3))+' kHz away from wanted frequency'
         print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' kHz away from wanted frequency'
+
+        
 
 
     total_d_steps = np.sum(d_steps)

@@ -106,10 +106,12 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msm1_cntr = 2.001883e9            #Electron spin ms=-1 frquency
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
-
-f_msm1_cntr =   2.024939e9-200e3          #Electron spin ms=-1 frquency
+### Here we set two frequencies, these are constants
+f_msm1_cntr =   2.024921e9        #Electron spin ms=-1 frquency0
 ### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
+### We want to use the difference (Z-field) and the average (X-field)
+
 
 
 zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 and -1 fregs.

@@ -18,7 +18,6 @@ class Gate(object):
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
-
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
@@ -43,7 +42,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return X
 
     def _Y_elt(self):
-    '''
+        '''
         Trigger element that is used in different measurement child classes
         '''
         X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
