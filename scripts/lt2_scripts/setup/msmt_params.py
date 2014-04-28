@@ -137,7 +137,7 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :        6.522e-6,
+'C1_Ren_tau'    :        6.523e-6,
 #'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
@@ -197,7 +197,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   72e-9,#60e-9,
-'fast_pi2_amp'              :   0.822801,#0*0.777847, #140324
+'fast_pi2_amp'              :   0.843194,#0.822801,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -378,7 +378,7 @@ cfg['protocols']['Hans_sil4']['pulses'] ={
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   60e-9,    #should be divisible by 2
-'fast_pi2_amp'              :   0.777847, #140324
+'fast_pi2_amp'              :   0.809057, #0.777847, #140324
 'fast_pi2_mod_frq'          :   f_MBI,
 
     ### MBI pulses ###

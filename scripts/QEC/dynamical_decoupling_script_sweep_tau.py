@@ -1,7 +1,6 @@
 """
 Script for a simple Decoupling sequence
 Based on Electron T1 script
-Made by Adriaan Rol
 """
 import numpy as np
 import qt
