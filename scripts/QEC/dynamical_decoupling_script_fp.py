@@ -28,7 +28,7 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
         Number_of_pulses = N 
-        pts = 51
+        pts = 101
         start    = 2.0e-6  + (kk+start_point)     * (pts-1)*step_size 
         end      = 2.0e-6  + (kk+1+start_point) * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
@@ -81,6 +81,6 @@ if __name__ == '__main__':
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point = 90, tot = 90)
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, tot = 140)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 1)
 
 

@@ -45,16 +45,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
-        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
             frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
             length = self.params['fast_pi_duration'],
             amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['X_phase'])
-        return X
-
+            phase =  self.params['Y_phase'])
+        return Y
+        
     def _Trigger_element(self):
         '''
         Trigger element that is used in different measurement child classes
@@ -829,7 +829,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 gate_seq = [simple_el_dec]
             else:
                 #Generate the start and end pulse
-                initial_Pi2.Gate = self.params['Initial_Pulse']
+                initial_Pi2.Gate_operation = self.params['Initial_Pulse']
                 initial_Pi2.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
                 initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
                 initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming
@@ -837,7 +837,7 @@ class SimpleDecoupling(DynamicalDecoupling):
 
                 final_Pi2.time_before_pulse =simple_el_dec.tau_cut
                 final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-                final_Pi2.Gate = self.params['Final_Pulse']
+                final_Pi2.Gate_operation = self.params['Final_Pulse']
                 final_Pi2.prefix = 'fin_pi2_'+str(pt) #to ensure unique naming
 
                 #Generate the start and end pulse

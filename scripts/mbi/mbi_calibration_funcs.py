@@ -104,7 +104,7 @@ def cal_fast_pi2(name,  mult=1):
 
     # pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
-    m.params['MW_pulse_amps'] = np.linspace(0.8, 0.83, pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.79, 0.83, pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 

@@ -123,7 +123,7 @@ N_HF_frq = 2.196e6        #calibrated 20140320/181319
 mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq
+mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
 mw_power = 20                               #MW power
 
 cfg['samples']['Hans_sil1'] = {
@@ -137,7 +137,7 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :        6.523e-6,
+'C1_Ren_tau'    :        6.522e-6,
 #'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
@@ -192,12 +192,12 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.848492,   
+'fast_pi_amp'               :   0.844083,   
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   72e-9,#60e-9,
-'fast_pi2_amp'              :   0.843194,#0.822801,#0*0.777847, #140324
+'fast_pi2_amp'              :   0.809691,#0.822801,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###

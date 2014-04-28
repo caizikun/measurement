@@ -3,6 +3,7 @@ Script for a carbon ramsey sequence
 """
 import numpy as np
 import qt
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -14,7 +15,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name):
+def Carbon_Ramsey(name,tau = None):
 
     m = DD.NuclearRamsey(name)
     funcs.prepare(m)
@@ -22,7 +23,7 @@ def Carbon_Ramsey(name):
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x'
+    m.params['Final_Pulse'] ='x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     ### Sweep parmater
@@ -33,7 +34,10 @@ def Carbon_Ramsey(name):
     m.params['sweep_name']       = 'Free evolution time (us)'
 
     m.params['C_Ren_N'] = 10 # Currently arbitrary m.params['C1_Ren_N']
-    m.params['C_Ren_tau'] = m.params['C1_Ren_tau']
+    if tau ==None: 
+        m.params['C_Ren_tau'] = m.params['C1_Ren_tau']
+    else: 
+        m.params['C_Ren_tau'] = tau 
 
 
     #############################
@@ -48,7 +52,20 @@ def Carbon_Ramsey(name):
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
 
-if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE)
 
+
+
+# if __name__ == '__main__':
+#     Carbon_Ramsey(SAMPLE)
+
+if __name__ == '__main__':
+    tau_list = np.linspace(6.522e-6-20e-9,6.522e-6+20e-9,21)
+    for tau in tau_list:
+        print tau 
+        Carbon_Ramsey(SAMPLE+str(tau),tau)
+
+        print 'press q now to cleanly exit this measurement loop'
+        qt.msleep(5)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
 

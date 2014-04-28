@@ -26,12 +26,12 @@ def SimpleDecoupling(name):
     m.params['Final_Pulse'] ='-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    Number_of_pulses = 32 #256
-    pts = 26 # 51
+    Number_of_pulses = 16 #256
+    # pts = 51 # 51
     #start   = 12.45e-6
     #end     = 12.55e-6
     #tau_list = np.linspace(start, end, pts)
-    tau_list = np.array(range(15000,15500,10))*1e-9
+    tau_list = np.array(range(2000,3000,100))*1e-9
 
     print tau_list
 
