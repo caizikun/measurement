@@ -51,7 +51,7 @@ def darkesr(name, ms = 'msp'):
 
 if __name__ == '__main__':
     
-    repetitions = 1000
+    repetitions = 5
     ## Create the lists to save the data to
     f0m = []; u_f0m = []; f0p = [] ;u_f0p = []
     Bx_field_measured = []

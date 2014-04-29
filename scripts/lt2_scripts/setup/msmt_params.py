@@ -137,7 +137,8 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :        6.522e-6,
+'C1_Ren_tau'    :       6.522e-6,
+'C1_freq'       :       343.0, #(2)
 #'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
