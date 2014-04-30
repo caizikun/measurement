@@ -13,6 +13,8 @@ class Gate(object):
         self.Gate_type = Gate_type # can be electron, carbon or connection
         self.phase = 0 #default phase at which the gate should start
         self.reps = 1 # only overwritten in case of Carbon decoupling elements
+        self.prefix = name #default prefix is identical to name, can be overwritten
+
         if Gate_type == 'Carbon_Gate':
             self.scheme = 'auto'
         # self.elements = elements
@@ -800,14 +802,15 @@ class LongNuclearRamsey(DynamicalDecoupling):
 
             ###########################################
             #####    Generating the sequence elements      ######
-            #    ---|pi/2| - |Ren| - |DD| - |Rz| - |Ren| - |pi/2| ---
+            #    ---|pi/2| - |Ren| -|con|- |DD| - |Rz| - |Ren| - |pi/2| ---
             ###########################################
-            initial_Pi2 = Gate('initial_pi2','electron_Gate')
-            Ren_a = Gate('Ren_a', 'Carbon_Gate')
-            DD_gate = Gate('DD_gate','Carbon_Gate') #NB not strictly a Carbon Gate
-            Rz = Gate('Rz','Connection_element')
-            Ren_b = Gate('Ren_b', 'Carbon_Gate')
-            final_Pi2 = Gate('final_pi2','electron_Gate')
+            initial_Pi2 = Gate('initial_pi2'+str(pt),'electron_Gate')
+            Ren_a = Gate('Ren_a'+str(pt), 'Carbon_Gate')
+            con_gate = Gate('con'+str(pt),'Connection_element')#Purely empty element
+            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
+            Rz = Gate('Rz'+str(pt),'Connection_element')
+            Ren_b = Gate('Ren_b'+str(pt), 'Carbon_Gate')
+            final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
 
             ############
             gate_seq = [initial_Pi2,Ren_a,DD, Rz,Ren_b,final_Pi2]
@@ -816,12 +819,10 @@ class LongNuclearRamsey(DynamicalDecoupling):
             Ren_a.N = self.params['C_Ren_N']
             Ren_a.tau = self.params['C_Ren_tau']
             Ren_a.scheme = self.params['Decoupling_sequence_scheme']
-            Ren_a.prefix = 'Ren_a'+str(pt)
 
             Ren_b.N = self.params['C_Ren_N']
             Ren_b.tau = self.params['C_Ren_tau']
             Ren_b.scheme = self.params['Decoupling_sequence_scheme']
-            Ren_b.prefix = 'Ren_b'+str(pt)
 
 
             #Generate sequence elements for all Carbon gates
@@ -833,12 +834,10 @@ class LongNuclearRamsey(DynamicalDecoupling):
             initial_Pi2.time_before_pulse =max(1e-6 - Ren_a.tau_cut + 36e-9,44e-9)
             initial_Pi2.time_after_pulse = Ren_a.tau_cut
             initial_Pi2.Gate_operation = self.params['Initial_Pulse']
-            initial_Pi2.prefix = 'init_pi2'+str(pt)
 
             final_Pi2.time_before_pulse =Ren_a.tau_cut
             final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
             final_Pi2.Gate_operation = self.params['Final_Pulse']
-            final_Pi2.prefix = 'fin_pi2'+str(pt)
 
             #Generate the start and end pulse
             self.generate_electron_gate_element(initial_Pi2)
@@ -856,14 +855,16 @@ class LongNuclearRamsey(DynamicalDecoupling):
 
             self.params['free_evolution_times'][pt]
 
-            N, tau_left = divmod(self.params['free_evolution_times'][pt],4*m.params['tau_larmor'])
-            N = int(N/2)
-
+            N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*m.params['tau_larmor'])
+            DD_gate.N = int(N2*2) #N2 because N must be even
             DD_gate.tau = m.params['tau_larmor']
-            DD_gate.N  =
             DD_gate.scheme = 'auto'
 
-            Rz.prefix = 'phase_gate'+str(pt)
+
+            self.generate_decoupling_sequence_elements(DD_gate)
+
+
+
             Rz.dec_duration = self.params['free_evolution_times'][pt]
             Rz.tau_cut_before = Ren_a.tau_cut
             Rz.tau_cut_after = Ren_a.tau_cut
