@@ -787,6 +787,62 @@ class NuclearRamsey(DynamicalDecoupling):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+
+class CarbonGateSequence(DynamicalDecoupling):
+    '''
+    This should be the most fancy version where in theory one should be able to put in any gate sequence
+    '''
+    mprefix = 'CarbonGateSeq'
+
+    def generate_sequence(self,upload=True,debug=False):
+        pts = self.params['pts']
+
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('CarbonGateSeq')
+
+        for pt in range(pts):
+            #########################
+            ## Define the sequence here
+            # NB this is an arbitrary test example
+            #########################
+
+            initial_Pi2 = Gate('initial_pi2'+str(pt),'electron_Gate')
+            Ren_a = Gate('Ren_a'+str(pt), 'Carbon_Gate')
+            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
+            Ren_b = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
+            middle_pi = Gate('final_pi2'+str(pt),'electron_Gate')
+            Ren_c = Gate('Ren_b'+str(pt), 'Carbon_Gate')
+            final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
+
+            gate_seq = [initial_Pi2,Ren_a,DD_gate,Ren_b,middle_pi,Ren_c,final_Pi2]
+
+            #something to get params of all the gates
+#            getgateparams()
+
+            Ren_a.N = self.params['C_Ren_N']
+            Ren_a.tau = self.params['C_Ren_tau']
+            Ren_a.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_a.phase = 0
+
+            Ren_b.N = self.params['C_Ren_N']
+            Ren_b.tau = self.params['C_Ren_tau']
+            Ren_b.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_b.phase = 0
+
+            Ren_c.N = self.params['C_Ren_N']
+            Ren_c.tau = self.params['C_Ren_tau']
+            Ren_c.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_c.phase = 0
+
+            for g in gate_seq:
+                if g.Gate_type =='Carbon_Gate':
+                    generate_decoupling_sequence_elements(g)
+            for i range(gate_seq-1):
+                if gate_seq[i].Gate_type =='Carbon_Gate' and gate_seq[i+1].Gate_type =='Carbon_Gate':
+
+
+
+
 class LongNuclearRamsey(DynamicalDecoupling):
     '''
     More fancy version of Nuclear Ramsey, eventually will be merged
