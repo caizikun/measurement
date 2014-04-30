@@ -137,8 +137,10 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
+### nuclear spin params
 'C1_Ren_tau'    :        6.522e-6,
-#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
+'C1_Ren_N'      :        10,
+#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
 'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
@@ -191,8 +193,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.844083,   
+'fast_pi_duration'          :   140e-9,
+'fast_pi_amp'               :   0.844083,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
