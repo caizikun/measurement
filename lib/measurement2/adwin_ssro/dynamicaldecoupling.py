@@ -846,29 +846,33 @@ class LongNuclearRamsey(DynamicalDecoupling):
             # Generate Rz element (now we explicitly set tau, N and time before and after final)
 
 
+            ###########
+            # Calculate parameters for and generate the main DD element
+            ###########
             f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
             m.params['tau_larmor'] = round(1/f_larmor,9)#rounds to ns
-            print 'tau larmor = %s' %m.params['tau_larmor']
-
-
-
-
+            print 'tau larmor = %s' %m.params['tau_larmor'] #Better would be to get this from the msmt params directly
             self.params['free_evolution_times'][pt]
 
             N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*m.params['tau_larmor'])
             DD_gate.N = int(N2*2) #N2 because N must be even
             DD_gate.tau = m.params['tau_larmor']
             DD_gate.scheme = 'auto'
-
-
             self.generate_decoupling_sequence_elements(DD_gate)
 
+            ############
+            # generate the connection element and phase element
+            ############
 
+            con_gate.tau_cut_before = Ren_a.tau_cut
+            con_gate.dec_duration = 0
+            con_gate.tau_cut_after = DD_gate.tau_cut
+            self.determine_connection_element_parameters(con_gate)
+            self.generate_connection_element(con_gate)
 
-            Rz.dec_duration = self.params['free_evolution_times'][pt]
-            Rz.tau_cut_before = Ren_a.tau_cut
-            Rz.tau_cut_after = Ren_a.tau_cut
-
+            Rz.dec_duration = tau_left
+            Rz.tau_cut_before = DD_gate.tau_cut
+            Rz.tau_cut_after = Ren_b.tau_cut
             self.determine_connection_element_parameters(Rz)
             self.generate_connection_element(Rz)
 
