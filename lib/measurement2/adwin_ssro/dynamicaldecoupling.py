@@ -80,7 +80,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
         '''
         dec_duration = Gate.dec_duration
-        if (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
+        if dec_duration == 0:
+            Gate.N = 0
+            Gate.tau = 0
+            return
+        elif (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
             print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us' %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
 
         #These lines must be added to measurement params
@@ -454,6 +458,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Creates a single element that does only decoupling
         requires Gate to have the following attributes
         N, prefix, tau, tau_cut_before, tau_cut_after
+        Function also works for N =0
         '''
 
         N = Gate.N
@@ -468,7 +473,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         X = self._X_elt()
         Y = self._Y_elt()
-        # If it turns out that N =0 /tau = 0 gives an error add an if statement for the 0 pulses case
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
             length = pulse_tau, amplitude = 0.)
         T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
