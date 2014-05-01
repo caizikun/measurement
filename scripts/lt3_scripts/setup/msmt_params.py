@@ -38,6 +38,7 @@ cfg['protocols']['AdwinSSRO']={
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
+		'SSRO_stop_after_first_photon':	0,
 		}
 
 yellow=False
@@ -113,7 +114,6 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
 		'SSRO_repetitions':				 5000,
-		'SSRO_stop_after_first_photon':	 0,
 		}
 
 

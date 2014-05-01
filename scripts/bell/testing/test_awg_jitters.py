@@ -13,11 +13,13 @@ def program_test_master():
     e=element.Element('Sinde', pulsar=qt.pulsar)
     e.append(T)
     e.append(p_trig)
-    e.append(pulse.cp(T, length = 800e-9))
+    e.append(pulse.cp(T, length = 500e-9))
     e.append(p_sync)
     e.append(T)
     e.append(p_pulse)
-    e.append(pulse.cp(T, length = 1000e-9))
+    e.append(pulse.cp(T, length = 100
+        \
+        0e-9))
 
     e.print_overview()
     
