@@ -9,9 +9,9 @@ def test_PQ_measurement(name):
         generate_test_sequence()
     m = pq_measurement.PQMeasurement(name)
     m.params['MAX_DATA_LEN']        =   int(100e6)
-    m.params['BINSIZE']             =   1  #2**BINSIZE*BASERESOLUTION
-    m.params['MIN_SYNC_BIN']        =   0 
-    m.params['MAX_SYNC_BIN']        =   1000 
+    m.params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION
+    m.params['MIN_SYNC_BIN']        =   0 # in BASERESOLUTION (e.g. ns for TH, ps for HH)
+    m.params['MAX_SYNC_BIN']        =   1000000 # in BASERESOLUTION (e.g. ns for TH, ps for HH)
     m.params['measurement_time']    =   1200 #sec
     m.params['measurement_abort_check_interval']    = 1. #sec
 
@@ -20,21 +20,22 @@ def test_PQ_measurement(name):
 
 def test_PQ_measurement_integrated(name):
     
-    m = pq_measurement.PQMeasurement(name)
+    m = pq_measurement.PQMeasurementIntegrated(name)
     m.params['pts']                 =   10
     m.params['syncs_per_sweep']     =   10
-    upload=True
+    upload=False
     if upload:
         generate_sweep_test_sequence(m.params['pts'], m.params['syncs_per_sweep'] )
     m.params['MAX_DATA_LEN']        =   int(100e6)
-    m.params['BINSIZE']             =   1  #2**BINSIZE*BASERESOLUTION
+    m.params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION
     m.params['MIN_SYNC_BIN']        =   0 
-    m.params['MAX_SYNC_BIN']        =   1000 
+    m.params['MAX_SYNC_BIN']        =   1000000
     m.params['measurement_time']    =   1200 #sec
     m.params['measurement_abort_check_interval']    = 1. #sec
 
     m.run()
     m.finish()
+
 def generate_sweep_test_sequence(pts, syncs_per_sweep):
     sync = pulse.SquarePulse(channel = 'sync',
             length = 50e-9, amplitude = 2)
@@ -126,7 +127,12 @@ def generate_test_sequence():
         refpulse = 'sync',
         refpoint = 'start')
     #elt.append(pulse.cp(photon_T, length=1e-6))
-
+    elt2 = element.Element('sync_only', pulsar=qt.pulsar)
+    elt2.add(sync_T,
+        name='sync_T')
+    elt2.add(sync,
+        refpulse='sync_T',
+        name='sync')
     #syncs_elt_mod0 = element.Element('2_syncs_photon_after_first', pulsar=qt.pulsar)
     #syncs_elt_mod0.append(sync_T)
     #s1 = syncs_elt_mod0.append(sync)
@@ -140,8 +146,12 @@ def generate_test_sequence():
     seq = pulsar.Sequence('PQ_testing')
     seq.append(name = 'test1',
         wfname = elt.name,
-        repetitions = 1000,
+        repetitions = 1,
         trigger_wait = True)
+    seq.append(name = 'test2',
+        wfname = elt2.name,
+        repetitions = 20,
+        trigger_wait = False)
     #seq.append(name = 'photon_after_sync1',
     #    wfname = syncs_elt_mod0.name,
     #    repetitions = 100)
@@ -154,4 +164,5 @@ def generate_test_sequence():
 
 
 if __name__ == '__main__':
+    #test_PQ_measurement('test')
     test_PQ_measurement_integrated('test')

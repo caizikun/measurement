@@ -21,9 +21,10 @@ class PQMeasurement(m2.Measurement):
         do_calibrate = kw.pop('pq_calibrate',True)
         if self.PQ_ins.OpenDevice():
             self.PQ_ins.start_T2_mode()
-            self.PQ_ins.set_Binning(self.params['BINSIZE'])
             if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
                 self.PQ_ins.calibrate()
+            self.PQ_ins.set_Binning(self.params['BINSIZE'])
+            print self.PQ_ins.get_ResolutionPS()
         else:
             raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
 
@@ -73,7 +74,7 @@ class PQMeasurement(m2.Measurement):
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
-        _timer=time.time() 
+        _timer=time.time()
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
@@ -98,7 +99,6 @@ class PQMeasurement(m2.Measurement):
                         T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
-
                 if newlength > 0:
 
                     dset_hhtime.resize((current_dset_length+newlength,))
@@ -138,7 +138,6 @@ class PQMeasurement(m2.Measurement):
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        
         self.stop_measurement_process()
         
 
@@ -226,8 +225,8 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
         print ll
         self.stop_measurement_process()
 
-        dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0)
-        dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1)
+        dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')
+        dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1, compression='gzip')
         self.h5data.flush()
 
 
