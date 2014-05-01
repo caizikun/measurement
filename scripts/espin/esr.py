@@ -15,6 +15,7 @@ green_power = 10e-6  #10e-6
 int_time = 25        # in ms
 reps = 10
 center_f =   qt.exp_params['samples']['Hans_sil1']['ms-1_cntr_frq']*1e-9 # in GHz
+
 range_f  =  0.030 # in GHz
 
 #generate list of frequencies

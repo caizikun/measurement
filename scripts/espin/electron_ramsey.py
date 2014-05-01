@@ -17,19 +17,19 @@ def electronramseyCORPSE(name):
     funcs.prepare(m)
     m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
 
-    pts = 41
+    pts = 21
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
 
-    #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0,5000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
+    #m.params['evolution_times'] = np.linspace(0,5000e-9,pts)
 
     # MW pulses
     m.params['detuning']  = 0.0e6
     m.params['CORPSE_pi2_mod_frq'] = m.params['MW_modulation_frequency']
     m.params['CORPSE_pi2_amps'] = np.ones(pts)*m.params['CORPSE_pi2_amp']
     m.params['CORPSE_pi2_phases1'] = np.ones(pts) * 0
-    m.params['CORPSE_pi2_phases2'] = np.ones(pts) * 0#360 * m.params['evolution_times'] * 2e6
+    m.params['CORPSE_pi2_phases2'] = np.ones(pts) * 90#360 * m.params['evolution_times'] * 2e6
 
     # for the autoanalysis
     m.params['sweep_name'] = 'evolution time (ns)'

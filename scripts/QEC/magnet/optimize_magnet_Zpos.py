@@ -6,17 +6,9 @@ At the moment this only optimizes the Z position on the ms=+1 transition
 import numpy as np
 import qt
 import msvcrt
-
-#import measurement.lib.config.adwins as adwins_cfg
-#import measurement.lib.measurement2.measurement as m2
-
-# import the msmt class
-#from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
-
 # import the dESR fit
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
-
 # import magnet tools and master of magnet
 from measurement.lib.tools import magnet_tools as mt; reload(mt)
 mom = qt.instruments['master_of_magnet']

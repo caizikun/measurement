@@ -59,9 +59,9 @@ def darkesr_auto(name, ms = 'msp'):
 if __name__ == '__main__':
     
     ### Set input parameters ###
-    axis = 'X_axis'
-    scan_range       = 2*600       # From -scan range/2 to +scan range/2  
-    no_of_steps      = 5         # with a total of no_of_steps measurment points.
+    axis = 'Y_axis'
+    scan_range       = 400      # From -scan range/2 to +scan range/2  
+    no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 50         # the sample position is checked after each magnet_step_size
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
@@ -71,11 +71,14 @@ if __name__ == '__main__':
     steps = [0, -scan_range/2] + (no_of_steps-1)*[stepsize]
     print steps
 
+
+
     #create the lists to save the data to
     f0m = []; u_f0m = []; f0p = [] ;u_f0p = []
     Bx_field_measured = []
     Bz_field_measured = []
     f_centre_list = []
+    f_diff_list = []
     positions = []
     pos = 0
     

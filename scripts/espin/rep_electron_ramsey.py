@@ -1,6 +1,7 @@
 # one CR check followed by N ramseys.
 # sequence: CR - |SP - AWG_ramsey - SSRO - SP_repump - delay_time - |^N
 import qt
+import msvcrt
 import numpy as np
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -75,7 +76,7 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
 
     # MW pulses
     m.params['CORPSE_pi2_mod_frq'] = m.params['MW_modulation_frequency']
-    m.params['CORPSE_pi2_amps'] = np.ones(pts)*1# np.ones(pts)*m.params['CORPSE_pi2_amp']
+    m.params['CORPSE_pi2_amps'] =np.ones(pts)*1# np.ones(pts)*m.params['CORPSE_pi2_amp']
     m.params['CORPSE_pi2_phases1'] = np.ones(pts) * 0
     m.params['CORPSE_pi2_phases2'] = np.ones(pts)*phase#360 * m.params['evolution_times'] * 2e6
 
@@ -88,21 +89,21 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
     funcs.finish(m,upload=upload)
     print m.adwin_var('completed_reps')
     return return_e
-def loop_rep_ramsey_CORPSE(delay_time=1,repump_E=0,repump_A=0,nr_of_hyperfine_periods=3,phase=90,reps=2):
+def loop_rep_ramsey_CORPSE(label='',delay_time=1,repump_E=0,repump_A=0,nr_of_hyperfine_periods=3,phase=90,reps=2):
     name='SIL1_segRO'+str(nr_of_hyperfine_periods)+'_hf'
-    n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr"
+    n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label
     repelectronramseyCORPSE(n+"0",delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=True)
 
     for i in np.arange(reps-1):
-        n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr"+str(i+1)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            raise Exception('User abort')
+        n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label+"_"+str(i+1)
         repelectronramseyCORPSE(n,delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=False)
 if __name__ == '__main__':
-    phase=0
-    loop_rep_ramsey_CORPSE(delay_time=0,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.5,phase=phase,reps=25)
-    phase=90
-    loop_rep_ramsey_CORPSE(delay_time=0,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.25,phase=phase,reps=25)
-    phase=0
-    loop_rep_ramsey_CORPSE(delay_time=100,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.5,phase=phase,reps=25)
+    loop_rep_ramsey_CORPSE(label='45V',delay_time=0,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=0.5,phase=0,reps=10)
+    
+    '''
     GreenAOM.set_power(5e-6)
     optimiz0r.optimize(dims=['x','y','z','x','y','z'])
     GreenAOM.set_power(0e-6)
@@ -124,5 +125,5 @@ if __name__ == '__main__':
             loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=1,nr_of_hyperfine_periods=hf,reps=50)
             loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=1,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
             loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
-
+    '''
 

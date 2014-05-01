@@ -1,21 +1,17 @@
 """
 Script for a simple Decoupling sequence
-Based on Electron T1 script
 """
 import numpy as np
 import qt
 
-#reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
-
-reload(DD)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling(name):
+def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16):
 
     m = DD.SimpleDecoupling(name)
     funcs.prepare(m)
@@ -23,16 +19,14 @@ def SimpleDecoupling(name):
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x'
+    if N%4 == 0: 
+        m.params['Final_Pulse'] ='-x'
+    else:
+        m.params['Final_Pulse'] ='x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    Number_of_pulses = 16 #256
-    # pts = 51 # 51
-    #start   = 12.45e-6
-    #end     = 12.55e-6
-    #tau_list = np.linspace(start, end, pts)
-    tau_list = np.array(range(2000,3000,100))*1e-9
-
+    Number_of_pulses = N 
+    tau_list = np.arange(tau_min,tau_max,tau_step) 
     print tau_list
 
     m.params['pts']              = len(tau_list)
@@ -45,6 +39,6 @@ def SimpleDecoupling(name):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    SimpleDecoupling(SAMPLE)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=18.300e-6,tau_max=18.800e-6,tau_step =10e-9, N =32)
 
 
