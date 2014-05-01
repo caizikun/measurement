@@ -5,10 +5,10 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.6
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 1 - 4 as 
@@ -40,8 +40,8 @@ DIM DATA_45[4] AS LONG     ' for the counts of the last int_time period
 
 INIT:
   int_time = PAR_23                  ' [ms]
-  avg_steps = PAR_24                 ' averaging periods
-  single_run = PAR_25
+  avg_steps =PAR_24                 ' averaging periods
+  single_run =PAR_25
   
   if (single_run > 0) then
     avg_steps = 1

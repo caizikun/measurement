@@ -53,11 +53,11 @@ SUB init_CR()
   A_off_voltage                = DATA_31[6]
   
   FOR cr_i = 1 TO max_repetitions
-    DATA_22[i] = 0
-    DATA_23[i] = 0
+    DATA_22[cr_i] = 0
+    DATA_23[cr_i] = 0
   NEXT cr_i
   FOR cr_i = 1 TO max_stat
-    DATA_26[i] = 0
+    DATA_26[cr_i] = 0
   NEXT cr_i
   
   counter_pattern     = 2 ^ (counter_channel-1)
