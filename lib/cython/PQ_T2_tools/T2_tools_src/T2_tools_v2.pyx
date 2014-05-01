@@ -1,5 +1,5 @@
 """
-Cython-based fast data analysis for raw data obtained with the HH in T2 mode.
+Cython-based fast data analysis for raw data obtained with the HH or TH in T2 mode.
 
 authors:
 Gerwin Koolstra
@@ -149,7 +149,7 @@ def LDE_live_filter_integrated(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time 
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
         if _sync_time < min_sync_time or _sync_time > max_sync_time:
             continue
-        _sweep_idx=floor(last_sync_number/syncs_per_sweep) % sweep_length
+        _sweep_idx=(last_sync_number/syncs_per_sweep) % sweep_length
         if channel[k] == 0:
             hist0[_sync_time,_sweep_idx] += 1
         elif channel[k] == 1:

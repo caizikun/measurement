@@ -9,7 +9,7 @@ import qt
 import measurement.lib.measurement2.measurement as m2
 import time
 
-from measurement.lib.cython.PQ_T2_tools import T2_tools
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 class PQMeasurement(m2.Measurement):
     mprefix = 'PQMeasurement'
@@ -22,7 +22,7 @@ class PQMeasurement(m2.Measurement):
         if self.PQ_ins.OpenDevice():
             self.PQ_ins.start_T2_mode()
             self.PQ_ins.set_Binning(self.params['BINSIZE'])
-            if do_calibrate:
+            if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
                 self.PQ_ins.calibrate()
         else:
             raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
@@ -95,9 +95,9 @@ class PQMeasurement(m2.Measurement):
                 
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,)
-                                                #T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
 
                 if newlength > 0:
 
@@ -186,16 +186,22 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
         self.start_keystroke_monitor('abort',timer=False)
+        _timer=time.time() 
+        ll=0
+        while(self.PQ_ins.get_MeasRunning()):
 
-        while(self.PQ_ins.get_MeasRunning() and self.adwin_process_running()):
+            if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+                if not self.measurement_process_running():
+                    break
+                self._keystroke_check('abort')
+                if self.keystroke('abort') in ['q','Q']:
+                    print 'aborted.'
+                    self.stop_keystroke_monitor('abort')
+                    break
+                    
+                self.print_measurement_progress()
 
-            self._keystroke_check('abort')
-            if self.keystroke('abort') in ['q','Q']:
-                print 'aborted.'
-                self.stop_keystroke_monitor('abort')
-                break
-
-            self.print_measurement_progress()
+                _timer=time.time()
 
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
@@ -204,12 +210,12 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
                 
                 hist0, hist1, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools.LDE_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
+                        T2_tools_v2.LDE_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
                             t_lastsync, last_sync_number,
                             syncs_per_sweep, sweep_length, 
                             MIN_SYNC_BIN, MAX_SYNC_BIN,
                             T2_WRAPAROUND,T2_TIMEFACTOR)
-
+                ll+=newlength
         self.PQ_ins.StopMeas()
 
 
@@ -217,15 +223,11 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        
+        print ll
         self.stop_measurement_process()
 
-        dset_hist0 = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
-            (hist_length,sweep_length), 'u1', maxshape=(None,None))
-        dset_hist1 = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
-            (hist_length,sweep_length), 'u1', maxshape=(None,None))
-        dset_hist0[:,:] = hist0
-        dset_hist1[:,:] = hist1
+        dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0)
+        dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1)
         self.h5data.flush()
 
 
