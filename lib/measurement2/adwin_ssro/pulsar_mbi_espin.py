@@ -185,5 +185,6 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, wait_elt, sync_elt, *pulse_elts)
-        qt.pulsar.program_sequence(seq)
+            #qt.pulsar.upload(mbi_elt, wait_elt, sync_elt, *pulse_elts)
+            qt.pulsar.program_awg(seq, mbi_elt, wait_elt, sync_elt, *pulse_elts, debug=debug)
+        #qt.pulsar.program_sequence(seq)

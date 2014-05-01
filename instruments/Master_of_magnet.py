@@ -129,6 +129,7 @@ class Master_of_magnet(Instrument):
                 negative steps. Valid inputs: +/- 1,2,3,4,5... and 'c','-c' for continious
         '''
         axis_number = self.Axis_config[axis]
+        freq = int(self.get_frequency(axis)[12:15])
 
         if steps == 'c':
             self._anc_ins.StepUp(axis_number, steps)
@@ -136,18 +137,14 @@ class Master_of_magnet(Instrument):
             self._anc_ins.StepDown(axis_number, 'c')
         elif int(steps) > 0:
             self._anc_ins.StepUp(axis_number, steps)
-            freq = self.get_frequency(axis)
-            print freq
-            print freq
-            #qt.msleep(int(steps)/freq + 1) # needs to first convert strings into numbers
+            qt.msleep(int(steps)/freq + 2)
         elif int(steps) < 0:
             self._anc_ins.StepDown(axis_number, abs(int(steps)))
-            #qt.msleep(abs(int(steps))/freq + 1)
+            qt.msleep(abs(int(steps))/freq + 2)
         elif int(steps) == 0:
             print 'Number of steps is 0, not moved'
         else:
-            print 'Error: invalid input'
-
+            print "Error: invalid input. 'c' or '-c' for continious, '+/- 1,2,3,4...' for number of int steps" 
 
     def stop(self, axis):
         axis_number = self.Axis_config[axis]

@@ -62,7 +62,7 @@ def darkesrp1(name):
 
     m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
-    m.params['pts'] = 101
+    m.params['pts'] = 81
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.03
 
