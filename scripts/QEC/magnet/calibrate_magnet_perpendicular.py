@@ -60,8 +60,8 @@ if __name__ == '__main__':
     
     ### Set input parameters ###
     axis = 'Y_axis'
-    scan_range       = 600       # From -scan range/2 to +scan range/2  
-    no_of_steps      = 5         # with a total of no_of_steps measurment points.
+    scan_range       = 400      # From -scan range/2 to +scan range/2  
+    no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 50         # the sample position is checked after each magnet_step_size
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
@@ -71,11 +71,14 @@ if __name__ == '__main__':
     steps = [0, -scan_range/2] + (no_of_steps-1)*[stepsize]
     print steps
 
+
+
     #create the lists to save the data to
     f0m = []; u_f0m = []; f0p = [] ;u_f0p = []
     Bx_field_measured = []
     Bz_field_measured = []
     f_centre_list = []
+    f_diff_list = []
     positions = []
     pos = 0
     
@@ -108,7 +111,7 @@ if __name__ == '__main__':
                 if cnts < 1e4:
                     optimiz0r.optimize(dims=['x','y','z'])
                 print 'press q to stop magnet movement loop'
-                qt.msleep(2)
+                qt.msleep(0.5)
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
             #use a higher threshold at the very end
@@ -132,12 +135,14 @@ if __name__ == '__main__':
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
         
         f_centre    = (f0m_temp+f0p_temp)/2
+        f_diff = (f_centre-ZFS*1e-9)*1e6
 
         f0m.append(f0m_temp)
         u_f0m.append(u_f0m_temp)
         f0p.append(f0p_temp)
         u_f0p.append(u_f0p_temp)
         f_centre_list.append(f_centre)
+        f_diff_list.append(f_diff)
         Bx_field_measured.append(Bx_measured)
         Bz_field_measured.append(Bz_measured)
 
@@ -169,8 +174,7 @@ if __name__ == '__main__':
     
     positions[0] = positions[0] + 0.001 #for some reason the plot below cannot handle twice the same x-coordinate
     print positions
-    p_c = qt.Plot2D(positions, f_centre_list, 'bO-', name='f_centre', clear=True)
+    p_c = qt.Plot2D(positions, f_diff_list, 'bO-', name='f_centre relative to ZFS', clear=True)
     p_c.save_png(filename+'.png')
-
 
     qt.mend()

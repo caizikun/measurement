@@ -163,7 +163,7 @@ class ElectronRabi(PulsarMeasurement):
         PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True):
-        print 'test'
+        #print 'test'
         # define the necessary pulses
 
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
@@ -212,7 +212,7 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
-        print self.params['A_SP_repump_voltage']
+
         PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True):
@@ -256,7 +256,6 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
         # create a sequence from the pulses
         seq = pulsar.Sequence('ElectronRamsey sequence')
         for e in elements:
-            print e.print_overview()
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
         # upload the waveforms to the AWG
@@ -478,7 +477,7 @@ class RepElectronRamseysCORPSE(ElectronRamseyCORPSE):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['evolution_times'])*1e3)+2)
         self.params['A_SP_repump_voltage']=self.A_aom.power_to_voltage(self.params['A_SP_repump_amplitude'])
-        print 'HERE!!!'
+        #print 'HERE!!!'
         PulsarMeasurement.autoconfig(self)
 
     def save(self, name='ssro'):
@@ -595,7 +594,7 @@ class MBI(PulsarMeasurement):
 
         self.save_adwin_data(name,
                 [   ('CR_before', sweeps),
-                    ('CR_after', sweeps),
+                    ('CR_after', sweeps),   
                     ('MBI_attempts', sweeps),
                     ('statistics', 10),
                     ('ssro_results', reps),

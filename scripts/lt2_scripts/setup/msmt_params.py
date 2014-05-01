@@ -49,13 +49,13 @@ cfg['protocols']['AdwinSSRO']={
 'Ex_off_voltage'            :       0.,
 'A_off_voltage'             :       -0.0,
 'repump_off_voltage'        :       0,
-'yellow_repump_amplitude'   :       100e-9,
+'yellow_repump_amplitude'   :       60e-9,
 'yellow_repump_duration'    :       500,
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
 'CR_probe_max_time'         :       1000000}
 
-yellow=False
+yellow=True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -137,10 +137,9 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-### nuclear spin params
-'C1_Ren_tau'    :        6.522e-6,
-'C1_Ren_N'      :        10,
-#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5
+'C1_Ren_tau'    :       6.522e-6,
+'C1_freq'       :       343.0, #(2)
+#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
 'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
@@ -193,8 +192,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,
-'fast_pi_amp'               :   0.844083,
+'fast_pi_duration'          :   140e-9,    
+'fast_pi_amp'               :   0.844083,   
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
@@ -252,18 +251,24 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 ###############################
 ### Rep Ramsey Magnetometry####
 ###############################
-CORPSE_frq=  5.7e6
+CORPSE_frq=  6.8e6
 MW_mod_magnetometry=43e6
+f_msm1_cntr = 2.0274e9            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.726819e9            #Electron spin ms=+1 frequency
 
 cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'MW_modulation_frequency'   :   MW_mod_magnetometry,
 'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry,
-
+'mw_power'      :       23,
+'ms-1_cntr_frq':       f_msm1_cntr,
+'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
 'SSRO_duration'     :  10,
-'Ex_RO_amplitude':  20e-9,
-'Ex_SP_amplitude'  : 60e-9,
-'A_SP_amplitude': 50e-9,
+'Ex_RO_amplitude':  50e-9,
+'Ex_SP_amplitude'  : 0e-9,
+'A_CR_amplitude': 25e-9,
+'Ex_CR_amplitude': 25e-9,
+'A_SP_amplitude': 60e-9,
 'A_SP_repump_amplitude':.5e-9,
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
@@ -271,7 +276,7 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
-'SSRO_stop_after_first_photon':1,
+'SSRO_stop_after_first_photon':0,
 #    ### Corpse pulses ###
 'CORPSE_pi2_amp'    :           1,
 'CORPSE_frq'  :  CORPSE_frq,
