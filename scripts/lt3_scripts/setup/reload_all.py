@@ -17,6 +17,9 @@ reload(pulselib)
 from measurement.lib.measurement2 import measurement
 reload(measurement)
 
+from measurement.lib.measurement2.pq import pq_measurement
+reload(pq_measurement)
+
 from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
 

@@ -34,8 +34,8 @@ DIM DATA_21[100] AS FLOAT
 
 'return
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
-DIM DATA_25[max_SSRO_dim] AS LONG  ' SSRO counts spin readout
-DIM DATA_26[max_events_dim] AS LONG  'time spent waiting after local CR ok, for entanglement event
+DIM DATA_25[max_events_dim] AS LONG  ' SSRO counts spin readout
+DIM DATA_27[max_events_dim] AS LONG  'time spent waiting after local CR ok, for entanglement event
 
 DIM SP_duration, SP_filter_duration AS LONG
 DIM SSRO_duration AS LONG
@@ -48,8 +48,9 @@ DIM first AS LONG
 
 DIM repetition_counter AS LONG
 
-DIM AWG_succes_DI_channel, AWG_succes_DI_pattern AS LONG
+DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
 DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
+DIM wait_for_AWG_done, sequence_wait_time AS LONG
 DIM counts, old_counts AS LONG
 
 DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
@@ -58,11 +59,15 @@ DIM succes_event_counter, remote_CR_wait_timer AS LONG
 
 INIT:
   init_CR()
-  AWG_succes_DI_channel         = DATA_20[2]
-  SP_duration                   = DATA_20[5]
-  local_wait_time_duration      = DATA_20[8]
-  remote_CR_trigger_do_channel
-  AWG_done_di_channel
+  AWG_done_di_channel           = DATA_20[1]
+  AWG_success_DI_channel        = DATA_20[2]
+  SP_duration                   = DATA_20[3]
+  local_wait_time_duration      = DATA_20[4]
+  remote_CR_trigger_do_channel  = DATA_20[5]
+  SSRO_duration                 = DATA_20[6]
+  wait_for_AWG_done             = DATA_20[7]
+  sequence_wait_time            = DATA_20[8]
+  
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -76,10 +81,10 @@ INIT:
   
   FOR i = 1 TO max_events_dim
     DATA_25[i] = 0
-    DATA_26[i] = 0
+    DATA_27[i] = 0
   NEXT i
     
-  AWG_succes_DI_pattern = 2 ^ AWG_succes_DI_channel
+  AWG_succes_DI_pattern = 2 ^ AWG_success_DI_channel
   AWG_done_di_pattern = 2 ^ AWG_done_di_channel
   
   repetition_counter  = 0
@@ -105,6 +110,7 @@ INIT:
   'live updated pars
   Par_61 = mode
   Par_62 = 0                    'AWG signal timeout (no ent. events)
+  Par_63 = 0                    ' Stop flag
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter                      
 
@@ -120,6 +126,9 @@ EVENT:
       CASE 0 'CR check
        
         IF ( CR_check(first,succes_event_counter) > 0 ) THEN
+          IF (Par_63 > 0) THEN
+            END
+          ENDIF
           mode = 2
           timer = -1
           first = 0
@@ -130,16 +139,16 @@ EVENT:
           'DAC( repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on Ex laser XXXXXX
           DAC(E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           DAC(A_laser_DAC_channel, 3277*A_SP_voltage+32768)   ' turn on A laser
-          CNT_CLEAR(CTR_MODULE,  counter_pattern)    'clear counter
-          CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
+          CNT_CLEAR( counter_pattern)    'clear counter
+          CNT_ENABLE(counter_pattern)    'turn on counter
           old_counts = 0
         ELSE 
-          counts = CNT_READ(CTR_MODULE, counter_channel)
+          counts = CNT_READ(counter_channel)
           DATA_24[timer] = DATA_24[timer] + counts - old_counts
 
           old_counts = counts
           IF (timer = SP_duration) THEN
-            CNT_ENABLE(CTR_MODULE, 0)
+            CNT_ENABLE(0)
             DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             DAC(E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
@@ -163,7 +172,7 @@ EVENT:
       
         AWG_done_was_high = AWG_done_is_high
         AWG_succes_was_high = AWG_succes_is_high
-        DIO_register = DIGIN_LONG(DIO_MODULE)
+        DIO_register = DIGIN_LONG()
         AWG_done_is_high = (DIO_register AND AWG_done_di_pattern)
         AWG_succes_is_high = (DIO_register AND AWG_succes_DI_pattern)
            
@@ -173,14 +182,25 @@ EVENT:
           INC(Par_77)
           mode = 5
           timer = -1         
-          DATA_26[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
+          DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
         ELSE                  
-          IF (((AWG_done_was_high = 0) AND (AWG_done_is_high > 0))) THEN 'AWG signal timeout (no ent. events)
-            INC(PAR_62)
-            DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
-            mode = 0
-            timer = -1
-          ENDIF        
+          IF (wait_for_AWG_done > 0) THEN
+            IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
+              INC(PAR_62)            
+              mode = 0
+              timer = -1
+              remote_mode = 0
+              local_wait_time = 10
+            ENDIF
+          ELSE
+            IF (timer = sequence_wait_time) THEN
+              INC(PAR_62)            
+              mode = 0
+              timer = -1
+              remote_mode = 0
+              local_wait_time = 10
+            ENDIF
+          ENDIF    
         ENDIF     
     
       CASE 5    ' spin readout

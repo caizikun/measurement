@@ -14,6 +14,7 @@ class remote_measurement_helper(Instrument):
         Instrument.__init__(self, name)
         self._remote_qtlab_name = remote_qtlab_name
         ins_pars  = {'measurement_params'    :   {'type':types.DictType,'val':{},'flags':Instrument.FLAG_GETSET},
+                    'measurement_name'    :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'is_running'       :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
                     'data_path'         :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'script_path'       :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},

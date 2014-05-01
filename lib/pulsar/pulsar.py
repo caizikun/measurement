@@ -8,7 +8,6 @@
 import time
 import numpy as np
 import logging
-import qt
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
@@ -504,9 +503,9 @@ class Pulsar:
                                             self.AWG_sequence_cfg)
 
         self.AWG.send_awg_file(filename,awg_file)
-        #qt.msleep(2)
+
         self.AWG.load_awg_file(filename)
-        #qt.msleep(1)
+
         self.activate_channels(channels)
 
 

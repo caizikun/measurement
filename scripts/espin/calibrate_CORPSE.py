@@ -240,7 +240,7 @@ def calibrate_msm1_pi(name):
     m.params['sweep_pts'] = m.params['CORPSE_pi_sweep_amps']
     m.params['wait_for_AWG_done'] = 1
     
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
 # def lt1_hans4_calibrate_msm1_pi2(name='hans4_msm1_pi'):
 #     m = CORPSEPi2Calibration(name)

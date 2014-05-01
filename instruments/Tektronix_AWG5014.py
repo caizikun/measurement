@@ -802,7 +802,7 @@ class Tektronix_AWG5014(Instrument):
 
     def load_awg_file(self, filename):
         s = 'AWGCONTROL:SRESTORE "%s"' %filename
-        print s
+        #print s
         self._visainstrument.write(s)
 
     def get_error(self):

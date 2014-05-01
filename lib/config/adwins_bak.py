@@ -186,7 +186,7 @@ config['adwin_lt1_processes'] = {
         'cr_check_mod' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
-            'file' : 'cr_mod.inc',
+            'file' : 'cr.inc',
             'par' : {
                     'CR_preselect'              : 75,
                     'CR_probe'                  : 68,
@@ -252,7 +252,7 @@ config['adwin_lt1_processes'] = {
         'singleshot' : {
                 'index' : 9,
                 'file' : 'singleshot_lt1.tb9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
                     'ssro_counts' : 74,
@@ -323,45 +323,6 @@ config['adwin_lt1_processes'] = {
                     'RO_data' : 25,
                     },
                 },
-
-
-        'bell' : {
-                'index' : 9,
-                'file' : 'bell_lt1.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
-                'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_done_DI_channel'         ,   8],
-                    ['AWG_success_DI_channel'         ,   8],
-                    ['SP_duration'                 , 100],
-                    ['wait_after_pulse_duration'   ,   1],
-                    ['remote_CR_DO_channel'        ,  15],
-                    ['SSRO_duration'               ,  50],
-                    ['wait_for_AWG_done'           ,   1],
-                    ['sequence_wait_time'          ,  10],
-                    ],
-                'params_long_index'  : 20,
-                'params_long_length' : 25,
-                'params_float' : [
-                    ['E_SP_voltage'        , 0.8],
-                    ['A_SP_voltage'        , 0.8],
-                    ['E_RO_voltage'        , 0.8],
-                    ['A_RO_voltage'        , 0.8],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 10,
-                'par' : {
-                    'local_mode': 61,
-                    'timeout_events': 62,
-                    'stop_flag': 63,
-                    'completed_reps' : 73,
-                    'entanglement_events': 77,
-                    },
-                'data_long' : {
-                    'SP_hist' : 24,
-                    'RO_data' : 25,
-                    'CR_timer': 27,
-                    },
-                },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
         'ssro_multiple_RO' : {
                 'index' : 9,
@@ -381,8 +342,8 @@ config['adwin_lt1_processes'] = {
                     ['cycle_duration'              , 300],
                     ['SP_repump_duration'          ,   1],
                     ['wait_time_between_msmnts'    ,   1],
-		            ['repump_E'    		           ,   0],
-		            ['repump_A'    		           ,   0],
+		    ['repump_E'    		   ,   0],
+		    ['repump_A'    		   ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1513,48 +1474,6 @@ config['adwin_lt3_processes'] = {
                 'data_long' : {
                     'SP_hist' : 24,
                     'RO_data' : 25,
-                    },
-                },
-
-        'bell' : {
-                'index' : 9,
-                'file' : 'bell_lt3.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
-                'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_start_DO_channel'        ,  16],
-                    ['AWG_done_DI_channel'         ,   8],
-                    ['SP_duration'                 , 100],
-                    ['wait_after_pulse_duration'   ,   1],
-                    ['remote_CR_DI_channel'        ,   8],
-                    ['SSRO_duration'               ,  50],
-                    ['wait_for_AWG_done'           ,   1],
-                    ['sequence_wait_time'          ,  10],
-                    ['PLU_DI_channel'              ,   1],
-                    ['do_sequences'                ,   1],
-
-                    ],
-                'params_long_index'  : 20,
-                'params_long_length' : 25,
-                'params_float' : [
-                    ['Ex_SP_voltage'        , 0.8],
-                    ['A_SP_voltage'        , 0.8],
-                    ['Ex_RO_voltage'        , 0.8],
-                    ['A_RO_voltage'        , 0.8],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 10,
-                'par' : {
-                    'remote_mode': 60,
-                    'local_mode': 61,
-                    'timeout_events': 62,
-                    'stop_flag': 63,
-                    'completed_reps' : 73,
-                    'entanglement_events': 77,
-                    },
-                'data_long' : {
-                    'SP_hist' : 24,
-                    'RO_data' : 25,
-                    'CR_timer': 27,
                     },
                 },
 
