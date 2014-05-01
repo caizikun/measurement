@@ -20,7 +20,7 @@ def test_PQ_measurement(name):
 
 def test_PQ_measurement_integrated(name):
     
-    m = pq_measurement.PQMeasurementIntegrated(name)
+    m = pq_measurement.PQMeasurement(name)
     m.params['pts']                 =   10
     m.params['syncs_per_sweep']     =   10
     upload=True
