@@ -21,7 +21,7 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
 
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =np.arange(8,128,8)
+    Number_of_pulses =np.arange(8,2*120,8)
     pts = len(Number_of_pulses)
 
     if tau == None: 
