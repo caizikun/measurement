@@ -13,3 +13,6 @@ def remote_HH_measurement(name):
     m.params['measurement_abort_check_interval']    = 1. #sec
     m.run()
     m.finish()
+    
+if __name__ == '__main__':
+    remote_HH_measurement('test')
