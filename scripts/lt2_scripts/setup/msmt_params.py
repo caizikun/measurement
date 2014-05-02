@@ -137,13 +137,23 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
+
 'C1_Ren_tau'    :        6.522e-6,
-#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
+'C1_Ren_N' : 10
+'C1_precession_freq' : 343e3 #as measured
+#'C1_Ren_tau' :          9.42e-6
+# 'C1_Ren_N' :              16
+#'C1_precession_freq' : 242.4e3 # should be identical to the 343 measured earlier
+
+#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
 'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
 'C3_Ren_tau'    :       8.840e-6}  #resonance k=
 #'C3_Ren_tau'    :       12.080e-6}  #resonance k=8
+
+'min_dec_tau'    :          0.23e-6  #based on FP 20140423/115045
+'max_dec_tau'    :          0.35e-6  #based on FP 20140423/115045
 
 
 
@@ -191,8 +201,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.844083,   
+'fast_pi_duration'          :   140e-9,
+'fast_pi_amp'               :   0.844083,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
