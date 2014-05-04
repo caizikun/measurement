@@ -55,7 +55,7 @@ cfg['protocols']['AdwinSSRO']={
 'green_CR_repump'           :       1000,
 'CR_probe_max_time'         :       1000000}
 
-yellow=True
+yellow=False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -107,7 +107,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 ### Here we set two frequencies, these are constants
-f_msm1_cntr =   2.024921e9        #Electron spin ms=-1 frquency0
+f_msm1_cntr =   2.024899e9        #Electron spin ms=-1 frquency0
 ### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 ### We want to use the difference (Z-field) and the average (X-field)
@@ -253,7 +253,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 ###############################
 CORPSE_frq=  6.8e6
 MW_mod_magnetometry=43e6
-f_msm1_cntr = 2.0274e9            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.024891e9            #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.726819e9            #Electron spin ms=+1 frequency
 
 cfg['protocols']['Hans_sil1']['Magnetometry'] ={

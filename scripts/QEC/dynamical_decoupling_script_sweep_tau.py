@@ -39,6 +39,6 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=18.300e-6,tau_max=18.800e-6,tau_step =10e-9, N =32)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=15.0e-6,tau_max=15.5e-6,tau_step =10e-9, N =32)
 
 
