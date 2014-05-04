@@ -11,9 +11,10 @@ import types
 from numpy import *
 import qt
 import hdf5_data as h5
+import measurement.lib.measurement2.measurement as m2
 
 class scan2d_counts(scan):
-    def __init__(self, name, linescan, mos, xdim='x', ydim='y', counters=None):
+    def __init__(self, name, linescan, mos, xdim='x', ydim='y', counters=None, setup_controller=None):
         scan.__init__(self, name, linescan, mos)
 
         self._linescan_dimensions = (xdim, ydim)
@@ -22,6 +23,7 @@ class scan2d_counts(scan):
         self._counters = qt.instruments[counters]
         self._counter_was_running = False
 
+        self._setup_controller = qt.instruments[setup_controller]
 
         # add the relevant parameters for a 2D PL scanner
         self.add_parameter('pixel_time', type=types.FloatType,
@@ -176,14 +178,18 @@ class scan2d_counts(scan):
         self.set_y_position(y)
        
     # overloading save function
-    def save(self, meta=""):
-        CyclopeanInstrument.save(self, meta)
-        
+    def save(self):
+        name = self.get_name()
+        if self._setup_controller != None:
+            name += '_' + self._setup_controller.get_keyword()
         # NOTE a test of hdf5 data
-        dat = h5.HDF5Data(name=self.get_name())
+        dat = h5.HDF5Data(name=name)
         dat.create_dataset('x', data=self._x)
         dat.create_dataset('y', data=self._y)
         dat.create_dataset('countrate', data=self._data['countrates'])
+        #if self._setup_controller != None:
+        #    dat.attrs['name'] = self._setup_controller.get_keyword()
+        m2.save_instrument_settings_file(dat)
         dat.close()
 
 
@@ -232,5 +238,5 @@ class scan2d_counts(scan):
 
     def _scan_finished(self):
          self.save()
-
+         self._counters.set_is_running(True)
 
