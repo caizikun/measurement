@@ -3,6 +3,7 @@ Script for a carbon ramsey sequence
 """
 import numpy as np
 import qt
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -14,7 +15,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name):
+def Carbon_Ramsey(name,tau = None,N=None):
 
     m = DD.NuclearRamsey(name)
     funcs.prepare(m)
@@ -26,21 +27,27 @@ def Carbon_Ramsey(name):
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     ### Sweep parmater
-    m.params['free_evolution_time'] = np.array(range(15000,15500,10))*1e-9
-    print m.params['free_evolution_time']
-    m.params['pts']              = len(self.params['free_evolution_time'])
-    m.params['sweep_pts']        =self.params['free_evolution_time']*1e6
+    m.params['free_evolution_times'] = np.concatenate([np.array([0]),np.linspace(1e3,20e3,40).astype(int)*1e-9])
+    print m.params['free_evolution_times']
+    m.params['pts']              = len(m.params['free_evolution_times'])
+    m.params['sweep_pts']        =m.params['free_evolution_times']*1e6
     m.params['sweep_name']       = 'Free evolution time (us)'
 
-    m.params['C_Ren_N'] = 16 # Currently arbitrary self.params['C1_Ren_N']
-    m.params['C_Ren_tau'] = self.params['C1_Ren_tau']
+    if N ==None: 
+        m.params['C_Ren_N'] = m.params['C1_Ren_N']  
+    else:
+        m.params['C_Ren_N'] = N
+    if tau ==None: 
+        m.params['C_Ren_tau'] = m.params['C1_Ren_tau']
+    else: 
+        m.params['C_Ren_tau'] = tau 
 
 
     #############################
     #!NB: These should go into msmt params
     #############################
-    m.params['min_dec_tau'] = 40e-9 + m.params['fast_pi_duration']
-    m.params['max_dec_tau'] = 0.4e-6 #Based on simulation for fingerprint at low tau
+    m.params['min_dec_tau'] = 20e-9 + m.params['fast_pi_duration']/2.0
+    m.params['max_dec_tau'] = 0.35e-6 #Based on simulation for fingerprint at low tau
     m.params['dec_pulse_multiple'] = 4#lowest multiple of 4 pulses
 
 
@@ -48,7 +55,20 @@ def Carbon_Ramsey(name):
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
 
-if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE)
 
+
+
+if __name__ == '__main__':
+    Carbon_Ramsey(SAMPLE, tau = 13.720e-6, N = 22)
+
+# if __name__ == '__main__':
+#     tau_list = np.linspace(6.522e-6-20e-9,6.522e-6+20e-9,21)
+#     for tau in tau_list:
+#         print tau 
+#         Carbon_Ramsey(SAMPLE+str(tau),tau, N=16)
+
+#         print 'press q now to cleanly exit this measurement loop'
+#         qt.msleep(5)
+#         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+#             break
 

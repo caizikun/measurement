@@ -4,6 +4,7 @@ Based on Electron T1 script
 """
 import numpy as np
 import qt
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -22,13 +23,13 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
     for kk in range(tot):
         
         ### Set experimental parameters ###
-        m.params['reps_per_ROsequence'] = 2000 
+        m.params['reps_per_ROsequence'] = 500 
         m.params['Initial_Pulse'] ='x'
         m.params['Final_Pulse'] ='-x'
         m.params['Decoupling_sequence_scheme'] = 'single_block'
 
         Number_of_pulses = N 
-        pts = 81
+        pts = 41
         start    = 0.13e-6  + (kk+start_point)     * (pts-1)*step_size 
         end      = 0.13e-6  + (kk+1+start_point)   * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
@@ -84,6 +85,6 @@ if __name__ == '__main__':
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
 
     #SimpleDecoupling('Fingerprint_Short_Tau_' + SAMPLE +'_N_' + str(32), N=32, step_size = 10e-9, start_point = 0, tot = 1)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=128*4, step_size = 4e-9,  start_point = 0, tot = 1)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9,  start_point = 0, tot = 1)
     
 

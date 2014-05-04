@@ -18,7 +18,6 @@ class Gate(object):
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
-
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
@@ -43,19 +42,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return X
 
     def _Y_elt(self):
-    '''
+        '''
         Trigger element that is used in different measurement child classes
         '''
-        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
             frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
             length = self.params['fast_pi_duration'],
             amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['X_phase'])
-        return X
-
+            phase =  self.params['Y_phase'])
+        return Y
+        
     def _Trigger_element(self):
         '''
         Trigger element that is used in different measurement child classes
@@ -80,7 +79,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         dec_duration = Gate.dec_duration
         if (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
-            print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us', %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
+            print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us' %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
 
         #These lines must be added to measurement params
         self.params['min_dec_tau']
@@ -89,14 +88,17 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         self.params['dec_pulse_multiple']
 
 
-        for k in range(10):
-            tau =dec_duration/(k*self.params['dec_pulse_multiple'])
-            if self.params['min_dec_tau']:
+        for k in range(40):
+            tau =dec_duration/(2*(k+1)*self.params['dec_pulse_multiple'])
+            if tau == 0: 
+                Gate.N = 0 
+                Gate.tau = 0 
+            elif tau < self.params['min_dec_tau']:
                 print 'Error: decoupling tau: (%s) smaller than minimum value(%s)' %(tau,self.params['min_dec_tau'] )
                 break
             elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
                 Gate.tau = tau
-                Gate.N = int(k*self.params['dec_pulse_multiple'])
+                Gate.N = int((k+1)*self.params['dec_pulse_multiple'])
                 print 'found the following decoupling tau: %s' %(tau)
                 break
 
@@ -462,10 +464,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         tau_cut_after = Gate.tau_cut_after
         pulse_tau= tau-self.params['fast_pi_duration']/2.0
 
-
+        X = self._X_elt()
+        Y = self._Y_elt()
+        # If it turns out that N =0 /tau = 0 gives an error add an if statement for the 0 pulses case 
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
             length = pulse_tau, amplitude = 0.)
-        T_inital = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
+        T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
             length = tau_cut_before, amplitude = 0.)
         T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
             length = tau_cut_after, amplitude = 0.)
@@ -495,10 +499,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         time_before_pulse = Gate.time_before_pulse
         time_after_pulse = Gate.time_after_pulse
-        Gate = Gate.Gate
+        Gate_operation = Gate.Gate_operation
         prefix = Gate.prefix
 
-        if Gate == 'x':
+        if Gate_operation == 'x':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -523,7 +527,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(T_after_p)
 
 
-        elif Gate == '-x':
+        elif Gate_operation == '-x':
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
@@ -546,7 +550,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(pulse.cp(X))
             e.append(T_after_p)
 
-        elif Gate == 'pi':
+        elif Gate_operation == 'pi':
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
@@ -697,47 +701,56 @@ class NuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
     '''
+    mprefix = 'CarbonRamsey'
+
     def generate_sequence(self, upload= True, debug = False):
         pts = self.params['pts']
-        free_evolution_time = self.param['free_evolution_times']
+        free_evolution_time = self.params['free_evolution_times']
 
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Nuclear Ramsey Sequence')
 
-        for pt in range[pts]:
+        for pt in range(pts):
 
             ###########################################
             #####    Generating the sequence elements      ######
             #    ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
             ###########################################
             initial_Pi2 = Gate('initial_pi2','electron_Gate')
-            Ren = Gate('Ren', 'Carbon_Gate')
+            Ren_a = Gate('Ren_a', 'Carbon_Gate')
             Rz = Gate('Rz','Connection_element')
+            Ren_b = Gate('Ren_b', 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2','electron_Gate')
 
             ############
-            gate_seq = [initial_Pi2,Ren,Rz,Ren,final_Pi2]
+            gate_seq = [initial_Pi2,Ren_a,Rz,Ren_b,final_Pi2]
             ############
 
-            Ren.N = self.params['C_Ren_N']
-            Ren.tau = self.params['C_Ren_tau']
-            Ren.scheme = self.params['Decoupling_sequence_scheme']
-            Ren.prefix = 'Ren'
+            Ren_a.N = self.params['C_Ren_N']
+            Ren_a.tau = self.params['C_Ren_tau']
+            Ren_a.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_a.prefix = 'Ren_a'+str(pt)
+
+            Ren_b.N = self.params['C_Ren_N']
+            Ren_b.tau = self.params['C_Ren_tau']
+            Ren_b.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_b.prefix = 'Ren_b'+str(pt)
 
             #Generate sequence elements for all Carbon gates
-            self.generate_decoupling_sequence_elements(Ren)
+            self.generate_decoupling_sequence_elements(Ren_a)
+            self.generate_decoupling_sequence_elements(Ren_b)
 
             #Use information about duration of carbon gates to calculate
             #use function for this in more fancy meass class
-            initial_Pi2.time_before_pulse =max(1e-6 - Ren.tau_cut + 36e-9,44e-9)
-            initial_Pi2.time_after_pulse = Ren.tau_cut
-            initial_Pi2.Gate = self.params['Initial_Pulse']
+            initial_Pi2.time_before_pulse =max(1e-6 - Ren_a.tau_cut + 36e-9,44e-9)
+            initial_Pi2.time_after_pulse = Ren_a.tau_cut
+            initial_Pi2.Gate_operation = self.params['Initial_Pulse']
             initial_Pi2.prefix = 'init_pi2'+str(pt)
 
-            final_Pi2.time_before_pulse =Ren.tau_cut
+            final_Pi2.time_before_pulse =Ren_a.tau_cut
             final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-            final_Pi2.Gate = self.params['Final_Pulse']
+            final_Pi2.Gate_operation = self.params['Final_Pulse']
             final_Pi2.prefix = 'fin_pi2'+str(pt)
 
             #Generate the start and end pulse
@@ -746,21 +759,18 @@ class NuclearRamsey(DynamicalDecoupling):
 
             # Generate Rz element (now we explicitly set tau, N and time before and after final)
             Rz.prefix = 'phase_gate'+str(pt)
-            Rz.dec_duration = self.param['free_evolution_time'][pt]
-            Rz.tau_cut_before = Ren.tau_cut
-            Rz.tau_cut_after = Ren.tau_cut
+            Rz.dec_duration = self.params['free_evolution_times'][pt]
+            Rz.tau_cut_before = Ren_a.tau_cut
+            Rz.tau_cut_after = Ren_a.tau_cut
 
             self.determine_connection_element_parameters(Rz)
             self.generate_connection_element(Rz)
 
             # Combine to AWG sequence that can be uploaded #
-            list_of_elements, seq = combine_to_AWG_sequence(gate_seq)
-
-        ##########################################
-        # Combine make final sequence for all loops
-        combined_list_of_elements.extend(list_of_elements)
-        for seq_el in seq.elements:
-            combined_seq.append_element(seq_el)
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
+            combined_list_of_elements.extend(list_of_elements)
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
 
 
 
@@ -819,7 +829,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 gate_seq = [simple_el_dec]
             else:
                 #Generate the start and end pulse
-                initial_Pi2.Gate = self.params['Initial_Pulse']
+                initial_Pi2.Gate_operation = self.params['Initial_Pulse']
                 initial_Pi2.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
                 initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
                 initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming
@@ -827,7 +837,7 @@ class SimpleDecoupling(DynamicalDecoupling):
 
                 final_Pi2.time_before_pulse =simple_el_dec.tau_cut
                 final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-                final_Pi2.Gate = self.params['Final_Pulse']
+                final_Pi2.Gate_operation = self.params['Final_Pulse']
                 final_Pi2.prefix = 'fin_pi2_'+str(pt) #to ensure unique naming
 
                 #Generate the start and end pulse

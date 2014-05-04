@@ -6,7 +6,7 @@ ssro.AdwinSSRO.yellow_aom = qt.instruments['YellowAOM']
 ssro.AdwinSSRO.adwin = qt.instruments['adwin']
 
 
-if qt.cfgman.get('protocols/AdwinSSRO/yellow'):
+if qt.exp_params['protocols']['AdwinSSRO']['yellow']:
     ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.yellow_aom
 else:
     ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.green_aom
@@ -14,4 +14,4 @@ else:
 pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SMB100']
 pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
 pulsar_msmt.PulsarMeasurement.physical_adwin = qt.instruments['physical_adwin']
-pulsar_pq.PQPulsarMeasurement.PQ_ins=qt.instruments['TH_260N']
+pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N']

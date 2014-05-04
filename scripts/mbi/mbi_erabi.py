@@ -39,8 +39,6 @@ def run(name):
     m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
     m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
 
-    print m.params['MW_pulse_mod_frqs']
-
     # for the autoanalysis
 
     funcs.finish(m, debug=False)
