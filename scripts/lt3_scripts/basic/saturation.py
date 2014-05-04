@@ -6,9 +6,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no2_SIL5_ZPL_TH'
+name = 'The111no2_SIL2_ZPL_TH'
 steps=21
-max_power=230e-6       #[w]
+max_power=250e-6       #[w]
 counter=2    #number of counter
 PQ_count=True    # counting with the HH, assumes apd on channel 0
 bg_x=-2.5          #delta x position of background [um]
