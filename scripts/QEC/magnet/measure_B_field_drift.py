@@ -1,16 +1,13 @@
 """
-Script for fine optimization of the magnet XY-position (using the average ms=-1, ms=+1 freq).
-Fine optimization measures only the center resonance
-Important: choose the right domain for the range of positions in get_magnet_position in magnet tools!
+Script for fine measurement of the magnetic field (using the average ms=-1, ms=+1 freq).
 """
 import numpy as np
 import qt
 import msvcrt
 from analysis.lib.fitting import fit, common; reload(common)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
-import measurement.scripts.mbi.mbi_funcs as funcs
 
-# import the DESR measurement, DESR fit, magnet tools and master of magnet
+
+# # import the DESR measurement, DESR fit, magnet tools and master of magnet
 from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 from measurement.lib.tools import magnet_tools as mt; reload(mt)
@@ -29,6 +26,11 @@ nm_per_step = qt.exp_params['magnet']['nm_per_step']
 current_f_msp1 = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']
 current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
+
+
+import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.mbi.mbi_funcs as funcs
+
 
 def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16):
 
@@ -59,7 +61,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 if __name__ == '__main__':
     
-    ######################
+    #####################
     ## Input parameters ##
     ######################
 
@@ -98,7 +100,7 @@ if __name__ == '__main__':
         DESR_msmt.darkesr('magnet_msm1_coarse', ms = 'msm', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
             #ms=-1 fine
-        DESR_msmt.darkesr('magnet_msm1', ms = 'msm', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
+        DESR_msmt.darkesr('magnet_msm1_fine', ms = 'msm', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
                    
         qt.msleep(1)
@@ -107,7 +109,7 @@ if __name__ == '__main__':
         DESR_msmt.darkesr('magnet_msp1_coarse', ms = 'msp', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
             #ms=+1 fine
-        DESR_msmt.darkesr('magnet_msp1', ms = 'msp', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
+        DESR_msmt.darkesr('magnet_msp1_fine', ms = 'msp', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
@@ -117,8 +119,8 @@ if __name__ == '__main__':
 
 
         print '-----------------------------'
-        print 'Fitted ms-1 transition frequency is '+str(f0m_temp)+' GHz' + ' +/- ' + str(u_f0m_temp*1e6) + ' khz'
-        print 'Fitted ms+1 transition frequency is '+str(f0p_temp)+' GHz' + ' +/- ' + str(u_f0p_temp*1e6) + ' khz'
+        print 'Fitted ms-1 transition frequency is '+str(f0m_temp)+' GHz' + ' +/- ' + str(u_f0m_temp*1e6) + ' kHz'
+        print 'Fitted ms+1 transition frequency is '+str(f0p_temp)+' GHz' + ' +/- ' + str(u_f0p_temp*1e6) + ' kHz'
         print 'Calculated centre between ms=-1 and ms=+1 is '+ str(f_centre)+' GHz +/- '+str((u_f0m_temp**2+u_f0p_temp**2)**(1./2)/2*1e6)+' kHz'
         print 'Difference to ZFS = '+ str((f_centre-ZFS*1e-9)*1e6)+ 'kHz'
         print 'Measured B_field is: Bz = '+str(Bz_measured)+ ' G ,Bx = '+str(Bx_measured)+ ' G'

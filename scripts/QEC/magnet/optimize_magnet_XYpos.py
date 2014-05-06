@@ -56,7 +56,9 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0, -scan_range/2] + (no_of_steps-1)*[stepsize]
+    steps = [0, -scan_range/2] + (no_of_steps-1)*[stepsize] 
+
+
     print steps
 
     #create the lists to save the data to
@@ -170,7 +172,7 @@ if __name__ == '__main__':
     fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
     print 'minimum at steps = '+str(fit_result['params_dict']['c'])
     print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
-    
+
     # print positions  
     d.create_file()
     filename=d.get_filepath()[:-4]

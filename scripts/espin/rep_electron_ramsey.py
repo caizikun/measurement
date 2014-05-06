@@ -13,7 +13,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 from measurement.scripts.espin import espin_funcs as funcs
 reload(funcs)
 
-name = 'rep_ramseys_SIL1_Hans_with_CORPSE_3hf_delay=7000us_'
+name = ''
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -60,7 +60,7 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
     m = pulsar_msmt.RepElectronRamseysCORPSE(name)
     funcs.prepare(m)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols']['Hans_sil4']['Magnetometry'])
 
 
 
@@ -70,7 +70,7 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
 
     pts = 1
     m.params['pts'] = pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 2500
 
     m.params['evolution_times'] = np.ones(1)*nr_of_hyperfine_periods/m.params['N_HF_frq']
 
@@ -90,18 +90,20 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
     print m.adwin_var('completed_reps')
     return return_e
 def loop_rep_ramsey_CORPSE(label='',delay_time=1,repump_E=0,repump_A=0,nr_of_hyperfine_periods=3,phase=90,reps=2):
-    name='SIL1_segRO'+str(nr_of_hyperfine_periods)+'_hf'
+    name='SIL4_'+str(nr_of_hyperfine_periods)+'_hf'
     n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label
     repelectronramseyCORPSE(n+"0",delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=True)
-
+    #AWG.clear_visa()
     for i in np.arange(reps-1):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             raise Exception('User abort')
         n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label+"_"+str(i+1)
-        repelectronramseyCORPSE(n,delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=False)
+        repelectronramseyCORPSE(n,delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=True)
+     #   AWG.clear_visa()
 if __name__ == '__main__':
-    loop_rep_ramsey_CORPSE(label='45V',delay_time=0,repump_E=0,repump_A=0,
-        nr_of_hyperfine_periods=0.5,phase=0,reps=10)
+    #AWG.clear_visa()
+    loop_rep_ramsey_CORPSE(label='',delay_time=0,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=0.25,phase=90,reps=10)
     
     '''
     GreenAOM.set_power(5e-6)
