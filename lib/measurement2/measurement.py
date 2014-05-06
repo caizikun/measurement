@@ -271,21 +271,7 @@ class Measurement(object):
     def save_instrument_settings_file(self, parent=None):
         if parent == None:
             parent = self.h5basegroup
-        
-        h5settingsgroup = parent.create_group('instrument_settings')
-        inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
-        
-        for (iname, ins) in inslist:
-            insgroup = h5settingsgroup.create_group(iname)
-            parlist = dict_to_ordered_tuples(ins.get_parameters())
-            
-            for (param, popts) in parlist:
-                try:
-                    insgroup.attrs[param] = ins.get(param, query=True) \
-                            if 'remote' in ins.get_options()['tags'] \
-                            else ins.get(param, query=False)
-                except (ValueError, TypeError):
-                        insgroup.attrs[param] = str(ins.get(param, query=False))
+        save_instrument_settings_file(parent)
                 
     def review_params(self):
         ''' 
@@ -425,6 +411,22 @@ class AdwinControlledMeasurement(Measurement):
         adsrc = self.adwin_process_src_filepath()
         if adsrc != None:
             shutil.copy(adsrc, sdir)
+
+def save_instrument_settings_file(parent):
+    h5settingsgroup = parent.create_group('instrument_settings')
+    inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
+    
+    for (iname, ins) in inslist:
+        insgroup = h5settingsgroup.create_group(iname)
+        parlist = dict_to_ordered_tuples(ins.get_parameters())
+        
+        for (param, popts) in parlist:
+            try:
+                insgroup.attrs[param] = ins.get(param, query=True) \
+                        if 'remote' in ins.get_options()['tags'] \
+                        else ins.get(param, query=False)
+            except (ValueError, TypeError):
+                    insgroup.attrs[param] = str(ins.get(param, query=False))
 
 class MultipleAdwinsMeasurement(Measurement):
 

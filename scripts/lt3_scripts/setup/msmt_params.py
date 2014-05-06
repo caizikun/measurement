@@ -1,5 +1,5 @@
 cfg={}
-sample_name = 'Fritz'
+sample_name = 'The111no2'
 sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
@@ -110,7 +110,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 5e-9,
 		'Ex_RO_amplitude':				 5e-9,
 		'Ex_SP_amplitude':				 5e-9,
-		'SP_duration':					 200,
+		'SP_duration':					 50,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
 		'SSRO_repetitions':				 5000,

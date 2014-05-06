@@ -14,7 +14,7 @@ def ssrocalibration(name):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    #machiel if you want to change the ssro, go make a copy of your own of this file
     # parameters
     m.params['SSRO_repetitions'] = 5000
     m.params['SSRO_duration']       = 100
@@ -24,11 +24,9 @@ def ssrocalibration(name):
     m.params['CR_preselect']    = 1000
     m.params['CR_repump']       = 1000
     m.params['CR_probe']        = 1000
-    m.params['CR_duration']        = 100
 
-    e_sp = 35e-9 #60e-9
-    a_sp=  35e-9
-    ro_amp=35e-9
+    e_sp = m.params['Ex_SP_amplitude'] #60e-9
+    a_sp=  m.params['A_SP_amplitude']
 
     #m.params['green_rempump_duration']=150
     #m.params['green_repump_amplitude'] = 30e-6
@@ -36,8 +34,7 @@ def ssrocalibration(name):
 
 
     # ms = 0 calibration
-    m.params['SP_duration']=48
-    m.params['Ex_RO_amplitude']=ro_amp
+    m.params['SP_duration']=50
     m.params['Ex_SP_amplitude'] = 0.
     m.params['A_SP_amplitude'] = a_sp
     m.run()
