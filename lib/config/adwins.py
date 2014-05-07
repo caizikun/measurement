@@ -186,7 +186,7 @@ config['adwin_lt1_processes'] = {
         'cr_check_mod' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
-            'file' : 'cr.inc',
+            'file' : 'cr_mod.inc',
             'par' : {
                     'CR_preselect'              : 75,
                     'CR_probe'                  : 68,
@@ -252,7 +252,7 @@ config['adwin_lt1_processes'] = {
         'singleshot' : {
                 'index' : 9,
                 'file' : 'singleshot_lt1.tb9',
-                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
                     'ssro_counts' : 74,
@@ -323,6 +323,45 @@ config['adwin_lt1_processes'] = {
                     'RO_data' : 25,
                     },
                 },
+
+
+        'bell' : {
+                'index' : 9,
+                'file' : 'bell_lt1.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['AWG_success_DI_channel'         ,   8],
+                    ['SP_duration'                 , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['remote_CR_DO_channel'        ,  15],
+                    ['SSRO_duration'               ,  50],
+                    ['wait_for_AWG_done'           ,   1],
+                    ['sequence_wait_time'          ,  10],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['E_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'        , 0.8],
+                    ['E_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'        , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'CR_timer': 27,
+                    },
+                },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
         'ssro_multiple_RO' : {
                 'index' : 9,
@@ -342,8 +381,8 @@ config['adwin_lt1_processes'] = {
                     ['cycle_duration'              , 300],
                     ['SP_repump_duration'          ,   1],
                     ['wait_time_between_msmnts'    ,   1],
-		    ['repump_E'    		   ,   0],
-		    ['repump_A'    		   ,   0],
+		            ['repump_E'    		           ,   0],
+		            ['repump_A'    		           ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1477,6 +1516,143 @@ config['adwin_lt3_processes'] = {
                     },
                 },
 
+        'bell' : {
+                'index' : 9,
+                'file' : 'bell_lt3.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['SP_duration'                 , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['remote_CR_DI_channel'        ,   8],
+                    ['SSRO_duration'               ,  50],
+                    ['wait_for_AWG_done'           ,   1],
+                    ['sequence_wait_time'          ,  10],
+                    ['PLU_DI_channel'              ,   1],
+                    ['do_sequences'                ,   1],
+
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'        , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'        , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'CR_timer': 27,
+                    },
+                },
+
 
 
         }
+
+
+config['adwin_rt2_dacs'] = {
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        }
+
+config['adwin_rt2_dios'] = {
+
+        }
+
+config['adwin_rt2_processes'] = {
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TB5',
+            },
+
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'rt2_linescan.TB2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
+                },
+            },
+
+        'counter' : {
+
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'rt2_simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'rt2_set_dac.TB3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'rt2_set_ttl_outputs.TB4',
+            'par' : {
+                'dio_no' : 61,
+                'dio_val' : 62,
+                },
+            },
+
+        'trigger_dio' : {
+            'index' : 4,
+            'file' : 'rt2_dio_trigger.tb4',
+            'par' : {
+                'dio_no' : 61,
+                'startval' : 62, # where to start - 0 or 1
+                'waittime' : 63, # length of the trigger pulse in units of 10 ns
+            },
+        },
+    }

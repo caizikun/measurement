@@ -1,5 +1,5 @@
 cfg={}
-sample_name = 'Fritz'
+sample_name = 'The111no2'
 sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
@@ -38,6 +38,7 @@ cfg['protocols']['AdwinSSRO']={
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
+		'SSRO_stop_after_first_photon':	0,
 		}
 
 yellow=False
@@ -109,11 +110,10 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 5e-9,
 		'Ex_RO_amplitude':				 5e-9,
 		'Ex_SP_amplitude':				 5e-9,
-		'SP_duration':					 200,
+		'SP_duration':					 50,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
 		'SSRO_repetitions':				 5000,
-		'SSRO_stop_after_first_photon':	 0,
 		}
 
 

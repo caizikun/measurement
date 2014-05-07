@@ -28,6 +28,7 @@ class master_of_space(CyclopeanInstrument):
 	
        # should not change often, hardcode is fine for now
         self.rt_dimensions = moscfg.config[dimension_set]['rt_dimensions']
+
          
         self.lt_dimensions = moscfg.config[dimension_set]['lt_dimensions']
         
@@ -107,14 +108,15 @@ class master_of_space(CyclopeanInstrument):
                 
                 # make stepping function
                 self._make_stepfunc(d)
-
+                minval= min([dim['min_v']*dim['micron_per_volt'],dim['max_v']*dim['micron_per_volt']])
+                maxval= max([dim['min_v']*dim['micron_per_volt'],dim['max_v']*dim['micron_per_volt']])
                 # register parameter (set and get need to exist already)
                 self.add_parameter(d, 
                         type=types.FloatType,
                         flags=Instrument.FLAG_GETSET, 
                         units='um',
-                        minval=dim['min_v']*dim['micron_per_volt'],
-                        maxval=dim['max_v']*dim['micron_per_volt'], )
+                        minval=minval,
+                        maxval=maxval, )
 
                 # register the step function
                 self.add_function('step_'+d)

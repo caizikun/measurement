@@ -1,8 +1,8 @@
 
 cfg={}
 
-cfg['samples'] = {'current':'Hans_sil1'}
-cfg['protocols'] = {'current':'Hans_sil1'}
+cfg['samples'] = {'current':'Hans_sil4'}
+cfg['protocols'] = {'current':'Hans_sil4'}
 
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
@@ -49,7 +49,7 @@ cfg['protocols']['AdwinSSRO']={
 'Ex_off_voltage'            :       0.,
 'A_off_voltage'             :       -0.0,
 'repump_off_voltage'        :       0,
-'yellow_repump_amplitude'   :       50e-9,
+'yellow_repump_amplitude'   :       60e-9,
 'yellow_repump_duration'    :       500,
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
@@ -106,10 +106,12 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msm1_cntr = 2.001883e9            #Electron spin ms=-1 frquency
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
-
-f_msm1_cntr = 2.024994e9          #Electron spin ms=-1 frquency
-### Do not change the +1 frq anymore!
+### Here we set two frequencies, these are constants
+f_msm1_cntr =   2.024899e9        #Electron spin ms=-1 frquency0
+### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
+### We want to use the difference (Z-field) and the average (X-field)
+
 
 
 zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 and -1 fregs.
@@ -121,7 +123,7 @@ N_HF_frq = 2.196e6        #calibrated 20140320/181319
 mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq
+mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
 mw_power = 20                               #MW power
 
 cfg['samples']['Hans_sil1'] = {
@@ -135,7 +137,8 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :        6.522e-6,
+'C1_Ren_tau'    :       6.522e-6,
+'C1_freq'       :       343.0, #(2)
 #'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
@@ -150,18 +153,18 @@ cfg['samples']['Hans_sil1'] = {
     #######################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
-'SSRO_repetitions'  : 10000,
+'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 3e-9,
+'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 10e-9,
 'CR_duration' :  50,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,
-'Ex_RO_amplitude':  8e-9,
+'Ex_CR_amplitude':  5e-9,#5nW
+'Ex_RO_amplitude':  16e-9,
 'Ex_SP_amplitude':  0e-9,
 'SP_duration'        : 300,
 'SP_filter_duration' : 0 }
@@ -172,7 +175,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
     ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 10}
+'SSRO_duration' : 14}
 
     ########################
     ### Pulse parameters ###
@@ -190,12 +193,12 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.854090,  
+'fast_pi_amp'               :   0.844083,   
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   72e-9,#60e-9,
-'fast_pi2_amp'              :   0.822801,#0*0.777847, #140324
+'fast_pi2_amp'              :   0.809691,#0.822801,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -248,18 +251,24 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 ###############################
 ### Rep Ramsey Magnetometry####
 ###############################
-CORPSE_frq=  5.7e6
+CORPSE_frq=  6.8e6
 MW_mod_magnetometry=43e6
+f_msm1_cntr = 2.024899e9 +40e3            #Electron spin ms=-1 frquency
+f_msp1_cntr = 3.730069e9              #Electron spin ms=+1 frequency
 
 cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'MW_modulation_frequency'   :   MW_mod_magnetometry,
 'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry,
-
+'mw_power'      :       20,
+'ms-1_cntr_frq':       f_msm1_cntr,
+'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
 'SSRO_duration'     :  10,
-'Ex_RO_amplitude':  20e-9,
-'Ex_SP_amplitude'  : 60e-9,
-'A_SP_amplitude': 50e-9,
+'Ex_RO_amplitude':  50e-9,
+'Ex_SP_amplitude'  : 0e-9,
+'A_CR_amplitude': 25e-9,
+'Ex_CR_amplitude': 25e-9,
+'A_SP_amplitude': 60e-9,
 'A_SP_repump_amplitude':.5e-9,
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
@@ -267,9 +276,46 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
-'SSRO_stop_after_first_photon':1,
+'SSRO_stop_after_first_photon':0,
 #    ### Corpse pulses ###
-'CORPSE_pi2_amp'    :           1,
+'CORPSE_pi2_amp'    :           .9,
+'CORPSE_frq'  :  CORPSE_frq,
+'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
+ 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+ 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+ 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+ 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+ 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.}
+
+
+
+
+
+
+CORPSE_frq=  11.76e6
+cfg['protocols']['Hans_sil4']['Magnetometry'] ={
+'MW_modulation_frequency'   :   MW_mod_magnetometry,
+'mw_frq'        :      f_msm1_cntr - MW_mod_magnetometry,
+'mw_power'      :       20,
+'ms-1_cntr_frq':       f_msm1_cntr,
+'ms+1_cntr_frq':       f_msp1_cntr,
+### Laser duration and powers etc ###
+'SSRO_duration'     :  40,
+'Ex_RO_amplitude':  35e-9,
+'Ex_SP_amplitude'  : 0e-9,
+'A_CR_amplitude': 20e-9,
+'Ex_CR_amplitude': 20e-9,
+'A_SP_amplitude': 35e-9,
+'A_SP_repump_amplitude':.5e-9,
+'SP_duration': 48, #!!!! 10
+'SP_repump_duration': 100,
+'wait_after_RO_pulse_duration':2,
+'wait_after_pulse_duration':2,
+'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
+
+'SSRO_stop_after_first_photon':0,
+#    ### Corpse pulses ###
+'CORPSE_pi2_amp'    :           0.9,
 'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
  'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
@@ -289,14 +335,6 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 
 
 
-
-
-
-
-
-
-
-
 #################
 ### Hans sil4 ###
 #################
@@ -304,12 +342,15 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
     ###############################
     ### NV and field parameters ###
     ###############################
+### Here we set two frequencies, these are constants
+f_msm1_cntr =   2.024899e9        #Electron spin ms=-1 frquency0
+### the +1 frq should in general not be changed anymore!
+f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
+### We want to use the difference (Z-field) and the average (X-field)
 
-f_msm1_cntr = 2.014001e9            #Electron spin ms=-1 frquency
-f_msp1_cntr = 3.741205e9            #Electron spin ms=+1 frequency
 
 mw_freq  = 3.65e9    #MW source frequency
-mw_power = 23        #MW power
+mw_power = 20        #MW power
 
 zero_field_splitting = 2.87747e9    # As measured by Julia on 20140227 2.87747(5)e9
 
@@ -334,17 +375,17 @@ cfg['protocols']['Hans_sil4']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 3e-9,
+'A_CR_amplitude': 20e-9,
 'A_RO_amplitude': 0,
-'A_SP_amplitude': 3e-9,
-'CR_duration' :  50,
+'A_SP_amplitude': 40e-9,
+'CR_duration' :  100,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,
-'Ex_RO_amplitude':  25e-9,
+'Ex_CR_amplitude':  20e-9,
+'Ex_RO_amplitude':  50e-9,
 'Ex_SP_amplitude':  0e-9,
-'SP_duration'        : 100,
+'SP_duration'        : 48,
 'SP_filter_duration' : 0 }
 
 
@@ -353,7 +394,7 @@ cfg['protocols']['Hans_sil4']['AdwinSSRO'] = {
     ##################################
 
 cfg['protocols']['Hans_sil4']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 10}
+'SSRO_duration' : 25}
 
     ########################
     ### Pulse parameters ###
@@ -371,18 +412,18 @@ cfg['protocols']['Hans_sil4']['pulses'] ={
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   110e-9,   #should be divisible by 2
-'fast_pi_amp'               :   0.857767, #140324
+'fast_pi_amp'               :   .77*0.857767, #140324
 'fast_pi_mod_frq'           :   f_MBI,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   60e-9,    #should be divisible by 2
-'fast_pi2_amp'              :   0.777847, #140324
+'fast_pi2_amp'              :   .77*0.809057, #0.777847, #140324
 'fast_pi2_mod_frq'          :   f_MBI,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_MBI,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_MBI,
-'AWG_MBI_MW_pulse_amp'      :   0.03,
+'AWG_MBI_MW_pulse_amp'      :   .77*0.03,
 'AWG_MBI_MW_pulse_duration' :   2500e-9}
 
 #    ### Corpse pulses ###

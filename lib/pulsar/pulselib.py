@@ -1,9 +1,41 @@
 import numpy as np
 import scipy.special as ssp
 import pulse
-import pulsar
 
 ### Basic multichannel pulses
+
+class MW_pulse(pulse.Pulse):
+    def __init__(self, name, MW_channel, PM_channel, **kw):
+        pulse.Pulse.__init__(self, name)
+
+        self.MW_channel = MW_channel
+        self.PM_channel = PM_channel
+        self.channels = [MW_channel, PM_channel]
+
+        self.amplitude = kw.pop('amplitude', 0.1)
+        self.length = kw.pop('length', 1e-6)
+        self.PM_risetime = kw.pop('PM_risetime', 0)
+
+        self.length += 2*self.PM_risetime
+        self.start_offset = self.PM_risetime
+        self.stop_offset = self.PM_risetime
+
+    def __call__(self, **kw):
+        self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
+            2*self.PM_risetime
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return np.ones(len(tvals))
+
+        else:  
+            idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
+            idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1]
+            wf = np.zeros(len(tvals))
+            wf[idx0:idx1] += self.amplitude
+            return wf
+
 class MW_IQmod_pulse(pulse.Pulse):
     def __init__(self, name, I_channel, Q_channel, PM_channel, **kw):
         pulse.Pulse.__init__(self, name)
@@ -63,15 +95,10 @@ class MW_IQmod_pulse(pulse.Pulse):
             return wf
 
 # class MW_IQmod_pulse
+class CORPSE_pulse:
 
-### Shaped pulses
-class IQ_CORPSE_pulse(MW_IQmod_pulse):
-    
-     # this is between the driving pulses (not PM)
+    def __init__(self, name, **kw):
 
-    def __init__(self, *arg, **kw):
-        MW_IQmod_pulse.__init__(self, *arg, **kw)
-   
         self.eff_rotation_angle = kw.pop('eff_rotation_angle', 0)
         self.rabi_frequency = kw.pop('rabi_frequency', 0)
         self.eff_rotation_angle_rad = self.eff_rotation_angle/360.*2*np.pi #np.sin expects radians
@@ -89,12 +116,7 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse):
         self.length = self.length_1 + self.length_2 + self.length_3 + \
             2*self.pulse_delay + 2*self.PM_risetime
 
-        self.start_offset = self.PM_risetime
-        self.stop_offset = self.PM_risetime
-
     def __call__(self, **kw):
-        MW_IQmod_pulse.__call__(self, **kw)
-
         self.eff_rotation_angle = kw.pop('eff_rotation_angle', self.eff_rotation_angle)
         self.rabi_frequency = kw.pop('rabi_frequency', self.rabi_frequency)
         self.eff_rotation_angle_rad = self.eff_rotation_angle/360.*2*np.pi #np.sin expects radians
@@ -103,15 +125,43 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse):
         self.rotation_angle_1 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
         self.rotation_angle_2 = 2*np.pi - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
         self.rotation_angle_3 = self.eff_rotation_angle_rad/2-np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-     
+
         self.length_1 = self.rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
         self.length_2 = self.rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
         self.length_3 = self.rotation_angle_3/(2*np.pi)/self.rabi_frequency # 60 for pi
-        self.pulse_delay = kw.pop('pulse_delay', 1e-9)
+        self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
 
         self.length = self.length_1 + self.length_2 + self.length_3 + \
             2*self.pulse_delay + 2*self.PM_risetime
 
+    def _get_starts_ends(self,tvals):
+
+        start_1 = np.where(tvals <= (tvals[0] + self.PM_risetime))[0][-1]
+        end_1 = np.where(tvals <= (tvals[0] + self.length_1 + self.PM_risetime))[0][-1]
+        start_2 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
+            self.pulse_delay))[0][-1]
+        end_2 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
+            self.pulse_delay + self.length_2))[0][-1]
+        start_3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
+            self.pulse_delay + self.length_2 + self.pulse_delay))[0][-1]
+        end_3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
+            self.pulse_delay + self.length_2 + self.pulse_delay + \
+            self.length_3))[0][-1]
+
+        return start_1, end_1, start_2, end_2, start_3, end_3 
+
+
+### Shaped pulses
+class IQ_CORPSE_pulse(MW_IQmod_pulse, CORPSE_pulse):
+    
+     # this is between the driving pulses (not PM)
+    def __init__(self, *arg, **kw):
+        MW_IQmod_pulse.__init__(self, *arg, **kw)
+        CORPSE_pulse.__init__(self, *arg, **kw)
+   
+    def __call__(self, **kw):
+        MW_IQmod_pulse.__call__(self, **kw)
+        CORPSE_pulse.__call__(self, **kw)
         return self
 
     def chan_wf(self, chan, tvals):
@@ -120,19 +170,8 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse):
 
         else:
             idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
-            idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1] + 1
 
-            start_1 = np.where(tvals <= (tvals[0] + self.PM_risetime))[0][-1]
-            end_1 = np.where(tvals <= (tvals[0] + self.length_1 + self.PM_risetime))[0][-1]
-            start_2 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
-                self.pulse_delay))[0][-1]
-            end_2 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
-                self.pulse_delay + self.length_2))[0][-1]
-            start_3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
-                self.pulse_delay + self.length_2 + self.pulse_delay))[0][-1]
-            end_3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_1 + \
-                self.pulse_delay + self.length_2 + self.pulse_delay + \
-                self.length_3))[0][-1]
+            start_1, end_1, start_2, end_2, start_3, end_3  = self._get_starts_ends(tvals)
 
             wf = np.zeros(len(tvals))
             
@@ -158,85 +197,6 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse):
                     (self.frequency * tvals[start_3:end_3] + self.phase/360.))
 
             return wf
-
-
-
-class IQ_CORPSE_pi_pulse(MW_IQmod_pulse):
-    
-     # this is between the driving pulses (not PM)
-
-    def __init__(self, *arg, **kw):
-        MW_IQmod_pulse.__init__(self, *arg, **kw)
-
-        self.length_60 = kw.pop('length_60', 0)
-        self.length_m300 = kw.pop('length_m300', 0)
-        self.length_420 = kw.pop('length_420', 0)
-        self.pulse_delay = kw.pop('pulse_delay', 1e-9)
-
-        self.length = self.length_60 + self.length_m300 + self.length_420 + \
-            2*self.pulse_delay + 2*self.PM_risetime
-
-        self.start_offset = self.PM_risetime
-        self.stop_offset = self.PM_risetime
-
-    def __call__(self, **kw):
-        MW_IQmod_pulse.__call__(self, **kw)
-
-        self.length_60 = kw.pop('length_60', self.length_60)
-        self.length_m300 = kw.pop('length_m300', self.length_m300)
-        self.length_420 = kw.pop('length_420', self.length_420)
-        self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
-
-        self.length = self.length_60 + self.length_m300 + self.length_420 + \
-            2*self.pulse_delay + 2*self.PM_risetime
-
-        return self
-
-    def chan_wf(self, chan, tvals):
-        if chan == self.PM_channel:
-            return np.ones(len(tvals))
-
-        else:
-            idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
-            idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1] + 1
-
-            start_420 = np.where(tvals <= (tvals[0] + self.PM_risetime))[0][-1]
-            end_420 = np.where(tvals <= (tvals[0] + self.length_420 + self.PM_risetime))[0][-1]
-            start_m300 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_420 + \
-                self.pulse_delay))[0][-1]
-            end_m300 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_420 + \
-                self.pulse_delay + self.length_m300))[0][-1]
-            start_60 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_420 + \
-                self.pulse_delay + self.length_m300 + self.pulse_delay))[0][-1]
-            end_60 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_420 + \
-                self.pulse_delay + self.length_m300 + self.pulse_delay + \
-                self.length_60))[0][-1]
-
-            wf = np.zeros(len(tvals))
-            
-            # in this case we start the wave with zero phase at the effective start time
-            # (up to the specified phase)
-            if not self.phaselock:
-                tvals = tvals.copy() - tvals[idx0]
-
-            if chan == self.I_channel:
-                wf[start_420:end_420] += self.amplitude * np.cos(2 * np.pi * \
-                    (self.frequency * tvals[start_420:end_420] + self.phase/360.))
-                wf[start_m300:end_m300] -= self.amplitude * np.cos(2 * np.pi * \
-                    (self.frequency * tvals[start_m300:end_m300] + self.phase/360.))
-                wf[start_60:end_60] += self.amplitude * np.cos(2 * np.pi * \
-                    (self.frequency * tvals[start_60:end_60] + self.phase/360.))
-
-            if chan == self.Q_channel:
-                wf[start_420:end_420] += self.amplitude * np.sin(2 * np.pi * \
-                    (self.frequency * tvals[start_420:end_420] + self.phase/360.))
-                wf[start_m300:end_m300] -= self.amplitude * np.sin(2 * np.pi * \
-                    (self.frequency * tvals[start_m300:end_m300] + self.phase/360.))
-                wf[start_60:end_60] += self.amplitude * np.sin(2 * np.pi * \
-                    (self.frequency * tvals[start_60:end_60] + self.phase/360.))
-
-            return wf
-
 class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
     # this is between the driving pulses (not PM)
 
@@ -314,7 +274,34 @@ class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
                     (self.frequency * tvals[start_24p3:end_24p3] + self.phase/360.))
 
             return wf
+class MW_CORPSE_pulse(MW_pulse, CORPSE_pulse):
 
+    # this is between the driving pulses (not PM)
+    def __init__(self, *arg, **kw):
+        MW_pulse.__init__(self, *arg, **kw)
+        CORPSE_pulse.__init__(self, *arg, **kw)
+        self.second_MW_channel = kw.pop('second_MW_channel', None)
+        if self.second_MW_channel != None:
+            self.channels.append(self.second_MW_channel)
+   
+    def __call__(self, **kw):
+        MW_pulse.__call__(self, **kw)
+        CORPSE_pulse.__call__(self, **kw)
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return np.ones(len(tvals))
+
+        else:
+            start_1, end_1, start_2, end_2, start_3, end_3  = self._get_starts_ends(tvals)
+            wf = np.zeros(len(tvals))
+            
+            wf[start_1:end_1] += self.amplitude 
+            wf[start_2:end_2] -= self.amplitude 
+            wf[start_3:end_3] += self.amplitude
+            
+            return wf 
 
 class RF_erf_envelope(pulse.SinePulse):
     def __init__(self, *arg, **kw):
@@ -332,120 +319,6 @@ class RF_erf_envelope(pulse.SinePulse):
 
         return wf * env
 
-
-class EOMAOMPulse(pulse.Pulse):
-    def __init__(self, name, eom_channel, aom_channel,  **kw):
-        pulse.Pulse.__init__(self, name)
-        self.eom_channel = eom_channel
-        self.aom_channel = aom_channel
-
-        self.channels = [eom_channel,aom_channel]
-                                               
-        self.eom_pulse_duration        = kw.pop('eom_pulse_duration'      ,2e-9) 
-        self.eom_off_duration          = kw.pop('eom_off_duration'        ,150e-9)
-        self.eom_off_amplitude         = kw.pop('eom_off_amplitude'       ,-.25)
-        self.eom_pulse_amplitude       = kw.pop('eom_pulse_amplitude'     ,1.2)
-        self.eom_overshoot_duration1   = kw.pop('eom_overshoot_duration1' ,10e-9)
-        self.eom_overshoot1            = kw.pop('eom_overshoot1'          ,-0.03)
-        self.eom_overshoot_duration2   = kw.pop('eom_overshoot_duration2' ,4e-9)
-        self.eom_overshoot2            = kw.pop('eom_overshoot2'          ,-0.03)
-        self.eom_comp_pulse_amplitude  = kw.pop('eom_comp_pulse_amplitude',self.eom_pulse_amplitude)
-        self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
-        self.aom_risetime              = kw.pop('aom_risetime'            ,23e-9)
-        self.aom_amplitude             = kw.pop('aom_amplitude'           ,1.0)
-        self.aom_on                    = kw.pop('aom_on'                  ,True)
-
-        self.start_offset   = self.eom_off_duration
-        self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration
-        self.length         = 4*self.eom_off_duration+2.*self.eom_pulse_duration                                      
-        
-    def __call__(self,  **kw):
-        self.eom_pulse_duration        = kw.pop('eom_pulse_duration'      ,self.eom_pulse_duration) 
-        self.eom_off_duration          = kw.pop('eom_off_duration'        ,self.eom_off_duration)
-        self.eom_off_amplitude         = kw.pop('eom_off_amplitude'       ,self.eom_off_amplitude)
-        self.eom_pulse_amplitude       = kw.pop('eom_pulse_amplitude'     ,self.eom_pulse_amplitude)
-        self.eom_overshoot_duration1   = kw.pop('eom_overshoot_duration1' ,self.eom_overshoot_duration1)
-        self.eom_overshoot1            = kw.pop('eom_overshoot1'          ,self.eom_overshoot1)
-        self.eom_overshoot_duration2   = kw.pop('eom_overshoot_duration2' ,self.eom_overshoot_duration2)
-        self.eom_overshoot2            = kw.pop('eom_overshoot2'          ,self.eom_overshoot2)
-        self.eom_comp_pulse_amplitude  = kw.pop('eom_comp_pulse_amplitude',self.eom_pulse_amplitude)
-        self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
-        self.aom_risetime              = kw.pop('aom_risetime'            ,self.aom_risetime)
-        self.aom_amplitude             = kw.pop('aom_amplitude'           ,self.aom_amplitude )
-        self.aom_on                    = kw.pop('aom_on'                  ,self.aom_on )
-        
-        self.start_offset   = self.eom_off_duration
-        self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration        
-        self.length         = 4*self.eom_off_duration + 2*self.eom_pulse_duration
-
-        return self
-        
-       
-    def chan_wf(self, channel, tvals):
-        
-        tvals -= tvals[0]
-        tvals = np.round(tvals, pulsar.SIGNIFICANT_DIGITS) 
-        
-        if channel == self.eom_channel:
-
-            off_time1_start     = 0
-            off_time1_stop      = np.where(tvals <= self.eom_off_duration)[0][-1]
-            opt_pulse_stop      = np.where(tvals <= np.round(
-                self.eom_off_duration+self.eom_pulse_duration, 
-                    pulsar.SIGNIFICANT_DIGITS))[0][-1]
-            
-            overshoot1_stop     = np.where(tvals <= np.round(self.eom_off_duration + \
-                                    self.eom_pulse_duration + \
-                                    self.eom_overshoot_duration1,
-                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
-            
-            overshoot2_stop     = np.where(tvals <= np.round(self.eom_off_duration + \
-                                    self.eom_pulse_duration + self.eom_overshoot_duration1 + \
-                                    self.eom_overshoot_duration2,
-                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
-            
-            off_time2_stop      = np.where(tvals <= np.round(self.eom_off_duration + \
-                                    self.eom_pulse_duration + \
-                                     self.eom_off_duration,
-                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
-    
-            #print len(tvals)
-            wf = np.zeros(len(tvals)/2)
-            wf[off_time1_start:off_time1_stop] += self.eom_off_amplitude
-            wf[off_time1_stop:opt_pulse_stop]  += self.eom_pulse_amplitude
-            wf[opt_pulse_stop:overshoot1_stop] += self.eom_overshoot1
-            wf[overshoot1_stop:overshoot2_stop]+= self.eom_overshoot2
-            wf[opt_pulse_stop:off_time2_stop]  += self.eom_off_amplitude
-
-            #compensation_pulse
-             #compensation_pulse
-            comp_wf = np.zeros(len(tvals)/2)
-
-            comp_amp = (2*self.eom_off_duration * self.eom_off_amplitude + \
-                            self.eom_comp_pulse_duration * self.eom_comp_pulse_amplitude + \
-                            self.eom_overshoot_duration1 * self.eom_overshoot1 + \
-                            self.eom_overshoot_duration2 * self.eom_overshoot2) / (2 * self.eom_off_duration)
-
-            comp_wf -= comp_amp
-
-            wf = np.append(wf,comp_wf)
-
-
-
-        if channel == self.aom_channel:
-
-            wf = np.zeros(len(tvals))
-
-            pulse_start = np.where(tvals <= np.round(self.eom_off_duration-self.aom_risetime, 
-                pulsar.SIGNIFICANT_DIGITS))[0][-1]
-            pulse_stop  = np.where(tvals <= np.round(self.eom_off_duration + \
-                            self.eom_pulse_duration + self.aom_risetime, 
-                                pulsar.SIGNIFICANT_DIGITS))[0][-1]
-
-            wf[pulse_start:pulse_stop] += self.aom_amplitude*self.aom_on 
-            
-        return wf
-                
 class GaussianPulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', 0.1)
