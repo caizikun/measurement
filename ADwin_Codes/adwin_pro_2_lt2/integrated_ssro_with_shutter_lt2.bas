@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -44,6 +44,7 @@ DIM SP_duration, SP_filter_duration AS LONG
 DIM SSRO_repetitions, SSRO_duration, SSRO_stop_after_first_photon, sweep_length AS LONG
 DIM cycle_duration AS LONG
 DIM wait_after_pulse, wait_after_pulse_duration AS LONG
+DIM safety_wait_time, wait_shutter_open, shutter_channel AS LONG
 
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
 
@@ -90,6 +91,9 @@ INIT:
   repetition_counter  = 0
   first               = 0
   wait_after_pulse    = 0
+  safety_wait_time    = 40000 'against shutter heating
+  wait_shutter_open   = 2000
+  shutter_channel = 7        'Number of DIO to set, output
       
   P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off repump
   P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
@@ -116,8 +120,15 @@ EVENT:
   ELSE
 
     SELECTCASE mode
+      
+      CASE 0 'safety wait-time for shutter heating (specified >35 msec)
         
-      CASE 0 'CR check
+        IF (timer > 0) THEN
+          mode = 1
+          timer = -1
+        ENDIF
+                  
+      CASE 1 'CR check
        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
           mode = 2
@@ -145,15 +156,21 @@ EVENT:
           
           IF ((send_AWG_start > 0) or (sequence_wait_time > 0)) THEN
             mode = 3
+            timer = -wait_shutter_open
           ELSE
             mode = 4
+            timer = -1
           ENDIF
-          
           wait_after_pulse = wait_after_pulse_duration
-          timer = -1
+          
         ENDIF
       
       CASE 3    '  wait for AWG sequence or for fixed duration
+        
+        IF (timer = -wait_shutter_open+1) THEN
+          P2_DIGOUT (DIO_MODULE, shutter_channel, 1) 'close shutter (check if '1' is correct)
+        endif   
+                
         IF (timer = 0) THEN
           IF (send_AWG_start > 0) THEN
             P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
@@ -172,21 +189,21 @@ EVENT:
                 aux_timer = timer
               ELSE
                 mode = 4
-                timer = -1
+                timer = -wait_shutter_open
                 wait_after_pulse = 0
               ENDIF
             ENDIF
           ELSE
             IF (timer - aux_timer >= sequence_wait_time) THEN
               mode = 4
-              timer = -1
+              timer = -wait_shutter_open
               wait_after_pulse = 0
             ENDIF
           ENDIF
         ELSE
           IF (timer >= sequence_wait_time) THEN
             mode = 4
-            timer = -1
+            timer = -wait_shutter_open
             wait_after_pulse = 0
             'ELSE
             'CPU_SLEEP(9)
@@ -194,6 +211,11 @@ EVENT:
         ENDIF
      
       CASE 4    ' spin readout
+        
+        IF (timer = -wait_shutter_open+1) THEN
+          P2_DIGOUT (DIO_MODULE, shutter_channel, 0) 'close shutter (check if '1' is correct)
+        endif        
+        
         IF (timer = 0) THEN
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
@@ -217,7 +239,7 @@ EVENT:
           endif
           
           mode = 0
-          timer = -1
+          timer = -safety_wait_time
           wait_after_pulse = wait_after_pulse_duration
           inc(repetition_counter)
           Par_73 = repetition_counter

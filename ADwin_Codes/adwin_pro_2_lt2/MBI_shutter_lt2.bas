@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -195,23 +195,22 @@ EVENT:
   ELSE
     
     SELECTCASE mode
-           
-      CASE 0 'CR check
+       
+      CASE 0 'safety wait-time for shutter (specified >35 msec)
+        
+        IF (timer > 0) THEN
+          mode = 1
+          timer = -1
+        ENDIF
+          
+      CASE 1 'CR check
        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
-          mode = 1
-          timer = -safety_wait_time
+          mode = 2
+          timer = -1
           first = 0 
         ENDIF 
-        
-      CASE 1 'safety wait-time for shutter (specified >35 msec)
-      
-      	IF (timer > 0) THEN
-      	  mode = 2
-      	  timer = -1
-      	ENDIF
-      
-      
+             
       CASE 2    ' E spin pumping
         
         ' turn on one laser and start counting
@@ -339,7 +338,7 @@ EVENT:
         sequence_wait_time = DATA_38[ROseq_cntr]
         
         IF (timer = 0) THEN
-            P2_DIGOUT (DIO_MODULE, shutter_channel, 1) 'close shutter (check if '1' is correct)
+          P2_DIGOUT (DIO_MODULE, shutter_channel, 1) 'close shutter (check if '1' is correct)
         endif       
        
         ' two options: either run an AWG sequence...
@@ -365,10 +364,10 @@ EVENT:
         else
           ' if we do not run an awg sequence, we just wait the specified time, and go then to readout
           IF (timer > wait_shutter_open + sequence_wait_time) THEN
-         	P2_DIGOUT (DIO_MODULE, shutter_channel, 0) 'open shutter (check if '0' is correct)
+            P2_DIGOUT (DIO_MODULE, shutter_channel, 0) 'open shutter (check if '0' is correct)
             mode = 6
-          	timer = -1
-          	wait_time = wait_shutter_open
+            timer = -1
+            wait_time = wait_shutter_open
           ENDIF
         endif
         
@@ -405,7 +404,7 @@ EVENT:
             IF (ROseq_cntr = nr_of_ROsequences+1) THEN ' this means we're done with one full run
               INC(seq_cntr)
               mode = 0
-              timer = -1                
+              timer = -safety_wait_time     'Safety wait time is the time that mode 0 waits to stop shutter heating                
               first = 1
               ROseq_cntr = 1
               
