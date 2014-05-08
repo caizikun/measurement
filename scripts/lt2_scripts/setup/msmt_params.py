@@ -1,8 +1,8 @@
 
 cfg={}
 
-cfg['samples'] = {'current':'Hans_sil4'}
-cfg['protocols'] = {'current':'Hans_sil4'}
+cfg['samples'] = {'current':'Hans_sil1'}
+cfg['protocols'] = {'current':'Hans_sil1'}
 
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
@@ -42,7 +42,7 @@ cfg['protocols']['AdwinSSRO']={
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
 'wait_after_RO_pulse_duration':     3,
-'wait_after_pulse_duration' :       3,
+'wait_after_pulse_duration' :       3,      #Wait time after turning off the lasers (E, A pump, etc)
 'cr_wait_after_pulse_duration':     2,
 'wait_for_AWG_done'         :       0,
 'green_off_voltage'         :       0,
@@ -107,7 +107,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 #f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 ### Here we set two frequencies, these are constants
-f_msm1_cntr =   2.024899e9        #Electron spin ms=-1 frquency0
+f_msm1_cntr =   2.024900e9        #Electron spin ms=-1 frquency0
 ### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
 ### We want to use the difference (Z-field) and the average (X-field)
@@ -124,6 +124,11 @@ mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
 mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
+
+#mw_freq  = f_msm1_cntr - mw_mod_frequency
+#mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
+
+
 mw_power = 20                               #MW power
 
 cfg['samples']['Hans_sil1'] = {
@@ -137,14 +142,25 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
-'C1_Ren_tau'    :       6.522e-6,
+
+## Nuclear spins
+    
 'C1_freq'       :       343.0, #(2)
-#'C2_Ren_tau'    :       6.62e-6,   #resonance k=5 
-#'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
-# 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
-'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
-'C3_Ren_tau'    :       8.840e-6}  #resonance k=
-#'C3_Ren_tau'    :       12.080e-6}  #resonance k=8
+'C1_Ren_tau'    :       [6.522e-6   , 9.420e-6],
+'C1_Ren_N'    :         [10         , 16],
+
+'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5 
+'C2_Ren_N'    :         [26     , 28      , 32],
+
+'C3_Ren_tau'    :       [15.324e-6, 16.936],  #resonance k=
+'C3_Ren_N'    :         [54       , 46],
+
+'C4_freq'       :       349.7,  #(2)
+'C4_Ren_tau'    :       [6.456e-6   ],
+'C4_Ren_N'    :         [40         ]}
+
+
+
 
 
 
@@ -193,19 +209,19 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.844083,   
+'fast_pi_amp'               :   0.807627,   
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
 'fast_pi2_duration'         :   72e-9,#60e-9,
-'fast_pi2_amp'              :   0.809691,#0.822801,#0*0.777847, #140324
+'fast_pi2_amp'              :   0.775325, #0.822801,#0*0.777847, #140324
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
-'AWG_MBI_MW_pulse_amp'      :   0.0248,
-'AWG_MBI_MW_pulse_duration' :   4000e-9,
+'AWG_MBI_MW_pulse_amp'      :   0.016,
+'AWG_MBI_MW_pulse_duration' :   5500e-9,
 
 #    ### Corpse pulses ###
 'CORPSE_pi2_amp'    :           1,
@@ -238,7 +254,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI paramters
-'max_MBI_attempts'          :           10,
+'max_MBI_attempts'          :           5,
 'MBI_threshold'             :           1,
 'AWG_wait_duration_before_MBI_MW_pulse':50e-9,
 'AWG_wait_for_adwin_MBI_duration':      15e-6,
@@ -273,7 +289,7 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
 'wait_after_RO_pulse_duration':2,
-'wait_after_pulse_duration':2,
+'wait_after_pulse_duration':2,      
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
 'SSRO_stop_after_first_photon':0,

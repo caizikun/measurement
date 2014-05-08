@@ -60,8 +60,8 @@ if __name__ == '__main__':
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
         ### for the first coarse step
-    init_range   = 4.5     #Common: 10 MHz
-    init_pts     = 91    #Common: 121
+    init_range   = 12     #Common: 10 MHz
+    init_pts     = 101    #Common: 121
     init_reps    = 750   #Common: 500
         ### for the remainder of the steps
     repeat_range = 4.5

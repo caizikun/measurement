@@ -29,9 +29,9 @@ if __name__ == '__main__':
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    DESR_range = 0.25       # MHz (ful range = 2*DESR_range)
-    pts   = 51
-    reps  = 4000
+    DESR_range = 5       # MHz (ful range = 2*DESR_range)
+    pts   = 121
+    reps  = 1000
 
     ###########
     ## Start ##
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
     # start to list all the measured values
@@ -58,6 +58,16 @@ if __name__ == '__main__':
     print 'Difference = ' + str(delta_f0_temp) + ' kHz'
     
     while abs(delta_f0_temp) > opimization_target:
+        
+        # To cleanly exit the optimization
+        print '--------------------------------'
+        print 'press q to stop measurement loop'
+        print '--------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+
+
         d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))))
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
@@ -83,7 +93,7 @@ if __name__ == '__main__':
         
         DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
         #do the fitting, returns in MHz, input in GHz
-        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
+        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
         delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
         f0.append(f0_temp)
@@ -93,13 +103,7 @@ if __name__ == '__main__':
         print 'Measured frequency = ' + str(f0_temp) + ' GHz +/- ' + str(u_f0_temp*1e6) + ' kHz'
         print 'Difference = ' + str(abs(f0_temp*1e6-current_f_msp1*1e-3)) + ' kHz'
     
-        # To cleanly exit the optimization
-        print '--------------------------------'
-        print 'press q to stop measurement loop'
-        print '--------------------------------'
-        qt.msleep(2)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            break
+
 
     total_d_steps = np.sum(d_steps)
 
