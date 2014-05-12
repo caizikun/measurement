@@ -78,7 +78,7 @@ DIM MBI_starts AS LONG
 DIM ROseq_cntr AS LONG
 
 ' MBI stuff
-dim next_MBI_stop, next_MBI_laser_stop, AWG_is_done as long
+dim next_MBI_stop, next_MBI_laser_stop as long
 dim current_MBI_attempt as long
 dim MBI_attempts_before_CR as long
 dim mbi_timer as long
@@ -100,7 +100,7 @@ INIT:
   MBI_duration                 = DATA_20[9]
   MBI_attempts_before_CR       = DATA_20[10]
   MBI_threshold                = DATA_20[11]
-  nr_of_ROsequences            = DATA_20[12]
+  nr_of_ROsequences            = DATA_20[12] 'The number of times the sequence SP, trig_AWG, RO is repeated. Example: for multiple readouts of a nuclear spin 
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
   
@@ -124,11 +124,10 @@ INIT:
   first               = 0
   wait_time           = 0
   stop_MBI            = -2 ' wait_for_MBI_pulse + MBI_duration
-  ROseq_cntr          = 1
+  ROseq_cntr          = 1  ' Counts the number of MBI --- RO sequences. Differs from the repetition_counter/i, which counts multiple ROs in one sequence seperately. 
   seq_cntr            = 1
   
   next_MBI_stop = -2
-  AWG_is_done = 0
   current_MBI_attempt = 1
   next_MBI_laser_stop = -2
   
@@ -238,69 +237,61 @@ EVENT:
        
           ' make sure we don't accidentally think we're done before getting the trigger
           next_MBI_stop = -2
-          AWG_is_done = 0
           
-        ELSE
+        else
           ' we expect a trigger from the AWG once it has done the MW pulse
           ' as soon as we assume the AWG has done the MW pulse, we turn on the E-laser,
           ' and start counting
-          IF(awg_in_switched_to_hi > 0) THEN
+          if(awg_in_switched_to_hi > 0) then
             
             next_MBI_stop = timer + MBI_duration
-            AWG_is_done = 1
-            
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
             P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
-          
-          ELSE
-            IF (AWG_is_done = 1) THEN
-              counts = P2_CNT_READ(CTR_MODULE, counter_channel)            
-              IF (counts >= MBI_threshold) THEN
-                P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-                P2_CNT_ENABLE(CTR_MODULE,0)
+                      
+          else            
+            IF (timer = next_MBI_stop) THEN
+              P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+              P2_CNT_ENABLE(CTR_MODULE,0)
+                              
+              ' MBI succeeds if the counts surpass the threshold;
+              ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
+              ' if MBI fails, we
+              ' - try again (until max. number of attempts, after some scrambling)
+              ' - go back to CR checking if max number of attempts is surpassed
               
+              IF (counts < MBI_threshold) THEN
+                INC(MBI_failed)
+                PAR_74 = MBI_failed
+      
+                if (current_MBI_attempt = MBI_attempts_before_CR) then
+                  current_cr_threshold = cr_preselect
+                  mode = 0 '(check resonance and start over)
+                  current_MBI_attempt = 1
+                else
+                  mode = 7
+                  INC(current_MBI_attempt)
+                endif                
+                timer = -1      
+              
+              else               
                 P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
                 CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
                 P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
                 
                 DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
                 mode = 4
-                timer = -1
                 current_MBI_attempt = 1
                 trying_mbi = 0
                 ' we want to save the time MBI takes
                 DATA_28[seq_cntr] = mbi_timer
                 mbi_timer = 0
               
-                         
-                ' MBI succeeds if the counts surpass the threshold;
-                ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
-                ' if MBI fails, we
-                ' - try again (until max. number of attempts, after some scrambling)
-                ' - go back to CR checking if max number of attempts is surpassed
-            
-              ELSE 
-                IF (timer = next_MBI_stop ) THEN
-                  P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-                  P2_CNT_ENABLE(CTR_MODULE,0)
-                  
-                  INC(MBI_failed)
-                  PAR_74 = MBI_failed
-      
-                  IF (current_MBI_attempt = MBI_attempts_before_CR) then
-                    current_cr_threshold = cr_preselect
-                    mode = 0 '(check resonance and start over)
-                    current_MBI_attempt = 1
-                  ELSE
-                    mode = 7
-                    INC(current_MBI_attempt)
-                  ENDIF                
-                  timer = -1      
-                ENDIF
-              ENDIF          
-            ENDIF
-          ENDIF
+              endif
+              timer = -1
+            endif          
+          endif
         ENDIF
         
       CASE 4    ' A laser spin pumping
@@ -391,6 +382,7 @@ EVENT:
                       
             IF (ROseq_cntr = nr_of_ROsequences+1) THEN ' this means we're done with one full run
               INC(seq_cntr)
+              par_66 = seq_cntr
               mode = 0
               timer = -1                
               first = 1

@@ -38,7 +38,7 @@ cfg['protocols']['AdwinSSRO']={
 'cycle_duration'            :       300,
 'green_off_amplitude'       :       0.0,
 'green_repump_amplitude'    :       200e-6,
-'green_repump_duration'     :       15,
+'green_repump_duration'     :       50, ###???
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
 'wait_after_RO_pulse_duration':     3,
@@ -103,16 +103,9 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
     ### NV and field parameters ###
     ###############################
 
-#f_msm1_cntr = 2.001883e9            #Electron spin ms=-1 frquency
-#f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
-
-### Here we set two frequencies, these are constants
+### Here we set two frequencies, these are both constants in our experiments
 f_msm1_cntr =   2.024900e9        #Electron spin ms=-1 frquency0
-### the +1 frq should in general not be changed anymore!
 f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
-### We want to use the difference (Z-field) and the average (X-field)
-
-
 
 zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 and -1 fregs.
 #As measured by Tim & Julia on 20140403 2.877480(5)e9
@@ -175,7 +168,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 10e-9,
-'CR_duration' :  50,
+'CR_duration' :  50,    #THT:This actually the green repump?
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
@@ -245,23 +238,22 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           300,
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           2e-9,
-'MBI_duration'              :           4,
+'Ex_MBI_amplitude'          :           0.5e-9,
+'MBI_duration'              :           16,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           20,
-'repump_after_MBI_A_amplitude':         [15e-9],
+'repump_after_MBI_A_amplitude':         [0*15e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI paramters
-'max_MBI_attempts'          :           5,
+'max_MBI_attempts'          :           10,
 'MBI_threshold'             :           1,
 'AWG_wait_duration_before_MBI_MW_pulse':50e-9,
-'AWG_wait_for_adwin_MBI_duration':      15e-6,
+'AWG_wait_for_adwin_MBI_duration':      25e-6,
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9}
-
 
 
 ###############################

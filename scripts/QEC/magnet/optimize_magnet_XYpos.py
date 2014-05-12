@@ -36,10 +36,10 @@ if __name__ == '__main__':
     ######################
 
     axis = 'X_axis'
-    scan_range       = 400        # From -scan range/2 to +scan range/2  
+    scan_range       = 200        # From -scan range/2 to +scan range/2  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
-    magnet_step_size = 50         # the sample position is checked after each magnet_step_size
-    mom.set_mode(axis, 'gnd')     # turn on or off the stepper
+    magnet_step_size = 10         # the sample position is checked after each magnet_step_size
+    mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
     range_coarse = 5.00
     pts_coarse  = 81   
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0]#, -scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [0, -100, -100]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
     print steps
