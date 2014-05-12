@@ -22,8 +22,6 @@ def Carbon_Ramsey(name,tau = None):
 
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     ### Sweep parmater
@@ -51,12 +49,6 @@ def Carbon_Ramsey(name,tau = None):
 
     m.autoconfig()
     funcs.finish(m, upload =True, debug=True)
-
-
-
-
-# if __name__ == '__main__':
-#     Carbon_Ramsey(SAMPLE)
 
 if __name__ == '__main__':
     Carbon_Ramsey(SAMPLE)

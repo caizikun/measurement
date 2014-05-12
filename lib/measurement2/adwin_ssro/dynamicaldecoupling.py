@@ -360,21 +360,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
 
             # combine the pulses to elements/waveforms and add to list of elements
-            e_X_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_X_start = element.Element('%s_X_Initial_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_X_start.append(T_shortened)
             e_X_start.append(pulse.cp(X))
             e_X_start.append(T)
             list_of_elements.append(e_X_start)
 
-            e_X =  element.Element('X rep %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_X =  element.Element('%s_X_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_X.append(T)
             e_X.append(pulse.cp(X))
             e_X.append(T)
             list_of_elements.append(e_X)
 
-            e_Y =  element.Element('Y rep  %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_Y =  element.Element('%s_Y_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_Y.append(T)
             e_Y.append(pulse.cp(Y))
@@ -389,7 +389,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 final_pulse = Y
                 P_type = 'Y'
-            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(P_type,prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(prefix,P_type,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(final_pulse))
@@ -421,7 +421,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length = tau_shortened, amplitude = 0.)
 
             #Combine pulses to elements/waveforms and add to list of elements
-            e_XY_start = element.Element('XY Initial %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_XY_start = element.Element('%s_XY_Init_XY8-DD_El_tau_N_%s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_XY_start.append(T_before_p)
             e_XY_start.append(pulse.cp(X))
@@ -431,7 +431,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY_start.append(T)
             list_of_elements.append(e_XY_start)
 
-            e_XY = element.Element('XY Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_XY = element.Element('%s_XY_Rep_XY8-DD_El_tau_N_%s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_XY.append(T)
             e_XY.append(pulse.cp(X))
@@ -441,7 +441,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_XY.append(T)
             list_of_elements.append(e_XY)
 
-            e_YX = element.Element('YX Rep %s XY8-DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_YX = element.Element('%s_YX_Rep_XY8-DD_El_tau_N_%s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_YX.append(T)
             e_YX.append(pulse.cp(Y))
@@ -451,7 +451,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_YX.append(T)
             list_of_elements.append(e_YX)
 
-            e_YX_end = element.Element('YX Final %s XY-8 DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_YX_end = element.Element('%s_YX_Final_XY-8 DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_YX_end.append(T)
             e_YX_end.append(pulse.cp(Y))
@@ -901,7 +901,7 @@ class NuclearRamsey(DynamicalDecoupling):
 
 class CarbonGateSequence(DynamicalDecoupling):
     '''
-    This should be the most fancy version where in theory one should be able to put in any gate sequence
+    This is an example of an arbitrary gate sequence. Using this class any and all sequences should be easy to create 
     '''
     mprefix = 'CarbonGateSeq'
 
@@ -998,17 +998,13 @@ class CarbonGateSequence(DynamicalDecoupling):
 
 class LongNuclearRamsey(DynamicalDecoupling):
     '''
-    More fancy version of Nuclear Ramsey, eventually will be merged
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
-    NB!
-    Still contains some bugs. Better to implement this in the way of the new CarbonGateSequence class 
+    This version varies the duration of the DynamicalDecoupling wait time and then tries to keep the phase fixed based on the Carbon precession_freq found in the msmt
     '''
     mprefix = 'CarbonRamsey'
 
     def generate_sequence(self, upload= True, debug = False):
         pts = self.params['pts']
-        free_evolution_time = self.params['free_evolution_times']
-
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Nuclear Ramsey Sequence')
@@ -1017,85 +1013,64 @@ class LongNuclearRamsey(DynamicalDecoupling):
 
             ###########################################
             #####    Generating the sequence elements      ######
-            #    ---|pi/2| - |Ren| -|con|- |DD| - |Rz| - |Ren| - |pi/2| ---
+            #    ---|pi/2| - |Ren| - |DD| - |Ren| - |pi/2| ---
             ###########################################
             initial_Pi2 = Gate('initial_pi2'+str(pt),'electron_Gate')
             Ren_a = Gate('Ren_a'+str(pt), 'Carbon_Gate')
-            con_gate = Gate('con'+str(pt),'Connection_element')#Purely empty element
-            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
-            Rz = Gate('Rz'+str(pt),'Connection_element')
+            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') 
             Ren_b = Gate('Ren_b'+str(pt), 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
 
-            ############
-            gate_seq = [initial_Pi2,Ren_a,DD_gate, Rz,Ren_b,final_Pi2]
+            gate_seq = [initial_Pi2,DD_gate, Ren_b,final_Pi2]
             ############
 
-            Ren_a.N = self.params['C_Ren_N']
-            Ren_a.tau = self.params['C_Ren_tau']
+            Ren_a.Carbon_ind = 1 #acts on carbon #1
+            Ren_b.Carbon_ind = 1 #acts on carbon #1 Default phase = 0
             Ren_a.scheme = self.params['Decoupling_sequence_scheme']
-
-            Ren_b.N = self.params['C_Ren_N']
-            Ren_b.tau = self.params['C_Ren_tau']
             Ren_b.scheme = self.params['Decoupling_sequence_scheme']
 
-
-            #Generate sequence elements for all Carbon gates
-            self.generate_decoupling_sequence_elements(Ren_a)
-            self.generate_decoupling_sequence_elements(Ren_b)
-
-            #Use information about duration of carbon gates to calculate
-            #use function for this in more fancy meass class
-            initial_Pi2.time_before_pulse =max(1e-6 - Ren_a.tau_cut + 36e-9,44e-9)
-            initial_Pi2.time_after_pulse = Ren_a.tau_cut
-            initial_Pi2.Gate_operation = self.params['Initial_Pulse']
-
-            final_Pi2.time_before_pulse =Ren_a.tau_cut
-            final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-            final_Pi2.Gate_operation = self.params['Final_Pulse']
-
-            #Generate the start and end pulse
-            self.generate_electron_gate_element(initial_Pi2)
-            self.generate_electron_gate_element(final_Pi2)
-
-            # Generate Rz element (now we explicitly set tau, N and time before and after final)
-
-
-           ###########
-            # Calculate parameters for and generate the main DD element
+            ###########
+            # Set parameters for and generate the main DD element
             ###########
             self.params['tau_larmor'] = self.get_tau_larmor()
-            self.params['free_evolution_times'][pt]
+            # self.params['free_evolution_times'][pt]
+            # N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*self.params['tau_larmor'])
 
-            N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*self.params['tau_larmor'])
-            DD_gate.N = int(N2*2) #N2 because N must be even
+            DD_gate.N = self.params['N_list'][pt]#int(N2*2) #N2 because N must be even
             DD_gate.tau = self.params['tau_larmor']
             DD_gate.scheme = 'auto' 
-            self.generate_decoupling_sequence_elements(DD_gate)
 
-            ############
-            # generate the connection element and phase element
-            ############
 
-            con_gate.tau_cut_before = Ren_a.tau_cut
-            con_gate.dec_duration = 0
-            con_gate.tau_cut_after = DD_gate.tau_cut
-            self.determine_connection_element_parameters(con_gate)
-            self.generate_connection_element(con_gate)
+            initial_Pi2.Gate_operation = 'pi2'
+            initial_Pi2.phase = 0
+            middle_pi.Gate_operation ='pi'
+            middle_pi.phase = np.pi
 
-            Rz.dec_duration = tau_left
-            Rz.tau_cut_before = DD_gate.tau_cut
-            Rz.tau_cut_after = Ren_b.tau_cut
-            self.determine_connection_element_parameters(Rz)
-            self.generate_connection_element(Rz)
+            final_Pi2.Gate_operation = 'pi2'
+            final_Pi2.phase = np.pi
 
-            # Combine to AWG sequence that can be uploaded #
+            for g in gate_seq:
+                if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
+                    self.get_gate_parameters(g)
+                    self.generate_decoupling_sequence_elements(g)
+
+            #Insert connection elements in sequence
+            #Function inserts (empty) phase gates in the sequence
+            for g in gate_seq:
+                print g.prefix 
+            print 
+            gate_seq = self.insert_phase_gates(gate_seq,pt)
+            for g in gate_seq:
+                print g.prefix 
+            print  
+            #generate connection elements with proper phases, also includes electron pulses
+            self.calc_and_gen_connection_elts(gate_seq)
+
+            #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
             combined_list_of_elements.extend(list_of_elements)
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
-
-
 
 
         if upload:
