@@ -11,6 +11,7 @@ class Gate(object):
     def __init__(self,name,Gate_type):
         self.name = name
         self.Gate_type = Gate_type # can be electron, carbon or connection
+        self.Carbon_ind = 0 #Defaults to not addressing a carbon 
         self.phase = 0 #default phase at which the gate should start
         self.reps = 1 # only overwritten in case of Carbon decoupling elements
         self.prefix = name #default prefix is identical to name, can be overwritten
@@ -29,7 +30,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     mprefix = 'DecouplingSequence'
 
     def get_tau_larmor(self):
-        f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+        f_larmor = (self.params['ms+1_cntr_frq']-self.params['zero_field_splitting'])*self.params['g_factor_C13']/self.params['g_factor']
         tau_larmor = round(1/f_larmor,9)#rounds to ns
         return tau_larmor
 
@@ -93,42 +94,57 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Currently can only do single type of gate. Always does same amount of pulses
         '''
         ind = Gate.Carbon_ind
+        if ind ==0:
+            return 
         Gate.N = self.params['C'+str(ind)+'_Ren_N'] #Needs to be added to msmt params
         Gate.tau = self.params['C'+str(ind)+'_Ren_tau']
 
-    def insert_phase_gates(self,gate_seq):
+    def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        for i range(gate_seq-1):
+        for i in range(len(gate_seq)-1):
             ext_gate_seq.append(gate_seq[i])
-            if gate_seq[i].Gate_type =='Carbon_Gate' and gate_seq[i+1].Gate_type =='Carbon_Gate':
-                ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element')
-        ext_gate_seq.append(gate_seq[i])
+            if (gate_seq[i].Gate_type =='Carbon_Gate' or gate_seq[i].Gate_type =='electron_decoupling')and gate_seq[i+1].Gate_type =='Carbon_Gate':
+                ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
+        
+        ext_gate_seq.append(gate_seq[-1])
         gate_seq = ext_gate_seq
-        return Gate_sequence
+        return gate_seq
 
     def calc_and_gen_connection_elts(self,Gate_sequence):
         t = 0
         t_start = np.zeros(20) #don't expect to have more than 19 carbons, ind 0 represents electron, other indices the carbons
         for i,g in enumerate(Gate_sequence):
+            #Note for Gate_type electron_decoupling nothing has to be done 
             if g.Gate_type == 'Carbon_Gate': #set start times for tracking carbon evolution
+                # print 'Carbon_Gate' 
                 if t_start[g.Carbon_ind] == 0:
                     t_start[g.Carbon_ind] = t
-            elif g.Gate_type == 'Connection_element' or g.Gate_type =='electron_Gate':
+            elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
+                # print 'con_gate'
                 ## if connection element determine parameters and track clock
-                C_ind = Gate_sequence[i+1].Carbon_ind
-                desired_phase = Gate_sequence[i+1].phase
-                precession_freq = self.params['C'+str(C_ind)+_'precession_freq'] #needs to be added to msmst params
-                evolution_time = t - t_start[C_ind]
-                current_phase = evolution_time*precession_freq%(2*np.pi)
-                phase_dif = desired_phase-current_phase
-                if phase_dif <0:
-                    phase_dif = phase_dif+2*np.pi
-                g.dec_duration = phase_dif/precession_freq
+                if i == len(Gate_sequence)-1: #at end of sequence no decoupling neccesarry for electron gate 
+                    g.dec_duration = 0
 
+                else: 
+                    C_ind = Gate_sequence[i+1].Carbon_ind
+                    if t_start[C_ind] ==0: #If not addresed before phase is arbitrary 
+                        g.dec_duration = 0 
+                    else: 
+                        desired_phase = Gate_sequence[i+1].phase
+                        precession_freq = self.params['C'+str(C_ind)+'_precession_freq'] #needs to be added to msmst params
+                        evolution_time = t - t_start[C_ind]
+                        current_phase = evolution_time*precession_freq%(2*np.pi)
+                        phase_dif = desired_phase-current_phase
+                        if phase_dif <0:
+                            phase_dif = phase_dif+2*np.pi
+                        g.dec_duration = round(phase_dif/precession_freq*1e9/8.)*8*1e-9 
+                    print 'dec_duration ' +str(g.dec_duration) 
+
+                #Connection element can never be the first or last element in the sequence 
                 if i ==0:
                     g.tau_cut_before = Gate_sequence[i+1].tau_cut
                     g.tau_cut_after= Gate_sequence[i+1].tau_cut
-                elif i== length(Gate_sequence):
+                elif i== len(Gate_sequence)-1:
                     g.tau_cut_before = Gate_sequence[i-1].tau_cut
                     g.tau_cut_after= Gate_sequence[i-1].tau_cut
                 else:
@@ -137,19 +153,17 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 g.elements_duration = g.tau_cut_before+g.dec_duration+g.tau_cut_after
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
+               
             t = t+g.elements_duration #tracks total time elapsed
         return Gate_sequence
-
-    def determine_length_and_type_of_Connection_elements(self,GateSequence) :
-        '''
-        Empty function, needs to be able to determine the length and type of glue gates in the future
-        '''
-        pass
 
     def determine_connection_element_parameters(self,Gate):
         '''
         Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
         '''
+        # Pulses must be multiple of
+        self.params['dec_pulse_multiple'] = 2
+
         dec_duration = Gate.dec_duration
         if dec_duration == 0:
             Gate.N = 0
@@ -157,23 +171,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
         elif (dec_duration + Gate.tau_cut_after+Gate.tau_cut_before)<1e-6:
             print 'Error: connection element decoupling duration is too short dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us' %(dec_duration,Gate.tau_cut_before,Gate.tau_after)
+            return  
+        elif (dec_duration/(2*self.params['dec_pulse_multiple']))<self.params['min_dec_tau']:
+            print 'Warning: connection element decoupling duration is too short. Not decoupling in time interval. \n dec_duration = %s, min dec_duration = %s' %(dec_duration,2*self.params['min_dec_tau']*self.params['dec_pulse_multiple'])
+            Gate.N=0
+            Gate.tau = 0  
 
-        # Pulses must be multiple of
-        self.params['dec_pulse_multiple'] = 4
 
-        for k in range(40):
+        for k in range(80):
+            #Sweep over possible tau's 
             tau =dec_duration/(2*(k+1)*self.params['dec_pulse_multiple'])
             if tau == 0:
                 Gate.N = 0
                 Gate.tau = 0
             elif tau < self.params['min_dec_tau']:
-                print 'Error: decoupling tau: (%s) smaller than minimum value(%s)' %(tau,self.params['min_dec_tau'] )
+                print 'Error: decoupling tau: (%s) smaller than minimum value(%s), decoupling duration (%s)' %(tau,self.params['min_dec_tau'],dec_duration )
                 break
+            #If the found tau is allowed (bigger than min and smaller than max loop is done) 
             elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
                 Gate.tau = tau
                 Gate.N = int((k+1)*self.params['dec_pulse_multiple'])
-                print 'found the following decoupling tau: %s' %(tau)
-                break
+                print 'found the following decoupling tau: %s, N: %s' %(tau,Gate.N)
+                break 
 
 
         return Gate
@@ -264,7 +283,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
             if pulse_tau_pi2 < 31e-9:
-                print 'tau to short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9)
+                print 'tau too short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9)
 
 
             initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
@@ -377,7 +396,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_end.append(T_shortened)
             list_of_elements.append(e_end)
 
-            T_us_rep = element.Element('us Rep elt %s DD_El_tau_N_%s_%s'%(prefix,tau_prnt,N),pulsar=qt.pulsar, global_time =True)
+            T_us_rep = element.Element('%s_Rep_elt_DD_tau_%s_N_%s'%(prefix,tau_prnt,N),pulsar=qt.pulsar, global_time =True)
             T_us_rep.append(Tus)
             list_of_elements.append(T_us_rep)
 
@@ -542,12 +561,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             length = pulse_tau, amplitude = 0.)
         T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
             length = tau_cut_after, amplitude = 0.)
-
-        if Gate.type =='electron_Gate':
+        if Gate.Gate_type =='electron_Gate':
             #in this an element should be added in before
-            if Gate_operation = 'pi2':
+            if Gate.Gate_operation == 'pi2':
                 eP = self._pi2_elt()
-            elif Gate_operation = 'pi':
+            elif Gate.Gate_operation == 'pi':
                 eP = self._X_elt()
             eP.phase = Gate.phase
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
@@ -566,7 +584,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         x_list = [0,2,5,7]
         decoupling_elt = element.Element('%s _tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
 
-        if Gate.type == 'electron_Gate':
+        if Gate.Gate_type == 'electron_Gate':
             decoupling_elt.append(T_initial)
             decoupling_elt.append(eP)
             decoupling_elt.append(T_dec_initial)
@@ -686,12 +704,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name), wfname=mbi_elt.name, trigger_wait=True,repetitions = 1, goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name), jump_target = gate_seq[0].elements[0].name)
 
         for i, gate in enumerate(gate_seq):
+            if gate.reps ==0:
+                gate.reps = 1 
             ####################
             ###  single elements  ###
             ####################
             if np.size(gate.elements) ==1:
                 e = gate.elements[0]
                 list_of_elements.append(e)
+                if gate.reps ==0:
+                    gate.reps = 1 
                 if i == 0:
                     seq.append(name=e.name, wfname=e.name,
                         trigger_wait=True,repetitions = gate.reps)
@@ -897,24 +919,21 @@ class CarbonGateSequence(DynamicalDecoupling):
 
             initial_Pi2 = Gate('initial_pi2'+str(pt),'electron_Gate')
             Ren_a = Gate('Ren_a'+str(pt), 'Carbon_Gate')
-            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
-            Ren_b = Gate('DD_gate'+str(pt),'Carbon_Gate') #NB not strictly a Carbon Gate
-            middle_pi = Gate('final_pi2'+str(pt),'electron_Gate')
-            Ren_c = Gate('Ren_b'+str(pt), 'Carbon_Gate')
+            DD_gate = Gate('DD_gate'+str(pt),'electron_decoupling') #NB not strictly a Carbon Gate
+            Ren_b = Gate('Ren_b'+str(pt),'Carbon_Gate') 
+            middle_pi = Gate('middle_pi2'+str(pt),'electron_Gate')
+            Ren_c = Gate('Ren_c'+str(pt), 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
 
             gate_seq = [initial_Pi2,Ren_a,DD_gate,Ren_b,middle_pi,Ren_c,final_Pi2]
-
-
 
             #############
             # Set parameters of gates
             # This sequence has arbitrary parameters but could have anything
             #############
             Ren_a.Carbon_ind = 1 #acts on carbon #1
-            #Ren_a.operation = a currently the script only supports one type of operation set by the N pulses in the msmt params. This is easily implemented
             Ren_a.phase = 0*np.pi  # the desired phase in radians
-            Ren_b.Carbon_ind = 2 #acts on carbon #1
+            Ren_b.Carbon_ind = 1 #acts on carbon #1
             Ren_b.phase = 0*np.pi  # the desired phase in radians
             Ren_c.Carbon_ind = 1 #acts on carbon #1
             Ren_c.phase = 0*np.pi  # the desired phase in radians
@@ -923,26 +942,44 @@ class CarbonGateSequence(DynamicalDecoupling):
             Ren_b.scheme = self.params['Decoupling_sequence_scheme']
             Ren_c.scheme = self.params['Decoupling_sequence_scheme']
 
-            Initial_Pi2.Gate_operation = 'pi2'
+
+            ###########
+            # Calculate parameters for and generate the main DD element
+            ###########
+            DD_gate.Carbon_ind = 0 #Not acting on a carbon 
+            self.params['tau_larmor'] = self.get_tau_larmor()
+            self.params['free_evolution_times'][pt]
+            N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*self.params['tau_larmor'])
+
+            DD_gate.N = int(N2*2) #N2 because N must be even
+            DD_gate.tau = self.params['tau_larmor']
+            DD_gate.scheme = 'auto' 
+
+
+            initial_Pi2.Gate_operation = 'pi2'
             initial_Pi2.phase = 0
             middle_pi.Gate_operation ='pi'
-            initial_Pi2.phase = np.pi
+            middle_pi.phase = np.pi
 
-            Initial_Pi2.Gate_operation = 'pi2'
-            initial_Pi2.phase = np.pi
-
-
+            final_Pi2.Gate_operation = 'pi2'
+            final_Pi2.phase = np.pi
 
             for g in gate_seq:
-                if g.Gate_type =='Carbon_Gate':
-                    get_gate_parameters(g)
-                    generate_decoupling_sequence_elements(g)
+                if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
+                    self.get_gate_parameters(g)
+                    self.generate_decoupling_sequence_elements(g)
 
             #Insert connection elements in sequence
             #Function inserts (empty) phase gates in the sequence
-            self.insert_phase_gates(gate_seq):
+            for g in gate_seq:
+                print g.prefix 
+            print 
+            gate_seq = self.insert_phase_gates(gate_seq,pt)
+            for g in gate_seq:
+                print g.prefix 
+            print  
             #generate connection elements with proper phases, also includes electron pulses
-            calc_and_gen_connection_elts(gate_seq)
+            self.calc_and_gen_connection_elts(gate_seq)
 
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
@@ -963,6 +1000,8 @@ class LongNuclearRamsey(DynamicalDecoupling):
     '''
     More fancy version of Nuclear Ramsey, eventually will be merged
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
+    NB!
+    Still contains some bugs. Better to implement this in the way of the new CarbonGateSequence class 
     '''
     mprefix = 'CarbonRamsey'
 
@@ -989,7 +1028,7 @@ class LongNuclearRamsey(DynamicalDecoupling):
             final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
 
             ############
-            gate_seq = [initial_Pi2,Ren_a,DD, Rz,Ren_b,final_Pi2]
+            gate_seq = [initial_Pi2,Ren_a,DD_gate, Rz,Ren_b,final_Pi2]
             ############
 
             Ren_a.N = self.params['C_Ren_N']
@@ -1022,16 +1061,16 @@ class LongNuclearRamsey(DynamicalDecoupling):
             # Generate Rz element (now we explicitly set tau, N and time before and after final)
 
 
-            ###########
+           ###########
             # Calculate parameters for and generate the main DD element
             ###########
-            m.params['tau_larmor'] = self.get_tau_larmor()
+            self.params['tau_larmor'] = self.get_tau_larmor()
             self.params['free_evolution_times'][pt]
 
-            N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*m.params['tau_larmor'])
+            N2, tau_left = divmod(self.params['free_evolution_times'][pt],4*self.params['tau_larmor'])
             DD_gate.N = int(N2*2) #N2 because N must be even
-            DD_gate.tau = m.params['tau_larmor']
-            DD_gate.scheme = 'auto'
+            DD_gate.tau = self.params['tau_larmor']
+            DD_gate.scheme = 'auto' 
             self.generate_decoupling_sequence_elements(DD_gate)
 
             ############

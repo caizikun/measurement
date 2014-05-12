@@ -139,8 +139,10 @@ cfg['samples']['Hans_sil1'] = {
 'N_HF_frq'      :       N_HF_frq,
 
 'C1_Ren_tau'    :        6.522e-6,
-'C1_Ren_N' : 10
-'C1_precession_freq' : 343e3 #as measured
+'C1_Ren_N' : 10,
+'C1_precession_freq' : 343e3, #as measured
+'C2_precession_freq' : 343e3,
+'C3_precession_freq' : 343e3,
 #'C1_Ren_tau' :          9.42e-6
 # 'C1_Ren_N' :              16
 #'C1_precession_freq' : 242.4e3 # should be identical to the 343 measured earlier
@@ -149,11 +151,13 @@ cfg['samples']['Hans_sil1'] = {
 #'C2_Ren_tau'     :       8.088e-6,   #resonance k = 6
 # 'C2_Ren_tau'    :      9.564e-6,  #resonace  k=7
 'C2_Ren_tau'    :       12.500e-6,  #resonace  k=
-'C3_Ren_tau'    :       8.840e-6}  #resonance k=
+'C2_Ren_N'      :       24, 
+'C3_Ren_tau'    :       8.840e-6,  #resonance k=
+'C1_Ren_N'      :       18, 
 #'C3_Ren_tau'    :       12.080e-6}  #resonance k=8
 
-'min_dec_tau'    :          0.23e-6  #based on FP 20140423/115045
-'max_dec_tau'    :          0.35e-6  #based on FP 20140423/115045
+'min_dec_tau'    :          0.23e-6,  #based on FP 20140423/115045
+'max_dec_tau'     :         0.35e-6 ,} #based on FP 20140423/115045
 
 
 
