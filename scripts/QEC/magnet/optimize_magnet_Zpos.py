@@ -147,7 +147,7 @@ if __name__ == '__main__':
         B_field_measured.append(mt.convert_f_to_Bz(freq=f0_temp*1e9))
 
         print 'Measured frequency = ' +str(f0_temp)+' GHz, so '+str(abs(f0_temp*1e6-current_f_msp1*1e-3))+' kHz away from wanted frequency'
-        print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' kHz away from wanted frequency'
+        print 'Measured B-field = '+str(B_field_measured[iterations])+' G, , so '+str(abs(B_field_measured[iterations]-B_field_ideal))+' G away from wanted frequency'
 
         
 
