@@ -22,7 +22,6 @@ current_B_field =  abs(ZFS-current_f_msp1)/g_factor
 
 ### Import the magnet parameters
 nm_per_step         = qt.exp_params['magnet']['nm_per_step']
-freq_per_step       = qt.exp_params['magnet']['freq_per_step']
 radius              = qt.exp_params['magnet']['radius']
 thickness           = qt.exp_params['magnet']['thickness']
 strength_constant   = qt.exp_params['magnet']['strength_constant']
@@ -64,14 +63,14 @@ def get_B_field(msm1_freq=current_f_msm1, msp1_freq=current_f_msp1):
 def get_magnet_position(msm1_freq=current_f_msm1,msp1_freq = current_f_msp1,ms = 'plus',solve_by = 'list'):
     ''' determines the magnet position (mm) for given msm1_freq
     or msp1_freq (GHz)
-    JULIA:  I am not sure yet what will be the best solution: try by measurement'''
+    '''
     if ms is 'minus':
         B_field = convert_f_to_Bz(freq=msm1_freq)
         print B_field
     if ms is 'plus':
         B_field = convert_f_to_Bz(freq=msp1_freq)
     if solve_by == 'list':
-        d = np.linspace(10.0,10.1,10**4+1) # ! this is the right domain for B around 300 G
+        d = np.linspace(10.0,10.2,10**5+1) # ! this is the right domain for B around 304 G
         B_field_difference = np.zeros(len(d))
         for j in [int(i) for i in np.linspace(0,len(d)-1,len(d))]:
             B_field_difference[j] = abs(B_field-get_field_at_position(d[j]))

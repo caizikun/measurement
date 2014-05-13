@@ -56,7 +56,7 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0, -100, -100]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [0, 100, 100]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
     print steps
