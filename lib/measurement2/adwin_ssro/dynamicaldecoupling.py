@@ -389,7 +389,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 final_pulse = Y
                 P_type = 'Y'
-            e_end = element.Element('%s Final %s DD_El_tau_N_ %s_%s' %(prefix,P_type,tau_prnt,N),  pulsar=qt.pulsar,
+            e_end = element.Element('%s_%s_Final_DD_El_tau_N_%s_%s' %(prefix,P_type,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(final_pulse))
@@ -482,14 +482,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length = tau_shortened, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
 
             #Combine pulses to elements/waveforms and add to list of elements
-            e_start = element.Element('X Initial %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_start = element.Element('%s_X_Initial_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_start.append(T_before_p)
             e_start.append(pulse.cp(X))
             e_start.append(T)
             list_of_elements.append(e_start)
             #Currently middle is XY2 with an if statement based on the value of N this can be optimised
-            e_middle = element.Element('YX Rep %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_middle = element.Element('%s_YX_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_middle.append(T)
             e_middle.append(pulse.cp(Y))
@@ -498,7 +498,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e_middle.append(pulse.cp(X))
             e_middle.append(T)
             list_of_elements.append(e_middle)
-            e_end = element.Element('Y Final %s DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+            e_end = element.Element('%s_Y_Final_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(Y))
@@ -527,6 +527,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
 
         Number_of_pulses  = N
+
+        
 
         ##########################################
         # adding all the relevant parameters to the object  ##
@@ -1017,15 +1019,15 @@ class LongNuclearRamsey(DynamicalDecoupling):
             ###########################################
             initial_Pi2 = Gate('initial_pi2'+str(pt),'electron_Gate')
             Ren_a = Gate('Ren_a'+str(pt), 'Carbon_Gate')
-            DD_gate = Gate('DD_gate'+str(pt),'Carbon_Gate') 
+            DD_gate = Gate('DD_gate'+str(pt),'electron_decoupling') 
             Ren_b = Gate('Ren_b'+str(pt), 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2'+str(pt),'electron_Gate')
 
-            gate_seq = [initial_Pi2,DD_gate, Ren_b,final_Pi2]
+            gate_seq = [initial_Pi2,Ren_a,DD_gate, Ren_b,final_Pi2]
             ############
 
-            Ren_a.Carbon_ind = 1 #acts on carbon #1
-            Ren_b.Carbon_ind = 1 #acts on carbon #1 Default phase = 0
+            Ren_a.Carbon_ind = self.params['Addressed_Carbon'] 
+            Ren_b.Carbon_ind = self.params['Addressed_Carbon'] #Default phase = 0
             Ren_a.scheme = self.params['Decoupling_sequence_scheme']
             Ren_b.scheme = self.params['Decoupling_sequence_scheme']
 
@@ -1042,12 +1044,9 @@ class LongNuclearRamsey(DynamicalDecoupling):
 
 
             initial_Pi2.Gate_operation = 'pi2'
-            initial_Pi2.phase = 0
-            middle_pi.Gate_operation ='pi'
-            middle_pi.phase = np.pi
 
             final_Pi2.Gate_operation = 'pi2'
-            final_Pi2.phase = np.pi
+            final_Pi2.phase = 0 #np.pi
 
             for g in gate_seq:
                 if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
@@ -1055,7 +1054,6 @@ class LongNuclearRamsey(DynamicalDecoupling):
                     self.generate_decoupling_sequence_elements(g)
 
             #Insert connection elements in sequence
-            #Function inserts (empty) phase gates in the sequence
             for g in gate_seq:
                 print g.prefix 
             print 
