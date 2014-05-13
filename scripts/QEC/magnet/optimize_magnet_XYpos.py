@@ -35,7 +35,7 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'X_axis'
+    axis = 'Y_axis'
     scan_range       = 200        # From -scan range/2 to +scan range/2  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 10         # the sample position is checked after each magnet_step_size

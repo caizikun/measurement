@@ -27,11 +27,18 @@ def Carbon_Ramsey(name,tau = None):
     ### Sweep parmater
 
     m.params['N_list'] = range(0,36,4)
+    m.params['C1_freq'] = 343.0e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    
+    tau_larmor = m.get_tau_larmor()
+    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor 
+    m.params['Addressed_Carbon'] = 1 
+    m.params['Phases_final_pi2_pulse'] = np.ones(len(m.params['N_list']))*0 
+
     m.params['pts']              = len(m.params['N_list'])
     m.params['sweep_pts']        =m.params['N_list']
     m.params['sweep_name']       = 'Number of pulses'
 
-    m.params['Addressed_Carbon'] = 1 
+
 
 
     #############################
