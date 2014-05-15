@@ -75,7 +75,6 @@ INIT:
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
-  par_80 = SSRO_stop_after_first_photon
   
   FOR i = 1 TO max_SP_bins
     DATA_24[i] = 0
