@@ -1,8 +1,8 @@
 
 cfg={}
 
-cfg['samples'] = {'current':'Hans_sil1'}
-cfg['protocols'] = {'current':'Hans_sil1'}
+cfg['samples'] = {'current':'Hans_sil4'}
+cfg['protocols'] = {'current':'Hans_sil4'}
 
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
@@ -309,13 +309,14 @@ cfg['protocols']['Hans_sil4']['Magnetometry'] ={
 'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
 'SSRO_duration'     :  40,
-'Ex_RO_amplitude':  35e-9,
+'CR_duration':      150,
+'Ex_RO_amplitude':  30e-9,
 'Ex_SP_amplitude'  : 0e-9,
 'A_CR_amplitude': 20e-9,
 'Ex_CR_amplitude': 20e-9,
 'A_SP_amplitude': 35e-9,
 'A_SP_repump_amplitude':.5e-9,
-'SP_duration': 48, #!!!! 10
+'SP_duration': 50, #!!!! 10
 'SP_repump_duration': 100,
 'wait_after_RO_pulse_duration':2,
 'wait_after_pulse_duration':2,
