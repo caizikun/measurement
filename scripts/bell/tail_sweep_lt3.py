@@ -43,6 +43,9 @@ class LT3Tail(bell.Bell):
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(self.lt3_seq)
 
+    def save(self):
+        pulsar_pq.PQPulsarMeasurement.save(self)
+
     def create_eom_pulse(self, i):
         if self.params['use_eom_pulse'] == 'short':
             print 'using short eom pulse'
@@ -110,7 +113,7 @@ def tail_lt3(name):
         m.params[k] = params.joint_params[k]
         m.joint_params[k] = params.joint_params[k]
 
-    pts=10
+    pts=11
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -139,8 +142,8 @@ def tail_lt3(name):
                                                     +m.params['eom_pulse_duration']*m.params['eom_off_amplitude'] )/(2.*m.params['eom_pulse_duration'])  
     else:#'normal':
 
-        m.params['eom_pulse_amplitude']        = np.ones(pts)*1.5 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-        m.params['eom_pulse_duration']         = np.ones(pts)* 2e-9
+        m.params['eom_pulse_amplitude']        = np.ones(pts)*2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+        m.params['eom_pulse_duration']         = np.ones(pts)*2e-9
         m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
         m.params['eom_off_duration']           = 200e-9
         m.params['eom_overshoot_duration1']    = 10e-9
@@ -156,33 +159,35 @@ def tail_lt3(name):
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
-    m.params['aom_amplitude']             = np.ones(pts)*1.0#aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
+    m.params['aom_amplitude'] = aom_voltage_sweep #np.ones(pts)*1.0#aom_voltage_sweep 
 
     m.params['sweep_name'] = 'aom_amplitude [percent]'
     m.params['sweep_pts'] = aom_power_sweep/max_power_aom
 
     bseq.pulse_defs_lt3(m)
+    m.params['MIN_SYNC_BIN'] =       5000 
+    m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 5000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     
-    debug=True
-    m.params['trigger_wait'] = not(debug)
+    debug=False
+    m.params['trigger_wait'] = True#not(debug)
     m.autoconfig()
     m.generate_sequence()
+    #print m.params['measurement_time']
 
-    if not debug:
-        m.setup(mw=m.params_lt3['MW_during_LDE'], pq_calibrate=False)
-        m.run(autoconfig=False, setup=False)    
-        m.save()
-        m.finish()
+    m.setup(debug=debug)
+    m.run(autoconfig=False, setup=False,debug=debug)    
+    m.save()
+    m.finish()
 
 
 if __name__ == '__main__':
-    tail_lt3('lt3_tailS_SIL5_Ex+8deg')
+    tail_lt3('lt3_tailS_The111no2_SIL2_Ey_+5deg')

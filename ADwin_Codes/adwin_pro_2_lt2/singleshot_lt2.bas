@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -127,7 +127,6 @@ EVENT:
         
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
-          'P2_DAC(DAC_MODULE, repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on Ex laser XXXXXX
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768)   ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,  counter_pattern)    'clear counter
@@ -141,7 +140,6 @@ EVENT:
           IF (timer = SP_duration) THEN
             P2_CNT_ENABLE(CTR_MODULE, 0)
             IF (SP_filter_duration = 0) THEN
-              P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
               P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
               P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
               IF ((send_AWG_start > 0) or (sequence_wait_time > 0)) THEN

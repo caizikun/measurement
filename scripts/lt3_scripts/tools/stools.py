@@ -172,3 +172,10 @@ def turn_on_lt3_pulse_path():
     qt.instruments['AWG'].set_runmode('CONT')
     qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 0.0)
 
+def init_AWG():
+    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    qt.pulsar.setup_channels()
+    qt.instruments['AWG'].set_ch1_status('on')
+    qt.instruments['AWG'].set_ch2_status('on')
+    qt.instruments['AWG'].set_ch3_status('on')
+    qt.instruments['AWG'].set_ch4_status('on')
