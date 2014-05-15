@@ -8,19 +8,34 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 class Gate(object):
+    '''
+    The class for Gate objects that are used routinely in generating gate sequences. The gate object contains the metadata for generating the AWG elements and while running trough the sequence classes data relating to the AWG elements gets added before they are uploaded .
+    '''
     def __init__(self,name,Gate_type):
-        self.name = name
-        self.Gate_type = Gate_type # can be electron, carbon or connection
-        self.Carbon_ind = 0 #Defaults to not addressing a carbon
-        self.phase = 0 #default phase at which the gate should start
-        self.reps = 1 # only overwritten in case of Carbon decoupling elements
+        self.name = name #Name of the gate
         self.prefix = name #default prefix is identical to name, can be overwritten
+        self.Gate_type = Gate_type # Supported gate types in the scripts are
+                # connection/phase gates: 'Connection_element' , 'electron_Gate',
+                #decoupling gates:  'Carbon_Gate', 'electron_decoupling'
+        self.Carbon_ind = 0 #0 is the electronic spin, higher indices are the carbons
+        self.phase = 0 #default phase at which the gate should start
+
+        self.reps = 1 # only overwritten in case of Carbon decoupling elements
 
         if Gate_type == 'Carbon_Gate' or 'electron_decoupling':
             self.scheme = 'auto'
+        #Description of other attributes that get added often
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
+        #self.elements_duration  # this is the duration of the AWG element corresponding to this gate. Note the difference with the gate duration (tau_cut)
+        #self.tau_cut # time removed from a decoupling sequence in final and initial element.
+        #self.tau_cut_before # this is the tau_cut of the previous element, gets added to connection type elements to calculate dec times
+        #self.tau_cut_after # this is the tau_cut of the following element
+        #self.dec_duration # this is the calculated decoupling duration for connection elements, this is used to correct for phases
+
+        #If there are any attributes being used frequently that are still missing here please add them for documentation
+
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
