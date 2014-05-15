@@ -18,7 +18,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True):
+    def setup(self, wait_for_awg=True, mw=True, **kw):
         ssro.IntegratedSSRO.setup(self)
 
         if mw:

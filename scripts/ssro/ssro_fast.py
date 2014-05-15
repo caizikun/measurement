@@ -16,11 +16,9 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
     def autoconfig(self, **kw):
-        pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
-
         self.params['send_AWG_start'] = 1
         self.params['wait_for_AWG_done'] = 1
-
+        pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
         self.params['A_SP_voltage_AWG'] = \
                     self.A_aom.power_to_voltage(
                             self.params['A_SP_amplitude_AWG'], controller='sec')
@@ -60,11 +58,13 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
         for i in range(self.params['pts']/2):
             e0 =  element.Element('SSRO-ms0-{}'.format(i), pulsar = qt.pulsar)
             e0.append(T)
-            e0.append(PQ_sync)  
+            e0.append(PQ_sync)
+            e0.append(T)  
             e0.append(pulse.cp(SP_A_pulse, length=self.params['A_SP_durations_AWG'][i]))
             e0.append(T)
             e0.append(pulse.cp(RO_pulse, length=self.params['E_RO_durations_AWG'][i],
                     amplitude=self.params['E_RO_voltages_AWG'][i]))
+            e0.append(T)
             elements.append(e0)
 
             seq.append(name='SSRO-ms0-{}'.format(i), wfname=e0.name, trigger_wait=True)
@@ -72,12 +72,14 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
             e1 =  element.Element('SSRO-ms1-{}'.format(i), pulsar = qt.pulsar)
             e1.append(T)
-            e1.append(PQ_sync)  
+            e1.append(PQ_sync)
+            e1.append(T)  
             e1.append(pulse.cp(SP_E_pulse, length=self.params['E_SP_durations_AWG'][i], 
                     amplitude=self.params['E_SP_voltages_AWG'][i]))
             e1.append(T)
             e1.append(pulse.cp(RO_pulse, length=self.params['E_RO_durations_AWG'][i],
                     amplitude=self.params['E_RO_voltages_AWG'][i]))
+            e1.append(T)
             elements.append(e1)
 
             seq.append(name='SSRO-ms1-{}'.format(i), wfname=e1.name, trigger_wait=True)
@@ -108,8 +110,11 @@ def fast_ssro_calibration(name):
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+
+    m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
+    print m.params['MAX_SYNC_BIN']
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9

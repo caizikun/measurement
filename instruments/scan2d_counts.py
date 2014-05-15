@@ -238,5 +238,6 @@ class scan2d_counts(scan):
 
     def _scan_finished(self):
          self.save()
-         self._counters.set_is_running(True)
+         #if not(self._counters.get_is_running()):
+         #   self._counters.set_is_running(True)
 
