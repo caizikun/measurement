@@ -120,14 +120,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             if g.Gate_type == 'Carbon_Gate': #set start times for tracking carbon evolution
                 # print 'Carbon_Gate'
                 if t_start[g.Carbon_ind] == 0:
-                    t_start[g.Carbon_ind] = t
+                    t_start[g.Carbon_ind] = t-g.tau_cut #Note this is the time the Carbon gate starts, this is not identical to the time where the AWG element starts
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
                 # print 'con_gate'
                 ## if connection element determine parameters and track clock
                 if i == len(Gate_sequence)-1: #at end of sequence no decoupling neccesarry for electron gate
                     g.dec_duration = 0
 
-                else:
+                else:# Determine
                     C_ind = Gate_sequence[i+1].Carbon_ind
                     if t_start[C_ind] ==0: #If not addresed before phase is arbitrary
                         g.dec_duration = 0
@@ -137,7 +137,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         if precession_freq == 0:
                             g.dec_duration = 0
                         else:
-                            evolution_time = t - t_start[C_ind]
+                            evolution_time = (t+Gate_sequence[i+1].tau_cut) - t_start[C_ind] # NB corrected for difference between time where the gate starts and where the AWG element starts
                             current_phase = evolution_time*precession_freq%(2*np.pi)
                             phase_dif = desired_phase-current_phase
 
@@ -164,7 +164,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
 
-            t = t+g.elements_duration #tracks total time elapsed
+            t = t+g.elements_duration #tracks total time elapsed of elements NOTE THIS IS INCLUDES THE TAU CUT
+
         return Gate_sequence
 
     def determine_connection_element_parameters(self,Gate):
@@ -207,8 +208,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         return Gate
 
-    #functions for making the elements
-
     def determine_decoupling_scheme(self,Gate):
         '''
         Function used by generate_decoupling_sequence_elements
@@ -230,6 +229,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         elif N%2:           ## ERROR?
             Gate.scheme = 'XY4' #Might be outdated in functionality
         return Gate
+
+    #functions for making the elements
 
     def generate_decoupling_sequence_elements(self,Gate):
         '''
@@ -620,7 +621,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 decoupling_elt.append(T)
         decoupling_elt.append(T_final)
         Gate.elements = [decoupling_elt]
-
 
     def generate_electron_gate_element(self,Gate):
         '''
