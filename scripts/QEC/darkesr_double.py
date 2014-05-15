@@ -35,10 +35,10 @@ def darkesr(name):
     m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - m.params['mw_mod_freq']
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 4000
+    m.params['repetitions'] = 500
 
-    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 0.25e6
-    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 0.25e6
+    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
+    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
     m.params['pts'] = 51
     m.params['pulse_length'] = 5e-6
     m.params['ssbmod_amplitude'] = 0.008
@@ -66,10 +66,10 @@ def darkesrp1(name):
 
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 4000
+    m.params['repetitions'] = 500
 
-    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 0.25e6
-    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 0.25e6
+    m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
+    m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
     m.params['pts'] = 51
     m.params['pulse_length'] = 5e-6
     m.params['ssbmod_amplitude'] = 0.010

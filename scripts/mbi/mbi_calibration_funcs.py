@@ -71,7 +71,7 @@ def cal_fast_pi(name, mult=1):
     funcs.prepare(m)
 
     # measurement settings
-    pts = 10
+    pts = 21
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 2000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
@@ -79,7 +79,7 @@ def cal_fast_pi(name, mult=1):
 
     # hard pi pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi_duration']*(np.ones(pts))
-    m.params['MW_pulse_amps'] = np.linspace(0.82,0.88,pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.815,0.885,pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -104,7 +104,7 @@ def cal_fast_pi2(name,  mult=1):
 
     # pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
-    m.params['MW_pulse_amps'] = np.linspace(0.79, 0.83, pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.76, 0.79, pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -180,6 +180,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    # cal_fast_pi(SAMPLE_CFG,mult=21)
+    #cal_fast_pi(SAMPLE_CFG,mult=21)
     cal_fast_pi2(SAMPLE_CFG,mult=34)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)

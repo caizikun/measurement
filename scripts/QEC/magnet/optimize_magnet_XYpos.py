@@ -35,10 +35,10 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'X_axis'
+    axis = 'Y_axis'
     scan_range       = 400        # From -scan range/2 to +scan range/2  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
-    magnet_step_size = 50         # the sample position is checked after each magnet_step_size
+    magnet_step_size = 10         # the sample position is checked after each magnet_step_size
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
     range_coarse = 5.00
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     range_fine = 0.25
     pts_fine  = 51   
-    reps_fine   = 4000
+    reps_fine   = 2000
 
     ###########
     ## start ##
@@ -56,7 +56,9 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0, -scan_range/2] + (no_of_steps-1)*[stepsize]
+    steps = [65]#[0, -50, -50]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
+
+
     print steps
 
     #create the lists to save the data to
@@ -165,12 +167,12 @@ if __name__ == '__main__':
     d.add_value('measured Bz field (G)')
 
     
-    #fitting
+    # #fitting
     p0, fitfunc, fitfunc_str = common.fit_parabole(g_o=5,g_A=1,g_c=0)
     fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
-    print 'minimum at steps = '+str(fit_result['params_dict']['c'])
-    print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
-    
+    # print 'minimum at steps = '+str(fit_result['params_dict']['c'])
+    # # print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
+
     # print positions  
     d.create_file()
     filename=d.get_filepath()[:-4]
