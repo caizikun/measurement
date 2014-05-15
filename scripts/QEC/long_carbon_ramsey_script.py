@@ -22,26 +22,26 @@ def Long_Carbon_Ramsey(name,tau = None):
 
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
+    m.params['Ren_Decoupling_scheme'] = 'repeating_T_elt'
 
     ### Sweep parmater
 
     m.params['N_list'] = range(0,129,4)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
     m.params['Phases_of_Ren_B'] =np.ones(len(m.params['N_list']))*0  #np.linspace(0,4*np.pi,41) #
 
- 
-    m.params['C1_freq'] =345.2e3-2e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
-    
+
+    m.params['C1_freq'] =345.2e3-2e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq
+
     tau_larmor = m.get_tau_larmor()
-    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor 
-    m.params['Addressed_Carbon'] = 1 
- 
+    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor
+    m.params['Addressed_Carbon'] = 1
+
 
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
     # m.params['sweep_name']       = 'Phase'
-    m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
-    m.params['sweep_name'] = 'Free Evolution time (s)' 
+    m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)'
+    m.params['sweep_name'] = 'Free Evolution time (s)'
 
 
     #############################

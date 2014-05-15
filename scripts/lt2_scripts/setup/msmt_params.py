@@ -31,6 +31,7 @@ cfg['magnet']={
     ######################################
 
 cfg['protocols']['AdwinSSRO']={
+'Min_AWG_element_duration' : 1e-6 #used in the DD scripts, time in seconds
 'AWG_done_DI_channel'       :       16,
 'AWG_event_jump_DO_channel' :       6,
 'AWG_start_DO_channel'      :       1,
@@ -137,12 +138,12 @@ cfg['samples']['Hans_sil1'] = {
 'N_HF_frq'      :       N_HF_frq,
 
 ## Nuclear spins
-    
-'C1_freq'       :       343.0e3, #be sure to enter in Hz 
+
+'C1_freq'       :       343.0e3, #be sure to enter in Hz
 'C1_Ren_tau'    :       [6.522e-6   , 9.420e-6],
 'C1_Ren_N'    :         [10         , 16],
 
-'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5 
+'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5
 'C2_Ren_N'    :         [26     , 28      , 32],
 
 'C3_Ren_tau'    :       [15.324e-6, 16.936],  #resonance k=
@@ -201,8 +202,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'Y_phase'                   :   0,
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,    
-'fast_pi_amp'               :   0.807627,   
+'fast_pi_duration'          :   140e-9,
+'fast_pi_amp'               :   0.807627,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, hard ###
@@ -281,7 +282,7 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
 'wait_after_RO_pulse_duration':2,
-'wait_after_pulse_duration':2,      
+'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
 'SSRO_stop_after_first_photon':0,
