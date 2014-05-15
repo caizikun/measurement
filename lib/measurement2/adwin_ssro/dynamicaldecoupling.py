@@ -133,12 +133,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     else: 
                         desired_phase = Gate_sequence[i+1].phase
                         precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #needs to be added to msmst params
-                        evolution_time = t - t_start[C_ind]
-                        current_phase = evolution_time*precession_freq%(2*np.pi)
-                        phase_dif = desired_phase-current_phase
-                        if phase_dif <0:
-                            phase_dif = phase_dif+2*np.pi
-                        g.dec_duration = round( phase_dif/precession_freq *1e9/8.)*8*1e-9 
+                        if precession_freq == 0: 
+                            g.dec_duration = 0
+                        else: 
+                            evolution_time = t - t_start[C_ind]
+                            current_phase = evolution_time*precession_freq%(2*np.pi)
+                            phase_dif = desired_phase-current_phase
+     
+                            dec_duration = round( phase_dif/precession_freq *1e9/(self.params['dec_pulse_multiple']*2))*(self.params['dec_pulse_multiple']*2)*1e-9 
+                            min_dec_duration= self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2 
+
+                            while dec_duration <= min_dec_duration: 
+                                phase_dif = phase_dif+2*np.pi 
+                                dec_duration = round( phase_dif/precession_freq *1e9/(self.params['dec_pulse_multiple']*2))*(self.params['dec_pulse_multiple']*2)*1e-9 
+
+                            g.dec_duration = dec_duration 
 
                 #Connection element can never be the first or last element in the sequence 
                 if i ==0:
@@ -162,8 +171,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
         '''
         # Pulses must be multiple of
-        self.params['dec_pulse_multiple'] = 2
-
         dec_duration = Gate.dec_duration
         if dec_duration == 0:
             Gate.N = 0
@@ -176,6 +183,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             print 'Warning: connection element decoupling duration is too short. Not decoupling in time interval. \n dec_duration = %s, min dec_duration = %s' %(dec_duration,2*self.params['min_dec_tau']*self.params['dec_pulse_multiple'])
             Gate.N=0
             Gate.tau = 0  
+            return Gate 
 
 
         for k in range(40):
@@ -601,11 +609,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 decoupling_elt.append(Y)
             decoupling_elt.append(T)
-            if n ==N:
-                decoupling_elt.append(T_final)
-            else:
+            if n !=(N-1):
                 decoupling_elt.append(T)
+        decoupling_elt.append(T_final)
         Gate.elements = [decoupling_elt]
+
 
     def generate_electron_gate_element(self,Gate):
         '''
@@ -883,8 +891,13 @@ class NuclearRamsey(DynamicalDecoupling):
             Rz.tau_cut_before = Ren_a.tau_cut
             Rz.tau_cut_after = Ren_a.tau_cut
 
+            print Rz.dec_duration
+            print Rz.tau_cut_after
+            print Rz.tau_cut_before
+            print Rz.dec_duration+Rz.tau_cut_before+Rz.tau_cut_after
             self.determine_connection_element_parameters(Rz)
             self.generate_connection_element(Rz)
+            print Rz.dec_duration
 
             # Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
@@ -1031,6 +1044,7 @@ class LongNuclearRamsey(DynamicalDecoupling):
             Ren_b.Carbon_ind = self.params['Addressed_Carbon'] #Default phase = 0
             Ren_a.scheme = self.params['Decoupling_sequence_scheme']
             Ren_b.scheme = self.params['Decoupling_sequence_scheme']
+            Ren_b.phase = self.params['Phases_of_Ren_B'][pt]
 
             ###########
             # Set parameters for and generate the main DD element
@@ -1042,7 +1056,10 @@ class LongNuclearRamsey(DynamicalDecoupling):
             initial_Pi2.Gate_operation = 'pi2'
 
             final_Pi2.Gate_operation = 'pi2'
-            final_Pi2.phase = self.params['Phases_final_pi2_pulse'][pt] #np.pi
+            if DD_gate.N%4==0:
+                final_Pi2.phase = 0 #default phase 
+            else: 
+                final_Pi2.phase = np.pi 
 
             for g in gate_seq:
                 if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
@@ -1055,6 +1072,11 @@ class LongNuclearRamsey(DynamicalDecoupling):
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
             combined_list_of_elements.extend(list_of_elements)
+
+            if self.params['sweep_name']== 'Free Evolution time (s)':
+                self.params['sweep_pts'][pt]= DD_gate.N*DD_gate.tau*2+gate_seq[3].dec_duration 
+                print 'changed sweep pt to %s' %(self.params['sweep_pts'][pt])
+
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 

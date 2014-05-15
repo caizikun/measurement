@@ -21,20 +21,19 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
 
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =np.arange(8,600,16)
+    Number_of_pulses =np.arange(0,68,4)
     pts = len(Number_of_pulses)
 
     if tau == None: 
-        m.params['C1_Ren_tau'] * np.ones(pts)
-    else: 
-        tau_list = tau*np.ones(pts)
+        tau = m.params['C1_Ren_tau'][0] 
+    tau_list = tau*np.ones(pts)
     print 'tau_list =' + str(tau_list)
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='x'
     m.params['Final_Pulse'] ='-x'
     #Method to construct the sequence
-    m.params['Decoupling_sequence_scheme'] = 'XY8'
+    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
@@ -47,6 +46,6 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N',tau =10.220e-6, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N',tau =None, reps_per_ROsequence = 500)
 
 

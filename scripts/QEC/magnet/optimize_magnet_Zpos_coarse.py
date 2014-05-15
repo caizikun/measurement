@@ -60,8 +60,8 @@ if __name__ == '__main__':
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
         ### for the first coarse step
-    init_range   = 12     #Common: 10 MHz
-    init_pts     = 101    #Common: 121
+    init_range   = 10     #Common: 10 MHz
+    init_pts     = 121    #Common: 121
     init_reps    = 750   #Common: 500
         ### for the remainder of the steps
     repeat_range = 4.5
@@ -110,6 +110,15 @@ if __name__ == '__main__':
             break
         else:
             mom.step('Z_axis',d_steps[iterations])
+
+
+        # To cleanly exit the optimization
+        print '--------------------------------'
+        print 'press q to stop measurement loop'
+        print '--------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or d_steps[iterations]==abs(1):
+            break
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
