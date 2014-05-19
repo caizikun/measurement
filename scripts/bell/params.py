@@ -114,6 +114,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt3['AWG_wait_for_lt1_start'] = 8e-6 #= dt(f,BC)
 params_lt3['sync_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 1
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']

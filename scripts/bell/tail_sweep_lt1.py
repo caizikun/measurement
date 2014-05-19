@@ -166,6 +166,7 @@ def tail_lt1(name):
 
     bseq.pulse_defs_lt1(m)
 
+    m.params['sync_during_LDE'] = 1
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
     m.params['repetitions'] = 10000
@@ -175,13 +176,13 @@ def tail_lt1(name):
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     
-    debug=True
+    debug=False
     m.params['trigger_wait'] = not(debug)
     m.autoconfig()
     m.generate_sequence()
 
     if not debug:
-        m.setup(mw=m.params_lt1['MW_during_LDE'], pq_calibrate=False)
+        m.setup(mw=m.params['MW_during_LDE'], pq_calibrate=False)
         m.run(autoconfig=False, setup=False)    
         m.save()
         m.finish()

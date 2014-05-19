@@ -93,6 +93,7 @@ params_lt1['MW_12_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 0 #sync is only for lt3
+params_lt1['plu_during_LDE'] = 0 
 params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] + 1.5e-6 #= dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']

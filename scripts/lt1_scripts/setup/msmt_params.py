@@ -52,7 +52,7 @@ cfg['protocols']['AdwinSSRO']={
 
 
 
-yellow=True
+yellow=False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -163,7 +163,7 @@ cfg['protocols']['Pippin_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 4e-9,#3nW
+'A_CR_amplitude': 10e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 15e-9,
 'CR_duration' :  50,

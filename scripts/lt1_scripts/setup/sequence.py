@@ -31,28 +31,33 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
 
 # light
-qt.pulsar.define_channel(id='ch2_marker2', name='Velocity1AOM', type='marker', 
+qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 
     high=0.4, low=0, offset=0., delay=700e-9, active=True)
-qt.pulsar.set_channel_opt('Velocity1AOM','high', qt.instruments['MatisseAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('Velocity1AOM','low', qt.instruments['MatisseAOM'].get_sec_V_off())
-qt.pulsar.define_channel(id='ch1_marker2', name='YellowAOM', type='marker', 
+
+qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
     high=0.4, low=0, offset=0., delay=750e-9, active=True)
-qt.pulsar.set_channel_opt('YellowAOM','high', qt.instruments['YellowAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('YellowAOM','low', qt.instruments['YellowAOM'].get_sec_V_off())
 
 ## EOM - short pulse
 qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=1.5,
     low=-1.5, offset=0., delay=112e-9, active=True)
 
-qt.pulsar.define_channel(id='ch4_marker1', name='EOM_AOM_Matisse', type='marker',
+qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
     high=1.0, low=0.02, offset=0., delay=416e-9, active=True)
 
 #PLU
-qt.pulsar.define_channel(id='ch11', name='plu_sync', type='analog',
+qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker',
     high=2.0, low=0, offset=0., delay=14e-9, active=True)
 
 
-#qt.pulsar.define_channel(id='ch2', name='Velocity1AOM', type='analog', 
+#RND
+qt.pulsar.define_channel(id='ch4_marker1', name='RND_halt', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+
+qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker', 
+    high=2.0, low=0, offset=0., delay=0., active=True)   
+
+
+#qt.pulsar.define_channel(id='ch2', name='AOM_Newfocus', type='analog', 
 #    high=0.4, low=0, offset=0., delay=700e-9, active=True)
 #qt.pulsar.define_channel(id='ch2_marker2', name='YellowAOM', type='marker', 
 #    high=0.4, low=0, offset=0., delay=750e-9, active=True)
