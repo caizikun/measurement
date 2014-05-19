@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -23,7 +23,7 @@
 '
 
 #INCLUDE ADwinGoldII.inc
-#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      1000000
@@ -120,7 +120,6 @@ EVENT:
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
           mode = 2
           timer = -1
-        ELSE
           first = 0
         ENDIF
         
