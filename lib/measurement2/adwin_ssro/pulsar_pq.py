@@ -35,6 +35,9 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
     def measurement_process_running(self):
         return self.adwin_process_running()
 
+    def run(self, **kw):
+        pq.PQMeasurement.run(self,**kw)
+
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \

@@ -28,24 +28,25 @@ def erabi(name):
     
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     
-    m.params['pts'] = 15
+    m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 700
+    m.params['repetitions'] = 1000
 
     #m.params['wait_after_pulse_duration']=0
     #m.params['wait_after_RO_pulse_duration']=0
     #m.params['Ex_SP_amplitude']=0
 
 
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6      #for ms=-1   'ms-1_cntr_frq'
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6  
+    #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     m.params['MW_pulse_frequency'] = 43e6
 
     #m.params['MW_pulse_durations'] =  np.ones(pts)*4e-6 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 100, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9
+    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.811
     #m.params['MW_pulse_amplitudes'] = np.linspace(0,0.02,pts)#0.55*np.ones(pts)
 
     # for autoanalysis

@@ -16,7 +16,7 @@ int_time = 25        # in ms
 reps = 10
 center_f =   qt.exp_params['samples']['Hans_sil1']['ms-1_cntr_frq']*1e-9 # in GHz
 
-range_f  =  0.030 # in GHz
+range_f  =  0.040 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)

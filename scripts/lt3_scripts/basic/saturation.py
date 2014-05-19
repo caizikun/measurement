@@ -1,4 +1,3 @@
-import time
 import qt
 import data
 from analysis.lib.fitting import fit, common
@@ -6,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no2_SIL2_ZPL_TH'
+name = 'The111no2_SIL1_PSB_MM_TH'
 steps=21
-max_power=250e-6       #[w]
-counter=2    #number of counter
+max_power=280e-6       #[w]
+counter=1   #number of counter
 PQ_count=True    # counting with the HH, assumes apd on channel 0
-bg_x=-2.5          #delta x position of background [um]
-bg_y=-2.5            #delta y position of background [um]
+bg_x=2.0          #delta x position of background [um]
+bg_y=-2.0            #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -30,14 +29,14 @@ current_x = current_mos.get_x()
 current_y = current_mos.get_y()
 
 current_aom.set_power(0)
-time.sleep(1)
+qt.msleep(1)
 br=False
 for i,pwr in enumerate(x):
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
         br = True
         break
     current_aom.set_power(pwr)
-    time.sleep(1)
+    qt.msleep(1)
     if not PQ_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:
@@ -45,14 +44,16 @@ for i,pwr in enumerate(x):
     print 'step %s, counts %s'%(i,y_NV[i])
         
 current_mos.set_x(current_x + bg_x)
+qt.msleep(1)
 current_mos.set_y(current_y + bg_y)
+qt.msleep(1)
 current_aom.set_power(0)
-time.sleep(1)
+qt.msleep(1)
 if not br:
     for i,pwr in enumerate(x):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         current_aom.set_power(pwr)
-        time.sleep(1)
+        qt.msleep(1)
         if not PQ_count:
             y_BG[i] = current_adwin.get_countrates()[counter-1]
         else:

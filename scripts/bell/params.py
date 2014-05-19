@@ -17,13 +17,13 @@ joint_params['LDE_RO_duration'] = 3e-6
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-joint_params['MIN_SYNC_BIN'] =       0
+joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
 bs_params = {}
 bs_params['MAX_DATA_LEN']        =   joint_params['MAX_DATA_LEN']
-bs_params['BINSIZE']             =   1  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 bs_params['MIN_SYNC_BIN']        =   0 
 bs_params['MAX_SYNC_BIN']        =   1000 
 bs_params['measurement_time']    =   24*60*60 #sec = 24H
@@ -45,7 +45,7 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 #to be implemented
 
 #bell adwin:
-params_lt3['AWG_start_DO_channel'] = 16
+params_lt3['AWG_start_DO_channel'] = 9
 params_lt3['AWG_done_DI_channel'] = 8
 params_lt3['SP_duration'] = 50
 params_lt3['wait_after_pulse_duration'] = 1
@@ -123,6 +123,6 @@ params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
-params_lt3['measurement_time'] =   20*60,#sec = 20 mins
+params_lt3['measurement_time'] =   20*60#sec = 20 mins
 
 joint_params['RND_start'] = params_lt3['opt_pulse_start']+joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin

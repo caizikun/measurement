@@ -10,7 +10,7 @@ import msvcrt
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 # import the DESR measurement, DESR fit, magnet tools and master of magnet
-from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
+from measurement.scripts.Magnetometry.magnet import DESR_msmt; reload(DESR_msmt)
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 from measurement.lib.tools import magnet_tools as mt; reload(mt)
 mom = qt.instruments['master_of_magnet']; reload(mt)

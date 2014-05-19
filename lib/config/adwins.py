@@ -1299,7 +1299,7 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom' : 5,
         'matisse_aom' : 6,
         'newfocus_aom': 7,
-        'not_in_use' : 8,
+        'gate' : 8,
         }
 
 config['adwin_lt3_dios'] = {

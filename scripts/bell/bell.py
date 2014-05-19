@@ -37,8 +37,8 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
         qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
 
-    def setup(self):
-        pulsar_pq.PQPulsarMeasurement.setup(self, mw=m.params['MW_during_LDE'])     
+    def setup(self, **kw):
+        pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)     
 
     def save(self, name='ssro'):
         reps = self.adwin_var('entanglement_events')
@@ -49,7 +49,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     ('RO_data', reps),
                     ('statistics', 10),
                     'entanglement_events',
-                    'completed_reps'
+                    'completed_reps',
                     'total_CR_counts'])
 
 class Bell_BS(pq.PQMeasurement):
