@@ -15,34 +15,29 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Long_Carbon_Ramsey(name,tau = None):
+def NuclearRamsey_no_elDD(name,tau = None):
 
-    m = DD.LongNuclearRamsey(name)
+    m = DD.NuclearRamsey_no_elDD(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Ren_Decoupling_scheme'] = 'repeating_T_elt'
-    m.params['DD_wait_scheme'] = 'auto'#XY8'
+
 
     ### Sweep parameters
+    m.params['wait_times'] = np.arange(3e-6,10e-3,.4e-3)
 
-    # m.params['N_list'] = range(8,400/8*6,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
-    m.params['N_list'] = range(8,400,24)
-    m.params['Phases_of_Ren_B'] =np.ones(len(m.params['N_list']))*0  #np.linspace(0,4*np.pi,41) #
-
- 
-    m.params['C3_freq'] =m.params['C3_freq']-.2e3# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
+    m.params['Ren_Decoupling_scheme'] = 'repeating_T_elt'
+    m.params['Phases_of_Ren_B'] =np.ones(len(m.params['wait_times']))*0  #np.linspace(0,4*np.pi,41) #
+    m.params['C1_freq'] =m.params['C1_freq']+.2e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
-    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*6
-    m.params['Addressed_Carbon'] = 3 
+    m.params['Addressed_Carbon'] = 1 
  
-
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
     # m.params['sweep_name']       = 'Phase'
-    m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
+    m.params['sweep_pts']      = np.ones(len(m.params['wait_times'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
     m.params['sweep_name'] = 'Free Evolution time (s)' 
 
 
@@ -59,5 +54,5 @@ def Long_Carbon_Ramsey(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    Long_Carbon_Ramsey(SAMPLE)
+    NuclearRamsey_no_elDD(SAMPLE)
 
