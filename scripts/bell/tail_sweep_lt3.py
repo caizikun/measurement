@@ -122,7 +122,7 @@ def tail_lt3(name):
 
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
-    m.params['aom_risetime']              = 25e-9#42e-9 # calibration to be done!
+    m.params['aom_risetime']              = 25e-9 # calibration to be done!
    
     if m.params['use_eom_pulse'] == 'raymond-pulse':
 
@@ -190,4 +190,4 @@ def tail_lt3(name):
 
 
 if __name__ == '__main__':
-    tail_lt3('lt3_tailS_The111no2_SIL2_Ey_+5deg')
+    tail_lt3('lt3_tailS_The111no2_SIL1_Ey_+11deg')

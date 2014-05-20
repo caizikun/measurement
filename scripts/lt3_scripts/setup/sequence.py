@@ -46,7 +46,7 @@ qt.pulsar.define_channel(id='ch2', name='AOM_Matisse', type='analog', high=1.0,
     low=-1.0, offset=0., delay=450e-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
-    low=-2.0, offset=0., delay=179e-9, active=True)
+    low=-2.0, offset=0., delay=200e-9, active=True)
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
     high=1.0, low=-1.0, offset=0.0, delay=617e-9, active=True) #617 ns for normal pulses
