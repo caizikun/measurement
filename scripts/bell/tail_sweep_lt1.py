@@ -46,6 +46,9 @@ class LT1Tail(bell.Bell):
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(self.lt1_seq)
 
+    def save(self):
+        pulsar_pq.PQPulsarMeasurement.save(self)
+
     def create_eom_pulse(self, i):
         if self.params['use_eom_pulse'] == 'short':
             print 'using short eom pulse'
@@ -121,7 +124,7 @@ def tail_lt1(name):
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
-    m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
+    m.params['eom_off_amplitude']         = np.ones(pts)*-0.26#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
     m.params['aom_risetime']              = 25e-9#42e-9 # calibration to be done!
    
     if m.params['use_eom_pulse'] == 'raymond-pulse':
@@ -159,12 +162,14 @@ def tail_lt1(name):
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
-    m.params['aom_amplitude']             = np.ones(pts)*1.0#aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
+    m.params['aom_amplitude']             = aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
 
     m.params['sweep_name'] = 'aom_amplitude [percent]'
     m.params['sweep_pts'] = aom_power_sweep/max_power_aom
 
     bseq.pulse_defs_lt1(m)
+    m.params['MIN_SYNC_BIN'] =       6000 
+    m.params['MAX_SYNC_BIN'] =       8000
 
     m.params['sync_during_LDE'] = 1
     m.params['send_AWG_start'] = 1
@@ -177,15 +182,14 @@ def tail_lt1(name):
     m.params['MW_during_LDE'] = 0
     
     debug=False
-    m.params['trigger_wait'] = not(debug)
+    m.params['trigger_wait'] = 1
     m.autoconfig()
     m.generate_sequence()
 
-    if not debug:
-        m.setup(mw=m.params['MW_during_LDE'], pq_calibrate=False)
-        m.run(autoconfig=False, setup=False)    
-        m.save()
-        m.finish()
+    m.setup(debug=debug)
+    m.run(autoconfig=False, setup=False,debug=debug)    
+    m.save()
+    m.finish()
 
 
 if __name__ == '__main__':

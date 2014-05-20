@@ -20,8 +20,8 @@ params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 #to be implemented
 
 #bell adwin:
-params_lt1['AWG_done_DI_channel'] = 8
-params_lt1['AWG_success_DI_channel'] = 8
+params_lt1['AWG_done_DI_channel'] = 16
+params_lt1['AWG_success_DI_channel'] = 8#????
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
@@ -30,13 +30,13 @@ params_lt1['wait_for_AWG_done'] = 0
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =8e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
 params_lt1['A_SP_amplitude'] = 10e-9             
 params_lt1['Ex_RO_amplitude'] = 5e-9
 params_lt1['A_RO_amplitude'] = 0
-params_lt1['repump_amplitude'] = 200e-6 
+params_lt1['repump_amplitude'] = 110e-6 
 
 ####################
 ### pulses and MW stuff LT1
@@ -102,4 +102,4 @@ params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 
-params_lt1['measurement_time'] =   24*60*60,#sec = 24 H
+params_lt1['measurement_time'] =   24*60*60 #sec = 24 H
