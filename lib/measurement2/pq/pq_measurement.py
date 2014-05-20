@@ -155,7 +155,7 @@ class PQMeasurement(m2.Measurement):
                     self.h5data.flush()
 
         self.PQ_ins.StopMeas()
-        print 'PQ total datasets, events last datase:', rawdata_idx, current_dset_length
+        print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
@@ -244,7 +244,7 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        print 'PQ total events:',  ll
+        print 'PQ total events: last sync number',  ll, last_sync_number
         self.stop_measurement_process()
 
         dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')
