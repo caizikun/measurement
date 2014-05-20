@@ -103,10 +103,10 @@ class CORPSE_pulse:
         self.rabi_frequency = kw.pop('rabi_frequency', 0)
         self.eff_rotation_angle_rad = self.eff_rotation_angle/360.*2*np.pi #np.sin expects radians
 
-        # this is the CORPSE pulse family with n1 = 1, n2 = 1, n3 = 0 (see Cummins 2008)
+        # this is the CORPSE pulse family with n1 = 1, n2 = 1, n3 = 1 (see Cummins 2008)
         self.rotation_angle_1 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
         self.rotation_angle_2 = 2*np.pi - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_3 = self.eff_rotation_angle_rad/2-np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        self.rotation_angle_3 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
 
         self.length_1 = self.rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
         self.length_2 = self.rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
@@ -124,7 +124,7 @@ class CORPSE_pulse:
         # this is the CORPSE pulse family with n1 = 1, n2 = 1, n3 = 0 (see Cummins 2008)
         self.rotation_angle_1 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
         self.rotation_angle_2 = 2*np.pi - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_3 = self.eff_rotation_angle_rad/2-np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        self.rotation_angle_3 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
 
         self.length_1 = self.rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
         self.length_2 = self.rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
@@ -207,6 +207,7 @@ class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
         self.length_m318p6 = kw.pop('length_m318p6', 0)
         self.length_384p3 = kw.pop('length_384p3', 0)
         self.pulse_delay = kw.pop('pulse_delay', 1e-9)
+
 
         self.length = self.length_24p3 + self.length_m318p6 + self.length_384p3 + \
             2*self.pulse_delay + 2*self.PM_risetime

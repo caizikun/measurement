@@ -23,7 +23,7 @@
 '
 
 #INCLUDE ADwinGoldII.inc
-#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      1000000
@@ -120,7 +120,6 @@ EVENT:
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
           mode = 2
           timer = -1
-        ELSE
           first = 0
         ENDIF
         

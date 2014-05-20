@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' this program implements CR check and N times |SP - AWG sequence - integrated SSRO - SP_repump - delay|^N
 ' controlled by ADwin Pro
@@ -116,6 +116,7 @@ INIT:
   Par_74 = mode
   PAR_64=0
   PAR_65=0
+  PAR_69=0
 
 
 EVENT:
@@ -135,7 +136,7 @@ EVENT:
         ENDIF
                
       
-      CASE 2    ' Ex or A laser spin pumping
+      CASE 2    '  A laser spin pumping
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' turn on A laser         
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
@@ -213,14 +214,17 @@ EVENT:
           endif
           IF ((repump_E<1) AND (repump_A<1))THEN  'skip SP_repump if we dont want it
             mode=9
+            timer = -wait_time_between_msmnts
           ELSE  
-            mode = 8 
+            mode = 8
+            timer = -1 
           ENDIF
           
-          timer = -1
+          
           wait_after_pulse = wait_after_pulse_duration
           inc(repetition_counter)
           Par_73 = repetition_counter
+          PAR_69 = wait_time_between_msmnts
           IF (repetition_counter = SSRO_repetitions) THEN
             END
           ENDIF
@@ -250,7 +254,7 @@ EVENT:
         ENDIF
       
       CASE 9 ' delay time
-        IF (timer = 0) THEN
+        IF (timer >= 0) THEN
           mode =2
           timer=-1
         ENDIF  
