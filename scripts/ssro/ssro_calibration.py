@@ -16,7 +16,7 @@ def ssrocalibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     #machiel if you want to change the ssro, go make a copy of your own of this file
     # parameters
-    m.params['SSRO_repetitions'] = 9999
+    m.params['SSRO_repetitions'] = 5000
     m.params['SSRO_duration']       = 100
     m.params['SSRO_stop_after_first_photon']= 0
 

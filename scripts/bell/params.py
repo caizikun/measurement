@@ -57,8 +57,8 @@ params_lt3['wait_for_AWG_done'] = 0
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 
 #adwin powers
-params_lt3['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt3['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt3['Ex_CR_amplitude'] = 3e-9#10e-9#6e-9             
+params_lt3['A_CR_amplitude'] =3e-9#10e-9#16e-9              
 params_lt3['Ex_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 10e-9             
 params_lt3['Ex_RO_amplitude'] = 5e-9
@@ -114,6 +114,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt3['AWG_wait_for_lt1_start'] = 8e-6 #= dt(f,BC)
 params_lt3['sync_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 1
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']

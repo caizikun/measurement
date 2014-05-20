@@ -110,8 +110,8 @@ def fast_ssro_calibration(name):
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
 
     m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
     print m.params['MAX_SYNC_BIN']
@@ -124,16 +124,16 @@ def fast_ssro_calibration(name):
     m.params['E_SP_amplitude'] = 0
     m.params['SSRO_duration'] = 1
 
-    debug=False
+    debug=True
 
     m.autoconfig()
     m.generate_sequence()
     
-    if not debug:
-        m.setup(mw=False)
-        m.run(autoconfig=False, setup=False)    
-        m.save()
-        m.finish()
+
+    m.setup(mw=False, debug=debug)
+    m.run(autoconfig=False, setup=False, debug=debug)    
+    m.save()
+    m.finish()
 
 if __name__ == '__main__':
     fast_ssro_calibration('test')

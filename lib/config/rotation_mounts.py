@@ -28,3 +28,23 @@ config['waveplates_lt3'] = {
 		'neg_calib_precise': 784,
 	},
 }
+
+config['waveplates_lt1'] = {
+	
+	'zpl_half': {
+		'channel' : 1,
+		'axis'	  : 2,
+		'pos_calib_quick' : 500,#steps/degree
+		'pos_calib_precise': 478,
+		'neg_calib_quick' : 432,#steps/degree
+		'neg_calib_precise': 474,
+	},
+	'zpl_quarter': {
+		'channel' : 1,
+		'axis'	  : 1,
+		'pos_calib_quick' : 510,#steps/degree
+		'pos_calib_precise': 500,
+		'neg_calib_quick' : 500,#steps/degree
+		'neg_calib_precise': 500,
+	},
+}

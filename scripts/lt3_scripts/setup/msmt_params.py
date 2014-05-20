@@ -1,6 +1,6 @@
 cfg={}
 sample_name = 'The111no2'
-sil_name = 'SIL2'
+sil_name = 'SIL1'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -23,7 +23,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       10e-6,
+		'green_repump_amplitude':       50e-6,
 		'green_repump_duration':        10,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -41,7 +41,7 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-yellow=True
+yellow=False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -101,16 +101,16 @@ cfg['samples'][sample_name] = {
 'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 1e-9,
+		'A_CR_amplitude':				 3e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 5e-9,
+		'A_SP_amplitude':				 3e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 .6e-9,
-		'Ex_RO_amplitude':				 .7e-9,
-		'Ex_SP_amplitude':				 1e-9,
+		'Ex_CR_amplitude':				 3e-9,
+		'Ex_RO_amplitude':				 3e-9,
+		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 50,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
