@@ -139,20 +139,21 @@ cfg['samples']['Hans_sil1'] = {
 
 ## Nuclear spins
     
-'C1_freq'       :       345.2e3, #be sure to enter in Hz 
+'C1_freq'       :       345.124e3, #be sure to enter in Hz 
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
-'C1_Ren_N'    :         [16, 10],
+'C1_Ren_N'    :         [16      , 10],
 
+'C2_freq'         :     339.955e3,#340e3,
 'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5 
 'C2_Ren_N'    :         [26     , 28      , 32],
 
-'C3_Ren_tau'    :       [15.324e-6, 16.936],  #resonance k=
-'C3_Ren_N'    :         [54       , 46],
+'C3_freq' :             309.815e3,
+'C3_Ren_tau'    :       [18.56e-6, 15.328e-6, 16.936e-6],  #resonance k=
+'C3_Ren_N'    :         [14      , 54       , 46],
 
-'C4_freq'       :       349.7e3,  #(2)
+'C4_freq'       :       348.574e3,  #(2)
 'C4_Ren_tau'    :       [6.456e-6   ],
 'C4_Ren_N'    :         [40         ]}
-
 
 
 
