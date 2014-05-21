@@ -262,7 +262,7 @@ def tail_lt1(name):
     m.params['sync_during_LDE'] = 1
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 5000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -280,4 +280,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt1('lt1_tail_Pippin')
+    tail_lt1('lt1_tail_Pippin_SIL1_SM')

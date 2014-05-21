@@ -1,4 +1,3 @@
-import time
 import qt
 import data
 from analysis.lib.fitting import fit, common
@@ -6,11 +5,11 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'ThePippin_SIL1_PSB_MM_TH'
+name = 'ThePippin_SIL3_ZPL_BS_SM_TH'
 steps=21
 max_power=105e-6       #[w]
-counter=1    #number of counter
-PQ_count=False    # counting with the HH, assumes apd on channel 0
+counter=2   #number of counter
+PQ_count=True    # counting with the HH, assumes apd on channel 0
 bg_x=2.5          #delta x position of background [um]
 bg_y=2.5            #delta y position of background [um]
 
@@ -30,14 +29,14 @@ current_x = current_mos.get_x()
 current_y = current_mos.get_y()
 
 current_aom.set_power(0)
-time.sleep(1)
+qt.msleep(1)
 br=False
 for i,pwr in enumerate(x):
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
         br = True
         break
     current_aom.set_power(pwr)
-    time.sleep(1)
+    qt.msleep(1)
     if not PQ_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:
@@ -45,14 +44,16 @@ for i,pwr in enumerate(x):
     print 'step %s, counts %s'%(i,y_NV[i])
         
 current_mos.set_x(current_x + bg_x)
+qt.msleep(0.5)
 current_mos.set_y(current_y + bg_y)
+qt.msleep(0.5)
 current_aom.set_power(0)
-time.sleep(1)
+qt.msleep(1)
 if not br:
     for i,pwr in enumerate(x):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         current_aom.set_power(pwr)
-        time.sleep(1)
+        qt.msleep(1)
         if not PQ_count:
             y_BG[i] = current_adwin.get_countrates()[counter-1]
         else:
@@ -87,5 +88,7 @@ plt.save_png(dat.get_filepath()+'png')
 dat.close_file()
 
 current_mos.set_x(current_x)
+qt.msleep(0.5)
 current_mos.set_y(current_y)
+qt.msleep(0.5)
 
