@@ -30,10 +30,10 @@ params_lt1['wait_for_AWG_done'] = 0
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =8e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 10e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =15e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 10e-9             
+params_lt1['A_SP_amplitude'] = 20e-9             
 params_lt1['Ex_RO_amplitude'] = 5e-9
 params_lt1['A_RO_amplitude'] = 0
 params_lt1['repump_amplitude'] = 110e-6 
