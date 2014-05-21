@@ -9,7 +9,10 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
 class Gate(object):
     '''
-    The class for Gate objects that are used routinely in generating gate sequences. The gate object contains the metadata for generating the AWG elements and while running trough the sequence classes data relating to the AWG elements gets added before they are uploaded .
+    The class for Gate objects that are used routinely in generating gate sequences.
+    The gate object contains the metadata for generating the AWG elements and while
+    running trough the sequence classes data relating to the AWG elements gets added
+    before they are uploaded .
     '''
     def __init__(self,name,Gate_type,**kw):
 
@@ -626,9 +629,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #in this an element should be added in before
             if Gate.Gate_operation == 'pi2':
                 eP = self._pi2_elt()
+                print 'pi/2'
             elif Gate.Gate_operation == 'pi':
                 eP = self._X_elt()
             eP.phase = Gate.phase
+            print 'debugging: printing phase of pi/2 pulses'
+            print Gate.phase
+            print eP.phase
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
                 length = tau_cut_before-eP.length/2.0, amplitude = 0.)
             T_dec_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
@@ -1107,7 +1114,7 @@ class LongNuclearRamsey(DynamicalDecoupling):
             if DD_gate.N%4==0:
                 final_Pi2.phase = 0 #default phase
             else:
-                final_Pi2.phase = np.pi
+                final_Pi2.phase = 180
 
             for g in gate_seq:
                 if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
@@ -1165,7 +1172,7 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
             Ren_b = Gate('Ren_b_'+str(pt), 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate')
 
-            gate_seq = [initial_Pi2,Ren_a,pi_2_a,wait_gate,pi_2_b, Ren_b,final_Pi2]
+            gate_seq = [initial_Pi2, Ren_a, pi_2_a, wait_gate, pi_2_b, Ren_b, final_Pi2]
             ############
 
             Ren_a.Carbon_ind = self.params['Addressed_Carbon']
@@ -1181,13 +1188,15 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
 
 
             initial_Pi2.Gate_operation = 'pi2'
-            initial_Pi2.Phase = self.params['Y_phase']
+
+            initial_Pi2.phase = self.params['Y_phase']
             pi_2_a.Gate_operation='pi2'
-            pi_2_a.Phase = self.params['X_phase']
+            pi_2_a.phase = self.params['X_phase']
             pi_2_b.Gate_operation='pi2'
-            pi_2_b.Phase = self.params['X_phase']
+
+            pi_2_b.phase = self.params['Y_phase']
             final_Pi2.Gate_operation = 'pi2'
-            final_Pi2 = self.params['Y_phase']
+            final_Pi2.phase = self.params['X_phase']
 
             for g in gate_seq:
                 if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
