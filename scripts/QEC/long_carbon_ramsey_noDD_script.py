@@ -37,8 +37,8 @@ def NuclearRamsey_no_elDD(name,tau = None):
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
     # m.params['sweep_name']       = 'Phase'
-    m.params['sweep_pts']      = np.ones(len(m.params['wait_times'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
-    m.params['sweep_name'] = 'Free Evolution time (s)' 
+    m.params['sweep_pts']        = np.ones(len(m.params['wait_times'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
+    m.params['sweep_name']       = 'Free Evolution time (s)' 
 
 
     #############################
@@ -46,9 +46,7 @@ def NuclearRamsey_no_elDD(name,tau = None):
     #############################
     m.params['min_dec_tau']         = 20e-9 + m.params['fast_pi_duration']/2.0
     m.params['max_dec_tau']         = 0.35e-6 #Based on simulation for fingerprint at low tau
-    m.params['dec_pulse_multiple']  = 4#lowest multiple of 4 pulses
-
-
+    m.params['dec_pulse_multiple']  = 4 #lowest multiple of 4 pulses
 
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
