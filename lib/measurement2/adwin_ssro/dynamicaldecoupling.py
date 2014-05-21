@@ -11,20 +11,28 @@ class Gate(object):
     '''
     The class for Gate objects that are used routinely in generating gate sequences. The gate object contains the metadata for generating the AWG elements and while running trough the sequence classes data relating to the AWG elements gets added before they are uploaded .
     '''
-    def __init__(self,name,Gate_type):
-        self.name = name #Name of the gate
-        self.prefix = name #default prefix is identical to name, can be overwritten
+    def __init__(self,name,Gate_type,**kw):
+
+        kw.pop('dimension', self._dimension)
+        self.name = name
+        self.prefix = name     # Default prefix is identical to name, can be overwritten
         self.Gate_type = Gate_type # Supported gate types in the scripts are
                 # connection/phase gates: 'Connection_element' , 'electron_Gate',
                 #decoupling gates:  'Carbon_Gate', 'electron_decoupling'
-        self.Carbon_ind = 0 #0 is the electronic spin, higher indices are the carbons
-        self.phase = 0 #default phase at which the gate should start
+                # Wait gate
+        self.Carbon_ind = kw.pop('Carbon_ind',0)  #0 is the electronic spin, higher indices are the carbons
+        self.phase = kw.pop('phase',0)
+        self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
+        self.N = kw.pop('N',None)
+        self.tau = kw.pop('tau',None)
 
-        self.reps = 1 # only overwritten in case of Carbon decoupling elements
+        # new arguments needed for jumping behaviour and AWG triggers
+        self.wait_for_trigger = kw.pop('wait_for_trigger',False)
+        self.jump_to_element = kw.pop('jump_to_element','next')
 
         if Gate_type == 'Carbon_Gate' or 'electron_decoupling':
-            self.scheme = 'auto'
-        #Description of other attributes that get added often
+            self.scheme = kw.pop('scheme','auto')
+        #Description of other attributes that get added by functions
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
@@ -550,7 +558,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             list_of_elements.append(wait)
 
         else:
-            print 'Scheme = '+Gate.scheme 
+            print 'Scheme = '+Gate.scheme
             print 'Error!: selected scheme does not exist for generating decoupling elements.'
 
             return
@@ -574,11 +582,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_passive_wait_element(self,Gate):
         '''
         a 1us wait element that is
-        ''' 
+        '''
 
         n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function
-        tau_remaind = tau_remaind *1e-9 #convert back to seconds 
-        Gate.reps = n_wait_reps -2 #because tau_cut must be atleast 1 us 
+        tau_remaind = tau_remaind *1e-9 #convert back to seconds
+        Gate.reps = n_wait_reps -2 #because tau_cut must be atleast 1 us
         Gate.tau_cut = 1e-6 + tau_remaind/2.0
 
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -587,7 +595,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         rep_wait_elt.append(T)
 
         Gate.elements = [rep_wait_elt]
-        Gate.elements_duration = 1e-6 *Gate.reps 
+        Gate.elements_duration = 1e-6 *Gate.reps
 
 
     def generate_connection_element(self,Gate):
@@ -1133,7 +1141,7 @@ class LongNuclearRamsey(DynamicalDecoupling):
 class NuclearRamsey_no_elDD(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
-    The no DD variant does not decouple the electronic spin while the nuclear spin evolves. Instead it applies a pi/2 pulse to bring the electronic spin in a mixed state, let the nucleus evolve and then applies a second pi/2 pulse before the second Ren gate to read out. 
+    The no DD variant does not decouple the electronic spin while the nuclear spin evolves. Instead it applies a pi/2 pulse to bring the electronic spin in a mixed state, let the nucleus evolve and then applies a second pi/2 pulse before the second Ren gate to read out.
     '''
     mprefix = 'CarbonRamsey'
 
@@ -1152,7 +1160,7 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
             initial_Pi2 = Gate('initial_pi2_'+str(pt),'electron_Gate')
             Ren_a = Gate('Ren_a_'+str(pt), 'Carbon_Gate')
             pi_2_a = Gate('pi2_a_'+str(pt),'electron_Gate')
-            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt') 
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt')
             pi_2_b = Gate('pi2_b_'+str(pt),'electron_Gate')
             Ren_b = Gate('Ren_b_'+str(pt), 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate')
@@ -1169,24 +1177,24 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
             ###########
             # Set parameters for and generate the main DD element
             ###########
-            wait_gate.wait_time = self.params['wait_times'][pt]  #here comes something with duration 
+            wait_gate.wait_time = self.params['wait_times'][pt]  #here comes something with duration
 
 
             initial_Pi2.Gate_operation = 'pi2'
-            initial_Pi2.Phase = self.params['Y_phase'] 
+            initial_Pi2.Phase = self.params['Y_phase']
             pi_2_a.Gate_operation='pi2'
             pi_2_a.Phase = self.params['X_phase']
             pi_2_b.Gate_operation='pi2'
-            pi_2_b.Phase = self.params['X_phase'] 
+            pi_2_b.Phase = self.params['X_phase']
             final_Pi2.Gate_operation = 'pi2'
-            final_Pi2 = self.params['Y_phase'] 
+            final_Pi2 = self.params['Y_phase']
 
             for g in gate_seq:
                 if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
                     self.get_gate_parameters(g)
                     self.generate_decoupling_sequence_elements(g)
                 elif g.Gate_type =='passive_elt':
-                    self.generate_passive_wait_element(g) 
+                    self.generate_passive_wait_element(g)
             #Insert connection elements in sequence
             gate_seq = self.insert_phase_gates(gate_seq,pt)
             #generate connection elements with proper phases, also includes electron pulses
@@ -1288,3 +1296,41 @@ class SimpleDecoupling(DynamicalDecoupling):
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
+
+
+class NuclearRamseyWithInitialization(DynamicalDecoupling):
+    '''
+    This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
+    UNDER DEVELOPMENT
+    '''
+    mprefix = 'CarbonRamseyInitialised'
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts):
+
+            #Acutal sequence is a combination of 3 subsequences
+            # 1. MBI initialisation
+            # 2. Carbon initialisation
+            # 3. Carbon Ramsey experiment
+
+            ###########################################
+            #####    Generating the sequence elements      ######
+            #    --|pi/2| - |Ren| - |pi/2|--|Wait| -- |pi/2|- |Ren| - |pi/2| ---
+            ###########################################
+            initial_Pi2 = Gate('initial_pi2_'+str(pt),'electron_Gate')
+            Ren_a = Gate('Ren_a_'+str(pt), 'Carbon_Gate')
+            pi_2_a = Gate('pi2_a_'+str(pt),'electron_Gate')
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt')
+            pi_2_b = Gate('pi2_b_'+str(pt),'electron_Gate')
+            Ren_b = Gate('Ren_b_'+str(pt), 'Carbon_Gate')
+            final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate')
+
+            # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
+            gate_seq = [initial_Pi2,Ren_a,pi_2_a,wait_gate,pi_2_b, Ren_b,final_Pi2]
+            ############
+
+
