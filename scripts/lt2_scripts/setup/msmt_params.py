@@ -92,7 +92,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'N_randomize_duration'                  :    50,
 'Ex_N_randomize_amplitude'              :    20e-9,
 'A_N_randomize_amplitude'               :    20e-9,
-'repump_N_randomize_amplitude'          :    20e-9}
+'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
 
 #################
@@ -165,12 +165,12 @@ cfg['samples']['Hans_sil1'] = {
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
-'SSRO_duration'     :  50,
-'SSRO_stop_after_first_photon' : 0,
+'SSRO_duration'     :  100,
+'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 10e-9,
-'CR_duration' :  50,    #THT:This actually the green repump?
+'CR_duration' :  50,    
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
@@ -240,19 +240,19 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           200,
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           0.5e-9,
-'MBI_duration'              :           16,
+'Ex_MBI_amplitude'          :           0.1e-9,
+'MBI_duration'              :           32,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           20,
-'repump_after_MBI_A_amplitude':         [15e-9],
+'repump_after_MBI_A_amplitude':         [0*15e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
-    #MBI paramters
-'max_MBI_attempts'          :           10,
+    #MBI parameters
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
 'MBI_threshold'             :           1,
-'AWG_wait_duration_before_MBI_MW_pulse':50e-9,
-'AWG_wait_for_adwin_MBI_duration':      25e-6, #needs to be long enough for the MBI_Duration RO to finish and send event trigger
+#'AWG_wait_duration_before_MBI_MW_pulse':50e-9, #??
+'AWG_wait_for_adwin_MBI_duration':      42e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9}

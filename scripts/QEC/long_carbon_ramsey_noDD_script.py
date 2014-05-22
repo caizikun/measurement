@@ -24,15 +24,16 @@ def NuclearRamsey_no_elDD(name,tau = None):
 
 
     ### Sweep parameters
-    m.params['wait_times'] = np.arange(3e-6,10e-3,.4e-3)
+    m.params['wait_times'] = np.arange(3e-6, 0.5e-3 ,40e-6)
+    m.params['wait_times'] = np.arange(3e-6, 40e-6, 0.7e-6)
 
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Ren_Decoupling_scheme'] = 'repeating_T_elt'
+    m.params['Ren_Decoupling_scheme'] = 'XY8'
     m.params['Phases_of_Ren_B'] =np.ones(len(m.params['wait_times']))*0  #np.linspace(0,4*np.pi,41) #
-    m.params['C1_freq'] =m.params['C1_freq']+.2e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['C4_freq'] = 0#m.params['C1_freq']+100e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
-    m.params['Addressed_Carbon'] = 1 
+    m.params['Addressed_Carbon'] = 4 
  
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']

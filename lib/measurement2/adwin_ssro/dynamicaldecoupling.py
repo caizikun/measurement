@@ -621,13 +621,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #in this an element should be added in before
             if Gate.Gate_operation == 'pi2':
                 eP = self._pi2_elt()
-                print 'pi/2'
             elif Gate.Gate_operation == 'pi':
                 eP = self._X_elt()
             eP.phase = Gate.phase
-            print 'debugging: printing phase of pi/2 pulses'
-            print Gate.phase
-            print eP.phase
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
                 length = tau_cut_before-eP.length/2.0, amplitude = 0.)
             T_dec_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',

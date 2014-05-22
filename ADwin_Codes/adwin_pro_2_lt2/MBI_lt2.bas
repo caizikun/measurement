@@ -93,7 +93,7 @@ INIT:
   AWG_start_DO_channel         = DATA_20[1]
   AWG_done_DI_channel          = DATA_20[2]
   SP_E_duration                = DATA_20[3] 'E spin pumping duration before MBI
-  wait_after_pulse_duration    = DATA_20[4]
+  wait_after_pulse_duration    = DATA_20[4] 'Time to wait after turning off a lser pulse
   RO_repetitions               = DATA_20[5]
   sweep_length                 = DATA_20[6] ' not used? -machiel 23-12-'13
   cycle_duration               = DATA_20[7]
