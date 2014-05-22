@@ -19,27 +19,44 @@ class Gate(object):
         kw.pop('dimension', self._dimension)
         self.name = name
         self.prefix = name     # Default prefix is identical to name, can be overwritten
-        self.Gate_type = Gate_type # Supported gate types in the scripts are
-                # connection/phase gates: 'Connection_element' , 'electron_Gate',
-                #decoupling gates:  'Carbon_Gate', 'electron_decoupling'
-                # Wait gate
+        self.Gate_type = Gate_type
+            '''
+            Supported gate types in the scripts are
+            connection/phase gates: 'Connection_element' , 'electron_Gate',
+            decoupling gates:  'Carbon_Gate', 'electron_decoupling'
+            misc gates: 'Wait gate', 'mbi'
+            '''
+        # Information on what type of gate to implement
         self.Carbon_ind = kw.pop('Carbon_ind',0)  #0 is the electronic spin, higher indices are the carbons
         self.phase = kw.pop('phase',0)
-        self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
+
+        #Scheme is used both for generating decoupling elements aaswell as the combine to sequence command
+        self.scheme = kw.pop('scheme','auto')
+
+        #Information on how to implement the gate (times, repetitions etc)
+
         self.N = kw.pop('N',None)
         self.tau = kw.pop('tau',None)
+        self.wait_time = kw.pop('wait_time',None)
 
-        # new arguments needed for jumping behaviour and AWG triggers
+        self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
+
+        # Information on how to combine the gates in the AWG.
         self.wait_for_trigger = kw.pop('wait_for_trigger',False)
-        self.jump_to_element = kw.pop('jump_to_element','next')
+        self.event_jump_to = kw.pop('event_jump_to',None)
+        self.go_to = kw.pop('go_to',None)
 
-        if Gate_type == 'Carbon_Gate' or 'electron_decoupling':
-            self.scheme = kw.pop('scheme','auto')
+        if self.Gate_type == 'MBI':
+            DynamicalDecoupling.generate_MBI_elt()
+        elif self.Gate_type == 'Trigger':
+            DynamicalDecoupling.generate_trigger_elt()
+
         #Description of other attributes that get added by functions
         # self.elements = elements
         # self. repetitions = repetitions
         # self.wait_reps = wait_reps
-        #self.elements_duration  # this is the duration of the AWG element corresponding to this gate. Note the difference with the gate duration (tau_cut)
+        #self.elements_duration  # this is the duration of the AWG element corresponding to this gate.
+        #   Note the difference with the gate duration (tau_cut)
         #self.tau_cut # time removed from a decoupling sequence in final and initial element.
         #self.tau_cut_before # this is the tau_cut of the previous element, gets added to connection type elements to calculate dec times
         #self.tau_cut_after # this is the tau_cut of the following element
@@ -50,7 +67,8 @@ class Gate(object):
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
-    This is a general class for decoupling gate sequences used in addressing Carbon -13 atoms
+    This is a general class for decoupling gate sequences used in addressing Carbon -13 atoms. It contains functions needed for generating the pulse sequences for the AWG.
+    It makes extensive use of the Gate class also found in this file.
     It is a child of PulsarMeasurment.MBI
     '''
     mprefix = 'DecouplingSequence'
@@ -102,12 +120,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             phase =  self.params['Y_phase'])
         return Y
 
-    def _Trigger_element(self):
+    def _Trigger_element(self,duration = 10e-6):
         '''
         Trigger element that is used in different measurement child classes
         '''
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
-            length = 10e-6, amplitude = 2)
+            length = duration, amplitude = 2)
         Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
             global_time = True)
         Trig_element.append(Trig)
@@ -131,8 +149,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ext_gate_seq = [] # this is the list that also contains the connection elements
         for i in range(len(gate_seq)-1):
             ext_gate_seq.append(gate_seq[i])
-            if (gate_seq[i].Gate_type =='Carbon_Gate' or gate_seq[i].Gate_type =='electron_decoupling')and (gate_seq[i+1].Gate_type =='Carbon_Gate' or gate_seq[i+1].Gate_type =='electron_decoupling' ):
+            if ((gate_seq[i].Gate_type =='Carbon_Gate' or
+                    gate_seq[i].Gate_type =='electron_decoupling') and
+                    (gate_seq[i+1].Gate_type =='Carbon_Gate' or
+                        gate_seq[i+1].Gate_type =='electron_decoupling' )):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
+            if gate_seq[i].Gate_type =='Trigger' :
+                ext_gate_seq[-1].tau_cut = ext_gate_seq[-2].tau_cut
+                if (gate_seq[i+1] =='Carbon_Gate' or
+                        gate_seq[i+1] == 'electron_decoupling'):
+                    ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
         ext_gate_seq.append(gate_seq[-1])
         gate_seq = ext_gate_seq
@@ -140,7 +166,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def calc_and_gen_connection_elts(self,Gate_sequence):
         t = 0
-        t_start = np.zeros(20) #don't expect to have more than 19 carbons, ind 0 represents electron, other indices the carbons
+        t_start = np.zeros(20) # don't expect to have more than 19 carbons, ind 0 represents electron, other indices the carbons
         for i,g in enumerate(Gate_sequence):
             #Note for Gate_type electron_decoupling nothing has to be done
             if g.Gate_type == 'Carbon_Gate': #set start times for tracking carbon evolution
@@ -257,6 +283,22 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return Gate
 
     #functions for making the elements
+
+
+    def generate_MBI_elt(self,Gate):
+        '''
+        adds MBI_element to Gate object
+        '''
+        Gate.scheme = 'mbi'
+        Gate.elements = [self._MBI_element()]
+        Gate.elements_duration = 0 # Clock should start counting at start of the next element
+    def generate_trigger_elt(self,Gate):
+        '''
+        adds trigger element to Gate object
+        '''
+        Gate.scheme ='trigger'
+        Gate.elements = [self._Trigger_element(self,Gate.wait_time)]
+        Gate.elements_duration = Gate.wait_time
 
     def generate_decoupling_sequence_elements(self,Gate):
         '''
@@ -584,7 +626,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def generate_passive_wait_element(self,Gate):
         '''
-        a 1us wait element that is
+        a 1us wait element that is repeated a lot of times
         '''
 
         n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function
@@ -759,29 +801,55 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.elements = [e]
 
     #function for making sequences out of elements
-    def combine_to_AWG_sequence(self,gate_seq):
+    def combine_to_AWG_sequence(self,gate_seq,explicit = False):
         '''
         Used as last step before uploading, combines all the gates to a sequence the AWG can understand. Requires the gates to already have the elements and repetitions and stuff added as arguments
+        NOTE: 'event_jump', 'goto' and 'wait' options only available for certain types of elements
+        explicit is a statement that is introduced to maintain backwards compatibility.
         '''
         list_of_elements=[]
         seq = pulsar.Sequence('Decoupling Sequence')
-
-        mbi_elt = self._MBI_element()
-        list_of_elements.append(mbi_elt)
-        seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name), wfname=mbi_elt.name, trigger_wait=True,repetitions = 1, goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name), jump_target = gate_seq[0].elements[0].name)
+        if explicit == False:  # explicit means that MBI and trigger elements must be given explicitly to the combine to AWG sequence function
+            mbi_elt = self._MBI_element()
+            list_of_elements.append(mbi_elt)
+            seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name), wfname=mbi_elt.name, trigger_wait=True,repetitions = 1, goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name), jump_target = gate_seq[0].elements[0].name)
 
         for i, gate in enumerate(gate_seq):
-            if gate.reps ==0:
-                gate.reps = 1
+            if gate.go_to == 'next':
+                gate.go_to = gate_seq[i+1]
+            if gate.event_jump == 'next':
+                gate.event_jump = gate_seq[i+1]
+
+            #####################
+            ### 'special' elements ###
+            #####################
+            if gate.scheme == 'mbi':
+                e = gate.elements[0]
+                list_of_elements.append(e)
+                seq.append(name =gate.name, wfname =e.name,
+                        trigger_wait = True,
+                        repetitions = 1,
+                        goto_target =gate.name ,
+                        jump_target =gate_seq[i+1].elements[0].name )
+                    # goto is self, jump is next. Starts at trigger
+            elif gate.scheme =='trig' :
+                e = gate.elements[0]
+                list_of_elements.append(e)
+                seq.append(name = gate.name, wfname =e.name,
+                        trigger_wait = gate.wait_for_trigger,
+                        repetitions = gate.reps,
+                        goto_target = gate.go_to,
+                        jump_target= gate.event_jump_to )
             ####################
             ###  single elements  ###
             ####################
-            if np.size(gate.elements) ==1:
+            single_elements_list = ['NO_Pulses','single_block']
+            elif gate.scheme in single_elements_list:
                 e = gate.elements[0]
                 list_of_elements.append(e)
                 if gate.reps ==0:
                     gate.reps = 1
-                if i == 0:
+                if i == 0 or (i==1 and explicit ==True) :  #need to check for modularity
                     seq.append(name=e.name, wfname=e.name,
                         trigger_wait=True,repetitions = gate.reps)
                 else:
@@ -791,7 +859,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ######################
             ### XY4 elements
             ######################
-            if np.size(gate.elements) ==3:
+            if gate.scheme == 'XY4':
                 list_of_elements.extend(gate.elements)
                 seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
                     trigger_wait=False,repetitions = 1)
@@ -803,7 +871,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ### XY8 elements
             #-a-b-(c^2-b^2)^(N/8-1)-c-d-
             ######################
-            elif np.size(gate.elements) == 4:
+            elif gate.scheme =='XY8':
                 list_of_elements.extend(gate.elements)
                 a = gate.elements[0]
                 b= gate.elements[1]
@@ -826,7 +894,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ### XYn, tau > 2 mus
             # t^n a t^n b t^n
             ######################
-            elif np.size(gate.elements) == 5:
+            elif gate.scheme =='repeating_T_elt':
                 list_of_elements.extend(gate.elements)
                 wait_reps = gate.n_wait_reps
                 st = gate.elements[0]
@@ -871,11 +939,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
                            trigger_wait=False,repetitions = red_wait_reps) #floor divisor
 
-
-        trig_elt = self._Trigger_element()
-        list_of_elements.append(trig_elt)
-        seq.append(name=str(trig_elt.name+e.name), wfname=trig_elt.name,
-                        trigger_wait=False,repetitions = 1)
+        if explicit == False:
+            trig_elt = self._Trigger_element()
+            list_of_elements.append(trig_elt)
+            seq.append(name=str(trig_elt.name+e.name), wfname=trig_elt.name,
+                            trigger_wait=False,repetitions = 1)
 
 
         return list_of_elements, seq
@@ -1071,7 +1139,8 @@ class CarbonGateSequence(DynamicalDecoupling):
 class LongNuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
-    This version varies the duration of the DynamicalDecoupling wait time and then tries to keep the phase fixed based on the Carbon precession_freq found in the msmt
+    This version varies the duration of the DynamicalDecoupling wait time and then tries to keep the phase fixed based on the Carbon
+        precession_freq found in the msmt
     '''
     mprefix = 'CarbonRamsey'
 
@@ -1148,7 +1217,8 @@ class LongNuclearRamsey(DynamicalDecoupling):
 class NuclearRamsey_no_elDD(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
-    The no DD variant does not decouple the electronic spin while the nuclear spin evolves. Instead it applies a pi/2 pulse to bring the electronic spin in a mixed state, let the nucleus evolve and then applies a second pi/2 pulse before the second Ren gate to read out.
+    The no DD variant does not decouple the electronic spin while the nuclear spin evolves. Instead it applies a pi/2 pulse to bring the
+        electronic spin in a mixed state, let the nucleus evolve and then applies a second pi/2 pulse before the second Ren gate to read out.
     '''
     mprefix = 'CarbonRamsey'
 
@@ -1324,22 +1394,81 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
             #Acutal sequence is a combination of 3 subsequences
             # 1. MBI initialisation
             # 2. Carbon initialisation
-            # 3. Carbon Ramsey experiment
+            # 3. Carbon Ramsey evolution
+            # 4. Carbon Readout
 
             ###########################################
             #####    Generating the sequence elements      ######
-            #    --|pi/2| - |Ren| - |pi/2|--|Wait| -- |pi/2|- |Ren| - |pi/2| ---
             ###########################################
-            initial_Pi2 = Gate('initial_pi2_'+str(pt),'electron_Gate')
-            Ren_a = Gate('Ren_a_'+str(pt), 'Carbon_Gate')
-            pi_2_a = Gate('pi2_a_'+str(pt),'electron_Gate')
-            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt')
-            pi_2_b = Gate('pi2_b_'+str(pt),'electron_Gate')
-            Ren_b = Gate('Ren_b_'+str(pt), 'Carbon_Gate')
-            final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate')
+            #Elements for the carbon initialisation
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+
+            y_C_int = Gate('y_C_int_'+str(pt),'electron_Gate',
+                    phase = self.params['Y_phase'])
+            Ren_a_C_int = Gate('Ren_a_C_int_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'])
+            x_C_int = Gate('x_C_int_'+str(pt),'electron_Gate',
+                    phase = self.params['X_phase'])
+            Ren_b_C_int = Gate('Ren_b_C_int_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'],
+                    phase = self.params['C13_Y_phase'])
+            RO_C_int_Trigger = Gate('RO_C_int_trig_'+str(pt),'Trigger',
+                    wait_time= self.params['Carbon_init_RO_wait'],
+                    event_jump_to = 'next',
+                    go_to = mbi)
+            carbon_init_seq = [y_C_int, Ren_a_C_int, x_C_int, Ren_b_C_int,
+                    RO_C_int_Trigger]
+
+            if self.params['wait_times'][pt]<self.params['Carbon_init_RO_wait']:
+                print 'Error: carbon evolution time (%s) is shorter than Iitialisation RO duration (%s)',
+                        %(self.params[wait_times][pt],self.params['Carbon_init_RO_wait'])
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                    wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
+            C_evol_seq =[wait_gate]
+            #Readout in the x basis
+            y_C_RO = Gate('y_C_RO'+str(pt),'electron_Gate',
+                    phase = self.params['Y_phase'])
+            Ren_b_C_int = Gate('Ren_b_C_int_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'],phase = 0)
+            x_C_RO = Gate('x_C_RO_'+str(pt),'electron_Gate',
+                    phase = self.params['X_phase'],)
+            RO_C_fin_Trigger = Gate('RO_C_fin_Trigger_'+str(pt),'Trigger')
+            carbon_RO_seq =[y_C_RO, Ren_b_C_int, x_C_RO]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
-            gate_seq = [initial_Pi2,Ren_a,pi_2_a,wait_gate,pi_2_b, Ren_b,final_Pi2]
+            gate_seq = []
+            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+            gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
             ############
+            if debug == True:
+                for g in gate_seq:
+                    l += str(g.prefix) +'-'
+                print l
+
+
+            for g in gate_seq:
+                if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
+                    self.get_gate_parameters(g)
+                    self.generate_decoupling_sequence_elements(g)
+                elif g.Gate_type =='passive_elt':
+                    self.generate_passive_wait_element(g)
+            #Insert connection elements in sequence
+            gate_seq = self.insert_phase_gates(gate_seq,pt)
+            #generate connection elements with proper phases, also includes electron pulses
+            self.calc_and_gen_connection_elts(gate_seq)
+
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
 

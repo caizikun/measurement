@@ -138,13 +138,13 @@ cfg['samples']['Hans_sil1'] = {
 'N_HF_frq'      :       N_HF_frq,
 
 ## Nuclear spins
-    
-'C1_freq'       :       345.124e3, #be sure to enter in Hz 
+
+'C1_freq'       :       345.124e3, #be sure to enter in Hz
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],
 
 'C2_freq'         :     339.955e3,#340e3,
-'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5 
+'C2_Ren_tau'    :       [6.62e-6, 8.088e-6, 9.560e-6],   #resonance k=5
 'C2_Ren_N'    :         [26     , 28      , 32],
 
 'C3_freq' :             309.815e3,
@@ -199,11 +199,15 @@ f_mod_0     = cfg['samples']['Hans_sil1']['mw_mod_freq']
 CORPSE_frq=  5.305e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
+#AWG phase definition (peculiar setup dependence)
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
+# Conventional phase definition
+'C13_X_phase' :0
+'C13_Y_phase' :90
 
     ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,    
+'fast_pi_duration'          :   140e-9,
 'fast_pi_amp'               :   0.767112,
 'fast_pi_mod_frq'           :   f_mod_0,
 
@@ -283,7 +287,7 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
 'wait_after_RO_pulse_duration':2,
-'wait_after_pulse_duration':2,      
+'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
 'SSRO_stop_after_first_photon':0,
