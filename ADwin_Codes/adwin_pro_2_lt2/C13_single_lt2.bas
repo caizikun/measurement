@@ -20,9 +20,6 @@
 '   2 : E spin pumping into ms=0
 '   3 : MBI
 '   4 : A-pumping
-
-
-
 '   5 : wait for AWG
 '   6 : spin-readout
 '   7 : nuclear spin randomize

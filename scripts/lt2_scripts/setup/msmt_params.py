@@ -165,7 +165,7 @@ cfg['samples']['Hans_sil1'] = {
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
-'SSRO_duration'     :  100,
+'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
@@ -175,9 +175,9 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'CR_probe':      1000,
 'CR_repump':     1000,
 'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude':  15e-9,
+'Ex_RO_amplitude':  15e-9,#15e-9,
 'Ex_SP_amplitude':  0e-9,
-'SP_duration'        : 300,
+'SP_duration'        : 50,
 'SP_filter_duration' : 0 }
 
 
@@ -203,8 +203,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
 # Conventional phase definition
-'C13_X_phase' :0
-'C13_Y_phase' :90
+'C13_X_phase' :0,
+'C13_Y_phase' :90,
 
     ### Pi pulses, hard ###
 'fast_pi_duration'          :   140e-9,
@@ -240,8 +240,9 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           25e-9,
-'SP_E_duration'             :           200,
+'Ex_SP_amplitude'           :           25e-9, 
+'A_SP_amplitude'            :           0e-9,    
+'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           0.1e-9,
@@ -249,22 +250,23 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           20,
-'repump_after_MBI_A_amplitude':         [0*15e-9],
+'repump_after_MBI_A_amplitude':         [15e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
 'MBI_threshold'             :           1,
 #'AWG_wait_duration_before_MBI_MW_pulse':50e-9, #??
-'AWG_wait_for_adwin_MBI_duration':      42e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+'AWG_wait_for_adwin_MBI_duration':      32e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9}
 
 
-###############################
-### Rep Ramsey Magnetometry####
-###############################
+    ###############################
+    ### Rep Ramsey Magnetometry####
+    ###############################
+
 CORPSE_frq=  6.8e6
 MW_mod_magnetometry=43e6
 f_msm1_cntr = 2.024900e9             #Electron spin ms=-1 frquency
