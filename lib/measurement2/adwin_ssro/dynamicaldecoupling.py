@@ -49,7 +49,7 @@ class Gate(object):
 
         #Description of other attributes that get added by functions
         # self.elements = elements
-        # self. repetitions = repetitions
+        # self.repetitions = repetitions
         # self.wait_reps = wait_reps
         #self.elements_duration  # this is the duration of the AWG element corresponding to this gate.
         #   Note the difference with the gate duration (tau_cut)
