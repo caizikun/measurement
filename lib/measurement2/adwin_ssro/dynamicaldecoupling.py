@@ -38,7 +38,7 @@ class Gate(object):
         self.N = kw.pop('N',None)
         self.tau = kw.pop('tau',None)
         self.wait_time = kw.pop('wait_time',None)
-        self.Gate_operation=kw.pop('Gate_operation',None) 
+        self.Gate_operation=kw.pop('Gate_operation',None)
 
         self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
 
@@ -116,13 +116,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             phase =  self.params['Y_phase'])
         return Y
 
-    def _Trigger_element(self,duration = 10e-6):
+    def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger'):
         '''
         Trigger element that is used in different measurement child classes
         '''
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
             length = duration, amplitude = 2)
-        Trig_element = element.Element('ADwin_trigger', pulsar=qt.pulsar,
+        Trig_element = element.Element(name, pulsar=qt.pulsar,
             global_time = True)
         Trig_element.append(Trig)
         return Trig_element
@@ -140,6 +140,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.N = self.params['C'+str(ind)+'_Ren_N'][resonance] #Needs to be added to msmt params
         Gate.tau = self.params['C'+str(ind)+'_Ren_tau'][resonance]
 
+    def find_gate_index(self,name,gate_seq):
+        '''
+        Returns index of gate with gate.name == name in gate sequence
+        '''
+        for i, gate in enumerate(gate_seq):
+            if gate.name == name:
+                return i
+        print 'Name (%s )  not found in gate sequence' %name
+        return
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
@@ -202,7 +211,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if i ==0 or (i!=0 and Gate_sequence[i-1].Gate_type=='MBI'):
                     g.tau_cut_before = Gate_sequence[i+1].tau_cut
                     g.tau_cut_after= Gate_sequence[i+1].tau_cut
-                elif (i== len(Gate_sequence)-1 or 
+                elif (i== len(Gate_sequence)-1 or
                         i!= len(Gate_sequence) and Gate_sequence[i+1].Gate_type == 'Trigger'):
                     g.tau_cut_before = Gate_sequence[i-1].tau_cut
                     g.tau_cut_after= Gate_sequence[i-1].tau_cut
@@ -286,17 +295,17 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         adds MBI_element to Gate object
         '''
         Gate.scheme = 'mbi'
-        Gate.elements = [self._MBI_element()]
+        Gate.elements = [self._MBI_element(Gate.prefix)]
         Gate.elements_duration = 0 # Clock should start counting at start of the next element
     def generate_trigger_elt(self,Gate):
         '''
         adds trigger element to Gate object
         '''
         Gate.scheme ='trigger'
-        Gate.elements = [self._Trigger_element(Gate.wait_time)]
+        Gate.elements = [self._Trigger_element(Gate.wait_time,Gate.prefix)]
         if Gate.wait_time!= None:
             Gate.elements_duration = Gate.wait_time
-        else: 
+        else:
             Gate.elements_duration = 10e-6
     def generate_decoupling_sequence_elements(self,Gate):
         '''
@@ -809,13 +818,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name), wfname=mbi_elt.name, trigger_wait=True,repetitions = 1, goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name), jump_target = gate_seq[0].elements[0].name)
 
         for i, gate in enumerate(gate_seq):
-
-            if hasattr(gate, 'go_to'): 
+            # Determine where jump events etc
+            if hasattr(gate, 'go_to'):
                 if gate.go_to == 'next':
-                    gate.go_to = gate_seq[i+1]
+                    gate.go_to = gate_seq[i+1].elements[0].name
+                elif gate.go_to == 'self':
+                    gate.elements[0].name
+                elif gate.go_to =='start':
+                    gate.go_to = gate_seq[0].elements[0].name
+                else:
+                    ind = self.find_gate_index(gate.go_to,gate_seq)
+                    gate.go_to = gate_seq[ind].elements[0].name
             if hasattr(gate, 'event_jump'):
                 if gate.event_jump == 'next':
-                    gate.event_jump = gate_seq[i+1]
+                    gate.event_jump = gate_seq[i+1].elements[0].name
+                elif gate.event_jump =='self':
+                    gate.elements[0].name
+                elif gate.event_jump == 'start' :
+                    gate.event_jump = gate_seq[0].elements[0].name
+                else:
+                    ind = self.find_gate_index(gate.event_jump,gate_seq)
+                    gate.event_jump = gate_seq[ind].elements[0].name
+
 
             single_elements_list = ['NO_Pulses','single_block']
             #####################
@@ -824,20 +848,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             if gate.scheme == 'mbi':
                 e = gate.elements[0]
                 list_of_elements.append(e)
-                seq.append(name =gate.name, wfname =e.name,
+                seq.append(name =e.name, wfname =e.name,
                         trigger_wait = True,
                         repetitions = 1,
-                        goto_target =gate.name ,
-                        jump_target =gate_seq[i+1].elements[0].name )
+                        goto_target =e.name ,
+                        jump_target =gate.event_jump)
                     # goto is self, jump is next. Starts at trigger
             elif gate.scheme =='trig' :
                 e = gate.elements[0]
                 list_of_elements.append(e)
-                seq.append(name = gate.name, wfname =e.name,
+                seq.append(name = e.name, wfname =e.name,
                         trigger_wait = gate.wait_for_trigger,
                         repetitions = gate.reps,
                         goto_target = gate.go_to,
-                        jump_target= gate.event_jump_to )
+                        jump_target= gate.event_jump )
 
             ####################
             ###  single elements  ###
@@ -847,24 +871,33 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 list_of_elements.append(e)
                 if gate.reps ==0:
                     gate.reps = 1
-                if i == 0 or (i==1 and explicit ==True) :  #need to check for modularity
+                if (i == 0 and explicit == False )or (i==1 and explicit ==True) :  #need to check for modularity
                     seq.append(name=e.name, wfname=e.name,
                         trigger_wait=True,repetitions = gate.reps)
                 else:
-                    seq.append(name=e.name,wfname =e.name,trigger_wait=False,
-                            repetitions=gate.reps)
+                    seq.append(name=e.name,wfname =e.name,
+                            trigger_wait=gate.wait_for_trigger,
+                            repetitions=gate.reps
+                            goto_target = gate.go_to,
+                            jump_target= gate.event_jump )
 
             ######################
             ### XY4 elements
             ######################
             if gate.scheme == 'XY4':
                 list_of_elements.extend(gate.elements)
+                # initial element
                 seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
-                    trigger_wait=False,repetitions = 1)
+                    trigger_wait=gate.wait_for_trigger,repetitions = 1)
+                # repeating element
                 seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
                     trigger_wait=False,repetitions = gate.reps/2-1)
+                # final element
                 seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
-                    trigger_wait=False,repetitions = 1)
+                    trigger_wait=False,
+                    goto_target = gate.go_to,
+                    jump_target = gate.event_jump
+                    repetitions = 1)
             ######################
             ### XY8 elements
             #-a-b-(c^2-b^2)^(N/8-1)-c-d-
@@ -876,7 +909,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 c = gate.elements[2]
                 d = gate.elements[3]
                 seq.append(name=a.name, wfname=a.name,
-                    trigger_wait=False,repetitions = 1)
+                    trigger_wait=gate.wait_for_trigger,
+                    repetitions = 1)
                 seq.append(name=b.name, wfname=b.name,
                     trigger_wait=False,repetitions = 1)
                 for i in range(gate.reps/8-1):
@@ -887,7 +921,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 seq.append(name=c.name, wfname=c.name,
                     trigger_wait=False,repetitions = 1)
                 seq.append(name=d.name, wfname=d.name,
-                    trigger_wait=False,repetitions = 1)
+                    trigger_wait=False,
+                    goto_target = gate.go_to,
+                    jump_target = gate.event_jump,
+                    repetitions = 1)
             ######################
             ### XYn, tau > 2 mus
             # t^n a t^n b t^n
@@ -906,7 +943,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 red_wait_reps = wait_reps//2
                 if red_wait_reps != 0:
                     seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
-                        trigger_wait=False,repetitions = red_wait_reps)#floor divisor
+                        trigger_wait=gate.wait_for_trigger,
+                        repetitions = red_wait_reps)#floor divisor
                 seq.append(name=st.name, wfname=st.name,
                     trigger_wait=False,repetitions = 1)
                 pulse_ct+=1
@@ -927,13 +965,25 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if gate.reps== 1:
                     if red_wait_reps!=0 and red_wait_reps!=1 :
                         seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
-                           trigger_wait=False,repetitions = red_wait_reps-1) #floor divisor
+                           trigger_wait=False,
+                           goto_target = gate.go_to,
+                           jump_target = gate.event_jump,
+                           repetitions = red_wait_reps-1) #floor divisor
                 else:
                     seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
                         trigger_wait=False,repetitions = wait_reps)
-                    seq.append(name=fin.name, wfname=fin.name,
-                        trigger_wait=False,repetitions = 1)
-                    if red_wait_reps!=0:
+                    if red_wait_rep == 0:
+                        seq.append(name=fin.name, wfname=fin.name,
+                            trigger_wait=False,
+                            goto_target = gate.go_to,
+                            jump_target = gate.event_jump,
+                            repetitions = 1)
+                    else:
+                        seq.append(name=fin.name, wfname=fin.name,
+                            trigger_wait=False,
+                            goto_target = gate.go_to,
+                            jump_target = gate.event_jump,
+                            repetitions = 1)
                         seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
                            trigger_wait=False,repetitions = red_wait_reps) #floor divisor
 
@@ -1404,7 +1454,7 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
             mbi_seq = [mbi]
 
             y_C_int = Gate('y_C_int_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2', 
+                    Gate_operation='pi2',
                     phase = self.params['Y_phase'])
             Ren_a_C_int = Gate('Ren_a_C_int_'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'])
@@ -1417,18 +1467,18 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
             RO_C_int_Trigger = Gate('RO_C_int_trig_'+str(pt),'Trigger',
                     wait_time= self.params['Carbon_init_RO_wait'],
                     event_jump_to = 'next',
-                    go_to = mbi)
+                    go_to = mbi.name)
 
             carbon_init_seq = [y_C_int, Ren_a_C_int, x_C_int, Ren_b_C_int,
                     RO_C_int_Trigger]
 
             ################################
             if self.params['wait_times'][pt]<self.params['Carbon_init_RO_wait']:
-                print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)' 
+                print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                         %(self.params[wait_times][pt],self.params['Carbon_init_RO_wait']))
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
-            
+
             C_evol_seq =[wait_gate]
             #############################
             #Readout in the x basis
@@ -1441,7 +1491,7 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
                     Gate_operation='pi2',
                     phase = self.params['X_phase'],)
             RO_C_fin_Trigger = Gate('RO_C_fin_Trigger_'+str(pt),'Trigger')
-            
+
             carbon_RO_seq =[y_C_RO, Ren_C_RO, x_C_RO,RO_C_fin_Trigger]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
@@ -1465,9 +1515,9 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
             #generate connection elements with proper phases, also includes electron pulses
             self.calc_and_gen_connection_elts(gate_seq)
             if debug == True:
-                print 
+                print
                 for g in gate_seq:
-                    print g.prefix 
+                    print g.prefix
 
 
             #Convert elements to AWG sequence and add to combined list
@@ -1481,13 +1531,13 @@ class NuclearRamseyWithInitialization(DynamicalDecoupling):
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
             '''
-            NOTE TO TIM 
-            It seems something is wrong with the jump_target. I have to check 
-            with what handle one should refer to a jump target. Is this the name of the element 
-            that is referred to? is it the element name? is it the element object? 
-            Needs to be checked. 
+            NOTE TO TIM
+            It seems something is wrong with the jump_target. I have to check
+            with what handle one should refer to a jump target. Is this the name of the element
+            that is referred to? is it the element name? is it the element object?
+            Needs to be checked.
 
-            See you tomorrow :) 
+            See you tomorrow :)
             '''
 
 
