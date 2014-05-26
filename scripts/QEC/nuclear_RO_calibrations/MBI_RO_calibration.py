@@ -15,6 +15,11 @@ def ssrocalibration(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
+
+    m.params['SSRO_duration']   =  50
+    m.params['Ex_RO_amplitude'] =  2e-9 
+    
+    m.params['SSRO_stop_after_first_photon']=1
     m.run()
     m.save('ms0')
 

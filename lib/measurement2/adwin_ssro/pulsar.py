@@ -518,6 +518,11 @@ class MBI(PulsarMeasurement):
         self.params['repump_N_randomize_voltage'] = \
             self.repump_aom.power_to_voltage(
                     self.params['repump_N_randomize_amplitude'])
+
+        self.params['A_SP_voltage'] = \
+            self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude'])
+
         # Calling autoconfig from sequence.SequenceSSRO and thus
         # from ssro.IntegratedSSRO after defining self.params['repetitions'],
         # since the autoconfig of IntegratedSSRO uses this parameter.
