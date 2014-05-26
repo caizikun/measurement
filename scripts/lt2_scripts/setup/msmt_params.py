@@ -241,7 +241,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
 'Ex_SP_amplitude'           :           25e-9, 
-'A_SP_amplitude'            :           0e-9,    
+#'A_SP_amplitude'            :           0e-9,   #still implement 
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
@@ -249,7 +249,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'MBI_duration'              :           32,
 
     #Repump after succesfull MBI
-'repump_after_MBI_duration' :           20,
+'repump_after_MBI_duration' :           [20],
 'repump_after_MBI_A_amplitude':         [15e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
