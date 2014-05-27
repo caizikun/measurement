@@ -164,16 +164,16 @@ cfg['samples']['Hans_sil1'] = {
     #######################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
-'SSRO_repetitions'  : 5000,
+'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
 'A_SP_amplitude': 10e-9,
 'CR_duration' :  50,    
-'CR_preselect':  1000,
-'CR_probe':      1000,
-'CR_repump':     1000,
+'CR_preselect': 1000,
+'CR_probe':     1000,
+'CR_repump':    1000,
 'Ex_CR_amplitude':  5e-9,#5nW
 'Ex_RO_amplitude':  15e-9,#15e-9,
 'Ex_SP_amplitude':  0e-9,
@@ -246,7 +246,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           0.1e-9,
-'MBI_duration'              :           32,
+'MBI_duration'              :           4,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -257,7 +257,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
 'MBI_threshold'             :           1,
 #'AWG_wait_duration_before_MBI_MW_pulse':50e-9, #??
-'AWG_wait_for_adwin_MBI_duration':      32e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+'AWG_wait_for_adwin_MBI_duration':      4e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9}

@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -108,6 +108,7 @@ INIT:
   'live updated pars
   Par_73 = repetition_counter     ' SSRO repetitions
   par_74 = 0                      ' SSRO cumulative counts
+  
 
 EVENT:
 
