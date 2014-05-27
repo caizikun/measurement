@@ -29,7 +29,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
             self.mwsrc.set_status('on')
 
         print 'AWG state before start'
-        print self.awg.get_state()    
+        print self.awg.get_state()
         self.awg.start()
         if not wait_for_awg:
             print 'NOT WAIING FOR AWG!!!!'
@@ -38,7 +38,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
             awg_ready = False
             while not awg_ready and i<100:
                 #print '( not awg_ready and i < 100 ) == True'
-                #print 'awg state: '+str(self.awg.get_state()) 
+                #print 'awg state: '+str(self.awg.get_state())
 
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'x')):
                     raise Exception('User abort while waiting for AWG')
@@ -518,6 +518,11 @@ class MBI(PulsarMeasurement):
         self.params['repump_N_randomize_voltage'] = \
             self.repump_aom.power_to_voltage(
                     self.params['repump_N_randomize_amplitude'])
+
+        # self.params['A_SP_voltage'] = \
+        #     self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude'])
+
         # Calling autoconfig from sequence.SequenceSSRO and thus
         # from ssro.IntegratedSSRO after defining self.params['repetitions'],
         # since the autoconfig of IntegratedSSRO uses this parameter.
@@ -594,7 +599,7 @@ class MBI(PulsarMeasurement):
 
         self.save_adwin_data(name,
                 [   ('CR_before', sweeps),
-                    ('CR_after', sweeps),   
+                    ('CR_after', sweeps),
                     ('MBI_attempts', sweeps),
                     ('statistics', 10),
                     ('ssro_results', reps),
@@ -602,7 +607,7 @@ class MBI(PulsarMeasurement):
                     ('MBI_time', sweeps),  ])
         return
 
-    def _MBI_element(self):
+    def _MBI_element(self,name ='MBI CNOT'):
         # define the necessary pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
             length = 10e-9, amplitude = 0)
@@ -621,7 +626,7 @@ class MBI(PulsarMeasurement):
             amplitude = 2)
 
         # the actual element
-        mbi_element = element.Element('MBI CNOT', pulsar=qt.pulsar)
+        mbi_element = element.Element(name, pulsar=qt.pulsar)
         mbi_element.append(T)
         mbi_element.append(X)
         mbi_element.append(adwin_sync)
