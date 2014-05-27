@@ -180,3 +180,8 @@ def init_AWG():
     qt.instruments['AWG'].set_ch2_status('on')
     qt.instruments['AWG'].set_ch3_status('on')
     qt.instruments['AWG'].set_ch4_status('on')
+
+def generate_quantum_random_number():
+    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.msleep(0.1)
+    qt.instruments['AWG'].set_ch1_marker2_low(0.)
