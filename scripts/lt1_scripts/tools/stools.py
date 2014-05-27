@@ -47,12 +47,12 @@ def turn_off_AWG_laser_channel():
     qt.instruments['AWG'].set_ch2_offset(0.)
 
 def start_bs_counter():
-    bs_helper.set_script_path("execfile(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')")
-    bs_helper.set_is_running(True)
-    bs_helper.execute_script()
+    qt.instruments['bs_helper'].set_script_path("execfile(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')")
+    qt.instruments['bs_helper'].set_is_running(True)
+    qt.instruments['bs_helper'].execute_script()
 
 def stop_bs_counter():
-    bs_helper.set_is_running(False)
+    qt.instruments['bs_helper'].set_is_running(False)
 
 def set_lt1_remote():
     for i in ['labjack', 
