@@ -17,7 +17,7 @@
 ' 
 ' modes:
 '   0 : CR check
-'   2 : E spin pumping into ms=+/-1
+'   2 : E spin pumping into ms=0
 '   3 : MBI
 '   4 : A-pumping
 '   5 : wait for AWG
@@ -62,7 +62,7 @@ DIM MBI_threshold AS LONG
 DIM nr_of_ROsequences AS LONG
 DIM wait_after_RO_pulse_duration AS LONG
 
-DIM E_SP_voltage, A_SP_voltage_after_MBI, E_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM E_SP_voltage, A_SP_voltage, E_SP_voltage_after_MBI, A_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM E_MBI_voltage AS FLOAT
 dim E_N_randomize_voltage, A_N_randomize_voltage, repump_N_randomize_voltage AS FLOAT
 
@@ -85,7 +85,7 @@ dim mbi_timer as long
 dim trying_mbi as long
 dim N_randomize_duration as long
 
-dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
+dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi, awg_in_switched_to_lo as long
 dim t1, t2 as long
 
 INIT:
@@ -98,14 +98,15 @@ INIT:
   sweep_length                 = DATA_20[6] ' not used? -machiel 23-12-'13
   cycle_duration               = DATA_20[7]
   AWG_event_jump_DO_channel    = DATA_20[8]
-  MBI_duration                 = DATA_20[9]
-  MBI_attempts_before_CR       = DATA_20[10]
+  MBI_duration                 = DATA_20[9] 'Length of the MBI RO pulse
+  MBI_attempts_before_CR       = DATA_20[10] 
   MBI_threshold                = DATA_20[11]
   nr_of_ROsequences            = DATA_20[12]
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
   
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
+  A_SP_voltage                 = DATA_21[6] 'A spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
@@ -155,6 +156,7 @@ INIT:
   awg_in_is_hi = 0      
   awg_in_was_hi = 0
   awg_in_switched_to_hi = 0
+  awg_in_switched_to_lo = 0 
   
   ' init parameters
   ' Y after the comment means I (wolfgang) checked whether they're actually used
@@ -164,7 +166,6 @@ INIT:
   PAR_77 = 0                      ' current mode (case) Y
   PAR_78 = 0                      ' MBI starts Y
   PAR_80 = 0                      ' ROseq_cntr Y 
-
   
 EVENT:
  
@@ -177,7 +178,7 @@ EVENT:
   else
     awg_in_switched_to_hi = 0
   endif
-    
+  
   PAR_77 = mode        
   
   if(trying_mbi > 0) then
@@ -203,6 +204,7 @@ EVENT:
         
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' turn off A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
         
@@ -268,8 +270,9 @@ EVENT:
                 P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
                 
                 DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
+                
                 mode = 4
-                wait_time = next_MBI_stop-timer
+                wait_time = next_MBI_stop-timer 'because the dynamical RO somteimes goes over 1 us, we can have a problem tha thtis is too short.
                 timer = -1
                 current_MBI_attempt = 1
                 trying_mbi = 0
@@ -435,7 +438,7 @@ EVENT:
     INC(timer)
     
   endif
-
+  
     
 FINISH:
   finish_CR()

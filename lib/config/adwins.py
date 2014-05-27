@@ -941,7 +941,6 @@ config['adwin_lt2_processes'] = {
                     'current mode': 77,
                     'MBI start': 78,
                     'ROseq_cntr': 80,
-
                     },
                 'data_long' : {
                     'MBI_attempts' : 24,

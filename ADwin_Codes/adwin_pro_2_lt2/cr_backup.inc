@@ -10,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_repetitions 50000
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
@@ -144,14 +144,14 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             P2_CNT_ENABLE(CTR_MODULE,0)
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
             PAR_70 = PAR_70 + cr_counts
-           
+            
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
               DATA_23[repetition_index] = cr_counts
               first_cr=0
             ENDIF
-                     
+                      
             IF (cr_counts < current_cr_threshold) THEN
-            cr_mode = 0
+              cr_mode = 0
               inc(CR_failed)
               inc(PAR_79)
             ELSE
