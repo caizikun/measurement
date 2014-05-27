@@ -1,10 +1,10 @@
 
 cfg={}
 
-cfg['samples'] = {'current':'Pippin_sil1'}
-cfg['protocols'] = {'current':'Pippin_sil1'}
+cfg['samples'] = {'current':'Pippin_sil3'}
+cfg['protocols'] = {'current':'Pippin_sil3'}
 
-cfg['protocols']['Pippin_sil1'] = {}
+cfg['protocols']['Pippin_sil3'] = {}
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 
@@ -52,7 +52,7 @@ cfg['protocols']['AdwinSSRO']={
 
 
 
-yellow=False
+yellow=True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -159,7 +159,7 @@ cfg['samples']['Hans_sil1'] = {
     #######################
 
 
-cfg['protocols']['Pippin_sil1']['AdwinSSRO'] = {
+cfg['protocols']['Pippin_sil3']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,

@@ -577,6 +577,34 @@ def repeated_red_scans_hannes(**kw):
     return ret
 
 
+def set_gate_voltage(v):
+    if v>2000. or v<-2000.:
+        print 'Gate voltage too high:',v
+        return False
+    return qt.instruments['ivvi'].set_dac2(v)
+
+
+def fast_gate_scan(name):
+    for v in np.linspace(-400.,-2000.,5):
+        if (msvcrt.kbhit() and msvcrt.getch()=='c'): 
+                break
+        set_gate_voltage(v)
+        qt.instruments['counters'].set_is_running(True)
+        qt.instruments['YellowAOM'].turn_on()
+        while qt.instruments['adwin'].get_countrates()[0]<200:
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                break
+            #print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
+            qt.msleep(0.1)
+        print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
+        qt.instruments['YellowAOM'].turn_off()
+
+        vname=name+'_{:.1f}V'.format(v*45.)
+        print 'Running scan ', vname
+        single_scan(vname)
+        qt.msleep(1)
+    set_gate_voltage(0)
+
 
 def gate_scan_with_c_optimize():
     if repeated_red_scans(gate_scan=True, gate_range=(0,1200),pts=19):
@@ -598,7 +626,7 @@ def single_scan(name):
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(65.4, 90.8, voltage_step=0.01, integration_time_ms=20, power = 0.4e-9)
+    m.red_scan(39, 62, voltage_step=0.01, integration_time_ms=20, power = 2e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(50, 80, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -611,7 +639,8 @@ def debug_scan(name):
 
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
-    single_scan('ThePippin_Sil1_dac3_on24_0600')
+    #single_scan('ThePippin_Sil1_dac3_on24_0600')
+    fast_gate_scan('ThePippin_Sil8_dac3_on24')
     #repeated_red_scans_hannes()
 
 
