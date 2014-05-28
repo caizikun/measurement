@@ -147,7 +147,7 @@ def pulse_defs_lt1(msmt):
                     aom_risetime            = self.params['aom_risetime'],
                     aom_amplitude           = self.params['aom_amplitude'])
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 1.0, 
+    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -176,7 +176,15 @@ def _lt3_sequence_start_element(msmt):
     e.append(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt1_start']))
     return e
 
-def _sequence_finished_element(msmt):
+def _lt1_sequence_start_element(msmt):
+    """
+    first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
+    """
+    e = element.Element('LT3_start', pulsar = qt.pulsar)
+    e.append(pulse.cp(msmt.SP_pulse, length=1e-6))
+    return e
+
+def _lt1_sequence_finished_element(msmt):
     """
     last element of a two-setup sequence. Sends a trigger to ADwin LT3.
     """

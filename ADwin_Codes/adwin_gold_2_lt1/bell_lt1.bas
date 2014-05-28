@@ -49,7 +49,6 @@ DIM first AS LONG
 DIM repetition_counter AS LONG
 
 DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
-DIM AWG_in_is_high, AWG_in_was_high AS LONG
 DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time AS LONG
 DIM counts, old_counts AS LONG
@@ -113,7 +112,8 @@ INIT:
   Par_62 = 0                    'AWG signal timeout (no ent. events)
   Par_63 = 0                    ' Stop flag
   Par_73 = repetition_counter     ' SSRO repetitions
-  par_77 = succes_event_counter                      
+  par_77 = succes_event_counter 
+  PAR_80=0                     
 
 EVENT:
 
@@ -176,7 +176,7 @@ EVENT:
         DIO_register = DIGIN_LONG()
         AWG_done_is_high = (DIO_register AND AWG_done_di_pattern)
         AWG_succes_is_high = (DIO_register AND AWG_succes_DI_pattern)
-           
+        'PAR_80=Par_80+AWG_done_is_high
         IF ((AWG_succes_was_high = 0) AND (AWG_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
           DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
           INC(succes_event_counter)
@@ -186,7 +186,8 @@ EVENT:
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
-            IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
+            
+            IF ((AWG_done_was_high = 0) AND (AWG_done_is_high > 0)) THEN
               INC(PAR_62)            
               mode = 0
               timer = -1
