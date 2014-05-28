@@ -163,7 +163,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         gate_seq[i+1].Gate_type =='electron_decoupling' )):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
             if gate_seq[i].Gate_type =='Trigger' :
-                ext_gate_seq[-1].tau_cut = ext_gate_seq[-2].tau_cut
+                # ext_gate_seq[-1].tau_cut = ext_gate_seq[-2].tau_cut
                 if (gate_seq[i+1] =='Carbon_Gate' or
                         gate_seq[i+1] == 'electron_decoupling'):
                     ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
@@ -214,13 +214,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if i ==0 or (i!=0 and Gate_sequence[i-1].Gate_type=='MBI'):
                     g.tau_cut_before = Gate_sequence[i+1].tau_cut
                     g.tau_cut_after= Gate_sequence[i+1].tau_cut
-                elif (i== len(Gate_sequence)-1 or
-                        i!= len(Gate_sequence) and Gate_sequence[i+1].Gate_type == 'Trigger'):
+                elif (i== len(Gate_sequence)-1 or (
+                            i ==len(Gate_sequence)-2) and Gate_sequence[i+1].Gate_type =='Trigger'):
                     g.tau_cut_before = Gate_sequence[i-1].tau_cut
                     g.tau_cut_after= Gate_sequence[i-1].tau_cut
+
+                elif Gate_sequence[i+1].Gate_type == 'Trigger' :
+                    g.tau_cut_before = Gate_sequence[i-1].tau_cut
+                    g.tau_cut_after =Gate_sequence[i+2].tau_cut
+
+
                 else:
                     g.tau_cut_before = Gate_sequence[i-1].tau_cut
                     g.tau_cut_after =Gate_sequence[i+1].tau_cut
+
                 g.elements_duration = g.tau_cut_before+g.dec_duration+g.tau_cut_after
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
@@ -1438,15 +1445,61 @@ class SimpleDecoupling(DynamicalDecoupling):
 ##########   Carbon Initialisated classes   ######## 
 ####################################################
 
-class MBI_single_C13(DynamicalDecoupling):
+class MBI_C13(DynamicalDecoupling):
     mprefix = 'single_carbon_initialised' 
-    adwin_process = 'MBI_single_C13'
+    adwin_process = 'MBI_single_C13' #Can be overwritten in childclasses if multiple C13's are addressed 
     '''
-    Class specifies a different adwin script to be used. Could be omitted. Does make classes more clear. 
+    Class specifies a different adwin script to be used. 
+    gate sequence functions that use carbon initialisation are located in this class 
     '''
+    def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1): 
+        '''
+        Supports Swap or MBI initialization, does not yet support initalizing in different bases. 
+        '''
+
+        if type(go_to_element) != str: 
+            go_to_element = go_to_element.name 
+
+        C_int_y = Gate('C_int_y_'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                wait_for_trigger = True, 
+                phase = self.params['Y_phase'])
+
+        C_int_Ren_a = Gate('C_int_Ren_a_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'],
+                phase = self.params['C13_X_phase'])
+
+        C_int_x = Gate('C_int_x_'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['X_phase'])
+
+        C_int_Ren_b = Gate('C_int_Ren_b_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'],
+                phase = self.params['C13_Y_phase'])
+
+        C_int_RO_Trigger = Gate('C_int_RO_trig_'+str(pt),'Trigger',
+                wait_time= self.params['Carbon_init_RO_wait'],
+                event_jump = 'next',
+                go_to = go_to_element)
+
+        if initialization_method == 'swap':
+            #Swap initializes into 1 or 0 and contains extra Ren gate 
+            carbon_init_seq = [C_int_y, C_int_Ren_a, C_int_x, 
+                    C_int_Ren_b,
+                    C_int_RO_Trigger]
+            # Normal MBI initializes into +/-X 
+        elif initialization_method == 'MBI': 
+            carbon_init_seq = [C_int_y, C_int_Ren_a, C_int_x,
+                    C_int_RO_Trigger]
+        else: 
+            print 'Error initialization method (%s) not recognized, supported methods are "swap" and "MBI"' %initialization_method
+            return False 
+        return carbon_init_seq
 
 
-class NuclearRamseyWithInitialization(MBI_single_C13):
+
+
+class NuclearRamseyWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
     UNDER DEVELOPMENT
@@ -1476,31 +1529,8 @@ class NuclearRamseyWithInitialization(MBI_single_C13):
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]
 
-            C_int_y = Gate('C_int_y_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    wait_for_trigger = True, 
-                    phase = self.params['Y_phase'])
-
-            C_int_Ren_a = Gate('C_int_Ren_a_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'],
-                    phase = self.params['C13_X_phase'])
-
-            C_int_x = Gate('C_int_x_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['X_phase'])
-
-            C_int_Ren_b = Gate('C_int_Ren_b_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'],
-                    phase = self.params['C13_Y_phase'])
-
-            C_int_RO_Trigger = Gate('C_int_RO_trig_'+str(pt),'Trigger',
-                    wait_time= self.params['Carbon_init_RO_wait'],
-                    event_jump = 'next',
-                    go_to = mbi.name)
-
-            carbon_init_seq = [C_int_y, C_int_Ren_a, C_int_x, C_int_Ren_b,
-                    C_int_RO_Trigger]
-
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi, 
+                    initialization_method = 'swap', pt =pt )
             ################################
             if self.params['wait_times'][pt]<self.params['Carbon_init_RO_wait']:
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
@@ -1543,11 +1573,14 @@ class NuclearRamseyWithInitialization(MBI_single_C13):
             gate_seq = self.insert_phase_gates(gate_seq,pt)
             #generate connection elements with proper phases, also includes electron pulses
             self.calc_and_gen_connection_elts(gate_seq)
+
+
+
             if debug == True:
                 print
                 for g in gate_seq:
                     print g.prefix
-
+                    if hasattr(g,'tau_cut'): print g.tau_cut 
 
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
@@ -1559,16 +1592,6 @@ class NuclearRamseyWithInitialization(MBI_single_C13):
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-            '''
-            NOTE TO TIM
-            It seems something is wrong with the jump_target. I have to check
-            with what handle one should refer to a jump target. Is this the name of the element
-            that is referred to? is it the element name? is it the element object?
-            Needs to be checked.
-
-            See you tomorrow :)
-            '''
-
 
         else:
             print 'upload = false, no sequence uploaded to AWG'
