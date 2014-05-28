@@ -96,6 +96,7 @@ INIT:
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   PLU_di_pattern = 2 ^ PLU_di_channel
   remote_CR_trigger_di_pattern = 2 ^ remote_CR_trigger_di_channel
+  remote_CR_is_high = 1
   
   repetition_counter  = 0
   first               = 0
@@ -126,6 +127,7 @@ INIT:
   Par_61 = -1                      'local mode
   Par_62 = 0                       'AWG signal timeouts (no ent. events)
   PAR_63 = 0                       'stop flag
+  Par_64 = 0                       'ADWIN LT1 READY TRIGGER
   
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter
@@ -160,7 +162,7 @@ EVENT:
           'P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0)
           remote_CR_is_high = 0
           remote_mode = 2
-          INC(par_73)
+          INC(Par_64)
         ENDIF             
       
       case 2 'remote CR OK, remote adwin waiting

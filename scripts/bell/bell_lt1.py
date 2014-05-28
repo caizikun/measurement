@@ -5,6 +5,7 @@ LT3 script for Measuring a tail with a picoquant time correlator
 
 import numpy as np
 import qt
+import msvcrt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
@@ -89,12 +90,12 @@ class Bell_LT1(bell.Bell):
 
 Bell_LT1.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 
-def bell_lt1(name):
+def bell_lt1_local(name):
 
     upload_only=False
     debug=True
     mw = False
-    remote_meas = True
+    remote_meas = False
 
     m=Bell_LT1(name) 
     m.params['MW_during_LDE'] = mw
@@ -107,6 +108,33 @@ def bell_lt1(name):
         m.run(autoconfig=False, setup=False,debug=debug)    
         m.save()
         m.finish()
+
+def bell_lt1_remote(name):
+
+    debug=True
+    mw = False
+    remote_meas = True
+
+    m=Bell_LT1(name) 
+    m.params['MW_during_LDE'] = mw
+    m.params['remote_measurement'] = remote_meas
+    m.autoconfig()
+    m.generate_sequence()
+    
+    m.setup(debug=debug)
+    lt3_ready = False
+    while(1):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+            break
+        if remote_measurement_helper.get_is_running():
+            lt3_ready = True
+            break
+        qt.msleep(1)
+    if lt3_ready:
+        m.run(autoconfig=False, setup=False,debug=debug)    
+        m.save()
+        m.finish()
+
 
 if __name__ == '__main__':
     bell_lt1('test')
