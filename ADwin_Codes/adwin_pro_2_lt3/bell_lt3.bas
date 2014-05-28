@@ -160,7 +160,7 @@ EVENT:
              
         IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round. 
           'P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0)
-          remote_CR_is_high = 0
+          'remote_CR_is_high = 0
           remote_mode = 2
           INC(Par_64)
         ENDIF             
@@ -173,7 +173,7 @@ EVENT:
         remote_CR_is_high = ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
                      
         IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round.
-          remote_CR_is_high = 0 
+          'remote_CR_is_high = 0 
           remote_mode = 4
         ENDIF
                 

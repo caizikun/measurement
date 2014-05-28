@@ -91,6 +91,18 @@ params_lt3['RND_duration'] = 100e-9
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
 # LDE Sequence in the AWGs
+
+params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+params_lt3['eom_pulse_duration']         = 2e-9
+params_lt1['eom_off_amplitude']          = -0.07 
+params_lt3['eom_comp_pulse_amplitude']   = params_lt3['eom_pulse_amplitude'] 
+params_lt3['eom_off_duration']           = 200e-9
+params_lt3['eom_overshoot_duration1']    = 10e-9
+params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
+params_lt3['eom_overshoot_duration2']    = 10e-9
+params_lt3['eom_overshoot2']             = 0
+params_lt3['eom_aom_on']                 = True
+
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
@@ -113,7 +125,7 @@ params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 150e-9
 
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
-params_lt3['AWG_wait_for_lt1_start'] = 8e-6 #= dt(f,BC)
+params_lt3['AWG_wait_for_lt1_start'] =  1487e-9#8e-6 = dt(f,AB)
 params_lt3['sync_during_LDE'] = 1
 params_lt3['plu_during_LDE'] = 1
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
