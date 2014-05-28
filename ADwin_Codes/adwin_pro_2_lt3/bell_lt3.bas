@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -56,7 +56,7 @@ DIM repetition_counter AS LONG
 DIM counts, old_counts AS LONG
 
 DIM remote_mode, remote_delay_time, do_sequences, remote_CR_wait_timer AS LONG
-DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high  AS LONG
+DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time AS LONG
@@ -75,6 +75,7 @@ INIT:
   sequence_wait_time           = DATA_20[8]
   PLU_di_channel               = DATA_20[9]
   do_sequences                 = DATA_20[10]
+  wait_for_remote_CR           = DATA_20[11]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -113,7 +114,8 @@ INIT:
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
   P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
 
-  P2_Digprog(DIO_MODULE,13)      'configure DIO 08:15 as input, all other ports as output
+  P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
+ 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
 
   mode = 0
@@ -124,9 +126,11 @@ INIT:
   Par_61 = -1                      'local mode
   Par_62 = 0                       'AWG signal timeouts (no ent. events)
   PAR_63 = 0                       'stop flag
+  
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter
   
+  PAR_80 = 20*wait_for_remote_CR
   
 
 EVENT:
@@ -138,10 +142,13 @@ EVENT:
     selectcase remote_mode
     
       case 0 'start remote CR check (automatically)
-            
-        remote_mode = 1
-        remote_CR_wait_timer = 0
-        remote_delay_time = 5
+        IF (wait_for_remote_CR > 0) THEN
+          remote_mode = 1
+          remote_CR_wait_timer = 0
+          remote_delay_time = 5
+        ELSE
+          remote_mode = 2
+        ENDIF
                                               
       case 1 'remote CR check running
       
@@ -284,46 +291,46 @@ EVENT:
             ENDIF
           ENDIF        
         ENDIF        
-      ENDIF
+      
     
-    CASE 5    ' spin readout
+      CASE 5    ' spin readout
         
-      IF (timer = 0) THEN
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_RO_voltage+32768) ' turn on E laser
-        P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_RO_voltage+32768) ' turn on A laser
-        old_counts = 0
+        IF (timer = 0) THEN
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_RO_voltage+32768) ' turn on E laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_RO_voltage+32768) ' turn on A laser
+          old_counts = 0
         
-      ELSE 
+        ELSE 
           
-        IF (timer = SSRO_duration) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          counts = P2_CNT_READ(CTR_MODULE,counter_channel) - old_counts
-          old_counts = counts
-          DATA_25[succes_event_counter] = counts
-          P2_CNT_ENABLE(CTR_MODULE,0)
+          IF (timer = SSRO_duration) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            counts = P2_CNT_READ(CTR_MODULE,counter_channel) - old_counts
+            old_counts = counts
+            DATA_25[succes_event_counter] = counts
+            P2_CNT_ENABLE(CTR_MODULE,0)
             
-          mode = 6
-          timer = -1
+            mode = 6
+            timer = -1
             
-          local_wait_time = local_wait_time_duration
+            local_wait_time = local_wait_time_duration
                      
+          ENDIF
         ENDIF
-      ENDIF
-    CASE 6 'local SSRO OK, wait for remote SSRO done
-      IF (remote_mode = 4) THEN
-        mode = 0 
-        remote_mode = 0
-        timer = -1
-      ENDIF      
-  ENDSELECT
+      CASE 6 'local SSRO OK, wait for remote SSRO done
+        IF (remote_mode = 4) THEN
+          mode = 0 
+          remote_mode = 0
+          timer = -1
+        ENDIF      
+    ENDSELECT
     
-  INC(timer)
-  INC(remote_CR_wait_timer)
+    INC(timer)
+    INC(remote_CR_wait_timer)
     
-ENDIF
+  ENDIF
   
 FINISH:
   finish_CR()

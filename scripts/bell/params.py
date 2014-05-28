@@ -46,15 +46,16 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 
 #bell adwin:
 params_lt3['AWG_start_DO_channel'] = 9
-params_lt3['AWG_done_DI_channel'] = 8
+params_lt3['AWG_done_DI_channel'] = 17
 params_lt3['SP_duration'] = 50
 params_lt3['wait_after_pulse_duration'] = 1
-params_lt3['remote_CR_DI_channel'] = 9
-params_lt3['PLU_DI_channel'] = 10
+params_lt3['remote_CR_DI_channel'] = 19
+params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
 params_lt3['SSRO_duration'] = 50
 params_lt3['wait_for_AWG_done'] = 0
-params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+#params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+params_lt3['wait_for_remote_CR'] = 1
 
 #adwin powers
 params_lt3['Ex_CR_amplitude'] = 3e-9#10e-9#6e-9             

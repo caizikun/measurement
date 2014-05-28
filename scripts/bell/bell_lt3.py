@@ -29,6 +29,10 @@ class Bell_LT3(bell.Bell):
             self.params[k] = params.params_lt3[k]
         bseq.pulse_defs_lt3(self)
 
+    def print_measurement_progress(self):
+        reps_completed = self.adwin_var('completed_reps')    
+        print('completed %s readout repetitions' % reps_completed)
+
     def generate_sequence(self):
         seq = pulsar.Sequence('BellLT3')
 
@@ -66,21 +70,27 @@ class Bell_LT3(bell.Bell):
     def stop_measurement_process(self):
         bell.Bell.stop_measurement_process(self)
         # signal LT1 to stop as well
-        self.remote_physical_adwin.Set_FPar(63,1)
+        self.remote_bs_measurement_helper.set_is_running(False)
+        #TODO! self.remote_lt1_measurement_helper.set_is_running(False)
 
-Bell_LT3.remote_physical_adwin = qt.instruments['physical_adwin_lt1']
+Bell_LT3.remote_bs_measurement_helper = qt.instruments['bs_helper']
+Bell_LT3.remote_lt1_measurement_helper = qt.instruments['lt1_helper']
+
 def bell_lt3(name):
+    upload_only=False
+    debug=True
+    mw = False
+    local_only = True
 
-    m=Bell_LT3(name)
-    
-    m.params['MW_during_LDE'] = True
-    
+    m=Bell_LT3(name) 
+    m.params['MW_during_LDE'] = mw
+    m.params['wait_for_remote_CR'] = not(local_only)
     m.autoconfig()
     m.generate_sequence()
-    debug=True
-    if not debug:
-        m.setup(mw=m.params['MW_during_LDE'], pq_calibrate=False)
-        m.run(autoconfig=False, setup=False)    
+    
+    if not(upload_only):
+        m.setup(debug=debug)
+        m.run(autoconfig=False, setup=False,debug=debug)    
         m.save()
         m.finish()
 

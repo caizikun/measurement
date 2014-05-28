@@ -35,10 +35,16 @@ class Bell_LT1(bell.Bell):
         bell.Bell.autoconfig(self, **kw)
         remote=kw.pop('remote_meas', False)
         if remote_meas:
-            remote_params = remote_measurement_helper.get_measurement_params()
+            remote_params = self.remote_measurement_helper.get_measurement_params()
             print remote_params
             for k in remote_params:
                 self.params[k] = remote_params[k]
+
+    def measurement_process_running(self):
+        return self.remote_measurement_helper.get_is_running()
+
+    def print_measurement_progress(self):
+        pass
 
     def generate_sequence(self):
         seq = pulsar.Sequence('BellLT3')
@@ -75,18 +81,22 @@ class Bell_LT1(bell.Bell):
             
         qt.pulsar.program_awg(seq,*elements)
 
+Bell_LT1.remote_measurement_helper = qt.instruments['remote_measurement_helper']
+
 def bell_lt1(name):
 
-    m=Bell_LT1(name)
-    
-    m.params['MW_during_LDE'] = True
-    
+    upload_only=False
+    debug=True
+    mw = False
+
+    m=Bell_LT1(name) 
+    m.params['MW_during_LDE'] = mw
     m.autoconfig()
     m.generate_sequence()
-    debug=True
-    if not debug:
-        m.setup(mw=m.params['MW_during_LDE'], pq_calibrate=False)
-        m.run(autoconfig=False, setup=False)    
+    
+    if not(upload_only):
+        m.setup(debug=debug)
+        m.run(autoconfig=False, setup=False,debug=debug)    
         m.save()
         m.finish()
 
