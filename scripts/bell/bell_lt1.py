@@ -58,33 +58,32 @@ class Bell_LT1(bell.Bell):
         elements = [] 
 
         #dummy_element = bseq._dummy_element(self)
-        #finished_element = bseq._sequence_finished_element(self)
-        #start_element = bseq._lt3_sequence_start_element(self)
+        finished_element = bseq._lt1_sequence_finished_element(self)
+        start_element = bseq._lt1_sequence_start_element(self)
         succes_element = bseq._lt1_entanglement_event_element(self)
-        #elements.append(start_element)
-        #elements.append(finished_element)
+        elements.append(start_element)
+        elements.append(finished_element)
         elements.append(succes_element)
         LDE_element = bseq._LDE_element(self, name='LDE_LT1')   
         elements.append(LDE_element)
         
-        #seq.append(name = 'start_LDE',
-        #    trigger_wait = True,
-        #    wfname = start_element.name)
+        seq.append(name = 'start_LDE',
+            trigger_wait = True,
+            wfname = start_element.name)
 
         seq.append(name = 'LDE_LT1',
             wfname = LDE_element.name,
-            trigger_wait = True,
+            trigger_wait = False,
             jump_target = 'RO_dummy',
-            goto_target = 'LDE_LT1',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-        #seq.append(name = 'LDE_timeout',
-        #    wfname = finished_element.name,
-        #    goto_target = 'start_LDE')
+        seq.append(name = 'LDE_timeout',
+            wfname = finished_element.name,
+            goto_target = 'start_LDE')
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
-            goto_target = 'LDE_LT1')
+            goto_target = 'start_LDE')
             
         qt.pulsar.program_awg(seq,*elements)
 
@@ -128,6 +127,7 @@ def bell_lt1_remote(name):
             break
         if remote_measurement_helper.get_is_running():
             lt3_ready = True
+            qt.msleep(2)
             break
         qt.msleep(1)
     if lt3_ready:
@@ -137,4 +137,4 @@ def bell_lt1_remote(name):
 
 
 if __name__ == '__main__':
-    bell_lt1('test')
+    bell_lt1_remote('test')
