@@ -69,8 +69,8 @@ class Bell_LT3(bell.Bell):
         self.remote_bs_measurement_helper.set_is_running(False)
         #TODO! self.remote_lt1_measurement_helper.set_is_running(False)
 
-Bell_LT3.remote_bs_measurement_helper = qt.instruments['bs_helper']
-Bell_LT3.remote_lt1_measurement_helper = qt.instruments['lt1_helper']
+Bell_LT3.bs_helper = qt.instruments['bs_helper']
+Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def bell_lt3(name):
     upload_only=False
@@ -87,6 +87,37 @@ def bell_lt3(name):
     if not(upload_only):
         m.setup(debug=debug)
         m.run(autoconfig=False, setup=False,debug=debug)    
+        m.save()
+        m.finish()
+
+
+def full_bell():
+
+    upload_only=False
+    debug=True
+    mw = False
+    local_only = False
+
+    m=Bell_LT3(name) 
+    m.params['MW_during_LDE'] = mw
+    m.params['wait_for_remote_CR'] = not(local_only)
+    m.autoconfig()
+    m.generate_sequence()
+    
+    if not(upload_only):
+        m.setup(debug=debug)
+        m.run(autoconfig=False, setup=False,debug=debug)
+
+        #bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+        #bs_helper.set_measurement_params(params.bs_params)
+        #bs_helper.set_is_running(True)
+        #bs_helper.execute_script()
+
+        lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
+        lt1_helper.set_is_running(True)
+        lt1_helper.execute_script()
+
+
         m.save()
         m.finish()
 
