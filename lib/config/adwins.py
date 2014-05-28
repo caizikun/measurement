@@ -1295,7 +1295,7 @@ config['adwin_lt2_processes'] = {
         'MBI_single_C13' : {
                 'info' : """
                     Conditional repumping, and resonant readout at the end.
-                    Has one MBI step and can read out multiple times (e.g., on different lines).
+                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
                     """,
                 'index' : 9,
                 'file' : 'C13_single_lt2.TB9',
@@ -1315,6 +1315,9 @@ config['adwin_lt2_processes'] = {
                     ['nr_of_ROsequences'           ,   1],
                     ['wait_after_RO_pulse_duration',   3],
                     ['N_randomize_duration'        ,  50],
+                    ['C13_MBI_threshold'           ,   1], 
+                    ['C13_MBI_duration'            ,  10],
+                    ['SP_duration_after_C13'       ,  25],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,

@@ -9,14 +9,15 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 514
+' Foldings                       = 519
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
 '
 ' protocol:
 ' 
-' modes:
+' modes: 
+' MODES ARE OUTDATED, NEED TO BE UPDATED FOR THIS SCRIPT 
 '   0 : CR check
 '   2 : E spin pumping into ms=0
 '   3 : MBI
@@ -90,9 +91,10 @@ dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
 'added for C13 initialization
-DIM C13_MBI_threshold AS LONG
-DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI AS FLOAT
-DIM SP_duration_after_C13 AS LONG
+DIM C13_MBI_threshold, C13_MBI_duration,SP_duration_after_C13 AS LONG
+DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_voltage AS FLOAT
+ 
+
 
 
 
@@ -112,6 +114,9 @@ INIT:
   nr_of_ROsequences            = DATA_20[12]
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
+  C13_MBI_threshold            = Data_20[15] 
+  C13_MBI_duration             = Data_20[16]
+  SP_duration_after_C13        = Data_20[17] 
   
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
@@ -164,9 +169,7 @@ INIT:
   awg_in_was_hi = 0
   awg_in_switched_to_hi = 0
   
-  'Parameters added for C13 init
-  C13_MBI_threshold = 0 'currently hardcoded, needs to be changed to python param 
-  
+  'Parameters added for C13 init  
   
   ' init parameters
   ' Y after the comment means I (wolfgang) checked whether they're actually used
@@ -378,6 +381,7 @@ EVENT:
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          ' Needs Carbon Voltage 
           
         ELSE 'Check if we got a count or if we are the end of the RO
           counts = P2_CNT_READ(CTR_MODULE, counter_channel)
@@ -390,7 +394,7 @@ EVENT:
             timer = -1
 
           ELSE 
-            IF (timer = MBI_duration) THEN
+            IF (timer = C13_MBI_duration ) THEN  'needs to be changed to C_MBI_duration 
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
         
@@ -403,9 +407,9 @@ EVENT:
         
       CASE 6    'A laser spin pumping after 13C MBI
         
+        'is this not a very odd place to specify values? Shouldn't that be done before the loop? Adriaan 
         A_SP_voltage_after_C13_MBI = DATA_35[ROseq_cntr]  ' currently these values are identical to the normal N-spin MBI 
         E_SP_voltage_after_C13_MBI = DATA_39[ROseq_cntr]
-        SP_duration_after_C13 = DATA_33[ROseq_cntr]
         
         'A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
         'E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]
@@ -422,6 +426,7 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
           CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+          'SP_duration_after_C13 =3 
                     
         ELSE 
           ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO

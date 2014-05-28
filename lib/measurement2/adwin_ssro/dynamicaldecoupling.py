@@ -1452,6 +1452,21 @@ class MBI_C13(DynamicalDecoupling):
     Class specifies a different adwin script to be used. 
     gate sequence functions that use carbon initialisation are located in this class 
     '''
+    def autoconfig(self):
+        self.params['A_SP_voltage_after_C13_MBI'] = \
+            self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_after_C13_MBI'])
+
+        self.params['E_SP_voltage_after_C13_MBI'] = \
+            self.E_aom.power_to_voltage(
+                    self.params['Ex_N_randomize_amplitude'])
+
+        self.params['E_C13_MBI_voltage'] = \
+            self.E_aom.power_to_voltage(
+                    self.params['E_C13_MBI_amplitude'])
+
+        DynamicalDecoupling.autoconfig(self)
+
     def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1): 
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases. 
@@ -1502,7 +1517,6 @@ class MBI_C13(DynamicalDecoupling):
 class NuclearRamseyWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
-    UNDER DEVELOPMENT
     '''
     mprefix = 'CarbonRamseyInitialised'
     # adwin_process = 'MBI_single_C13' Omitted, is inclued in MBI_single_C13 class 

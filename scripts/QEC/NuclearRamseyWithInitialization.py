@@ -51,10 +51,20 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to make the script always work 
-    m.params['MBI_threshold']=0
+    m.params['MBI_threshold']           = 0
+    m.params['C13_MBI_threshold']       = 1
+
+    m.params['C13_MBI_duration']        = 30 
+    m.params['SP_duration_after_C13']   = 20
+
+
+    # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
+    m.params['A_SP_amplitude_after_C13_MBI']  = 10e-9
+    m.params['Ex_N_randomize_amplitude']  = 0e-9 
+    m.params['E_C13_MBI_amplitude']       = 0 
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)
