@@ -179,6 +179,7 @@ def _lt1_entanglement_event_element(msmt):
 
     e.append(msmt.TIQ)
     e.append(msmt.adwin_success_pulse)
+    return e
 
 def _lt3_wait_1us_element(msmt):
     """
@@ -191,12 +192,12 @@ def _lt3_wait_1us_element(msmt):
 
 def _LDE_element(msmt, **kw):
     """
-    This element contains the LDE part for LT3, i.e., spin pumping and MW pulses
+    This element contains the LDE part, i.e., spin pumping and MW pulses
     for the LT3 NV and the optical pi pulses as well as all the markers for HH and PLU.
     """
 
     # variable parameters
-    name = kw.pop('name', 'LDE_LT3')
+    name = kw.pop('name', 'LDE_element')
     eom_pulse = kw.pop('eom_pulse', msmt.eom_pulse)#pulse.cp(msmt.eom_aom_pulse, aom_on=msmt.params['eom_aom_on']))
 
     ###

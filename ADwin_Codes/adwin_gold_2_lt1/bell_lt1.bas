@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -49,6 +49,7 @@ DIM first AS LONG
 DIM repetition_counter AS LONG
 
 DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
+DIM AWG_in_is_high, AWG_in_was_high AS LONG
 DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time AS LONG
 DIM counts, old_counts AS LONG
@@ -189,7 +190,6 @@ EVENT:
               INC(PAR_62)            
               mode = 0
               timer = -1
-              remote_mode = 0
               local_wait_time = 10
             ENDIF
           ELSE
@@ -197,7 +197,6 @@ EVENT:
               INC(PAR_62)            
               mode = 0
               timer = -1
-              remote_mode = 0
               local_wait_time = 10
             ENDIF
           ENDIF    

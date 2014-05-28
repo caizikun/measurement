@@ -44,7 +44,7 @@ class Bell_LT3(bell.Bell):
         elements.append(start_element)
         #elements.append(finished_element)
         elements.append(dummy_element)
-        LDE_element = bseq._LDE_element(self)   
+        LDE_element = bseq._LDE_element(self, name='LDE_LT1')   
         elements.append(LDE_element)
         
         seq.append(name = 'start_LDE',

@@ -342,9 +342,9 @@ config['adwin_lt1_processes'] = {
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
                 'params_float' : [
-                    ['E_SP_voltage'        , 0.8],
+                    ['Ex_SP_voltage'        , 0.8],
                     ['A_SP_voltage'        , 0.8],
-                    ['E_RO_voltage'        , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'        , 0.8],
                     ],
                 'params_float_index'  : 21,

@@ -33,15 +33,17 @@ class Bell_LT1(bell.Bell):
 
     def autoconfig(self, **kw):
         bell.Bell.autoconfig(self, **kw)
-        remote=kw.pop('remote_meas', False)
-        if remote_meas:
+        if self.params['remote_measurement']:
             remote_params = self.remote_measurement_helper.get_measurement_params()
             print remote_params
             for k in remote_params:
                 self.params[k] = remote_params[k]
 
     def measurement_process_running(self):
-        return self.remote_measurement_helper.get_is_running()
+        if self.params['remote_measurement']:
+            return self.remote_measurement_helper.get_is_running()
+        else:
+            return self.adwin_process_running()
 
     def print_measurement_progress(self):
         pass
@@ -51,14 +53,14 @@ class Bell_LT1(bell.Bell):
 
         elements = [] 
 
-        dummy_element = bseq._dummy_element(self)
+        #dummy_element = bseq._dummy_element(self)
         #finished_element = bseq._sequence_finished_element(self)
         #start_element = bseq._lt3_sequence_start_element(self)
         succes_element = bseq._lt1_entanglement_event_element(self)
         #elements.append(start_element)
         #elements.append(finished_element)
         elements.append(succes_element)
-        LDE_element = bseq._LDE_element(self)   
+        LDE_element = bseq._LDE_element(self, name='LDE_LT1')   
         elements.append(LDE_element)
         
         #seq.append(name = 'start_LDE',
@@ -67,8 +69,9 @@ class Bell_LT1(bell.Bell):
 
         seq.append(name = 'LDE_LT1',
             wfname = LDE_element.name,
+            trigger_wait = True,
             jump_target = 'RO_dummy',
-            goto_target = 'start_LDE',
+            goto_target = 'LDE_LT1',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
@@ -77,7 +80,7 @@ class Bell_LT1(bell.Bell):
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_LT1')
             
         qt.pulsar.program_awg(seq,*elements)
 
@@ -88,9 +91,11 @@ def bell_lt1(name):
     upload_only=False
     debug=True
     mw = False
+    remote_meas = False
 
     m=Bell_LT1(name) 
     m.params['MW_during_LDE'] = mw
+    m.params['remote_measurement'] = remote_meas
     m.autoconfig()
     m.generate_sequence()
     
