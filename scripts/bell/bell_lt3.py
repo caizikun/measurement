@@ -29,10 +29,6 @@ class Bell_LT3(bell.Bell):
             self.params[k] = params.params_lt3[k]
         bseq.pulse_defs_lt3(self)
 
-    def print_measurement_progress(self):
-        reps_completed = self.adwin_var('completed_reps')    
-        print('completed %s readout repetitions' % reps_completed)
-
     def generate_sequence(self):
         seq = pulsar.Sequence('BellLT3')
 

@@ -46,7 +46,10 @@ class Bell_LT1(bell.Bell):
             return self.adwin_process_running()
 
     def print_measurement_progress(self):
-        pass
+        if self.params['remote_measurement']:
+            pass
+        else:
+            bell.Bell.print_measurement_progress(self)
 
     def generate_sequence(self):
         seq = pulsar.Sequence('BellLT3')
@@ -91,7 +94,7 @@ def bell_lt1(name):
     upload_only=False
     debug=True
     mw = False
-    remote_meas = False
+    remote_meas = True
 
     m=Bell_LT1(name) 
     m.params['MW_during_LDE'] = mw

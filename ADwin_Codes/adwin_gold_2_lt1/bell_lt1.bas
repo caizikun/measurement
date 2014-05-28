@@ -125,11 +125,11 @@ EVENT:
     SELECTCASE mode
        
       CASE 0 'CR check
-       
+        DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
         IF ( CR_check(first,succes_event_counter) > 0 ) THEN
-          IF (Par_63 > 0) THEN
-            END
-          ENDIF
+          'IF (Par_63 > 0) THEN
+          '  END
+          'ENDIF
           mode = 2
           timer = -1
           first = 0
@@ -162,9 +162,9 @@ EVENT:
         
       case 3  ' signal local CR+SP done to remote adwin
         
+        DIGOUT(remote_CR_trigger_do_channel, 1)
         INC(repetition_counter)
         INC(PAR_73)
-        DIGOUT(remote_CR_trigger_do_channel, 1)
         mode = 4            
         timer = -1
         remote_CR_wait_timer = 0
@@ -231,6 +231,7 @@ EVENT:
         
       case 6  ' signal local SSRO done to remote adwin
         DIGOUT(remote_CR_trigger_do_channel, 1)
+        local_wait_time = 10
         mode = 0            
         timer = -1
         

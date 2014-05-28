@@ -40,6 +40,11 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         else:
             print self.mprefix, self.name, ': Ignoring yellow'
 
+    
+    def print_measurement_progress(self):
+        reps_completed = self.adwin_var('completed_reps')    
+        print('completed %s readout repetitions' % reps_completed)
+
     def setup(self, **kw):
         pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)     
 
