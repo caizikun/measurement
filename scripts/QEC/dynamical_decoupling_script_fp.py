@@ -79,8 +79,9 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
 if __name__ == '__main__':
     ## Extend the N=64 measurement to longer tau
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
-    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point = 90, tot = 90)
-    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, tot = 140)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 1)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 140)
+    SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 90)
+    
+    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 1)
 
 

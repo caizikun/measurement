@@ -20,23 +20,23 @@ params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 #to be implemented
 
 #bell adwin:
-params_lt1['AWG_done_DI_channel'] = 8
-params_lt1['AWG_success_DI_channel'] = 8
+params_lt1['AWG_done_DI_channel'] = 16
+params_lt1['AWG_success_DI_channel'] = 18#????
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
-params_lt1['remote_CR_DO_channel'] = 9
+params_lt1['remote_CR_DO_channel'] = 12
 params_lt1['SSRO_duration'] = 50
 params_lt1['wait_for_AWG_done'] = 0
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 10e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =15e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 10e-9             
+params_lt1['A_SP_amplitude'] = 20e-9             
 params_lt1['Ex_RO_amplitude'] = 5e-9
 params_lt1['A_RO_amplitude'] = 0
-params_lt1['repump_amplitude'] = 200e-6 
+params_lt1['repump_amplitude'] = 110e-6 
 
 ####################
 ### pulses and MW stuff LT1
@@ -62,7 +62,22 @@ params_lt1['RND_duration'] = 100e-9
 
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
-# LDE Sequence in the AWGs
+# LDE Sequence in the AWG
+
+params_lt1['eom_pulse_duration']        = 2e-9
+params_lt1['eom_off_duration']          = 100e-9
+params_lt1['eom_off_amplitude']         = -.26  # calibration from 23-08-2013
+params_lt1['eom_pulse_amplitude']       = 1.2
+params_lt1['eom_overshoot_duration1']   = 10e-9
+params_lt1['eom_overshoot1']            = -0.03
+params_lt1['eom_overshoot_duration2']   = 4e-9
+params_lt1['eom_overshoot2']            = -0.03
+params_lt1['aom_risetime']              = 42e-9
+params_lt1['eom_aom_on']                = True
+
+
+
+
 params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt1['AWG_SP_power']            = params_lt1['A_SP_amplitude']
@@ -78,6 +93,7 @@ params_lt1['MW_12_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 0 #sync is only for lt3
+params_lt1['plu_during_LDE'] = 0 
 params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] + 1.5e-6 #= dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
@@ -86,4 +102,4 @@ params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 
-params_lt1['measurement_time'] =   24*60*60,#sec = 24 H
+params_lt1['measurement_time'] =   24*60*60 #sec = 24 H

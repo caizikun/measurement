@@ -17,13 +17,13 @@ joint_params['LDE_RO_duration'] = 3e-6
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-joint_params['MIN_SYNC_BIN'] =       0
+joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
 bs_params = {}
 bs_params['MAX_DATA_LEN']        =   joint_params['MAX_DATA_LEN']
-bs_params['BINSIZE']             =   1  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 bs_params['MIN_SYNC_BIN']        =   0 
 bs_params['MAX_SYNC_BIN']        =   1000 
 bs_params['measurement_time']    =   24*60*60 #sec = 24H
@@ -45,20 +45,21 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 #to be implemented
 
 #bell adwin:
-params_lt3['AWG_start_DO_channel'] = 16
-params_lt3['AWG_done_DI_channel'] = 8
+params_lt3['AWG_start_DO_channel'] = 9
+params_lt3['AWG_done_DI_channel'] = 17
 params_lt3['SP_duration'] = 50
 params_lt3['wait_after_pulse_duration'] = 1
-params_lt3['remote_CR_DI_channel'] = 9
-params_lt3['PLU_DI_channel'] = 10
+params_lt3['remote_CR_DI_channel'] = 19
+params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
 params_lt3['SSRO_duration'] = 50
 params_lt3['wait_for_AWG_done'] = 0
-params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+#params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+params_lt3['wait_for_remote_CR'] = 1
 
 #adwin powers
-params_lt3['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt3['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt3['Ex_CR_amplitude'] = 3e-9#10e-9#6e-9             
+params_lt3['A_CR_amplitude'] =3e-9#10e-9#16e-9              
 params_lt3['Ex_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 10e-9             
 params_lt3['Ex_RO_amplitude'] = 5e-9
@@ -114,6 +115,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt3['AWG_wait_for_lt1_start'] = 8e-6 #= dt(f,BC)
 params_lt3['sync_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 1
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
@@ -122,6 +124,6 @@ params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
-params_lt3['measurement_time'] =   20*60,#sec = 20 mins
+params_lt3['measurement_time'] =   20*60#sec = 20 mins
 
 joint_params['RND_start'] = params_lt3['opt_pulse_start']+joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin

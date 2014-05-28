@@ -23,30 +23,30 @@ def pulse_defs_lt3(msmt):
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
     msmt.CORPSE_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_Qmod',
+        second_MW_channel = 'MW_2',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 180)
     msmt.CORPSE_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_Qmod',
+        second_MW_channel = 'MW_2',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi2_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 90)
     msmt.CORPSE_RND0 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = msmt.params['RND_angle_0'])
     msmt.CORPSE_RND1 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Qmod', 
+        MW_channel = 'MW_2', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
@@ -135,6 +135,7 @@ def pulse_defs_lt1(msmt):
         length = 5e-6, amplitude = 2) 
     msmt.adwin_success_pulse = pulse.SquarePulse(channel = 'adwin_success_trigger',
         length = 5e-6, amplitude = 2) 
+    msmt.sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
     msmt.SP_pulse = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
     msmt.RO_pulse = pulse.SquarePulse(channel = 'AOM_Matisse', amplitude = 0.0)
@@ -257,7 +258,7 @@ def _LDE_element(msmt, **kw):
     #5 HHsync
     
     #6 plugate 1
-    if msmt.params['sync_during_LDE'] == 1 :
+    if msmt.params['plu_during_LDE'] == 1 :
         e.add(msmt.plu_gate, name = 'plu gate 1', 
             refpulse = 'opt pi 1',
             start = msmt.params['PLU_1_delay'])
@@ -272,14 +273,14 @@ def _LDE_element(msmt, **kw):
             name='MW_pi')
     
     #10 plugate 2
-    if msmt.params['sync_during_LDE'] == 1 :
+    if msmt.params['plu_during_LDE'] == 1 :
         e.add(msmt.plu_gate, 
             name = 'plu gate 2',
             refpulse = 'opt pi {}'.format(msmt.joint_params['opt_pi_pulses']),
             start = msmt.params['PLU_2_delay']) 
 
     #11 plugate 3
-    if msmt.params['sync_during_LDE'] == 1 :
+    if msmt.params['plu_during_LDE'] == 1 :
         e.add(pulse.cp(msmt.plu_gate, 
                 length = msmt.params['PLU_gate_3_duration']), 
             name = 'plu gate 3', 
@@ -287,7 +288,7 @@ def _LDE_element(msmt, **kw):
             refpulse = 'plu gate 2')
     
     #12 plugate 4
-    if msmt.params['sync_during_LDE'] == 1 :
+    if msmt.params['plu_during_LDE'] == 1 :
         e.add(msmt.plu_gate, name = 'plu gate 4', start = msmt.params['PLU_4_delay'],
                 refpulse = 'plu gate 3')
 

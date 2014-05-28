@@ -941,7 +941,6 @@ config['adwin_lt2_processes'] = {
                     'current mode': 77,
                     'MBI start': 78,
                     'ROseq_cntr': 80,
-
                     },
                 'data_long' : {
                     'MBI_attempts' : 24,
@@ -1299,7 +1298,7 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom' : 5,
         'matisse_aom' : 6,
         'newfocus_aom': 7,
-        'not_in_use' : 8,
+        'gate' : 8,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1531,6 +1530,7 @@ config['adwin_lt3_processes'] = {
                     ['sequence_wait_time'          ,  10],
                     ['PLU_DI_channel'              ,   1],
                     ['do_sequences'                ,   1],
+                    ['wait_for_remote_CR'          ,   1],
 
                     ],
                 'params_long_index'  : 20,
@@ -1561,3 +1561,98 @@ config['adwin_lt3_processes'] = {
 
 
         }
+
+
+config['adwin_rt2_dacs'] = {
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        }
+
+config['adwin_rt2_dios'] = {
+
+        }
+
+config['adwin_rt2_processes'] = {
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TB5',
+            },
+
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'rt2_linescan.TB2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
+                },
+            },
+
+        'counter' : {
+
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'rt2_simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'rt2_set_dac.TB3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'rt2_set_ttl_outputs.TB4',
+            'par' : {
+                'dio_no' : 61,
+                'dio_val' : 62,
+                },
+            },
+
+        'trigger_dio' : {
+            'index' : 4,
+            'file' : 'rt2_dio_trigger.tb4',
+            'par' : {
+                'dio_no' : 61,
+                'startval' : 62, # where to start - 0 or 1
+                'waittime' : 63, # length of the trigger pulse in units of 10 ns
+            },
+        },
+    }

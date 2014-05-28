@@ -21,6 +21,7 @@ class MW_pulse(pulse.Pulse):
         self.stop_offset = self.PM_risetime
 
     def __call__(self, **kw):
+        self.amplitude = kw.pop('amplitude', self.amplitude)
         self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
             2*self.PM_risetime
         return self
@@ -103,14 +104,10 @@ class CORPSE_pulse:
         self.rabi_frequency = kw.pop('rabi_frequency', 0)
         self.eff_rotation_angle_rad = self.eff_rotation_angle/360.*2*np.pi #np.sin expects radians
 
-        # this is the CORPSE pulse family with n1 = 1, n2 = 1, n3 = 0 (see Cummins 2008)
-        self.rotation_angle_1 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_2 = 2*np.pi - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_3 = self.eff_rotation_angle_rad/2-np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        self.rotation_integers = kw.pop('rotation_integers', [1,1,0])
 
-        self.length_1 = self.rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
-        self.length_2 = self.rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
-        self.length_3 = self.rotation_angle_3/(2*np.pi)/self.rabi_frequency # 60 for pi
+        self.length_1,  self.length_2,  self.length_3 = self._get_lengths()
+      
         self.pulse_delay = kw.pop('pulse_delay', 1e-9)
 
         self.length = self.length_1 + self.length_2 + self.length_3 + \
@@ -121,18 +118,23 @@ class CORPSE_pulse:
         self.rabi_frequency = kw.pop('rabi_frequency', self.rabi_frequency)
         self.eff_rotation_angle_rad = self.eff_rotation_angle/360.*2*np.pi #np.sin expects radians
 
-        # this is the CORPSE pulse family with n1 = 1, n2 = 1, n3 = 0 (see Cummins 2008)
-        self.rotation_angle_1 = 2*np.pi + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_2 = 2*np.pi - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
-        self.rotation_angle_3 = self.eff_rotation_angle_rad/2-np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        self.length_1,  self.length_2,  self.length_3 = self._get_lengths()
 
-        self.length_1 = self.rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
-        self.length_2 = self.rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
-        self.length_3 = self.rotation_angle_3/(2*np.pi)/self.rabi_frequency # 60 for pi
         self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
 
         self.length = self.length_1 + self.length_2 + self.length_3 + \
             2*self.pulse_delay + 2*self.PM_risetime
+
+    def _get_lengths(self):
+        rotation_angle_1 = 2*np.pi*self.rotation_integers[0] + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        rotation_angle_2 = 2*np.pi*self.rotation_integers[1] - 2 * np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+        rotation_angle_3 = 2*np.pi*self.rotation_integers[2] + self.eff_rotation_angle_rad/2 - np.arcsin(np.sin(self.eff_rotation_angle_rad/2)/2)
+
+        length_1 = rotation_angle_1/(2*np.pi)/self.rabi_frequency # 420 for pi
+        length_2 = rotation_angle_2/(2*np.pi)/self.rabi_frequency # 300 for pi
+        length_3 = rotation_angle_3/(2*np.pi)/self.rabi_frequency # 60 for pi
+
+        return length_1, length_2, length_3
 
     def _get_starts_ends(self,tvals):
 
@@ -197,7 +199,85 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse, CORPSE_pulse):
                     (self.frequency * tvals[start_3:end_3] + self.phase/360.))
 
             return wf
+class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
+    # this is between the driving pulses (not PM)
 
+    def __init__(self, *arg, **kw):
+        MW_IQmod_pulse.__init__(self, *arg, **kw)
+
+        self.length_24p3 = kw.pop('length_24p3', 0)
+        self.length_m318p6 = kw.pop('length_m318p6', 0)
+        self.length_384p3 = kw.pop('length_384p3', 0)
+        self.pulse_delay = kw.pop('pulse_delay', 1e-9)
+
+
+        self.length = self.length_24p3 + self.length_m318p6 + self.length_384p3 + \
+            2*self.pulse_delay + 2*self.PM_risetime
+
+        self.start_offset = self.PM_risetime
+        self.stop_offset = self.PM_risetime
+
+    def __call__(self, **kw):
+        MW_IQmod_pulse.__call__(self, **kw)
+
+        self.length_24p3 = kw.pop('length_24p3', self.length_24p3)
+        self.length_m318p6 = kw.pop('length_m318p6', self.length_m318p6)
+        self.length_384p3 = kw.pop('length_384p3', self.length_384p3)
+        self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
+
+        self.length = self.length_24p3 + self.length_m318p6 + self.length_384p3 + \
+            2*self.pulse_delay + 2*self.PM_risetime
+
+        return self
+
+    def chan_wf(self, chan, tvals):
+        
+        if chan == self.PM_channel:
+            return np.ones(len(tvals))
+
+        else:
+            idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
+            idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1] + 1
+
+            start_384p3 = np.where(tvals <= (tvals[0] + self.PM_risetime))[0][-1]
+            end_384p3 = np.where(tvals <= (tvals[0] + self.length_384p3 + self.PM_risetime))[0][-1]
+            start_m318p6 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_384p3 + \
+                self.pulse_delay))[0][-1]
+            end_m318p6 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_384p3 + \
+                self.pulse_delay + self.length_m318p6))[0][-1]
+            start_24p3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_384p3 + \
+                self.pulse_delay + self.length_m318p6 + self.pulse_delay))[0][-1]
+            end_24p3 = np.where(tvals <= (tvals[0] + self.PM_risetime + self.length_384p3 + \
+                self.pulse_delay + self.length_m318p6 + self.pulse_delay + \
+                self.length_24p3))[0][-1]
+
+            wf = np.zeros(len(tvals))
+            
+            # in this case we start the wave with zero phase at the effective start time
+            # (up to the specified phase)
+            if not self.phaselock:
+                tvals = tvals.copy() - tvals[idx0]
+
+                print self.name, tvals[0]
+
+            if chan == self.I_channel:
+                wf[start_384p3:end_384p3] += self.amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_384p3:end_384p3] + self.phase/360.))
+                wf[start_m318p6:end_m318p6] -= self.amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_m318p6:end_m318p6] + self.phase/360.))
+                wf[start_24p3:end_24p3] += self.amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_24p3:end_24p3] + self.phase/360.))
+
+            if chan == self.Q_channel:
+                wf[start_384p3:end_384p3] += self.amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_384p3:end_384p3] + self.phase/360.))
+                wf[start_m318p6:end_m318p6] -= self.amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_m318p6:end_m318p6] + self.phase/360.))
+                wf[start_24p3:end_24p3] += self.amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_24p3:end_24p3] + self.phase/360.))
+
+            return wf
+            
 class MW_CORPSE_pulse(MW_pulse, CORPSE_pulse):
 
     # this is between the driving pulses (not PM)

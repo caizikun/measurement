@@ -142,7 +142,7 @@ class adwin_lt3(adwin):
             self._dac_voltages[n] = stop_voltages[i]
         self.save_cfg()
 
-    def speed2px(self, dac_names, target_voltages, speed=5000, pxtime=5,
+    def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,
             minsteps=10):
         """
         Parameters:

@@ -11,16 +11,17 @@ def run(name):
     m = pulsar_mbi_espin.ElectronRabi(name)
     funcs.prepare(m)
 
-    pts = 51
+    pts = 61
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 500
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 2000e-9
 
     # MW pulses
-    m.params['MW_pulse_durations']  = np.ones(pts) * 2e-6
-    m.params['MW_pulse_amps']       = np.ones(pts) * 0.03
+    m.params['MW_pulse_durations']  = np.ones(pts) * 3e-6
+    m.params['MW_pulse_amps']       = np.ones(pts) * 0.02
     m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']-1.5e6, m.params['MW_modulation_frequency']+5.5e6, pts)
+    #m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']-5.5e6, m.params['MW_modulation_frequency']+1.5e6, pts)
     print m.params['MW_pulse_mod_frqs']
 
     # for the autoanalysis

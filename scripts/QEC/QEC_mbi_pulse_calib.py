@@ -41,7 +41,7 @@ def erabi(name):
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
     elif 1:
-        m.params['MW_pulse_durations'] =  np.linspace(0,50e-6,pts)
+        m.params['MW_pulse_durations'] =  np.linspace(0,10e-6,pts)
         m.params['MW_pulse_amplitudes'] = np.ones(pts)*m.params['AWG_MBI_MW_pulse_amp']
         m.params['sweep_name'] = 'MW_pulse_durations (us)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e6

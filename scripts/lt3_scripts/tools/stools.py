@@ -171,4 +171,26 @@ def turn_on_lt3_pulse_path():
     qt.instruments['AWG'].stop()
     qt.instruments['AWG'].set_runmode('CONT')
     qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 0.0)
+    qt.instruments['PMServo'].move_out()
 
+def init_AWG():
+    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    qt.pulsar.setup_channels()
+    qt.instruments['AWG'].set_ch1_status('on')
+    qt.instruments['AWG'].set_ch2_status('on')
+    qt.instruments['AWG'].set_ch3_status('on')
+    qt.instruments['AWG'].set_ch4_status('on')
+
+def start_bs_counter():
+    qt.instruments['counters'].set_is_running(False)
+    qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
+    qt.instruments['bs_helper'].set_is_running(True)
+    qt.instruments['bs_helper'].execute_script()
+
+def stop_bs_counter():
+    qt.instruments['bs_helper'].set_is_running(False)
+
+def generate_quantum_random_number():
+    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.msleep(0.1)
+    qt.instruments['AWG'].set_ch1_marker2_low(0.)

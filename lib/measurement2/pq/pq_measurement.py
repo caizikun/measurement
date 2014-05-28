@@ -17,8 +17,9 @@ class PQMeasurement(m2.Measurement):
     def autoconfig(self):
         pass
 
-    def setup(self, **kw):
-        do_calibrate = kw.pop('pq_calibrate',True)
+    def setup(self, do_calibrate = True, debug = False, **kw):
+        if debug:
+            return
         if self.PQ_ins.OpenDevice():
             self.PQ_ins.start_T2_mode()
             if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
@@ -40,7 +41,28 @@ class PQMeasurement(m2.Measurement):
     def print_measurement_progress(self):
         pass
 
-    def run(self, autoconfig=True, setup=True):
+    def run_debug(self):
+        self.start_keystroke_monitor('abort',timer=False)
+        self.start_measurement_process()
+        _timer=time.time()
+        while True:
+            if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+                if not self.measurement_process_running():
+                    break
+                self._keystroke_check('abort')
+                if self.keystroke('abort') in ['q','Q']:
+                    print 'aborted.'
+                    self.stop_keystroke_monitor('abort')
+                    break
+                    
+                self.print_measurement_progress()
+                _timer=time.time()
+        self.stop_measurement_process()
+
+    def run(self, autoconfig=True, setup=True, debug=False):
+        if debug:
+            self.run_debug()
+            return
 
         if autoconfig:
             self.autoconfig()
@@ -57,7 +79,7 @@ class PQMeasurement(m2.Measurement):
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
-    
+        print 'run PQ measurement'
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
@@ -133,7 +155,7 @@ class PQMeasurement(m2.Measurement):
                     self.h5data.flush()
 
         self.PQ_ins.StopMeas()
-
+        print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
@@ -222,7 +244,7 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        print ll
+        print 'PQ total events: last sync number',  ll, last_sync_number
         self.stop_measurement_process()
 
         dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')

@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -101,7 +101,7 @@ INIT:
   CNT_ENABLE(0000b)'turn off all counters
   CNT_MODE(counter_channel,000010000b) 'configure counter
 
-  CONF_DIO(11)
+  CONF_DIO(0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO)
   DIGOUT(remote_CR_trigger_do_channel,0)
 
   mode = 0
