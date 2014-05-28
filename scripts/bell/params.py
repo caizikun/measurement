@@ -94,7 +94,7 @@ params_lt3['RND_duration'] = 100e-9
 
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt1['eom_off_amplitude']          = -0.07 
+params_lt3['eom_off_amplitude']          = -0.07 
 params_lt3['eom_comp_pulse_amplitude']   = params_lt3['eom_pulse_amplitude'] 
 params_lt3['eom_off_duration']           = 200e-9
 params_lt3['eom_overshoot_duration1']    = 10e-9
@@ -102,6 +102,8 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['eom_aom_on']                 = True
+params_lt3['aom_risetime']				 = 25e-9
+params_lt3['aom_amplitude']				 = 1.0
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
