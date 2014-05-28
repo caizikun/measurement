@@ -26,7 +26,7 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+   # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     
     m.params['pts'] = 21
     pts = m.params['pts']
@@ -44,7 +44,7 @@ def erabi(name):
     m.params['MW_pulse_frequency'] = 43e6
 
     #m.params['MW_pulse_durations'] =  np.ones(pts)*4e-6 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 100, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 1000, pts) * 1e-9
 
     m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.811
     #m.params['MW_pulse_amplitudes'] = np.linspace(0,0.02,pts)#0.55*np.ones(pts)

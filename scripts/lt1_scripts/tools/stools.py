@@ -46,6 +46,13 @@ def check_max_powers(names = ALLAOMS):
 def turn_off_AWG_laser_channel():
     qt.instruments['AWG'].set_ch2_offset(0.)
 
+def start_bs_counter():
+    qt.instruments['bs_helper'].set_script_path("execfile(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')")
+    qt.instruments['bs_helper'].set_is_running(True)
+    qt.instruments['bs_helper'].execute_script()
+
+def stop_bs_counter():
+    qt.instruments['bs_helper'].set_is_running(False)
 
 def set_lt1_remote():
     for i in ['labjack', 
@@ -67,6 +74,14 @@ def set_lt1_remote():
             qt.instruments.remove(i)
         except:
             logging.warning('could not remove instrument {}'.format(i))
+
+def init_AWG():
+    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    qt.pulsar.setup_channels()
+    qt.instruments['AWG'].set_ch1_status('on')
+    qt.instruments['AWG'].set_ch2_status('on')
+    qt.instruments['AWG'].set_ch3_status('on')
+    qt.instruments['AWG'].set_ch4_status('on')
 
 def set_lt1_standalone():
     global adwin
@@ -125,4 +140,5 @@ def set_lt1_standalone():
         labjack = qt.instruments.create('labjack', 'Remote_Instrument',
         remote_name='labjack', inssrv=remote_ins_server)
         
+
 

@@ -23,30 +23,30 @@ def pulse_defs_lt3(msmt):
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
     msmt.CORPSE_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_Qmod',
+        second_MW_channel = 'MW_2',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 180)
     msmt.CORPSE_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_Qmod',
+        second_MW_channel = 'MW_2',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi2_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 90)
     msmt.CORPSE_RND0 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Imod', 
+        MW_channel = 'MW_1', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = msmt.params['RND_angle_0'])
     msmt.CORPSE_RND1 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_Qmod', 
+        MW_channel = 'MW_2', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
@@ -55,10 +55,20 @@ def pulse_defs_lt3(msmt):
 
     msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
-                    aom_channel = 'EOM_AOM_Matisse')
+                    aom_channel = 'EOM_AOM_Matisse',
+                    eom_pulse_duration      = msmt.params['eom_pulse_duration'],
+                    eom_off_duration        = msmt.params['eom_off_duration'],
+                    eom_off_amplitude       = msmt.params['eom_off_amplitude'],
+                    eom_pulse_amplitude     = msmt.params['eom_pulse_amplitude'],
+                    eom_overshoot_duration1 = msmt.params['eom_overshoot_duration1'],
+                    eom_overshoot1          = msmt.params['eom_overshoot1'],
+                    eom_overshoot_duration2 = msmt.params['eom_overshoot_duration2'],
+                    eom_overshoot2          = msmt.params['eom_overshoot2'],
+                    aom_risetime            = msmt.params['aom_risetime'],
+                    aom_amplitude           = msmt.params['aom_amplitude'])
 
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -1.0, 
+    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -125,9 +135,19 @@ def pulse_defs_lt1(msmt):
 
     msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
-                    aom_channel = 'EOM_AOM_Matisse')
+                    aom_channel = 'EOM_AOM_Matisse',
+                    eom_pulse_duration      = self.params['eom_pulse_duration'],
+                    eom_off_duration        = self.params['eom_off_duration'],
+                    eom_off_amplitude       = self.params['eom_off_amplitude'],
+                    eom_pulse_amplitude     = self.params['eom_pulse_amplitude'],
+                    eom_overshoot_duration1 = self.params['eom_overshoot_duration1'],
+                    eom_overshoot1          = self.params['eom_overshoot1'],
+                    eom_overshoot_duration2 = self.params['eom_overshoot_duration2'],
+                    eom_overshoot2          = self.params['eom_overshoot2'],
+                    aom_risetime            = self.params['aom_risetime'],
+                    aom_amplitude           = self.params['aom_amplitude'])
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -1.0, 
+    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -156,7 +176,15 @@ def _lt3_sequence_start_element(msmt):
     e.append(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt1_start']))
     return e
 
-def _sequence_finished_element(msmt):
+def _lt1_sequence_start_element(msmt):
+    """
+    first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
+    """
+    e = element.Element('LT3_start', pulsar = qt.pulsar)
+    e.append(pulse.cp(msmt.SP_pulse, length=1e-6))
+    return e
+
+def _lt1_sequence_finished_element(msmt):
     """
     last element of a two-setup sequence. Sends a trigger to ADwin LT3.
     """
@@ -179,6 +207,7 @@ def _lt1_entanglement_event_element(msmt):
 
     e.append(msmt.TIQ)
     e.append(msmt.adwin_success_pulse)
+    return e
 
 def _lt3_wait_1us_element(msmt):
     """
@@ -191,12 +220,12 @@ def _lt3_wait_1us_element(msmt):
 
 def _LDE_element(msmt, **kw):
     """
-    This element contains the LDE part for LT3, i.e., spin pumping and MW pulses
+    This element contains the LDE part, i.e., spin pumping and MW pulses
     for the LT3 NV and the optical pi pulses as well as all the markers for HH and PLU.
     """
 
     # variable parameters
-    name = kw.pop('name', 'LDE_LT3')
+    name = kw.pop('name', 'LDE_element')
     eom_pulse = kw.pop('eom_pulse', msmt.eom_pulse)#pulse.cp(msmt.eom_aom_pulse, aom_on=msmt.params['eom_aom_on']))
 
     ###

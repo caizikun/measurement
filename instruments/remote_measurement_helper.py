@@ -10,9 +10,9 @@ import os
 
 class remote_measurement_helper(Instrument):
     
-    def __init__(self, name, remote_qtlab_name, **kw):
+    def __init__(self, name, exec_qtlab_name, **kw):
         Instrument.__init__(self, name)
-        self._remote_qtlab_name = remote_qtlab_name
+        self._exec_qtlab_name = exec_qtlab_name
         ins_pars  = {'measurement_params'    :   {'type':types.DictType,'val':{},'flags':Instrument.FLAG_GETSET},
                     'measurement_name'    :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'is_running'       :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
@@ -58,8 +58,9 @@ class remote_measurement_helper(Instrument):
             self._ins_cfg[param] = value
 
     def execute_script(self):
-        remote_cmd=objsh.helper.find_object(self._remote_qtlab_name +':python_server')
+        remote_cmd=objsh.helper.find_object(self._exec_qtlab_name +':python_server')
         if remote_cmd!=None:
-            remote_cmd.cmd("execfile(qt.instruments['remote_measurement_helper'].get_script_path())", signal=True)
+            remote_cmd.cmd("execfile('{}')".format(self.get_script_path()))
         else:
-            logging.warning(self.get_name() + ': Remote qtlab instance ' + self._remote_qtlab_name +' not found, client disconnected?')
+            logging.warning(self.get_name() + ': Remote qtlab instance ' + self._exec_qtlab_name +' not found, client disconnected?')
+        return True

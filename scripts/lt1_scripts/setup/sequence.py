@@ -29,13 +29,18 @@ qt.pulsar.define_channel(id='ch4', name='MW_Qmod', type='analog', high=0.9,
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch3_marker1', name='adwin_success_trigger', type='marker', 
+    high=2.0, low=0, offset=0., delay=0., active=True)
 
 # light
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 
-    high=0.4, low=0, offset=0., delay=700e-9, active=True)
+    high=0.4, low=0, offset=0., delay=400e-9, active=True)
 
 qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
-    high=0.4, low=0, offset=0., delay=750e-9, active=True)
+    high=0.4, low=0, offset=0., delay=400e-9, active=True)
+
+qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',
+    high=0.4, low=0, offset=0., delay=14e-9, active=True)
 
 ## EOM - short pulse
 qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=1.5,
@@ -44,14 +49,9 @@ qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=1.5,
 qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
     high=1.0, low=-1.0, offset=0., delay=416e-9, active=True)
 
-#PLU
-qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker',
-    high=2.0, low=0, offset=0., delay=14e-9, active=True)
-
-
 #RND
-qt.pulsar.define_channel(id='ch4_marker1', name='RND_halt', type='marker', 
-    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+qt.pulsar.define_channel(id='ch2_marker1', name='RND_halt', type='marker', 
+    high=2.0, low=0, offset=2.0, delay=0e-9, active=True)
 
 qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)   
@@ -62,9 +62,6 @@ qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker',
 #qt.pulsar.define_channel(id='ch2_marker2', name='YellowAOM', type='marker', 
 #    high=0.4, low=0, offset=0., delay=750e-9, active=True)
 
-# Trigger AWG LT2
-qt.pulsar.define_channel(id='ch3_marker1', name='scope_pulse', type='marker', 
-    high=0.5, low=0, offset=0., delay=0., active=True)
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   1e9,
@@ -76,7 +73,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
-        'TRIGGER_INPUT_THRESHOLD'   :   1.4,  # V
+        'TRIGGER_INPUT_THRESHOLD'   :   0.4,  # V
         'EVENT_INPUT_IMPEDANCE'     :   2,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
         'EVENT_INPUT_THRESHOLD'     :   1.4,  #V

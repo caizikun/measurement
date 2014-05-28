@@ -114,7 +114,7 @@ class PQMeasurement(m2.Measurement):
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
-                _t, _c, _s = self._PQ_decode(_data[:_length])
+                _t, _c, _s = PQ_decode(_data[:_length])
                 
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
@@ -163,16 +163,16 @@ class PQMeasurement(m2.Measurement):
         self.stop_measurement_process()
         
 
-    def _PQ_decode(self,data):
-        """
-        Decode the binary data into event time (absolute, highest precision),
-        channel number and special bit. See PicoQuant (HydraHarp, TimeHarp, PicoHarp) 
-        documentation about the details.
-        """
-        event_time = np.bitwise_and(data, 2**25-1)
-        channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)
-        special = np.bitwise_and(np.right_shift(data, 31), 1)
-        return event_time, channel, special
+def PQ_decode(data):
+    """
+    Decode the binary data into event time (absolute, highest precision),
+    channel number and special bit. See PicoQuant (HydraHarp, TimeHarp, PicoHarp) 
+    documentation about the details.
+    """
+    event_time = np.bitwise_and(data, 2**25-1)
+    channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)
+    special = np.bitwise_and(np.right_shift(data, 31), 1)
+    return event_time, channel, special
 
 
 class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
@@ -227,7 +227,7 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
-                _t, _c, _s = self._PQ_decode(_data[:_length])
+                _t, _c, _s = PQ_decode(_data[:_length])
                 
                 hist0, hist1, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \

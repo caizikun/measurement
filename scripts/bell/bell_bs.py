@@ -2,6 +2,7 @@ import qt
 import numpy as np
 import bell
 
+bell.Bell_BS.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 def remote_HH_measurement(name):
 
     m=bell.Bell_BS(qt.instruments['remote_measurement_helper'].get_measurement_name())
