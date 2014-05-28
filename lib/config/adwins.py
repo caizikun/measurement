@@ -1279,13 +1279,67 @@ config['adwin_lt2_processes'] = {
                     'repump_freq_counts'        : 27,
                     },
                 },
-
+       
         #gate modulation
         'check_trigger_from_lt1' : {
                 'index' : 9,
                 'file' : 'check_trigger_from_lt1.TB9',
                 'par' : {},
                 'fpar': {}
+                },
+
+        ###########################
+        ### QEC Carbon Control ####
+        ###########################
+
+        'MBI_single_C13' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one MBI step and can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'C13_single_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   0],
+                    ['AWG_done_DI_channel'         ,   9],
+                    ['SP_E_duration'               , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['sweep_length'                ,  10],
+                    ['cycle_duration'              , 300],
+                    ['AWG_event_jump_DO_channel'   ,   6],
+                    ['MBI_duration'                ,   1],
+                    ['max_MBI_attempts'            ,   1],
+                    ['MBI_threshold'               ,   0],
+                    ['nr_of_ROsequences'           ,   1],
+                    ['wait_after_RO_pulse_duration',   3],
+                    ['N_randomize_duration'        ,  50],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8],
+                    ['Ex_MBI_voltage'               , 0.8],
+                    ['Ex_N_randomize_voltage'       , 0.0],
+                    ['A_N_randomize_voltage'        , 0.0],
+                    ['repump_N_randomize_voltage'   , 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 74,
+                    'current mode': 77,
+                    'MBI start': 78,
+                    'ROseq_cntr': 80,
+                    },
+                'data_long' : {
+                    'MBI_attempts' : 24,
+                    'MBI_cycles' : 25,
+                    'ssro_results' : 27,
+                    'MBI_time' : 28,
+                    },
                 },
 
         }

@@ -496,7 +496,6 @@ class MBI(PulsarMeasurement):
     adwin_process = 'MBI'
 
     def autoconfig(self):
-
         self.params['sweep_length'] = self.params['pts']
         self.params['repetitions'] = \
                 self.params['nr_of_ROsequences'] * \
@@ -540,10 +539,13 @@ class MBI(PulsarMeasurement):
         for i in range(10):
             self.physical_adwin.Stop_Process(i+1)
             qt.msleep(0.1)
-
         qt.msleep(1)
-        self.adwin.load_MBI()
+        # self.adwin.load_MBI()   
+        # New functionality, now always uses the adwin_process specified as a class variables 
+        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+        exec(loadstr)
         qt.msleep(1)
+        # print loadstr 
 
         length = self.params['nr_of_ROsequences']
         self.physical_adwin.Set_Data_Long(

@@ -1434,13 +1434,26 @@ class SimpleDecoupling(DynamicalDecoupling):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+####################################################
+##########   Carbon Initialisated classes   ######## 
+####################################################
 
-class NuclearRamseyWithInitialization(DynamicalDecoupling):
+class MBI_single_C13(DynamicalDecoupling):
+    mprefix = 'single_carbon_initialised' 
+    adwin_process = 'MBI_single_C13'
+    '''
+    Class specifies a different adwin script to be used. Could be omitted. Does make classes more clear. 
+    '''
+
+
+class NuclearRamseyWithInitialization(MBI_single_C13):
     '''
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
     UNDER DEVELOPMENT
     '''
     mprefix = 'CarbonRamseyInitialised'
+    # adwin_process = 'MBI_single_C13' Omitted, is inclued in MBI_single_C13 class 
+ # overwrites the name of the adwin_process 
     def generate_sequence(self,upload=True,debug = False):
         pts = self.params['pts']
         # #initialise empty sequence and elements
