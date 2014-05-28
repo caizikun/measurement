@@ -172,7 +172,7 @@ def tail_lt3(name):
 
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -233,7 +233,7 @@ def tail_lt1(name):
                                                     +m.params['eom_pulse_duration']*m.params['eom_off_amplitude'] )/(2.*m.params['eom_pulse_duration'])  
     else:#'normal':
 
-        m.params['eom_pulse_amplitude']        = np.linspace(0.5,1.5,pts)*1.5 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+        m.params['eom_pulse_amplitude']        = np.ones(pts)*1.5 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
         m.params['eom_pulse_duration']         = np.ones(pts)* 2e-9
         m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
         m.params['eom_off_duration']           = 200e-9
@@ -250,9 +250,9 @@ def tail_lt1(name):
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
-    m.params['aom_amplitude']             = np.ones(pts)*1.0#aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
+    m.params['aom_amplitude']             = aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
 
-    m.params['sweep_name'] = 'eom on amplitude'#'aom_amplitude [percent]'
+    m.params['sweep_name'] = 'aom_amplitude [percent]'
     m.params['sweep_pts'] = aom_power_sweep/max_power_aom
 
     bseq.pulse_defs_lt1(m)
@@ -262,7 +262,7 @@ def tail_lt1(name):
     m.params['sync_during_LDE'] = 1
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -280,4 +280,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt1('lt1_tail_Pippin_SIL3_SM+12deg')
+    tail_lt3('lt3_tail_The111NO1_SIL5_10deg')

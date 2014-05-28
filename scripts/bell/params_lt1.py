@@ -21,10 +21,10 @@ params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 
 #bell adwin:
 params_lt1['AWG_done_DI_channel'] = 16
-params_lt1['AWG_success_DI_channel'] = 8#????
+params_lt1['AWG_success_DI_channel'] = 18#????
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
-params_lt1['remote_CR_DO_channel'] = 9
+params_lt1['remote_CR_DO_channel'] = 12
 params_lt1['SSRO_duration'] = 50
 params_lt1['wait_for_AWG_done'] = 0
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig

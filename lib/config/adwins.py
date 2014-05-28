@@ -1530,6 +1530,7 @@ config['adwin_lt3_processes'] = {
                     ['sequence_wait_time'          ,  10],
                     ['PLU_DI_channel'              ,   1],
                     ['do_sequences'                ,   1],
+                    ['wait_for_remote_CR'          ,   1],
 
                     ],
                 'params_long_index'  : 20,
