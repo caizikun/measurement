@@ -40,7 +40,7 @@ class Bell_LT3(bell.Bell):
         elements.append(start_element)
         #elements.append(finished_element)
         elements.append(dummy_element)
-        LDE_element = bseq._LDE_element(self, name='LDE_LT1')   
+        LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
         elements.append(LDE_element)
         
         seq.append(name = 'start_LDE',
@@ -66,14 +66,14 @@ class Bell_LT3(bell.Bell):
     def stop_measurement_process(self):
         bell.Bell.stop_measurement_process(self)
         # signal LT1 to stop as well
-        self.remote_bs_measurement_helper.set_is_running(False)
-        #TODO! self.remote_lt1_measurement_helper.set_is_running(False)
+        self.bs_helper.set_is_running(False)
+        self.lt1_helper.set_is_running(False)
 
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def bell_lt3(name):
-    upload_only=False
+    upload_only=True
     debug=True
     mw = False
     local_only = True
@@ -81,6 +81,8 @@ def bell_lt3(name):
     m=Bell_LT3(name) 
     m.params['MW_during_LDE'] = mw
     m.params['wait_for_remote_CR'] = not(local_only)
+    print m.joint_params['RND_start']
+
     m.autoconfig()
     m.generate_sequence()
     
@@ -91,35 +93,34 @@ def bell_lt3(name):
         m.finish()
 
 
-def full_bell():
+def full_bell(name):
 
-    upload_only=False
     debug=True
     mw = False
     local_only = False
-
     m=Bell_LT3(name) 
+
+    m.lt1_helper.set_is_running(False)
+    m.lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
+    m.lt1_helper.execute_script()
+
+    #bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+    #bs_helper.set_measurement_params(params.bs_params)
+    #bs_helper.set_is_running(True)
+    #bs_helper.execute_script()
+    
     m.params['MW_during_LDE'] = mw
     m.params['wait_for_remote_CR'] = not(local_only)
     m.autoconfig()
     m.generate_sequence()
     
-    if not(upload_only):
-        m.setup(debug=debug)
-        m.run(autoconfig=False, setup=False,debug=debug)
 
-        #bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
-        #bs_helper.set_measurement_params(params.bs_params)
-        #bs_helper.set_is_running(True)
-        #bs_helper.execute_script()
-
-        lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
-        lt1_helper.set_is_running(True)
-        lt1_helper.execute_script()
-
-
-        m.save()
-        m.finish()
+    m.setup(debug=debug)
+    lt1_helper.set_is_running(True)
+    m.run(autoconfig=False, setup=False,debug=debug)
+    m.save()
+    m.finish()
 
 if __name__ == '__main__':
-    bell_lt3('test')
+    #bell_lt3('test')
+    full_bell('test')   
