@@ -136,16 +136,16 @@ def pulse_defs_lt1(msmt):
     msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
                     aom_channel = 'EOM_AOM_Matisse',
-                    eom_pulse_duration      = self.params['eom_pulse_duration'],
-                    eom_off_duration        = self.params['eom_off_duration'],
-                    eom_off_amplitude       = self.params['eom_off_amplitude'],
-                    eom_pulse_amplitude     = self.params['eom_pulse_amplitude'],
-                    eom_overshoot_duration1 = self.params['eom_overshoot_duration1'],
-                    eom_overshoot1          = self.params['eom_overshoot1'],
-                    eom_overshoot_duration2 = self.params['eom_overshoot_duration2'],
-                    eom_overshoot2          = self.params['eom_overshoot2'],
-                    aom_risetime            = self.params['aom_risetime'],
-                    aom_amplitude           = self.params['aom_amplitude'])
+                    eom_pulse_duration      = msmt.params['eom_pulse_duration'],
+                    eom_off_duration        = msmt.params['eom_off_duration'],
+                    eom_off_amplitude       = msmt.params['eom_off_amplitude'],
+                    eom_pulse_amplitude     = msmt.params['eom_pulse_amplitude'],
+                    eom_overshoot_duration1 = msmt.params['eom_overshoot_duration1'],
+                    eom_overshoot1          = msmt.params['eom_overshoot1'],
+                    eom_overshoot_duration2 = msmt.params['eom_overshoot_duration2'],
+                    eom_overshoot2          = msmt.params['eom_overshoot2'],
+                    aom_risetime            = msmt.params['aom_risetime'],
+                    aom_amplitude           = msmt.params['aom_amplitude'])
 
     msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
                                     length = msmt.params['RND_duration'])

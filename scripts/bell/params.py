@@ -21,14 +21,6 @@ joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
-bs_params = {}
-bs_params['MAX_DATA_LEN']        =   joint_params['MAX_DATA_LEN']
-bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-bs_params['MIN_SYNC_BIN']        =   0 
-bs_params['MAX_SYNC_BIN']        =   1000 
-bs_params['measurement_time']    =   24*60*60 #sec = 24H
-bs_params['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval'] #sec
-
 params_lt3 = {}
 ### Hardware stuff
 # params['HH_binsize_T3'] = 8
