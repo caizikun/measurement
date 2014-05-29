@@ -7,6 +7,7 @@ import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 
+
 class Gate(object):
     '''
     The class for Gate objects that are used routinely in generating gate sequences.
@@ -1459,12 +1460,17 @@ class MBI_C13(DynamicalDecoupling):
 
         self.params['E_SP_voltage_after_C13_MBI'] = \
             self.E_aom.power_to_voltage(
-                    self.params['Ex_N_randomize_amplitude'])
+                    self.params['E_SP_amplitude_after_C13_MBI'])
 
         self.params['E_C13_MBI_voltage'] = \
             self.E_aom.power_to_voltage(
                     self.params['E_C13_MBI_amplitude'])
 
+        # set time that the adwin maximally does MBI equal to the duration of the AWG trigger where it expects an event jump  
+        self.params['C13_MBI_duration']= int(self.params['Carbon_init_RO_wait'] *1e6 -5)
+        if  self.params['C13_MBI_duration'] < 0 :
+            print 'Error: C13_MBI duration <0 duration is : %s us' % self.params['C13_MBI_duration']
+            return 
         DynamicalDecoupling.autoconfig(self)
 
     def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1): 

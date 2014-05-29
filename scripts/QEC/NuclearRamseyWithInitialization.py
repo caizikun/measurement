@@ -24,7 +24,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
 
     ### Sweep parameters
-    m.params['wait_times'] = np.arange(15e-6, 26e-6 ,5e-6)
+    m.params['wait_times'] = np.arange(40e-6, 50e-6 ,5e-6)
 
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Ren_Decoupling_scheme'] = 'auto' 
@@ -41,7 +41,8 @@ def NuclearRamseyWithInitialization(name,tau = None):
     #############################
     #!NB: These should go into msmt params
     #############################
-    m.params['Carbon_init_RO_wait']   = 10e-6 # Should be sweeped for optimal in adwin 
+    m.params['Carbon_init_RO_wait']   = 15e-6 # Because of delays the time listed here is the time waiting for MBI trigger. 
+                                              # The actual time for MBI reps is 5us shorter.   
     m.params['min_dec_tau']         = 20e-9 + m.params['fast_pi_duration']/2.0
     m.params['max_dec_tau']         = 0.35e-6 #Based on simulation for fingerprint at low tau
 
@@ -54,14 +55,13 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['MBI_threshold']           = 0
     m.params['C13_MBI_threshold']       = 1
 
-    m.params['C13_MBI_duration']        = 30 
-    m.params['SP_duration_after_C13']   = 20
+    m.params['SP_duration_after_C13']   = 10
 
 
     # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
-    m.params['A_SP_amplitude_after_C13_MBI']  = 10e-9
-    m.params['Ex_N_randomize_amplitude']  = 0e-9 
-    m.params['E_C13_MBI_amplitude']       = 0 
+    m.params['A_SP_amplitude_after_C13_MBI']  = 5e-9
+    m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
+    m.params['E_C13_MBI_amplitude']       = 5e-9
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=False)
