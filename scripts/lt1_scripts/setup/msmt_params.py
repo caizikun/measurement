@@ -163,17 +163,17 @@ cfg['protocols']['Pippin_sil3']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 10e-9,#3nW
+'A_CR_amplitude': 2e-9,#3nW
 'A_RO_amplitude': 0,
-'A_SP_amplitude': 15e-9,
+'A_SP_amplitude': 2e-9,
 'CR_duration' :  50,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude': 4e-9,
-'Ex_SP_amplitude':  3e-9,
-'SP_duration'        : 300,
+'Ex_CR_amplitude':  1e-9,#5nW
+'Ex_RO_amplitude': 1e-9,
+'Ex_SP_amplitude':  1e-9,
+'SP_duration'        : 100,
 'SP_filter_duration' : 0 }
 
 
@@ -183,14 +183,14 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_stop_after_first_photon' : 0,
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
-'A_SP_amplitude': 10e-9,
+'A_SP_amplitude': 3e-9,
 'CR_duration' :  50,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude':  16e-9,
-'Ex_SP_amplitude':  0e-9,
+'Ex_CR_amplitude':  3e-9,#5nW
+'Ex_RO_amplitude':  3e-9,
+'Ex_SP_amplitude':  3e-9,
 'SP_duration'        : 300,
 'SP_filter_duration' : 0 }
 

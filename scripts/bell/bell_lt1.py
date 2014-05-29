@@ -125,7 +125,7 @@ def bell_lt1_remote(name):
     while(1):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
-        if remote_measurement_helper.get_is_running():
+        if m.remote_measurement_helper.get_is_running():
             lt3_ready = True
             qt.msleep(2)
             break
@@ -133,6 +133,7 @@ def bell_lt1_remote(name):
     if lt3_ready:
         m.run(autoconfig=False, setup=False,debug=debug)    
         m.save()
+        m.remote_measurement_helper.set_data_path(m.h5datapath)
         m.finish()
 
 
