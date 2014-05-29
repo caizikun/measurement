@@ -144,6 +144,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.N = self.params['C'+str(ind)+'_Ren_N'][resonance] #Needs to be added to msmt params
         Gate.tau = self.params['C'+str(ind)+'_Ren_tau'][resonance]
 
+
     def find_gate_index(self,name,gate_seq):
         '''
         Returns index of gate with gate.name == name in gate sequence
@@ -648,6 +649,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         a 1us wait element that is repeated a lot of times
         '''
+        # Because there are connection elts on both sides of the wait gates the minimum duration of the wait is 3us. This is because tau cut is 1e-6 on both sides. 
+        # This condition could be defined stricter when going trough all the files 
 
         n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function
         tau_remaind = tau_remaind *1e-9 #convert back to seconds
@@ -1383,7 +1386,6 @@ class SimpleDecoupling(DynamicalDecoupling):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
 
-        i = 0
         for pt in range(pts):
 
 
@@ -1473,7 +1475,7 @@ class MBI_C13(DynamicalDecoupling):
             return 
         DynamicalDecoupling.autoconfig(self)
 
-    def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1): 
+    def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1, addressed_carbon =1): 
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases. 
         '''
@@ -1487,7 +1489,7 @@ class MBI_C13(DynamicalDecoupling):
                 phase = self.params['Y_phase'])
 
         C_int_Ren_a = Gate('C_int_Ren_a_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'],
+                Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
 
         C_int_x = Gate('C_int_x_'+str(pt),'electron_Gate',
@@ -1495,7 +1497,7 @@ class MBI_C13(DynamicalDecoupling):
                 phase = self.params['X_phase'])
 
         C_int_Ren_b = Gate('C_int_Ren_b_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'],
+                Carbon_ind = addressed_carbon,
                 phase = self.params['C13_Y_phase'])
 
         C_int_RO_Trigger = Gate('C_int_RO_trig_'+str(pt),'Trigger',
@@ -1517,7 +1519,37 @@ class MBI_C13(DynamicalDecoupling):
             return False 
         return carbon_init_seq
 
+    def readout_carbon_sequence(self, RO_phase = 0,pt = 1, addressed_carbon =1 ): 
+        C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+        C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+        C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['X_phase'])
+        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
+        carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+        return carbon_RO_seq
+
+    def generate_AWG_elements(self,gate_seq,pt = 1):
+
+        for g in gate_seq:
+            if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
+                self.get_gate_parameters(g)
+                self.generate_decoupling_sequence_elements(g)
+            elif g.Gate_type =='passive_elt':
+                self.generate_passive_wait_element(g)
+            elif g.Gate_type == 'MBI':
+                self.generate_MBI_elt(g)
+            elif g.Gate_type == 'Trigger':
+                self.generate_trigger_elt(g)
+        #Insert connection elements in sequence
+        gate_seq = self.insert_phase_gates(gate_seq,pt)
+        #generate connection elements with proper phases, also includes electron pulses
+        self.calc_and_gen_connection_elts(gate_seq)
+        return gate_seq 
 
 
 class NuclearRamseyWithInitialization(MBI_C13):
@@ -1550,11 +1582,12 @@ class NuclearRamseyWithInitialization(MBI_C13):
             mbi_seq = [mbi]
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi, 
-                    initialization_method = 'swap', pt =pt )
+                    initialization_method = 'swap', pt =pt,
+                    addressed_carbon= self.params['Addressed_Carbon'])
             ################################
-            if self.params['wait_times'][pt]<self.params['Carbon_init_RO_wait']:
+            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): #because min length is 3e-6 
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
-                        %(self.params[wait_times][pt],self.params['Carbon_init_RO_wait']))
+                        %(self.params['wait_times'][pt],self.params['Carbon_init_RO_wait']))
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
@@ -1565,10 +1598,10 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     Gate_operation='pi2',
                     phase = self.params['Y_phase'])
             C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'],phase = 0)
+                    Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
-                    phase = self.params['X_phase'],)
+                    phase = self.params['X_phase'])
             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
@@ -1579,29 +1612,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
             gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
             ############
 
-            for g in gate_seq:
-                if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
-                    self.get_gate_parameters(g)
-                    self.generate_decoupling_sequence_elements(g)
-                elif g.Gate_type =='passive_elt':
-                    self.generate_passive_wait_element(g)
-                elif g.Gate_type == 'MBI':
-                    self.generate_MBI_elt(g)
-                elif g.Gate_type == 'Trigger':
-                    self.generate_trigger_elt(g)
-            #Insert connection elements in sequence
-            gate_seq = self.insert_phase_gates(gate_seq,pt)
-            #generate connection elements with proper phases, also includes electron pulses
-            self.calc_and_gen_connection_elts(gate_seq)
-
-
-
-            if debug == True:
-                print
-                for g in gate_seq:
-                    print g.prefix
-                    if hasattr(g,'tau_cut'): print g.tau_cut 
-
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) 
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
