@@ -44,7 +44,7 @@ qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',
 
 ## EOM - short pulse
 qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=1.5,
-    low=-1.5, offset=0., delay=112e-9, active=True)
+    low=-1.5, offset=0., delay=112e-9, active=True, skew=0.220)
 
 qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
     high=1.0, low=-1.0, offset=0., delay=416e-9, active=True)
