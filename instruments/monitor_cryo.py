@@ -299,7 +299,7 @@ class monitor_cryo(MonitorInstrument):
                           'LT1 temperature B: %.3f K'%(temp_B) + '\n'+\
                           'This is below minimum value (temp_A < %.3f)' %(self.get_lt1_temp_A_max()) + ' K \n'+\
                           'Please help me!!!\n xxx LT1'
-                recipients  = ['B.J.Hensen@tudelft.nl', 'h.bernien@tudelft.nl', 'w.pfaff@tudelft.nl', 'M.S.Blok@tudelft.nl', 'julia.cramer@gmail.com']
+                recipients  = ['B.J.Hensen@tudelft.nl', 'h.bernien@tudelft.nl', 'w.pfaff@tudelft.nl', 'M.S.Blok@tudelft.nl', 'julia.cramer@gmail.com','adriaan.rol@gmail.com']
                 if temp_A>self.get_lt1_temp_A_max()+3:
                     subject=subject+' - LT1 WARMING UP!!!'
                     self.warmup_lt1()
