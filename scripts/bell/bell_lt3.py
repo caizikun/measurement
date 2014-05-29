@@ -84,7 +84,7 @@ def full_bell(name):
     m=Bell_LT3(name) 
 
     m.params['MW_during_LDE'] = mw
-    m.params['wait_for_remote_CR'] = not(local_only)
+    m.params['wait_for_remote_CR'] = measure_lt1
 
     if not(sequence_only):
         if measure_lt1:
@@ -98,7 +98,7 @@ def full_bell(name):
     
     m.autoconfig()
     m.generate_sequence()
-    if sequence_upload_only: return
+    if sequence_only: return
 
     m.setup(debug=debug)
 
@@ -110,6 +110,7 @@ def full_bell(name):
          m.params['lt1_data_path'] = lt1_helper.get_data_path()
     if measure_bs:
         m.params['bs_data_path'] = bs_helper.get_data_path()
+        
     m.finish()
 
 if __name__ == '__main__':
