@@ -48,6 +48,9 @@ class Tail(bell.Bell):
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
 
+    def print_measurement_progress(self):
+        pulsar_pq.PQPulsarMeasurement.print_measurement_progress(self)
+
     def create_eom_pulse(self, i):
         if self.params['use_eom_pulse'] == 'short':
             print 'using short eom pulse'
@@ -101,7 +104,7 @@ class Tail(bell.Bell):
                     aom_risetime            = self.params['aom_risetime'],
                     aom_amplitude           = self.params['aom_amplitude'][i])
 
-
+Tail.bs_helper = qt.instruments['bs_helper']
 def tail_lt3(name):
 
     m=Tail(name)
@@ -172,7 +175,7 @@ def tail_lt3(name):
 
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 5000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -180,14 +183,25 @@ def tail_lt3(name):
     m.params['MW_during_LDE'] = 0
     
     debug=False
+    measure_bs=True
+
     m.params['trigger_wait'] = True#not(debug)
     m.autoconfig()
     m.generate_sequence()
     #print m.params['measurement_time']
 
-    m.setup(debug=debug)
-    m.run(autoconfig=False, setup=False,debug=debug)    
+    if measure_bs:
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_measurement_name(name)
+            m.bs_helper.set_is_running(True)
+            m.bs_helper.execute_script()
+
+    m.setup(debug=(debug or measure_bs))
+    m.run(autoconfig=False, setup=False,debug=(debug or measure_bs))    
     m.save()
+    if measure_bs:
+        m.bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()
     m.finish()
 
 
@@ -270,14 +284,26 @@ def tail_lt1(name):
     m.params['MW_during_LDE'] = 0
     
     debug=False
+    measure_bs=True
+
     m.params['trigger_wait'] = 1
     m.autoconfig()
     m.generate_sequence()
 
-    m.setup(debug=debug)
-    m.run(autoconfig=False, setup=False,debug=debug)    
+    if measure_bs:
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_measurement_name(name)
+            m.bs_helper.set_is_running(True)
+            m.bs_helper.execute_script()
+
+
+    m.setup(debug=(debug or measure_bs))
+    m.run(autoconfig=False, setup=False,debug=(debug or measure_bs))    
     m.save()
+    if measure_bs:
+        m.bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt3('lt3_tail_The111NO1_SIL5_10deg')
+    tail_lt3('lt3_tail_The111NO1_SIL2')
