@@ -35,7 +35,7 @@ class Pulsar:
 
     ### channel handling
     def define_channel(self, id, name, type, delay, offset,
-            high, low, active):
+            high, low, active, skew=0):
 
         _doubles = []
         for c in self.channels:
@@ -54,6 +54,7 @@ class Pulsar:
             'high' : high,
             'low' : low,
             'active' : active,
+            'skew'   : skew,
             }
 
     def set_channel_opt(self, name, option, value):
@@ -165,11 +166,13 @@ class Pulsar:
                 o = (self.channels[c]['high'] + self.channels[c]['low'])/2.
                 channel_cfg['ANALOG_AMPLITUDE_%s' %n[-1]] = a
                 channel_cfg['ANALOG_OFFSET_%s' %n[-1]] = o
+                channel_cfg['CHANNEL_SKEW_%s' %n[-1]] = self.channels[c]['skew']
             elif self.channels[c]['type'] == 'marker':
                 channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
                 channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
                 channel_cfg['MARKER%s_LOW_%s'%(n[-1],n[2])] = self.channels[c]['low']
                 channel_cfg['MARKER%s_HIGH_%s'%(n[-1],n[2])] = self.channels[c]['high']
+                channel_cfg['MARKER%s_SKEW_%s'%(n[-1],n[2])] = self.channels[c]['skew']
             #elif self.channels[c]['type'] == 'dc':
             #    channel_cfg['DC_OUTPUT_LEVEL_%s'%n[-1]] = self.channels[c]['level']
 
@@ -506,7 +509,6 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
-
         self.AWG.send_awg_file(filename,awg_file)
 
         self.AWG.load_awg_file(filename)
