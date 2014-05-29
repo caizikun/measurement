@@ -43,12 +43,10 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 		if not(meas_helper.get_is_running()): break
 
 		length, data = PQ_ins.get_TTTR_Data()
-		event_time, channel, special = pq_measurement.PQ_decode(data)
+		event_time, channel, special = pq_measurement.PQ_decode(data[:length])
 		if length > 2:
-			if length == 131072:
+			if length > 131070:
 				print 'WARNING: TTTR length == max TTTR length. get TTTR rate to slow?'
-			channel=channel[:length]
-			special=special[:length]
 			#for i in range(length):
 			#	if special[i] == 0 and channel[i]==0:
 			#		cts0+=1
