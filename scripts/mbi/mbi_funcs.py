@@ -1,7 +1,7 @@
 import qt
 import numpy as np
 
-from measurement.lib.measurement2.adwin_ssro import ssro, pulsar_mbi_espin
+from measurement.lib.measurement2.adwin_ssro import ssro, pulsar_mbi_espin,pulsar_mbi_nitrogenspin
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']

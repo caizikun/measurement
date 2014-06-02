@@ -113,6 +113,7 @@ zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 an
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.196e6        #calibrated 20140320/181319
+Q = 4.938e6                 # from above values. 20140530
 
 mw_mod_frequency = 250e6
 
@@ -132,8 +133,10 @@ cfg['samples']['Hans_sil1'] = {
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
 'zero_field_splitting': zero_field_splitting,
+'Q_splitting':          Q,
 'g_factor'      :       2.8025e6, #Hz/Gauss
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
+'g_factor_N14'  :       0.3077e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
 
@@ -304,11 +307,11 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
 'SSRO_duration'     :  10,
-'Ex_RO_amplitude':  50e-9,
-'Ex_SP_amplitude'  : 0e-9,
+'Ex_RO_amplitude':  10e-9,
+'Ex_SP_amplitude'  : 25e-9,
 'A_CR_amplitude': 25e-9,
 'Ex_CR_amplitude': 25e-9,
-'A_SP_amplitude': 60e-9,
+'A_SP_amplitude': 20e-9,
 'A_SP_repump_amplitude':.5e-9,
 'SP_duration': 10, #!!!! 10
 'SP_repump_duration': 100,
@@ -317,17 +320,34 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
 'SSRO_stop_after_first_photon':0,
-#    ### Corpse pulses ###
+
+### Corpse pulses ###
 'CORPSE_pi2_amp'    :           .9,
 'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
- 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
- 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
- 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
- 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
- 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
+'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.,
 
+# For nitrogen initialization
+'N_0-1_splitting_ms-1': 7.13429e6,
+'init_repetitions':1,
+'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry,
+'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry,
+'AWG_MBI_MW_pulse_amp'      :   0.09,
+'AWG_MBI_MW_pulse_duration' :   2500e-9,
 
+#MBI readout power and duration
+'Ex_MBI_amplitude'          :           10e-9,
+'MBI_duration'              :           5,
+
+'pi2pi_mI0_mod_frq':MW_mod_magnetometry,
+'pi2pi_mI0_amp':0.736,
+'pi2pi_mI0_duration':395e-9,
+'MW_pi_pulse_amp': 0.9,
+'MW_pi_pulse_duration': 385e-9
  }
 
 

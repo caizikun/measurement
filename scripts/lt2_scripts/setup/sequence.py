@@ -28,6 +28,10 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
 qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
+#RF
+qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+
 # sync ADwin
 qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
@@ -42,12 +46,14 @@ qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker',
 #qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=1.5,
 #    low=-1.5, offset=0., delay=112e-9, active=True)
 
+'''
 # 2013-12-03: trying different channel def. to make a shorter eom pulse
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.8,
     low=-1.25, offset=0., delay=112e-9, active=True)
 
 qt.pulsar.define_channel(id='ch3_marker2', name='EOM_trigger', type='marker',
      high=2.0, low=0.0, offset=0., delay=0e-9, active=True)
+'''
 
 #AOMs
 #qt.pulsar.define_channel(id='ch4_marker1', name='EOM_AOM_Matisse', type='marker',

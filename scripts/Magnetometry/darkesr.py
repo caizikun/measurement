@@ -64,7 +64,8 @@ def darkesrp1(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
-
+    
+    
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     print m.params['ms+1_cntr_frq']
@@ -72,8 +73,9 @@ def darkesrp1(name):
     m.params['repetitions'] = 1000
     m.params['range']        = 7e6
     m.params['pts'] = 101
-    m.params['pulse_length'] = 2.38e-6
-    m.params['ssbmod_amplitude'] = 0.018
+    m.params['pulse_length'] = 2.5e-6
+    m.params['ssbmod_amplitude'] = 0.054
+    m.params['Ex_SP_amplitude'] = 0
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
@@ -84,8 +86,55 @@ def darkesrp1(name):
     m.save()
     m.finish()
 
+def init_N_darkesr(name):
+    '''
+    Initialize the Nitrogen with conditional pulses and Ex_SP_amplitude
+    then
+    dark ESR on the 0 <-> -1 transition
+    '''
+
+    m = pulsar_msmt.initNitrogen_DarkESR(name)
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
+
+    #m.params['A_SP_amplitude'] = 0
+    m.params['Ex_SP_amplitude'] = 0
+    m.params['wait_for_AWG_done'] = 1
+    m.params['ssmod_detuning'] = 43e6
+    m.params['mw_frq']       = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
+    m.params['repetitions']  = 1000
+    m.params['range']        = 3e6
+    m.params['pts'] = 151
+    m.params['pulse_length'] = m.params['AWG_MBI_MW_pulse_duration']
+    m.params['ssbmod_amplitude'] = m.params['AWG_MBI_MW_pulse_amp']
+    m.params['init_repetitions']=1
+    m.params['Ex_SP_amplitude']=0
+    m.params['RF_amp']=1
+    #m.params['pi2pi_mI0_amp']=0
+    m.params['RF1_duration']=175e-6
+    m.params['RF2_duration']=80e-6
+
+    B=(m.params['zero_field_splitting']-m.params['ms-1_cntr_frq'])/m.params['g_factor']
+    m.params['RF1_frq'] = m.params['Q_splitting'] - m.params['N_HF_frq'] + m.params['g_factor_N14']*B
+    m.params['RF2_frq'] = m.params['Q_splitting'] + m.params['N_HF_frq'] - m.params['g_factor_N14']*B
+    m.params['RF1_frq'] = 2.667e6
+    m.params['RF2_frq'] = 7.234e6
+
+    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
+    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
+
+    m.autoconfig()
+    m.generate_sequence(upload=True)
+    m.run()
+    m.save()
+    m.finish()
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
-    
-    darkesr(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)
+    init_N_darkesr('1_rep_only_first_cond_pulses')
+    #darkesr(SAMPLE_CFG)

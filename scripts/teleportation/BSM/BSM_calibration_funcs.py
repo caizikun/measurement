@@ -25,12 +25,13 @@ reload(BSM_sequences)
 from measurement.scripts.teleportation.BSM import BSM_funcs as funcs
 reload(funcs)
 
-
+SAMPLE = qt.exp_params['samples']['current']
+SAMPLE_CFG = qt.exp_params['protocols']['current']
 #############SSRO
 
 def cal_ssro_teleportation(name):
     m = ssro.AdwinSSRO('SSROCalibration_'+name) 
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])  
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])  
     funcs.prepare(m)
     m.params['SSRO_repetitions'] = 5000
     m.params['SP_duration'] = 250 # we want to calibrate the RO, not the SP
@@ -55,7 +56,7 @@ def cal_ssro_teleportation(name):
 ### Calibration stage 1
 def cal_slow_pi(name):
     m = pulsar_mbi_espin.ElectronRabi('cal_slow_pi_'+name)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
     # measurement settings
     pts = 11
@@ -82,8 +83,8 @@ def cal_slow_pi(name):
 def calibrate_MBI_fidelity_RO_pulses(name):
     m = pulsar_msmt.ElectronRabi('MBI_fidelity_RO_pulses_'+name)
     
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     funcs.prepare(m)
 
     m.params['pts'] = 21
@@ -120,8 +121,8 @@ def calibrate_MBI_fidelity_RO_pulses(name):
 ### Calibration stage 1.75
 def calibrate_MBI_fidelity(name):
     m = MBIFidelity(name)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
     funcs.prepare(m)
 
     pts = 4
@@ -162,7 +163,7 @@ def calibrate_MBI_fidelity(name):
 ### Calibration stage 2
 def cal_fast_rabi(name):
     m = pulsar_mbi_espin.ElectronRabi('cal_fast_rabi'+name)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
 
     pts = 21
@@ -186,7 +187,7 @@ def cal_fast_rabi(name):
 def cal_fast_pi(name, mult=1):
     m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
         'cal_fast_pi_'+name+'_M=%d' % mult)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
     
     # measurement settings
@@ -211,7 +212,7 @@ def cal_fast_pi(name, mult=1):
 def cal_fast_pi2(name):
     m = pi2_calibration.Pi2Calibration(
         'cal_fast_pi_over_2_'+name)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)    
     
     # measurement settings
@@ -233,7 +234,7 @@ def cal_fast_pi2(name):
 
 def cal_CORPSE_pi(name , mult=1):
     m = CORPSE_calibration.CORPSEPiCalibration(name+'_M=%d' % mult)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
 
     pts = 11
@@ -254,7 +255,7 @@ def cal_CORPSE_pi(name , mult=1):
 def cal_pi2pi_pi(name, mult=1):
     m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
         'cal_pi2pi_pi_'+name+'_M=%d' % mult)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
     
     # measurement settings
@@ -279,7 +280,7 @@ def cal_pi2pi_pi(name, mult=1):
 def cal_pi2pi_pi_mI0(name, mult=1):
     m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
         'cal_pi2pi_pi_mI0_'+name+'_M=%d' % mult)
-    m.params.from_dict(qt.cfgman['protocols']['AdwinSSRO+MBI']) 
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI']) 
     funcs.prepare(m)
     
     # measurement settings
