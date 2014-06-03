@@ -481,11 +481,11 @@ class adwin(Instrument):
                 set_single_run=single_run)
 
     def get_countrates(self):
-    #    if not 'counter' in self.processes:
-     #       print 'Process for counting not configured.'
-      #      return False
+        #if not 'counter' in self.processes:
+        #    print 'Process for counting not configured.'
+        #    return False
 
-       # if self.is_counter_running():
+        #if self.is_counter_running():
         return self.get_counter_var('get_countrates')
             
     

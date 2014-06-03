@@ -260,7 +260,31 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'AWG_wait_for_adwin_MBI_duration':      4e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
-'repump_after_E_RO_amplitude':          15e-9}
+'repump_after_E_RO_amplitude':          15e-9,
+
+
+    ################
+    ### C13  MBI ###
+    ################
+'E_C13_MBI_amplitude':               5e-9,
+'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger. 
+                                              # The actual time for MBI reps is 5us shorter. 
+'C13_MBI_threshold' :                 0,
+'SP_duration_after_C13':              10,
+
+# We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
+'A_SP_amplitude_after_C13_MBI'  :       5e-9,
+'E_SP_amplitude_after_C13_MBI'  :       0e-9,
+
+#######################
+###  Carbon control ###
+#######################
+
+ 'min_dec_tau'         : 20e-9 + cfg['protocols']['Hans_sil1']['pulses']['fast_pi_duration']/2.0,
+ 'max_dec_tau'         : 0.35e-6, #Based on simulation for fingerprint at low tau
+ 'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
+ }
+
 
 
     ###############################
@@ -301,7 +325,10 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
  'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
  'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
  'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
- 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.}
+ 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
+
+
+ }
 
 
 
