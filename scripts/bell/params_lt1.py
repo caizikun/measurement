@@ -66,7 +66,7 @@ params_lt1['RND_duration'] = 300e-9
 
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 1.5
-params_lt1['eom_off_duration']          = 200e-9
+params_lt1['eom_off_duration']          = 150e-9
 params_lt1['eom_off_amplitude']         = -.26  # calibration from 23-08-2013
 params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
 params_lt1['eom_pulse_amplitude']       = 1.5
