@@ -8,7 +8,7 @@ import numpy as np
 import qt
 import measurement.lib.measurement2.measurement as m2
 import time
-
+import logging
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 class PQMeasurement(m2.Measurement):
@@ -79,6 +79,7 @@ class PQMeasurement(m2.Measurement):
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
+        T2_READMAX = self.PQ_ins.get_T2_READMAX()
         print 'run PQ measurement'
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
@@ -114,6 +115,9 @@ class PQMeasurement(m2.Measurement):
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
+                if _length == T2_READMAX:
+                    logging.warning(self.get_name() + 'TTTR record length is maximum length, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
                 _t, _c, _s = PQ_decode(_data[:_length])
                 
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
