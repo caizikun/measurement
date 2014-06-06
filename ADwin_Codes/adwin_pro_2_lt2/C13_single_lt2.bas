@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 519
+' Foldings                       = 521
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -123,7 +123,9 @@ INIT:
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
   repump_N_randomize_voltage   = DATA_21[5]
-  
+  E_SP_voltage_after_C13_MBI   = DATA_21[6]
+  A_SP_voltage_after_C13_MBI   = DATA_21[7]
+  E_C13_MBI_voltage            = DATA_21[8]
   ' initialize the data arrays
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
@@ -380,7 +382,7 @@ EVENT:
                 
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
           ' Needs Carbon Voltage 
           
         ELSE 'Check if we got a count or if we are the end of the RO
@@ -408,8 +410,8 @@ EVENT:
       CASE 6    'A laser spin pumping after 13C MBI
         
         'is this not a very odd place to specify values? Shouldn't that be done before the loop? Adriaan 
-        A_SP_voltage_after_C13_MBI = DATA_35[ROseq_cntr]  ' currently these values are identical to the normal N-spin MBI 
-        E_SP_voltage_after_C13_MBI = DATA_39[ROseq_cntr]
+        'A_SP_voltage_after_C13_MBI = DATA_35[ROseq_cntr]  ' currently these values are identical to the normal N-spin MBI 
+        'E_SP_voltage_after_C13_MBI = DATA_39[ROseq_cntr]
         
         'A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
         'E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]

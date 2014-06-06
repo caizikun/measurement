@@ -7,12 +7,12 @@ joint_params = {}
 ### default process settings
 joint_params['RO_during_LDE'] = 1
 
-joint_params['opt_pi_pulses'] = 2
+joint_params['opt_pi_pulses'] = 15
 joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9
 joint_params['opt_pulse_separation']    = 600e-9
 
-joint_params['LDE_element_length']              = 16e-6 # 9e-6 for TPQI with 5 pulses
+joint_params['LDE_element_length']              = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation'] # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
@@ -88,7 +88,7 @@ params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor
 params_lt3['eom_pulse_duration']         = 2e-9
 params_lt3['eom_off_amplitude']          = -0.07 
 params_lt3['eom_comp_pulse_amplitude']   = params_lt3['eom_pulse_amplitude'] 
-params_lt3['eom_off_duration']           = 200e-9
+params_lt3['eom_off_duration']           = 150e-9
 params_lt3['eom_overshoot_duration1']    = 10e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
@@ -132,4 +132,4 @@ params_lt3['measurement_abort_check_interval']    = joint_params['measurement_ab
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins
 
-joint_params['RND_start'] = params_lt3['opt_pulse_start']+joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin
+joint_params['RND_start'] = params_lt3['opt_pulse_start']+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin

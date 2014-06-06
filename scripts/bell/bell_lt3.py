@@ -76,10 +76,10 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 def full_bell(name):
 
     debug = True
-    sequence_only = False
+    sequence_only = True
     mw = False
     measure_lt1 = True
-    measure_bs = False
+    measure_bs = True
 
     m=Bell_LT3(name) 
 
@@ -110,7 +110,7 @@ def full_bell(name):
          m.params['lt1_data_path'] = lt1_helper.get_data_path()
     if measure_bs:
         m.params['bs_data_path'] = bs_helper.get_data_path()
-        
+
     m.finish()
 
 if __name__ == '__main__':
