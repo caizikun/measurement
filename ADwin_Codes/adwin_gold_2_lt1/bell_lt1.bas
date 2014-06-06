@@ -99,7 +99,7 @@ INIT:
   DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off E laser
 
   CNT_ENABLE(0000b)'turn off all counters
-  CNT_MODE(counter_channel,000010000b) 'configure counter
+  CNT_MODE(counter_channel,00001000b) 'configure counter
 
   CONF_DIO(0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO)
   DIGOUT(remote_CR_trigger_do_channel,0)
