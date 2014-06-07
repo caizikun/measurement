@@ -52,7 +52,7 @@ cfg['protocols']['AdwinSSRO']={
 
 
 
-yellow=True
+yellow=False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
