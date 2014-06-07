@@ -12,7 +12,7 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9
 joint_params['opt_pulse_separation']    = 600e-9
 
-joint_params['LDE_element_length']              = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation'] # 9e-6 for TPQI with 5 pulses
+joint_params['LDE_element_length']              = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
@@ -121,7 +121,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt3['AWG_wait_for_lt1_start'] =  1487e-9#8e-6 = dt(f,AB)
 params_lt3['sync_during_LDE'] = 1
-params_lt3['plu_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 0
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']

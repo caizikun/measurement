@@ -30,6 +30,7 @@ qt.pulsar.define_channel(id='ch2', name='MW_2', type='analog', high=1.0,
 #TH
 qt.pulsar.define_channel(id='ch3_marker1', name='sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)   
+
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
