@@ -65,6 +65,8 @@ params_lt1['RND_duration'] = 300e-9
 # LDE Sequence in the AWG
 # calibration from 2014-05-30
 
+params_lt1['initial_delay']   	        = 11e-9
+
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 2.0
 params_lt1['eom_off_duration']          = 200e-9

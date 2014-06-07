@@ -240,7 +240,7 @@ def _LDE_element(msmt, **kw):
     #1 SP
     e.add(pulse.cp(msmt.SP_pulse, 
             amplitude = 0, 
-            length = msmt.joint_params['initial_delay']), 
+            length = msmt.params['initial_delay']), ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
         name = 'initial_delay')
     
     e.add(pulse.cp(msmt.SP_pulse, 
