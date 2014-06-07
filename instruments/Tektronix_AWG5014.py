@@ -822,7 +822,7 @@ class Tektronix_AWG5014(Instrument):
 #WAVEFORM FILE FUNCTIONS------------------------------------------------------------------------------------------------
 
     # Send waveform to the device
-    def send_waveform(self,w,m1,m2,filename,clock=1e9):
+    def send_waveform(self,w,m1,m2,filename,clock=None):
         '''
         Sends a complete waveform. All parameters need to be specified.
         See also: resend_waveform()
@@ -860,7 +860,10 @@ class Tektronix_AWG5014(Instrument):
         s1 = 'MMEM:DATA "%s",' % filename
         s3 = 'MAGIC 1000\n'
         s5 = ws
-        s6 = 'CLOCK %.10e\n' % clock
+        if clock != None:
+            s6 = 'CLOCK %.10e\n' % clock
+        else:
+            s6=''
 
         s4 = '#' + str(len(str(len(s5)))) + str(len(s5))
         lenlen=str(len(str(len(s6) + len(s5) + len(s4) + len(s3))))

@@ -67,7 +67,7 @@ params_lt1['RND_duration'] = 300e-9
 
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 2.0
-params_lt1['eom_off_duration']          = 200e-9
+params_lt1['eom_off_duration']          = 150e-9
 params_lt1['eom_off_amplitude']         = -.375  
 params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
 params_lt1['eom_pulse_amplitude']       = 2.0
@@ -93,9 +93,9 @@ params_lt1['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
 params_lt1['MW_12_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
-params_lt1['sync_during_LDE'] = 0 #sync is only for lt3
+params_lt1['sync_during_LDE'] = 1#sync is only for lt3
 params_lt1['plu_during_LDE'] = 0 
-params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] -149e-9 #1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] - 145e-9 #1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

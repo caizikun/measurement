@@ -181,7 +181,7 @@ def _lt1_sequence_start_element(msmt):
     first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
     """
     e = element.Element('LT3_start', pulsar = qt.pulsar)
-    e.append(pulse.cp(msmt.SP_pulse, length=1e-6))
+    e.append(pulse.cp(msmt.SP_pulse, length=1e-6, amplitude = 0))
     return e
 
 def _lt1_sequence_finished_element(msmt):
