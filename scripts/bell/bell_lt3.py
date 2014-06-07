@@ -8,7 +8,7 @@ import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-
+from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 reload(eom_pulses)
 import bell
@@ -61,7 +61,9 @@ class Bell_LT3(bell.Bell):
             wfname = dummy_element.name,
             goto_target = 'start_LDE')
             
-        qt.pulsar.program_awg(seq,*elements)
+        #qt.pulsar.program_awg(seq,*elements)
+        qt.pulsar.upload(*elements)
+        qt.pulsar.program_sequence(seq)
 
     def stop_measurement_process(self):
         bell.Bell.stop_measurement_process(self)
@@ -70,16 +72,20 @@ class Bell_LT3(bell.Bell):
         self.bs_helper.set_is_running(False)
         self.lt1_helper.set_is_running(False)
 
+    #def finish(self):
+    #    ssro.IntegratedSSRO.finish(self)
+
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    debug = True
-    sequence_only = True
+    th_debug = True
+    sequence_only = False
     mw = False
     measure_lt1 = True
-    measure_bs = True
+    measure_bs = False
+    do_upload = True
 
     m=Bell_LT3(name) 
 
@@ -97,13 +103,15 @@ def full_bell(name):
             m.bs_helper.execute_script()
     
     m.autoconfig()
-    m.generate_sequence()
-    if sequence_only: return
+    if do_upload:
+        m.generate_sequence()
+    if sequence_only: 
+        return
 
-    m.setup(debug=debug)
+    m.setup(debug=th_debug)
 
     if measure_lt1: lt1_helper.set_is_running(True)
-    m.run(autoconfig=False, setup=False,debug=debug)
+    m.run(autoconfig=False, setup=False,debug=th_debug)
     m.save()
 
     if measure_lt1:
