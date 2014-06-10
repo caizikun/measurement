@@ -146,4 +146,4 @@ def bell_lt1_remote(name):
 
 
 if __name__ == '__main__':
-    bell_lt1_remote('test')
+    bell_lt1_remote('tpqi_parallel')
