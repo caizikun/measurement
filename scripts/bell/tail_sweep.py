@@ -118,7 +118,7 @@ def tail_lt3(name):
         m.params[k] = params.joint_params[k]
         m.joint_params[k] = params.joint_params[k]
 
-    pts=11
+    pts=5
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -159,7 +159,7 @@ def tail_lt3(name):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.1,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
@@ -175,7 +175,7 @@ def tail_lt3(name):
 
     m.params['send_AWG_start'] = 1
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -307,4 +307,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt1('lt1_tail_dac3_m1500_Ey')
+    tail_lt3('lt3_the111no2_Sil2')
