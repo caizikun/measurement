@@ -147,7 +147,7 @@ def set_lt1_optimization_powers():
 
 
 def turn_on_lt3_pulse_path():
-    qt.instruments['PMServo'].move_in()
+    #qt.instruments['PMServo'].move_in()
     p=pulse.SinePulse(channel='EOM_Matisse', name='pp', length=100e-6, frequency=1/(100e-6), amplitude = 1.8)
     opt = 'offset' if qt.pulsar.channels['EOM_AOM_Matisse']['type']=='analog' else 'low'
 
@@ -171,7 +171,7 @@ def turn_on_lt3_pulse_path():
     qt.instruments['AWG'].stop()
     qt.instruments['AWG'].set_runmode('CONT')
     qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 0.0)
-    qt.instruments['PMServo'].move_out()
+    #qt.instruments['PMServo'].move_out()
 
 def init_AWG():
     qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')

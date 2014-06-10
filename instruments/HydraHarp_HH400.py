@@ -153,6 +153,7 @@ class HydraHarp_HH400(Instrument): #1
                            minval=0, maxval=MAXBINSTEPS-1)
         self.add_parameter('T2_WRAPAROUND', flags = Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('T2_TIMEFACTOR', flags = Instrument.FLAG_GET, type=types.IntType)
+        self.add_parameter('T2_READMAX', flags = Instrument.FLAG_GET, type=types.IntType)
         
         self.add_function('start_histogram_mode')
         self.add_function('start_T2_mode')
@@ -244,6 +245,9 @@ class HydraHarp_HH400(Instrument): #1
 
     def _do_get_T2_TIMEFACTOR(self):
         return T2_TIMEFACTOR
+
+    def _do_get_T2_READMAX(self):
+        return TTREADMAX
 
     def _do_set_Channel(self,val):
 	if val < self.NumOfInputChannels:

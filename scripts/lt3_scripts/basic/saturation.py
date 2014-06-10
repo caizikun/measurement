@@ -5,11 +5,11 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no2_SIL2_ZPL_TH'
+name = 'The111no2_SIL2_ZPL_SM'
 steps=21
-max_power=280e-6       #[w]
-counter=1   #number of counter
-PQ_count=True    # counting with the HH, assumes apd on channel 0
+max_power=270e-6       #[w]
+counter=3   #number of counter
+PQ_count=False    # counting with the HH, assumes apd on channel 0
 bg_x=3.0          #delta x position of background [um]
 bg_y=3.0            #delta y position of background [um]
 
