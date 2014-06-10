@@ -2,8 +2,7 @@
 Script for a carbon ramsey sequence
 """
 import numpy as np
-import qt
-import msvcrt
+import qt 
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -24,29 +23,38 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
 
     ### Sweep parameters
-    m.params['wait_times'] = np.arange(15e-6, 26e-6 ,5e-6)
-
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Ren_Decoupling_scheme'] = 'auto' 
-    m.params['Phases_of_Ren_B'] =np.ones(len(m.params['wait_times']))*0  #np.linspace(0,4*np.pi,41) #
-    # m.params['C1_freq'] = m.params['C1_freq'] # +100e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
-    
+    m.params['pts'] = 10 
+
     m.params['Addressed_Carbon'] = 1
- 
-    m.params['pts']              = len(m.params['wait_times'])
-    m.params['sweep_pts']        = np.ones(len(m.params['wait_times'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
+    m.params['Carbon_init_RO_wait']   = 15e-6
+
+    m.params['C_RO_phase'] =  np.linspace(0,360,m.params['pts'])
+    
+    m.params['wait_times'] = np.ones( m.params['pts'] )* m.params['Carbon_init_RO_wait'] +5e-6 #Note: wait time must be atleast carbon init time +5us 
+    
+    print     m.params['C_RO_phase']
+
+    m.params['sweep_pts']        = m.params['C_RO_phase']#NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
     m.params['sweep_name']       = 'Free Evolution time (s)' 
 
 
     #############################
     #!NB: These should go into msmt params
     #############################
-    m.params['Carbon_init_RO_wait']   = 10e-6 # Should be sweeped for optimal in adwin 
-    m.params['min_dec_tau']         = 20e-9 + m.params['fast_pi_duration']/2.0
-    m.params['max_dec_tau']         = 0.35e-6 #Based on simulation for fingerprint at low tau
-    m.params['dec_pulse_multiple']  = 4 #lowest multiple of 4 pulses
 
-    m.autoconfig()
+    ##########
+    # Overwrite certain params to make the script always work 
+    m.params['MBI_threshold']           = 0
+    m.params['C13_MBI_threshold']       = 1
+    m.params['SP_duration_after_C13']   = 10
+
+    # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
+    m.params['A_SP_amplitude_after_C13_MBI']  = 5e-9
+    m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
+    m.params['E_C13_MBI_amplitude']       = 5e-9
+
+    # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':

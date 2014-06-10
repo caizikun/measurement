@@ -40,11 +40,19 @@ config['waveplates_lt1'] = {
 		'neg_calib_precise': 474,
 	},
 	'zpl_quarter': {
-		'channel' : 1,
+		'channel' : 2,
 		'axis'	  : 1,
 		'pos_calib_quick' : 510,#steps/degree
 		'pos_calib_precise': 500,
 		'neg_calib_quick' : 500,#steps/degree
 		'neg_calib_precise': 500,
+	},
+		'cryo_half': {
+		'channel' : 2,
+		'axis'	  : 2,
+		'pos_calib_quick' : 510,#steps/degree
+		'pos_calib_precise': 833,
+		'neg_calib_quick' : 500,#steps/degree
+		'neg_calib_precise': 714,
 	},
 }

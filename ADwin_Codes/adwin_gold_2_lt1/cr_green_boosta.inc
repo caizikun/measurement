@@ -1,4 +1,5 @@
 '<ADbasic Header, Headerversion 001.001>
+' Foldings                       = 178
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -30,7 +31,9 @@ DIM cr_wait_after_pulse, cr_wait_after_pulse_duration AS LONG
 DIM counter_channel, counter_pattern AS LONG
 DIM E_laser_DAC_channel, A_laser_DAC_channel, repump_laser_DAC_channel AS LONG
 
+
 DIM repump_voltage, repump_off_voltage, E_CR_voltage, A_CR_voltage, E_off_voltage, A_off_voltage AS FLOAT
+DIM green_boost AS Float
 
 SUB init_CR()
   counter_channel              = DATA_30[1]
@@ -63,10 +66,9 @@ SUB init_CR()
   total_repump_counts = 0
   CR_failed           = 0
   repumps             = 0
-  cr_wait_after_pulse    = 0
+  cr_wait_after_pulse = 0
   cr_mode = 0
   cr_timer = 0
-  cr_counts = 0 
   
   PAR_70 = 0                      ' cumulative counts from probe intervals
   PAR_71 = 0                      ' number of repumps
@@ -76,6 +78,7 @@ SUB init_CR()
   par_69 = CR_repump
   par_76 = 0                      ' cumulative counts during repumping
   par_79 = 0                      ' CR below treshold events
+  fpar_80 = 0
 ENDSUB
 
 
@@ -93,10 +96,12 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               
         IF (cr_timer = 0) THEN
           CR_repump                    = PAR_69
+          green_boost                  = FPAR_80
           IF (cr_counts < CR_repump)  THEN  'only repump 
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-            P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on green
+            CNT_CLEAR(counter_pattern)    'clear counter
+            CNT_ENABLE(counter_pattern)    'turn on counter
+            DAC(repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on repump
+            DAC(4,3277*green_boost+32768) ' green boost
             repumps = repumps + 1
             inc(par_71)
           ELSE
@@ -109,10 +114,12 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           
           IF (cr_timer = repump_duration) THEN
             
-            P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
-            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-            P2_CNT_ENABLE(CTR_MODULE,0)
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
+            DAC(repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off repump
+            DAC(4, 3277*0.0+32768) ' turn off green
+            
+            cr_counts = CNT_READ(counter_channel)
+            CNT_ENABLE(0)
+            CNT_CLEAR(counter_pattern)
             
             total_repump_counts = total_repump_counts + cr_counts
             PAR_76 = total_repump_counts
@@ -129,29 +136,29 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         IF (cr_timer = 0) THEN
           CR_preselect                 = PAR_75
           CR_probe                     = PAR_68
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          DAC(E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
+          DAC(A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
+          CNT_CLEAR(counter_pattern)    'clear counter
+          CNT_ENABLE(counter_pattern)    'turn on counter
           INC(PAR_72)
         
         ELSE 
           
           IF (cr_timer = CR_duration) THEN
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
-            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-            P2_CNT_ENABLE(CTR_MODULE,0)
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
+            DAC(E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
+            DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            cr_counts = CNT_READ(counter_channel)
+            CNT_ENABLE(0)
+            CNT_CLEAR(counter_pattern)
             PAR_70 = PAR_70 + cr_counts
-           
+            
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
               DATA_23[repetition_index] = cr_counts
-              first_cr=0
+              first_cr = 0
             ENDIF
-                     
+                      
             IF (cr_counts < current_cr_threshold) THEN
-            cr_mode = 0
+              cr_mode = 0
               inc(CR_failed)
               inc(PAR_79)
             ELSE

@@ -7,12 +7,12 @@ joint_params = {}
 ### default process settings
 joint_params['RO_during_LDE'] = 1
 
-joint_params['opt_pi_pulses'] = 2
+joint_params['opt_pi_pulses'] = 15
 joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
-joint_params['initial_delay']           = 10e-9
+#joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
 joint_params['opt_pulse_separation']    = 600e-9
 
-joint_params['LDE_element_length']              = 16e-6 # 9e-6 for TPQI with 5 pulses
+joint_params['LDE_element_length']              = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
@@ -20,14 +20,6 @@ joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
 joint_params['measurement_abort_check_interval']    = 1. #sec
-
-bs_params = {}
-bs_params['MAX_DATA_LEN']        =   joint_params['MAX_DATA_LEN']
-bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-bs_params['MIN_SYNC_BIN']        =   0 
-bs_params['MAX_SYNC_BIN']        =   1000 
-bs_params['measurement_time']    =   24*60*60 #sec = 24H
-bs_params['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval'] #sec
 
 params_lt3 = {}
 ### Hardware stuff
@@ -46,15 +38,16 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 
 #bell adwin:
 params_lt3['AWG_start_DO_channel'] = 9
-params_lt3['AWG_done_DI_channel'] = 8
+params_lt3['AWG_done_DI_channel'] = 17
 params_lt3['SP_duration'] = 50
 params_lt3['wait_after_pulse_duration'] = 1
-params_lt3['remote_CR_DI_channel'] = 9
-params_lt3['PLU_DI_channel'] = 10
+params_lt3['remote_CR_DI_channel'] = 19
+params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
 params_lt3['SSRO_duration'] = 50
 params_lt3['wait_for_AWG_done'] = 0
-params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+#params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
+params_lt3['wait_for_remote_CR'] = 1
 
 #adwin powers
 params_lt3['Ex_CR_amplitude'] = 3e-9#10e-9#6e-9             
@@ -90,6 +83,22 @@ params_lt3['RND_duration'] = 100e-9
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
 # LDE Sequence in the AWGs
+
+params_lt3['initial_delay']   	        = 10e-9
+
+params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+params_lt3['eom_pulse_duration']         = 2e-9
+params_lt3['eom_off_amplitude']          = -0.07 
+params_lt3['eom_comp_pulse_amplitude']   = params_lt3['eom_pulse_amplitude'] 
+params_lt3['eom_off_duration']           = 150e-9
+params_lt3['eom_overshoot_duration1']    = 10e-9
+params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
+params_lt3['eom_overshoot_duration2']    = 10e-9
+params_lt3['eom_overshoot2']             = 0
+params_lt3['eom_aom_on']                 = True
+params_lt3['aom_risetime']				 = 25e-9
+params_lt3['aom_amplitude']				 = 1.0
+
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
@@ -112,9 +121,9 @@ params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 150e-9
 
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
-params_lt3['AWG_wait_for_lt1_start'] = 8e-6 #= dt(f,BC)
+params_lt3['AWG_wait_for_lt1_start'] =  1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 params_lt3['sync_during_LDE'] = 1
-params_lt3['plu_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 0
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
@@ -125,4 +134,4 @@ params_lt3['measurement_abort_check_interval']    = joint_params['measurement_ab
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins
 
-joint_params['RND_start'] = params_lt3['opt_pulse_start']+joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin
+joint_params['RND_start'] = params_lt3['opt_pulse_start']+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin

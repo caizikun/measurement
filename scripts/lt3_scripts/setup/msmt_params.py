@@ -1,6 +1,6 @@
 cfg={}
 sample_name = 'The111no2'
-sil_name = 'SIL1'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -86,7 +86,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.809880e9# +/-   0.000005            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.8085e9# +/-   0.000005            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -103,7 +103,7 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 3e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 3e-9,
+		'A_SP_amplitude':				 5e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
@@ -113,23 +113,26 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 50,
 		'SP_filter_duration':			 0,
-		'SSRO_duration':				 50,
+		'SSRO_duration':				 100,
 		'SSRO_repetitions':				 5000,
 		}
 
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 30}
+'SSRO_duration' : 25}
 
 CORPSE_frq = 6.5e6
 cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,
     	'CORPSE_amp' : 0.201 ,#m.params['msm1_CORPSE_pi_amp'
-    	'CORPSE_pi2_amp':0.236991,
-    	'CORPSE_pi_60_duration' : 1./CORPSE_frq/6.,
-    	'CORPSE_pi_m300_duration' : 5./CORPSE_frq/6.,
-    	'CORPSE_pi_420_duration' : 7./CORPSE_frq/6.,
-    	'CORPSE_pi_mod_frq' : f_msm1_cntr - mw_frq,
-    	'CORPSE_pi2_mod_frq' : f_msm1_cntr - mw_frq,
+    	#'CORPSE_pi2_amp':0.236991,
+    	#'CORPSE_pi_60_duration' : 1./CORPSE_frq/6.,
+    	#'CORPSE_pi_m300_duration' : 5./CORPSE_frq/6.,
+    	#'CORPSE_pi_420_duration' : 7./CORPSE_frq/6.,
+    	#'CORPSE_pi_mod_frq' : f_msm1_cntr - mw_frq,
+    	#'CORPSE_pi2_mod_frq' : f_msm1_cntr - mw_frq,
+    	'CORPSE_pi_amp': 0.739547,
+    	'MW_pi_amp': 0.9,
+    	'MW_pi_length': 65e-9
 }

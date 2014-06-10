@@ -35,7 +35,15 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
         #print 'setting AWG SP voltage:', self.params['SP_voltage_AWG']
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
-        qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
+        if self.params['LDE_yellow_duration'] > 0.:
+            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
+        else:
+            print self.mprefix, self.name, ': Ignoring yellow'
+
+    
+    def print_measurement_progress(self):
+        reps_completed = self.adwin_var('completed_reps')    
+        print('completed %s readout repetitions' % reps_completed)
 
     def setup(self, **kw):
         pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)     
@@ -51,33 +59,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     'entanglement_events',
                     'completed_reps',
                     'total_CR_counts'])
-
-class Bell_BS(pq.PQMeasurement):
-
-    mprefix = 'Bell_BS'
-    PQ_ins = qt.instruments['HH_400']
-    remote_measurement_helper = qt.instruments['remote_measurement_helper']
-    
-    def autoconfig(self):
-        remote_params = remote_measurement_helper.get_measurement_params()
-        print remote_params
-        for k in remote_params:
-            self.params[k] = remote_params[k]
-
-    def start_measurement_process(self):
-        self.remote_measurement_helper.set_is_running(True)
-
-    def measurement_process_running(self):
-        return self.remote_measurement_helper.get_is_running()
-
-    def stop_measurement_process(self):
-        self.remote_measurement_helper.set_is_running(False)
-
-    def finish(self):
-        self.save_instrument_settings_file()
-        self.save_params()
-        remote_measurement_helper.set_data_path(self.h5datapath)
-        pq.PQMeasurement.finish(self)
 
 
 #if __name__ == '__main__':

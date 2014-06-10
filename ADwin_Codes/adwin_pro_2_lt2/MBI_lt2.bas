@@ -17,7 +17,7 @@
 ' 
 ' modes:
 '   0 : CR check
-'   2 : E spin pumping into ms=0
+'   2 : E spin pumping into ms=+/-1
 '   3 : MBI
 '   4 : A-pumping
 '   5 : wait for AWG
@@ -164,6 +164,7 @@ INIT:
   PAR_77 = 0                      ' current mode (case) Y
   PAR_78 = 0                      ' MBI starts Y
   PAR_80 = 0                      ' ROseq_cntr Y 
+
   
 EVENT:
  
@@ -434,7 +435,7 @@ EVENT:
     INC(timer)
     
   endif
-  
+
     
 FINISH:
   finish_CR()

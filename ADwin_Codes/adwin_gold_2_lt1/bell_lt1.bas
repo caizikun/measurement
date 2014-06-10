@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -99,9 +99,9 @@ INIT:
   DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off E laser
 
   CNT_ENABLE(0000b)'turn off all counters
-  CNT_MODE(counter_channel,000010000b) 'configure counter
+  CNT_MODE(counter_channel,00001000b) 'configure counter
 
-  CONF_DIO(11)
+  CONF_DIO(0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO)
   DIGOUT(remote_CR_trigger_do_channel,0)
 
   mode = 0
@@ -112,7 +112,8 @@ INIT:
   Par_62 = 0                    'AWG signal timeout (no ent. events)
   Par_63 = 0                    ' Stop flag
   Par_73 = repetition_counter     ' SSRO repetitions
-  par_77 = succes_event_counter                      
+  par_77 = succes_event_counter 
+  PAR_80=0                     
 
 EVENT:
 
@@ -124,11 +125,11 @@ EVENT:
     SELECTCASE mode
        
       CASE 0 'CR check
-       
+        DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
         IF ( CR_check(first,succes_event_counter) > 0 ) THEN
-          IF (Par_63 > 0) THEN
-            END
-          ENDIF
+          'IF (Par_63 > 0) THEN
+          '  END
+          'ENDIF
           mode = 2
           timer = -1
           first = 0
@@ -161,9 +162,9 @@ EVENT:
         
       case 3  ' signal local CR+SP done to remote adwin
         
+        DIGOUT(remote_CR_trigger_do_channel, 1)
         INC(repetition_counter)
         INC(PAR_73)
-        DIGOUT(remote_CR_trigger_do_channel, 1)
         mode = 4            
         timer = -1
         remote_CR_wait_timer = 0
@@ -175,7 +176,7 @@ EVENT:
         DIO_register = DIGIN_LONG()
         AWG_done_is_high = (DIO_register AND AWG_done_di_pattern)
         AWG_succes_is_high = (DIO_register AND AWG_succes_DI_pattern)
-           
+        'PAR_80=Par_80+AWG_done_is_high
         IF ((AWG_succes_was_high = 0) AND (AWG_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
           DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
           INC(succes_event_counter)
@@ -185,11 +186,11 @@ EVENT:
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
-            IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
+            
+            IF ((AWG_done_was_high = 0) AND (AWG_done_is_high > 0)) THEN
               INC(PAR_62)            
               mode = 0
               timer = -1
-              remote_mode = 0
               local_wait_time = 10
             ENDIF
           ELSE
@@ -197,7 +198,6 @@ EVENT:
               INC(PAR_62)            
               mode = 0
               timer = -1
-              remote_mode = 0
               local_wait_time = 10
             ENDIF
           ENDIF    
@@ -232,6 +232,7 @@ EVENT:
         
       case 6  ' signal local SSRO done to remote adwin
         DIGOUT(remote_CR_trigger_do_channel, 1)
+        local_wait_time = 10
         mode = 0            
         timer = -1
         

@@ -99,7 +99,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 10
+    pts = 5
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 1000
 
@@ -124,7 +124,7 @@ def fast_ssro_calibration(name):
     m.params['E_SP_amplitude'] = 0
     m.params['SSRO_duration'] = 1
 
-    debug=True
+    debug=False
 
     m.autoconfig()
     m.generate_sequence()

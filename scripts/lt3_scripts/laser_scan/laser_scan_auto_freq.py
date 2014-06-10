@@ -552,7 +552,7 @@ def single_scan(name):
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(63, 82, voltage_step=0.01, integration_time_ms=20, power = 0.5e-9)  #0.6e-9
+    m.red_scan(52, 70, voltage_step=0.01, integration_time_ms=20, power = 10e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
     #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -568,9 +568,9 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(0.5e-6)
 
-    single_scan('The111no2_SIL1_MW_0V')
+    single_scan('The111no2_SIL5_Green_0V')
     #fast_gate_scan('The111no2_SIL1_MW')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)

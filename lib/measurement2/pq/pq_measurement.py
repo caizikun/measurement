@@ -8,7 +8,7 @@ import numpy as np
 import qt
 import measurement.lib.measurement2.measurement as m2
 import time
-
+import logging
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 class PQMeasurement(m2.Measurement):
@@ -79,6 +79,7 @@ class PQMeasurement(m2.Measurement):
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
+        T2_READMAX = self.PQ_ins.get_T2_READMAX()
         print 'run PQ measurement'
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
@@ -114,7 +115,10 @@ class PQMeasurement(m2.Measurement):
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
-                _t, _c, _s = self._PQ_decode(_data[:_length])
+                if _length == T2_READMAX:
+                    logging.warning(self.get_name() + 'TTTR record length is maximum length, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
+                _t, _c, _s = PQ_decode(_data[:_length])
                 
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
@@ -163,16 +167,16 @@ class PQMeasurement(m2.Measurement):
         self.stop_measurement_process()
         
 
-    def _PQ_decode(self,data):
-        """
-        Decode the binary data into event time (absolute, highest precision),
-        channel number and special bit. See PicoQuant (HydraHarp, TimeHarp, PicoHarp) 
-        documentation about the details.
-        """
-        event_time = np.bitwise_and(data, 2**25-1)
-        channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)
-        special = np.bitwise_and(np.right_shift(data, 31), 1)
-        return event_time, channel, special
+def PQ_decode(data):
+    """
+    Decode the binary data into event time (absolute, highest precision),
+    channel number and special bit. See PicoQuant (HydraHarp, TimeHarp, PicoHarp) 
+    documentation about the details.
+    """
+    event_time = np.bitwise_and(data, 2**25-1)
+    channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)
+    special = np.bitwise_and(np.right_shift(data, 31), 1)
+    return event_time, channel, special
 
 
 class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
@@ -227,7 +231,7 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
-                _t, _c, _s = self._PQ_decode(_data[:_length])
+                _t, _c, _s = PQ_decode(_data[:_length])
                 
                 hist0, hist1, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
