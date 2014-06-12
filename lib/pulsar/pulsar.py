@@ -253,7 +253,7 @@ class Pulsar:
 
             # upload to AWG
             self.AWG.send_waveform(chan_wfs[id], chan_wfs[id+'_marker1'],
-                chan_wfs[id+'_marker2'], wfname, self.clock)#here is wehere gijs' code comes in!
+                chan_wfs[id+'_marker2'], wfname)#, self.clock)#here is wehere gijs' code comes in!
             self.AWG.import_waveform_file(wfname, wfname, type='wfm')
 
         _t = time.time() - _t0

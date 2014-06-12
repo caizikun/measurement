@@ -4,8 +4,8 @@ import numpy as np
 
 def measure_and_broadcast_countrates(): #TODO clean up print and debug statements
 
-	meas_time = 1000 * 1e3 #s
-	approx_int_time  = 0.05#s
+	meas_time = 10000 * 1e3 #s
+	approx_int_time  = 0.1#s
 	PQ_ins = qt.instruments['HH_400']
 
 	adwin_ins_lt1 = qt.instruments['physical_adwin_lt1']
@@ -78,8 +78,8 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 			ch0_countrates = float(len(np.where(np.logical_and(special == 0, channel == 0))[0]))/(int_time)
 			ch1_countrates = float(len(np.where(np.logical_and(special == 0, channel == 1))[0]))/(int_time)
 			#print ch0_countrates, ch1_countrates
-			adwin_ins_lt1.Set_Par(adwin_par_lt1, int(ch0_countrates))
-			adwin_ins_lt3.Set_Par(adwin_par_lt3, int(ch1_countrates))
+			adwin_ins_lt1.Set_Par(adwin_par_lt1, int(ch0_countrates+ch1_countrates))
+			adwin_ins_lt3.Set_Par(adwin_par_lt3, int(ch0_countrates+ch1_countrates))
 			qt.msleep(approx_int_time)
 
 	#print ofl, cts0, cts1, ii

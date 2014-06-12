@@ -285,6 +285,8 @@ class ElectronPulse_I_CORPSE_Random(pulsar_pq.PQPulsarMeasurement):
         # some debugging:
         # elements[-1].print_overview()
 
+
+# bug !!
 class DarkESR_CORPSE_Imod(pulsar_msmt.PulsarMeasurement):
     mprefix = 'PulsarDarkESR_CORPSE_Imod'
 

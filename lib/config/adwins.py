@@ -360,6 +360,7 @@ config['adwin_lt1_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
@@ -1670,6 +1671,7 @@ config['adwin_lt3_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
 

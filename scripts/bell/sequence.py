@@ -181,7 +181,7 @@ def _lt1_sequence_start_element(msmt):
     first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
     """
     e = element.Element('LT3_start', pulsar = qt.pulsar)
-    e.append(pulse.cp(msmt.SP_pulse, length=1e-6))
+    e.append(pulse.cp(msmt.SP_pulse, length=1e-6, amplitude = 0))
     return e
 
 def _lt1_sequence_finished_element(msmt):
@@ -240,7 +240,7 @@ def _LDE_element(msmt, **kw):
     #1 SP
     e.add(pulse.cp(msmt.SP_pulse, 
             amplitude = 0, 
-            length = msmt.joint_params['initial_delay']), 
+            length = msmt.params['initial_delay']), ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
         name = 'initial_delay')
     
     e.add(pulse.cp(msmt.SP_pulse, 
@@ -370,6 +370,7 @@ def _LDE_element(msmt, **kw):
     ############
     #print e.print_overview()
     e_len = e.length()
+    print 'SAMPLES', e.samples
     if e_len != msmt.joint_params['LDE_element_length']:
         raise Exception('LDE element "{}" has length {:.2e}, but specified length was {:.2e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
     return e

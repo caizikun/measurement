@@ -200,7 +200,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.dec_duration = 0
                         else:
                             evolution_time = (t+Gate_sequence[i-1].tau_cut) - t_start[C_ind] # NB corrected for difference between time where the gate starts and where the AWG element starts
-                            current_phase = evolution_time*precession_freq%(2*np.pi)
+                            current_phase = evolution_time*precession_freq%(2*np.pi) # shouldnt this modulo be in the next line? - JULIA
                             phase_dif = desired_phase-current_phase
 
                             dec_duration = round( phase_dif/precession_freq *1e9/(self.params['dec_pulse_multiple']*2))*(self.params['dec_pulse_multiple']*2)*1e-9

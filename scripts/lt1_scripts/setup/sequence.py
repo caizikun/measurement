@@ -43,8 +43,8 @@ qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',
     high=0.4, low=0, offset=0., delay=14e-9, active=True)
 
 ## EOM - short pulse
-qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=1.5,
-    low=-1.5, offset=0., delay=112e-9, active=True, skew=10)
+qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=2.0,
+    low=-2.0, offset=0., delay=112e-9, active=True, skew=0)
 
 qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
     high=1.0, low=-1.0, offset=0., delay=416e-9, active=True)
@@ -73,7 +73,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
-        'TRIGGER_INPUT_THRESHOLD'   :   0.4,  # V
+        'TRIGGER_INPUT_THRESHOLD'   :   1.4,  # V
         'EVENT_INPUT_IMPEDANCE'     :   2,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
         'EVENT_INPUT_THRESHOLD'     :   1.4,  #V

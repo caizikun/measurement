@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -187,9 +187,9 @@ EVENT:
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
           mode = 2 
           timer = -1 
-          first = 0 
         ENDIF 
-      
+        first = 0 
+        
       CASE 2    ' E spin pumping
         
         ' turn on both lasers and start counting
