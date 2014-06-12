@@ -167,7 +167,8 @@ class ElectronRabi(PulsarMeasurement):
         # define the necessary pulses
 
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            I_channel='MW_Imod',
+            Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_pulse_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])
@@ -204,6 +205,56 @@ class ElectronRabi(PulsarMeasurement):
 
         # some debugging:
         # elements[-1].print_overview()
+        
+
+class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
+    mprefix = 'ElectronRabi_square'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
+
+
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True):
+        #print 'test'
+        # define the necessary pulses
+
+        X = pulselib.MW_pulse('Weak pi-pulse',
+            MW_channel='MW_Imod',
+            PM_channel='MW_pulsemod',
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        T = pulse.SquarePulse(channel='MW_2', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['MW_pulse_durations'][i],
+                amplitude = self.params['MW_pulse_amplitudes'][i]))
+
+            elements.append(e)
+
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            qt.pulsar.program_awg(seq,*elements)
+            #qt.pulsar.upload(*elements)
+
+
+
 
 class ElectronRamseyCORPSE(PulsarMeasurement):
     mprefix = 'ElectronRamsey'
