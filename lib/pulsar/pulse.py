@@ -141,3 +141,32 @@ class SinePulse(Pulse):
         return self.amplitude * np.sin(2*np.pi * \
                 (self.frequency * tvals + self.phase/360.))
 
+class clock_train(Pulse):
+    def __init__(self, channel, name='clock train', **kw):
+        Pulse.__init__(self, name)
+
+        self.channel = channel
+        self.channels.append (channel)
+
+        self.amplitude = kw.pop('amplitude', 0.1)
+        self.cycles = kw.pop('cycles', 100)
+        self.nr_up_points = kw.pop('nr_up_points', 2)
+        self.nr_down_points = kw.pop('nr_down_points', 2)
+
+    def __call__(self, **kw):
+        self.amplitude = kw.pop('amplitude', self.amplitude)
+        self.cycles = kw.pop('cycles', self.cycles)
+        self.nr_up_points = kw.pop('nr_up_points', self.nr_up_points)
+        self.nr_down_points = kw.pop('nr_down_points', self.nr_down_points)       
+        self.length = self.cycles*(self.nr_up_points+self.nr_down_points)*1e-9
+        return self
+
+    def chan_wf(self, chan, tvals):
+        unit_cell = []
+        for i in np.arange(self.nr_up_points):
+            unit_cell.append(self.amplitude)
+        for i in np.arange(self.nr_down_points):
+            unit_cell.append(0)
+        wf = unit_cell*self.cycles
+            
+        return wf

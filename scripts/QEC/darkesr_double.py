@@ -17,7 +17,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def darkesr(name):
+def darkesrm1(name):
 
     m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -32,6 +32,7 @@ def darkesr(name):
     m.params['SP_duration'] = 50
 
     # m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['mw_mod_freq'] #MW source frequency
+
     m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - m.params['mw_mod_freq']
 
     m.params['mw_power'] = 20
@@ -40,7 +41,7 @@ def darkesr(name):
     m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
     m.params['pts'] = 51
-    m.params['pulse_length'] = 5e-6
+    m.params['pulse_length'] = 10e-6
     m.params['ssbmod_amplitude'] = 0.008
 
     m.autoconfig()
@@ -60,7 +61,7 @@ def darkesrp1(name):
 
     m.params['mw_mod_freq'] = 43e6
     m.params['SP_duration'] = 50
-
+    # m.params['ms+1_cntr_frq'] =  3.725838e9
     m.params['mw_frq'] = m.params['ms+1_cntr_frq']-m.params['mw_mod_freq'] #MW source frequency
     # m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] - m.params['mw_mod_freq']
 
@@ -81,8 +82,9 @@ def darkesrp1(name):
     m.finish()
 
 if __name__ == '__main__':
+    # darkesrm1(SAMPLE_CFG)
     darkesrp1(SAMPLE_CFG)
     cont = raw_input ('Do the fitting for ms=+1... Continue with ms=-1 y/n?')
     if cont =='y':
-        darkesr(SAMPLE_CFG)
+        darkesrm1(SAMPLE_CFG)
 

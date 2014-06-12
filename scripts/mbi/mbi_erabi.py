@@ -20,34 +20,37 @@ def run(name):
     print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 21
+    pts = 15
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 750
 
+    sweep_duration=True
+    sweep_detuning=False
 
-    m.params['MW_pulse_amps']       = np.ones(pts) * 0.09#m.params['fast_pi_amp']
-    m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['MW_modulation_frequency'] -m.params['N_HF_frq']#m.params['AWG_MBI_MW_pulse_mod_frq']
-
-
-    if 1:
-        m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
-        m.params['MW_pulse_delays'] = np.ones(pts) * 2000e-9
+    m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['MW_modulation_frequency'] -m.params['N_HF_frq']
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']
+    m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)#*5
+    m.params['MW_pulse_delays'] = np.ones(pts) * 200e-9
+    
+    if sweep_duration:        
     # MW pulses
-        m.params['MW_pulse_durations']  = np.linspace(0,7500e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
+        m.params['MW_pulse_amps']       = np.ones(pts) * 0.009#m.params['fast_pi_amp']
+        m.params['MW_pulse_durations']  = np.linspace(0,5000e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
         m.params['sweep_name'] = 'MW pulse duration (ns)'
         m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
-
-        #m.params['sweep_name'] = 'MW amp (V)'
-        #m.params['sweep_pts']  = m.params['MW_pulse_amps'] 
-
-
-    if 0:
-        m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)*4
+    else:
         tau_larmor = 2.999e-6
-        m.params['MW_pulse_delays'] = 2 * np.linspace(tau_larmor,pts*tau_larmor,pts)
-        m.params['MW_pulse_durations']  = np.ones(pts)* m.params['fast_pi_duration']#why this +10 here?
-        m.params['sweep_name'] = 'MW_pulse_delays'
-        m.params['sweep_pts']  = m.params['MW_pulse_delays'] * 1e9
+        m.params['MW_pulse_amps']       = np.linspace(0.10,0.11,pts)
+        m.params['MW_pulse_durations']  = np.ones(pts)* 394e-9
+        m.params['sweep_name'] = 'MW pulse amp'
+        m.params['sweep_pts']  = m.params['MW_pulse_amps']
+    if sweep_detuning:    
+        m.params['MW_pulse_amps']       = np.ones(pts) * 0.108#m.params['fast_pi_amp']
+        m.params['MW_pulse_durations']  = np.ones(pts)* 394e-9 # 05-30-'14 Took away the +10 ns -Machiel
+        fctr=m.params['MW_modulation_frequency']
+        m.params['MW_pulse_mod_frqs']   = np.linspace(fctr-500e3,fctr+500e3,pts) 
+        m.params['sweep_name'] = 'MW added detuning (KHz)'
+        m.params['sweep_pts']  = m.params['MW_pulse_mod_frqs'] * 1e-3
 
 
     # for the autoanalysis
@@ -55,5 +58,5 @@ def run(name):
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run('hans1_finding_slow_pi')
+    run('hans1_slow_pi_pulse_msm1')
 

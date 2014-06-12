@@ -56,6 +56,7 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
+    safemode=True 
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
@@ -100,15 +101,19 @@ if __name__ == '__main__':
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
             print 'd_steps>+/-00, step only 250 steps!'
             if d_steps[iterations] > 0:
-                mom.step('Z_axis',maximum_magnet_step_size)
                 d_steps[iterations] = maximum_magnet_step_size
             if d_steps[iterations] < 0:
-                mom.step('Z_axis',-1*maximum_magnet_step_size)
                 d_steps[iterations] = -1*maximum_magnet_step_size
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
-        else:
+        if safemode == True: 
+            ri = raw_input ('move magnet? (y/n)')
+            if str(ri) == 'y': 
+                mom.step('Z_axis',d_steps[iterations])
+            else :
+                break 
+        else: 
             mom.step('Z_axis',d_steps[iterations])
 
 

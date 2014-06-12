@@ -515,11 +515,11 @@ class initNitrogen_DarkESR(DarkESR):
         PM_channel = 'MW_pulsemod',
         PM_risetime = self.params['MW_pulse_mod_risetime'],
         frequency = self.params['pi2pi_mI0_mod_frq'],
-        amplitude = self.params['pi2pi_mI0_amp'],
+        amplitude = self.params['pi2pi_mIp1_amp'],
         length = self.params['pi2pi_mI0_duration'])
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2)
-        SP = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0,length=7e-6)
+        SP = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0,length=10e-6)
 
         T = pulse.SquarePulse(channel='MW_Imod', name='delay')
         T.amplitude = 0.
@@ -533,23 +533,26 @@ class initNitrogen_DarkESR(DarkESR):
         n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
         n.append(pulse.cp(T,length=100e-9))
         n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
-                               frequency=self.params['MW_modulation_frequency']-self.params['N_HF_frq']))
-        n.append(pulse.cp(T,length=1e-6))
-        n.append(pulse.cp(N_pulse,name='RF-first',
-                                 frequency=self.params['RF1_frq'],
-                                 amplitude=self.params['RF_amp'],
-                                 length=self.params['RF1_duration']))
-        n.append(pulse.cp(T,length=1e-6))
+                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
+                               amplitude=self.params['pi2pi_mIm1_amp']))
+        #n.append(pulse.cp(T,length=1e-6))
+        #n.append(pulse.cp(N_pulse,name='RF-first',
+        #                         frequency=self.params['RF1_frq'],
+        #                         amplitude=self.params['RF_amp'],
+        #                         length=self.params['RF1_duration']))
+        #n.append(pulse.cp(T,length=1e-6))
         n.append(SP)
         n.append(pulse.cp(T,length=1e-6))
-        #n.append(pulse.cp(pi2pi_0, name='pi2pi_second',frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq']))
-        #n.append(pulse.cp(T,length=1e-6))
+        n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
+                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
+                                   amplitude=self.params['pi2pi_mI0_amp']))
+        n.append(pulse.cp(T,length=1e-6))
         #n.append(pulse.cp(N_pulse,name='RF-second',
         #      frequency=self.params['RF2_frq'],
         #      amplitude=self.params['RF_amp'],
         #      length=self.params['RF2_duration']))
-        #n.append(pulse.cp(T,length=1e-6))
-        #n.append(SP)
+        n.append(pulse.cp(T,length=1e-6))
+        n.append(SP)
         elements.append(n)
         for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
             self.params['ssbmod_frq_stop'], self.params['pts'])):
@@ -723,7 +726,122 @@ class MBI(PulsarMeasurement):
 
 
 
+class Magnetometry(PulsarMeasurement):
+    mprefix = 'PulsarMagnetometry'
+    adwin_process = 'adaptive_magnetometry'
+
+    def autoconfig(self):
+
+        self.params['sweep_length'] = self.params['repetitions']*self.params['adptv_steps']
+        self.params['pts'] = self.params['repetitions']*self.params['adptv_steps']
+        
+
+                # self.params['A_SP_voltage'] = \
+        #     self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude'])
+
+        # Calling autoconfig from sequence.SequenceSSRO and thus
+        # from ssro.IntegratedSSRO after defining self.params['repetitions'],
+        # since the autoconfig of IntegratedSSRO uses this parameter.
+        PulsarMeasurement.autoconfig(self)
+
+
+
+    def run(self, autoconfig=True, setup=True):
+        if autoconfig:
+            self.autoconfig()
+
+        if setup:
+            self.setup()
+
+        for i in range(10):
+            self.physical_adwin.Stop_Process(i+1)
+            qt.msleep(0.1)
+        qt.msleep(1)
+        # self.adwin.load_MBI()   
+        # New functionality, now always uses the adwin_process specified as a class variables 
+        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+        exec(loadstr)
+        qt.msleep(1)
+        # print loadstr 
+
+        length = self.params['repetitions']*self.params['adptv_steps']
+
+        self.start_adwin_process(stop_processes=['counter'], load=False)
+        qt.msleep(1)
+        self.start_keystroke_monitor('abort')
+
+        while self.adwin_process_running():
+
+            if self.keystroke('abort') != '':
+                print 'aborted.'
+                self.stop_keystroke_monitor('abort')
+                break
+
+            reps_completed = self.adwin_var('completed_reps')
+            print('completed %s / %s readout repetitions' % \
+                    (reps_completed, self.params['repetitions']))
+            qt.msleep(1)
+
+        try:
+            self.stop_keystroke_monitor('abort')
+        except KeyError:
+            pass # means it's already stopped
+
+        self.stop_adwin_process()
+        reps_completed = self.adwin_var('completed_reps')
+        print('completed %s / %s readout repetitions' % \
+                (reps_completed, self.params['repetitions']))
+
+
+    def save(self, name='adwindata'):
+        reps = self.adwin_var('completed_reps')
+        sweeps = self.params['repetitions'] * self.params['adptv_steps']
+
+        self.save_adwin_data(name,
+                [   ('CR_before', sweeps),
+                    ('CR_after', sweeps),
+                    ('RO_data', sweeps),
+                    ('set_phase', sweeps),
+                    'completed_reps'])
+        return
+
+    def _Ninit_element(self,name ='N_init'):
+        # define the necessary pulses
+        pi2pi_0 = pulselib.MW_IQmod_pulse('pi2pi pulse mI=0',
+        I_channel = 'MW_Imod',
+        Q_channel = 'MW_Qmod',
+        PM_channel = 'MW_pulsemod',
+        PM_risetime = self.params['MW_pulse_mod_risetime'],
+        frequency = self.params['pi2pi_mI0_mod_frq'],
+        amplitude = self.params['pi2pi_mIp1_amp'],
+        length = self.params['pi2pi_mI0_duration'])
+        SP = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0,length=10e-6)
+        total_length = int((2*pi2pi_0.length + 2*SP.length + 2.1e-6)*0.25e9)
+        clock_pulse = pulse.clock_train (channel = 'fpga_clock', amplitude = 4.0, nr_up_points=2, nr_down_points=2, cycles= total_length+100)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay')
+        T.amplitude = 0.
+        T.length = 2e-6
+
+        n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
+        n.append(pulse.cp(T,length=100e-9))
+        n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
+                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
+                               amplitude=self.params['pi2pi_mIm1_amp']))
+        n.append(SP)
+        n.append(pulse.cp(T,length=1e-6))
+        n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
+                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
+                                   amplitude=self.params['pi2pi_mI0_amp']))
+        n.append(pulse.cp(T,length=1e-6))
+        n.append(SP)
+        total_length = int((2*pi2pi_0.length + 2*SP.length + 2.1e-6)*1e9)
+        n.add(pulse.cp(clock_pulse, amplitude = 4.0))
+        return n
 
 
 
 
+
+        

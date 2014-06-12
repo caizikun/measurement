@@ -26,6 +26,7 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
+    safemode = True
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
@@ -43,9 +44,11 @@ if __name__ == '__main__':
     mom.set_mode('Z_axis', 'stp')
 
     # start: define B-field and position by first ESR measurement
-    DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
+    DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', 
+            range_MHz=DESR_range, pts=pts, reps=reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
     # start to list all the measured values
@@ -68,21 +71,26 @@ if __name__ == '__main__':
             break
 
 
-        d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))))
+        d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,
+                freq_id=current_f_msp1, ms = 'plus'))))
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
             print 'd_steps>+/-00, step only 250 steps!'
             if d_steps[iterations] > 0:
-                mom.step('Z_axis',maximum_magnet_step_size)
                 d_steps[iterations] = maximum_magnet_step_size
             if d_steps[iterations] < 0:
-                mom.step('Z_axis',-1*maximum_magnet_step_size)
                 d_steps[iterations] = -1*maximum_magnet_step_size
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
-        else:
+        if safemode == True: 
+            ri = raw_input ('move magnet? (y/n)')
+            if str(ri) == 'y': 
+                mom.step('Z_axis',d_steps[iterations])
+            else :
+                break 
+        else: 
             mom.step('Z_axis',d_steps[iterations])
 
         qt.msleep(1)
@@ -91,9 +99,11 @@ if __name__ == '__main__':
         optimiz0r.optimize(dims=['x','y','z'])
         iterations += 1
         
-        DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
+        DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', 
+                range_MHz=DESR_range, pts=pts, reps=reps)
         #do the fitting, returns in MHz, input in GHz
-        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
         delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
         f0.append(f0_temp)

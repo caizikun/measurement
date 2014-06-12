@@ -71,8 +71,8 @@ def darkesrp1(name):
     print m.params['ms+1_cntr_frq']
     m.params['mw_power'] = 20
     m.params['repetitions'] = 1000
-    m.params['range']        = 7e6
-    m.params['pts'] = 101
+    m.params['range']        = 30e6
+    m.params['pts'] = 71
     m.params['pulse_length'] = 2.5e-6
     m.params['ssbmod_amplitude'] = 0.054
     m.params['Ex_SP_amplitude'] = 0
@@ -105,18 +105,18 @@ def init_N_darkesr(name):
     m.params['Ex_SP_amplitude'] = 0
     m.params['wait_for_AWG_done'] = 1
     m.params['ssmod_detuning'] = 43e6
+    m.params['wait_after_RO_pulse_duration']=1#10000
     m.params['mw_frq']       = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
     m.params['repetitions']  = 1000
-    m.params['range']        = 3e6
-    m.params['pts'] = 151
+    m.params['range']        = 1.5*m.params['N_HF_frq']
+    m.params['pts'] = 51
     m.params['pulse_length'] = m.params['AWG_MBI_MW_pulse_duration']
     m.params['ssbmod_amplitude'] = m.params['AWG_MBI_MW_pulse_amp']
-    m.params['init_repetitions']=1
-    m.params['Ex_SP_amplitude']=0
-    m.params['RF_amp']=1
+    m.params['init_repetitions']=100
+    m.params['RF_amp']=1*0
     #m.params['pi2pi_mI0_amp']=0
-    m.params['RF1_duration']=175e-6
-    m.params['RF2_duration']=80e-6
+    m.params['RF1_duration']=53.6e-6
+    m.params['RF2_duration']=30.4e-6
 
     B=(m.params['zero_field_splitting']-m.params['ms-1_cntr_frq'])/m.params['g_factor']
     m.params['RF1_frq'] = m.params['Q_splitting'] - m.params['N_HF_frq'] + m.params['g_factor_N14']*B
@@ -135,6 +135,6 @@ def init_N_darkesr(name):
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
-    #darkesrp1(SAMPLE_CFG)
-    init_N_darkesr('1_rep_only_first_cond_pulses')
+    darkesrp1(SAMPLE_CFG)
+    #init_N_darkesr('only_pi2pi_mI0_and_mIm1_noRF_100rep')
     #darkesr(SAMPLE_CFG)

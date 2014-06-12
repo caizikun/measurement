@@ -29,8 +29,8 @@ qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 #RF
-qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+#qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+#    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 # sync ADwin
 qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
@@ -45,6 +45,13 @@ qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker',
 #EOM
 #qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=1.5,
 #    low=-1.5, offset=0., delay=112e-9, active=True)
+
+
+qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
+        high=4.0, low=0, offset=0., delay=148e-9, active=True)
+qt.pulsar.define_channel(id='ch4_marker1', name='fpga_clock', type='marker', 
+        high=1.0, low=0, offset=0., delay=0., active=True)
+ 
 
 '''
 # 2013-12-03: trying different channel def. to make a shorter eom pulse
@@ -74,8 +81,8 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].g
 #    high=2.0, low=0, offset=0., delay=14e-9, active=True)
 
 ### TMP HH debug channel -- normally there's RF on this output.
-qt.pulsar.define_channel(id='ch2', name='HH_test', type='analog', high=2.0,
-    low=0, offset=0., delay=0, active=True)
+#qt.pulsar.define_channel(id='ch2', name='HH_test', type='analog', high=2.0,
+#    low=0, offset=0., delay=0, active=True)
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,

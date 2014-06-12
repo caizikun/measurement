@@ -151,7 +151,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             ENDIF
                      
             IF (cr_counts < current_cr_threshold) THEN
-            cr_mode = 0
+              cr_mode = 0
               inc(CR_failed)
               inc(PAR_79)
             ELSE
