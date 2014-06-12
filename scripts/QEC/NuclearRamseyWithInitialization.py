@@ -45,7 +45,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to make the script always work 
-    m.params['MBI_threshold']           = 0
+    # m.params['MBI_threshold']           = 0
     m.params['C13_MBI_threshold']       = 1
     m.params['SP_duration_after_C13']   = 10
 
@@ -55,7 +55,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['E_C13_MBI_amplitude']       = 5e-9
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)

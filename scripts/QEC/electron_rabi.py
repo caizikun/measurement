@@ -15,7 +15,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def erabi(name):
+def erabi_m1(name):
     m = pulsar_msmt.ElectronRabi(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -98,21 +98,21 @@ def erabi_p1(name):
     m.params['mw_power'] = 23
 
 
-    m.params['MW_pulse_durations'] =  np.linspace(0, 600, pts) * 1e-9
-    #m.params['MW_pulse_durations'] =  80e-9*np.ones(pts)#np.linspace(0, 200, pts) * 1e-9
+    # m.params['MW_pulse_durations'] =  np.linspace(0, 600, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  5500e-9*np.ones(pts)#np.linspace(0, 200, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts) *1
-    #m.params['MW_pulse_amplitudes'] = np.linspace(0,1.,pts) #0.85*np.ones(pts)
+    # m.params['MW_pulse_amplitudes'] = np.ones(pts) *1
+    m.params['MW_pulse_amplitudes'] = np.linspace(0,0.02,pts) #0.85*np.ones(pts)
 
     # for autoanalysis
     #m.params['sweep_name'] = 'Pulse duration (ns)' #'Pulse amps (V)'
     #m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
 
-    m.params['sweep_name'] = 'Pulse durations (ns)'
-    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    # m.params['sweep_name'] = 'Pulse durations (ns)'
+    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
-    #m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    # m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
+    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
     m.params['sequence_wait_time'] = \
             int(np.ceil(np.max(m.params['MW_pulse_durations'])*1e6)+10) #Redundant because defined in m.autoconfig? Tim
@@ -125,7 +125,7 @@ def erabi_p1(name):
 
 
 if __name__ == '__main__':
-    erabi_p1(SAMPLE+'_'+'Rabi-1')
-    cont = raw_input ('Do the fitting for ms=-1... Continue with ms=+1 y/n?')
+    erabi_p1(SAMPLE+'_'+'Rabi+1')
+    cont = raw_input ('Do the fitting for ms=+1... Continue with ms=-1 y/n?')
     if cont =='y':
-        erabi_p1(SAMPLE+'_'+'Rabi+1')
+        erabi_m1(SAMPLE+'_'+'Rabi-1')

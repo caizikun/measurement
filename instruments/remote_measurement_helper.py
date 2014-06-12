@@ -58,8 +58,10 @@ class remote_measurement_helper(Instrument):
             self._ins_cfg[param] = value
 
     def execute_script(self):
+        script_dir = os.path.split(self.get_script_path())[0]
         remote_cmd=objsh.helper.find_object(self._exec_qtlab_name +':python_server')
         if remote_cmd!=None:
+            remote_cmd.cmd("os.chdir('{}')".format(script_dir))
             remote_cmd.cmd("execfile('{}')".format(self.get_script_path()))
         else:
             logging.warning(self.get_name() + ': Remote qtlab instance ' + self._exec_qtlab_name +' not found, client disconnected?')

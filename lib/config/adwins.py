@@ -360,6 +360,7 @@ config['adwin_lt1_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
@@ -837,6 +838,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
                     ['sweep_length'                ,   1],
+                    ['wait_after_RO_pulse_duration',1],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -949,6 +951,58 @@ config['adwin_lt2_processes'] = {
                     'MBI_time' : 28,
                     },
                 },
+
+        'adaptive_magnetometry' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_phase_calibr'             ,   1],
+                    ['min_phase'                   ,   0],
+                    ['delta_phase'                 ,   0],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    },
+                },
+
+
+
 
         'general_pulses_sweep' : {
                 'index' : 9,
@@ -1617,6 +1671,7 @@ config['adwin_lt3_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
 

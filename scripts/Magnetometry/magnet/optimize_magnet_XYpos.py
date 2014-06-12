@@ -35,14 +35,14 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'Y_axis'
+    axis = 'X_axis'
     scan_range       = 400        # From -scan range/2 to +scan range/2  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 10         # the sample position is checked after each magnet_step_size
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
     range_coarse = 5.00
-    pts_coarse  = 81   
+    pts_coarse  = 101   
     reps_coarse   = 500
 
     range_fine = 0.25
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0,-50]#[0, -50, -50]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [0]#[0, -50, -50]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
     print steps
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         #measure both frequencies
             #ms=-1 coarse
         DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
             #ms=-1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         
             #ms=+1 coarse
         DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
             #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
