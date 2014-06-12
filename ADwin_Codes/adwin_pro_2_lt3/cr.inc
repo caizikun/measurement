@@ -147,7 +147,6 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
               DATA_23[repetition_index] = cr_counts
-              first_cr=0
             ENDIF
                       
             IF (cr_counts < current_cr_threshold) THEN

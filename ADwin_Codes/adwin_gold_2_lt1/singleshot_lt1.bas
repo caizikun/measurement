@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -120,8 +120,8 @@ EVENT:
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
           mode = 2
           timer = -1
-          first = 0
         ENDIF
+        first = 0
         
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN

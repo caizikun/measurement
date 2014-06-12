@@ -1,6 +1,6 @@
 cfg={}
-sample_name = 'The111no2'
-sil_name = 'SIL2'
+sample_name = 'Sam'
+sil_name = 'SIL5'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}

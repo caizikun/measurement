@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no2_SIL2_ZPL_SM'
-steps=21
-max_power=270e-6       #[w]
-counter=3   #number of counter
+name = 'Sam_SIL5_ZPL_SM_BS'
+steps=31
+max_power=260e-6       #[w]
+counter=3  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=3.0          #delta x position of background [um]
-bg_y=3.0            #delta y position of background [um]
+bg_x=2.0          #delta x position of background [um]
+bg_y=-2.0            #delta y position of background [um]
 
 #instruments
 if PQ_count:

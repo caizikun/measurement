@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -27,6 +27,7 @@
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_events_dim      50000
+#DEFINE max_CR_counts 200
 
 'init
 DIM DATA_20[100] AS LONG
@@ -36,6 +37,7 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
 DIM DATA_25[max_events_dim] AS LONG  ' SSRO counts spin readout
 DIM DATA_27[max_events_dim] AS LONG  'time spent waiting after local CR ok, for entanglement event
+DIM DATA_28[max_CR_counts] AS LONG  'CR hist after sequence
 
 DIM SP_duration, SP_filter_duration AS LONG
 DIM SSRO_duration AS LONG
@@ -132,6 +134,10 @@ EVENT:
           'ENDIF
           mode = 2
           timer = -1
+        ENDIF
+        IF (first > 1) THEN
+          i = MAX_LONG(cr_counts+1,max_CR_counts)
+          INC(DATA_28[i])
           first = 0
         ENDIF
         
@@ -183,7 +189,8 @@ EVENT:
           INC(Par_77)
           mode = 5
           timer = -1         
-          DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
+          DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
+          first = 1 
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
             
@@ -192,6 +199,7 @@ EVENT:
               mode = 0
               timer = -1
               local_wait_time = 10
+              first = 1
             ENDIF
           ELSE
             IF (timer = sequence_wait_time) THEN
@@ -199,6 +207,7 @@ EVENT:
               mode = 0
               timer = -1
               local_wait_time = 10
+              first = 1
             ENDIF
           ENDIF    
         ENDIF     
@@ -224,9 +233,7 @@ EVENT:
             
             local_wait_time = local_wait_time_duration 
             mode = 6
-            timer = -1
-            first = 1
-                     
+            timer = -1                    
           ENDIF
         ENDIF
         

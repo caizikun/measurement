@@ -118,7 +118,7 @@ def tail_lt3(name):
         m.params[k] = params.joint_params[k]
         m.joint_params[k] = params.joint_params[k]
 
-    pts=5
+    pts=10
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -159,7 +159,7 @@ def tail_lt3(name):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.2,0.6,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
@@ -307,4 +307,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt3('lt3_the111no2_Sil2')
+    tail_lt3('lt3_Sam_Sil5')
