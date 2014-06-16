@@ -9,7 +9,7 @@ import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 

@@ -8,7 +8,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 import msvcrt
 # XX from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmnt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmnt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 import sequence as bseq

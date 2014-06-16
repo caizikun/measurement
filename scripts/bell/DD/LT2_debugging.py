@@ -4,7 +4,7 @@ debugging functions for LDE and the dynamical decoupling used in teleportation
 import numpy as np
 import qt
 
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 import measurement.scripts.espin.CORPSE_tests as CORPSE_tests
 reload(CORPSE_tests)

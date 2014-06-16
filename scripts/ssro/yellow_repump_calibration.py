@@ -6,7 +6,7 @@ import qt
 import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.scripts.lt1_scripts import stools
 
 # import the msmt class

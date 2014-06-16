@@ -12,7 +12,7 @@ import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.scripts.Magnetometry import pulsar_magnetometry as pulsar_mgnt
 reload(pulsar_mgnt)
 
