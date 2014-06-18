@@ -185,13 +185,13 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
-'A_SP_amplitude': 10e-9,
+'A_SP_amplitude': 15e-9,
 'CR_duration' :  50,    
 'CR_preselect': 1000,
 'CR_probe':     1000,
 'CR_repump':    1000,
-'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude':  15e-9,#15e-9,
+'Ex_CR_amplitude':  5e-9,   #5nW
+'Ex_RO_amplitude':  15e-9,  #15e-9,
 'Ex_SP_amplitude':  0e-9,
 'SP_duration'        : 50,
 'SP_filter_duration' : 0 }
@@ -235,7 +235,7 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
-'AWG_MBI_MW_pulse_amp'      :   0.016,
+'AWG_MBI_MW_pulse_amp'      :   0.013,
 'AWG_MBI_MW_pulse_duration' :   5500e-9,
 
 #    ### Corpse pulses ###
@@ -261,8 +261,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           0.1e-9,
-'MBI_duration'              :           4,
+'Ex_MBI_amplitude'          :           0.5e-9,
+'MBI_duration'              :           14,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -313,7 +313,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 ########################
 
 CORPSE_frq=  6.8e6
-MW_mod_magnetometry=43e6
+MW_mod_magnetometry=30e6
 f_msm1_cntr = 2.024900e9             #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.730069e9              #Electron spin ms=+1 frequency
 
@@ -353,19 +353,19 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 # For nitrogen initialization
 'N_0-1_splitting_ms-1': 7.13429e6,
 'init_repetitions':1,
-'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry-N_HF_frq,
-'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry-N_HF_frq,
-'AWG_MBI_MW_pulse_amp'      :   0.0101,
-'AWG_MBI_MW_pulse_duration' :   4250e-9,
+'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry+N_HF_frq,
+'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry+N_HF_frq,
+'AWG_MBI_MW_pulse_amp'      :   0.015,
+'AWG_MBI_MW_pulse_duration' :   4000e-9,
 
 #MBI readout power and duration
 'Ex_MBI_amplitude'          :           3e-9,
 'MBI_duration'              :           4,
 
-'pi2pi_mI0_mod_frq':MW_mod_magnetometry,
-'pi2pi_mIm1_amp':0.1078,
-'pi2pi_mIp1_amp':0.1042,
-'pi2pi_mI0_amp':0.105,
+'pi2pi_mI0_mod_frq':MW_mod_magnetometry+N_HF_frq,
+'pi2pi_mIm1_amp':0.2081,
+'pi2pi_mIp1_amp':0.2027,
+'pi2pi_mI0_amp':0.2027,
 'pi2pi_mI0_duration':394e-9,
 'MW_pi_pulse_amp': 0.9,
 'MW_pi_pulse_duration': 55e-9

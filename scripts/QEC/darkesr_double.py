@@ -28,7 +28,7 @@ def darkesrm1(name):
 
     
     m.params['mw_mod_freq'] = 43e6
-    m.params['SSRO_duration'] = 8    
+    m.params['SSRO_duration'] = 12
     m.params['SP_duration'] = 50
 
     # m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['mw_mod_freq'] #MW source frequency
@@ -36,13 +36,13 @@ def darkesrm1(name):
     m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - m.params['mw_mod_freq']
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 1000
 
     m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
-    m.params['pts'] = 51
-    m.params['pulse_length'] = 10e-6
-    m.params['ssbmod_amplitude'] = 0.008
+    m.params['pts'] = 61
+    m.params['pulse_length'] = 2e-6
+    m.params['ssbmod_amplitude'] = 0.01
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -67,13 +67,13 @@ def darkesrp1(name):
 
 
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 1000
 
     m.params['ssbmod_frq_start'] = m.params['mw_mod_freq'] - 5e6
     m.params['ssbmod_frq_stop'] = m.params['mw_mod_freq'] + 5e6
-    m.params['pts'] = 51
-    m.params['pulse_length'] = 5e-6
-    m.params['ssbmod_amplitude'] = 0.010
+    m.params['pts'] = 61
+    m.params['pulse_length'] = 2e-6
+    m.params['ssbmod_amplitude'] = 0.04
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -83,7 +83,7 @@ def darkesrp1(name):
 
 if __name__ == '__main__':
     # darkesrm1(SAMPLE_CFG)
-    darkesrp1(SAMPLE_CFG)
+    # darkesrp1(SAMPLE_CFG)
     cont = raw_input ('Do the fitting for ms=+1... Continue with ms=-1 y/n?')
     if cont =='y':
         darkesrm1(SAMPLE_CFG)

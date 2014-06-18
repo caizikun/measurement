@@ -113,19 +113,25 @@ if __name__ == '__main__':
 
         #measure both frequencies
             #ms=-1 coarse
-        DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+        DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', 
+                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
             #ms=-1 fine
-        DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
+        DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
                    
         qt.msleep(1)
         
             #ms=+1 coarse
-        DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+        DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
+                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
             #ms=+1 fine
-        DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
+        DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)

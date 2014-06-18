@@ -827,12 +827,12 @@ class Magnetometry(PulsarMeasurement):
         n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
         n.append(pulse.cp(T,length=100e-9))
         n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
-                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
+                               frequency=self.params['pi2pi_mI0_mod_frq']+self.params['N_HF_frq'],
                                amplitude=self.params['pi2pi_mIm1_amp']))
         n.append(SP)
         n.append(pulse.cp(T,length=1e-6))
         n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
-                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
+                                   frequency=self.params['pi2pi_mI0_mod_frq'],#-self.params['N_HF_frq'],
                                    amplitude=self.params['pi2pi_mI0_amp']))
         n.append(pulse.cp(T,length=1e-6))
         n.append(SP)

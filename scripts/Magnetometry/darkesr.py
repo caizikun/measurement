@@ -68,13 +68,13 @@ def darkesrp1(name):
     
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
-    print m.params['ms+1_cntr_frq']
+    #print m.params['ms+1_cntr_frq']
     m.params['mw_power'] = 20
     m.params['repetitions'] = 1000
-    m.params['range']        = 30e6
-    m.params['pts'] = 71
+    m.params['range'] = 20e6
+    m.params['pts'] = 201
     m.params['pulse_length'] = 2.5e-6
-    m.params['ssbmod_amplitude'] = 0.054
+    m.params['ssbmod_amplitude'] = 0.027
     m.params['Ex_SP_amplitude'] = 0
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
@@ -86,7 +86,7 @@ def darkesrp1(name):
     m.save()
     m.finish()
 
-def init_N_darkesr(name):
+def init_N_darkesr(name, init_reps):
     '''
     Initialize the Nitrogen with conditional pulses and Ex_SP_amplitude
     then
@@ -104,19 +104,19 @@ def init_N_darkesr(name):
     #m.params['A_SP_amplitude'] = 0
     m.params['Ex_SP_amplitude'] = 0
     m.params['wait_for_AWG_done'] = 1
-    m.params['ssmod_detuning'] = 43e6
+    m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['wait_after_RO_pulse_duration']=1#10000
     m.params['mw_frq']       = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
-    m.params['repetitions']  = 1000
+    m.params['repetitions']  = 3000
     m.params['range']        = 1.5*m.params['N_HF_frq']
     m.params['pts'] = 51
     m.params['pulse_length'] = m.params['AWG_MBI_MW_pulse_duration']
     m.params['ssbmod_amplitude'] = m.params['AWG_MBI_MW_pulse_amp']
-    m.params['init_repetitions']=100
+    m.params['init_repetitions']=init_reps
     m.params['RF_amp']=1*0
     #m.params['pi2pi_mI0_amp']=0
-    m.params['RF1_duration']=53.6e-6
-    m.params['RF2_duration']=30.4e-6
+    m.params['RF1_duration']=0*53.6e-6
+    m.params['RF2_duration']=0*30.4e-6
 
     B=(m.params['zero_field_splitting']-m.params['ms-1_cntr_frq'])/m.params['g_factor']
     m.params['RF1_frq'] = m.params['Q_splitting'] - m.params['N_HF_frq'] + m.params['g_factor_N14']*B
@@ -136,5 +136,8 @@ if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
     darkesrp1(SAMPLE_CFG)
-    #init_N_darkesr('only_pi2pi_mI0_and_mIm1_noRF_100rep')
+    #reps = 100
+    #for reps in [1,2,3,5,10]:
+    #init_N_darkesr('test_init_pi2pi_mI0_and_mIm1_noRF_' +str(reps), init_reps=reps)
+    #    raw_input('analysze...')
     #darkesr(SAMPLE_CFG)

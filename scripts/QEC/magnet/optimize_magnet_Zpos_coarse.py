@@ -39,7 +39,7 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.03
+    m.params['ssbmod_amplitude'] = 0.04
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
-    safemode=True 
+    safemode=False 
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
@@ -82,7 +82,8 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
     # start to list all the measured values
@@ -95,7 +96,8 @@ if __name__ == '__main__':
     print 'Difference = ' + str(delta_f0_temp) + ' kHz'
     
     while abs(delta_f0_temp) > opimization_target:
-        d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,freq_id=current_f_msp1, ms = 'plus'))))
+        d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,
+                freq_id=current_f_msp1, ms = 'plus'))))
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
@@ -134,7 +136,8 @@ if __name__ == '__main__':
         darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps)
         
         #Determine frequency and B-field --> this fit programme returns in MHz, needs input GHz
-        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9,qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
+        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9,
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
         delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
         f0.append(f0_temp)

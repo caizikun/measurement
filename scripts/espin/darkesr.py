@@ -66,13 +66,13 @@ def darkesrp1(name):
     m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     m.params['mw_power'] = 20
     m.params['repetitions'] = 500
-    m.params['range']        = 10e6
-    m.params['pts'] = 121
+    m.params['range']        = 20e6
+    m.params['pts'] = 151
     m.params['pulse_length'] = 2.5e-6
     m.params['ssbmod_amplitude'] = 0.025
 
-    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
-    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
+    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] #- m.params['range']
+    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + 2*m.params['range']
 
     m.autoconfig()
     m.generate_sequence(upload=True)

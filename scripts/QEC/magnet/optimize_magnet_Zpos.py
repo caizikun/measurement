@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
-    safemode = True
+    safemode = False
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
