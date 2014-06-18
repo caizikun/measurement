@@ -124,14 +124,14 @@ f_msp1_cntr =   3.730069e9           #Electron spin ms=+1 frequency
 zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 and -1 fregs.
 #As measured by Tim & Julia on 20140403 2.877480(5)e9
 
-N_frq    = 7.13429e6        #not calibrated
-N_HF_frq = 2.196e6        #calibrated 20140320/181319
-Q = 4.938e6                 # from above values. 20140530
+N_frq    = 7.13429e6      # not calibrated
+N_HF_frq = 2.196e6        # calibrated 20140320/181319
+Q = 4.938e6               # from above values. 20140530
 
 mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
+mw_freq_MBI = f_msp1_cntr- N_HF_frq - mw_mod_frequency  #better take plus N_hf?
 
 #mw_freq  = f_msm1_cntr - mw_mod_frequency
 #mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
@@ -146,7 +146,7 @@ cfg['samples']['Hans_sil1'] = {
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
 'zero_field_splitting': zero_field_splitting,
-'Q_splitting':          Q,
+'Q_splitting'   :       Q,
 'g_factor'      :       2.8025e6, #Hz/Gauss
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
 'g_factor_N14'  :       0.3077e3, #Hz/Gauss
@@ -261,8 +261,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           0.5e-9,
-'MBI_duration'              :           14,
+'Ex_MBI_amplitude'          :           1e-9,
+'MBI_duration'              :           18,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -273,7 +273,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
 'MBI_threshold'             :           1,
 #'AWG_wait_duration_before_MBI_MW_pulse':50e-9, #??
-'AWG_wait_for_adwin_MBI_duration':      4e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+'AWG_wait_for_adwin_MBI_duration':      18e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9,
@@ -300,6 +300,26 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
  'max_dec_tau'         : 0.35e-6, #Based on simulation for fingerprint at low tau
  'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
