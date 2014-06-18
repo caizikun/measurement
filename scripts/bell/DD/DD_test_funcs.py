@@ -4,7 +4,7 @@ Test functions for the dynamical decoupling sequence
 import numpy as np
 import qt
 
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 #this is a CORPSE calibration based on electron Rabi.
 import measurement.scripts.espin.calibrate_CORPSE as CORPSE_calibration

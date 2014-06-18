@@ -6,7 +6,7 @@ Important: choose the right domain for the range of positions in get_magnet_posi
 import numpy as np
 import qt
 import msvcrt
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 # import the dESR fit, magnet tools and master of magnet
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)

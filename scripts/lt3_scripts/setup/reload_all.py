@@ -24,7 +24,7 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
 
 # pulsar measurements
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 reload(pulsar_msmt)
 
 from measurement.lib.measurement2.adwin_ssro import pulsar_mbi_espin

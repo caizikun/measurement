@@ -2,7 +2,7 @@
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 import measurement.lib.measurement2.measurement as m2
-from measurement.lib.measurement2.adwin_ssro.pulsar import PulsarMeasurement
+from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 
 
 
