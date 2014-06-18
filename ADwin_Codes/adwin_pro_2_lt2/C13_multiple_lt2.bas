@@ -16,15 +16,35 @@
 '
 ' protocol:
 '
-' modes:
-' MODES ARE OUTDATED, NEED TO BE UPDATED FOR THIS SCRIPT
-'   0 : CR check
-'   2 : E spin pumping into ms=0
-'   3 : MBI
-'   4 : A-pumping
-'   5 : wait for AWG
-'   6 : spin-readout
-'   7 : nuclear spin randomize
+'   Cases :
+'   0 : CR
+'   1 : Spin pump E
+'   2 : MBI Nitrogen
+'   3 : A laser spin pump after N-MBI
+'   4 : Start AWG sequence and wait for trigger
+'   5 : RO C-MBI, MBE and parity
+'   6 : Spin pump A after
+'   7 : wait for AWG to finish and RO on trigger
+'   8 : Final readout on E line
+'  10: turn on the lasers to randomize the N-spin state before re-trying
+
+'  Truth table for jumping between cases
+'    RO type    | RO Counts | No RO counts
+' Carbon Int   |  6 -4-5     | 0
+' MBE             |  4 -5         | 0
+'  If no parity measurement go to Final RO case 7-8
+' Parity           | 4-5          |  4-5   Parity goes on
+' Last parity    | 7-8          |  7-8|
+
+' TODO_MAR: create counters that keep track of being in Carbon Init, MBE or parity measurements
+' Name of new variables to be introduced and corresponding counters
+'
+' N_init_C  Long
+' N_MBE  Long
+' N_parity_msmts Long (loaded from adwins )
+' Carbon Init counter (long)
+' MBE counter (long)
+' parity msmt counter (long)
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -92,6 +112,8 @@ dim t1, t2 as long
 
 'added for C13 initialization
 DIM C13_MBI_threshold, C13_MBI_duration,SP_duration_after_C13 AS LONG
+DIM N_init_C, N_MBE, N_parity_msmts AS LONG
+DIM Carbon_init_cntr, MBE_cntr, parity_msmt_cntr AS LONG
 DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_voltage AS FLOAT
 
 
@@ -117,6 +139,9 @@ INIT:
   C13_MBI_threshold            = Data_20[15]
   C13_MBI_duration             = Data_20[16]
   SP_duration_after_C13        = Data_20[17]
+  N_init_C  = Data_20[18]
+  N_MBE = Data_20[19]
+  N_parity_msmts = Data_20[20]
 
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]
@@ -142,6 +167,12 @@ INIT:
   stop_MBI            = -2 ' wait_for_MBI_pulse + MBI_duration
   ROseq_cntr          = 1
   seq_cntr            = 1
+
+  ' Multiple C counters
+  Carbon_init_cntr = 0
+  MBE_cntr  =0
+  parity_msmt_cntr = 0
+
 
   next_MBI_stop = -2
   AWG_is_done = 0
@@ -352,9 +383,6 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
 
           ' make sure we don't accidentally think we're done before getting the trigger
-          'next_MBI_stop = -2
-          'AWG_is_done = 0
-
 
         ELSE
           ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
@@ -379,6 +407,13 @@ EVENT:
       CASE 5 'C13 init/MBI RO
 
         IF(timer=0) THEN 'Start the laser
+          ' The counters below exist to determine what to do after a click or no click is found
+          IF (Carbon_init_cntr <N_init_C)
+            INC(Carbon_init_cntr)
+          ELSEIF
+
+          ENDIF
+
 
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
