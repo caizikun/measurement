@@ -1627,9 +1627,140 @@ class NuclearRamseyWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-class ThreeQubitMeasurementBasedQuantumErrorCorrection(MBI_C13):
+class Two_QB_MBE(MBI_C13):
+    '''
+    This class is to test multiple carbon initialization, MBE and RO.
+    '''
+    mprefix = 'single_carbon_initialised'
+    adwin_process = 'MBI_multiple_C13'
+    self.params['N_init_C']= 2
+    self.params['N_MBE'] =1
+    self.params['N_parity_msmts']=0
+
+
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Two Qubit MBE')
+
+        for pt in range(pts):
+
+            #Acutal sequence is a combination of multiple subsequences
+            # 1. MBI initialisation
+            # 2. Carbon initialisation 2 times
+            # 3. MBE parity msmst
+            # 4. Carbon Readout
+
+            ###########################################
+            #####    Generating the sequence elements      ######
+            ###########################################
+            #Elements for the carbon initialisation
+
+            gate_seq = []
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+            gate_seq.extend(mbi_seq)
+
+            carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= 1)
+            carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= 2)
+            gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
+
+            ################################
+            # Encoding
+
+
+            enc_Rx =  # IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
+            '''
+            TODO_MAR: Still need to determine what the initial state is that will be encoded and how
+            dynamical this needs to be.
+            '''
+
+
+            enc_Ren_1 =Gate('enc_Ren_1'+str(pt), 'Carbon_Gate',
+                Carbon_ind = 1,
+                phase = self.params['C13_X_phase'])
+            enc_Ren_2 =Gate('enc_Ren_2'+str(pt), 'Carbon_Gate',
+                Carbon_ind = 2,
+                phase = self.params['C13_X_phase'])
+
+            enc_x =Gate('enc_x'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['X_phase'])
+
+            enc_RO = Gate('enc_RO_trig_'+str(pt),'Trigger',
+                wait_time= self.params['Carbon_init_RO_wait'],
+                event_jump = 'next',
+                go_to = mbi)
+
+            encoding_seq = [enc_Rx,enc_Ren_1,enc_Ren_2,enc_x,enc_RO]
+            gate_seq.extend(encoding_seq)
+            ################################
+            # Parity measurements
+
+            par_1_y_1=Gate('par_1_y_1'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+            par_1_Ren_1 =Gate('par_1_Ren_1'+str(pt), 'Carbon_Gate',
+                Carbon_ind = 1,
+                phase = self.params['C13_X_phase'])
+            par_1_Ren_2 =Gate('par_1_Ren_2'+str(pt), 'Carbon_Gate',
+                Carbon_ind = 2,
+                phase = self.params['C13_X_phase'])
+            par_1_y_2=Gate('par_1_y_2'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+            parity_seq_1 =[par_1_y_1,par_1_Ren_1,par_1_Ren_2,par_1_y_2]
+            gate_seq.extend(parity_seq_1)
+
+            #############################
+            #Readout Tomography
+            '''
+            TODO _MAR: Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
+            '''
+            C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['Y_phase'])
+            C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
+            C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['X_phase'])
+            C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
+
+            carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+            gate_seq.extend(carbon_RO_seq)
+
+            ########################
+            # All information that defines the sequence is now given.
+            # We can now let the python code convert the gate seq to an AWG seq.
+            ##################
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+class Three_QB_MB_QEC(MBI_C13):
     '''
     This class is supposed to contain the complete QEC gate sequence. It still needs Adwin code to support it and to test it.
+    Underdevelopment
     '''
     mprefix = 'single_carbon_initialised'
     adwin_process = 'MBI_single_C13'
@@ -1677,7 +1808,7 @@ class ThreeQubitMeasurementBasedQuantumErrorCorrection(MBI_C13):
 
             enc_Rx =  # IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
             '''
-            Still need to determine what the initial state is that will be encoded and how
+            TODO_MAR:            Still need to determine what the initial state is that will be encoded and how
             dynamical this needs to be.
             '''
 
@@ -1739,15 +1870,15 @@ class ThreeQubitMeasurementBasedQuantumErrorCorrection(MBI_C13):
             ########################
             ##  Conditional Feedback
             '''
-            This still needs to be coded and a good way needs to be found to work with the adwin. AWG probably does support jumping statements.
+            TODO_MAR:            This still needs to be coded and a good way needs to be found to work with the adwin. AWG probably does support jumping statements.
             '''
 
 
 
             #############################
-            #Readout in the x basis
+            #Readout Tomography
             '''
-            Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
+            TODO_MAR:            Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
             '''
 
             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
