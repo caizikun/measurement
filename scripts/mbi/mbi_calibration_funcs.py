@@ -180,6 +180,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    # cal_fast_pi(SAMPLE_CFG,mult=1)
-    cal_fast_pi2(SAMPLE_CFG,mult=6)
+    cal_fast_pi(SAMPLE_CFG,mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95)
+    # cal_fast_pi2(SAMPLE_CFG,mult=6,min_pulse_amp =0.1, max_pulse_amp =0.95)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)

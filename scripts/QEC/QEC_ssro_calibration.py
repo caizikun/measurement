@@ -23,7 +23,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
     m.save('ms0')
 
     # ms = 1 calibration
-    m.params['SP_duration']     = 250
+    m.params['SP_duration']     = 500
     m.params['A_SP_amplitude']  = 0.
     m.params['Ex_SP_amplitude'] = 20e-9
     m.run()

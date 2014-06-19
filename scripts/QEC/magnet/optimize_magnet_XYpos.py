@@ -35,10 +35,11 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'Y_axis'
-    scan_range       = 200        # From -scan range/2 to +scan range/2  
+    axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
+    scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 25         # the sample position is checked after each magnet_step_size
+    min_counts_before_optimize = 10e3   #optimize position if counts are below this
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
 
     range_coarse = 5.00
@@ -54,12 +55,13 @@ if __name__ == '__main__':
     ###########
 
     #calculate steps to do
-    stepsize = scan_range/(no_of_steps-1) 
+    #stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [-100,100,100] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [-150,100,100,100] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
-    print steps
+    print 'Moving along %s' %axis 
+    print 'Steps: %s' %steps
 
     #create the lists to save the data to
     f0m = []; u_f0m = []; f0p = [] ;u_f0p = []
@@ -96,20 +98,13 @@ if __name__ == '__main__':
                 int_time = 1000 
                 cnts = ins_adwin.measure_counts(int_time)[0]
                 print 'counts = '+str(cnts)
-                if cnts < 1e4:
+                if ((cnts < min_counts_before_optimize) & (i != abs(step)/magnet_step_size-1)):
                     optimiz0r.optimize(dims=['x','y','z'])
                 print 'press q to stop magnet movement loop'
                 qt.msleep(0.5)
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
-            #use a higher threshold at the very end
-            GreenAOM.set_power(5e-6)
-            ins_counters.set_is_running(0)
-            int_time = 1000 
-            cnts = ins_adwin.measure_counts(int_time)[0]
-            print 'counts = '+str(cnts)
-            if cnts < 30e4:
-                optimiz0r.optimize(dims=['x','y','z'])
+            optimiz0r.optimize(dims=['x','y','z'])
 
         #measure both frequencies
             #ms=-1 coarse
