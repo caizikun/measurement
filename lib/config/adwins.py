@@ -1370,7 +1370,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_RO_pulse_duration',   3],
                     ['N_randomize_duration'        ,  50],
                     ['C13_MBI_threshold'           ,   1],
-                    ['C13_MBI_duration'            ,  10],
+                    ['C13_MBI_RO_duration'            ,  10],
                     ['SP_duration_after_C13'       ,  25],
                     ],
                 'params_long_index'  : 20,
@@ -1428,7 +1428,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_RO_pulse_duration',   3],
                     ['N_randomize_duration'        ,  50],
                     ['C13_MBI_threshold'           ,   1],
-                    ['C13_MBI_duration'            ,  10],
+                    ['C13_MBI_RO_duration'            ,  10],
                     ['SP_duration_after_C13'       ,  25],
                     #  NOTE: values should be overwritten from msmt params
                     ['N_init_C' , 2],

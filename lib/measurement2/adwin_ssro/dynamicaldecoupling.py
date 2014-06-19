@@ -1476,11 +1476,8 @@ class MBI_C13(DynamicalDecoupling):
             self.E_aom.power_to_voltage(
                     self.params['E_C13_MBI_amplitude'])
 
-        # set time that the adwin maximally does MBI equal to the duration of the AWG trigger where it expects an event jump
-        self.params['C13_MBI_duration']= int(self.params['Carbon_init_RO_wait'] *1e6 -5)
-        if  self.params['C13_MBI_duration'] < 0 :
-            print 'Error: C13_MBI duration <0 duration is : %s us' % self.params['C13_MBI_duration']
-            return
+        self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration']+self.params['SP_duration_after_C13'])*1.2e-6+20e-6
+        # print 'carbon init ro wait %s' %self.params['Carbon_init_RO_wait']
         DynamicalDecoupling.autoconfig(self)
 
     def initialize_carbon_sequence(self, go_to_element ='MBI_1', 
@@ -1590,7 +1587,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
             mbi_seq = [mbi]
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    initialization_method = 'swap', pt =pt,
+                    initialization_method = 'MBI', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'])
             ################################
             if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): 
@@ -1615,7 +1612,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
-
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
