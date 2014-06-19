@@ -55,7 +55,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['E_C13_MBI_amplitude']       = 5e-9
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)

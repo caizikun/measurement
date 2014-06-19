@@ -195,20 +195,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         g.dec_duration = 0
                     else:
                         desired_phase = Gate_sequence[i+1].phase
+                        
                         precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #needs to be added to msmst params
+                        
                         if precession_freq == 0:
                             g.dec_duration = 0
                         else:
                             evolution_time = (t+Gate_sequence[i-1].tau_cut) - t_start[C_ind] # NB corrected for difference between time where the gate starts and where the AWG element starts
-                            current_phase = evolution_time*precession_freq%(2*np.pi) # shouldnt this modulo be in the next line? - JULIA
-                            phase_dif = desired_phase-current_phase
-
-                            dec_duration = round( phase_dif/precession_freq *1e9/(self.params['dec_pulse_multiple']*2))*(self.params['dec_pulse_multiple']*2)*1e-9
+                            
+                            current_phase = evolution_time*precession_freq 
+                            
+                            phase_dif = (desired_phase-current_phase)%(2*np.pi)
+                            
+                            dec_duration =(round( phase_dif/precession_freq 
+                                    *1e9/(self.params['dec_pulse_multiple']*2))
+                                    *(self.params['dec_pulse_multiple']*2)*1e-9)
                             min_dec_duration= self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
                             while dec_duration <= min_dec_duration:
                                 phase_dif = phase_dif+2*np.pi
-                                dec_duration = round( phase_dif/precession_freq *1e9/(self.params['dec_pulse_multiple']*2))*(self.params['dec_pulse_multiple']*2)*1e-9
+                                dec_duration = (round( phase_dif/precession_freq 
+                                        *1e9/(self.params['dec_pulse_multiple']*2))
+                                        *(self.params['dec_pulse_multiple']*2)*1e-9)
 
                             g.dec_duration = dec_duration
 
@@ -1475,7 +1483,8 @@ class MBI_C13(DynamicalDecoupling):
             return
         DynamicalDecoupling.autoconfig(self)
 
-    def initialize_carbon_sequence(self, go_to_element ='MBI_1', initialization_method ='swap', pt = 1, addressed_carbon =1):
+    def initialize_carbon_sequence(self, go_to_element ='MBI_1', 
+            initialization_method ='swap', pt = 1, addressed_carbon =1):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
         '''
@@ -1557,8 +1566,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
     '''
     mprefix = 'CarbonRamseyInitialised'
-    # adwin_process = 'MBI_single_C13' Omitted, is inclued in MBI_single_C13 class
- # overwrites the name of the adwin_process
+
     def generate_sequence(self,upload=True,debug = False):
         pts = self.params['pts']
         # #initialise empty sequence and elements
@@ -1585,9 +1593,11 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'])
             ################################
-            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): #because min length is 3e-6
+            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): 
+                # because min length is 3e-6
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                         %(self.params['wait_times'][pt],self.params['Carbon_init_RO_wait']))
+
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
@@ -1759,7 +1769,9 @@ class NuclearRamseyWithInitialization(MBI_C13):
 
 class Three_QB_MB_QEC(MBI_C13):
     '''
-    This class is supposed to contain the complete QEC gate sequence. It still needs Adwin code to support it and to test it.
+    TODO_MAR: Finish 3QB MB QEC class 
+    This class is supposed to contain the complete QEC gate sequence. 
+    It still needs Adwin code to support it and to test it.
     Underdevelopment
     '''
     mprefix = 'single_carbon_initialised'

@@ -216,13 +216,13 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'C13_Y_phase' :90,
 
     ### Pi pulses, fast & hard ###
-'fast_pi_duration'          :   140e-9,
-'fast_pi_amp'               :   0.767112,
+'fast_pi_duration'          :   160e-9,
+'fast_pi_amp'               :   0.800621,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard ###
-'fast_pi2_duration'         :   72e-9,
-'fast_pi2_amp'              :   0.737172, 
+'fast_pi2_duration'         :   90e-9, #72e-9
+'fast_pi2_amp'              :    0.697519, 
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -254,7 +254,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           1e-9,
+'Ex_MBI_amplitude'          :           2e-9,
 'MBI_duration'              :           18,
 
     #Repump after succesfull MBI
@@ -289,10 +289,22 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
     ###  Carbon control ###
     #######################
 
-'min_dec_tau'         : 20e-9 + cfg['protocols']['Hans_sil1']['pulses']['fast_pi_duration']/2.0,
-'max_dec_tau'         : 0.35e-6, #Based on simulation for fingerprint at low tau
+'min_dec_tau'         : 20e-9 + cfg['protocols']['Hans_sil1']['pulses']['fast_pi_duration'],
+'max_dec_tau'         : 0.4e-6, #0.35e-6, #Based on measurement for fingerprint at low tau
 'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

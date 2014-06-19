@@ -25,7 +25,7 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
     pts = len(Number_of_pulses)
 
     if tau == None: 
-        tau = m.params['C3_Ren_tau'][0] 
+        tau = m.params['C1_Ren_tau'][0] 
     tau_list = tau*np.ones(pts)
     print 'tau_list =' + str(tau_list)
 
