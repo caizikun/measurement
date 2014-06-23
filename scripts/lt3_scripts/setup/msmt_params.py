@@ -1,6 +1,6 @@
 cfg={}
-sample_name = 'The111no2'
-sil_name = 'SIL2'
+sample_name = 'Sam'
+sil_name = 'SIL5'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -69,7 +69,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 		'nr_of_ROsequences':                        1,
 		'MW_pulse_mod_risetime':                    10e-9,
 		'AWG_to_adwin_ttl_trigger_duration':        2e-6,
-		'repump_after_MBI_duration':                100,
+		'repump_after_MBI_duration':                100, 
 		'repump_after_MBI_amp':                     15e-9,
 		}
 cfg['protocols']['AdwinSSRO+PQ'] = {
@@ -112,6 +112,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_RO_amplitude':				 3e-9,
 		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 50,
+		'SP_duration_ms0':				 100,
+		'SP_duration_ms1':				 150,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 100,
 		'SSRO_repetitions':				 5000,

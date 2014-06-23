@@ -27,16 +27,15 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['pts'] = 10 
 
     m.params['Addressed_Carbon'] = 1
-    m.params['Carbon_init_RO_wait']   = 15e-6
 
     m.params['C_RO_phase'] =  np.linspace(0,360,m.params['pts'])
     
-    m.params['wait_times'] = np.ones( m.params['pts'] )* m.params['Carbon_init_RO_wait'] +5e-6 #Note: wait time must be atleast carbon init time +5us 
+    m.params['wait_times'] = np.ones( m.params['pts'] )* 25e-6+30e-6 #Note: wait time must be atleast carbon init time +5us 
     
     print     m.params['C_RO_phase']
 
-    m.params['sweep_pts']        = m.params['C_RO_phase']#NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
-    m.params['sweep_name']       = 'Free Evolution time (s)' 
+    m.params['sweep_pts']        = m.params['C_RO_phase']
+    m.params['sweep_name']       = 'RO phase (degree)' 
 
 
     #############################
@@ -45,9 +44,12 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to make the script always work 
-    m.params['MBI_threshold']           = 0
+    # m.params['MBI_threshold']           = 0
     m.params['C13_MBI_threshold']       = 1
+    # m.params['Carbon_init_RO_wait']     = 15 # This should be ahidden variable 
+    m.params['C13_MBI_RO_duration']     = 15 
     m.params['SP_duration_after_C13']   = 10
+
 
     # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
     m.params['A_SP_amplitude_after_C13_MBI']  = 5e-9
@@ -55,7 +57,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['E_C13_MBI_amplitude']       = 5e-9
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)

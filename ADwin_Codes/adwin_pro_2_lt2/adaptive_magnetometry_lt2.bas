@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' this program implements adaptive magnetometry protocols (Cappellaro, real-time calculation of optimal phase)
 '
@@ -37,6 +37,7 @@ DIM p_imag_old[max_prob_array] AS FLOAT
 DIM ch[8] AS LONG
 
 'return
+DIM DATA_24[max_repetitions] AS LONG  ' adaptive phase (in degrees)
 DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
@@ -54,12 +55,13 @@ DIM c_n, t_n, pi AS FLOAT
 DIM timer, aux_timer, mode, i, k, sweep_index, a, k_opt AS LONG
 DIM AWG_done AS LONG
 DIM first, do_adaptive, do_phase_calibr AS LONG
-DIM min_phase, max_phase, delta_phi AS FLOAT
+DIM min_phase, delta_phase, delta_phi AS LONG
 
 DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
 DIM counts, old_counts AS LONG
 DIM adptv_steps, curr_adptv_phase, dig_phase, curr_adptv_step, rep_index, curr_msmnt_result AS LONG
+DIM t1 AS LONG
 
 INIT:  
   init_CR()
@@ -71,7 +73,7 @@ INIT:
   wait_after_pulse_duration    = DATA_20[6]
   repetitions                  = DATA_20[7]  'now this is the nr of times we repeat the series of adaptive msmnt steps
   SSRO_duration                = DATA_20[8]
-  SSRO_stop_after_first_photon = DATA_20[9]
+  SSRO_stop_after_first_photon = DATA_20[9]  ' not used
   cycle_duration               = DATA_20[10] '(in processor clock cycles, 3.333ns)
   sweep_length                 = DATA_20[11]
   do_adaptive                  = DATA_20[12] 'do_adaptive=1 activates adptv protocol, =0 sets phase always to zero
@@ -86,7 +88,7 @@ INIT:
   ch[8]                        = DATA_20[21]
   do_phase_calibr              = DATA_20[22] 'phase calibration modality (sine wave)
   min_phase                    = DATA_20[23] 'min phase for calibration
-  max_phase                    = DATA_20[24] 'max phase for calibration
+  delta_phase                  = DATA_20[24] 'phase step for calibration
   
   pi = 3.14
   
@@ -99,19 +101,23 @@ INIT:
   FOR i = 1 TO repetitions*adptv_steps
     DATA_25[i] = 0
   NEXT i
-  
-  FOR i = 1 TO 2^(adptv_steps+2)+1
-    p_real[i] = 0
-    p_imag[i] = 0
-    p_real_old[i] = 0
-    p_imag_old[i] = 0
-  NEXT i    
-  
-  p_real[2^(adptv_steps+1)] = 1
-  p_imag[2^(adptv_steps+1)] = 0
-  
-  delta_phi = (max_phase-min_phase)/adptv_steps
-  
+ 
+  FOR i = 1 TO repetitions*adptv_steps
+    DATA_24[i] = 0
+  NEXT i
+
+  IF (do_phase_calibr=0) THEN 
+    FOR i = 1 TO 2^(adptv_steps+2)+1
+      p_real[i] = 0
+      p_imag[i] = 0
+      p_real_old[i] = 0
+      p_imag_old[i] = 0
+    NEXT i    
+    
+    p_real[2^(adptv_steps+1)] = 1
+    p_imag[2^(adptv_steps+1)] = 0
+  ENDIF
+      
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
 
   repetition_counter  = 0
@@ -127,15 +133,20 @@ INIT:
 
   P2_Digprog(DIO_MODULE,11)
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
+  FOR i = 0 TO 7
+    'set hardware phase channel (8-i) to zero
+    P2_DIGOUT(DIO_Module,ch[8-i], 0)
+  NEXT i
+ 
   sweep_index = 1
   mode = 0
   timer = 0
   processdelay = cycle_duration  
   
   Par_73 = repetition_counter
-  curr_adptv_phase = 0
+  curr_adptv_phase = min_phase
   rep_index = 1
+  curr_adptv_step = 1
   curr_msmnt_result = 0
   a = 0
 
@@ -164,19 +175,24 @@ EVENT:
 
         IF (timer = SP_duration) THEN
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser                
-          
-          mode = 2
-            
+                    
           ' SET PHASE TO FPGA (8-bit)
-          a = 2*255*curr_adptv_phase/180
+
+          a = (255*mod(curr_adptv_phase, 360))/360
+          IF (do_phase_calibr > 0) THEN
+            DATA_24[sweep_index] = a
+          ELSE
+            DATA_24[sweep_index] = curr_adptv_phase
+          ENDIF
+          
           FOR i = 0 TO 7
-            a = a/2
             dig_phase = mod (a, 2)
+            a = a/2
             'set hardware phase channel (8-i) to dig_phase
-            P2_DIGOUT(DIO_Module,ch[8-i], dig_phase)
+            P2_DIGOUT(DIO_Module,ch[i+1], dig_phase)
           NEXT i
-      
-                            
+          
+          mode = 2                 
           wait_after_pulse = wait_after_pulse_duration
           timer = -1
         ENDIF
@@ -229,27 +245,57 @@ EVENT:
         endif
          
         IF (timer = SSRO_duration) THEN
+                   
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
           counts = P2_CNT_READ(CTR_MODULE,counter_channel)
           P2_CNT_ENABLE(CTR_MODULE,0)
 
           if (counts > 0) then
-            inc(curr_msmnt_result)
+            curr_msmnt_result = 1
+            inc(DATA_25[sweep_index])
+          else
+            curr_msmnt_result = 0
           endif
-
-          DATA_25 [sweep_index] = curr_msmnt_result
+          
           inc (sweep_index)
-          inc (curr_adptv_step)
+          inc(repetition_counter)
+          first=1
+          'DATA_24 [sweep_index] = curr_adptv_step
           IF (curr_adptv_step < adptv_steps) THEN 
             mode = 4
+            timer=-1
           ELSE
             curr_adptv_step = 1
             inc(rep_index)
-            IF (rep_index >= repetitions) THEN
+            PAR_73 = rep_index
+                       
+            'reset phase estimation
+            IF (do_adaptive>0) THEN 
+              FOR i = 1 TO 2^(adptv_steps+2)+1
+                p_real[i] = 0
+                p_imag[i] = 0
+                p_real_old[i] = 0
+                p_imag_old[i] = 0
+              NEXT i    
+    
+              p_real[2^(adptv_steps+1)] = 1
+              p_imag[2^(adptv_steps+1)] = 0
+            ENDIF
+ 
+ 
+            IF (rep_index > repetitions) THEN
+              
+              FOR i = 0 TO 7
+                '  set hardware phase channel (8-i) to zero
+                P2_DIGOUT(DIO_Module,ch[i+1], 0)
+              NEXT i
+              
               END
             ENDIF
             mode = 0
+            timer=-1
+            curr_adptv_phase = min_phase
           ENDIF
           
           timer = -1
@@ -261,37 +307,46 @@ EVENT:
       CASE 4    'calculate optimal phase
     
         IF (do_phase_calibr > 0) THEN
-          curr_adptv_phase = curr_adptv_phase + delta_phi
+          curr_adptv_phase = curr_adptv_phase + delta_phase
+          inc (curr_adptv_step)
         
         ELSE
-          IF (do_adaptive >1) THEN
+          IF (do_adaptive >0) THEN
             c_n = curr_msmnt_result*pi+curr_adptv_phase*pi/180
             t_n = 2^(adptv_steps-curr_adptv_step)
             k_opt = 2^(adptv_steps-curr_adptv_step+1)+2^(adptv_steps+1)
-
+            
+            't1 = read_timer()
             'copy current arrays into old arrays
             FOR k = 1 TO 2^(adptv_steps+2)+1
               p_real_old[k] = p_real[k]
               p_imag_old[k] = p_imag[k]
             NEXT k
-        
-      
+            'PAR_62 = read_timer()-t1
+            
+            't1 = read_timer()            
             'Bayesian update rule for phase estimation
             FOR k = 2^adptv_steps TO 3*(2^adptv_steps)
               p_real [k] = 0.5*p_real_old[k] + 0.25*(COS(c_n)*(p_real_old [k-t_n] + p_real_old [k+t_n]) - SIN(c_n)*(p_imag_old [k-t_n] - p_imag_old [k+t_n])) 
               p_imag [k] = 0.5*p_imag_old[k] + 0.25*(COS(c_n)*(p_imag [k-t_n] + p_imag_old [k+t_n]) + SIN(c_n)*(p_real_old [k-t_n] - p_real_old [k+t_n])) 
             NEXT k
-            
+            'PAR_61 = read_timer()-t1
             'define optimal phase according to Cappellaro protocol
-            curr_adptv_phase = -0.5*ARCTAN (p_imag[k_opt]/p_real[k_opt])*(180/pi)
+            curr_adptv_phase = mod(-0.5*ARCTAN (p_imag[k_opt]/p_real[k_opt])*(180/pi), 360)
+            IF (curr_adptv_phase < 0) THEN
+              curr_adptv_phase = curr_adptv_phase+ 360
+            ENDIF
+            
+            'DATA_24[sweep_index] = curr_adptv_phase
+            inc (curr_adptv_step)
           ELSE
             curr_adptv_phase = 0
+            inc (curr_adptv_step)
           ENDIF
         ENDIF
         curr_msmnt_result = 0
         timer=-1
-        mode = 1
-      
+        mode = 0
       
     ENDSELECT
     

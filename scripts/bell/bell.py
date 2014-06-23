@@ -54,6 +54,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 [   ('CR_before', reps),
                     ('CR_after', reps),
                     ('SP_hist', self.params['SP_duration']),
+                    ('CR_hist', 200),
                     ('RO_data', reps),
                     ('statistics', 10),
                     'entanglement_events',

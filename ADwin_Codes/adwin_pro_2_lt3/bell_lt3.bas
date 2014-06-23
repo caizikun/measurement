@@ -28,6 +28,7 @@
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_events_dim      50000
+#DEFINE max_CR_counts 200
 
 'init
 DIM DATA_20[100] AS LONG
@@ -37,6 +38,7 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
 DIM DATA_25[max_events_dim] AS LONG  ' SSRO counts spin readout
 DIM DATA_27[max_events_dim] AS LONG  'time spent waiting for remote adwin
+DIM DATA_28[max_CR_counts] AS LONG  'CR hist after sequence
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_done_DI_pattern AS LONG
 
@@ -92,7 +94,10 @@ INIT:
     DATA_27[i] = 0
   NEXT i
   
-    
+  FOR i = 1 TO max_CR_counts
+    DATA_28[i] = 0
+  NEXT i
+      
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   PLU_di_pattern = 2 ^ PLU_di_channel
   remote_CR_trigger_di_pattern = 2 ^ remote_CR_trigger_di_channel
@@ -196,9 +201,12 @@ EVENT:
           ENDIF
           mode = 2
           timer = -1
+        ENDIF
+        IF (first > 1) THEN
+          i = MAX_LONG(cr_counts+1,max_CR_counts)
+          INC(DATA_28[i])
           first = 0
         ENDIF
-        
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
           'P2_DAC(DAC_MODULE, repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on Ex laser XXXXXX
@@ -273,6 +281,7 @@ EVENT:
             mode = 5
             timer = -1
             remote_mode = 3
+            first = 1
           ELSE  
             IF (wait_for_AWG_done > 0) THEN
               IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
@@ -281,6 +290,7 @@ EVENT:
                 timer = -1
                 remote_mode = 0
                 local_wait_time = 10
+                first = 1
               ENDIF
             ELSE
               IF (timer = sequence_wait_time) THEN
@@ -289,6 +299,7 @@ EVENT:
                 timer = -1
                 remote_mode = 0
                 local_wait_time = 10
+                first = 1
               ENDIF
             ENDIF
           ENDIF        

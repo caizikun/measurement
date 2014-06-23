@@ -1,5 +1,5 @@
 import msvcrt
-for i in range(100):
+for i in range(100000):
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
         break
     GreenAOM.set_power(i*1e-6)
@@ -15,6 +15,7 @@ for i in range(100):
     qt.msleep(0.1)
     NewfocusAOM.apply_voltage(0)
     qt.msleep(0.1)
-    YellowAOM.apply_voltage(YellowAOM.get_V_max())
+    #YellowAOM.apply_voltage(YellowAOM.get_V_max())
+    YellowAOM.turn_on()
     qt.msleep(0.2)
      

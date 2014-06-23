@@ -3,19 +3,20 @@ import qt
 import numpy as np
 import msvcrt
 
-from measurement.lib.AWG_HW_sequencer_v2 import Sequence
-from measurement.lib.config import awgchannels as awgcfg
+#from measurement.lib.AWG_HW_sequencer_v2 import Sequence
+#from measurement.lib.config import awgchannels as awgcfg
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 import pprint
 
 reload(pulse)
 reload(element)
 reload(pulsar)
-reload(awgcfg)
+#reload(awgcfg)
 
 pulsar.Pulsar.AWG = qt.instruments['AWG']
 #AWG = qt.instruments['AWG']
 
+'''
 def generate_sequence_old (do_program=True):
         seq = Sequence('Test')
 
@@ -52,7 +53,7 @@ def generate_sequence_old (do_program=True):
         seq.send_sequence()
         
         return True
-
+'''
 def generate_sequence (do_program = True):
 
     # FIXME in principle we only want to create that once, at startup
@@ -80,9 +81,9 @@ def generate_sequence (do_program = True):
         'RUN_STATE'                 :   0,    # On | Off
         }
 
-    qt.pulsar.define_channel(id='ch1', name='gate', type='analog', 
+    qt.pulsar.define_channel(id='ch2', name='gate', type='analog', 
         high=4.0, low=0, offset=0., delay=0., active=True)
-    qt.pulsar.define_channel(id='ch2', name='clock', type='analog', 
+    qt.pulsar.define_channel(id='ch4', name='clock', type='analog', 
         high=4.0, low=0, offset=0., delay=0., active=True)
     
 
@@ -93,14 +94,19 @@ def generate_sequence (do_program = True):
     clock_down = pulse.SquarePulse(channel = 'clock', amplitude = 0, lenght = pulse_length)
  
     elt1 = element.Element('trigger', pulsar = qt.pulsar)
-
-    elt1.append(pulse.cp(gate, amplitude = 4.0, length = 900*pulse_length))
-    elt1.add(pulse.cp(clock_down, amplitude = 0, length = 5e-9))
+    elt1.append(pulse.cp(clock_down, amplitude = 0, length = 5e-9))
+    
+    
    
+
     for i in arange (500):
         elt1.append(pulse.cp(clock_up, amplitude = 4.0, length = pulse_length))
         elt1.append(pulse.cp(clock_down, amplitude = 0, length = pulse_length))
-    
+    elt1.append(pulse.cp(clock_down, amplitude = 0, length = 1000e-9))
+    elt1.add(pulse.cp(gate, amplitude = 4.0, length = 100*pulse_length))    
+    for i in arange (2):
+        elt1.append(pulse.cp(clock_up, amplitude = 4.0, length = pulse_length))
+        elt1.append(pulse.cp(clock_down, amplitude = 0, length = pulse_length))
     #pprint.pprint (elt1.pulses)
     seq = pulsar.Sequence('FPGA_test')
     seq.append(name = 'trigger', wfname = elt1.name, trigger_wait = False, repetitions = 1, goto_target = 'trigger')

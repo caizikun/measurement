@@ -9,7 +9,7 @@ import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
@@ -17,7 +17,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
-    mprefix = 'ElectronRabi'
+    mprefix = 'ElectronRabi_square'
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
@@ -287,61 +287,7 @@ class ElectronPulse_I_CORPSE_Random(pulsar_pq.PQPulsarMeasurement):
 
 
 # bug !!
-class DarkESR_CORPSE_Imod(pulsar_msmt.PulsarMeasurement):
-    mprefix = 'PulsarDarkESR_CORPSE_Imod'
 
-    def autoconfig(self):
-        self.params['sequence_wait_time'] = \
-            int(np.ceil(self.params['pulse_length']*1e6)+15)
-
-        pulsar_msmt.PulsarMeasurement.autoconfig(self)
-
-        self.params['sweep_name'] = 'MW frq (GHz)'
-        self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
-            self.params['ssbmod_frq_stop'], self.params['pts']) + \
-                self.params['mw_frq'])*1e-9
-
-    def generate_sequence(self, upload=True):
-
-        # define the necessary pulses
-        X = pulselib.IQ_CORPSE_pulse('CORPSE Imod pi-pulse',
-            I_channel='MW_1',
-            Q_channel='dummy',
-            PM_channel='MW_pulsemod',
-            amplitude = self.params['ssbmod_amplitude'],
-            length = self.params['pulse_length'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            frequency = self.params['ssmod_detuning'],
-            rabi_frequency = self.params['CORPSE_rabi_frequency'],
-            pulse_delay = self.params['CORPSE_pulse_delay'],
-            eff_rotation_angle = self.params['CORPSE_eff_rotation_angle'])
-        
-        X.channels.remove('dummy')
-
-
-        T = pulse.SquarePulse(channel='MW_1', name='delay')
-        T.amplitude = 0.
-        T.length = 2e-6
-
-        # make the elements - one for each ssb frequency
-        elements = []
-        for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
-            self.params['ssbmod_frq_stop'], self.params['pts'])):
-
-            e = element.Element('DarkESR_CORPSE_Imod_frq-%d' % i, pulsar=qt.pulsar)
-            e.add(T, name='wait')
-            e.add(X(frequency=f), refpulse='wait')
-            elements.append(e)
-
-        # create a sequence from the pulses
-        seq = pulsar.Sequence('DarkESR sequence')
-        for e in elements:
-            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-
-        # upload the waveforms to the AWG
-        if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
 
 def erabi(name):
     m = ElectronRabi_Square(name)
