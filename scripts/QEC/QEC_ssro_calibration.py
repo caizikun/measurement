@@ -33,6 +33,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
 if __name__ == '__main__':
     ssrocalibration(SAMPLE_CFG)
+    #ssrocalibration(SAMPLE_CFG, RO_power = 0.5e-9,SSRO_duration = 100)
 
     # RO_powers = [0.2e-9,0.5e-9,1e-9,2e-9,5e-9]
     # for RO_power in RO_powers: 

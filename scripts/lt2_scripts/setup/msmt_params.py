@@ -254,8 +254,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           2e-9,
-'MBI_duration'              :           18,
+'Ex_MBI_amplitude'          :           1e-9,
+'MBI_duration'              :           30,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -265,7 +265,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
     #MBI parameters
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
 'MBI_threshold'             :           1,
-'AWG_wait_for_adwin_MBI_duration':      18e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+'AWG_wait_for_adwin_MBI_duration':      30e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9,
@@ -274,6 +274,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
     ################
     ### C13  MBI ###
     ################
+
+
 
 'E_C13_MBI_amplitude':               5e-9,
 'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger. 

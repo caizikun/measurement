@@ -191,22 +191,18 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                 else:# Determine
                     C_ind = Gate_sequence[i+1].Carbon_ind
-                    if t_start[C_ind] ==0: #If not addresed before phase is arbitrary
+                    if t_start[C_ind] == 0: #If not addresed before phase is arbitrary
                         g.dec_duration = 0
                     else:
-                        desired_phase = Gate_sequence[i+1].phase
-                        
-                        precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #needs to be added to msmst params
-                        
+
+                        desired_phase = Gate_sequence[i+1].phase/180.*np.pi #convert degrees to radians 
+                        precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #convert to radians/s
                         if precession_freq == 0:
                             g.dec_duration = 0
                         else:
                             evolution_time = (t+Gate_sequence[i-1].tau_cut) - t_start[C_ind] # NB corrected for difference between time where the gate starts and where the AWG element starts
-                            
                             current_phase = evolution_time*precession_freq 
-                            
-                            phase_dif = (desired_phase-current_phase)%(2*np.pi)
-                            
+                            phase_dif = (desired_phase-current_phase)%(2*np.pi) 
                             dec_duration =(round( phase_dif/precession_freq 
                                     *1e9/(self.params['dec_pulse_multiple']*2))
                                     *(self.params['dec_pulse_multiple']*2)*1e-9)
@@ -1601,17 +1597,19 @@ class NuclearRamseyWithInitialization(MBI_C13):
             C_evol_seq =[wait_gate]
             #############################
             #Readout in the x basis
+            # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['Y_phase'])
             C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
+                    Carbon_ind = self.params['Addressed_Carbon'], phase = self.params['C_RO_phase'][pt])
             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['X_phase'])
             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
