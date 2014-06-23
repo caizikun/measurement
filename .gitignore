@@ -18,4 +18,3 @@ CPLD
 *.vi
 *.bmp
 *.png
-./scripts/bell/*

@@ -226,7 +226,7 @@ def tail_lt1(name):
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
-    m.params['eom_off_amplitude']         = np.ones(pts)*-0.375#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
+    m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
     m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
    
     if m.params['use_eom_pulse'] == 'raymond-pulse':
@@ -248,7 +248,7 @@ def tail_lt1(name):
     else:#'normal':
 
         m.params['eom_pulse_duration']         = np.ones(pts)* 2e-9
-        m.params['eom_pulse_amplitude']        = np.ones(pts)*2.0
+        m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
         m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
         m.params['eom_off_duration']           = 200e-9
         m.params['eom_overshoot_duration1']    = np.linspace(1e-9,15e-9,pts)
@@ -264,9 +264,9 @@ def tail_lt1(name):
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
-    m.params['aom_amplitude']             = aom_voltage_sweep#np.ones(pts)*1.0#aom_voltage_sweep 
+    m.params['aom_amplitude']             = aom_voltage_sweep 
 
-    m.params['sweep_name'] = 'sqrt aom power'
+    m.params['sweep_name'] = 'aom voltage'
     m.params['sweep_pts'] = np.sqrt(aom_power_sweep/max_power_aom)
 
     bseq.pulse_defs_lt1(m)
@@ -277,14 +277,14 @@ def tail_lt1(name):
     m.params['send_AWG_start'] = 1
     m.params['wait_for_AWG_done'] = 0
     m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']
-    m.params['repetitions'] = 15000
+    m.params['repetitions'] = 10000
     m.params['SP_duration'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     
-    debug=False
+    debug=False 
     measure_bs=True
 
     m.params['trigger_wait'] = 1
@@ -307,4 +307,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt3('lt3_the111no2_Sil2')
+    tail_lt1('lt1_the111no1_Sil18_8_degrees')

@@ -68,9 +68,9 @@ params_lt1['RND_duration'] = 300e-9
 params_lt1['initial_delay']   	        = 11e-9
 
 params_lt1['eom_pulse_duration']        = 2e-9
-params_lt1['eom_pulse_amplitude']		= 2.0
+params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.375  
+params_lt1['eom_off_amplitude']         = -.28 
 params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
 params_lt1['eom_pulse_amplitude']       = 2.0
 params_lt1['eom_overshoot_duration1']   = 10e-9
