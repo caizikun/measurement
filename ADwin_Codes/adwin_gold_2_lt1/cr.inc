@@ -1,5 +1,5 @@
 '<ADbasic Header, Headerversion 001.001>
-' Foldings                       = 170
+' Foldings                       = 171
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -146,6 +146,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             PAR_70 = PAR_70 + cr_counts
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
+              first_cr = 0
               DATA_23[repetition_index] = cr_counts
             ENDIF
                       
