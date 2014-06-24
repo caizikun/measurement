@@ -167,7 +167,8 @@ class ElectronRabi(PulsarMeasurement):
         # define the necessary pulses
 
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            I_channel='MW_Imod',
+            Q_channel='MW_Qmod',
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_pulse_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])
@@ -204,6 +205,56 @@ class ElectronRabi(PulsarMeasurement):
 
         # some debugging:
         # elements[-1].print_overview()
+        
+
+class ElectronRabi_Square(PulsarMeasurement):
+    mprefix = 'ElectronRabi_square'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True):
+        #print 'test'
+        # define the necessary pulses
+
+        X = pulselib.MW_pulse('Weak pi-pulse',
+            MW_channel='MW_Imod',
+            PM_channel='MW_pulsemod',
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['MW_pulse_durations'][i],
+                amplitude = self.params['MW_pulse_amplitudes'][i]))
+
+            elements.append(e)
+
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            qt.pulsar.program_awg(seq,*elements)
+            #qt.pulsar.upload(*elements)
+
+
+
 
 class ElectronRamseyCORPSE(PulsarMeasurement):
     mprefix = 'ElectronRamsey'
@@ -827,12 +878,12 @@ class Magnetometry(PulsarMeasurement):
         n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
         n.append(pulse.cp(T,length=100e-9))
         n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
-                               frequency=self.params['pi2pi_mI0_mod_frq']+self.params['N_HF_frq'],
+                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
                                amplitude=self.params['pi2pi_mIm1_amp']))
         n.append(SP)
         n.append(pulse.cp(T,length=1e-6))
         n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
-                                   frequency=self.params['pi2pi_mI0_mod_frq'],#-self.params['N_HF_frq'],
+                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
                                    amplitude=self.params['pi2pi_mI0_amp']))
         n.append(pulse.cp(T,length=1e-6))
         n.append(SP)

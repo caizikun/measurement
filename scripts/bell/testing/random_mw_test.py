@@ -31,11 +31,11 @@ class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
         # define the necessary pulses
 
         X = pulselib.MW_pulse('Weak pi-pulse',
-            MW_channel='MW_1',
+            MW_channel='MW_Imod',
             PM_channel='MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'])
 
-        T = pulse.SquarePulse(channel='MW_2', name='delay',
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
             length = 200e-9, amplitude = 0.)
 
         # make the elements - one for each ssb frequency
@@ -316,9 +316,9 @@ def erabi(name):
     #m.params['MW_pulse_frequency'] = 43e6
 
     #m.params['MW_pulse_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 4000, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.27
+    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.03
     #m.params['MW_pulse_amplitudes'] = np.linspace(0,0.8,pts)#0.55*np.ones(pts)
 
     # for autoanalysis

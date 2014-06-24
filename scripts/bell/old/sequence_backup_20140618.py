@@ -370,7 +370,7 @@ def _LDE_element(msmt, **kw):
     ############
     #print e.print_overview()
     e_len = e.length()
-    #print 'SAMPLES', e.samples
+    print 'SAMPLES', e.samples
     if e_len != msmt.joint_params['LDE_element_length']:
         raise Exception('LDE element "{}" has length {:.2e}, but specified length was {:.2e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
     return e

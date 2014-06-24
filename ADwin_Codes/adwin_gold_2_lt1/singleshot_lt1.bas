@@ -121,8 +121,7 @@ EVENT:
           mode = 2
           timer = -1
         ENDIF
-        first = 0
-        
+    
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
           DAC(E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
