@@ -398,34 +398,28 @@ class DD_CORPSE_ZerothRevival(pulsar_msmt.PulsarMeasurement):
                 global_time = True)
             e.append(T)
 
-            last = e.add(pulse.cp(pulse_pi2,
-                        amplitude = self.params['CORPSE_pi2_amps'][i],
-                        phase = self.params['CORPSE_pi2_phases1'][i]),
-                    start = 200e-9,
-                    name = 'pi2_1')
-                
+            e.append(pulse.cp(pulse_pi2,
+                amplitude = self.params['CORPSE_pi2_amps'][i],
+                phase = self.params['CORPSE_pi2_phases1'][i]))
+
             for j in range(self.params['number_pulses']):
 
-
-                last = e.add(pulse.cp(pulse_pi,
-                        amplitude = self.params['CORPSE_pi_amps'][i],
-                        phase = self.params['CORPSE_pi_phases'][j]),
-                    refpulse = last,
-                    refpoint = 'end' if (j == 0) else 'center',
-                    refpoint_new = 'center',
-                    start = self.params['evolution_times'][i] if (j == 0) else 2*self.params['evolution_times'][i],
-                    name = 'pi_{}'.format(j))
+                e.append(pulse.cp(T,
+                    length = self.params['evolution_times'][i]))
 
 
-            e.add(pulse.cp(pulse_pi2,
-                    amplitude = self.params['CORPSE_pi2_amps'][i],
-                    phase = self.params['CORPSE_pi2_phases2'][j]),
-                refpulse = last,
-                refpoint = 'center',
-                refpoint_new = 'start',
-                start = self.params['evolution_times'][i]+self.params['extra_wait_final_pi2'][i],
-                name = 'pi2_2')
-            
+                e.append(pulse.cp(pulse_pi,
+                    amplitude = self.params['CORPSE_pi_amps'][i],
+                    phase = self.params['CORPSE_pi_phases'][j]))
+
+                e.append(pulse.cp(T,
+                    length = self.params['evolution_times'][i]))
+
+            e.append(pulse.cp(pulse_pi2,
+                amplitude = self.params['CORPSE_pi2_amps'][i],
+                phase = self.params['CORPSE_pi2_phases2'][i]))
+
+
             elements.append(e)
         
         return_e=e
@@ -515,7 +509,7 @@ class DD_ZerothRevival(pulsar_msmt.PulsarMeasurement):
                 last = e.add(pulse.cp(pulse_pi,
                     amplitude = self.params['pulse_pi_amps'][i]),
                     refpulse = last,
-                    refpoint = 'end' if (j == 0) else 'center',
+                    refpoint = 'center',
                     refpoint_new = 'center',
                     start = self.params['evolution_times'][i] if (j == 0) else 2*self.params['evolution_times'][i],
                     name = 'pi_{}'.format(j))
@@ -528,7 +522,7 @@ class DD_ZerothRevival(pulsar_msmt.PulsarMeasurement):
                 amplitude = self.params['pulse_pi2_amps'][i]),
                 refpulse = last,
                 refpoint = 'center',
-                refpoint_new = 'start',
+                refpoint_new = 'center',
                 start = self.params['evolution_times'][i],
                 name = 'pi2_2')
                 #phase = self.params['pulse_pi2_phases2'][i]))
@@ -614,7 +608,7 @@ def dark_esr(name):
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
     m.params['repetitions']  = 1000
-    m.params['range']        = 6e6
+    m.params['range']        = 8e6
     m.params['pts'] = 131
     m.params['pulse_length'] = 2.e-6
     m.params['ssbmod_amplitude'] = 0.04
@@ -676,7 +670,7 @@ def calibrate_Pi_CORPSE(name,IQmod=True,multiplicity=1):
 
     funcs.prepare(m)
 
-    pts = 20
+    pts = 21
     
     
     m.params['IQmod'] = IQmod
@@ -697,7 +691,7 @@ def calibrate_Pi_CORPSE(name,IQmod=True,multiplicity=1):
     m.params['repetitions'] = 1000
 
     # sweep params
-    m.params['CORPSE_pi_sweep_amps'] =  np.linspace(0.69, 0.76, pts) #0.872982*np.ones(pts)#
+    m.params['CORPSE_pi_sweep_amps'] = np.linspace(0.69, 0.78, pts) #0.872982*np.ones(pts)#
     m.params['CORPSE_pulse_delays']=0.*np.ones(pts)#np.linspace(0,10e-9,pts)
     m.params['CORPSE_eff_rotation_angle'] = 180
     m.params['delay_reps'] = 1
@@ -741,7 +735,7 @@ def calibrate_Pi2_CORPSE(name,IQmod=True):
     else :
         CORPSE_frq = 9e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq'] 
-        m.params['CORPSE_pi_amp'] = 0.713
+        m.params['CORPSE_pi_amp'] = 0.723
     print 'IQmod :', IQmod
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
 
@@ -769,12 +763,13 @@ def ramsey_Corpse(name, IQmod=True) :
     funcs.prepare(m)
 
 
-    pts = 128
+    pts = 101
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
     print 1/m.params['N_HF_frq']
 
-
+    CORPSE_frq = 9e6
+    m.params['CORPSE_rabi_frequency'] = CORPSE_frq
     m.params['IQmod'] = IQmod
     m.params['cur_MW_channel'] = 'MW_Imod'
 
@@ -782,24 +777,20 @@ def ramsey_Corpse(name, IQmod=True) :
 
     m.params['detuning']  = 3e3
     if IQmod :
-        CORPSE_frq = 4.5e6
         m.params['frq_mod'] = 43e6 
         m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['frq_mod'] -m.params['detuning']
     else :
-        CORPSE_frq = 9e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq'] -m.params['detuning']
-
-    m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    print IQmod
+        print IQmod
 
 
     
     #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0, 5000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0, 10000e-9,pts)
     #m.params['evolution_times'] = 5*np.ones (pts)*1e-9
 
     # MW pulses
-    m.params['CORPSE_pi2_amps'] = np.ones(pts)*0.770#m.params['CORPSE_pi2_amp']
+    m.params['CORPSE_pi2_amps'] = np.ones(pts)*0.738#m.params['CORPSE_pi2_amp']
     m.params['CORPSE_pi2_phases1'] = np.ones(pts) * 0
     m.params['CORPSE_pi2_phases2'] = 0*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
 
@@ -818,9 +809,10 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
     funcs.prepare(m)
 
 
-    pts = 41
+    pts = 30
     m.params['pts'] = pts
     m.params['repetitions'] = 2000
+    print 1/m.params['N_HF_frq']
 
     m.params['IQmod'] = IQmod
     m.params['cur_MW_channel'] = 'MW_Imod'
@@ -842,39 +834,31 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
 
 
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    m.params['number_pulses'] = 3
-
+    m.params['number_pulses'] = 5
     
-    if mod(m.params['number_pulses'],2) ==0 :
-        m.params['extra_wait_final_pi2']=np.ones(pts)*m.params['extra_wait_final_pi2']
-        #m.params['extra_wait_final_pi2'] = np.linspace(-100e-9,60e-9,pts)#np.ones(pts)*0
-    else :
-        m.params['extra_wait_final_pi2']=np.ones(pts)*0
-        #m.params['extra_wait_final_pi2'] = np.linspace(-80e-9,80e-9,pts)
 
-    m.params['evolution_times'] = np.linspace(300e-9*2.*m.params['number_pulses'], 15e-6,pts)/(2.*m.params['number_pulses'])
-    #np.linspace((2.2*1/CORPSE_frq)*2*m.params['number_pulses'], 40e-6,pts)/(2.*m.params['number_pulses'])
+    m.params['evolution_times'] = np.linspace(1e-9, 50e-6,pts)/(2.*m.params['number_pulses'])
 
     # MW pulses
     #m.params['CORPSE_pi2_amps'] = np.ones(pts)*m.params['CORPSE_pi2_amp']#0.752#0.738
     m.params['CORPSE_pi2_phases1'] = np.ones(pts) * 0
-    m.params['CORPSE_pi2_phases2'] = 0*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
+    m.params['CORPSE_pi2_phases2'] = 90*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
     #m.params['CORPSE_pi_amps'] = np.ones(pts)*m.params['CORPSE_pi_amp']#0.752#0.727
     
     
-    m.params['CORPSE_pi_phases'] = np.zeros(m.params['number_pulses'])
+    m.params['CORPSE_pi_phases'] = np.ones(m.params['number_pulses'])
     if mod(m.params['number_pulses'],2) == 0 :
         for i in range(m.params['number_pulses']):
             m.params['CORPSE_pi_phases'][i]= 90*0**mod((mod(i,2)+i/4),2)
     else :
         for i in range(m.params['number_pulses']):
             m.params['CORPSE_pi_phases'][i]= 90*0**mod((mod(i+1,2)+(i+1)/4),2)
-#
-    m.params['first_CORPSE_pi_phase'] = 90
+
+    m.params['first_CORPSE_pi_phase'] = 0
     if m.params['first_CORPSE_pi_phase'] != m.params['CORPSE_pi_phases'][0]:
         m.params['CORPSE_pi_phases'] = abs(m.params['CORPSE_pi_phases']- 90)
 
-    m.params['CORPSE_pi_phases'] = np.ones(m.params['number_pulses'])*0
+    #m.params['CORPSE_pi_phases'] = np.ones(m.params['number_pulses'])*0
 
     print "Phases of the pi pulses : ",  m.params['CORPSE_pi_phases']
 
@@ -882,8 +866,6 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
     # for the autoanalysis
     m.params['sweep_name'] = 'evolution time (us)'
     m.params['sweep_pts'] = m.params['evolution_times']*2*m.params['number_pulses']/1e-6
-    #m.params['sweep_name'] = 'extra wait time before pi/2 (ns)'
-    #m.params['sweep_pts'] = m.params['extra_wait_final_pi2']*1e9#m.params['evolution_times']*2*m.params['number_pulses']/1e-6
     #m.params['sweep_name'] = 'phase second pi2'
     #m.params['sweep_pts'] = m.params['CORPSE_pi2_phases2']
 
@@ -916,8 +898,8 @@ def dd_zerothrevival(name, IQmod=True) :
         m.params['pulse_pi2_amps'] = np.ones(pts)*0.6#0.35
 
 
-    m.params['pulse_pi_duration'] = 91e-9
-    m.params['pulse_pi2_duration'] = 40e-9
+    m.params['pulse_pi_duration'] = 94e-9
+    m.params['pulse_pi2_duration'] = 47e-9
     m.params['pulse_pi_amp'] = 0.35
     m.params['pulse_pi2_amp'] = 0.35
 
@@ -925,7 +907,7 @@ def dd_zerothrevival(name, IQmod=True) :
     m.params['number_pulses'] = 2
     
 
-    m.params['evolution_times'] = np.linspace(120e-9, 40e-6,pts)/(2.*m.params['number_pulses'])
+    m.params['evolution_times'] = np.linspace(1e-9, 5e-6,pts)/(2.*m.params['number_pulses'])
 
 
 
@@ -961,7 +943,7 @@ def run_calibrations(stage, IQmod):
     if stage == 3.0 :
         calibrate_Pi_CORPSE(SAMPLE_CFG, IQmod = IQmod )
     if stage == 3.5 :
-        calibrate_Pi_CORPSE(SAMPLE_CFG, IQmod = IQmod, multiplicity = 8)
+        calibrate_Pi_CORPSE(SAMPLE_CFG, IQmod = IQmod, multiplicity = 11)
     if stage == 3.75:
         dark_esr_Corpse(SAMPLE_CFG)
 
@@ -979,7 +961,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(5.0, IQmod = False)
+    run_calibrations(6.0, IQmod = False)
 
     """
     stage 0 : continuous ESR
@@ -1001,11 +983,4 @@ if __name__ == '__main__':
     		--> 'CORPSE_pi_amp' in qt.exp_params
 
     stage 4.0 : calibration of the pi/2 CORPSE pulse
-
-    stage 5.0 : ramsey 
-
-    stage 6.0 : dynamical decoupling sequence
-        + calibrate the 'extra_wait_final_pi2', ie the time between the last pi pulse_pi
-        and pi/2 pulse_pi
     """
-

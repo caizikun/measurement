@@ -25,17 +25,17 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
+    
     
     m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 10000
 
     #m.params['wait_after_pulse_duration']=0
     #m.params['wait_after_RO_pulse_duration']=0
     m.params['Ex_SP_amplitude']=0
-
-
+    
+    m.params['MW_modulation_frequency'] = 43e6
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
@@ -43,9 +43,9 @@ def erabi(name):
     m.params['MW_pulse_frequency'] = m.params['MW_modulation_frequency']
 
     #m.params['MW_pulse_durations'] =  np.ones(pts)*2500e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 4000, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 400, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.009
+    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9#0.27
     #m.params['MW_pulse_amplitudes'] = np.linspace(0,0.03,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -69,4 +69,4 @@ def erabi(name):
     m.finish()
 
 if __name__ == '__main__':
-    erabi(SAMPLE+'_'+'slow_rabi_ms-1')
+    erabi(SAMPLE)

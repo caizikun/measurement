@@ -22,6 +22,8 @@ reload(params)
 import params_lt1
 reload(params_lt1)
 
+
+
 class Tail(bell.Bell):
     adwin_process = pulsar_pq.PQPulsarMeasurement.adwin_process
     
@@ -120,10 +122,14 @@ def tail_lt3(name):
 
     pts=10
     m.params['pts']=pts
+
+    GreenAOM = qt.instruments['GreenAOM'] 
+    GreenAOM.set_power(0e-9)
     
     #EOM pulse ----------------------------------
     #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
+
 
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
@@ -159,7 +165,7 @@ def tail_lt3(name):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.2,0.6,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.05,0.6,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
@@ -225,6 +231,7 @@ def tail_lt1(name):
     #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
+
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     m.params['eom_off_amplitude']         = np.ones(pts)*-0.375#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
     m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
@@ -259,7 +266,7 @@ def tail_lt1(name):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.2,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.1,0.4,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
