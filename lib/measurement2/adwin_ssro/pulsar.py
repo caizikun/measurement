@@ -207,7 +207,7 @@ class ElectronRabi(PulsarMeasurement):
         # elements[-1].print_overview()
         
 
-class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
+class ElectronRabi_Square(PulsarMeasurement):
     mprefix = 'ElectronRabi_square'
 
     def autoconfig(self):
@@ -215,7 +215,7 @@ class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
             int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
 
 
-        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+        PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True):
         #print 'test'
@@ -226,7 +226,7 @@ class ElectronRabi_Square(pulsar_msmt.PulsarMeasurement):
             PM_channel='MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'])
 
-        T = pulse.SquarePulse(channel='MW_2', name='delay',
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
             length = 200e-9, amplitude = 0.)
 
         # make the elements - one for each ssb frequency
