@@ -143,7 +143,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
         if gate.N==None:
             gate.N = self.params['C'+str(ind)+'_Ren_N'][resonance] #Needs to be added to msmt params
-        if gate.tau==None: 
+        if gate.tau==None:
             gate.tau = self.params['C'+str(ind)+'_Ren_tau'][resonance]
 
 
@@ -168,8 +168,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
             if gate_seq[i].Gate_type =='Trigger' :
                 # ext_gate_seq[-1].tau_cut = ext_gate_seq[-2].tau_cut
-                if (gate_seq[i+1] =='Carbon_Gate' or
-                        gate_seq[i+1] == 'electron_decoupling'):
+                if (gate_seq[i+1].Gate_type =='Carbon_Gate' or
+                        gate_seq[i+1].Gate_type == 'electron_decoupling'):
                     ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
         ext_gate_seq.append(gate_seq[-1])
@@ -197,22 +197,22 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         g.dec_duration = 0
                     else:
 
-                        desired_phase = Gate_sequence[i+1].phase/180.*np.pi #convert degrees to radians 
+                        desired_phase = Gate_sequence[i+1].phase/180.*np.pi #convert degrees to radians
                         precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #convert to radians/s
                         if precession_freq == 0:
                             g.dec_duration = 0
                         else:
                             evolution_time = (t+Gate_sequence[i-1].tau_cut) - t_start[C_ind] # NB corrected for difference between time where the gate starts and where the AWG element starts
-                            current_phase = evolution_time*precession_freq 
-                            phase_dif = (desired_phase-current_phase)%(2*np.pi) 
-                            dec_duration =(round( phase_dif/precession_freq 
+                            current_phase = evolution_time*precession_freq
+                            phase_dif = (desired_phase-current_phase)%(2*np.pi)
+                            dec_duration =(round( phase_dif/precession_freq
                                     *1e9/(self.params['dec_pulse_multiple']*2))
                                     *(self.params['dec_pulse_multiple']*2)*1e-9)
                             min_dec_duration= self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
                             while dec_duration <= min_dec_duration:
                                 phase_dif = phase_dif+2*np.pi
-                                dec_duration = (round( phase_dif/precession_freq 
+                                dec_duration = (round( phase_dif/precession_freq
                                         *1e9/(self.params['dec_pulse_multiple']*2))
                                         *(self.params['dec_pulse_multiple']*2)*1e-9)
 
@@ -295,8 +295,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         elif Gate.tau>2e-6 :           ## ERROR?
             Gate.scheme = 'repeating_T_elt'
         elif Gate.tau<= self.params['fast_pi_duration']+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?
-            print Gate.name 
-            print 'Error: tau (%s) too small: Pulses will overlap! \n Min tau = %s' %(Gate.tau,self.params['fast_pi_duration']+20e-9) 
+            print Gate.name
+            print 'Error: tau (%s) too small: Pulses will overlap! \n Min tau = %s' %(Gate.tau,self.params['fast_pi_duration']+20e-9)
             return
         elif Gate.tau<0.5e-6:
             Gate.scheme = 'single_block'
@@ -1479,7 +1479,7 @@ class MBI_C13(DynamicalDecoupling):
         # print 'carbon init ro wait %s' %self.params['Carbon_init_RO_wait']
         DynamicalDecoupling.autoconfig(self)
 
-    def initialize_carbon_sequence(self, go_to_element ='MBI_1', 
+    def initialize_carbon_sequence(self, go_to_element ='MBI_1',
             initialization_method ='swap', pt = 1, addressed_carbon =1, init_state='up'):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
@@ -1563,6 +1563,47 @@ class MBI_C13(DynamicalDecoupling):
         self.calc_and_gen_connection_elts(gate_seq)
         return gate_seq
 
+    #Function overwrites same function in parent class
+    def calc_and_gen_connection_elts(self,Gate_sequence):
+        '''
+        This function keeps track of phases in a Gate sequence.
+        It differs from the version in the parent class DynamicalDecoupling in that it
+        tracks the evolved phase per gate based on the electron state.
+        This allows for mid gate changing of precession frequency.
+        It requires three variables in the msmt params to be stored for each carbon
+        C*_freq_0, C*_freq_1, C*_freq_dec. where *is a carbon index (1,2 etc).
+
+        It no longer makes sense to use an absolute clock for calculating phase as the simple product no longer works.
+        Instead I will add the following attributes to each gate object: C*_phase_after gate.
+        NOTE: Element lengths are defined as in (IDEAL/AWG CASE) TODO: chooce
+        '''
+
+        ## Initialize Carbon phases
+
+
+
+        for i,g in enumerate(Gate_sequence):
+            #Loop over all gates
+
+            #Determine type
+            #    - Needs active phase correction/calculation (Carbon Gate)
+            #    - Connection element or the like
+
+            # Calculate phase evoluition
+            # Determine if phase needs to be added trough g.dec_duration
+
+            # Correct for fact that last and Trigger elements are different
+
+            #Call functions to determine the connection gate parameters
+            # Call function that makes the AWG elements for these gates.
+
+                g.elements_duration = g.tau_cut_before+g.dec_duration+g.tau_cut_after
+                self.determine_connection_element_parameters(g)
+                self.generate_connection_element(g)
+            t = t+g.elements_duration #tracks total time elapsed of elements NOTE THIS IS INCLUDES THE TAU CUT
+
+        return Gate_sequence
+
 
 class NuclearRamseyWithInitialization(MBI_C13):
     '''
@@ -1596,8 +1637,8 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     initialization_method = 'MBI', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'], init_state = self.params['C13_init_state'])
             ################################
-            
-            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): 
+
+            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6):
                 # because min length is 3e-6
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                         %(self.params['wait_times'][pt],self.params['Carbon_init_RO_wait']))
@@ -1613,7 +1654,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
             C_evol_seq =[wait_gate0, Electron_X, wait_gate]
-            
+
             #############################
             #Readout in the x basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
@@ -1682,9 +1723,9 @@ class NuclearRabiWithInitialization(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'])
             ################################
- 
+
             C_Rabi_Ren = Gate('C_Rabi_Ren'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], 
+                    Carbon_ind = self.params['Addressed_Carbon'],
                     N = self.params['Rabi_N_Sweep'][pt])
 
             C_evol_seq =[C_Rabi_Ren]
@@ -1723,6 +1764,10 @@ class NuclearRabiWithInitialization(MBI_C13):
 
         else:
             print 'upload = false, no sequence uploaded to AWG'
+
+#TODO_MAR: Create phase test class
+#TODO_MAR: 2QB Parity test
+
 
 # class Two_QB_MBE(MBI_C13):
 #     '''
@@ -1856,8 +1901,8 @@ class NuclearRabiWithInitialization(MBI_C13):
 
 class Three_QB_MB_QEC(MBI_C13):
     '''
-    TODO_MAR: Finish 3QB MB QEC class 
-    This class is supposed to contain the complete QEC gate sequence. 
+    TODO_MAR: Finish 3QB MB QEC class
+    This class is supposed to contain the complete QEC gate sequence.
     It still needs Adwin code to support it and to test it.
     Underdevelopment
     '''
@@ -1907,7 +1952,8 @@ class Three_QB_MB_QEC(MBI_C13):
 
             #enc_Rx =  #TO:  IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
             '''
-            TODO_MAR:            Still need to determine what the initial state is that will be encoded and how
+            TODO_MAR: 3QB Encoding, determine initial state.
+            Still need to determine what the initial state is that will be encoded and how
             dynamical this needs to be.
             '''
 
