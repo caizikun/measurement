@@ -1516,6 +1516,7 @@ class MBI_C13(DynamicalDecoupling):
                 wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element)
+        #TODO_MAR: Add functionality to initialize electron in 1 after RO by adding a pi pulse
 
         if initialization_method == 'swap':
             #Swap initializes into 1 or 0 and contains extra Ren gate
@@ -1643,17 +1644,18 @@ class NuclearRamseyWithInitialization(MBI_C13):
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                         %(self.params['wait_times'][pt],self.params['Carbon_init_RO_wait']))
 
-            wait_gate0 = Gate('Wait_gate0_'+str(pt),'passive_elt',
-                    wait_time = 5e-6)
+            #wait_gate0 = Gate('Wait_gate0_'+str(pt),'passive_elt',
+            #        wait_time = 5e-6)
 
-            Electron_X = Gate('Electron_X_'+str(pt),'electron_Gate',
-                    Gate_operation='pi',
-                    phase = self.params['X_phase'])
+            # Electron_X = Gate('Electron_X_'+str(pt),'electron_Gate',
+            #         Gate_operation='pi',
+            #         phase = self.params['X_phase'])
 
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
-            C_evol_seq =[wait_gate0, Electron_X, wait_gate]
+            C_evol_seq =[wait_gate]
+
 
             #############################
             #Readout in the x basis
@@ -1701,7 +1703,7 @@ class NuclearRabiWithInitialization(MBI_C13):
         pts = self.params['pts']
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
-        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+        combined_seq = pulsar.Sequence('Initialized Nuclear Rabi Sequence')
 
         for pt in range(pts):
 
@@ -1724,19 +1726,25 @@ class NuclearRabiWithInitialization(MBI_C13):
                     addressed_carbon= self.params['Addressed_Carbon'])
             ################################
 
+
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                    wait_time = 6e-6)
+
             C_Rabi_Ren = Gate('C_Rabi_Ren'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'],
-                    N = self.params['Rabi_N_Sweep'][pt])
+                    N = self.params['Rabi_N_Sweep'][pt],
+                    phase = self.params['C13_X_phase'])
 
-            C_evol_seq =[C_Rabi_Ren]
+            C_evol_seq =[wait_gate, C_Rabi_Ren]
             #############################
-            #Readout in the x basis
+            #Readout in the Y basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['Y_phase'])
             C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], phase = self.params['C13_Y_phase'])
+                    Carbon_ind = self.params['Addressed_Carbon'],
+                    phase = self.params['C13_Y_phase'])
             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['X_phase'])

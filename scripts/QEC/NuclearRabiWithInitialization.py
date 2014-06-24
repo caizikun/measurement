@@ -23,39 +23,42 @@ def NuclearRabiWithInitialization(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 31 
+    
 
     m.params['Addressed_Carbon'] = 1
-
-
+    m.params['C13_init_state'] = 'down' 
 
     m.params['sweep_name'] = 'Number of pulses'
 
-    m.params['Rabi_N_Sweep']= np.arange(4,10000,4)[0: m.params['pts']]
+    m.params['Rabi_N_Sweep']= np.arange(4,100,4)
     print m.params['Rabi_N_Sweep']
-    m.params['sweep_pts']        = m.params['Rabi_N_Sweep']
-
-
+    m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
+    m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
     #############################
     #!NB: These should go into msmt params
     #############################
 
     ##########
-    # Overwrite certain params to make the script always work 
-    m.params['C13_MBI_threshold']       = 1
-    m.params['MBI_threshold'] = 1
-
+    # Overwrite certain params to test
+    m.params['C13_MBI_threshold']       = 0
+    m.params['MBI_threshold']           = 1
+    
     m.params['C13_MBI_RO_duration']     = 30 
-    m.params['SP_duration_after_C13']   = 10
+    m.params['E_C13_MBI_amplitude']     = 1e-9
 
+    m.params['SP_duration_after_C13']   = 50
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
     m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
-    m.params['E_C13_MBI_amplitude']           = 1e-9
-
+    
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRabiWithInitialization(SAMPLE)
+
+
+
+
+
 
