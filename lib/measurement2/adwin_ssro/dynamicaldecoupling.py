@@ -1576,17 +1576,23 @@ class MBI_C13(DynamicalDecoupling):
         '''
         loads carbon frequencies to a handy array
         '''
+        C_freq_0 =[]
+        C_freq_1=[]
+        C_freq_dec=[]
         for i in range(10):
-            C_freq_0.append() = self.params['C%s_freq_0',%i] *2*np.pi
-            C_freq_1.append() = self.params['C%s_freq_1',%i]*2*np.pi
-            C_freq_dec.append()  = self.params['C%s_freq_dec',%i]*2*np.pi
+            C0str = 'C'+str(i)+'_freq_0'
+            C1str = 'C'+str(i)+'_freq_1'
+            Cdecstr = 'C'+str(i)+'_freq_dec'
+            C_freq_0.append = self.params[C0str] *2*np.pi
+            C_freq_1.append = self.params[C1str]*2*np.pi
+            C_freq_dec.append  = self.params[Cdecstr]*2*np.pi
 
         return C_freq_0, C_freq_1, C_freq_dec
 
 
 
     #Function overwrites same function in parent class
-    def calc_and_gen_connection_elts(self,Gate_sequence):
+    def calc_and_gen_connection_elts_new(self,Gate_sequence):
         '''
         This function keeps track of phases in a Gate sequence.
         It differs from the version in the parent class DynamicalDecoupling in that it
@@ -1600,7 +1606,7 @@ class MBI_C13(DynamicalDecoupling):
 
         The following attributes are added to each gate
         C_phases_after_gate [phase_C1, phase_C2, ... ]
-        el_state_after_gate
+        el_state_after_gate:  Possibilities are '0', '1' and 'sup' 
         el_state_before_gate
 
         If g.C_phases_after_gate[i]  is specified for the gate before the function is called this takes priority
@@ -1613,7 +1619,10 @@ class MBI_C13(DynamicalDecoupling):
         NOTE: g.el_state_after_gate has to be explicitly stated when it changes.
         No automatic bookkeeping done for you.
 
+        TODO_MAR: if two consequtive Carbon gates act on the same carbon (with the same phase) dec_duration should be 0
+        Other way to say this is if the time is close to a multiple of 2pi phase. 
 
+        TODO_MAR: make usefull for subsequences to allow for branching 
         '''
 
         ## Initialize Carbon phases
@@ -1622,11 +1631,11 @@ class MBI_C13(DynamicalDecoupling):
 
 
         for i,g in enumerate(Gate_sequence):
-            if i = 0: #At first element, start initialised
-                g.el_state_before_gate = '|0>'
+            if i == 0: #At first element, start initialised
+                g.el_state_before_gate = '0'
             else:
                 g.el_state_before_gate =Gate_sequence[i-1].el_state_after_gate
-                g.C_phases_before_gate = Gate_sequence[i-1].C_phases_before_gate
+                g.C_phases_before_gate = Gate_sequence[i-1].C_phases_after_gate
 
             if g.el_state_after_gate ==None:
                 g.el_state_after_gate = g.el_state_before_gate
@@ -1654,7 +1663,7 @@ class MBI_C13(DynamicalDecoupling):
             #################
 
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
-                if i == len(Gate_sequence)-1: #at end of sequence no decoupling neccesarry for electron gate
+                if i == len(Gate_sequence)-1: #TODO_MAR: Needs to be changed for subsequences #at end of sequence no decoupling neccesarry for electron gate
                     g.dec_duration = 0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi #Convert degrees to radian
@@ -1665,6 +1674,7 @@ class MBI_C13(DynamicalDecoupling):
                         dec_duration =(round( phase_diff/C_freq_dec[g.Carbon_ind]
                                 *1e9/(self.params['dec_pulse_multiple']*2))
                                 *(self.params['dec_pulse_multiple']*2)*1e-9)
+                        #TODO_MAR: Add option for (absolute) extremely small dec_duration to not decouple at all 
                         while dec_duration <= self.params['min_dec_duration']:
                             phase_diff = phase_diff +2*np.pi
                             dec_duration =(round( phase_diff/C_freq_dec[g.Carbon_ind]
@@ -1701,24 +1711,22 @@ class MBI_C13(DynamicalDecoupling):
             elif g.Gate_type =='passive_elt':
                 for iC in range(len(g.C_phases_before_gate)):
                     if g.C_phases_after_gate[iC] ==None:
-                        if g.el_state_before_gate == '|0>':
+                        if g.el_state_before_gate == '0':
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.wait_time*C_freq_0[iC]
-                        if g.el_state_before_gate == '|1>':
+                        elif g.el_state_before_gate == '1':
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.wait_time*C_freq_1[iC]
-                        if g.el_state_before_gate == '|0>':
-                                g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.wait_time*C_freq_dec[iC]
-
+                        elif g.el_state_before_gate == 'sup':
+                            print 'Error: %s, el state in sup for passive elt' %g.name 
             elif g.Gate_type=='Trigger':
                 for iC in range(len(g.C_phases_before_gate)):
+                    #TODO_MAR: check None statement 
                     if g.C_phases_after_gate[iC] ==None:
-                        if g.el_state_before_gate == '|0>':
+                        if g.el_state_before_gate == '0':
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.elements_duration*C_freq_0[iC]
-                        if g.el_state_before_gate == '|1>':
+                        elif g.el_state_before_gate == '1':
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.elements_duration*C_freq_1[iC]
-                        if g.el_state_before_gate == '|0>':
-                                g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] + g.elements_duration*C_freq_dec[iC]
-
-
+                        elif g.el_state_before_gate == 'sup':
+                                print 'Error: %s, el state in sup for Trigger elt' %g.name 
             elif g.Gate_type =='MBI':
                 for iC in range(len(g.C_phases_before_gate)):
                     # The MBI element is always first and should not have anything to do with C_phases
