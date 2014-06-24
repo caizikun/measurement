@@ -151,7 +151,7 @@ cfg['samples']['Hans_sil1'] = {
 
 ## Nuclear spins
 
-'C1_freq'       :       345.124e3, #be sure to enter in Hz
+'C1_freq'       :       0*345.124e3, #be sure to enter in Hz
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],
 
@@ -280,7 +280,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'E_C13_MBI_amplitude':               5e-9,
 'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger. 
                                               # The actual time for MBI reps is 5us shorter. 
-'C13_MBI_threshold' :                 0,
+'C13_MBI_threshold' :                 1,
 'SP_duration_after_C13':              10,
 
 # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
