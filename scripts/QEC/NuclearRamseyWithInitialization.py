@@ -28,10 +28,10 @@ def NuclearRamseyWithInitialization(name,tau = None):
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'down' 
 
-    m.params['sweep_name']       = 'wait_times' 
+    m.params['sweep_name']       = 'RO_phase_(degree)' 
     # m.params['sweep_name'] = 'RO phase (degree)'
 
-    if m.params['sweep_name'] == 'RO phase (degree)':
+    if m.params['sweep_name'] == 'RO_phase_(degree)':
 
         m.params['C_RO_phase'] =  np.linspace(0,360*2,m.params['pts'])
         m.params['wait_times'] = np.ones(m.params['pts'])*100e-6+30e-6 #Note: wait time must be atleast carbon init time +5us 
@@ -51,7 +51,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 1
+    m.params['C13_MBI_threshold']       = 0
     m.params['MBI_threshold']           = 1
     
     m.params['C13_MBI_RO_duration']     = 30 
