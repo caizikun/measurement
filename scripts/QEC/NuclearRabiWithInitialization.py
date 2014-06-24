@@ -1,5 +1,5 @@
 """
-Script for a carbon ramsey sequence
+Script for a carbon Rabi sequence
 """
 import numpy as np
 import qt 
@@ -14,36 +14,26 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRamseyWithInitialization(name,tau = None):
+def NuclearRabiWithInitialization(name,tau = None):
 
-    m = DD.NuclearRamseyWithInitialization(name)
+    m = DD.NuclearRabiWithInitialization(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 51 
+    
 
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'down' 
 
-    m.params['sweep_name']       = 'RO_phase_(degree)' 
-    # m.params['sweep_name'] = 'RO phase (degree)'
+    m.params['sweep_name'] = 'Number of pulses'
 
-    if m.params['sweep_name'] == 'RO_phase_(degree)':
-
-        m.params['C_RO_phase'] =  np.linspace(0,360*2,m.params['pts'])
-        m.params['wait_times'] = np.ones(m.params['pts'])*100e-6+30e-6 #Note: wait time must be atleast carbon init time +5us 
-        m.params['sweep_pts']        = m.params['C_RO_phase']
-        print     m.params['C_RO_phase']
-
-    elif m.params['sweep_name']  == 'wait_times':
-        m.params['C_RO_phase'] = np.ones(m.params['pts'] )*0
-        m.params['wait_times'] = np.linspace(130e-6, 150e-6,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
-        m.params['sweep_pts'] = m.params['wait_times']
-
-
+    m.params['Rabi_N_Sweep']= np.arange(4,100,4)
+    print m.params['Rabi_N_Sweep']
+    m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
+    m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
     #############################
     #!NB: These should go into msmt params
@@ -65,5 +55,10 @@ def NuclearRamseyWithInitialization(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+    NuclearRabiWithInitialization(SAMPLE)
+
+
+
+
+
 

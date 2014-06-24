@@ -2,7 +2,7 @@ import numpy as np
 import qt
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 
 class ElectronRabi(pulsar_msmt.MBI):

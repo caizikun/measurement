@@ -27,12 +27,14 @@ def Long_Carbon_Ramsey(name,tau = None):
 
     ### Sweep parameters
 
-    # m.params['N_list'] = range(8,400/8*6,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
-    m.params['N_list'] = range(8,360,24)
-    m.params['Phases_of_Ren_B'] =np.ones(len(m.params['N_list']))*0  #np.linspace(0,4*np.pi,41) #
+    # m.params['N_list'] = range(8,120,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
+    # m.params['Phases_of_Ren_B'] = np.ones(len(m.params['N_list']))*0 
+
+    m.params['N_list'] = np.ones(21)*4#
+    m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
 
  
-    m.params['C1_freq'] =m.params['C1_freq']-.2e3# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['C1_freq'] =m.params['C1_freq']-.5e3# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
     m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*6
@@ -40,18 +42,10 @@ def Long_Carbon_Ramsey(name,tau = None):
  
 
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
-    # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
-    # m.params['sweep_name']       = 'Phase'
-    m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
-    m.params['sweep_name'] = 'Free Evolution time (s)' 
-
-
-    #############################
-    #!NB: These should go into msmt params
-    #############################
-    m.params['min_dec_tau']         = 20e-9 + m.params['fast_pi_duration']/2.0
-    m.params['max_dec_tau']         = 0.35e-6 #Based on simulation for fingerprint at low tau
-    m.params['dec_pulse_multiple']  = 4#lowest multiple of 4 pulses
+    m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
+    m.params['sweep_name']       = 'Phase'
+    # m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
+    # m.params['sweep_name'] = 'Free Evolution time (s)' 
 
 
 

@@ -1,6 +1,6 @@
 import qt
 import numpy as np
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 from measurement.scripts.espin import espin_funcs as funcs

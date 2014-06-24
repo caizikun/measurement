@@ -5,7 +5,7 @@ import numpy as np
 import qt
 
 import measurement.lib.measurement2.measurement as m2
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulselib)
 

@@ -8,7 +8,7 @@ import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 def erabi(name, msp1=False):
     m = pulsar_msmt.ElectronRabi(name)

@@ -6,7 +6,7 @@ import numpy as np
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 
 

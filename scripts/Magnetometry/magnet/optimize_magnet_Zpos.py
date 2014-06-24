@@ -7,7 +7,7 @@ Important: choose the right domain for the range of positions in get_magnet_posi
 import numpy as np
 import qt
 import msvcrt
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 # import the DESR measurement, DESR fit, magnet tools and master of magnet
 from measurement.scripts.Magnetometry.magnet import DESR_msmt; reload(DESR_msmt)
@@ -34,8 +34,9 @@ if __name__ == '__main__':
     magnet_step_size = 25         # the sample position is checked after each magnet_step_size
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    DESR_range = 7       # MHz (ful range = 2*DESR_range)
-    pts   = 181
+    DESR_range = 3
+    # MHz (ful range = 2*DESR_range)
+    pts   = 151
     reps  = 1500
 
     ###########
