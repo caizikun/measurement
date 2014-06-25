@@ -1,5 +1,5 @@
 """
-Script for a carbon Rabi sequence
+Script for a carbonT1 msmnts
 """
 import numpy as np
 import qt 
@@ -14,25 +14,24 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRabiWithInitialization(name,tau = None):
+def NuclearT1(name,tau = None):
 
-    m = DD.NuclearRabiWithInitialization(name)
+    m = DD.NuclearT1(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
+
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 350 #Repetitions of each data point
-    
+    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
+    m.params['pts'] = 11 
 
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'up' 
 
-    m.params['sweep_name'] = 'Number of pulses'
+    m.params['sweep_name'] = 'wait_times'
+    m.params['wait_times'] = np.linspace(130e-6, 50e-3,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
+    m.params['sweep_pts']  = m.params['wait_times']
 
-    m.params['Rabi_N_Sweep']= np.arange(0,260,12)
-    print m.params['Rabi_N_Sweep']
-    m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
-    m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
     #############################
     #!NB: These should go into msmt params
@@ -40,7 +39,7 @@ def NuclearRabiWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 1
+    m.params['C13_MBI_threshold']       = 0
     m.params['MBI_threshold']           = 1
     
     m.params['C13_MBI_RO_duration']     = 30 
@@ -54,10 +53,5 @@ def NuclearRabiWithInitialization(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    NuclearRabiWithInitialization(SAMPLE)
-
-
-
-
-
+    NuclearT1(SAMPLE)
 

@@ -322,10 +322,11 @@ def _LDE_element(msmt, **kw):
                 refpulse = 'plu gate 3')
 
     # 14 RND generator HOLD OFF
-    e.add(msmt.RND_halt_off_pulse,
-            start = msmt.joint_params['RND_start'],
-            refpulse = 'initial_delay',
-            name = 'RND')
+    if msmt.params['RND_during_LDE'] == 1:
+        e.add(msmt.RND_halt_off_pulse,
+                start = msmt.joint_params['RND_start'],
+                refpulse = 'initial_delay',
+                name = 'RND')
 
     # 14 RND MW pulse
     if msmt.params['MW_during_LDE'] == 1:
