@@ -90,6 +90,8 @@ params_lt3['RND_angle_1'] = 315
 
 params_lt3['RND_duration'] = 100e-9
 
+params_lt3['RND_during_LDE'] = 1 
+
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
 # LDE Sequence in the AWGs

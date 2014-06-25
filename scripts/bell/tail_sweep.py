@@ -218,6 +218,8 @@ def tail_lt1(name):
         m.params[k] = params.joint_params[k]
         m.joint_params[k] = params.joint_params[k]
 
+    m.joint_params['LDE_element_length'] = 7e-6
+    m.params['RND_during_LDE'] = 0
     pts=10
     m.params['pts']=pts
     
@@ -270,8 +272,8 @@ def tail_lt1(name):
     m.params['sweep_pts'] = np.sqrt(aom_power_sweep/max_power_aom)
 
     bseq.pulse_defs_lt1(m)
-    m.params['MIN_SYNC_BIN'] =       6000 
-    m.params['MAX_SYNC_BIN'] =       8000
+    m.params['MIN_SYNC_BIN'] =       5000 
+    m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['sync_during_LDE'] = 1
     m.params['send_AWG_start'] = 1
@@ -307,4 +309,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt1('lt1_the111no1_Sil18_8_degrees')
+    tail_lt1('lt1_The111no1_sil1_15degrees')
