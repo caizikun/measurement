@@ -25,7 +25,8 @@ class Gate(object):
         Supported gate types in the scripts are
         connection/phase gates: 'Connection_element' , 'electron_Gate',
         decoupling gates:  'Carbon_Gate', 'electron_decoupling'
-        misc gates: 'passive_elt', 'mbi', 'Trigger'
+        misc gates: 'passive_elt', (also has tau_cut)
+        special gates: 'mbi', 'Trigger'
         '''
         # Information on what type of gate to implement
         self.Carbon_ind = kw.pop('Carbon_ind',0)  #0 is the electronic spin, higher indices are the carbons
@@ -165,17 +166,18 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
+        gates_in_need_of_connecting_elts = ['Carbon_Gate','electron_decoupling','passive_elt']
+
+
         for i in range(len(gate_seq)-1):
             ext_gate_seq.append(gate_seq[i])
-            if ((gate_seq[i].Gate_type =='Carbon_Gate' or
-                    gate_seq[i].Gate_type =='electron_decoupling') and
-                    (gate_seq[i+1].Gate_type =='Carbon_Gate' or
-                        gate_seq[i+1].Gate_type =='electron_decoupling' )):
+            if ((gate_seq[i].Gate_type in gates_in_need_of_connecting_elts) and
+                    (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts)):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
             if gate_seq[i].Gate_type =='Trigger' :
-                if (gate_seq[i+1].Gate_type =='Carbon_Gate' or
-                        gate_seq[i+1].Gate_type == 'electron_decoupling'):
+                if ((gate_seq[i-1].Gate_type in gates_in_need_of_connecting_elts) and
+                        (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts)):
                     ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
         ext_gate_seq.append(gate_seq[-1])
@@ -838,16 +840,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     #function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):
         '''
-        Used as last step before uploading, combines all the gates to a sequence the AWG can understand. Requires the gates to already have the elements and repetitions and stuff added as arguments
+        Used as last step before uploading, combines all the gates to a sequence the AWG can understand.
+        Requires the gates to already have the elements and repetitions and stuff added as arguments.
         NOTE: 'event_jump', 'goto' and 'wait' options only available for certain types of elements
-        explicit is a statement that is introduced to maintain backwards compatibility.
+        explicit is a statement that is introduced to maintain backwards compatibility, explicit is also required when using jump and goto statements.
         '''
         list_of_elements=[]
         seq = pulsar.Sequence('Decoupling Sequence')
         if explicit == False:  # explicit means that MBI and trigger elements must be given explicitly to the combine to AWG sequence function
             mbi_elt = self._MBI_element()
             list_of_elements.append(mbi_elt)
-            seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name), wfname=mbi_elt.name, trigger_wait=True,repetitions = 1, goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name), jump_target = gate_seq[0].elements[0].name)
+            seq.append(name=str(mbi_elt.name+gate_seq[0].elements[0].name),
+                    wfname=mbi_elt.name, trigger_wait=True,repetitions = 1,
+                    goto_target =str(mbi_elt.name+gate_seq[0].elements[0].name),
+                    jump_target = gate_seq[0].elements[0].name)
 
         for i, gate in enumerate(gate_seq):
             # Determine where jump events etc
@@ -1492,7 +1498,7 @@ class MBI_C13(DynamicalDecoupling):
         DynamicalDecoupling.autoconfig(self)
 
     def initialize_carbon_sequence(self, go_to_element ='MBI_1',
-            initialization_method ='swap', pt = 1, addressed_carbon =1, C_init_state='up', el_after_init = '1' ):
+            initialization_method ='swap', pt = 1, addressed_carbon =1, C_init_state='up', el_after_init = '0' ):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
         state can be 'up' or 'down'
@@ -1501,6 +1507,10 @@ class MBI_C13(DynamicalDecoupling):
 
         Supports leaving the electron state in '0' or '1' after the gate by applying an extra X-pulse.
         Electron state after gate = '1'
+
+        NOTE: There is a limitation if the electron is left in the '1' state the sequence ends with an electron pulse.
+            This means that the first element after this sequence cannot be an electron pulse. If this is desired choose
+            to initialize into '0' (ms=0) and then add the electron gate.
         '''
 
         if type(go_to_element) != str:
@@ -1618,7 +1628,6 @@ class MBI_C13(DynamicalDecoupling):
         '''
         Loops over all elements in the gate sequence and adds g.tau_cut_before and g.tau_cut_after to connection and
             electron gate elements.
-            TODO_MAR: check what passive wait elements do
         '''
         for i,g in enumerate(Gate_sequence):
 
@@ -1821,14 +1830,12 @@ class NuclearRamseyWithInitialization(MBI_C13):
 
             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
 
-            # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
             gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
             ############
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
-            #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
 
