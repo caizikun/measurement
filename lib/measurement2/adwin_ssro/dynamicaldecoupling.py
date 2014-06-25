@@ -659,40 +659,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_passive_wait_element(self,Gate):
         '''
         a 1us wait element that is repeated a lot of times
+
+        Because there are connection elts on both sides of the wait gates the minimum duration of the wait is 3us.
+        This is because tau cut is 1e-6 on both sides.
+        This condition could be defined stricter when going trough all the files
         '''
-        # Because there are connection elts on both sides of the wait gates the minimum duration of the wait is 3us. This is because tau cut is 1e-6 on both sides.
-        # This condition could be defined stricter when going trough all the files
+        duration = 1e-6
+        n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),duration*1e9) #Rounding to ns
+        while n_wait_reps > 50000: #allows for longer durations than max reps in AWG
+            duration = duration *10
+            n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),duration*1e9)
 
-        n_wait_reps, tau_remaind = divmod(round(Gate.wait_time*1e9),1e3) #multiplying and round is to prevent weird rounding error going two ways in divmod function
         tau_remaind = tau_remaind *1e-9 #convert back to seconds
-        Gate.reps = n_wait_reps -2 #because tau_cut must be atleast 1 us
-        Gate.tau_cut = 1e-6 + tau_remaind/2.0
+        Gate.reps = n_wait_reps -2
+        Gate.tau_cut = duration + tau_remaind/2.0
+        T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = duration, amplitude = 0.)
+        rep_wait_elt = element.Element('%s' %(Gate.prefix), pulsar = qt.pulsar, global_time=True)
+        rep_wait_elt.append(T)
+        Gate.elements = [rep_wait_elt]
 
-        if Gate.reps <= 60000: #Max nr of rep of elt is 66000
-            T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
-                length = 1e-6, amplitude = 0.)
-            rep_wait_elt = element.Element('%s' %(Gate.prefix), pulsar = qt.pulsar, global_time=True)
-            rep_wait_elt.append(T)
-            Gate.elements = [rep_wait_elt]
-        else:
-            Gate.scheme = 'mult_rep_wait_elts'
-            k = 1
-            while (Gate.reps/k) >= 60000:
-                k+=1
-                Gate.reps = Gate.reps/k #bugfix
-            Gate.N_of_wait_elts = k
-            Gate.elements =[]
-            for i in k:
-                T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
-                    length = 1e-6, amplitude = 0.)
-                rep_wait_elt = element.Element('%s_%s' %(Gate.prefix,i), pulsar = qt.pulsar, global_time=True)
-                rep_wait_elt.append(T)
-                Gate.elements.append(rep_wait_elt)
-                #TODO_MAR: check append syntax
-                #TODO_MAR: multiples of 2?
+        Gate.elements_duration = duration *Gate.reps
 
-        Gate.elements_duration = 1e-6 *Gate.reps
-        #TODO_MAR: return gate object?
 
     def generate_connection_element(self,Gate):
         '''
@@ -912,27 +900,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         repetitions = gate.reps,
                         goto_target = gate.go_to,
                         jump_target= gate.event_jump )
-            elif gate.scheme =='mult_rep_wait_elts':
-                for k in range(gate.N_of_wait_elts):
-                    e = gate.elements[k]
-                    if k == 0:
-                        seq.append(name = e.name, wfname =e.name,
-                                trigger_wait = gate.wait_for_trigger,
-                                repetitions = (gate.reps/gate.N_of_wait_elts),
-                                goto_target = None,
-                                jump_target= None )
-                    elif k == gate.N_of_wait_elts:
-                        seq.append(name = e.name, wfname =e.name,
-                                trigger_wait = False,
-                                repetitions = (gate.reps/gate.N_of_wait_elts),
-                                goto_target = gate.go_to,
-                                jump_target= gate.event_jump )
-                    else:
-                        seq.append(name = e.name, wfname =e.name,
-                                trigger_wait = False,
-                                repetitions = (gate.reps/gate.N_of_wait_elts),
-                                goto_target = None,
-                                jump_target= None )
 
             ####################
             ###  single elements  ###
