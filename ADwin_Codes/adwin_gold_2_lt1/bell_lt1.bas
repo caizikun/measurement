@@ -130,7 +130,7 @@ EVENT:
        
       CASE 0 'CR check
         DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
-        CR_result = CR_check(first,succes_event_counter)
+        CR_result = CR_check(first,succes_event_counter+1)
         IF ( CR_result > 0 ) THEN
           'IF (Par_63 > 0) THEN
           '  END
@@ -138,8 +138,8 @@ EVENT:
           mode = 2
           timer = -1
         ENDIF
-        IF (( CR_result <> 0 ) AND (first_local > 1)) THEN
-          i = MAX_LONG(cr_counts+1,max_CR_counts)
+        IF (( CR_result <> 0 ) AND (first_local > 0)) THEN
+          i = MIN_LONG(cr_counts+1,max_CR_counts)
           INC(DATA_28[i])
           first_local = 0
         ENDIF

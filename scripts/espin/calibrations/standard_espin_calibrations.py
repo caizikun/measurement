@@ -979,7 +979,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(5.0, IQmod = False)
+    run_calibrations(2.0, IQmod = False)
 
     """
     stage 0 : continuous ESR

@@ -34,14 +34,14 @@ cfg['protocols']['AdwinSSRO']={
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
 		'yellow_repump_amplitude':      3e-9,
-		'yellow_repump_duration':       100,
+		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-yellow=True
+yellow=False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']

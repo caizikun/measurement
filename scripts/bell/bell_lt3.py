@@ -69,8 +69,10 @@ class Bell_LT3(bell.Bell):
         bell.Bell.stop_measurement_process(self)
 
         # signal BS and LT1 to stop as well
-        self.bs_helper.set_is_running(False)
-        self.lt1_helper.set_is_running(False)
+        if self.bs_helper != None:
+            self.bs_helper.set_is_running(False)
+        if self.lt1_helper != None:    
+            self.lt1_helper.set_is_running(False)
 
     #def finish(self):
     #    ssro.IntegratedSSRO.finish(self)
@@ -83,8 +85,8 @@ def full_bell(name):
     th_debug = True
     sequence_only = False
     mw = False
-    measure_lt1 = True
-    measure_bs = True
+    measure_lt1 = False
+    measure_bs = False
     do_upload = True
 
     m=Bell_LT3(name) 

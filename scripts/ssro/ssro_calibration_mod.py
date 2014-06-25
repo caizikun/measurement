@@ -20,8 +20,8 @@ def ssrocalibration(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
-    m.params['repump_mod_DAC_channel'] = 4
-    m.params['cr_mod_DAC_channel']     = ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
+    m.params['repump_mod_DAC_channel'] = 2
+    m.params['cr_mod_DAC_channel']     = 1#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
     m.params['cr_mod_control_offset']  =  0.0
     m.params['cr_mod_control_amp']     =  0.05 #V
     m.params['repump_mod_control_offset']  =  5.4
@@ -33,36 +33,31 @@ def ssrocalibration(name):
     m.params['pos_mod_min_counts'] = 100.
 
     m.params['pos_mod_activate'] = 0
-    m.params['repump_mod_activate'] = 0
-    m.params['cr_mod_activate'] = 0
+    m.params['repump_mod_activate'] = 1
+    m.params['cr_mod_activate'] = 1
 
-    # parameters
-    m.params['SSRO_repetitions'] = 5000
+        # parameters
+    e_sp = m.params['Ex_SP_amplitude'] 
+    a_sp =  m.params['A_SP_amplitude']
 
-    m.params['A_CR_amplitude'] = 5e-9 #5e-9
-    m.params['E_CR_amplitude'] = 5e-9 #5e-9
-
-    m.params['SSRO_duration'] = 50
+    print m.params['Ex_CR_amplitude']
 
     # ms = 0 calibration
-    m.params['SP_duration'] = 50
-    m.params['A_SP_amplitude'] = 5e-9
+    m.params['SP_duration'] = m.params['SP_duration_ms0']
     m.params['Ex_SP_amplitude'] = 0.
-    m.params['Ex_RO_amplitude'] = 5e-9 #10e-9
-
-    # m.autoconfig()
-    # m.setup()
-
-
+    m.params['A_SP_amplitude'] = a_sp
     m.run()
     m.save('ms0')
 
     # ms = 1 calibration
-    m.params['SP_duration'] = 250
-    m.params['A_SP_amplitude'] = 0.
-    m.params['Ex_SP_amplitude'] = 10e-9 #10e-9
+    m.params['SP_duration'] = m.params['SP_duration_ms1']
+    m.params['A_SP_amplitude'] = 0
+    m.params['Ex_SP_amplitude'] = e_sp
+    #m.run()
+    #m.save('ms1')
 
     m.params['atto_positions_after'] = m.adwin_var(('atto_positions',3))
+    #print m.params['atto_positions_after'] 
     m.adwin.set_dac_voltage(('atto_x',m.params['atto_positions_after'][0]))
     m.adwin.set_dac_voltage(('atto_y',m.params['atto_positions_after'][1]))
     m.adwin.set_dac_voltage(('atto_z',m.params['atto_positions_after'][2]))
@@ -76,9 +71,13 @@ def ssrocalibration(name):
 if __name__ == '__main__':
     print 'Green off'
     qt.instruments['GreenAOM'].turn_off()
-    x=qt.instruments['master_of_space'].get_x()
-    y=qt.instruments['master_of_space'].get_y()
+    x=qt.instruments['master_of_space'].get_x()*1000
+    y=qt.instruments['master_of_space'].get_y()*1000
+    z=qt.instruments['master_of_space'].get_z()*1000
     ssrocalibration(SAMPLE_CFG)
-    print 'before:', x, y
-    print 'after:', qt.instruments['master_of_space'].get_x(), qt.instruments['master_of_space'].get_y()
+    qt.msleep(0.3)
+    x2=qt.instruments['master_of_space'].get_x()*1000
+    y2=qt.instruments['master_of_space'].get_y()*1000
+    z2=qt.instruments['master_of_space'].get_z()*1000
+    print 'moved [nm]:', int(x-x2), int(y-y2), int(z-z2)
 
