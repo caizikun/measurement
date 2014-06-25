@@ -1658,7 +1658,7 @@ class MBI_C13(DynamicalDecoupling):
         for i,g in enumerate(Gate_sequence):
             if g.el_state_before_gate ==None:
                 if i == 0: #At first element, start initialised
-                    g.el_state_before_gate = '0'
+                    g.el_state_before_gate = 'sup' # if nothing added g.el_state_before it defaults to sup.
                 else:
                     g.el_state_before_gate =Gate_sequence[i-1].el_state_after_gate
                     g.C_phases_before_gate = Gate_sequence[i-1].C_phases_after_gate
