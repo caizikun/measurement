@@ -1492,18 +1492,25 @@ class MBI_C13(DynamicalDecoupling):
         DynamicalDecoupling.autoconfig(self)
 
     def initialize_carbon_sequence(self, go_to_element ='MBI_1',
-            initialization_method ='swap', pt = 1, addressed_carbon =1, init_state='up'):
+            initialization_method ='swap', pt = 1, addressed_carbon =1, C_init_state='up', el_after_init = '1' ):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
         state can be 'up' or 'down'
+        Swap init: up -> 0, down ->1 ? (CHECK)
+        MBI init: up -> +X, down -> -X
+
+        Supports leaving the electron state in '0' or '1' after the gate by applying an extra X-pulse.
+        Electron state after gate = '1'
+
+
         '''
 
         if type(go_to_element) != str:
             go_to_element = go_to_element.name
 
-        if init_state == 'up':
+        if C_init_state == 'up':
             C_int_y_phase = self.params['Y_phase']
-        elif init_state == 'down':
+        elif C_init_state == 'down':
             C_int_y_phase = self.params['Y_phase']+180
 
 
@@ -1527,7 +1534,13 @@ class MBI_C13(DynamicalDecoupling):
         C_int_RO_Trigger = Gate('C_int_RO_trig_'+str(pt),'Trigger',
                 wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
-                go_to = go_to_element)
+                go_to = go_to_element,
+                el_state_after_gate = '1')
+
+        C_int_elec_X = Gate('C_int_elec_X'+str(pt),'electron_Gate',
+                Gate_operation='pi',
+                phase = self.params['X_phase'],
+                el_state_after_gate = '0')
 
         if initialization_method == 'swap':
             #Swap initializes into 1 or 0 and contains extra Ren gate
@@ -1538,6 +1551,10 @@ class MBI_C13(DynamicalDecoupling):
         elif initialization_method == 'MBI':
             carbon_init_seq = [C_int_y, C_int_Ren_a, C_int_x,
                     C_int_RO_Trigger]
+
+        if el_after_init =='0':
+            carbon_init_seq.append(C_int_elec_X)
+
         else:
             print 'Error initialization method (%s) not recognized, supported methods are "swap" and "MBI"' %initialization_method
             return False
@@ -1580,7 +1597,6 @@ class MBI_C13(DynamicalDecoupling):
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
         return Gate_sequence
-        #TODO_MAR: negative phases fix
 
 
     def load_C_freqs_in_radians_sec(self):
@@ -1604,6 +1620,7 @@ class MBI_C13(DynamicalDecoupling):
         '''
         Loops over all elements in the gate sequence and adds g.tau_cut_before and g.tau_cut_after to connection and
             electron gate elements.
+            TODO_MAR: check what passive wait elements do
         '''
         for i,g in enumerate(Gate_sequence):
 
@@ -1752,6 +1769,12 @@ class MBI_C13(DynamicalDecoupling):
 class NuclearRamseyWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
+
+    Sequence is a combination of 4 subsequences
+    1. MBI initialisation
+    2. Carbon initialisation
+    3. Carbon Ramsey evolution
+    4. Carbon Readout
     '''
     mprefix = 'CarbonRamseyInitialised'
 
@@ -1762,13 +1785,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
         combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
 
         for pt in range(pts):
-
-            #Acutal sequence is a combination of 3 subsequences
-            # 1. MBI initialisation
-            # 2. Carbon initialisation
-            # 3. Carbon Ramsey evolution
-            # 4. Carbon Readout
-
             ###########################################
             #####    Generating the sequence elements      ######
             ###########################################
@@ -1779,21 +1795,14 @@ class NuclearRamseyWithInitialization(MBI_C13):
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     initialization_method = 'MBI', pt =pt,
-                    addressed_carbon= self.params['Addressed_Carbon'], init_state = self.params['C13_init_state'])
+                    addressed_carbon= self.params['Addressed_Carbon'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_after_init = '1' )
             ################################
 
-            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6):
-                # because min length is 3e-6
+            if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
                 print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                         %(self.params['wait_times'][pt],self.params['Carbon_init_RO_wait']))
-
-            #wait_gate0 = Gate('Wait_gate0_'+str(pt),'passive_elt',
-            #        wait_time = 5e-6)
-
-            # Electron_X = Gate('Electron_X_'+str(pt),'electron_Gate',
-            #         Gate_operation='pi',
-            #         phase = self.params['X_phase'])
-
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
@@ -1865,7 +1874,9 @@ class NuclearRabiWithInitialization(MBI_C13):
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     initialization_method = 'swap', pt =pt,
-                    addressed_carbon= self.params['Addressed_Carbon'], init_state = self.params['C13_init_state'] )
+                    addressed_carbon= self.params['Addressed_Carbon'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_after_init = '1' )
             ################################
 
 
@@ -1946,7 +1957,9 @@ class NuclearT1(MBI_C13):
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     initialization_method = 'swap', pt =pt,
-                    addressed_carbon= self.params['Addressed_Carbon'], init_state = self.params['C13_init_state'] )
+                    addressed_carbon= self.params['Addressed_Carbon'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_after_init = '1'  )
 
             #Elements for T1 evolution
 
