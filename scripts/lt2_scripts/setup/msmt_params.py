@@ -151,12 +151,10 @@ cfg['samples']['Hans_sil1'] = {
 
 ## Nuclear spins
 
-'C1_freq'       :       345.124e3, #be sure to enter in Hz
-
+'C1_freq'       :       345.124e3-100, #be sure to enter in Hz
 'C1_freq_0'   :325, #approx
 'C1_freq_1'   :360,  #approx
 'C1_freq_dec'   :345.124e3,
-
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],
 

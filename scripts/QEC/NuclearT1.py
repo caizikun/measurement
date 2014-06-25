@@ -29,7 +29,7 @@ def NuclearT1(name,tau = None):
     m.params['C13_init_state'] = 'up' 
 
     m.params['sweep_name'] = 'wait_times'
-    m.params['wait_times'] = np.linspace(130e-6, 100e-3,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
+    m.params['wait_times'] = np.linspace(130e-6, 50e-3,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
     m.params['sweep_pts']  = m.params['wait_times']
 
 

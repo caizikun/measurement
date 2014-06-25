@@ -1908,6 +1908,8 @@ class NuclearRabiWithInitialization(MBI_C13):
 class NuclearT1(MBI_C13):
     '''
     This class generates the AWG sequence for a C13 T1 experiment.
+    TODO_THT: Needs to chop up the wait gate in larger chunks because an element cannot be 
+    repeated more than 66000 times.
     '''
     mprefix = 'CarbonT1'
 
@@ -1952,7 +1954,6 @@ class NuclearT1(MBI_C13):
                     Carbon_ind = self.params['Addressed_Carbon'], 
                     N = 0,
                     phase = self.params['C13_X_phase'])
-
             
             C_basis_Ren = Gate('C_basis_Ren'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'], 
