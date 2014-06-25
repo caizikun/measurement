@@ -1804,7 +1804,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     initialization_method = 'MBI', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_after_init = '1' )
+                    el_after_init = '0' )
             ################################
 
             if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
@@ -1838,7 +1838,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
-
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
@@ -1881,10 +1880,10 @@ class NuclearRabiWithInitialization(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_after_init = '1' )
+                    el_after_init = '0' )
             ################################
 
-
+            #TODO_MAR: Is this also the dirty fix?
             C_Rabi_Ren0 = Gate('C_Rabi_Ren0'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'],
                     N = 0,
@@ -1936,6 +1935,10 @@ class NuclearRabiWithInitialization(MBI_C13):
 class NuclearT1(MBI_C13):
     '''
     This class generates the AWG sequence for a C13 T1 experiment.
+    1. MBI initialisation
+    2. Carbon initialisation into +Z
+    3. Carbon T1 evolution
+    4. Carbon Z-Readout
     '''
     mprefix = 'CarbonT1'
 
@@ -1947,10 +1950,7 @@ class NuclearT1(MBI_C13):
 
         for pt in range(pts):
 
-            # 1. MBI initialisation
-            # 2. Carbon initialisation
-            # 3. Carbon T1 evolution
-            # 4. Carbon Z-Readout
+
 
             #####################################################
             #####    Generating the sequence elements      ######
@@ -1964,7 +1964,7 @@ class NuclearT1(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_after_init = '1'  )
+                    el_after_init = '0'  )
 
             #Elements for T1 evolution
 
@@ -1976,12 +1976,6 @@ class NuclearT1(MBI_C13):
             #############################
             #Readout in the Y basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
-
-            #This gate is just here to make sure the next gate uses a phase gate (dirty fix)
-            C_dummy_Ren = Gate('C_Dummy_Ren'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'],
-                    N = 0,
-                    phase = self.params['C13_X_phase'])
 
             C_basis_Ren = Gate('C_basis_Ren'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'],
@@ -1998,7 +1992,7 @@ class NuclearT1(MBI_C13):
                     phase = self.params['X_phase'])
             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
-            carbon_RO_seq =[C_dummy_Ren, C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_fin_Trigger]
+            carbon_RO_seq =[C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_fin_Trigger]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
