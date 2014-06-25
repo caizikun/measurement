@@ -1,5 +1,5 @@
 '''
-Measurement class
+Measurement classes
 File made by Adriaan Rol
 '''
 import numpy as np
@@ -1528,7 +1528,6 @@ class MBI_C13(DynamicalDecoupling):
                 wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element)
-        #TODO_MAR: Add functionality to initialize electron in 1 after RO by adding a pi pulse
 
         if initialization_method == 'swap':
             #Swap initializes into 1 or 0 and contains extra Ren gate
@@ -1698,7 +1697,8 @@ class MBI_C13(DynamicalDecoupling):
                         g.dec_duration = 0 #
                     else:
                         phase_diff =(desired_phase - g.C_phases_before_gate[g.Carbon_ind])%(2*np.pi)
-                        if abs(phase_diff) <= (self.params['min_phase_correct']/180.*np.pi)
+                        if (phase_diff <= (self.params['min_phase_correct']/180.*np.pi) or
+                                abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi) )
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
                             g.dec_duration = 0
