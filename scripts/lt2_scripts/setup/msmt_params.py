@@ -148,8 +148,12 @@ cfg['samples']['Hans_sil1'] = {
 'g_factor_N14'  :       0.3077e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
+#######################
+# Nuclear spins control
+#######################
 
-## Nuclear spins
+'min_phase_correct' : 3 #in degrees.
+                                    # if the phase difference is smaller than +- 5 degrees no decoupling seq to correct for this phase generated
 
 'C1_freq'       :       345.124e3-100, #be sure to enter in Hz
 'C1_freq_0'   :325, #approx
