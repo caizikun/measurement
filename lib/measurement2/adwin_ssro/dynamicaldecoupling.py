@@ -1496,13 +1496,11 @@ class MBI_C13(DynamicalDecoupling):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
         state can be 'up' or 'down'
-        Swap init: up -> 0, down ->1 ? (CHECK)
+        Swap init: up -> 0, down ->1
         MBI init: up -> +X, down -> -X
 
         Supports leaving the electron state in '0' or '1' after the gate by applying an extra X-pulse.
         Electron state after gate = '1'
-
-
         '''
 
         if type(go_to_element) != str:
@@ -1535,12 +1533,12 @@ class MBI_C13(DynamicalDecoupling):
                 wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
-                el_state_after_gate = '1')
+                el_state_after_gate = '0')
 
         C_int_elec_X = Gate('C_int_elec_X'+str(pt),'electron_Gate',
                 Gate_operation='pi',
                 phase = self.params['X_phase'],
-                el_state_after_gate = '0')
+                el_state_after_gate = '1')
 
         if initialization_method == 'swap':
             #Swap initializes into 1 or 0 and contains extra Ren gate
@@ -1552,7 +1550,7 @@ class MBI_C13(DynamicalDecoupling):
             carbon_init_seq = [C_int_y, C_int_Ren_a, C_int_x,
                     C_int_RO_Trigger]
 
-        if el_after_init =='0':
+        if el_after_init =='1':
             carbon_init_seq.append(C_int_elec_X)
 
         else:
