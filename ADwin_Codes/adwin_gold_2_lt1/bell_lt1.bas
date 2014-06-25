@@ -57,6 +57,7 @@ DIM counts, old_counts AS LONG
 
 DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
 DIM succes_event_counter, remote_CR_wait_timer AS LONG
+DIM CR_result,first_local AS LONG
 
 
 INIT:
@@ -89,9 +90,10 @@ INIT:
   AWG_succes_DI_pattern = 2 ^ AWG_success_DI_channel
   AWG_done_di_pattern = 2 ^ AWG_done_di_channel
   
-  repetition_counter  = 0
-  first               = 0
+  repetition_counter = 0
+  first              = 0
   local_wait_time    = 0
+  first_local        = 0
    
   succes_event_counter = 0
   remote_CR_wait_timer = 0
@@ -128,17 +130,18 @@ EVENT:
        
       CASE 0 'CR check
         DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
-        IF ( CR_check(first,succes_event_counter) > 0 ) THEN
+        CR_result = CR_check(first,succes_event_counter)
+        IF ( CR_result > 0 ) THEN
           'IF (Par_63 > 0) THEN
           '  END
           'ENDIF
           mode = 2
           timer = -1
         ENDIF
-        IF (first > 1) THEN
+        IF (( CR_result <> 0 ) AND (first_local > 1)) THEN
           i = MAX_LONG(cr_counts+1,max_CR_counts)
           INC(DATA_28[i])
-          first = 0
+          first_local = 0
         ENDIF
         
       CASE 2    ' Ex or A laser spin pumping
@@ -191,6 +194,7 @@ EVENT:
           timer = -1         
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
           first = 1 
+          first_local = 1
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
             
@@ -200,6 +204,7 @@ EVENT:
               timer = -1
               local_wait_time = 10
               first = 1
+              first_local = 1
             ENDIF
           ELSE
             IF (timer = sequence_wait_time) THEN
@@ -208,6 +213,7 @@ EVENT:
               timer = -1
               local_wait_time = 10
               first = 1
+              first_local = 1
             ENDIF
           ENDIF    
         ENDIF     

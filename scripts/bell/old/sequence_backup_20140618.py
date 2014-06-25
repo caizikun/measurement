@@ -322,11 +322,10 @@ def _LDE_element(msmt, **kw):
                 refpulse = 'plu gate 3')
 
     # 14 RND generator HOLD OFF
-    if msmt.params['RND_during_LDE'] == 1:
-        e.add(msmt.RND_halt_off_pulse,
-                start = msmt.joint_params['RND_start'],
-                refpulse = 'initial_delay',
-                name = 'RND')
+    e.add(msmt.RND_halt_off_pulse,
+            start = msmt.joint_params['RND_start'],
+            refpulse = 'initial_delay',
+            name = 'RND')
 
     # 14 RND MW pulse
     if msmt.params['MW_during_LDE'] == 1:
@@ -371,7 +370,7 @@ def _LDE_element(msmt, **kw):
     ############
     #print e.print_overview()
     e_len = e.length()
-    #print 'SAMPLES', e.samples
+    print 'SAMPLES', e.samples
     if e_len != msmt.joint_params['LDE_element_length']:
         raise Exception('LDE element "{}" has length {:.2e}, but specified length was {:.2e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
     return e

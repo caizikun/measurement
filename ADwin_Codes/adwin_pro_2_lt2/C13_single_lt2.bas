@@ -515,7 +515,7 @@ EVENT:
             P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_off_voltage+32768)
             P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_off_voltage+32768)
             
-            mode = 2
+            mode = 1
             timer = -1
             wait_time = wait_after_pulse_duration
           endif                    

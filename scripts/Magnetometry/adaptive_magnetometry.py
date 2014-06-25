@@ -116,9 +116,9 @@ def ramsey (name, tau = None, phase = None):
     m.params['wait_for_AWG_done'] = 1
     m.params['wait_after_RO_pulse_duration']=1#10000
 
-    m.params['init_repetitions'] = 100
+    m.params['init_repetitions'] = 1
 
-    nr_adptv_steps = 15
+    nr_adptv_steps = 13
     m.params['do_adaptive'] = 0
     m.params['do_phase_calibr'] = 1
     m.params['min_phase'] = 0
@@ -134,7 +134,7 @@ def ramsey (name, tau = None, phase = None):
         m.params['MW_pulse_mod_frqs'] = np.ones(nr_adptv_steps)*m.params['MW_modulation_frequency']
         m.params['MW_pulse_amps'] = m.params['MW_pi_pulse_amp']*np.ones(nr_adptv_steps)
         m.params['MW_pulse_durations'] = pi2_mw_dur*np.ones(nr_adptv_steps)
-        m.params['ramsey_time'] = np.linspace(74e-9, 75e-9, nr_adptv_steps)
+        m.params['ramsey_time'] = np.linspace(1e-9, 75e-9, nr_adptv_steps)
         dt = m.params['ramsey_time'][1] - m.params['ramsey_time'][0]
         m.params['delta_phase'] =  12#(30e6*dt)*360
         print 'phase step: ', m.params['delta_phase']
@@ -150,8 +150,6 @@ def ramsey (name, tau = None, phase = None):
         m.params['MW_pulse_durations'] = pi2_mw_dur*np.ones(nr_adptv_steps)
         m.params['ramsey_time'] = tau*np.ones(nr_adptv_steps)
         m.params['fpga_mw_duration'] = pi2_fpga_dur*np.ones(nr_adptv_steps) 
-        #m.params['sweep_pts'] = np.arange(nr_adptv_steps)
-        #m.params['sweep_name'] = 'step'
         m.params['sweep_pts'] = np.arange(nr_adptv_steps)*m.params['delta_phase']
         m.params['sweep_name'] = 'phase fpga pulse [deg]'
 

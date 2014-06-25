@@ -8,6 +8,7 @@ import qt
 import msvcrt
 
 from measurement.lib.config import optimiz0rs as optcfg
+reload(optcfg)
 
 class optimiz0r(Instrument):
     
