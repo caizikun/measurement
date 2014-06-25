@@ -167,7 +167,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
         gates_in_need_of_connecting_elts = ['Carbon_Gate','electron_decoupling','passive_elt']
-
+        #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
 
         for i in range(len(gate_seq)-1):
             ext_gate_seq.append(gate_seq[i])
@@ -1711,6 +1711,7 @@ class MBI_C13(DynamicalDecoupling):
             #################
             # Connecting elements
             #################
+            #TODO_MAR: Accomodate new type of phase gate that also supports not decoupling to correct for phase difference.
 
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
                 if i == len(Gate_sequence)-1:
@@ -1818,6 +1819,11 @@ class NuclearRamseyWithInitialization(MBI_C13):
             #############################
             #Readout in the x basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
+            # TODO_MAR: Convert C_RO to function
+            # Function takes Z yes/no as input and a phase. See TOMOS for how it should look gate wise
+            # TODO_MAR: Make C_RO_Parity function.
+
+
             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['Y_phase'])
