@@ -679,7 +679,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             k = 1
             while (Gate.reps/k) >= 60000:
                 k+=1
-                Gate.reps = Gate.reps/k
+                Gate.reps = Gate.reps/k #bugfix
             Gate.N_of_wait_elts = k
             Gate.elements =[]
             for i in k:
@@ -688,11 +688,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 rep_wait_elt = element.Element('%s_%s' %(Gate.prefix,i), pulsar = qt.pulsar, global_time=True)
                 rep_wait_elt.append(T)
                 Gate.elements.append(rep_wait_elt)
-
-
+                #TODO_MAR: check append syntax
+                #TODO_MAR: multiples of 2?
 
         Gate.elements_duration = 1e-6 *Gate.reps
-
+        #TODO_MAR: return gate object?
 
     def generate_connection_element(self,Gate):
         '''
@@ -1614,6 +1614,7 @@ class MBI_C13(DynamicalDecoupling):
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
         return Gate_sequence
+        #TODO_MAR: negative phases fix
 
 
     def load_C_freqs_in_radians_sec(self):
