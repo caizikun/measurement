@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -27,6 +27,7 @@
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_events_dim      50000
+#DEFINE max_CR_counts 200
 
 'init
 DIM DATA_20[100] AS LONG
@@ -36,6 +37,7 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
 DIM DATA_25[max_events_dim] AS LONG  ' SSRO counts spin readout
 DIM DATA_27[max_events_dim] AS LONG  'time spent waiting after local CR ok, for entanglement event
+DIM DATA_28[max_CR_counts] AS LONG  'CR hist after sequence
 
 DIM SP_duration, SP_filter_duration AS LONG
 DIM SSRO_duration AS LONG
@@ -55,6 +57,7 @@ DIM counts, old_counts AS LONG
 
 DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
 DIM succes_event_counter, remote_CR_wait_timer AS LONG
+DIM CR_result,first_local AS LONG
 
 
 INIT:
@@ -87,9 +90,10 @@ INIT:
   AWG_succes_DI_pattern = 2 ^ AWG_success_DI_channel
   AWG_done_di_pattern = 2 ^ AWG_done_di_channel
   
-  repetition_counter  = 0
-  first               = 0
+  repetition_counter = 0
+  first              = 0
   local_wait_time    = 0
+  first_local        = 0
    
   succes_event_counter = 0
   remote_CR_wait_timer = 0
@@ -126,13 +130,18 @@ EVENT:
        
       CASE 0 'CR check
         DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
-        IF ( CR_check(first,succes_event_counter) > 0 ) THEN
+        CR_result = CR_check(first,succes_event_counter+1)
+        IF ( CR_result > 0 ) THEN
           'IF (Par_63 > 0) THEN
           '  END
           'ENDIF
           mode = 2
           timer = -1
-          first = 0
+        ENDIF
+        IF (( CR_result <> 0 ) AND (first_local > 0)) THEN
+          i = MIN_LONG(cr_counts+1,max_CR_counts)
+          INC(DATA_28[i])
+          first_local = 0
         ENDIF
         
       CASE 2    ' Ex or A laser spin pumping
@@ -183,7 +192,9 @@ EVENT:
           INC(Par_77)
           mode = 5
           timer = -1         
-          DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just before LDE sequence -> put to after LDE later? 
+          DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
+          first = 1 
+          first_local = 1
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
             
@@ -192,6 +203,8 @@ EVENT:
               mode = 0
               timer = -1
               local_wait_time = 10
+              first = 1
+              first_local = 1
             ENDIF
           ELSE
             IF (timer = sequence_wait_time) THEN
@@ -199,6 +212,8 @@ EVENT:
               mode = 0
               timer = -1
               local_wait_time = 10
+              first = 1
+              first_local = 1
             ENDIF
           ENDIF    
         ENDIF     
@@ -224,9 +239,7 @@ EVENT:
             
             local_wait_time = local_wait_time_duration 
             mode = 6
-            timer = -1
-            first = 1
-                     
+            timer = -1                    
           ENDIF
         ENDIF
         

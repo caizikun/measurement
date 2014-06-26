@@ -2,7 +2,7 @@ import numpy as np
 import qt
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 
 class ElectronRabi(pulsar_msmt.MBI):
@@ -53,7 +53,8 @@ class ElectronRabi(pulsar_msmt.MBI):
                 jump_target = e.name)
             seq.append(name = e.name, wfname = e.name,
                 trigger_wait = True)
-
+        print 'MBI at', self.params['AWG_MBI_MW_pulse_ssbmod_frq']
+        print 'MW rotations at', self.params['MW_pulse_mod_frqs'][i]
         # program AWG
         if upload:
             #qt.pulsar.upload(mbi_elt, *elts)

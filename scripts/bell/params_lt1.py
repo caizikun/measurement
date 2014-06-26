@@ -60,6 +60,8 @@ params_lt1['RND_angle_1'] = 315
 
 params_lt1['RND_duration'] = 300e-9
 
+params_lt1['RND_during_LDE'] = 1 
+
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
 # LDE Sequence in the AWG
@@ -68,9 +70,9 @@ params_lt1['RND_duration'] = 300e-9
 params_lt1['initial_delay']   	        = 11e-9
 
 params_lt1['eom_pulse_duration']        = 2e-9
-params_lt1['eom_pulse_amplitude']		= 2.0
+params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.375  
+params_lt1['eom_off_amplitude']         = -.28 
 params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
 params_lt1['eom_pulse_amplitude']       = 2.0
 params_lt1['eom_overshoot_duration1']   = 10e-9
@@ -103,6 +105,8 @@ params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
+params_lt1['TTTR_wait_time'] =     params.joint_params['TTTR_wait_time']
+
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 
 params_lt1['measurement_time'] =   24*60*60 #sec = 24 H

@@ -14,11 +14,13 @@ joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['LDE_element_length']              = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
+joint_params['separate_RO_element'] =  True
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
+joint_params['TTTR_wait_time'] = 	 0.1 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
 params_lt3 = {}
@@ -26,7 +28,7 @@ params_lt3 = {}
 # params['HH_binsize_T3'] = 8
 #CR:
 params_lt3['counter_channel'] = 1
-params_lt3['repump_duration'] = 10 # 10 for green, 500 for yellow
+params_lt3['repump_duration'] = 10#500# 10 for green, 500 for yellow
 params_lt3['CR_duration'] = 100
 params_lt3['cr_wait_after_pulse_duration'] = 1
 params_lt3['CR_preselect'] = 2500
@@ -50,13 +52,13 @@ params_lt3['wait_for_AWG_done'] = 0
 params_lt3['wait_for_remote_CR'] = 1
 
 #adwin powers
-params_lt3['Ex_CR_amplitude'] = 3e-9#10e-9#6e-9             
-params_lt3['A_CR_amplitude'] =3e-9#10e-9#16e-9              
+params_lt3['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
+params_lt3['A_CR_amplitude'] =4e-9#10e-9#16e-9              
 params_lt3['Ex_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 10e-9             
 params_lt3['Ex_RO_amplitude'] = 5e-9
 params_lt3['A_RO_amplitude'] = 0
-params_lt3['repump_amplitude'] = 200e-6 
+params_lt3['repump_amplitude'] = 5e-6#30e-9 
 
 ####################
 ### pulses and MW stuff LT3
@@ -79,6 +81,8 @@ params_lt3['RND_angle_0'] = 45
 params_lt3['RND_angle_1'] = 315
 
 params_lt3['RND_duration'] = 100e-9
+
+params_lt3['RND_during_LDE'] = 1 
 
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
@@ -130,6 +134,7 @@ params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
+params_lt3['TTTR_wait_time'] =     joint_params['TTTR_wait_time']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins

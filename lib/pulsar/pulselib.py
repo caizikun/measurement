@@ -37,6 +37,8 @@ class MW_pulse(pulse.Pulse):
             wf[idx0:idx1] += self.amplitude
             return wf
 
+
+
 class MW_IQmod_pulse(pulse.Pulse):
     def __init__(self, name, I_channel, Q_channel, PM_channel, **kw):
         pulse.Pulse.__init__(self, name)

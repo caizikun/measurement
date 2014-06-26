@@ -1,7 +1,7 @@
 import qt
 import numpy as np
 execfile(qt.reload_current_setup)
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 from measurement.scripts.espin import espin_funcs as funcs
 reload(funcs)

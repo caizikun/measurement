@@ -28,6 +28,7 @@
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_events_dim      50000
+#DEFINE max_CR_counts 200
 
 'init
 DIM DATA_20[100] AS LONG
@@ -37,6 +38,7 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
 DIM DATA_25[max_events_dim] AS LONG  ' SSRO counts spin readout
 DIM DATA_27[max_events_dim] AS LONG  'time spent waiting for remote adwin
+DIM DATA_28[max_CR_counts] AS LONG  'CR hist after sequence
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_done_DI_pattern AS LONG
 
@@ -61,6 +63,7 @@ DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time AS LONG
 DIM succes_event_counter AS LONG
+DIM CR_result,first_local AS LONG
 
 
 INIT:
@@ -92,7 +95,10 @@ INIT:
     DATA_27[i] = 0
   NEXT i
   
-    
+  FOR i = 1 TO max_CR_counts
+    DATA_28[i] = 0
+  NEXT i
+      
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   PLU_di_pattern = 2 ^ PLU_di_channel
   remote_CR_trigger_di_pattern = 2 ^ remote_CR_trigger_di_channel
@@ -100,6 +106,7 @@ INIT:
   
   repetition_counter  = 0
   first               = 0
+  first_local        = 0
   local_wait_time    = 0
   remote_CR_wait_timer = 0
   
@@ -189,14 +196,19 @@ EVENT:
     SELECTCASE mode
       
       CASE 0 'CR check
-       
-        IF ( CR_check(first,succes_event_counter) > 0 ) THEN
+        CR_result = CR_check(first,succes_event_counter+1)
+        IF ( CR_result > 0 ) THEN
           IF (Par_63 > 0) THEN
             END
           ENDIF
           mode = 2
           timer = -1
-          first = 0
+        ENDIF
+        IF (( CR_result <> 0 ) AND (first_local > 0)) THEN
+          i = MIN_LONG(cr_counts+1,max_CR_counts)
+          INC(DATA_28[i])
+          Par_80=-99
+          first_local = 0
         ENDIF
         
       CASE 2    ' Ex or A laser spin pumping
@@ -273,6 +285,8 @@ EVENT:
             mode = 5
             timer = -1
             remote_mode = 3
+            first = 1
+            first_local = 1
           ELSE  
             IF (wait_for_AWG_done > 0) THEN
               IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
@@ -281,6 +295,8 @@ EVENT:
                 timer = -1
                 remote_mode = 0
                 local_wait_time = 10
+                first = 1
+                first_local = 1
               ENDIF
             ELSE
               IF (timer = sequence_wait_time) THEN
@@ -289,6 +305,8 @@ EVENT:
                 timer = -1
                 remote_mode = 0
                 local_wait_time = 10
+                first = 1
+                first_local = 1
               ENDIF
             ENDIF
           ENDIF        

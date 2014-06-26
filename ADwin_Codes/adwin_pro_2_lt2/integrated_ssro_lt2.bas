@@ -43,7 +43,7 @@ DIM sequence_wait_time AS LONG
 DIM SP_duration, SP_filter_duration AS LONG
 DIM SSRO_repetitions, SSRO_duration, SSRO_stop_after_first_photon, sweep_length AS LONG
 DIM cycle_duration AS LONG
-DIM wait_after_pulse, wait_after_pulse_duration AS LONG
+DIM wait_after_pulse, wait_after_pulse_duration,wait_after_RO_pulse_duration AS LONG
 
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
 
@@ -70,6 +70,7 @@ INIT:
   SSRO_stop_after_first_photon = DATA_20[11]
   cycle_duration               = DATA_20[12] '(in processor clock cycles, 3.333ns)
   sweep_length                 = DATA_20[13]
+  wait_after_RO_pulse_duration = DATA_20[14]
   
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -219,7 +220,7 @@ EVENT:
           
           mode = 0
           timer = -1
-          wait_after_pulse = wait_after_pulse_duration
+          wait_after_pulse = wait_after_RO_pulse_duration
           inc(repetition_counter)
           Par_73 = repetition_counter
           IF (repetition_counter = SSRO_repetitions) THEN

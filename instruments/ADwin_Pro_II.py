@@ -114,6 +114,7 @@ class ADwin_Pro_II(Instrument): #1
         return data
 
     def Get_Data_Long(self, index, start, count):
+        #print 'idx, start, ct', index, start, count
         ErrorMsg=c_int32(0)
         data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
         success = self._adwin32.e_Get_Data(data.ctypes.data,2,index,start,count, self._address,ctypes.byref(ErrorMsg))

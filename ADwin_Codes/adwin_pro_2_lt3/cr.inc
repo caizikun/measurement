@@ -81,7 +81,6 @@ ENDSUB
 
 
 FUNCTION CR_check(first_cr, repetition_index) As LONG
-
   CR_check = 0
   
   IF (cr_wait_after_pulse > 0) THEN
@@ -146,12 +145,13 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             PAR_70 = PAR_70 + cr_counts
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
+              first_cr = 0
               DATA_23[repetition_index] = cr_counts
-              first_cr=0
             ENDIF
                       
             IF (cr_counts < current_cr_threshold) THEN
               cr_mode = 0
+              CR_check = -1
               inc(CR_failed)
               inc(PAR_79)
             ELSE

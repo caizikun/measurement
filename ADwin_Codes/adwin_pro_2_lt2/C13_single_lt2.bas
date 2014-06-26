@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 521
+' Foldings                       = 518
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -91,7 +91,7 @@ dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
 'added for C13 initialization
-DIM C13_MBI_threshold, C13_MBI_duration,SP_duration_after_C13 AS LONG
+DIM C13_MBI_threshold, C13_MBI_RO_duration,SP_duration_after_C13 AS LONG
 DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_voltage AS FLOAT
  
 
@@ -115,7 +115,7 @@ INIT:
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
   C13_MBI_threshold            = Data_20[15] 
-  C13_MBI_duration             = Data_20[16]
+  C13_MBI_RO_duration             = Data_20[16]
   SP_duration_after_C13        = Data_20[17] 
   
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -396,7 +396,7 @@ EVENT:
             timer = -1
 
           ELSE 
-            IF (timer = C13_MBI_duration ) THEN  'needs to be changed to C_MBI_duration 
+            IF (timer = C13_MBI_RO_duration ) THEN  'needs to be changed to C_MBI_duration 
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
         
@@ -422,14 +422,7 @@ EVENT:
           ' Typicallyl the laser power for one of the two is set to 0 in the msmt params that are loaded 
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_C13_MBI+32768) ' turn on A laser, for spin pumping after C13 MBI
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_C13_MBI+32768) ' turn on E laser, for spin pumping after C13 MBI
-          
-          'this signal is never send for sure  
-          'Send event to the AWG to signal C13 MBI succes
-          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
-          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
-          'SP_duration_after_C13 =3 
-                    
+                              
         ELSE 
           ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
           IF (timer = SP_duration_after_C13) THEN
@@ -437,6 +430,10 @@ EVENT:
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             
+            'Send event to the AWG to signal C13 MBI succes
+            P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
+            CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+            P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
                         
             wait_time = wait_after_pulse_duration
             
@@ -518,7 +515,7 @@ EVENT:
             P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_off_voltage+32768)
             P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_off_voltage+32768)
             
-            mode = 2
+            mode = 1
             timer = -1
             wait_time = wait_after_pulse_duration
           endif                    

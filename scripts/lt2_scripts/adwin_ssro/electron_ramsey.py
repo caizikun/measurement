@@ -1,6 +1,6 @@
 import qt
 import numpy as np
-from measurement.lib.measurement2.adwin_ssro import pulsar
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 from measurement.scripts.lt2_scripts.adwin_ssro import espin_funcs as funcs
 reload(funcs)
@@ -8,7 +8,7 @@ reload(funcs)
 name = 'sil5_det_0MHz_ph_0MHz'
 
 def electronramsey(name):
-    m = pulsar.ElectronRamsey(name)
+    m = pulsar_msmt.ElectronRamsey(name)
     funcs.prepare(m)
 
     pts = 61

@@ -8,7 +8,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 import msvcrt
 from measurement.lib.config import awgchannels_lt2 as awgcfg
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 import sequence as tseq

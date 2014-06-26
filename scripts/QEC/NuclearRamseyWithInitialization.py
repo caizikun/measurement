@@ -21,22 +21,28 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     '''set experimental parameters'''
 
-
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 10 
+    m.params['pts'] = 51 
 
     m.params['Addressed_Carbon'] = 1
-    m.params['Carbon_init_RO_wait']   = 15e-6
+    m.params['C13_init_state'] = 'down' 
 
-    m.params['C_RO_phase'] =  np.linspace(0,360,m.params['pts'])
-    
-    m.params['wait_times'] = np.ones( m.params['pts'] )* m.params['Carbon_init_RO_wait'] +5e-6 #Note: wait time must be atleast carbon init time +5us 
-    
-    print     m.params['C_RO_phase']
+    m.params['sweep_name']       = 'RO_phase_(degree)' 
+    # m.params['sweep_name'] = 'RO phase (degree)'
 
-    m.params['sweep_pts']        = m.params['C_RO_phase']#NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
-    m.params['sweep_name']       = 'Free Evolution time (s)' 
+    if m.params['sweep_name'] == 'RO_phase_(degree)':
+
+        m.params['C_RO_phase'] =  np.linspace(0,360*2,m.params['pts'])
+        m.params['wait_times'] = np.ones(m.params['pts'])*100e-6+30e-6 #Note: wait time must be atleast carbon init time +5us 
+        m.params['sweep_pts']        = m.params['C_RO_phase']
+        print     m.params['C_RO_phase']
+
+    elif m.params['sweep_name']  == 'wait_times':
+        m.params['C_RO_phase'] = np.ones(m.params['pts'] )*0
+        m.params['wait_times'] = np.linspace(130e-6, 150e-6,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
+        m.params['sweep_pts'] = m.params['wait_times']
+
 
 
     #############################
@@ -44,18 +50,19 @@ def NuclearRamseyWithInitialization(name,tau = None):
     #############################
 
     ##########
-    # Overwrite certain params to make the script always work 
-    m.params['MBI_threshold']           = 0
-    m.params['C13_MBI_threshold']       = 1
-    m.params['SP_duration_after_C13']   = 10
+    # Overwrite certain params to test
+    m.params['C13_MBI_threshold']       = 0
+    m.params['MBI_threshold']           = 1
+    
+    m.params['C13_MBI_RO_duration']     = 30 
+    m.params['E_C13_MBI_amplitude']     = 1e-9
 
-    # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
-    m.params['A_SP_amplitude_after_C13_MBI']  = 5e-9
+    m.params['SP_duration_after_C13']   = 50
+    m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
     m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
-    m.params['E_C13_MBI_amplitude']       = 5e-9
-
+    
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)

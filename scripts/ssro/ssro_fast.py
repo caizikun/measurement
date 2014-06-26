@@ -57,7 +57,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
         for i in range(self.params['pts']/2):
             e0 =  element.Element('SSRO-ms0-{}'.format(i), pulsar = qt.pulsar)
-            e0.append(T)
+            e0.append(pulse.cp(T,length=3e-6))
             e0.append(PQ_sync)
             e0.append(T)  
             e0.append(pulse.cp(SP_A_pulse, length=self.params['A_SP_durations_AWG'][i]))
@@ -71,7 +71,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
             seq.append(name='finished-ms0-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
 
             e1 =  element.Element('SSRO-ms1-{}'.format(i), pulsar = qt.pulsar)
-            e1.append(T)
+            e0.append(pulse.cp(T,length=3e-6))
             e1.append(PQ_sync)
             e1.append(T)  
             e1.append(pulse.cp(SP_E_pulse, length=self.params['E_SP_durations_AWG'][i], 
@@ -99,18 +99,18 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 5
+    pts = 15
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 1000
 
     m.params['wait_length']    = 1000e-9
-    m.params['pq_sync_length']    = 50e-9
+    m.params['pq_sync_length']    = 150e-9
     m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,2,pts)*m.params['Ex_RO_amplitude']
     m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
 
     m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
@@ -125,15 +125,25 @@ def fast_ssro_calibration(name):
     m.params['SSRO_duration'] = 1
 
     debug=False
+    measure_bs=False
 
     m.autoconfig()
     m.generate_sequence()
     
 
     m.setup(mw=False, debug=debug)
+    if measure_bs:
+        bs_helper = qt.instruments['bs_helper']
+        bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/remote_ssro_fast.py')
+        bs_helper.set_is_running(True)
+        bs_helper.execute_script()
     m.run(autoconfig=False, setup=False, debug=debug)    
     m.save()
+    if measure_bs:
+        bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = bs_helper.get_data_path()
     m.finish()
+
 
 if __name__ == '__main__':
     fast_ssro_calibration('test')

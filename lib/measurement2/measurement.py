@@ -444,6 +444,7 @@ class MultipleAdwinsMeasurement(Measurement):
     def start_adwin_process(self, adwin, load=True, stop_processes=[]):
         proc = getattr(self.adwins[adwin]['ins'], 
             'start_'+self.adwins[adwin]['process'])
+        
         proc(load=load, stop_processes=stop_processes,
                 **self.adwin_process_params[adwin].to_dict())
 

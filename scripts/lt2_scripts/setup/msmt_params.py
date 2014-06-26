@@ -94,6 +94,19 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'A_N_randomize_amplitude'               :    20e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
+cfg['protocols']['Magnetometry']={
+'ch1'                                   :   8,
+'ch2'                                   :   9,
+'ch3'                                   :   10,
+'ch4'                                   :   11,
+'ch5'                                   :   12,
+'ch6'                                   :   13,
+'ch7'                                   :   14,
+'ch8'                                   :   15,
+'AWG_to_adwin_ttl_trigger_duration'     :   1e-6
+}
+
+
 
 #################
 ### Hans sil1 ###
@@ -104,26 +117,23 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
     ###############################
 
 ### Here we set two frequencies, these are both constants in our experiments
-f_msm1_cntr =   2.024900e9        #Electron spin ms=-1 frquency0
-f_msp1_cntr = 3.730069e9           #Electron spin ms=+1 frequency
+f_msm1_cntr =   2.0249e9            #Electron spin ms=-1 frquency  DO NOT CHANGE THIS!
+f_msp1_cntr =   3.730069e9          #Electron spin ms=+1 frequency DO NOT CHANGE THIS!
 #f_msp1_cntr = 3.728869e9           #Electron spin ms=+1 frequency
 
 zero_field_splitting = 2.877480e9    # Lowest value obtained for average ms+1 and -1 fregs.
 #As measured by Tim & Julia on 20140403 2.877480(5)e9
 
-N_frq    = 7.13429e6        #not calibrated
-N_HF_frq = 2.196e6        #calibrated 20140320/181319
+N_frq    = 7.13429e6      # not calibrated
+N_HF_frq = 2.196e6        # calibrated 20140320/181319
+Q        = 4.938e6        # from above values. 20140530
 
 mw_mod_frequency = 250e6
 
 mw_freq  = f_msp1_cntr - mw_mod_frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
+mw_freq_MBI = f_msp1_cntr- N_HF_frq - mw_mod_frequency
 
-#mw_freq  = f_msm1_cntr - mw_mod_frequency
-#mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq #better take plus N_hf?
-
-
-mw_power = 20                               #MW power
+mw_power = 20
 
 cfg['samples']['Hans_sil1'] = {
 'mw_mod_freq'   :       mw_mod_frequency,
@@ -132,14 +142,23 @@ cfg['samples']['Hans_sil1'] = {
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
 'zero_field_splitting': zero_field_splitting,
+'Q_splitting'   :       Q,
 'g_factor'      :       2.8025e6, #Hz/Gauss
 'g_factor_C13'  :       1.0705e3, #Hz/Gauss
+'g_factor_N14'  :       0.3077e3, #Hz/Gauss
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
+#######################
+# Nuclear spins control
+#######################
 
-## Nuclear spins
+'min_phase_correct' : 3 #in degrees.
+                                    # if the phase difference is smaller than +- 5 degrees no decoupling seq to correct for this phase generated
 
-'C1_freq'       :       345.124e3, #be sure to enter in Hz
+'C1_freq'       :       345.124e3-100, #be sure to enter in Hz
+'C1_freq_0'   :325, #approx
+'C1_freq_1'   :360,  #approx
+'C1_freq_dec'   :345.124e3,
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],
 
@@ -155,38 +174,37 @@ cfg['samples']['Hans_sil1'] = {
 'C4_Ren_tau'    :       [6.456e-6   ],
 'C4_Ren_N'    :         [40         ]}
 
-
-
-
-
     #######################
     ### SSRO parameters ###
-    #######################
+    ######################
+    #
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude': 3e-9,#3nW
-'A_RO_amplitude': 0,
-'A_SP_amplitude': 10e-9,
-'CR_duration' :  50,    
-'CR_preselect': 1000,
-'CR_probe':     1000,
-'CR_repump':    1000,
-'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude':  15e-9,#15e-9,
-'Ex_SP_amplitude':  0e-9,
+'A_CR_amplitude' : 10e-9, # was 3 e-9 -Machiel25-06-14
+'A_RO_amplitude' : 0,
+'A_SP_amplitude' : 15e-9,
+'CR_duration'    : 50,
+'CR_preselect'   : 1000,
+'CR_probe'       : 1000,
+'CR_repump'      : 1000,
+'Ex_CR_amplitude': 10e-9,   # was 5 e-9 -Machiel 25-06-14
+'Ex_RO_amplitude': 15e-9,   # was 10 e-9 -Machiel 25-06-14
+'Ex_SP_amplitude': 18e-9,   # pay attention, ambiguous parameter!!!-Machiel 25-06-14
 'SP_duration'        : 50,
+'SP_duration_ms0': 50,
+'SP_duration_ms1':200,
 'SP_filter_duration' : 0 }
-
 
     ##################################
     ### Integrated SSRO parameters ###
     ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 14}
+'SSRO_duration' : 41,   # was 14 us -Machiel 25-06-14
+'Ex_SP_amplitude':0}
 
     ########################
     ### Pulse parameters ###
@@ -199,54 +217,56 @@ f_mod_0     = cfg['samples']['Hans_sil1']['mw_mod_freq']
 CORPSE_frq=  5.305e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
-#AWG phase definition (peculiar setup dependence)
+
+    ### phase definition for electron pulses
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
-# Conventional phase definition
+
+    ### phase definition for C13 pulses
 'C13_X_phase' :0,
 'C13_Y_phase' :90,
 
-    ### Pi pulses, hard ###
-'fast_pi_duration'          :   140e-9,
-'fast_pi_amp'               :   0.767112,
+    ### Pi pulses, fast & hard ###
+'fast_pi_duration'          :   160e-9,
+'fast_pi_amp'               :   0.800621,
 'fast_pi_mod_frq'           :   f_mod_0,
 
-    ### Pi/2 pulses, hard ###
-'fast_pi2_duration'         :   72e-9,#60e-9,
-'fast_pi2_amp'              :   0.737172, #0.822801,#0*0.777847, #140324
+    ### Pi/2 pulses, fast & hard ###
+'fast_pi2_duration'         :   90e-9, #72e-9
+'fast_pi2_amp'              :    0.697519,
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
-'AWG_MBI_MW_pulse_amp'      :   0.016,
+'AWG_MBI_MW_pulse_amp'      :   0.013,
 'AWG_MBI_MW_pulse_duration' :   5500e-9,
 
-#    ### Corpse pulses ###
+    ### Corpse pulses ###
 'CORPSE_pi2_amp'    :           1,
 'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
- 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
- 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
- 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
- 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
- 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
-    }
+'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
+}
 
-    ###########
-    ### MBI ###
-    ###########
+    ######################
+    ### MBI parameters ###
+    ######################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           25e-9, 
-#'A_SP_amplitude'            :           0e-9,   #still implement 
+'Ex_SP_amplitude'           :           18e-9,
+#'A_SP_amplitude'            :           0e-9,   #TODO: still implement in python/ADWIN
 'SP_E_duration'             :           200,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           0.1e-9,
-'MBI_duration'              :           4,
+'Ex_MBI_amplitude'          :           1e-9,
+'MBI_duration'              :           30,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -254,10 +274,9 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
-'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check 
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
 'MBI_threshold'             :           1,
-#'AWG_wait_duration_before_MBI_MW_pulse':50e-9, #??
-'AWG_wait_for_adwin_MBI_duration':      4e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+'AWG_wait_for_adwin_MBI_duration':      30e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
 'repump_after_E_RO_amplitude':          15e-9,
@@ -266,24 +285,46 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
     ################
     ### C13  MBI ###
     ################
+
+
+
 'E_C13_MBI_amplitude':               5e-9,
-'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger. 
-                                              # The actual time for MBI reps is 5us shorter. 
-'C13_MBI_threshold' :                 0,
+'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger.
+                                              # The actual time for MBI reps is 5us shorter.
+'C13_MBI_threshold' :                 1,
 'SP_duration_after_C13':              10,
 
-# We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial 
+# We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial
 'A_SP_amplitude_after_C13_MBI'  :       5e-9,
 'E_SP_amplitude_after_C13_MBI'  :       0e-9,
 
-#######################
-###  Carbon control ###
-#######################
+    #######################
+    ###  Carbon control ###
+    #######################
 
- 'min_dec_tau'         : 20e-9 + cfg['protocols']['Hans_sil1']['pulses']['fast_pi_duration']/2.0,
- 'max_dec_tau'         : 0.35e-6, #Based on simulation for fingerprint at low tau
- 'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
- }
+'min_dec_tau'         : 20e-9 + cfg['protocols']['Hans_sil1']['pulses']['fast_pi_duration'],
+'max_dec_tau'         : 0.4e-6, #0.35e-6, #Based on measurement for fingerprint at low tau
+'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -291,44 +332,72 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
     ### Rep Ramsey Magnetometry####
     ###############################
 
+
+########################
+### MAGNETOMETRY #######
+########################
+
 CORPSE_frq=  6.8e6
-MW_mod_magnetometry=43e6
+MW_mod_magnetometry=30e6
 f_msm1_cntr = 2.024900e9             #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.730069e9              #Electron spin ms=+1 frequency
 
 cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'MW_modulation_frequency'   :   MW_mod_magnetometry,
-'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry,
+'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry-N_HF_frq,
 'mw_power'      :       20,
 'ms-1_cntr_frq':       f_msm1_cntr,
 'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
-'SSRO_duration'     :  10,
-'Ex_RO_amplitude':  50e-9,
-'Ex_SP_amplitude'  : 0e-9,
+
+'SSRO_duration'     :  25.,
+'Ex_RO_amplitude':  20e-9,
+'Ex_SP_amplitude'  : 20e-9,
 'A_CR_amplitude': 25e-9,
-'Ex_CR_amplitude': 25e-9,
-'A_SP_amplitude': 60e-9,
+'Ex_CR_amplitude': 20e-9,
+'A_SP_amplitude': 25e-9,
 'A_SP_repump_amplitude':.5e-9,
-'SP_duration': 10, #!!!! 10
+'SP_duration': 100, #!!!! 10
 'SP_repump_duration': 100,
+
 'wait_after_RO_pulse_duration':2,
 'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
 
 'SSRO_stop_after_first_photon':0,
-#    ### Corpse pulses ###
+
+### Corpse pulses ###
 'CORPSE_pi2_amp'    :           .9,
 'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
- 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
- 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
- 'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
- 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
- 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.
+'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.,
 
+# For nitrogen initialization
+'N_0-1_splitting_ms-1': 7.13429e6,
+'init_repetitions':1,
+'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry-N_HF_frq,
+'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry-N_HF_frq,
+'AWG_MBI_MW_pulse_amp'      :   0.0165,
+'AWG_MBI_MW_pulse_duration' :   4000e-9,
 
- }
+#MBI readout power and duration
+'Ex_MBI_amplitude'          :           5e-9,
+'MBI_duration'              :           4,
+'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
+
+#'pi2pi_mI0_mod_frq':MW_mod_magnetometry,#+N_HF_frq,
+'pi2pi_mIm1_amp':0.180,
+'pi2pi_mIp1_amp':0.168,
+'pi2pi_mI0_amp':0.1755,
+'pi2pi_mI0_duration':394e-9,
+'MW_pi_pulse_amp': 0.9,
+'AWG_pi2_duration': 40e-9,
+'fpga_pi2_duration': 39e-9
+}
 
 
 

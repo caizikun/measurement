@@ -523,13 +523,13 @@ def gate_scan_with_optimize():
         repeated_red_scans(gate_scan=True, gate_range=(0,-1800),pts=19)
 
 def fast_gate_scan(name):
-    for v in np.linspace(0.,-1.,6):
+    for v in np.linspace(0.,-1,6):
         if (msvcrt.kbhit() and msvcrt.getch()=='c'): 
                 break
         set_gate_voltage(v)
         qt.instruments['counters'].set_is_running(True)
         qt.instruments['YellowAOM'].turn_on()
-        while qt.instruments['adwin'].get_countrates()[0]<1250:
+        while qt.instruments['adwin'].get_countrates()[0]<3000:
             if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 break
             print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
@@ -547,12 +547,12 @@ def single_scan(name):
     do_MW=True
     if do_MW:
         m.mw.set_power(-7)
-        m.mw.set_frequency(2.809e9)
+        m.mw.set_frequency(2.807e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(52, 70, voltage_step=0.01, integration_time_ms=20, power = 10e-9)  #0.6e-9
+    m.red_scan(65, 85, voltage_step=0.02, integration_time_ms=20, power = 0.2e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
     #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -568,10 +568,10 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.5e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(0.e-6)
 
-    single_scan('The111no2_SIL5_Green_0V')
-    #fast_gate_scan('The111no2_SIL1_MW')
+    #single_scan('Sam_SIL5_MW_0V')
+    fast_gate_scan('Sam_SIL5_MW')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
     # repeated_red_scans()
