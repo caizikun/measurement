@@ -565,7 +565,7 @@ class initNitrogen_DarkESR(DarkESR):
         Q_channel = 'MW_Qmod',
         PM_channel = 'MW_pulsemod',
         PM_risetime = self.params['MW_pulse_mod_risetime'],
-        frequency = self.params['pi2pi_mI0_mod_frq'],
+        frequency = self.params['MW_modulation_frequency'],
         amplitude = self.params['pi2pi_mIp1_amp'],
         length = self.params['pi2pi_mI0_duration'])
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
@@ -795,7 +795,7 @@ class Magnetometry(PulsarMeasurement):
         # from ssro.IntegratedSSRO after defining self.params['repetitions'],
         # since the autoconfig of IntegratedSSRO uses this parameter.
         PulsarMeasurement.autoconfig(self)
-
+        
 
 
     def run(self, autoconfig=True, setup=True):
@@ -864,7 +864,7 @@ class Magnetometry(PulsarMeasurement):
         Q_channel = 'MW_Qmod',
         PM_channel = 'MW_pulsemod',
         PM_risetime = self.params['MW_pulse_mod_risetime'],
-        frequency = self.params['pi2pi_mI0_mod_frq'],
+        frequency = self.params['MW_modulation_frequency'],
         amplitude = self.params['pi2pi_mIp1_amp'],
         length = self.params['pi2pi_mI0_duration'])
         SP = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0,length=10e-6)
@@ -878,12 +878,12 @@ class Magnetometry(PulsarMeasurement):
         n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
         n.append(pulse.cp(T,length=100e-9))
         n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
-                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
+                               frequency=self.params['MW_modulation_frequency']+2*self.params['N_HF_frq'],
                                amplitude=self.params['pi2pi_mIm1_amp']))
         n.append(SP)
         n.append(pulse.cp(T,length=1e-6))
         n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
-                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
+                                   frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],#-self.params['N_HF_frq'],
                                    amplitude=self.params['pi2pi_mI0_amp']))
         n.append(pulse.cp(T,length=1e-6))
         n.append(SP)

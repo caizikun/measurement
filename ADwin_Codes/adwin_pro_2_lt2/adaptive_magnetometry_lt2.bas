@@ -30,6 +30,7 @@
 'init
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
+DIM DATA_27[1000] AS LONG
 DIM p_real[max_prob_array] AS FLOAT
 DIM p_imag[max_prob_array] AS FLOAT
 DIM p_real_old[max_prob_array] AS FLOAT
@@ -56,7 +57,7 @@ DIM c_n, t_n, pi AS FLOAT
 DIM timer, aux_timer, mode, i, k, sweep_index, a, k_opt AS LONG
 DIM AWG_done AS LONG
 DIM first, do_adaptive, do_phase_calibr AS LONG
-DIM min_phase, delta_phase, delta_phi AS LONG
+DIM delta_phi AS LONG
 
 DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
@@ -88,8 +89,8 @@ INIT:
   ch[7]                        = DATA_20[20]
   ch[8]                        = DATA_20[21]
   do_phase_calibr              = DATA_20[22] 'phase calibration modality (sine wave)
-  min_phase                    = DATA_20[23] 'min phase for calibration
-  delta_phase                  = DATA_20[24] 'phase step for calibration
+
+
   
   pi = 3.14
   
@@ -149,7 +150,7 @@ INIT:
   processdelay = cycle_duration  
   
   Par_73 = repetition_counter
-  curr_adptv_phase = min_phase
+  curr_adptv_phase = DATA_27[1]
   rep_index = 1
   curr_adptv_step = 1
   curr_msmnt_result = 0
@@ -183,13 +184,8 @@ EVENT:
                     
           ' SET PHASE TO FPGA (8-bit)
 
-          a = (255*mod(curr_adptv_phase, 360))/360
-          IF (do_phase_calibr > 0) THEN
-            DATA_24[sweep_index] = a
-          ELSE
-            DATA_24[sweep_index] = curr_adptv_phase
-          ENDIF
-          
+          'a = (255*mod(curr_adptv_phase, 360))/360
+          a=curr_adptv_phase
           FOR i = 0 TO 7
             dig_phase = mod (a, 2)
             a = a/2
@@ -290,7 +286,7 @@ EVENT:
               
               END
             ENDIF
-            curr_adptv_phase = min_phase
+            curr_adptv_phase = DATA_27[1]
             mode = 0
             timer=-1
           ENDIF
@@ -302,9 +298,10 @@ EVENT:
         ENDIF
         
       CASE 4    'calculate optimal phase
-    
-        curr_adptv_phase = curr_adptv_phase + delta_phase
         inc (curr_adptv_step)
+        curr_adptv_phase = DATA_27[curr_adptv_step]
+        
+        
         curr_msmnt_result = 0
         timer=-1
         mode = 0

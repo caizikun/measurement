@@ -979,8 +979,8 @@ config['adwin_lt2_processes'] = {
                     ['ch7'                         ,   0],
                     ['ch8'                         ,   0],
                     ['do_phase_calibr'             ,   1],
-                    ['min_phase'                   ,   0],
-                    ['delta_phase'                 ,   0],
+
+                    
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -998,6 +998,7 @@ config['adwin_lt2_processes'] = {
                 'data_long' : {
                     'set_phase' : 24,
                     'RO_data' : 25,
+                    'phases':27,
                     },
                 },
 
