@@ -116,7 +116,7 @@ class PQMeasurement(m2.Measurement):
                 
             if _length > 0:
                 if _length == T2_READMAX:
-                    logging.warning(self.get_name() + 'TTTR record length is maximum length, \
+                    logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
                 _t, _c, _s = PQ_decode(_data[:_length])
                 
