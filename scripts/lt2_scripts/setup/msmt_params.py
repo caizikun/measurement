@@ -183,14 +183,14 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude' : 3e-9, #10e-9, # was 3 e-9 -Machiel25-06-14
+'A_CR_amplitude' : 10e-9, # was 3 e-9 -Machiel25-06-14
 'A_RO_amplitude' : 0,
 'A_SP_amplitude' : 15e-9,
 'CR_duration'    : 50,
 'CR_preselect'   : 1000,
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
-'Ex_CR_amplitude': 5e-9, #10e-9,   # was 5 e-9 -Machiel 25-06-14
+'Ex_CR_amplitude': 10e-9,   # was 5 e-9 -Machiel 25-06-14
 'Ex_RO_amplitude': 10e-9,#15e-9,   # was 10 e-9 -Machiel 25-06-14
 'Ex_SP_amplitude': 0,#18e-9,   # pay attention, ambiguous parameter!!!-Machiel 25-06-14
 'SP_duration'        : 50,

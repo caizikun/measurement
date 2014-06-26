@@ -1581,56 +1581,89 @@ class MBI_C13(DynamicalDecoupling):
         Base to readout can be specified by 
         RO_Z True or False 
         RO_phase  in degress 
-        go_to_element -> enter 
 
         In the case where this function is used to do conditional feed forward the following parameters have to be specified
-        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a trigger from the adwin 
-        go_to_element: determines where to go when no 'click' comes from the adwin 
+        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin 
+        go_to_element: determines where to go when no 'click' comes from the adwin. 
         event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
 
-        TODO_MAR: determine how to implement el_state_after for C13 RO gates 
-        initialization gates works when there are jump 
-        statements depending on outcome
-
+        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
         '''
 
-            C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
-            
-            C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['Y_phase'])
-
-            C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) #TODO_MAR: Check with Julia if this indeed is always 90 deg extra 
-            
-            C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['X_phase'])
-            C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
-                    elements_duration= RO_duration,
-                    el_state_after_gate = el_after_RO)
-
-
-
-            if RO_Z == True: 
-                carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
-            else: 
-                C_RO_Ren_b.phase = RO_phase 
-                carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
-
-    def readout_carbon_sequence(self, RO_phase = 0,pt = 1, addressed_carbon =1 ):
+        C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+        
         C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['Y_phase'])
-        C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+
+        C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) 
+        
         C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
-        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
+        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
+                elements_duration= RO_duration,
+                el_state_after_gate = el_after_RO)
 
-        carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+
+        if RO_Z == True: 
+            carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+        else: 
+            C_RO_Ren_b.phase = RO_phase 
+            carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+        return carbon_RO_seq
+
+    def readout_multiple_carbon_sequence(self, 
+            go_to_element ='next',event_jump_element = 'next', 
+            RO_duration = 10e-6, 
+            pt = 1, addressed_carbon =[1,2], 
+            RO_Z=[False,True],RO_phase = [0,0], 
+            el_after_RO = '0' ):
+        '''
+        Creates a single carbon readout gate sequence. 
+        Does a readout an a single Carbon. 
+
+        Base to readout can be specified by 
+        RO_Z True or False 
+        RO_phase  in degress 
+
+        In the case where this function is used to do conditional feed forward the following parameters have to be specified
+        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin 
+        go_to_element: determines where to go when no 'click' comes from the adwin. 
+        event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
+
+        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
+        '''
+
+        C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+        
+        C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+
+        C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) 
+        
+        C_RO_fin_pi2 = Gate('C_RO_fin_pi2'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['X_phase'])
+
+
+
+        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
+                elements_duration= RO_duration,
+                el_state_after_gate = el_after_RO)
+
+        if len(addressed_carbon) %2 ==0: 
+            C_RO_fin_pi2.phase = self.params['Y_phase'] 
+        if RO_Z == True: 
+            carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_fin_pi2,C_RO_fin_Trigger]
+        else: 
+            C_RO_Ren_b.phase = RO_phase 
+            carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_fin_pi2,C_RO_fin_Trigger]
         return carbon_RO_seq
 
     def generate_AWG_elements(self,Gate_sequence,pt = 1):
@@ -1647,12 +1680,10 @@ class MBI_C13(DynamicalDecoupling):
                 self.generate_trigger_elt(g)
 
         Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
-
-        # Previously this was one function.
         self.get_tau_cut_for_connecting_elts(Gate_sequence)
         self.track_and_calc_phase(Gate_sequence)
         for g in Gate_sequence:
-            elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
+            if (g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate'):
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
         return Gate_sequence
@@ -1772,9 +1803,9 @@ class MBI_C13(DynamicalDecoupling):
                     if desired_phase == None:
                         g.dec_duration = 0 #
                     else:
-                        phase_diff =(desired_phase - g.C_phases_before_gate[g.Carbon_ind])%(2*np.pi)
-                        if (phase_diff <= (self.params['min_phase_correct']/180.*np.pi) or
-                                abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi) )
+                        phase_diff =(desired_phase - g.C_phases_before_gate[g.Carbon_ind])%(2*np.pi) 
+                        if (phase_diff <= (self.params['min_phase_correct']/180.*np.pi) or 
+                                abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi) ): 
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
                             g.dec_duration = 0
@@ -2076,6 +2107,7 @@ class NuclearT1(MBI_C13):
 
 #class Two_QB_MBE(MBI_C13):
     #     '''
+    #     TODO_MAR: test 2QB MBE experiment. 
     #     This class is to test multiple carbon initialization, MBE and RO.
     #     '''
     #     mprefix = 'single_carbon_initialised'
