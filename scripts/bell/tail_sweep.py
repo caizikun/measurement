@@ -309,4 +309,4 @@ def tail_lt1(name):
     m.finish()
 
 if __name__ == '__main__':
-    tail_lt1('lt1_The111no1_sil1_15degrees')
+    tail_lt1('lt1_The111no1_sil1_8degrees')
