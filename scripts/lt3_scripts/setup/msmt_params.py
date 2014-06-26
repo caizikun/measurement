@@ -41,7 +41,7 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-yellow=False
+yellow=True
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -77,6 +77,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
+		'TTTR_wait_time':							0.2, #s
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1#sec
 		}
@@ -101,16 +102,16 @@ cfg['samples'][sample_name] = {
 'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 4e-9,
+		'A_CR_amplitude':				 0.5e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 4e-9,
+		'A_SP_amplitude':				 3e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9,
-		'Ex_RO_amplitude':				 2e-9,
-		'Ex_SP_amplitude':				 2e-9,
+		'Ex_CR_amplitude':				 0.5e-9,
+		'Ex_RO_amplitude':				 0.5e-9,
+		'Ex_SP_amplitude':				 1e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 500,
