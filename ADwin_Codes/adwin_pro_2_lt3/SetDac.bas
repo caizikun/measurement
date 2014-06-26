@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 'DIM ret_val AS INTEGER
 #INCLUDE ADwinPro_All.inc
@@ -17,5 +17,10 @@ DIM value, time AS LONG
 
 EVENT:
   value=FPar_20*3276.8+32768  'Convert voltage to bit value
-  P2_DAC(DAC_Module,Par_20, value)           'PAR_20 = DAC number
+  IF (Par_20<9) THEN
+    P2_DAC(DAC_Module,Par_20, value)           'PAR_20 = DAC number
+  ELSE
+    P2_DAC(DAC_Module_2,Par_20-8, value) 
+  ENDIF
+  
   END

@@ -1479,6 +1479,8 @@ config['adwin_lt3_dacs'] = {
         'matisse_aom' : 6,
         'newfocus_aom': 7,
         'gate' : 8,
+        'gate_mod' : 9,
+        'yellow_frq_mod':10,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1600,6 +1602,71 @@ config['adwin_lt3_processes'] = {
                     'statistics' : 26,
                     },
                 },
+
+         'cr_check_mod' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_mod.inc',
+            'par' : {
+                    'CR_preselect'              : 75,
+                    'CR_probe'                  : 68,
+                    'CR_repump'                 : 69,
+                    'total_CR_counts'           : 70,
+                    'noof_repumps'              : 71,
+                    'noof_cr_checks'            : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts'             : 76,
+                    'pos_mod_activate'          : 65,
+                    'repump_mod_activate'       : 66,
+                    'cr_mod_activate'           : 67,
+                    'cur_pos_mod_dac'           : 64,
+                    },
+                    'fpar' : {
+                    'repump_mod_err' : 78,
+                    'cr_mod_err'     : 79,
+                    'pos_mod_err'    : 64,
+
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ['repump_mod_DAC_channel'      ,   7],
+                    ['cr_mod_DAC_channel'          ,   8],
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'           ,   0.8],
+                    ['repump_off_voltage'       ,  0.07],
+                    ['Ex_CR_voltage'            ,   0.8],
+                    ['A_CR_voltage'             ,   0.8],
+                    ['Ex_off_voltage'           ,   0.0],
+                    ['A_off_voltage'            , -0.08],
+                    ['repump_mod_control_offset',   0.0],
+                    ['repump_mod_control_amp'   ,   0.0],
+                    ['cr_mod_control_offset'    ,   0.0],
+                    ['cr_mod_control_amp'       ,   0.0],
+                    ['pos_mod_control_amp'      ,  0.03],
+                    ['pos_mod_fb'               ,   0.1],
+                    ['pos_mod_min_counts'       ,  300.]
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                'data_float' : {
+                    'atto_positions' : 16
+                    }
+                },        
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
         # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
         # Not sure if this function is then needed. - Machiel 30-12-'13'

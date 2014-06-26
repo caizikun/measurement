@@ -37,7 +37,7 @@ params_lt3 = {}
 # params['HH_binsize_T3'] = 8
 #CR:
 params_lt3['counter_channel'] = 1
-params_lt3['repump_duration'] = 500# 10 for green, 500 for yellow
+params_lt3['repump_duration'] = 10#500# 10 for green, 500 for yellow
 params_lt3['CR_duration'] = 100
 params_lt3['cr_wait_after_pulse_duration'] = 1
 params_lt3['CR_preselect'] = 2500
@@ -67,7 +67,7 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 params_lt3['A_SP_amplitude'] = 10e-9             
 params_lt3['Ex_RO_amplitude'] = 5e-9
 params_lt3['A_RO_amplitude'] = 0
-#params_lt3['repump_amplitude'] = 30e-9 
+params_lt3['repump_amplitude'] = 5e-6#30e-9 
 
 ####################
 ### pulses and MW stuff LT3
@@ -90,6 +90,8 @@ params_lt3['RND_angle_0'] = 45
 params_lt3['RND_angle_1'] = 315
 
 params_lt3['RND_duration'] = 100e-9
+
+params_lt3['RND_during_LDE'] = 1 
 
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 

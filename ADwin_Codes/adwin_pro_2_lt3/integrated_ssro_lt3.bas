@@ -122,7 +122,6 @@ EVENT:
           mode = 2
           timer = -1
         ENDIF
-        first = 0
 
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
