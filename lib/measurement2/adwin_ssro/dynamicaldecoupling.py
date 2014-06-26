@@ -1568,6 +1568,57 @@ class MBI_C13(DynamicalDecoupling):
             return False
         return carbon_init_seq
 
+    def readout_single_carbon_sequence(self, 
+            go_to_element ='next',event_jump_element = 'next', 
+            RO_duration = 10e-6, 
+            pt = 1, addressed_carbon =1, 
+            RO_Z=False,RO_phase = 0, 
+            el_after_RO = '0' ):
+        '''
+        Creates a single carbon readout gate sequence. 
+        Does a readout an a single Carbon. 
+
+        Base to readout can be specified by 
+        RO_Z True or False 
+        RO_phase  in degress 
+        go_to_element -> enter 
+
+        In the case where this function is used to do conditional feed forward the following parameters have to be specified
+        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a trigger from the adwin 
+        go_to_element: determines where to go when no 'click' comes from the adwin 
+        event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
+
+        TODO_MAR: determine how to implement el_state_after for C13 RO gates 
+        initialization gates works when there are jump 
+        statements depending on outcome
+
+        '''
+
+            C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+            
+            C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['Y_phase'])
+
+            C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) #TODO_MAR: Check with Julia if this indeed is always 90 deg extra 
+            
+            C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['X_phase'])
+            C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
+                    elements_duration= RO_duration,
+                    el_state_after_gate = el_after_RO)
+
+
+
+            if RO_Z == True: 
+                carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+            else: 
+                C_RO_Ren_b.phase = RO_phase 
+                carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+
     def readout_carbon_sequence(self, RO_phase = 0,pt = 1, addressed_carbon =1 ):
         C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
@@ -1774,6 +1825,8 @@ class MBI_C13(DynamicalDecoupling):
         return Gate_sequence
 
 
+
+
 class NuclearRamseyWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon ramsey experiment with nuclear initialization.
@@ -1818,9 +1871,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
 
             #############################
             #Readout in the x basis
-            # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
-            # TODO_MAR: Convert C_RO to function
-            # Function takes Z yes/no as input and a phase. See TOMOS for how it should look gate wise
             # TODO_MAR: Make C_RO_Parity function.
 
 
@@ -1835,6 +1885,15 @@ class NuclearRamseyWithInitialization(MBI_C13):
             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
 
             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+
+            # TODO_MAR: Test new C RO function 
+            # carbon_RO_seq = self.readout_single_carbon_sequence(self, 
+            #         pt = pt, addressed_carbon =self.params['Addressed_Carbon'], 
+            #         RO_Z=False,
+            #         RO_phase = self.params['C_RO_phase'][pt], 
+            #         el_after_RO = '0' )
+
+
 
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
@@ -1857,6 +1916,11 @@ class NuclearRamseyWithInitialization(MBI_C13):
 class NuclearRabiWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon Rabi experiment with nuclear initialization.
+    Sequence is a combination of different subsequences 
+    1. MBI initialisation
+    2. Carbon initialisation
+    3. Carbon Rabi evolution
+    4. Carbon Readout
     '''
     mprefix = 'CarbonRabiInitialised'
 
@@ -1867,12 +1931,6 @@ class NuclearRabiWithInitialization(MBI_C13):
         combined_seq = pulsar.Sequence('Initialized Nuclear Rabi Sequence')
 
         for pt in range(pts):
-
-            #Acutal sequence is a combination of 3 subsequences
-            # 1. MBI initialisation
-            # 2. Carbon initialisation
-            # 3. Carbon Rabi evolution
-            # 4. Carbon Readout
 
             ###########################################
             #####    Generating the sequence elements      ######
@@ -1888,12 +1946,6 @@ class NuclearRabiWithInitialization(MBI_C13):
                     C_init_state = self.params['C13_init_state'],
                     el_after_init = '0' )
             ################################
-
-            #TODO_MAR: Is this also the dirty fix?
-            C_Rabi_Ren0 = Gate('C_Rabi_Ren0'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'],
-                    N = 0,
-                    phase = self.params['C13_X_phase'])
 
             C_Rabi_Ren = Gate('C_Rabi_Ren'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'],
@@ -1955,8 +2007,6 @@ class NuclearT1(MBI_C13):
         combined_seq = pulsar.Sequence('Carbon T1')
 
         for pt in range(pts):
-
-
 
             #####################################################
             #####    Generating the sequence elements      ######
@@ -2074,8 +2124,7 @@ class NuclearT1(MBI_C13):
 
     #             #enc_Rx =  #TODO: IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
     #             '''
-    #             TODO_MAR: Still need to determine what the initial state is that will be encoded and how
-    #             dynamical this needs to be.
+    #             TODO_MAR: Determine initial state for 2QB MBE
     #             '''
 
 
@@ -2207,8 +2256,7 @@ class Three_QB_MB_QEC(MBI_C13):
 
             #enc_Rx =  #TO:  IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
             '''
-            TODO_MAR:            Still need to determine what the initial state is that will be encoded and how
-            dynamical this needs to be.
+            TODO_MAR: Definie initial state for 3QB MB QEC 
             '''
 
 
@@ -2269,7 +2317,9 @@ class Three_QB_MB_QEC(MBI_C13):
             ########################
             ##  Conditional Feedback
             '''
-            TODO_MAR:            This still needs to be coded and a good way needs to be found to work with the adwin. AWG probably does support jumping statements.
+            TODO_MAR:  Code conditional feedback in adwin 
+            This still needs to be coded and a good way needs to be found to work with the adwin. 
+            AWG probably does support jumping statements.
             '''
 
 
@@ -2277,7 +2327,8 @@ class Three_QB_MB_QEC(MBI_C13):
             #############################
             #Readout Tomography
             '''
-            TODO_MAR:            Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
+            TODO_MAR: Make RO Tomography 
+            Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
             '''
 
             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
