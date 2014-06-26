@@ -37,21 +37,30 @@ class AdaptivePhaseEstimation(pulsar_msmt.Magnetometry):
         for i in np.arange(self.params['adptv_steps']):
             e = element.Element('adpt_step_nr-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
-            e.add(pulse.cp(clock_pulse, amplitude = 1.0, cycles = 700+int(0.25e9*self.params['ramsey_time'][i])))
 
-            e.add(pulse.cp(T, length=1e-6))
+            e.add(pulse.cp(T, length=1e-6),name='T1')
 
-            e.append(pulse.cp(X,
+            e.add(pulse.cp(X,
                         frequency = self.params['MW_pulse_mod_frqs'][i],
                         amplitude = self.params['MW_pulse_amps'][i],
-                        length = self.params['MW_pulse_durations'][i]))
-            e.append(pulse.cp(T, length=self.params['ramsey_time'][i]))
+                        length = self.params['MW_pulse_durations'][i]),name='first_pi2',refpulse='T1')
+            e.add(pulse.cp(T, length=self.params['ramsey_time'][i]),name='tau',refpulse='first_pi2')
+            
+            if self.params['MW_only_by_awg']:
+                e.add(pulse.cp(X,
+                        frequency = self.params['MW_pulse_mod_frqs'][i],
+                        amplitude = self.params['MW_pulse_amps'][i],
+                        length = self.params['MW_pulse_durations'][i],
+                        phase = self.params['phase_second_pi2'][i]),name='second_pi2',refpulse='tau')
+                last='second_pi2'
+            else:    
+                e.add(pulse.cp(fpga_gate, amplitude = 4.0, length=self.params['fpga_mw_duration'][i]),name='fpga_gate_pulse',refpulse='tau')
+                e.add(pulse.cp(clock_pulse, amplitude = 1.0, cycles = 700+int(0.25e9*self.params['ramsey_time'][i])),start=-915e-9,refpulse='fpga_gate_pulse')
+                last='fpga_gate_pulse'
+            e.add(T,name='extra_wait',refpulse=last)
+            e.add(adwin_sync,name='adwin_sync',refpulse='extra_wait')
 
-            e.append(pulse.cp(fpga_gate, amplitude = 4.0, length=self.params['fpga_mw_duration'][i]))
-            e.append(T)
-            e.append(adwin_sync)
-
-            e.append(pulse.cp(T, length=100e-9))        
+            e.add(pulse.cp(T, length=100e-9),name='final_wait',refpulse='adwin_sync')        
             elts.append(e)
 
         print 'Elements created...'

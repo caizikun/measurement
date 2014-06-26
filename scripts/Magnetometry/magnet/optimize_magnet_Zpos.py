@@ -16,6 +16,8 @@ from measurement.lib.tools import magnet_tools as mt; reload(mt)
 mom = qt.instruments['master_of_magnet']; reload(mt)
 
 execfile(qt.reload_current_setup)
+SAMPLE_CFG = qt.exp_params['protocols']['current']
+SAMPLE = qt.exp_params['samples']['current']
 
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']

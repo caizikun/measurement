@@ -172,23 +172,26 @@ cfg['samples']['Hans_sil1'] = {
 
     #######################
     ### SSRO parameters ###
-    #######################
+    ######################
+    #
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude' : 3e-9,
+'A_CR_amplitude' : 10e-9, # was 3 e-9 -Machiel25-06-14
 'A_RO_amplitude' : 0,
 'A_SP_amplitude' : 15e-9,
 'CR_duration'    : 50,
 'CR_preselect'   : 1000,
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
-'Ex_CR_amplitude': 5e-9,
-'Ex_RO_amplitude': 10e-9,
-'Ex_SP_amplitude': 0e-9,
+'Ex_CR_amplitude': 10e-9,   # was 5 e-9 -Machiel 25-06-14
+'Ex_RO_amplitude': 15e-9,   # was 10 e-9 -Machiel 25-06-14
+'Ex_SP_amplitude': 18e-9,   # pay attention, ambiguous parameter!!!-Machiel 25-06-14
 'SP_duration'        : 50,
+'SP_duration_ms0': 50,
+'SP_duration_ms1':200,
 'SP_filter_duration' : 0 }
 
     ##################################
@@ -196,7 +199,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
     ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 14}
+'SSRO_duration' : 41,   # was 14 us -Machiel 25-06-14
+'Ex_SP_amplitude':0}
 
     ########################
     ### Pulse parameters ###
@@ -336,21 +340,22 @@ f_msp1_cntr = 3.730069e9              #Electron spin ms=+1 frequency
 
 cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'MW_modulation_frequency'   :   MW_mod_magnetometry,
-'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry,
+'mw_frq'        :      f_msp1_cntr - MW_mod_magnetometry-N_HF_frq,
 'mw_power'      :       20,
 'ms-1_cntr_frq':       f_msm1_cntr,
 'ms+1_cntr_frq':       f_msp1_cntr,
 ### Laser duration and powers etc ###
-'SSRO_duration'     :  25.
-,
+
+'SSRO_duration'     :  25.,
 'Ex_RO_amplitude':  20e-9,
 'Ex_SP_amplitude'  : 20e-9,
 'A_CR_amplitude': 25e-9,
-'Ex_CR_amplitude': 25e-9,
+'Ex_CR_amplitude': 20e-9,
 'A_SP_amplitude': 25e-9,
 'A_SP_repump_amplitude':.5e-9,
 'SP_duration': 100, #!!!! 10
 'SP_repump_duration': 100,
+
 'wait_after_RO_pulse_duration':2,
 'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
@@ -370,23 +375,25 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 # For nitrogen initialization
 'N_0-1_splitting_ms-1': 7.13429e6,
 'init_repetitions':1,
-'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry+N_HF_frq,
-'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry+N_HF_frq,
-'AWG_MBI_MW_pulse_amp'      :   0.015,
+'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry-N_HF_frq,
+'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry-N_HF_frq,
+'AWG_MBI_MW_pulse_amp'      :   0.0165,
 'AWG_MBI_MW_pulse_duration' :   4000e-9,
 
 #MBI readout power and duration
-'Ex_MBI_amplitude'          :           3e-9,
+'Ex_MBI_amplitude'          :           5e-9,
 'MBI_duration'              :           4,
+'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
 
-'pi2pi_mI0_mod_frq':MW_mod_magnetometry+N_HF_frq,
-'pi2pi_mIm1_amp':0.2081,
-'pi2pi_mIp1_amp':0.2027,
-'pi2pi_mI0_amp':0.2027,
+#'pi2pi_mI0_mod_frq':MW_mod_magnetometry,#+N_HF_frq,
+'pi2pi_mIm1_amp':0.180,
+'pi2pi_mIp1_amp':0.168,
+'pi2pi_mI0_amp':0.1755,
 'pi2pi_mI0_duration':394e-9,
 'MW_pi_pulse_amp': 0.9,
-'MW_pi_pulse_duration': 55e-9
- }
+'AWG_pi2_duration': 40e-9,
+'fpga_pi2_duration': 39e-9
+}
 
 
 

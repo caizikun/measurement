@@ -106,10 +106,9 @@ def init_N_darkesr(name, init_reps):
     m.params['wait_for_AWG_done'] = 1
     m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['wait_after_RO_pulse_duration']=1#10000
-    m.params['mw_frq']       = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
-    m.params['repetitions']  = 3000
+    m.params['repetitions']  = 1000
     m.params['range']        = 1.5*m.params['N_HF_frq']
-    m.params['pts'] = 51
+    m.params['pts'] = 41
     m.params['pulse_length'] = m.params['AWG_MBI_MW_pulse_duration']
     m.params['ssbmod_amplitude'] = m.params['AWG_MBI_MW_pulse_amp']
     m.params['init_repetitions']=init_reps
@@ -135,7 +134,9 @@ def init_N_darkesr(name, init_reps):
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
-    darkesrp1(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)
+    reps=100
+    init_N_darkesr('test_init_pi2pi_mI0_and_mIm1_noRF_' +str(reps), init_reps=reps)
     #reps = 100
     #for reps in [1,2,3,5,10]:
     #init_N_darkesr('test_init_pi2pi_mI0_and_mIm1_noRF_' +str(reps), init_reps=reps)
