@@ -23,13 +23,13 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 51 
+    m.params['pts'] = 21 
 
     m.params['Addressed_Carbon'] = 1
-    m.params['C13_init_state'] = 'down' 
+    m.params['C13_init_state'] = 'up' 
 
-    m.params['sweep_name']       = 'RO_phase_(degree)' 
-    # m.params['sweep_name'] = 'RO phase (degree)'
+    # m.params['sweep_name']       = 'RO_phase_(degree)' 
+    m.params['sweep_name'] = 'wait_times'
 
     if m.params['sweep_name'] == 'RO_phase_(degree)':
 
@@ -51,7 +51,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 0
+    m.params['C13_MBI_threshold']       = 1
     m.params['MBI_threshold']           = 1
     
     m.params['C13_MBI_RO_duration']     = 30 
