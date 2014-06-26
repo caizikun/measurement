@@ -74,13 +74,16 @@ class PQMeasurement(m2.Measurement):
         t_ofl = 0
         t_lastsync = 0
         last_sync_number = 0
+        new_sync_number = 0
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
+        TTTR_wait_time = self.params['TTTR_wait_time']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
-        print 'run PQ measurement'
+
+        print 'run PQ measurement, TTTR_wait_time ', TTTR_wait_time
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
@@ -99,29 +102,37 @@ class PQMeasurement(m2.Measurement):
         self.start_measurement_process()
         _timer=time.time()
         while(self.PQ_ins.get_MeasRunning()):
+            if TTTR_wait_time>0.:
+                qt.msleep(TTTR_wait_time)
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
-                    break
+                    #Check that all the measurement data has been transsfered from the PQ ins FIFO
+                    if new_sync_number == last_sync_number: 
+                        break 
                 self._keystroke_check('abort')
                 if self.keystroke('abort') in ['q','Q']:
                     print 'aborted.'
                     self.stop_keystroke_monitor('abort')
-                    break
+                    self.stop_measurement_process()
                     
                 self.print_measurement_progress()
-
+                print 'current sync, dset length:', last_sync_number, current_dset_length
+            
                 _timer=time.time()
 
+            last_sync_number=new_sync_number
+
             _length, _data = self.PQ_ins.get_TTTR_Data()
-                
+
             if _length > 0:
                 if _length == T2_READMAX:
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
+
                 _t, _c, _s = PQ_decode(_data[:_length])
-                
+
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                    newlength, t_ofl, t_lastsync, new_sync_number = \
                         T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only

@@ -20,17 +20,8 @@ joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG
 joint_params['MAX_SYNC_BIN'] =       1000
+joint_params['TTTR_wait_time'] = 	 0.1 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
-
-
-bs_params = {}
-bs_params['MAX_DATA_LEN']        =   joint_params['MAX_DATA_LEN']
-bs_params['BINSIZE']             =   8  #2**BINSIZE*(BASERESOLUTION = 1 ps for HH)
-bs_params['MIN_SYNC_BIN']        =   int(5e-6*1e12) #5 us 
-bs_params['MAX_SYNC_BIN']        =   int(joint_params['opt_pi_pulses']*1e-6*1e12) #1 us per opt pi pulse
-bs_params['measurement_time']    =   24*60*60 #sec = 24H
-bs_params['measurement_abort_check_interval']    = 1 #sec
-
 
 params_lt3 = {}
 ### Hardware stuff
@@ -143,6 +134,7 @@ params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
+params_lt3['TTTR_wait_time'] =     joint_params['TTTR_wait_time']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins

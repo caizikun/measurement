@@ -112,14 +112,14 @@ def full_bell(name):
 
     m.setup(debug=th_debug)
 
-    if measure_lt1: lt1_helper.set_is_running(True)
+    if measure_lt1: m.lt1_helper.set_is_running(True)
     m.run(autoconfig=False, setup=False,debug=th_debug)
     m.save()
 
     if measure_lt1:
-         m.params['lt1_data_path'] = lt1_helper.get_data_path()
+         m.params['lt1_data_path'] = m.lt1_helper.get_data_path()
     if measure_bs:
-        m.params['bs_data_path'] = bs_helper.get_data_path()
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()
 
     m.finish()
 
