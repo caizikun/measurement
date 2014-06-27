@@ -78,12 +78,12 @@ class PQMeasurement(m2.Measurement):
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
-        TTTR_wait_time = self.params['TTTR_wait_time']
+        TTTR_read_count = self.params['TTTR_read_count']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
 
-        print 'run PQ measurement, TTTR_wait_time ', TTTR_wait_time
+        print 'run PQ measurement, TTTR_read_count ', TTTR_read_count
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
@@ -102,30 +102,28 @@ class PQMeasurement(m2.Measurement):
         self.start_measurement_process()
         _timer=time.time()
 
-        ll=np.zeros(T2_READMAX) #XXX
+        #ll=np.zeros(T2_READMAX+1) #XXX
         while(self.PQ_ins.get_MeasRunning()):
-            if TTTR_wait_time>0.:
-                #qt.msleep(TTTR_wait_time)
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
-                if not self.measurement_process_running():
+                if self.measurement_process_running():
+                    self.print_measurement_progress()
+                    self._keystroke_check('abort')
+                    if self.keystroke('abort') in ['q','Q']:
+                        print 'aborted.'
+                        self.stop_keystroke_monitor('abort')
+                        self.stop_measurement_process()
+                else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
                     if new_sync_number == last_sync_number: 
                         break 
-                self._keystroke_check('abort')
-                if self.keystroke('abort') in ['q','Q']:
-                    print 'aborted.'
-                    self.stop_keystroke_monitor('abort')
-                    self.stop_measurement_process()
-                    
-                self.print_measurement_progress()
                 print 'current sync, dset length:', last_sync_number, current_dset_length
             
                 _timer=time.time()
 
             last_sync_number=new_sync_number
 
-            _length, _data = self.PQ_ins.get_TTTR_Data()
-            ll[_length]+=1 #XXX
+            _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+            #ll[_length]+=1 #XXX
             if _length > 0:
                 if _length == T2_READMAX:
                     logging.warning('TTTR record length is maximum length, \
@@ -172,8 +170,8 @@ class PQMeasurement(m2.Measurement):
                     self.h5data.flush()
 
         self.PQ_ins.StopMeas()
-        self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
-        self.h5data.flush()#XXX
+        #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
+        #self.h5data.flush()#XXX
         print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')

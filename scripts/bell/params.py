@@ -20,7 +20,7 @@ joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG / TODO
 joint_params['MAX_SYNC_BIN'] =       1000
-joint_params['TTTR_wait_time'] = 	 0.1 #s
+joint_params['TTTR_read_count'] = 	 1000 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
 params_lt3 = {}
