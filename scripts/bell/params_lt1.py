@@ -94,7 +94,7 @@ params_lt1['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] = params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
-params_lt1['MW_12_offset'] = 0.
+params_lt1['echo_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 1#sync is only for lt3

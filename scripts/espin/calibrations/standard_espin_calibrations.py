@@ -591,9 +591,9 @@ def rabi(name, IQmod=True):
     print m.params['ms-1_cntr_frq'] 
 
     #m.params['MW_pulse_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.linspace(0, 4000, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.35
+    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.03
     #m.params['MW_pulse_amplitudes'] = np.linspace(0.3,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -630,7 +630,7 @@ def dark_esr(name):
     m.params['repetitions']  = 1000
     m.params['range']        = 6e6
     m.params['pts'] = 131
-    m.params['pulse_length'] = 2.e-6
+    m.params['pulse_length'] = 2.3e-6
     m.params['ssbmod_amplitude'] = 0.04
     
     m.params['Ex_SP_amplitude']=0
@@ -998,7 +998,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(5.0, IQmod = False)
+    run_calibrations(2.5, IQmod = True)
 
     """
     stage 0 : continuous ESR
