@@ -24,7 +24,7 @@ print 'updating msmt params lt1 for {}'.format(cfg['samples']['current'])
     ######################################
 
 cfg['protocols']['AdwinSSRO']={
-'AWG_done_DI_channel'       :       16,
+'AWG_done_DI_channel'       :       20,
 'AWG_event_jump_DO_channel' :       14,
 'AWG_start_DO_channel'      :       10,
 'counter_channel'           :       1,
@@ -42,7 +42,7 @@ cfg['protocols']['AdwinSSRO']={
 'Ex_off_voltage'            :       0.,
 'A_off_voltage'             :       -0.0,
 'repump_off_voltage'        :       0,
-'yellow_repump_amplitude'   :       60e-9,
+'yellow_repump_amplitude'   :       30e-9,
 'yellow_repump_duration'    :       500,
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
@@ -97,9 +97,14 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
         'BINSIZE':                                  1, #2**BINSIZE*BASERESOLUTION
         'MIN_SYNC_BIN':                             0,
         'MAX_SYNC_BIN':                             1000,
+        'TTTR_wait_time':                           0.25, #s
         'measurement_time':                         1200,#sec
+        'measurement_abort_check_interval':         1#sec
+
         }
 
+cfg['protocols']['The111_no1_SIL18']['AdwinSSRO-integrated'] = {
+'SSRO_duration' : 30}
 
 #################
 ### Hans sil1 ###
@@ -163,16 +168,16 @@ cfg['protocols']['The111_no1_SIL18']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
-'A_CR_amplitude': 5e-9,#3nW
+'A_CR_amplitude': 3e-9,#3nW
 'A_RO_amplitude': 0,
-'A_SP_amplitude': 2e-9,
-'CR_duration' :  50,
+'A_SP_amplitude': 5e-9,
+'CR_duration' :  100,
 'CR_preselect':  1000,
 'CR_probe':      1000,
 'CR_repump':     1000,
-'Ex_CR_amplitude':  5e-9,#5nW
-'Ex_RO_amplitude': 2e-9,
-'Ex_SP_amplitude':  8e-9,
+'Ex_CR_amplitude':  2e-9,#5nW
+'Ex_RO_amplitude': 3e-9,
+'Ex_SP_amplitude':  3e-9,
 'SP_duration'        : 100,
 'SP_duration_ms0' : 100,
 'SP_duration_ms1' : 100,

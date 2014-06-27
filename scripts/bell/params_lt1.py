@@ -9,7 +9,7 @@ params_lt1 = {}
 # params['HH_binsize_T3'] = 8
 #CR:
 params_lt1['counter_channel'] = 1
-params_lt1['repump_duration'] = 10 # 10 for green, 500 for yellow
+params_lt1['repump_duration'] = 500 # 10 for green, 500 for yellow
 params_lt1['CR_duration'] = 100
 params_lt1['cr_wait_after_pulse_duration'] = 1
 params_lt1['CR_preselect'] = 2500
@@ -30,13 +30,13 @@ params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =4e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 10e-9             
-params_lt1['Ex_RO_amplitude'] = 3e-9
+params_lt1['A_SP_amplitude'] = 5e-9             
+params_lt1['Ex_RO_amplitude'] = 6e-9
 params_lt1['A_RO_amplitude'] = 0
-params_lt1['repump_amplitude'] = 110e-6 
+params_lt1['repump_amplitude'] = 30e-9 
 
 ####################
 ### pulses and MW stuff LT1

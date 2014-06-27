@@ -33,6 +33,7 @@ class Tail(bell.Bell):
 
         for i in range(self.params['pts']):
             eom_p = self.create_eom_pulse(i)
+            self.params[self.params['sweep_name']]=self.params['sweep_pts'][i]
             e = bseq._LDE_element(self, 
                 name = 'Tail sweep element {}'.format(i),
                eom_pulse =  eom_p)    
@@ -220,7 +221,7 @@ def tail_lt1(name):
 
     m.joint_params['LDE_element_length'] = 7e-6
     m.params['RND_during_LDE'] = 0
-    pts=10
+    pts=1
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -253,7 +254,7 @@ def tail_lt1(name):
         m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
         m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
         m.params['eom_off_duration']           = 200e-9
-        m.params['eom_overshoot_duration1']    = np.linspace(1e-9,15e-9,pts)
+        m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9
         m.params['eom_overshoot1']             = np.ones(pts)*-0.05  #     np.ones(pts)*-0.03 # calibration from 19-03-2014# 
         m.params['eom_overshoot_duration2']    = 10e-9
         m.params['eom_overshoot2']             = 0
@@ -261,7 +262,7 @@ def tail_lt1(name):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.2,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.7,0.7,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
@@ -300,8 +301,8 @@ def tail_lt1(name):
             m.bs_helper.execute_script()
 
 
-    m.setup(debug=(debug or measure_bs))
-    m.run(autoconfig=False, setup=False,debug=(debug or measure_bs))    
+    m.setup(debug=debug)
+    m.run(autoconfig=False, setup=False,debug=debug)    
     m.save()
     if measure_bs:
         m.bs_helper.set_is_running(False)

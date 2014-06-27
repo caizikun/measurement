@@ -101,9 +101,11 @@ class PQMeasurement(m2.Measurement):
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
         _timer=time.time()
+
+        ll=np.zeros(T2_READMAX) #XXX
         while(self.PQ_ins.get_MeasRunning()):
             if TTTR_wait_time>0.:
-                qt.msleep(TTTR_wait_time)
+                #qt.msleep(TTTR_wait_time)
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
@@ -123,7 +125,7 @@ class PQMeasurement(m2.Measurement):
             last_sync_number=new_sync_number
 
             _length, _data = self.PQ_ins.get_TTTR_Data()
-
+            ll[_length]+=1 #XXX
             if _length > 0:
                 if _length == T2_READMAX:
                     logging.warning('TTTR record length is maximum length, \
@@ -170,6 +172,8 @@ class PQMeasurement(m2.Measurement):
                     self.h5data.flush()
 
         self.PQ_ins.StopMeas()
+        self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
+        self.h5data.flush()#XXX
         print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
