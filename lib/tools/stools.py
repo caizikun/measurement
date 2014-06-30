@@ -18,10 +18,11 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.msleep(1)
     print 'Calibrate', name
     qt.instruments[name].apply_voltage(0)
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    was_awg = qt.instruments[name].get_cur_controller() == 'AWG'
+    if awg and not(was_awg): qt.instruments[name].set_cur_controller('AWG')
     qt.instruments[name].calibrate(31)
     qt.instruments[name].apply_voltage(0)
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    if awg and not(was_awg): qt.instruments[name].set_cur_controller('ADWIN')
     qt.msleep(1)
 
     qt.instruments[name].apply_voltage(0)

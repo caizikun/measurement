@@ -20,8 +20,8 @@ def ssrocalibration(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
-    m.params['repump_mod_DAC_channel'] = 2
-    m.params['cr_mod_DAC_channel']     = 1#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
+    m.params['repump_mod_DAC_channel'] = m.adwin.get_dac_channels()['yellow_aom_frq']
+    m.params['cr_mod_DAC_channel']     = m.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
     m.params['cr_mod_control_offset']  =  0.0
     m.params['cr_mod_control_amp']     =  0.05 #V
     m.params['repump_mod_control_offset']  =  5.4

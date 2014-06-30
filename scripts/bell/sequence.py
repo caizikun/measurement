@@ -153,8 +153,8 @@ def pulse_defs_lt1(msmt):
     ### synchronizing, etc
     msmt.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2) 
-    msmt.adwin_success_pulse = pulse.SquarePulse(channel = 'adwin_success_trigger',
-        length = 5e-6, amplitude = 2) 
+    #msmt.adwin_success_pulse = pulse.SquarePulse(channel = 'adwin_success_trigger',
+    #    length = 5e-6, amplitude = 2) 
     msmt.sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
     msmt.SP_pulse = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
@@ -206,7 +206,7 @@ def _lt1_entanglement_event_element(msmt):
     e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
 
     e.append(msmt.TIQ)
-    e.append(msmt.adwin_success_pulse)
+    #e.append(msmt.adwin_success_pulse)
     return e
 
 def _lt3_wait_1us_element(msmt):
