@@ -152,13 +152,14 @@ cfg['samples']['Hans_sil1'] = {
 # Nuclear spins control
 #######################
 
-'min_phase_correct' : 3 #in degrees.
+'min_phase_correct' : 3, #in degrees.
                                     # if the phase difference is smaller than +- 5 degrees no decoupling seq to correct for this phase generated
 
-'C1_freq'       :       345.124e3-100, #be sure to enter in Hz
-'C1_freq_0'   :325, #approx
-'C1_freq_1'   :360,  #approx
-'C1_freq_dec'   :345.124e3,
+'C1_freq'      :       345.124e3-100, #be sure to enter in Hz
+'C1_freq_0'   :        325.750e3, 
+'C1_freq_1'   :        360e3,  #approx
+'C1_freq_dec'   :      345.124e3,
+
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],
 
@@ -191,8 +192,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 10e-9,   # was 5 e-9 -Machiel 25-06-14
-'Ex_RO_amplitude': 15e-9,   # was 10 e-9 -Machiel 25-06-14
-'Ex_SP_amplitude': 18e-9,   # pay attention, ambiguous parameter!!!-Machiel 25-06-14
+'Ex_RO_amplitude': 10e-9,#15e-9,   # was 10 e-9 -Machiel 25-06-14
+'Ex_SP_amplitude': 0,#18e-9,   # pay attention, ambiguous parameter!!!-Machiel 25-06-14
 'SP_duration'        : 50,
 'SP_duration_ms0': 50,
 'SP_duration_ms1':200,

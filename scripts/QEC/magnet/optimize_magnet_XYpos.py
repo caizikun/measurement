@@ -35,7 +35,7 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
+    axis = 'Y_axis'               # X usually moves 2x slower than Y (current settings)  
     scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
     no_of_steps      = 5          # with a total of no_of_steps measurment points.
     magnet_step_size = 50         # the sample position is checked after each magnet_step_size
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     #calculate steps to do
     #stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [-200,100,100,100,100] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [-150,100,100,100] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
     print 'Moving along %s' %axis 

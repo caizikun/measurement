@@ -113,9 +113,6 @@ def fast_ssro_calibration(name):
     m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
 
-    m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
-    print m.params['MAX_SYNC_BIN']
-
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
     
@@ -126,22 +123,31 @@ def fast_ssro_calibration(name):
 
     debug=False
     measure_bs=False
+    upload=True
 
     m.autoconfig()
-    m.generate_sequence()
+
+    if upload:
+        m.generate_sequence()
     
 
     m.setup(mw=False, debug=debug)
+    m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
+    print m.params['MAX_SYNC_BIN']
+
     if measure_bs:
         bs_helper = qt.instruments['bs_helper']
         bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/remote_ssro_fast.py')
         bs_helper.set_is_running(True)
         bs_helper.execute_script()
+    
     m.run(autoconfig=False, setup=False, debug=debug)    
     m.save()
+    
     if measure_bs:
         bs_helper.set_is_running(False)
         m.params['bs_data_path'] = bs_helper.get_data_path()
+    
     m.finish()
 
 

@@ -23,30 +23,30 @@ def pulse_defs_lt3(msmt):
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
     msmt.CORPSE_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
-        MW_channel = 'MW_1', 
+        MW_channel = 'MW_Imod', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_2',
+        second_MW_channel = 'MW_Qmod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 180)
     msmt.CORPSE_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_1', 
+        MW_channel = 'MW_Imod', 
         PM_channel = 'MW_pulsemod',
-        second_MW_channel = 'MW_2',
+        second_MW_channel = 'MW_Qmod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_pi2_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = 90)
-    msmt.CORPSE_RND0 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_1', 
+    msmt.CORPSE_RND0 = pulselib.MW_CORPSE_pulse('CORPSE RND0-pulse',
+        MW_channel = 'MW_Imod', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
         rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
         eff_rotation_angle = msmt.params['RND_angle_0'])
-    msmt.CORPSE_RND1 = pulselib.MW_CORPSE_pulse('CORPSE pi2-pulse',
-        MW_channel = 'MW_2', 
+    msmt.CORPSE_RND1 = pulselib.MW_CORPSE_pulse('CORPSE RND1-pulse',
+        MW_channel = 'MW_Qmod', 
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
         amplitude = msmt.params['CORPSE_RND_amp'],
@@ -323,6 +323,7 @@ def _LDE_element(msmt, **kw):
 
     # 14 RND generator HOLD OFF
     if msmt.params['RND_during_LDE'] == 1:
+        #print 'RND_start', msmt.joint_params['RND_start']
         e.add(msmt.RND_halt_off_pulse,
                 start = msmt.joint_params['RND_start'],
                 refpulse = 'initial_delay',
@@ -358,15 +359,17 @@ def _LDE_element(msmt, **kw):
     if msmt.params['MW_during_LDE'] == 1:
         ref_p_1 = e.pulses['MW_pi']
         ref_p_2 = e.pulses['MW_RND_0']
+        #print 'RND MW start:', ref_p_2.effective_start()
         #calculate middle between the final pi/n pulse and the echo from the LDE pi/2+pi
-        echo_start = -(ref_p_2.effective_start()-ref_p_1.effective_stop()-msmt.params['MW_1_separation'])/2.+msmt.params['MW_12_offset']
-        #print 'echo start: ', echo_start
+        LDE_echo_point = ref_p_1.effective_start()+ msmt.params['MW_1_separation']
+        expected_echo_time = (ref_p_2.effective_start()- LDE_echo_point)/2.
+        #print 'LDE_echo_point, expected_echo_time: ', LDE_echo_point, expected_echo_time
         e.add(msmt.CORPSE_pi, 
-            start = echo_start,
+            start = -expected_echo_time +msmt.params['echo_offset'],
             refpulse = 'MW_RND_0', 
             refpoint = 'start', 
-            refpoint_new = 'end',
-            name='MW_pi_2')
+            refpoint_new = 'center',
+            name='MW_echo_pi')
 
     ############
     #print e.print_overview()
