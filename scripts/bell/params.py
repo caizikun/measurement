@@ -77,7 +77,7 @@ params_lt3['CORPSE_pi_amp'] = 0.713
 params_lt3['CORPSE_pi2_amp'] = 0.770
 params_lt3['CORPSE_RND_amp'] = 0.77 #?
 
-params_lt3['RND_angle_0'] = 90
+params_lt3['RND_angle_0'] = 0
 params_lt3['RND_angle_1'] = 90
 
 params_lt3['RND_duration'] = 100e-9
@@ -133,7 +133,7 @@ params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
-params_lt3['TTTR_wait_time'] =     joint_params['TTTR_wait_time']
+params_lt3['TTTR_read_count'] =    joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins

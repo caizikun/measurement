@@ -618,12 +618,7 @@ def dark_esr(name):
     '''
 
     m = pulsar_msmt.DarkESR(name)
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-
+    funcs.prepare(m)
 
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
@@ -649,11 +644,7 @@ def dark_esr_Corpse(name):
     '''
 
     m = DarkESR_CORPSE(name)
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    funcs.prepare(m)
 
 
     CORPSE_frq = 4.5e6
