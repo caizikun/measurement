@@ -13,6 +13,7 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['LDE_element_length']     = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
+joint_params['late_RO_element_length'] = 85e-6
 joint_params['LDE_RO_duration'] = 3e-6
 joint_params['separate_RO_element'] =  True
 
@@ -42,11 +43,12 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 params_lt3['AWG_start_DO_channel'] = 9
 params_lt3['AWG_done_DI_channel'] = 17
 params_lt3['SP_duration'] = 50
+
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 20
+params_lt3['SSRO_duration'] = 30#20
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1
@@ -83,6 +85,8 @@ params_lt3['RND_angle_1'] = 90
 params_lt3['RND_duration'] = 100e-9
 
 params_lt3['RND_during_LDE'] = 1 
+
+params_lt3['wait_for_PLU'] = 0
 
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
