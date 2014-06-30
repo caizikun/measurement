@@ -42,20 +42,30 @@ class Bell_LT3(bell.Bell):
         elements.append(dummy_element)
         LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
         elements.append(LDE_element)
-        
+
+        if self.params['wait_for_PLU']:
+            LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
+            late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_LT3')
+            elements.append(late_RO)
+
+
         seq.append(name = 'start_LDE',
             trigger_wait = True,
             wfname = start_element.name)
 
         seq.append(name = 'LDE_LT3',
             wfname = LDE_element.name,
-            jump_target = 'RO_dummy',
+            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'start_LDE',
             goto_target = 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
         #    wfname = finished_element.name,
         #    goto_target = 'start_LDE')
+        if self.params['wait_for_PLU']:
+            seq.append(name = 'late_RO',
+                wfname = late_RO.name,
+                goto_target = 'start_LDE')
 
         seq.append(name = 'RO_dummy',
             wfname = dummy_element.name,

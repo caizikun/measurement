@@ -848,7 +848,7 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
 
 
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    m.params['number_pulses'] = 3
+    m.params['number_pulses'] = 1
 
     
     if mod(m.params['number_pulses'],2) ==0 :
@@ -858,7 +858,7 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
         m.params['extra_wait_final_pi2']=np.ones(pts)*0
         #m.params['extra_wait_final_pi2'] = np.linspace(-80e-9,80e-9,pts)
 
-    m.params['evolution_times'] = np.linspace(300e-9*2.*m.params['number_pulses'], 15e-6,pts)/(2.*m.params['number_pulses'])
+    m.params['evolution_times'] =np.linspace(50e-6, 100e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
     #np.linspace((2.2*1/CORPSE_frq)*2*m.params['number_pulses'], 40e-6,pts)/(2.*m.params['number_pulses'])
 
     # MW pulses
@@ -989,7 +989,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.5, IQmod = True)
+    run_calibrations(6.0, IQmod = False)
 
     """
     stage 0 : continuous ESR

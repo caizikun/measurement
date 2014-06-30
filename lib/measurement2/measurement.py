@@ -220,7 +220,7 @@ class Measurement(object):
         if not os.path.isdir(sdir):
             os.makedirs(sdir)
         
-        pprint.pprint(inspect.stack())
+        # pprint.pprint(inspect.stack())
         
         stack = inspect.stack()
         i = 0
