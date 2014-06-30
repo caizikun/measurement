@@ -626,7 +626,7 @@ def single_scan(name):
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(76.5, 85, voltage_step=0.01, integration_time_ms=20, power = 0.3e-9)
+    m.red_scan(55.5, 95, voltage_step=0.01, integration_time_ms=20, power = 0.3e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(50, 80, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -639,7 +639,7 @@ def debug_scan(name):
 
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
-    single_scan('The111no1_enlarged_Sil1_3rd-cool-down-gate22-36V')
+    single_scan('The111no1_enlarged_Sil8_4th-cool-down')
     #fast_gate_scan('ThePippin_Sil8_dac3_on24')
     #repeated_red_scans_hannes()
 
