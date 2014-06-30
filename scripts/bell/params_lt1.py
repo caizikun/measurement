@@ -9,7 +9,7 @@ params_lt1 = {}
 # params['HH_binsize_T3'] = 8
 #CR:
 params_lt1['counter_channel'] = 1
-params_lt1['repump_duration'] = 10 # 10 for green, 500 for yellow
+params_lt1['repump_duration'] = 500 # 10 for green, 500 for yellow
 params_lt1['CR_duration'] = 100
 params_lt1['cr_wait_after_pulse_duration'] = 1
 params_lt1['CR_preselect'] = 2500
@@ -30,13 +30,13 @@ params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =4e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 10e-9             
-params_lt1['Ex_RO_amplitude'] = 3e-9
+params_lt1['A_SP_amplitude'] = 5e-9             
+params_lt1['Ex_RO_amplitude'] = 6e-9
 params_lt1['A_RO_amplitude'] = 0
-params_lt1['repump_amplitude'] = 110e-6 
+params_lt1['repump_amplitude'] = 30e-9 
 
 ####################
 ### pulses and MW stuff LT1
@@ -94,7 +94,7 @@ params_lt1['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] = params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
-params_lt1['MW_12_offset'] = 0.
+params_lt1['echo_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 1#sync is only for lt3
@@ -105,6 +105,8 @@ params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
+params_lt1['TTTR_wait_time'] =     params.joint_params['TTTR_wait_time']
+
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 
 params_lt1['measurement_time'] =   24*60*60 #sec = 24 H

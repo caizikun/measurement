@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      3e-9,
+		'yellow_repump_amplitude':      10e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -77,6 +77,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
+		'TTTR_wait_time':							0.0, #s
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1#sec
 		}
@@ -101,16 +102,16 @@ cfg['samples'][sample_name] = {
 'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 4e-9,
+		'A_CR_amplitude':				 0.5e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 4e-9,
+		'A_SP_amplitude':				 3e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9,
-		'Ex_RO_amplitude':				 2e-9,
-		'Ex_SP_amplitude':				 2e-9,
+		'Ex_CR_amplitude':				 0.5e-9,
+		'Ex_RO_amplitude':				 0.5e-9,
+		'Ex_SP_amplitude':				 1e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 500,
@@ -123,7 +124,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 'SSRO_duration' : 30}
 
-CORPSE_frq = 6.5e6
+CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,

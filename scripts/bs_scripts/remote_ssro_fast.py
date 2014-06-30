@@ -7,17 +7,16 @@ import measurement.lib.measurement2.pq.pq_measurement as pq
 
 bs_params = {}
 bs_params['MAX_DATA_LEN']        =   int(100e6)
-bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-bs_params['MIN_SYNC_BIN']        =   int(5e-6*1e12) #5 us 
-bs_params['MAX_SYNC_BIN']        =   int(15e-6*1e12) #15 us
+bs_params['BINSIZE']             =   10  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+bs_params['MIN_SYNC_BIN']        =   int(0e-6*1e12) #0 us 
+bs_params['MAX_SYNC_BIN']        =   int(200e-6*1e12) #200 us
 bs_params['measurement_time']    =   24*60*60 #sec = 24H
 bs_params['measurement_abort_check_interval']    = 1 #sec
-bs_params['TTTR_wait_time'] = 0.
 
 
-class Bell_BS(pq.PQMeasurement):
+class SSRO_BS(pq.PQMeasurement):
 
-    mprefix = 'Bell_BS'
+    mprefix = 'SSRO_BS'
 
     def autoconfig(self):
         remote_params = self.remote_measurement_helper.get_measurement_params()
@@ -54,4 +53,4 @@ def remote_HH_measurement(name):
     m.finish()
     
 if __name__ == '__main__':
-    remote_HH_measurement('tpqi_parallel_BS')
+    remote_HH_measurement('ssro_fast_BS')
