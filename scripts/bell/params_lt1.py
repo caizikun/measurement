@@ -94,7 +94,7 @@ params_lt1['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] = params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
-params_lt1['MW_12_offset'] = 0.
+params_lt1['echo_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 1#sync is only for lt3
@@ -105,7 +105,7 @@ params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
-params_lt1['TTTR_wait_time'] =     params.joint_params['TTTR_wait_time']
+params_lt1['TTTR_read_count'] =    params.joint_params['TTTR_read_count']
 
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 

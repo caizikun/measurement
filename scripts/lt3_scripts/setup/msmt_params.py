@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      3e-9,
+		'yellow_repump_amplitude':      10e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -41,7 +41,7 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-yellow=True
+yellow=False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
-		'TTTR_wait_time':							0.2, #s
+		'TTTR_read_count':							1000, #s
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1#sec
 		}
@@ -124,7 +124,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 'SSRO_duration' : 30}
 
-CORPSE_frq = 6.5e6
+CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,
