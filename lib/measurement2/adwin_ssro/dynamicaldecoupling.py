@@ -58,6 +58,11 @@ class Gate(object):
         self.el_state_before_gate = kw.pop('el_state_before_gate',None)
         self.el_state_after_gate = kw.pop('el_state_after_gate',None)
 
+
+        #NOTE_MAR: Carbon gate correction no phase evolution might not be what we want. 
+        if self.Gate_type =='Carbon_Gate': 
+            self.C_phases_after_gate[self.Carbon_ind] = self.phase
+
         #Description of other attributes that get added by functions
         # self.elements = elements
         # self.repetitions = repetitions
@@ -1899,10 +1904,10 @@ class NuclearRamseyWithInitialization(MBI_C13):
             mbi_seq = [mbi]
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    initialization_method = 'MBI', pt =pt,
+                    initialization_method = self.params['C_init_method'], pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_after_init = '0' )
+                    el_after_init = '0' ) # TODO_MAR: Fix  
             ################################
 
             if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
@@ -1930,7 +1935,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
             combined_list_of_elements.extend(list_of_elements)
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
-
 
         if upload:
             print ' uploading sequence'
