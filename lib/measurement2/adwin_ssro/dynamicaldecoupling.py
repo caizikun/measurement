@@ -1811,21 +1811,37 @@ class MBI_C13(DynamicalDecoupling):
         '''
         Loops over all elements in the gate sequence and adds g.tau_cut_before and g.tau_cut_after to connection and
             electron gate elements.
+        If there is only a trigger element between two electron gates the trigger elements_duration is extended twice by 1e-6 and 
+            that duration is added to the tau_cut_before and after of the respective electron gates.  
+
         '''
         for i,g in enumerate(Gate_sequence):
-
+            found_trigger = False 
             if g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
                 for g_b in Gate_sequence[i-1::-1]:
                     g.tau_cut_before = 1e-6 # Default value in case it is the first element
-                    if g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
-                        print ( 'Error: There is no decoupling gate between %s and %s. \n n') %(g.name,g_b.name)
+                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the 
+                        found_trigger = True 
+                        g_t = g_b 
+                    elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
+                        g_t.elements_duration = g_t.elements_duration +1e-6 
+                        g.tau_cut_before = 1e-6 
+
+                    elif g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
+                        print ( 'Error: There is no decoupling gate or trigger between %s and %s.') %(g.name,g_b.name)
                     elif hasattr(g_b, 'tau_cut'):
                         g.tau_cut_before = g_b.tau_cut
                         break
                 for g_b in Gate_sequence[i+1::]:
                     g.tau_cut_after = 1e-6 # Default value in case it is the first element
-                    if g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
-                        print ( 'Error: There is no decoupling gate between %s and %s. \n n') %(g.name,g_b.name)
+                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the 
+                        found_trigger = True 
+                        g_t = g_b 
+                    elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
+                        g_t.elements_duration = g_t.elements_duration +1e-6 
+                        g.tau_cut_after = 1e-6 
+                    elif g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
+                        print ( 'Error: There is no decoupling gate or trigger between %s and %s.') %(g.name,g_b.name)
                     elif hasattr(g_b, 'tau_cut'):
                         g.tau_cut_after = g_b.tau_cut
                         break
@@ -2008,7 +2024,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
             #############################
             carbon_RO_seq = self.readout_single_carbon_sequence(self, 
                     pt = pt, addressed_carbon =self.params['Addressed_Carbon'], 
-                    RO_Z=False,
+                    RO_Z=self.params['C_RO_Z'] ,
                     RO_phase = self.params['C_RO_phase'][pt], 
                     el_after_RO = '0' )
             gate_seq = []
@@ -2186,7 +2202,6 @@ class Two_QB_MBE(MBI_C13):
         '''
         TODO_MAR: Multiple branches depending on outcome
         TODO_MAR: Double naming of Gates, check how this works
-        TODO_MAR: Insert wait element before phase gate and after trigger. 
 
         This class is to test multiple carbon initialization, MBE and RO.
 
@@ -2195,6 +2210,12 @@ class Two_QB_MBE(MBI_C13):
         2. Carbon initialization 2 times
         3. MBE parity msmt
         4. Carbon Tomography Readout
+
+
+                                             --|Tomo A| 
+        |elMBI| -|CinitA|-|CinitB|-|Parity|             --wait 
+                                             --|Tomo B|
+
         '''
         mprefix = 'single_carbon_initialised'
         adwin_process = 'MBI_multiple_C13'
@@ -2232,8 +2253,10 @@ class Two_QB_MBE(MBI_C13):
 
                 ################################
                 # Parity measurements
+                # TODO_MAR: goto and jump cannot jump to statements that do not exist yet... 
                 carbon_pRO_seq = self.readout_multiple_carbon_sequence( 
-                        go_to_element ='next',event_jump_element = 'next', 
+                        go_to_element =carbon_tomo_seq_no_click[0],
+                        event_jump_element = carbon_tomo_seq_click[0], 
                         pt = pt, 
                         addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']], 
                         RO_Z=[self.params['measZ_C_A'][pt],self.params['measZ_C_B'][pt]],
@@ -2244,19 +2267,30 @@ class Two_QB_MBE(MBI_C13):
 
                 #############################
                 #Readout Tomography
-                '''
-                TODO_MAR: This is not branched yet.  
-                '''
+                # TODO_MAR: This is not branched yet.  
+                # TODO_MAR: Determine correct bases for alternate (outcome el =1) tomography. Currently these are identical 
+                # TODO_MAR: correct jump and goto statements 
+
                 print self.params['Tomography Bases'][pt] 
-                carbon_tomo_seq = self.multi_qubit_tomography( go_to_element = 'next',
+                carbon_tomo_seq_click = self.multi_qubit_tomography( go_to_element = 'next',
                         event_jump_element = 'next', 
                         RO_duration=10e-6, 
                         pt = pt, 
                         addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
                         RO_bases =self.params['Tomography Bases'][pt])
-                gate_seq.extend(carbon_tomo_seq)
+                
+                carbon_tomo_seq_no_click = self.multi_qubit_tomography( go_to_element = 'next',
+                        event_jump_element = 'next', 
+                        RO_duration=10e-6, 
+                        pt = pt, 
+                        addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
+                        RO_bases =self.params['Tomography Bases'][pt])
 
-                ########################
+                gate_seq.extend(carbon_tomo_seq_click, carbon_tomo_seq_no_click)
+
+                ###########################
+                ### Sequence generation ###
+                ###########################
                 gate_seq = self.generate_AWG_elements(gate_seq,pt)
                 #Convert elements to AWG sequence and add to combined list
                 list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
@@ -2267,7 +2301,7 @@ class Two_QB_MBE(MBI_C13):
 
                 print '*'*10 
                 for g in gate_seq:
-                    print g.name , g 
+                    print g, g.name  
                 print '-'*10  
 
             if upload:
