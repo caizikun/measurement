@@ -41,6 +41,14 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
+cfg['protocols']['AdwinSSRO']['cr_mod'] = True
+cfg['protocols']['cr_mod']={
+'cr_mod_control_offset'     :   0.0,
+'cr_mod_control_amp'        :   0.05, #V
+'repump_mod_control_offset' :   5.4,
+'repump_mod_control_amp'    :   .5, #V
+}
+
 yellow=False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:

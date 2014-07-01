@@ -95,6 +95,7 @@ def fast_ssro_calibration(name):
     m = FastSSRO('FastSSROCalibration_'+name)
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+PQ'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])

@@ -54,6 +54,7 @@ cfg['protocols']['AdwinSSRO']={
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
 'CR_probe_max_time'         :       1000000}
+cfg['protocols']['AdwinSSRO']['cr_mod'] = False
 
 yellow=False
 
