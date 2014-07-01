@@ -2195,121 +2195,187 @@ class NuclearT1(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class Two_QB_Tomography(MBI_C13):
+    '''
+    This class is to test multiple carbon initialization and Tomography.
 
+    #Acutal sequence is a combination of multiple subsequences
+
+    |elMBI| -|CinitA|-|CinitB|-|Tomography| 
+    '''
+    mprefix = 'single_carbon_initialised'
+    adwin_process = 'MBI_multiple_C13'
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Two Qubit MBE')
+        self.params['N_init_C']= 2
+        self.params['N_MBE'] =1
+        self.params['N_parity_msmts']=0
+
+        for pt in range(pts):
+            gate_seq = []
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+            gate_seq.extend(mbi_seq)
+
+            carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= self.params['Carbon A'])
+            carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= self.params['Carbon B'])
+            gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
+
+            print self.params['Tomography Bases'][pt] 
+
+            carbon_tomo_seq = self.multi_qubit_tomography( go_to_element = 'next',
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
+                    addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
+                    RO_bases =self.params['Tomography Bases'][pt])
+            gate_seq.extend(carbon_tomo_seq)
+
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            print '*'*10 
+            for g in gate_seq:
+                print g.name  
+            print '-'*10  
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
 
 class Two_QB_MBE(MBI_C13):
-        '''
-        TODO_MAR: Multiple branches depending on outcome
-        TODO_MAR: Double naming of Gates, check how this works
+    '''
+    TODO_MAR: Multiple branches depending on outcome
+    TODO_MAR: Double naming of Gates, check how this works
 
-        This class is to test multiple carbon initialization, MBE and RO.
+    This class is to test multiple carbon initialization, MBE and RO.
 
-        #Acutal sequence is a combination of multiple subsequences
-        1. MBI electron initialization
-        2. Carbon initialization 2 times
-        3. MBE parity msmt
-        4. Carbon Tomography Readout
-
-
-                                             --|Tomo A| 
-        |elMBI| -|CinitA|-|CinitB|-|Parity|             --wait 
-                                             --|Tomo B|
-
-        '''
-        mprefix = 'single_carbon_initialised'
-        adwin_process = 'MBI_multiple_C13'
-
-        def generate_sequence(self,upload=True,debug = False):
-            pts = self.params['pts']
-            # #initialise empty sequence and elements
-            combined_list_of_elements =[]
-            combined_seq = pulsar.Sequence('Two Qubit MBE')
-            self.params['N_init_C']= 2
-            self.params['N_MBE'] =1
-            self.params['N_parity_msmts']=0
-
-            for pt in range(pts):
+    #Acutal sequence is a combination of multiple subsequences
+    1. MBI electron initialization
+    2. Carbon initialization 2 times
+    3. MBE parity msmt
+    4. Carbon Tomography Readout
 
 
-                ###########################################
-                #####    Generating the sequence elements      ######
-                ###########################################
-                #Elements for the carbon initialisation into 0 
+                                         --|Tomo A| 
+    |elMBI| -|CinitA|-|CinitB|-|Parity|             --wait 
+                                         --|Tomo B|
 
-                gate_seq = []
+    '''
+    mprefix = 'single_carbon_initialised'
+    adwin_process = 'MBI_multiple_C13'
 
-                mbi = Gate('MBI_'+str(pt),'MBI')
-                mbi_seq = [mbi]
-                gate_seq.extend(mbi_seq)
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Two Qubit MBE')
+        self.params['N_init_C']= 2
+        self.params['N_MBE'] =1
+        self.params['N_parity_msmts']=0
 
-                carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
-                        initialization_method = 'MBI', pt =pt,
-                        addressed_carbon= self.params['Carbon A'])
-                carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
-                        initialization_method = 'MBI', pt =pt,
-                        addressed_carbon= self.params['Carbon B'])
-                gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
+        for pt in range(pts):
 
-                ################################
-                # Parity measurements
-                # TODO_MAR: goto and jump cannot jump to statements that do not exist yet... 
-                carbon_pRO_seq = self.readout_multiple_carbon_sequence( 
-                        go_to_element =carbon_tomo_seq_no_click[0],
-                        event_jump_element = carbon_tomo_seq_click[0], 
-                        pt = pt, 
-                        addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']], 
-                        RO_Z=[self.params['measZ_C_A'][pt],self.params['measZ_C_B'][pt]],
-                        RO_phase = [self.params['Phases_C_A'][pt],self.params['Phases_C_B'][pt]], 
-                        el_after_RO = '0' )
 
-                gate_seq.extend(carbon_pRO_seq)
+            ###########################################
+            #####    Generating the sequence elements      ######
+            ###########################################
+            #Elements for the carbon initialisation into 0 
 
-                #############################
-                #Readout Tomography
-                # TODO_MAR: This is not branched yet.  
-                # TODO_MAR: Determine correct bases for alternate (outcome el =1) tomography. Currently these are identical 
-                # TODO_MAR: correct jump and goto statements 
+            gate_seq = []
 
-                print self.params['Tomography Bases'][pt] 
-                carbon_tomo_seq_click = self.multi_qubit_tomography( go_to_element = 'next',
-                        event_jump_element = 'next', 
-                        RO_duration=10e-6, 
-                        pt = pt, 
-                        addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
-                        RO_bases =self.params['Tomography Bases'][pt])
-                
-                carbon_tomo_seq_no_click = self.multi_qubit_tomography( go_to_element = 'next',
-                        event_jump_element = 'next', 
-                        RO_duration=10e-6, 
-                        pt = pt, 
-                        addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
-                        RO_bases =self.params['Tomography Bases'][pt])
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+            gate_seq.extend(mbi_seq)
 
-                gate_seq.extend(carbon_tomo_seq_click, carbon_tomo_seq_no_click)
+            carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= self.params['Carbon A'])
+            carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'MBI', pt =pt,
+                    addressed_carbon= self.params['Carbon B'])
+            gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
 
-                ###########################
-                ### Sequence generation ###
-                ###########################
-                gate_seq = self.generate_AWG_elements(gate_seq,pt)
-                #Convert elements to AWG sequence and add to combined list
-                list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
-                combined_list_of_elements.extend(list_of_elements)
+            ################################
+            # Parity measurements
+            # TODO_MAR: goto and jump cannot jump to statements that do not exist yet... 
+            carbon_pRO_seq = self.readout_multiple_carbon_sequence( 
+                    pt = pt, 
+                    addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']], 
+                    RO_Z=[self.params['measZ_C_A'][pt],self.params['measZ_C_B'][pt]],
+                    RO_phase = [self.params['Phases_C_A'][pt],self.params['Phases_C_B'][pt]], 
+                    el_after_RO = '0' )
 
-                for seq_el in seq.elements:
-                    combined_seq.append_element(seq_el)
+            gate_seq.extend(carbon_pRO_seq)
 
-                print '*'*10 
-                for g in gate_seq:
-                    print g, g.name  
-                print '-'*10  
+            #############################
+            #Readout Tomography
+            # TODO_MAR: This is not branched yet.  
+            # TODO_MAR: Determine correct bases for alternate (outcome el =1) tomography. Currently these are identical 
+            # TODO_MAR: correct jump and goto statements 
 
-            if upload:
-                print ' uploading sequence'
-                qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+            print self.params['Tomography Bases'][pt] 
+            carbon_tomo_seq_click = self.multi_qubit_tomography( go_to_element = 'next',
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
+                    addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
+                    RO_bases =self.params['Tomography Bases'][pt])
+            
+            carbon_tomo_seq_no_click = self.multi_qubit_tomography( prefix= 'Tomo_n_',
+                    go_to_element = 'next',
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
+                    addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
+                    RO_bases =self.params['Tomography Bases'][pt])
 
-            else:
-                print 'upload = false, no sequence uploaded to AWG'
+            # Make correct jump statements for branching 
+            carbon_pRO_seq[-1].go_to = carbon_tomo_seq_no_click[0].name
+            carbon_pRO_seq[-1].event_jump = carbon_tomo_seq_click[0].name
+
+            gate_seq.extend(carbon_tomo_seq_click), gate_seq.extend(carbon_tomo_seq_no_click)
+
+            ###########################
+            ### Sequence generation ###
+            ###########################
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            print '*'*10 
+            for g in gate_seq:
+                print g.name  
+            print '-'*10  
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
 
 class Three_QB_MB_QEC(MBI_C13):

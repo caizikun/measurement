@@ -1,5 +1,5 @@
 """
-Script for a carbon ramsey sequence
+Script for a carbon parity measurement with following Tomography
 """
 import numpy as np
 import qt 
