@@ -1501,8 +1501,16 @@ class MBI_C13(DynamicalDecoupling):
         # print 'carbon init ro wait %s' %self.params['Carbon_init_RO_wait']
         DynamicalDecoupling.autoconfig(self)
 
-    def initialize_carbon_sequence(self, go_to_element ='MBI_1',
-            initialization_method ='swap', pt = 1, addressed_carbon =1, C_init_state='up', el_after_init = '0' ):
+
+    # sub sequence functions 
+    def initialize_carbon_sequence(self, 
+            prefix = 'C_init',
+            go_to_element ='MBI_1',
+            initialization_method ='swap', 
+            pt = 1, 
+            addressed_carbon =1, 
+            C_init_state='up', 
+            el_after_init = '0' ):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
         state can be 'up' or 'down'
@@ -1526,30 +1534,30 @@ class MBI_C13(DynamicalDecoupling):
             C_int_y_phase = self.params['Y_phase']+180
 
 
-        C_int_y = Gate('C_int_y_'+str(pt),'electron_Gate',
+        C_int_y = Gate(prefix+str(addressed_carbon)+'_y_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 wait_for_trigger = True,
                 phase = C_int_y_phase)
 
-        C_int_Ren_a = Gate('C_int_Ren_a_'+str(pt), 'Carbon_Gate',
+        C_int_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
 
-        C_int_x = Gate('C_int_x_'+str(pt),'electron_Gate',
+        C_int_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
 
-        C_int_Ren_b = Gate('C_int_Ren_b_'+str(pt), 'Carbon_Gate',
+        C_int_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_Y_phase'])
 
-        C_int_RO_Trigger = Gate('C_int_RO_trig_'+str(pt),'Trigger',
+        C_int_RO_Trigger = Gate(prefix+str(addressed_carbon)+'_RO_trig_'+str(pt),'Trigger',
                 wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
                 el_state_before_gate = '0') #NOTE: If RO gets a click then the electron state has always been 0 since before the click
 
-        C_int_elec_X = Gate('C_int_elec_X'+str(pt),'electron_Gate',
+        C_int_elec_X = Gate(prefix+str(addressed_carbon)+'_elec_X'+str(pt),'electron_Gate',
                 Gate_operation='pi',
                 phase = self.params['X_phase'],
                 el_state_after_gate = '1')
@@ -1573,9 +1581,10 @@ class MBI_C13(DynamicalDecoupling):
         return carbon_init_seq
 
     def readout_single_carbon_sequence(self, 
+            prefix = 'C_RO', 
             go_to_element ='next',event_jump_element = 'next', 
             RO_duration = 10e-6, 
-            pt = 1, addressed_carbon =1, 
+            pt = 1, addressed_carbon =1,  
             RO_Z=False,RO_phase = 0, 
             el_after_RO = '0' ):
         '''
@@ -1593,40 +1602,44 @@ class MBI_C13(DynamicalDecoupling):
 
         NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
         '''
-
-        C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
+        C_RO_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
+                Carbon_ind = addressed_carbon, phase = RO_phase)
         
-        C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+        C_RO_y = Gate(prefix+str(addressed_carbon)+'y_'+str(pt),
+                'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['Y_phase'])
-
-        C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) 
+        C_RO_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt), 
+                'Carbon_Gate',
+                Carbon_ind = addressed_carbon, phase =( RO_phase+90)) 
         
-        C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+        C_RO_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
-        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
+        C_RO_Trigger = Gate(prefix+str(addressed_carbon)+'_Trigger_'+str(pt),'Trigger',
                 elements_duration= RO_duration,
                 el_state_before_gate = el_after_RO)
 
 
         if RO_Z == True: 
-            carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+            carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_Trigger]
         else: 
             C_RO_Ren_b.phase = RO_phase 
-            carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_fin_Trigger]
+            carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_Trigger]
         return carbon_RO_seq
 
     def readout_multiple_carbon_sequence(self, 
+            prefix = 'C_pRO',
             go_to_element ='next',event_jump_element = 'next', 
             RO_duration = 10e-6, 
-            pt = 1, addressed_carbon =[1,2], 
-            RO_Z=[False,True],RO_phase = [0,0], 
+            pt = 1, 
+            addressed_carbon =[1,2], 
+            RO_Z=[False,True],
+            RO_phase = [0,0], 
             el_after_RO = '0' ):
         '''
         TODO_MAR: Finish readout multiple carbon sequence 
+
         Creates a single carbon readout gate sequence. 
         Does a readout an a single Carbon. 
 
@@ -1634,42 +1647,120 @@ class MBI_C13(DynamicalDecoupling):
         RO_Z True or False 
         RO_phase  in degress 
 
+        By setting RO_phase = None, for one of the two carbons to be None, that carbon will not be read out. 
+        Instead the fucntion readout_single_carbon_sequence is called to read out the other carbon. This allows to perform ex the IX parity measurement. 
+
         In the case where this function is used to do conditional feed forward the following parameters have to be specified
         RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin 
         go_to_element: determines where to go when no 'click' comes from the adwin. 
         event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
 
+        all elements for this sequence start with C_pRO_ as a prefix. where pRO stands for parity  Readout
+
         NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
         '''
+        if  RO_phase[0] == None and  RO_phase[1] == None: 
+            print 'NO Carbon selected for readout, No sequence could be generated. in function: readout_multiple_carbon_sequence '
+        elif RO_phase[0] == None: 
+            carbon_RO_seq = self.readout_single_carbon_sequence(prefix=prefix, 
+            go_to_element =go_to_element,event_jump_element = event_jump_element, 
+            RO_duration = RO_duration, 
+            pt = pt, addressed_carbon =addressed_carbon[1], 
+            RO_Z=RO_Z[1],RO_phase =RO_phase[1], 
+            el_after_RO = el_after_RO )
+            return carbon_RO_seq
 
-        C_RO_Ren_a = Gate('C_RO_Ren_a_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase)
-        
-        C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['Y_phase'])
+        elif RO_phase[1] == None: 
+            carbon_RO_seq = self.readout_single_carbon_sequence(prefix = prefix, 
+            go_to_element =go_to_element,event_jump_element = event_jump_element, 
+            RO_duration = RO_duration, 
+            pt = pt, addressed_carbon =addressed_carbon[0], 
+            RO_Z=RO_Z[0],RO_phase =RO_phase[0], 
+            el_after_RO = el_after_RO )
+            return carbon_RO_seq
 
-        C_RO_Ren_b = Gate('C_RO_Ren_b_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = self.params['Addressed_Carbon'], phase = RO_phase+90) 
-        
-        C_RO_fin_pi2 = Gate('C_RO_fin_pi2'+str(pt),'electron_Gate',
+ 
+        C_pRO_x_a = Gate(prefix+str(addressed_carbon[0])+'_x_'+str(pt), 'Carbon_Gate',
+            Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
+        C_pRO_x_b = Gate(prefix+str(addressed_carbon[1])+'_x_'+str(pt), 'Carbon_Gate',
+            Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
+       
+        C_pRO_init_pi2 = Gate(prefix+'_pi2_a'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
 
-
-
-        C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger',
+        C_pRO_Ren_a = Gate(prefix+str(addressed_carbon[0])+'_Ren_'+str(pt), 'Carbon_Gate',
+            Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
+        C_pRO_Ren_b = Gate(prefix+str(addressed_carbon[1])+'_Ren_'+str(pt), 'Carbon_Gate',
+            Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
+        
+        C_pRO_fin_pi2 = Gate(prefix+'_pi2_b'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['X_phase'])
+        C_pRO_Trigger = Gate(prefix+'_Trigger_'+str(pt),'Trigger',
                 elements_duration= RO_duration,
                 el_state_after_gate = el_after_RO)
 
-        if len(addressed_carbon) %2 ==0: 
-            C_RO_fin_pi2.phase = self.params['Y_phase'] 
-        if RO_Z == True: 
-            carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_fin_pi2,C_RO_fin_Trigger]
-        else: 
-            C_RO_Ren_b.phase = RO_phase 
-            carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_fin_pi2,C_RO_fin_Trigger]
-        return carbon_RO_seq
+        if RO_Z[0] == True and RO_Z[1] ==True: 
+            C_pRO_Ren_a.phase = RO_phase[0]+90
+            C_pRO_Ren_b.phase = RO_phase[1]+90 
+            carbon_pRO_seq = [C_pRO_x_a,C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
+        elif RO_Z[0] == True:
+            C_pRO_Ren_a.phase = RO_phase[0]+90 
+            carbon_pRO_seq = [C_pRO_x_a,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
+        elif RO_Z[1] == True:
+            C_pRO_Ren_b.phase = RO_phase[1]+90 
+            carbon_pRO_seq = [C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
+        elif RO_Z[0] == False and RO_Z[1] ==False: 
+            carbon_pRO_seq = [C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
+        return carbon_pRO_seq
+
+    def multi_qubit_tomography(self, 
+            prefix = 'Tomo',
+            go_to_element='next',
+            event_jump_element = 'next', 
+            RO_duration=10e-6, 
+            pt = 1, 
+            addressed_carbon = [1,2],
+            RO_bases =['X','Y'], 
+            el_after_RO = '0'):
+        '''
+        Uses the readout_multiple_carbon_sequence function to generate a multi qubit tomography sequence 
+        NOTE: the multi_qubit_tomography function currently only supports 2 qubit tomography sequences 
+        '''
+        RO_Z =[None] *len(addressed_carbon)
+        RO_phase = [None] *len(addressed_carbon)
+        len(addressed_carbon)
+        for i in range(len(addressed_carbon)): 
+            
+
+            if RO_bases[i] == 'I': 
+                RO_Z[i] =False
+                RO_phase[i] = None 
+            elif RO_bases[i] =='X': 
+                RO_Z[i] = False
+                RO_phase[i] = self.params['C13_X_phase']
+               
+            elif RO_bases[i] == 'Y': 
+                RO_Z[i] = False
+                RO_phase[i] = self.params['C13_Y_phase']
+
+            elif RO_bases[i] == 'Z': 
+                RO_Z[i] = True
+                RO_phase[i] = 0
+        
+        carbon_tomo_seq=self.readout_multiple_carbon_sequence( prefix = prefix, 
+            go_to_element =go_to_element,
+            event_jump_element =event_jump_element, 
+            RO_duration =RO_duration, 
+            pt = pt, 
+            addressed_carbon =addressed_carbon, 
+            RO_Z=RO_Z,
+            RO_phase = RO_phase, 
+            el_after_RO = el_after_RO)
+        return carbon_tomo_seq
+
+    # elements generation 
 
     def generate_AWG_elements(self,Gate_sequence,pt = 1):
 
@@ -1816,6 +1907,7 @@ class MBI_C13(DynamicalDecoupling):
                         g.dec_duration = 0 #
                     else:
                         phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi) 
+
                         if ( (phase_diff <= (self.params['min_phase_correct']/180.*np.pi)) or 
                                 (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ): 
                         # For very small phase differences correcting phase with decoupling introduces a larger error
@@ -1866,11 +1958,6 @@ class MBI_C13(DynamicalDecoupling):
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
 
-            # TODO_MAR: Remove print statments 
-            # print g.name 
-            # print g.C_phases_before_gate
-            # print g.C_phases_after_gate
-            # print '-' *20
         return Gate_sequence
 
 
@@ -1919,7 +2006,6 @@ class NuclearRamseyWithInitialization(MBI_C13):
             C_evol_seq =[wait_gate]
 
             #############################
-            # TODO_MAR: Make C_RO_Parity function.
             carbon_RO_seq = self.readout_single_carbon_sequence(self, 
                     pt = pt, addressed_carbon =self.params['Addressed_Carbon'], 
                     RO_Z=False,
@@ -2068,9 +2154,9 @@ class NuclearT1(MBI_C13):
             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['X_phase'])
-            C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
+            C_RO_Trigger = Gate('C_RO_Trigger_'+str(pt),'Trigger')
 
-            carbon_RO_seq =[C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_fin_Trigger]
+            carbon_RO_seq =[C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_Trigger]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
@@ -2096,134 +2182,100 @@ class NuclearT1(MBI_C13):
 
 
 
-#class Two_QB_MBE(MBI_C13):
-    #     '''
-    #     TODO_MAR: test 2QB MBE experiment. 
-    #     This class is to test multiple carbon initialization, MBE and RO.
-    #     '''
-    #     mprefix = 'single_carbon_initialised'
-    #     adwin_process = 'MBI_multiple_C13'
-    #     self.params['N_init_C']= 2
-    #     self.params['N_MBE'] =1
-    #     self.params['N_parity_msmts']=0
+class Two_QB_MBE(MBI_C13):
+        '''
+        TODO_MAR: Multiple branches depending on outcome
+        TODO_MAR: Double naming of Gates, check how this works
+        TODO_MAR: Insert wait element before phase gate and after trigger. 
+
+        This class is to test multiple carbon initialization, MBE and RO.
+
+        #Acutal sequence is a combination of multiple subsequences
+        1. MBI electron initialization
+        2. Carbon initialization 2 times
+        3. MBE parity msmt
+        4. Carbon Tomography Readout
+        '''
+        mprefix = 'single_carbon_initialised'
+        adwin_process = 'MBI_multiple_C13'
+
+        def generate_sequence(self,upload=True,debug = False):
+            pts = self.params['pts']
+            # #initialise empty sequence and elements
+            combined_list_of_elements =[]
+            combined_seq = pulsar.Sequence('Two Qubit MBE')
+            self.params['N_init_C']= 2
+            self.params['N_MBE'] =1
+            self.params['N_parity_msmts']=0
+
+            for pt in range(pts):
 
 
-    #     def generate_sequence(self,upload=True,debug = False):
-    #         pts = self.params['pts']
-    #         # #initialise empty sequence and elements
-    #         combined_list_of_elements =[]
-    #         combined_seq = pulsar.Sequence('Two Qubit MBE')
+                ###########################################
+                #####    Generating the sequence elements      ######
+                ###########################################
+                #Elements for the carbon initialisation into 0 
 
-    #         for pt in range(pts):
+                gate_seq = []
 
-    #             #Acutal sequence is a combination of multiple subsequences
-    #             # 1. MBI initialisation
-    #             # 2. Carbon initialisation 2 times
-    #             # 3. MBE parity msmst
-    #             # 4. Carbon Readout
+                mbi = Gate('MBI_'+str(pt),'MBI')
+                mbi_seq = [mbi]
+                gate_seq.extend(mbi_seq)
 
-    #             ###########################################
-    #             #####    Generating the sequence elements      ######
-    #             ###########################################
-    #             #Elements for the carbon initialisation
+                carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
+                        initialization_method = 'MBI', pt =pt,
+                        addressed_carbon= self.params['Carbon A'])
+                carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+                        initialization_method = 'MBI', pt =pt,
+                        addressed_carbon= self.params['Carbon B'])
+                gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
 
-    #             gate_seq = []
+                ################################
+                # Parity measurements
+                carbon_pRO_seq = self.readout_multiple_carbon_sequence( 
+                        go_to_element ='next',event_jump_element = 'next', 
+                        pt = pt, 
+                        addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']], 
+                        RO_Z=[self.params['measZ_C_A'][pt],self.params['measZ_C_B'][pt]],
+                        RO_phase = [self.params['Phases_C_A'][pt],self.params['Phases_C_B'][pt]], 
+                        el_after_RO = '0' )
 
-    #             mbi = Gate('MBI_'+str(pt),'MBI')
-    #             mbi_seq = [mbi]
-    #             gate_seq.extend(mbi_seq)
+                gate_seq.extend(carbon_pRO_seq)
 
-    #             carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
-    #                     initialization_method = 'MBI', pt =pt,
-    #                     addressed_carbon= 1)
-    #             carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
-    #                     initialization_method = 'MBI', pt =pt,
-    #                     addressed_carbon= 2)
-    #             gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
+                #############################
+                #Readout Tomography
+                '''
+                TODO_MAR: This is not branched yet.  
+                '''
+                print self.params['Tomography Bases'][pt] 
+                carbon_tomo_seq = self.multi_qubit_tomography( go_to_element = 'next',
+                        event_jump_element = 'next', 
+                        RO_duration=10e-6, 
+                        pt = pt, 
+                        addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
+                        RO_bases =self.params['Tomography Bases'][pt])
+                gate_seq.extend(carbon_tomo_seq)
 
-    #             ################################
-    #             # Encoding
+                ########################
+                gate_seq = self.generate_AWG_elements(gate_seq,pt)
+                #Convert elements to AWG sequence and add to combined list
+                list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+                combined_list_of_elements.extend(list_of_elements)
 
+                for seq_el in seq.elements:
+                    combined_seq.append_element(seq_el)
 
-    #             #enc_Rx =  #TODO: IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
-    #             '''
-    #             TODO_MAR: Determine initial state for 2QB MBE
-    #             '''
+                print '*'*10 
+                for g in gate_seq:
+                    print g.name , g 
+                print '-'*10  
 
+            if upload:
+                print ' uploading sequence'
+                qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
 
-    #             enc_Ren_1 =Gate('enc_Ren_1'+str(pt), 'Carbon_Gate',
-    #                 Carbon_ind = 1,
-    #                 phase = self.params['C13_X_phase'])
-    #             enc_Ren_2 =Gate('enc_Ren_2'+str(pt), 'Carbon_Gate',
-    #                 Carbon_ind = 2,
-    #                 phase = self.params['C13_X_phase'])
-
-    #             enc_x =Gate('enc_x'+str(pt),'electron_Gate',
-    #                 Gate_operation='pi2',
-    #                 phase = self.params['X_phase'])
-
-    #             enc_RO = Gate('enc_RO_trig_'+str(pt),'Trigger',
-    #                 wait_time= self.params['Carbon_init_RO_wait'],
-    #                 event_jump = 'next',
-    #                 go_to = mbi)
-
-    #             encoding_seq = [enc_Rx,enc_Ren_1,enc_Ren_2,enc_x,enc_RO]
-    #             gate_seq.extend(encoding_seq)
-    #             ################################
-    #             # Parity measurements
-
-    #             par_1_y_1=Gate('par_1_y_1'+str(pt),'electron_Gate',
-    #                 Gate_operation='pi2',
-    #                 phase = self.params['Y_phase'])
-    #             par_1_Ren_1 =Gate('par_1_Ren_1'+str(pt), 'Carbon_Gate',
-    #                 Carbon_ind = 1,
-    #                 phase = self.params['C13_X_phase'])
-    #             par_1_Ren_2 =Gate('par_1_Ren_2'+str(pt), 'Carbon_Gate',
-    #                 Carbon_ind = 2,
-    #                 phase = self.params['C13_X_phase'])
-    #             par_1_y_2=Gate('par_1_y_2'+str(pt),'electron_Gate',
-    #                 Gate_operation='pi2',
-    #                 phase = self.params['Y_phase'])
-    #             parity_seq_1 =[par_1_y_1,par_1_Ren_1,par_1_Ren_2,par_1_y_2]
-    #             gate_seq.extend(parity_seq_1)
-
-    #             #############################
-    #             #Readout Tomography
-    #             '''
-    #             TODO _MAR: Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
-    #             '''
-    #             C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
-    #                     Gate_operation='pi2',
-    #                     phase = self.params['Y_phase'])
-    #             C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-    #                     Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
-    #             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
-    #                     Gate_operation='pi2',
-    #                     phase = self.params['X_phase'])
-    #             C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
-
-    #             carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
-    #             gate_seq.extend(carbon_RO_seq)
-
-    #             ########################
-    #             # All information that defines the sequence is now given.
-    #             # We can now let the python code convert the gate seq to an AWG seq.
-    #             ##################
-
-    #             gate_seq = self.generate_AWG_elements(gate_seq,pt)
-    #             #Convert elements to AWG sequence and add to combined list
-    #             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
-    #             combined_list_of_elements.extend(list_of_elements)
-
-    #             for seq_el in seq.elements:
-    #                 combined_seq.append_element(seq_el)
-
-    #         if upload:
-    #             print ' uploading sequence'
-    #             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-
-    #         else:
-    #             print 'upload = false, no sequence uploaded to AWG'
+            else:
+                print 'upload = false, no sequence uploaded to AWG'
 
 
 class Three_QB_MB_QEC(MBI_C13):
@@ -2242,144 +2294,144 @@ class Three_QB_MB_QEC(MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
 
-        for pt in range(pts):
+        # for pt in range(pts):
 
-            #Acutal sequence is a combination of multiple subsequences
-            # 1. MBI initialisation
-            # 2. Carbon initialisation 3 times
-            # 3. Carbon Ramsey evolution
-            # 4. Carbon Readout
+        #     #Acutal sequence is a combination of multiple subsequences
+        #     # 1. MBI initialisation
+        #     # 2. Carbon initialisation 3 times
+        #     # 3. Carbon Ramsey evolution
+        #     # 4. Carbon Readout
 
-            ###########################################
-            #####    Generating the sequence elements      ######
-            ###########################################
-            #Elements for the carbon initialisation
+        #     ###########################################
+        #     #####    Generating the sequence elements      ######
+        #     ###########################################
+        #     #Elements for the carbon initialisation
 
-            gate_seq = []
+        #     gate_seq = []
 
-            mbi = Gate('MBI_'+str(pt),'MBI')
-            mbi_seq = [mbi]
-            gate_seq.extend(mbi_seq)
+        #     mbi = Gate('MBI_'+str(pt),'MBI')
+        #     mbi_seq = [mbi]
+        #     gate_seq.extend(mbi_seq)
 
-            carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
-                    initialization_method = 'MBI', pt =pt,
-                    addressed_carbon= 1)
-            carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
-                    initialization_method = 'MBI', pt =pt,
-                    addressed_carbon= 2)
-            carbon_init_seq_3 = self.initialize_carbon_sequence(go_to_element = mbi,
-                    initialization_method = 'MBI', pt =pt,
-                    addressed_carbon= 3)
-            gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
-            gate_seq.extend(carbon_init_seq_3)
+        #     carbon_init_seq_1 = self.initialize_carbon_sequence(go_to_element = mbi,
+        #             initialization_method = 'MBI', pt =pt,
+        #             addressed_carbon= 1)
+        #     carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+        #             initialization_method = 'MBI', pt =pt,
+        #             addressed_carbon= 2)
+        #     carbon_init_seq_3 = self.initialize_carbon_sequence(go_to_element = mbi,
+        #             initialization_method = 'MBI', pt =pt,
+        #             addressed_carbon= 3)
+        #     gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
+        #     gate_seq.extend(carbon_init_seq_3)
 
-            ################################
-            # Encoding
-
-
-            #enc_Rx =  #TO:  IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
-            '''
-            TODO_MAR: Definie initial state for 3QB MB QEC 
-            '''
+        #     ################################
+        #     # Encoding
 
 
-            enc_Ren_1 =Gate('enc_Ren_1'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 1,
-                phase = self.params['C13_X_phase'])
-            enc_Ren_2 =Gate('enc_Ren_2'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 2,
-                phase = self.params['C13_X_phase'])
-            enc_Ren_3 = Gate('enc_Ren_3'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 3,
-                phase = self.params['C13_X_phase'])
-
-            enc_x =Gate('enc_x'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['X_phase'])
-
-            enc_RO = Gate('enc_RO_trig_'+str(pt),'Trigger',
-                wait_time= self.params['Carbon_init_RO_wait'],
-                event_jump = 'next',
-                go_to = mbi)
-
-            encoding_seq = [enc_Rx,enc_Ren_1,enc_Ren_2,enc_Ren_3,enc_x,enc_RO]
-            gate_seq.extend(encoding_seq)
-            ################################
-            # Parity measurements
-
-            par_1_y_1=Gate('par_1_y_1'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['Y_phase'])
-            par_1_Ren_1 =Gate('par_1_Ren_1'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 1,
-                phase = self.params['C13_X_phase'])
-            par_1_Ren_2 =Gate('par_1_Ren_2'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 2,
-                phase = self.params['C13_X_phase'])
-            par_1_y_2=Gate('par_1_y_2'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['Y_phase'])
-            parity_seq_1 =[par_1_y_1,par_1_Ren_1,par_1_Ren_2,par_1_y_2]
-
-            par_2_y_1=Gate('par_2_y_1'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['Y_phase'])
-            par_2_Ren_1 =Gate('par_2_Ren_1'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 2,
-                phase = self.params['C13_X_phase'])
-            par_2_Ren_2 =Gate('par_2_Ren_2'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 3,
-                phase = self.params['C13_X_phase'])
-            par_2_y_2=Gate('par_2_y_2'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['Y_phase'])
-            parity_seq_2 =[par_2_y_1,par_2_Ren_1,par_2_Ren_2,par_2_y_2]
-
-            gate_seq.extend(parity_seq_1),gate_seq.extend(parity_seq_2)
-
-            ########################
-            ##  Conditional Feedback
-            '''
-            TODO_MAR:  Code conditional feedback in adwin 
-            This still needs to be coded and a good way needs to be found to work with the adwin. 
-            AWG probably does support jumping statements.
-            '''
+        #     #enc_Rx =  #TO:  IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
+        #     '''
+        #     TODO_MAR: Definie initial state for 3QB MB QEC 
+        #     '''
 
 
+        #     enc_Ren_1 =Gate('enc_Ren_1'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 1,
+        #         phase = self.params['C13_X_phase'])
+        #     enc_Ren_2 =Gate('enc_Ren_2'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 2,
+        #         phase = self.params['C13_X_phase'])
+        #     enc_Ren_3 = Gate('enc_Ren_3'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 3,
+        #         phase = self.params['C13_X_phase'])
 
-            #############################
-            #Readout Tomography
-            '''
-            TODO_MAR: Make RO Tomography 
-            Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
-            '''
+        #     enc_x =Gate('enc_x'+str(pt),'electron_Gate',
+        #         Gate_operation='pi2',
+        #         phase = self.params['X_phase'])
 
-            C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['Y_phase'])
-            C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
-            C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['X_phase'])
-            C_RO_fin_Trigger = Gate('C_RO_fin_Trigger_'+str(pt),'Trigger')
+        #     enc_RO = Gate('enc_RO_trig_'+str(pt),'Trigger',
+        #         wait_time= self.params['Carbon_init_RO_wait'],
+        #         event_jump = 'next',
+        #         go_to = mbi)
 
-            carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_fin_Trigger]
+        #     encoding_seq = [enc_Rx,enc_Ren_1,enc_Ren_2,enc_Ren_3,enc_x,enc_RO]
+        #     gate_seq.extend(encoding_seq)
+        #     ################################
+        #     # Parity measurements
+
+        #     par_1_y_1=Gate('par_1_y_1'+str(pt),'electron_Gate',
+        #         Gate_operation='pi2',
+        #         phase = self.params['Y_phase'])
+        #     par_1_Ren_1 =Gate('par_1_Ren_1'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 1,
+        #         phase = self.params['C13_X_phase'])
+        #     par_1_Ren_2 =Gate('par_1_Ren_2'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 2,
+        #         phase = self.params['C13_X_phase'])
+        #     par_1_y_2=Gate('par_1_y_2'+str(pt),'electron_Gate',
+        #         Gate_operation='pi2',
+        #         phase = self.params['Y_phase'])
+        #     parity_seq_1 =[par_1_y_1,par_1_Ren_1,par_1_Ren_2,par_1_y_2]
+
+        #     par_2_y_1=Gate('par_2_y_1'+str(pt),'electron_Gate',
+        #         Gate_operation='pi2',
+        #         phase = self.params['Y_phase'])
+        #     par_2_Ren_1 =Gate('par_2_Ren_1'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 2,
+        #         phase = self.params['C13_X_phase'])
+        #     par_2_Ren_2 =Gate('par_2_Ren_2'+str(pt), 'Carbon_Gate',
+        #         Carbon_ind = 3,
+        #         phase = self.params['C13_X_phase'])
+        #     par_2_y_2=Gate('par_2_y_2'+str(pt),'electron_Gate',
+        #         Gate_operation='pi2',
+        #         phase = self.params['Y_phase'])
+        #     parity_seq_2 =[par_2_y_1,par_2_Ren_1,par_2_Ren_2,par_2_y_2]
+
+        #     gate_seq.extend(parity_seq_1),gate_seq.extend(parity_seq_2)
+
+        #     ########################
+        #     ##  Conditional Feedback
+        #     '''
+        #     TODO_MAR:  Code conditional feedback in adwin 
+        #     This still needs to be coded and a good way needs to be found to work with the adwin. 
+        #     AWG probably does support jumping statements.
+        #     '''
 
 
 
-            ########################
-            # All information that defines the sequence is now given.
-            # We can now let the python code convert the gate seq to an AWG seq.
-            ##################
+        #     #############################
+        #     #Readout Tomography
+        #     '''
+        #     TODO_MAR: Make RO Tomography 
+        #     Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
+        #     '''
 
-            gate_seq = self.generate_AWG_elements(gate_seq,pt)
-            #Convert elements to AWG sequence and add to combined list
-            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
-            combined_list_of_elements.extend(list_of_elements)
+        #     C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+        #             Gate_operation='pi2',
+        #             phase = self.params['Y_phase'])
+        #     C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
+        #             Carbon_ind = self.params['Addressed_Carbon'], phase = 0)
+        #     C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+        #             Gate_operation='pi2',
+        #             phase = self.params['X_phase'])
+        #     C_RO_Trigger = Gate('C_RO_Trigger_'+str(pt),'Trigger')
 
-            for seq_el in seq.elements:
-                combined_seq.append_element(seq_el)
+        #     carbon_RO_seq =[C_RO_y, C_RO_Ren, C_RO_x,C_RO_Trigger]
+
+
+
+        #     ########################
+        #     # All information that defines the sequence is now given.
+        #     # We can now let the python code convert the gate seq to an AWG seq.
+        #     ##################
+
+        #     gate_seq = self.generate_AWG_elements(gate_seq,pt)
+        #     #Convert elements to AWG sequence and add to combined list
+        #     list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+        #     combined_list_of_elements.extend(list_of_elements)
+
+        #     for seq_el in seq.elements:
+        #         combined_seq.append_element(seq_el)
 
         if upload:
             print ' uploading sequence'
