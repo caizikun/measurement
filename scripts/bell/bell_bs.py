@@ -12,7 +12,7 @@ bs_params['MIN_SYNC_BIN']        =   int(5e-6*1e12) #5 us
 bs_params['MAX_SYNC_BIN']        =   int(15e-6*1e12) #15 us
 bs_params['measurement_time']    =   24*60*60 #sec = 24H
 bs_params['measurement_abort_check_interval']    = 1 #sec
-bs_params['TTTR_wait_time'] = 0.
+bs_params['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
 
 
 class Bell_BS(pq.PQMeasurement):

@@ -97,7 +97,7 @@ Bell_LT1.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 def bell_lt1_local(name):
 
     upload_only=False
-    debug=True
+    th_debug=True
     mw = False
     remote_meas = False
 
@@ -108,14 +108,14 @@ def bell_lt1_local(name):
     m.generate_sequence()
     
     if not(upload_only):
-        m.setup(debug=debug)
-        m.run(autoconfig=False, setup=False,debug=debug)    
+        m.setup(debug=th_debug)
+        m.run(autoconfig=False, setup=False,debug=th_debug)    
         m.save()
         m.finish()
 
 def bell_lt1_remote(name):
 
-    debug=True
+    th_debug=True
     mw = False
     remote_meas = True
     do_upload = True
@@ -128,7 +128,7 @@ def bell_lt1_remote(name):
     if do_upload:
         m.generate_sequence()
     
-    m.setup(debug=debug)
+    m.setup(debug=th_debug)
     lt3_ready = False
     while(1):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -139,7 +139,7 @@ def bell_lt1_remote(name):
             break
         qt.msleep(1)
     if lt3_ready:
-        m.run(autoconfig=False, setup=False,debug=debug)    
+        m.run(autoconfig=False, setup=False,debug=th_debug)    
         m.save()
         m.remote_measurement_helper.set_data_path(m.h5datapath)
         m.finish()

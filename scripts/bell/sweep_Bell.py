@@ -34,17 +34,28 @@ class SweepBell(bell.Bell):
 
         for i in range(self.params['pts']):
             if self.params['do_general_sweep'] :
-                self.params[self.params['sweep_name']] = self.params['sweep_pts'][i]
-
+                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
+                
             eom_p = self.create_eom_pulse(i)
-            e = bseq._LDE_element(self, 
+            LDE_element = bseq._LDE_element(self, 
                 name = 'Bell sweep element {}'.format(i),
-               eom_pulse =  eom_p)    
-            elements.append(e)
+                eom_pulse =  eom_p)    
+            elements.append(LDE_element)
+
+            if self.params['wait_for_PLU']:
+                LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
+                late_RO_element = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = 'late RO element {}'.format(i))
+                elements.append(late_RO_element)
+
             self.sweep_bell_seq.append(name = 'Bell sweep {}'.format(i),
-                wfname = e.name,
+                wfname = LDE_element.name,
                 trigger_wait = self.params['trigger_wait'],
                 repetitions = self.joint_params['LDE_attempts_before_CR'])
+
+            if self.params['wait_for_PLU']:
+                self.sweep_bell_seq.append(name= 'late_RO {}'.format(i),
+                    wfname = late_RO_element.name )
+
             
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(self.sweep_bell_seq)
@@ -134,7 +145,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=31
+    pts=11
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -149,7 +160,6 @@ def sweep_bell(name, setup = 'lt3'):
     elif setup == 'lt1' :
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
-
 
     if m.params['use_eom_pulse'] == 'raymond-pulse':
 
@@ -186,28 +196,32 @@ def sweep_bell(name, setup = 'lt3'):
 
     
     p_aom= qt.instruments['PulseAOM']
-    max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+    #max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
+    #aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+    #for i,p in enumerate(aom_power_sweep):
+    #    aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     aom_voltage_sweep = np.zeros(pts)
-    for i,p in enumerate(aom_power_sweep):
-        aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
-    m.params['aom_amplitude'] = np.ones(pts)*0.0# aom_voltage_sweep #np.ones(pts)*1.0#aom_voltage_sweep 
+    m.params['aom_amplitude'] = aom_voltage_sweep #np.ones(pts)*1.0#aom_voltage_sweep 
     #------------------------------------------------------------------
-    
+    m.joint_params['LDE_attempts_before_CR'] = 1
     #m.joint_params['opt_pi_pulses'] = 1
     #m.joint_params['LDE_element_length'] = 7e-6
     m.params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 1
+    m.params['wait_for_PLU'] = 1
 
-    m.params['do_general_sweep']= 1# sweep the parameter defined by sweep_name, with the values given by sweep_pts
+    m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
+    m.params['general_sweep_name'] = 'free_precession_time_1st_revival' 
+    m.params['general_sweep_pts'] = np.linspace(-5,15,pts)*1e-6+75e-6
+    m.params['echo_offset'] = 0e-9
+
+    #for the analysis:
+    m.params['sweep_name'] = 'free_precession_time_1st_revival' 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']#aom_power_sweep/max_power_aom
     
-    m.params['sweep_name'] = 'echo_offset' 
-    m.params['sweep_pts'] = np.linspace(-50,50, pts)*1e-9
-
-    m.joint_params['LDE_attempts_before_CR'] = 1
-    m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']
+    m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     if setup == 'lt3':
         bseq.pulse_defs_lt3(m)
@@ -220,21 +234,22 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['send_AWG_start'] = 1
     m.params['repetitions'] = 1000
 
-    debug=True
+    th_debug=False
     measure_bs=False
+    upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
     m.autoconfig()
     m.generate_sequence()
-    print m.params['measurement_time']
+    if upload_only:
+        return
     if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
-    m.setup(debug=(debug or measure_bs))
-    print (debug or measure_bs)
-    m.run(autoconfig=False, setup=False,debug=(debug or measure_bs))    
+    m.setup(debug=th_debug )
+    m.run(autoconfig=False, setup=False,debug=th_debug)    
     m.save()
     if measure_bs:
         m.bs_helper.set_is_running(False)

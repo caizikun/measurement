@@ -13,6 +13,7 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['LDE_element_length']     = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
+joint_params['late_RO_element_length'] = 85e-6
 joint_params['LDE_RO_duration'] = 3e-6
 joint_params['separate_RO_element'] =  True
 
@@ -20,7 +21,7 @@ joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG / TODO
 joint_params['MAX_SYNC_BIN'] =       1000
-joint_params['TTTR_wait_time'] = 	 0.1 #s
+joint_params['TTTR_read_count'] = 	 1000 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
 params_lt3 = {}
@@ -42,11 +43,12 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 params_lt3['AWG_start_DO_channel'] = 9
 params_lt3['AWG_done_DI_channel'] = 17
 params_lt3['SP_duration'] = 50
+
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 20
+params_lt3['SSRO_duration'] = 30#20
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1
@@ -77,12 +79,14 @@ params_lt3['CORPSE_pi_amp'] = 0.713
 params_lt3['CORPSE_pi2_amp'] = 0.770
 params_lt3['CORPSE_RND_amp'] = 0.77 #?
 
-params_lt3['RND_angle_0'] = 90
+params_lt3['RND_angle_0'] = 0
 params_lt3['RND_angle_1'] = 90
 
 params_lt3['RND_duration'] = 100e-9
 
 params_lt3['RND_during_LDE'] = 1 
+
+params_lt3['wait_for_PLU'] = 0
 
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
@@ -133,7 +137,7 @@ params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
-params_lt3['TTTR_wait_time'] =     joint_params['TTTR_wait_time']
+params_lt3['TTTR_read_count'] =    joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   20*60#sec = 20 mins
