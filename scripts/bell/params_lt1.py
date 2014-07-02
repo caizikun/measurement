@@ -30,8 +30,8 @@ params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =4e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
 params_lt1['A_SP_amplitude'] = 5e-9             
 params_lt1['Ex_RO_amplitude'] = 6e-9
@@ -72,7 +72,7 @@ params_lt1['initial_delay']   	        = 11e-9
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.28 
+params_lt1['eom_off_amplitude']         = -.255
 params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
 params_lt1['eom_pulse_amplitude']       = 2.0
 params_lt1['eom_overshoot_duration1']   = 10e-9

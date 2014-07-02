@@ -345,7 +345,7 @@ config['adwin_lt1_processes'] = {
         'integrated_ssro' : {
                 'index' : 9,
                 'file' : 'integrated_ssro_lt1.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],

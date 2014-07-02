@@ -1,10 +1,10 @@
 
 cfg={}
 
-cfg['samples'] = {'current':'The111_no1_SIL18'}
-cfg['protocols'] = {'current':'The111_no1_SIL18'}
+cfg['samples'] = {'current':'The111_no1_SIL1'}
+cfg['protocols'] = {'current':'The111_no1_SIL1'}
 
-cfg['protocols']['The111_no1_SIL18'] = {}
+cfg['protocols']['The111_no1_SIL1'] = {}
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 
@@ -53,7 +53,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
 'cr_mod_control_offset'     :   0.0,
 'cr_mod_control_amp'        :   0.05, #V
-'repump_mod_control_offset' :   5.4,
+'repump_mod_control_offset' :   7.0,
 'repump_mod_control_amp'    :   .5, #V
 }
 
@@ -104,13 +104,13 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
         'BINSIZE':                                  1, #2**BINSIZE*BASERESOLUTION
         'MIN_SYNC_BIN':                             0,
         'MAX_SYNC_BIN':                             1000,
-        'TTTR_wait_time':                           0.25, #s
+        'TTTR_read_count':                          1000, 
         'measurement_time':                         1200,#sec
         'measurement_abort_check_interval':         1#sec
 
         }
 
-cfg['protocols']['The111_no1_SIL18']['AdwinSSRO-integrated'] = {
+cfg['protocols']['The111_no1_SIL1']['AdwinSSRO-integrated'] = {
 'SSRO_duration' : 30}
 
 #################
@@ -171,7 +171,7 @@ cfg['samples']['Hans_sil1'] = {
     #######################
 
 
-cfg['protocols']['The111_no1_SIL18']['AdwinSSRO'] = {
+cfg['protocols']['The111_no1_SIL1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
@@ -183,8 +183,8 @@ cfg['protocols']['The111_no1_SIL18']['AdwinSSRO'] = {
 'CR_probe':      1000,
 'CR_repump':     1000,
 'Ex_CR_amplitude':  4e-9,#5nW
-'Ex_RO_amplitude': 5e-9,
-'Ex_SP_amplitude':  10e-9,
+'Ex_RO_amplitude': 15e-9,
+'Ex_SP_amplitude':  15e-9,
 'SP_duration'        : 100,
 'SP_duration_ms0' : 100,
 'SP_duration_ms1' : 100,
