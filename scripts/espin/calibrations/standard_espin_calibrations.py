@@ -417,6 +417,16 @@ class DD_CORPSE_ZerothRevival(pulsar_msmt.PulsarMeasurement):
                         phase = self.params['CORPSE_pi2_phases1'][i]),
                     start = 200e-9,
                     name = 'pi2_1')
+
+            #!!!!! careful, this pulse has only been added to test
+            last = e.add(pulse.cp(pulse_pi,
+                        amplitude = self.params['CORPSE_pi_amp']),
+                    refpulse = last,
+                    refpoint = 'start',
+                    refpoint_new = 'start',
+                    start = self.params['MW_1_separation'][i],
+                    name = 'pi pulse')
+
                 
             for j in range(self.params['number_pulses']):
 
@@ -427,7 +437,7 @@ class DD_CORPSE_ZerothRevival(pulsar_msmt.PulsarMeasurement):
                     refpulse = last,
                     refpoint = 'end' if (j == 0) else 'center',
                     refpoint_new = 'center',
-                    start = self.params['evolution_times'][i] if (j == 0) else 2*self.params['evolution_times'][i],
+                    start = self.params['evolution_times'][i] + self.params['MW_1_separation'][i] - 243e-9 if (j == 0) else 2*self.params['evolution_times'][i],
                     name = 'pi_{}'.format(j))
 
 
@@ -824,7 +834,7 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
     funcs.prepare(m)
 
 
-    pts = 41
+    pts = 11
     m.params['pts'] = pts
     m.params['repetitions'] = 2000
 
@@ -843,8 +853,8 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
     else :
         CORPSE_frq = 9e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq']
-        m.params['CORPSE_pi_amps'] = np.ones(pts)*0.723
-        m.params['CORPSE_pi2_amps'] = np.ones(pts)*0.774
+        m.params['CORPSE_pi_amps'] = np.ones(pts)*0.713
+        m.params['CORPSE_pi2_amps'] = np.ones(pts)*0.77
 
 
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
@@ -858,7 +868,9 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
         m.params['extra_wait_final_pi2']=np.ones(pts)*0
         #m.params['extra_wait_final_pi2'] = np.linspace(-80e-9,80e-9,pts)
 
-    m.params['evolution_times'] =np.linspace(50e-6, 100e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+    
+
+    m.params['evolution_times'] = np.linspace(50e-6, 100e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
     #np.linspace((2.2*1/CORPSE_frq)*2*m.params['number_pulses'], 40e-6,pts)/(2.*m.params['number_pulses'])
 
     # MW pulses
@@ -867,6 +879,7 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
     m.params['CORPSE_pi2_phases2'] = 0*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
     #m.params['CORPSE_pi_amps'] = np.ones(pts)*m.params['CORPSE_pi_amp']#0.752#0.727
     
+    m.params['MW_1_separation'] = np.ones(pts)*600e-9#np.linspace(280, 800, pts)*1e-9
     
     m.params['CORPSE_pi_phases'] = np.zeros(m.params['number_pulses'])
     if mod(m.params['number_pulses'],2) == 0 :
@@ -886,14 +899,14 @@ def dd_Corpse_zerothrevival(name, IQmod=True) :
 
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'evolution time (us)'
+    m.params['sweep_name'] = 'evolution time (us)' #'MW_1_separation (ns)'
     m.params['sweep_pts'] = m.params['evolution_times']*2*m.params['number_pulses']/1e-6
     #m.params['sweep_name'] = 'extra wait time before pi/2 (ns)'
     #m.params['sweep_pts'] = m.params['extra_wait_final_pi2']*1e9#m.params['evolution_times']*2*m.params['number_pulses']/1e-6
     #m.params['sweep_name'] = 'phase second pi2'
     #m.params['sweep_pts'] = m.params['CORPSE_pi2_phases2']
 
-    funcs.finish(m)
+    funcs.finish(m, debug = False)
 
 
 

@@ -62,6 +62,12 @@ params_lt1['RND_duration'] = 300e-9
 
 params_lt1['RND_during_LDE'] = 1 
 
+params_lt1['do_echo'] = 1
+params_lt1['do_final_MW_rotation'] = 1
+
+params_lt1['wait_for_PLU'] = 0
+params_lt1['free_precession_time_1st_revival'] = 73.9e-6
+
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
 # LDE Sequence in the AWG
