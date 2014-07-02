@@ -31,8 +31,8 @@ qt.pulsar.define_channel(id='ch4', name='MW_2', type='analog', high=0.9,
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
-qt.pulsar.define_channel(id='ch3_marker1', name='adwin_success_trigger', type='marker', 
-    high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch3_marker1', name='AOM_Green', type='marker', 
+    high=1.0, low=0, offset=0., delay=0., active=True)
 
 # light
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 

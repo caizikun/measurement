@@ -15,6 +15,7 @@ def ssrocalibration(name, **additional_params):
 
     
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(additional_params)
     print 'test1'

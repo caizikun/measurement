@@ -54,6 +54,7 @@ cfg['protocols']['AdwinSSRO']={
 'yellow_CR_repump'          :       1,
 'green_CR_repump'           :       1000,
 'CR_probe_max_time'         :       1000000}
+cfg['protocols']['AdwinSSRO']['cr_mod'] = False
 
 yellow=False
 
@@ -171,7 +172,12 @@ cfg['samples']['Hans_sil1'] = {
 'C3_Ren_tau'    :       [18.56e-6, 15.328e-6, 16.936e-6],  #resonance k=
 'C3_Ren_N'    :         [14      , 54       , 46],
 
-'C4_freq'       :       348.574e3,  #(2)
+'C4_freq'       :       348.574e3,  #NOTE: based on old measurements 
+'C4_freq_0'   :        324.631e3, 
+'C4_freq_1'   :        370.115e3,  
+'C4_freq_dec'   :      348.574e3,
+
+
 'C4_Ren_tau'    :       [6.456e-6   ],
 'C4_Ren_N'    :         [40         ]}
 
