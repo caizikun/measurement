@@ -92,9 +92,9 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = True
+    th_debug = False
     sequence_only = False
-    mw = False
+    mw = True
     measure_lt1 = False
     measure_bs = False
     do_upload = True
@@ -103,6 +103,7 @@ def full_bell(name):
 
     m.params['MW_during_LDE'] = mw
     m.params['wait_for_remote_CR'] = measure_lt1
+
 
     if not(sequence_only):
         if measure_lt1:
@@ -134,4 +135,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('tpqi_parallel')   
+    full_bell('Sam_SIL5_correlation')   
