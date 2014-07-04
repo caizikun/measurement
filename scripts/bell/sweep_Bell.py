@@ -185,7 +185,7 @@ def sweep_bell(name, setup = 'lt3'):
             m.params['eom_overshoot_duration1']    = np.ones(pts)*2e-9
             m.params['eom_overshoot1']             = np.ones(pts)*-0.03 # calibration from 19-03-2014# 
         elif setup == 'lt1': 
-            m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
+            m.params['eom_pulse_amplitude']        = np.linspace(1.4,1.9,pts)#np.ones(pts)*1.9
             m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9 #what is the correct value ?
             m.params['eom_overshoot1']             = np.ones(pts)*-0.05  #     np.ones(pts)*-0.03 # calibration from 19-03-2014# 
 
@@ -198,13 +198,13 @@ def sweep_bell(name, setup = 'lt3'):
     
     p_aom= qt.instruments['PulseAOM']
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(1.0,1.0,pts)*max_power_aom #%power
     aom_voltage_sweep = np.zeros(pts)
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    m.params['aom_amplitude'] = aom_voltage_sweep #0.3*np.ones(pts)#np.ones(pts)#
+    m.params['aom_amplitude'] = np.ones(pts)#aom_voltage_sweep #0.3*np.ones(pts)#np.ones(pts)#
     #------------------------------------------------------------------
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -221,8 +221,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['echo_offset'] = 0e-9
 
     #for the analysis:
-    m.params['sweep_name'] = 'aom voltage sweep'#eom off voltage' #aom voltage sweep' 
-    m.params['sweep_pts'] = aom_power_sweep/max_power_aom#m.params['general_sweep_pts']#m.params['eom_off_amplitude']#
+    m.params['sweep_name'] = 'eom on voltage'#eom off voltage' #aom voltage sweep' 
+    m.params['sweep_pts'] = m.params['eom_pulse_amplitude']#aom_power_sweep/max_power_aom#m.params['general_sweep_pts']#m.params['eom_off_amplitude']#
     
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
@@ -263,4 +263,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('psb_zpl', setup = 'lt1')
+    sweep_bell('pulse_shaping', setup = 'lt1')

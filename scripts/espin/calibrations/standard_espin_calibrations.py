@@ -567,12 +567,7 @@ def rabi(name, IQmod=True):
         m = pulsar_msmt.ElectronRabi(name)
     else :
         m = pulsar_msmt.ElectronRabi_Square(name)
-
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    funcs.prepare(m)
 
 
     m.params['pts'] = 21
@@ -590,18 +585,18 @@ def rabi(name, IQmod=True):
         print IQmod
     print m.params['ms-1_cntr_frq'] 
 
-    #m.params['MW_pulse_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['MW_pulse_durations'] =  np.linspace(0, 4000, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.ones(pts)*200e-9 #np.linspace(0, 10, pts) * 1e-6
+    #m.params['MW_pulse_durations'] =  np.linspace(0, 50, pts) * 1e-9
 
-    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.03
-    #m.params['MW_pulse_amplitudes'] = np.linspace(0.3,0.6,pts)#0.55*np.ones(pts)
+    #m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9
+    m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.2,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
-    m.params['sweep_name'] = 'Pulse durations (ns)'
-    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    #m.params['sweep_name'] = 'Pulse durations (ns)'
+    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    #m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
-    m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
+    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    #m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
     print m.params['sweep_pts']
 
 
@@ -625,8 +620,8 @@ def dark_esr(name):
     m.params['repetitions']  = 1000
     m.params['range']        = 6e6
     m.params['pts'] = 131
-    m.params['pulse_length'] = 2.3e-6
-    m.params['ssbmod_amplitude'] = 0.04
+    m.params['pulse_length'] = 1.78e-6
+    m.params['ssbmod_amplitude'] = 0.008
     
     m.params['Ex_SP_amplitude']=0
 
@@ -694,7 +689,7 @@ def calibrate_Pi_CORPSE(name,IQmod=True,multiplicity=1):
         CORPSE_frq = 4.5e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['frq_mod'] 
     else :
-        CORPSE_frq = 9e6
+        CORPSE_frq = 4.5e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq'] 
     m.params['CORPSE_rabi_frequency'] = CORPSE_frq
 
@@ -702,7 +697,7 @@ def calibrate_Pi_CORPSE(name,IQmod=True,multiplicity=1):
     m.params['repetitions'] = 1000
 
     # sweep params
-    m.params['CORPSE_pi_sweep_amps'] =  np.linspace(0.69, 0.76, pts) #0.872982*np.ones(pts)#
+    m.params['CORPSE_pi_sweep_amps'] =  np.linspace(0.0, 0.5, pts) #0.872982*np.ones(pts)#
     m.params['CORPSE_pulse_delays']=0.*np.ones(pts)#np.linspace(0,10e-9,pts)
     m.params['CORPSE_eff_rotation_angle'] = 180
     m.params['delay_reps'] = 1
@@ -989,7 +984,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(6.0, IQmod = False)
+    run_calibrations(3.0, IQmod = False)
 
     """
     stage 0 : continuous ESR

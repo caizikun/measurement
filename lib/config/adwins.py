@@ -383,7 +383,7 @@ config['adwin_lt1_processes'] = {
         'bell' : {
                 'index' : 9,
                 'file' : 'bell_lt1.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_done_DI_channel'         ,   8],
                     ['AWG_success_DI_channel'         ,   8],
