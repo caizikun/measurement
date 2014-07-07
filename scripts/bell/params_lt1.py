@@ -15,13 +15,18 @@ params_lt1['cr_wait_after_pulse_duration'] = 1
 params_lt1['CR_preselect'] = 2500
 params_lt1['CR_probe'] = 20
 params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
+params_lt1['cr_mod'] = True
+params_lt1['cr_mod_control_offset']     =  0.0
+params_lt1['cr_mod_control_amp']        =  0.05 #V
+params_lt1['repump_mod_control_offset'] =  7.0
+params_lt1['repump_mod_control_amp']    =  .5 #V
 
 #CR check modulation pars:
 #to be implemented
 
 #bell adwin:
 params_lt1['AWG_done_DI_channel'] = 20
-params_lt1['AWG_success_DI_channel'] = 18#????
+params_lt1['AWG_success_DI_channel'] = 21
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
@@ -73,14 +78,11 @@ params_lt1['free_precession_time_1st_revival'] = 73.9e-6
 # LDE Sequence in the AWG
 # calibration from 2014-05-30
 
-params_lt1['initial_delay']   	        = 11e-9
 
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_off_duration']          = 150e-9
 params_lt1['eom_off_amplitude']         = -.255
-params_lt1['eom_comp_pulse_amplitude']   = params_lt1['eom_pulse_amplitude'] 
-params_lt1['eom_pulse_amplitude']       = 2.0
 params_lt1['eom_overshoot_duration1']   = 10e-9
 params_lt1['eom_overshoot1']            = -0.05
 params_lt1['eom_overshoot_duration2']   = 4e-9
@@ -105,7 +107,7 @@ params_lt1['echo_offset'] = 0.
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 1#sync is only for lt3
 params_lt1['plu_during_LDE'] = 0 
-params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] - 145e-9 #1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt1['opt_pulse_start'] = params.params_lt3['opt_pulse_start'] - 143e-9 #1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

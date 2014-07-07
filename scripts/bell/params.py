@@ -5,11 +5,11 @@ This file contains all the joint and lt3 measurement parameters.
 joint_params = {}
 
 ### default process settings
-joint_params['RO_during_LDE'] = 1
+joint_params['RO_during_LDE'] = 0
 
-joint_params['opt_pi_pulses'] = 2#15
+joint_params['opt_pi_pulses'] = 2
 joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
-#joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
+joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['LDE_element_length']     = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
@@ -34,6 +34,7 @@ params_lt3['cr_wait_after_pulse_duration'] = 1
 params_lt3['CR_preselect'] = 2500
 params_lt3['CR_probe'] = 20
 params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
+params_lt3['cr_mod'] = False
 
 #CR check modulation pars:
 #to be implemented
@@ -41,23 +42,23 @@ params_lt3['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 #bell adwin:
 params_lt3['AWG_start_DO_channel'] = 9
 params_lt3['AWG_done_DI_channel'] = 17
-params_lt3['SP_duration'] = 50
+params_lt3['SP_duration'] = 10
 
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 30#20
+params_lt3['SSRO_duration'] = 20#20
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1
 
 #adwin powers
-params_lt3['Ex_CR_amplitude'] = 0.5e-9#10e-9#6e-9             
-params_lt3['A_CR_amplitude'] =0.5e-9#10e-9#16e-9              
-params_lt3['Ex_SP_amplitude'] = 1e-9              
+params_lt3['Ex_CR_amplitude'] = 0.5e-9#0.5e-9#10e-9#6e-9             
+params_lt3['A_CR_amplitude'] =1e-9#10e-9#16e-9              
+params_lt3['Ex_SP_amplitude'] = 0e-9              
 params_lt3['A_SP_amplitude'] = 3e-9             
-params_lt3['Ex_RO_amplitude'] = 0.5e-9
+params_lt3['Ex_RO_amplitude'] = 2e-9
 params_lt3['A_RO_amplitude'] = 0
 params_lt3['repump_amplitude'] = 50e-6#30e-9 
 
@@ -73,13 +74,21 @@ params_lt3['mw_frq'] = mw0_lt3
 params_lt3['mw_power'] = 20
 params_lt3['MW_pulse_mod_risetime'] = 10e-9
 
-params_lt3['CORPSE_rabi_frequency'] = 9e6
-params_lt3['CORPSE_pi_amp'] = 0.713
-params_lt3['CORPSE_pi2_amp'] = 0.770
-params_lt3['CORPSE_RND_amp'] = 0.77 #?
+#params_lt3['CORPSE_rabi_frequency'] = 9e6
+#params_lt3['CORPSE_pi_amp'] = 0.713 #
+#params_lt3['CORPSE_pi2_amp'] = 0.770 #
+#params_lt3['CORPSE_RND_amp'] = 0.77 #?
+#params_lt3['RND_angle_0'] = 90 #0
+#params_lt3['RND_angle_1'] = 90
 
-params_lt3['RND_angle_0'] = 90 #0
-params_lt3['RND_angle_1'] = 90
+params_lt3['MW_pi_amp']		   = 0.842
+params_lt3['MW_pi_duration']   = 250e-9
+params_lt3['MW_pi2_amp']	   = 0.751
+params_lt3['MW_pi2_duration']  = 125e-9
+params_lt3['MW_RND0_amp']	   = 0.751 #TODO Calibrate
+params_lt3['MW_RND0_duration'] = 125e-9 #TODO Calibrate
+params_lt3['MW_RND1_amp']	   = 0.751 #TODO Calibrate
+params_lt3['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt3['RND_duration'] = 100e-9
 
@@ -95,7 +104,6 @@ params_lt3['free_precession_time_1st_revival'] = 73.9e-6
 
 # LDE Sequence in the AWGs
 
-params_lt3['initial_delay']   	        = 10e-9
 
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
 params_lt3['eom_pulse_duration']         = 2e-9
