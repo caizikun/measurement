@@ -40,7 +40,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
         print     m.params['C_RO_phase']
 
     elif m.params['sweep_name']  == 'wait_times':
-        m.params['C_RO_phase'] = np.ones(m.params['pts'] )*0
+        m.params['C_RO_phase'] =np.ones(m.params['pts'] )*0 # [None]*m.params['pts'] #
         m.params['wait_times'] = np.linspace(130e-6, 5e-3,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
         m.params['sweep_pts'] = m.params['wait_times']
 
@@ -58,6 +58,9 @@ def NuclearRamseyWithInitialization(name,tau = None):
     
     m.params['C13_MBI_RO_duration']     = 31 
     m.params['E_C13_MBI_amplitude']     = 1e-9
+
+    m.params['C1_init_phase_offset'] = 0
+
 
     m.params['SP_duration_after_C13']   = 50
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9

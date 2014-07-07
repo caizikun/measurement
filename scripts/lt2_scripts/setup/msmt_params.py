@@ -189,7 +189,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude' : 10e-9, # was 3 e-9 -Machiel25-06-14
+'A_CR_amplitude' : 15e-9, # was 3 e-9 -Machiel25-06-14
 'A_RO_amplitude' : 0,
 'A_SP_amplitude' : 15e-9,
 'CR_duration'    : 50,
