@@ -65,6 +65,7 @@ class pid_controller_v4(Instrument):
                     'step_size'                 :   {'type':types.FloatType,  'val':0.01, 'flags':Instrument.FLAG_GETSET},
                     'floating_avg_pts'          :   {'type':types.IntType,    'val':1.,   'maxval':100,'minval':1, 'flags':Instrument.FLAG_GETSET},
                     'max_control_deviation'     :   {'type':types.FloatType,  'val':1.0,  'flags':Instrument.FLAG_GETSET},
+                    'min_value_deviation'       :   {'type':types.FloatType,  'val':0.001,'flags':Instrument.FLAG_GETSET},
                     'control_coarse_step'       :   {'type':types.FloatType, 'val':0.05,'flags':Instrument.FLAG_GETSET},
                     'do_plot'                  :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     }
@@ -89,7 +90,7 @@ class pid_controller_v4(Instrument):
         self._parlist = ['P', 'I', 'D',
                 'setpoint', 'value_factor', 'value_offset','max_value',
                 'min_value', 'max_control_deviation','use_stabilizor', 'step_size',
-                'control_coarse_step', 'do_plot']
+                'control_coarse_step', 'do_plot', 'min_value_deviation']
         self.ins_cfg = config.Config(cfg_fn)
         self.load_cfg()
         self.save_cfg()
@@ -162,7 +163,7 @@ class pid_controller_v4(Instrument):
         self._error = 0.
         self._derivator = 0.
         self._integrator = 0.
-        self._values = []
+        self._values = [0]
         self._read_counter=-1
         
         self._t0 = time.time()
@@ -199,7 +200,7 @@ class pid_controller_v4(Instrument):
             return False
         
         new_raw_value = self.get_value()
-        if new_raw_value > self._max_value or new_raw_value < self._min_value:
+        if new_raw_value > self._max_value or new_raw_value < self._min_value or abs(new_raw_value-self._values[-1])<self._min_value_deviation:
             return True     
         
         self._values.append(new_raw_value)

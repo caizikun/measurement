@@ -46,7 +46,7 @@ class SweepBell(bell.Bell):
                 LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
                 late_RO_element = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = 'late RO element {}'.format(i))
                 elements.append(late_RO_element)
-
+            
             self.sweep_bell_seq.append(name = 'Bell sweep {}'.format(i),
                 wfname = LDE_element.name,
                 trigger_wait = self.params['trigger_wait'],
@@ -196,31 +196,48 @@ def sweep_bell(name, setup = 'lt3'):
 
     
     p_aom= qt.instruments['PulseAOM']
-    #max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    #aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
-    #for i,p in enumerate(aom_power_sweep):
-    #    aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     aom_voltage_sweep = np.zeros(pts)
-
-    m.params['aom_amplitude'] = aom_voltage_sweep #np.ones(pts)*1.0#aom_voltage_sweep 
-    #------------------------------------------------------------------
-    m.joint_params['LDE_attempts_before_CR'] = 1
-    #m.joint_params['opt_pi_pulses'] = 1
-    #m.joint_params['LDE_element_length'] = 7e-6
-    m.params['RND_during_LDE'] = 1
-    m.joint_params['RO_during_LDE'] = 0
-    m.params['MW_during_LDE'] = 1
-    m.params['wait_for_PLU'] = 1
-
-    m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
-    m.params['general_sweep_name'] = 'free_precession_time_1st_revival' 
-    m.params['general_sweep_pts'] = np.linspace(-5,15,pts)*1e-6+75e-6
-    m.params['echo_offset'] = 0e-9
-
-    #for the analysis:
-    m.params['sweep_name'] = 'free_precession_time_1st_revival' 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']#aom_power_sweep/max_power_aom
+    max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
+    aom_power_sweep=linspace(0.55,1.0,pts)*max_power_aom #%power
+    for i,p in enumerate(aom_power_sweep):
+        aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
+
+    do_tail = True 
+    if do_tail:
+        m.params['aom_amplitude'] = aom_voltage_sweep
+        m.joint_params['LDE_attempts_before_CR'] = 250
+        m.params['do_general_sweep']= 0
+        m.joint_params['opt_pi_pulses'] = 1
+        m.params['RND_during_LDE'] = 0
+        m.joint_params['RO_during_LDE'] = 0
+        m.params['MW_during_LDE'] = 0
+
+        m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
+        m.params['sweep_pts'] = aom_power_sweep/max_power_aom
+    else : 
+        m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
+        m.params['general_sweep_name'] = 'free_precession_time_1st_revival' 
+        m.params['general_sweep_pts'] = np.linspace(50,100,pts)*1e-6
+
+        m.joint_params['LDE_attempts_before_CR'] = 1
+        m.joint_params['opt_pi_pulses'] = 2
+        m.params['aom_amplitude'] = np.ones(pts)*0.0
+
+        m.params['RND_during_LDE'] = 1
+        m.joint_params['RO_during_LDE'] = 0
+        m.params['MW_during_LDE'] = 1
+
+        # to measure the echo on the 1st revival
+        # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
+        m.params['wait_for_PLU'] = 1
+
+        #for the analysis:
+        m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
+    
+    
+
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     if setup == 'lt3':
@@ -232,7 +249,7 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 2000
 
     th_debug=False
     measure_bs=False
@@ -260,4 +277,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('test', setup = 'lt3')
+    sweep_bell('Sam_SIL5_Tail', setup = 'lt3')

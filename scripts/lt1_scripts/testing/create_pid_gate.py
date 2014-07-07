@@ -5,7 +5,7 @@ if True:
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
     pidgate = qt.instruments.create('pidgate', 'pid_controller_v4', 
             set_ctrl_func=_setctrl_gate , get_val_func=_getval_gate , get_ctrl_func=_getctrl_gate, 
-            ctrl_minval=600.0, ctrl_maxval=800.0)
+            ctrl_minval=600.0, ctrl_maxval=1000.0)
 
 if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin_lt2'].Set_FPar(52,x)

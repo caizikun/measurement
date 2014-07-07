@@ -15,4 +15,4 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 if __name__ == '__main__':
 
-    ssro_calibration.ssrocalibration('test', **params.params_lt3)
+    ssro_calibration.ssrocalibration('SAMPLE_CFG', **params.params_lt3)

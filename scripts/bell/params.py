@@ -13,7 +13,6 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['LDE_element_length']     = 16e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
-joint_params['late_RO_element_length'] = 85e-6
 joint_params['LDE_RO_duration'] = 3e-6
 joint_params['separate_RO_element'] =  True
 
@@ -79,14 +78,18 @@ params_lt3['CORPSE_pi_amp'] = 0.713
 params_lt3['CORPSE_pi2_amp'] = 0.770
 params_lt3['CORPSE_RND_amp'] = 0.77 #?
 
-params_lt3['RND_angle_0'] = 0
+params_lt3['RND_angle_0'] = 90 #0
 params_lt3['RND_angle_1'] = 90
 
 params_lt3['RND_duration'] = 100e-9
 
 params_lt3['RND_during_LDE'] = 1 
 
+params_lt3['do_echo'] = 0
+params_lt3['do_final_MW_rotation'] = 0
+
 params_lt3['wait_for_PLU'] = 0
+params_lt3['free_precession_time_1st_revival'] = 73.9e-6
 
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
@@ -104,7 +107,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 25e-9
-params_lt3['aom_amplitude']				 = 1.0
+params_lt3['aom_amplitude']				 = 0.77
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -120,7 +123,7 @@ params_lt3['MW_1_separation'] = joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
 params_lt3['echo_offset'] = 11e-9
 
-params_lt3['PLU_gate_duration']       = 70e-9
+params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 1e-9
 params_lt3['PLU_2_delay']             = 1e-9
@@ -130,7 +133,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt3['AWG_wait_for_lt1_start'] =  1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 params_lt3['sync_during_LDE'] = 1
-params_lt3['plu_during_LDE'] = 0
+params_lt3['plu_during_LDE'] = 1
 params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']

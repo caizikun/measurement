@@ -18,14 +18,9 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def ssrocalibration(name):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
-    m.params['repump_mod_DAC_channel'] = m.adwin.get_dac_channels()['yellow_aom_frq']
-    m.params['cr_mod_DAC_channel']     = m.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
-    m.params['cr_mod_control_offset']  =  0.0
-    m.params['cr_mod_control_amp']     =  0.05 #V
-    m.params['repump_mod_control_offset']  =  5.4
-    m.params['repump_mod_control_amp']     =  .5 #V
     m.params['atto_positions'] = [m.adwin.get_dac_voltage('atto_x'), m.adwin.get_dac_voltage('atto_y'), m.adwin.get_dac_voltage('atto_z')]
     m.set_adwin_process_variable_from_params('atto_positions')
     m.params['pos_mod_control_amp'] =  0.03
@@ -63,8 +58,8 @@ def ssrocalibration(name):
     m.adwin.set_dac_voltage(('atto_z',m.params['atto_positions_after'][2]))
     qt.instruments['master_of_space'].init_positions_from_adwin_dacs()
 
-    #m.run()
-    #m.save('ms1')
+    m.run()
+    m.save('ms1')
 
     m.finish()
 
