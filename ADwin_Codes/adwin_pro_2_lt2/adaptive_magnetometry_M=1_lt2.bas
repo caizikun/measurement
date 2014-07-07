@@ -10,17 +10,14 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
-'This program implements adaptive magnetometry protocols.
-'The adaptive phase decision tree is passed as an array (DATA_27), as an integer in the range 0..255, 
-'which is then converted to a 8-bit number used to control the FPGA.
-'The number of measurements per step is set by M.
+' this program implements adaptive magnetometry protocols (Cappellaro, real-time calculation of optimal phase)
 '
 ' protocol:
 ' mode  0:  CR check
 ' mode  1:  spin pumping with A pulse
 ' mode  2:  AWG (N-init, Ramsey)
 ' mode  3:  Ex pulse and photon counting for spin-readout with time dependence (repetitive e-spin ssro)
-' mode  4:  choose optimal phase
+' mode  4:  calculate optimal phase
 ' -> mode 0
 
 #INCLUDE ADwinPro_All.inc
@@ -29,16 +26,20 @@
 #INCLUDE Math.inc
 
 #DEFINE max_stat            10
+#DEFINE max_prob_array    40000
 'init
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
-DIM DATA_27[50000] AS LONG 'adaptive phase decision tree
+DIM DATA_27[1000] AS LONG
+DIM p_real[max_prob_array] AS FLOAT
+DIM p_imag[max_prob_array] AS FLOAT
+DIM p_real_old[max_prob_array] AS FLOAT
+DIM p_imag_old[max_prob_array] AS FLOAT
 DIM ch[8] AS LONG
 DIM ch_value[8] AS LONG
-DIM indiv_ssro[25] AS LONG
 
 'return
-DIM DATA_24[max_repetitions] AS LONG  ' adaptive phase (0..255)
+DIM DATA_24[max_repetitions] AS LONG  ' adaptive phase (in degrees)
 DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
@@ -53,16 +54,16 @@ DIM wait_after_pulse, wait_after_pulse_duration AS LONG
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM c_n, t_n, pi AS FLOAT
 
-DIM timer, aux_timer, mode, i, k, sweep_index, a AS LONG
+DIM timer, aux_timer, mode, i, k, sweep_index, a, k_opt AS LONG
 DIM AWG_done AS LONG
 DIM first, do_adaptive, do_phase_calibr AS LONG
 DIM delta_phi AS LONG
 
 DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
-DIM counts, old_counts , threshold_majority_vote AS LONG
-DIM adptv_steps, curr_adptv_phase, dig_phase, curr_adptv_step, rep_index, curr_msmnt_result, curr_ssro, M AS LONG
-DIM t1, p AS LONG
+DIM counts, old_counts AS LONG
+DIM adptv_steps, curr_adptv_phase, dig_phase, curr_adptv_step, rep_index, curr_msmnt_result AS LONG
+DIM t1 AS LONG
 
 INIT:  
   init_CR()
@@ -72,24 +73,24 @@ INIT:
   SP_duration                  = DATA_20[4]
   sequence_wait_time           = DATA_20[5]
   wait_after_pulse_duration    = DATA_20[6]
-  repetitions                  = DATA_20[7]   'now this is the nr of times we repeat the series of adaptive msmnt steps
+  repetitions                  = DATA_20[7]  'now this is the nr of times we repeat the series of adaptive msmnt steps
   SSRO_duration                = DATA_20[8]
-  SSRO_stop_after_first_photon = DATA_20[9]   ' not used
-  cycle_duration               = DATA_20[10]  '(in processor clock cycles, 3.333ns)
+  SSRO_stop_after_first_photon = DATA_20[9]  ' not used
+  cycle_duration               = DATA_20[10] '(in processor clock cycles, 3.333ns)
   sweep_length                 = DATA_20[11]
-  do_adaptive                  = DATA_20[12]  'do_adaptive=1 activates adptv protocol, =0 uses phases in DATA_27 as non-adaptive
-  adptv_steps                  = DATA_20[13]  'nr of msmnt steps in adaptive protocol
-  ch[1]                        = DATA_20[14]  'adwin channels for 8-bit phase to FPGA
-  ch[2]                        = DATA_20[15]  'physical channels ADWIN-FPGA
+  do_adaptive                  = DATA_20[12] 'do_adaptive=1 activates adptv protocol, =0 sets phase always to zero
+  adptv_steps                  = DATA_20[13] 'nr of msmnt steps in adaptive protocol
+  ch[1]                        = DATA_20[14] 'adwin channels for 8-bit phase to FPGA
+  ch[2]                        = DATA_20[15]
   ch[3]                        = DATA_20[16]
   ch[4]                        = DATA_20[17]
   ch[5]                        = DATA_20[18]
   ch[6]                        = DATA_20[19]
   ch[7]                        = DATA_20[20]
   ch[8]                        = DATA_20[21]
-  do_phase_calibr              = DATA_20[22]  'phase calibration modality (sine wave)
-  M                            = DATA_20[23]  'number of measurements per adaptive step
-  threshold_majority_vote      = DATA_20[24]  
+  do_phase_calibr              = DATA_20[22] 'phase calibration modality (sine wave)
+
+
   
   pi = 3.14
   
@@ -97,26 +98,32 @@ INIT:
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
-
-  
   par_80 = SSRO_stop_after_first_photon
    
   FOR i = 1 TO repetitions*adptv_steps
     DATA_25[i] = 0
   NEXT i
  
-  FOR i = 1 TO M
-    indiv_ssro[i]=0
-  NEXT i
-  
   FOR i = 1 TO 8
     ch_value[i] = 0
   NEXT i
  
-  FOR i = 1 TO repetitions*adptv_steps*M
+  FOR i = 1 TO repetitions*adptv_steps
     DATA_24[i] = 0
   NEXT i
 
+  IF (do_phase_calibr=0) THEN 
+    FOR i = 1 TO 2^(adptv_steps+2)+1
+      p_real[i] = 0
+      p_imag[i] = 0
+      p_real_old[i] = 0
+      p_imag_old[i] = 0
+    NEXT i    
+    
+    p_real[2^(adptv_steps+1)] = 1
+    p_imag[2^(adptv_steps+1)] = 0
+  ENDIF
+      
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
 
   repetition_counter  = 0
@@ -146,10 +153,8 @@ INIT:
   curr_adptv_phase = DATA_27[1]
   rep_index = 1
   curr_adptv_step = 1
-  curr_ssro = 1
   curr_msmnt_result = 0
   a = 0
-  p = 0
 
 EVENT:
     
@@ -178,6 +183,8 @@ EVENT:
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser                
                     
           ' SET PHASE TO FPGA (8-bit)
+
+          'a = (255*mod(curr_adptv_phase, 360))/360
           a=curr_adptv_phase
           FOR i = 0 TO 7
             dig_phase = mod (a, 2)
@@ -187,7 +194,7 @@ EVENT:
             ch_value[i+1] = dig_phase
           NEXT i
           
-          'DATA_24 [sweep_index] = 1*ch_value[1]+2*ch_value[2]+4*ch_value[3]+8*ch_value[4]+16*ch_value[5]+32*ch_value[6]+64*ch_value[7]+128*ch_value[8]
+          DATA_24 [sweep_index] = 1*ch_value[1]+2*ch_value[2]+4*ch_value[3]+8*ch_value[4]+16*ch_value[5]+32*ch_value[6]+64*ch_value[7]+128*ch_value[8]
           
           mode = 2                 
           wait_after_pulse = wait_after_pulse_duration
@@ -249,59 +256,41 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE,0)
 
           if (counts > 0) then
-            indiv_ssro[curr_ssro] = 1 
+            curr_msmnt_result = 1
           else
-            indiv_ssro[curr_ssro] = 0 
+            curr_msmnt_result = 0
           endif
-                  
+          DATA_25[sweep_index] = curr_msmnt_result
+          'DATA_25[sweep_index] = data_25[SWEEP_INDEX]+1
+          
+          inc (sweep_index)
+          inc(repetition_counter)
+          PAR_73 = repetition_counter
           first=1
 
-          IF (curr_ssro < M) THEN
-            mode = 0
-            timer = -1
-            inc(curr_ssro)
+          IF (curr_adptv_step < adptv_steps) THEN 
+            mode = 4
+            timer=-1
           ELSE
-            
-            p=0
-            FOR i = 1 TO M
-              p = p + indiv_ssro[i]
-            NEXT i
-
-            IF (p>=threshold_majority_vote) THEN
-              curr_msmnt_result = 1
-            ELSE
-              curr_msmnt_result = 0
-            ENDIF
-            
-            DATA_25[sweep_index] = curr_msmnt_result       
-
-            inc (sweep_index)
-            inc(repetition_counter)
-            PAR_73 = repetition_counter
-            curr_ssro = 1
-
-            IF (curr_adptv_step < adptv_steps) THEN 
-              mode = 4
-              timer=-1
-            ELSE
-              curr_adptv_step = 1
-              inc(rep_index)
+            curr_adptv_step = 1
+            inc(rep_index)
                        
-              'reset phase estimation
-   
-              IF (rep_index > repetitions) THEN
+            'reset phase estimation
+ 
+            IF (rep_index > repetitions) THEN
               
-                FOR i = 0 TO 7
-                  P2_DIGOUT(DIO_Module,ch[i+1], 0) 'set hardware phase channel (8-i) to zero
-                NEXT i
+              FOR i = 0 TO 7
+                '  set hardware phase channel (8-i) to zero
+                P2_DIGOUT(DIO_Module,ch[i+1], 0)
+              NEXT i
               
-                END
-              ENDIF
-              curr_adptv_phase = DATA_27[1]
-              mode = 0
-              timer=-1
+              END
             ENDIF
+            curr_adptv_phase = DATA_27[1]
+            mode = 0
+            timer=-1
           ENDIF
+          
           timer = -1
           wait_after_pulse = wait_after_pulse_duration
           first = 1
@@ -310,16 +299,9 @@ EVENT:
         
       CASE 4    'calculate optimal phase
         inc (curr_adptv_step)
-        IF (do_adaptive>0) THEN
-          p = 0
-          FOR i = 1 TO curr_adptv_step-1
-            p = p + DATA_25[sweep_index-curr_adptv_step+i]*(2^(i-1)) 
-          NEXT i
-          curr_adptv_phase = DATA_27[p + 2^(curr_adptv_step-1)] 'choose tabled phase for decision-tree stored in DATA_27
-          DATA_24[sweep_index] = p + 2^(curr_adptv_step-1) 
-        ELSE
-          curr_adptv_phase = DATA_27[curr_adptv_step]
-        ENDIF                
+        curr_adptv_phase = DATA_27[curr_adptv_step]
+        
+        
         curr_msmnt_result = 0
         timer=-1
         mode = 0

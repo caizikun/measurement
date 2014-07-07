@@ -1,5 +1,5 @@
 """
-Script for a carbon ramsey sequence
+Script for a carbon parity measurement with following Tomography
 """
 import numpy as np
 import qt 
@@ -39,7 +39,8 @@ def Two_QB_MBE(name,tau = None):
 
 
     # Tomography Readout stuff 
-    m.params['Tomography Bases'] = ([['I','X'],['I','Y'],['I','Z'],
+    m.params['Tomography Bases'] = ([
+            ['I','X'],['I','Y'],['I','Z'],
             ['X','X'],['X','Y'],['X','Z'],['X','I'],
             ['Y','X'],['Y','Y'],['Y','Z'],['Y','I'],
             ['Z','X'],['Z','Y'],['Z','Z'],['Z','I']])

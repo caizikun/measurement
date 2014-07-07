@@ -39,7 +39,8 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['A_laser_DAC_channel'] = self.adwin.get_dac_channels()\
                 [self.A_aom.get_pri_channel()]
         self.params['repump_laser_DAC_channel'] = self.adwin.get_dac_channels()\
-                [self.repump_aom.get_pri_channel()]        
+                [self.repump_aom.get_pri_channel()]    
+
         if self.params['cr_mod']:
             self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()['yellow_aom_frq']
             self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
