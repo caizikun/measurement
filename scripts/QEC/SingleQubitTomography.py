@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
+def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False, N = None ):
 
     m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
@@ -30,7 +30,7 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
     m.params['Addressed_Carbon'] = 1
     # State to be initialized into 
     m.params['C13_init_state'] = 'up' 
-    m.params['C_init_method'] = 'MBI'#'MBI'
+    m.params['C_init_method'] = 'swap'#'MBI'->X, 'swap'-> 0 
 
     m.params['sweep_name'] = 'C_RO_phase' 
 
@@ -51,9 +51,11 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
 
     ##########
     # Overwrite certain params to test
-    
+    m.params['C13_MBI_threshold']  = 0
     m.params['C13_MBI_RO_duration']     = 30 
     m.params['E_C13_MBI_amplitude']     = 1e-9
+    if N !=None:
+        m.params['C1_Ren_N']=    [N      , 10]
 
     m.params['SP_duration_after_C13']   = 50
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
@@ -64,8 +66,12 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
 
 if __name__ == '__main__':
     # Tomography 
-    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = False)
-    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 90, RO_Z = False)
-    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = True)
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = False,N=14)
+    # NuclearRamseyWithInitialization(SAMPLE,RO_phase = 90, RO_Z = False)
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = True,N=14)
 
+
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = False,N=18)
+    # NuclearRamseyWithInitialization(SAMPLE,RO_phase = 90, RO_Z = False)
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = True,N=18)
 

@@ -59,10 +59,8 @@ class Gate(object):
         self.C_phases_after_gate = [None]*10
         self.el_state_before_gate = kw.pop('el_state_before_gate',None)
         self.el_state_after_gate = kw.pop('el_state_after_gate',None)
-        if self.Gate_type =='Carbon_Gate' and self.C_phases_after_gate[self.Carbon_ind]!=None: 
+        if self.Gate_type =='Carbon_Gate' : 
             self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi 
-
-
 
         '''
         Description of other attributes that get added by functions
@@ -118,9 +116,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             length = self.params['fast_pi2_duration'],
             amplitude = self.params['fast_pi2_amp'],
             phase = self.params['X_phase'])
-
-        print 'Printing length of actual pi2 pulse %s' %pi2.length 
-        print self.params['fast_pi2_duration']
         return pi2
 
     def _spec_pi2_elt(self): 
@@ -1223,7 +1218,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]+ (2*g.tau*g.N)*C_freq_dec[iC]
-                    elif g.C_phases_after_gate[iC] !=None and Ren_phase_offset == True: 
+                    elif g.C_phases_after_gate[iC] !=None and Ren_phase_offset == True:  #Currently not used 
                         g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC] + self.params['C'+str(iC)+'_Ren_phase_offset']/180.*np.pi  
 
             elif g.Gate_type =='electron_decoupling':
@@ -2230,7 +2225,7 @@ class Two_QB_Tomography(MBI_C13):
 
     #Acutal sequence is a combination of multiple subsequences
 
-    |elMBI| -|CinitA|-|CinitB|-|Tomography| 
+    |N-MBI| -|CinitA|-|CinitB|-|Tomography| 
     '''
     mprefix = 'single_carbon_initialised'
     adwin_process = 'MBI_multiple_C13'
@@ -2239,9 +2234,9 @@ class Two_QB_Tomography(MBI_C13):
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Two Qubit MBE')
-        self.params['N_init_C']= 2
-        self.params['N_MBE'] =1
-        self.params['N_parity_msmts']=0
+        self.params['Nr_init_C']= 2
+        self.params['Nr_MBE'] =1
+        self.params['Nr_parity_msmts']=0
 
         for pt in range(pts):
             gate_seq = []
