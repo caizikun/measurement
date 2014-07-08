@@ -181,7 +181,8 @@ class GeneralPiCalibration(pulsar_msmt.PulsarMeasurement):
 
 class GeneralPi2Calibration(pulsar_msmt.PulsarMeasurement):
     """
-    Do a pi/2 pulse, followed by a pi-pulse; sweep the time between them.
+    Do a pi/2 pulse, followed by a pi-pulse; sweep the time between them. 
+    generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
     """
     mprefix = 'GeneralPi2Calibration'
 

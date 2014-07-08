@@ -66,7 +66,7 @@ params_lt3['repump_amplitude'] = 50e-6#30e-9
 ### pulses and MW stuff LT3
 #####################
 ## general
-f_msm1_cntr_lt3 = 2.807035e9 
+f_msm1_cntr_lt3 = 2.6e9#2.807035e9 XXXXXXXXXXXXXXX
 mw0_lt3 = f_msm1_cntr_lt3
 #f0_lt3 = f_msm1_cntr_lt3 - mw0_lt3
 #params_lt3['ms-1_cntr_frq'] = f_msm1_cntr_lt3

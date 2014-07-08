@@ -153,7 +153,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=11
+    pts=1
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -226,7 +226,7 @@ def sweep_bell(name, setup = 'lt3'):
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'MW_pi_amp' 
-        m.params['general_sweep_pts'] = np.linspace(0.0,1.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(1.0,1.0,pts)
 
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.joint_params['opt_pi_pulses'] = 2
