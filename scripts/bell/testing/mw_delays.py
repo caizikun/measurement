@@ -27,7 +27,7 @@ X2 = pulse.SquarePulse('MW_Imod','small_pulse',
 e=element.Element('Sinde', pulsar=qt.pulsar)
 e.append(T)
 e.append(sync)
-e.append(pulse.cp(T,length=100e-9))
+e.append(pulse.cp(T,length=300e-9))
 e.append(X2)
 e.append(X)
 e.append(X2)

@@ -41,7 +41,7 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-cfg['protocols']['AdwinSSRO']['cr_mod'] = True
+cfg['protocols']['AdwinSSRO']['cr_mod'] = False
 cfg['protocols']['cr_mod']={
 	'cr_mod_control_offset'     :   0.0,
 	'cr_mod_control_amp'        :   0.05, #V
@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.807010e9# +/-   0.000005            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.807019e9# +/-   0.000005            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -120,7 +120,7 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 0.5e-9,
+		'A_CR_amplitude':				 1e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 3e-9,
 		'CR_duration' :				 	 100,
@@ -129,10 +129,10 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 0.5e-9,
 		'Ex_RO_amplitude':				 2e-9,
-		'Ex_SP_amplitude':				 1e-9,
+		'Ex_SP_amplitude':				 2e-9,
 		'SP_duration':					 100,
-		'SP_duration_ms0':				 100,
-		'SP_duration_ms1':				 500,
+		'SP_duration_ms0':				 50,
+		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 100,
 		'SSRO_repetitions':				 5000,
@@ -150,7 +150,8 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.770,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.713,
-    	'MW_pi_amp': 0.9,
+    	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
-    	'extra_wait_final_pi2' : -30e-9
+    	'extra_wait_final_pi2' : -30e-9,
+    	'MW_pulse_mod_frequency' : 43e6,
 }

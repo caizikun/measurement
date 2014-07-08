@@ -1034,7 +1034,8 @@ config['adwin_lt2_processes'] = {
                     ['ch7'                         ,   0],
                     ['ch8'                         ,   0],
                     ['do_phase_calibr'             ,   1],
-
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
                     
                     ],
                 'params_long_index'  : 20,
@@ -1044,6 +1045,7 @@ config['adwin_lt2_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
+
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,

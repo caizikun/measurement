@@ -110,7 +110,6 @@ class PQMeasurement(m2.Measurement):
                     self._keystroke_check('abort')
                     if self.keystroke('abort') in ['q','Q']:
                         print 'aborted.'
-                        self.stop_keystroke_monitor('abort')
                         self.stop_measurement_process()
                 else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO

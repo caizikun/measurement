@@ -783,8 +783,8 @@ class Magnetometry(PulsarMeasurement):
 
     def autoconfig(self):
 
-        self.params['sweep_length'] = self.params['repetitions']*self.params['adptv_steps']
-        self.params['pts'] = self.params['repetitions']*self.params['adptv_steps']
+        self.params['sweep_length'] = self.params['repetitions']*self.params['adptv_steps']*self.params['M']
+        self.params['pts'] = self.params['repetitions']*self.params['adptv_steps']*self.params['M']
         
 
                 # self.params['A_SP_voltage'] = \
@@ -831,7 +831,7 @@ class Magnetometry(PulsarMeasurement):
 
             reps_completed = self.adwin_var('completed_reps')
             print('completed %s / %s readout repetitions' % \
-                    (reps_completed, self.params['repetitions']))
+                    (reps_completed, self.params['repetitions']*self.params['adptv_steps']))
             qt.msleep(1)
 
         try:
@@ -842,7 +842,7 @@ class Magnetometry(PulsarMeasurement):
         self.stop_adwin_process()
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
-                (reps_completed, self.params['repetitions']))
+                (reps_completed, self.params['repetitions']*self.params['adptv_steps']))
 
 
     def save(self, name='adwindata'):

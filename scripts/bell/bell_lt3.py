@@ -55,7 +55,7 @@ class Bell_LT3(bell.Bell):
 
         seq.append(name = 'LDE_LT3',
             wfname = LDE_element.name,
-            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'start_LDE',
+            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'RO_dummy',
             goto_target = 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
@@ -72,7 +72,7 @@ class Bell_LT3(bell.Bell):
             goto_target = 'start_LDE')
             
         #qt.pulsar.program_awg(seq,*elements)
-        qt.pulsar.upload(*elements)
+        qt.pulsar.upload(*elements) 
         qt.pulsar.program_sequence(seq)
 
     def stop_measurement_process(self):
@@ -84,6 +84,13 @@ class Bell_LT3(bell.Bell):
         if self.lt1_helper != None:    
             self.lt1_helper.set_is_running(False)
 
+    def reset_plu(self):
+        self.adwin.start_set_dio(dio_no=2, dio_val=0)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=2, dio_val=1)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=2, dio_val=0)
+
     #def finish(self):
     #    ssro.IntegratedSSRO.finish(self)
 
@@ -92,11 +99,11 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = False
+    th_debug = True
     sequence_only = False
     mw = True
     measure_lt1 = False
-    measure_bs = False
+    measure_bs = True
     do_upload = True
 
     m=Bell_LT3(name) 
@@ -122,6 +129,7 @@ def full_bell(name):
         return
 
     m.setup(debug=th_debug)
+    m.reset_plu()
 
     if measure_lt1: m.lt1_helper.set_is_running(True)
     m.run(autoconfig=False, setup=False,debug=th_debug)
@@ -135,4 +143,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('Sam_SIL5_correlation')   
+    full_bell('Heating test')   

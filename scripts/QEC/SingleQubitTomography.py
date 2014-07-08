@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRamseyWithInitialization(name,tau = None):
+def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
 
     m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
@@ -23,26 +23,25 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 21
-    m.params['C_init_method'] = 'MBI'
+    m.params['pts'] = 21 
 
+
+    #Carbon to be addressed
     m.params['Addressed_Carbon'] = 1
+    # State to be initialized into 
     m.params['C13_init_state'] = 'up' 
-    m.params['C_RO_Z'] = False 
-    
-    m.params['sweep_name']       = 'RO_phase_(degree)' 
-    # m.params['sweep_name'] = 'wait_times'
+    m.params['C_init_method'] = 'swap'#'MBI'
 
-    if m.params['sweep_name'] == 'RO_phase_(degree)':
-        m.params['C_RO_phase'] =  np.linspace(0,360*3,m.params['pts']) 
-        m.params['wait_times'] = (np.ones(m.params['pts'])*100e-6+30e-6) #Note: wait time must be atleast carbon init time +5us 
-        m.params['sweep_pts']        = m.params['C_RO_phase']
-        print     m.params['C_RO_phase']
+    m.params['sweep_name'] = 'C_RO_phase' 
 
-    elif m.params['sweep_name']  == 'wait_times':
-        m.params['C_RO_phase'] =np.ones(m.params['pts'] )*0 # [None]*m.params['pts'] #
-        m.params['wait_times'] = np.linspace(130e-6, 5e-3,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
-        m.params['sweep_pts'] = m.params['wait_times']
+    m.params['C_RO_phase'] =  np.linspace(0,360*3,m.params['pts'])+ RO_phase 
+    m.params['C_RO_Z'] = RO_Z 
+
+    m.params['wait_times'] = (np.ones(m.params['pts'])*100e-6+30e-6) #Note: wait time must be atleast carbon init time +5us 
+    m.params['sweep_pts']  = m.params['C_RO_phase'] - RO_phase # This needs to substracted for the data analysis. 
+
+    # m.params['wait_times'] = np.linspace(130e-6, 150e-6,m.params['pts'])#Note: wait time must be atleast carbon init time +5us 
+    # m.params['sweep_pts'] = m.params['wait_times']
 
 
 
@@ -50,17 +49,11 @@ def NuclearRamseyWithInitialization(name,tau = None):
     #!NB: These should go into msmt params
     #############################
 
-
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 1
-    m.params['MBI_threshold']           = 1
     
-    m.params['C13_MBI_RO_duration']     = 31 
+    m.params['C13_MBI_RO_duration']     = 30 
     m.params['E_C13_MBI_amplitude']     = 1e-9
-
-    m.params['C1_init_phase_offset'] = 0
-
 
     m.params['SP_duration_after_C13']   = 50
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
@@ -70,5 +63,9 @@ def NuclearRamseyWithInitialization(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+    # Tomography 
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = False)
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 90, RO_Z = False)
+    NuclearRamseyWithInitialization(SAMPLE,RO_phase = 0, RO_Z = True)
+
 
