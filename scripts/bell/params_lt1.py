@@ -51,8 +51,8 @@ params_lt1['mw_power'] = 20
 params_lt1['MW_pulse_mod_risetime'] = 10e-9
 
 params_lt1['CORPSE_rabi_frequency'] = 8.15e6
-params_lt1['CORPSE_pi_amp'] = 0.382
-params_lt1['CORPSE_pi2_amp'] = 0.419864
+params_lt1['CORPSE_pi_amp'] = 0.8#382
+params_lt1['CORPSE_pi2_amp'] = 0.8#419864
 params_lt1['CORPSE_RND_amp'] = 0.5
 
 params_lt1['RND_angle_0'] = 45
@@ -62,8 +62,8 @@ params_lt1['RND_duration'] = 300e-9
 
 params_lt1['RND_during_LDE'] = 1 
 
-params_lt1['do_echo'] = 1
-params_lt1['do_final_MW_rotation'] = 1
+params_lt1['do_echo'] = 0
+params_lt1['do_final_MW_rotation'] = 0
 
 params_lt1['wait_for_PLU'] = 0
 params_lt1['free_precession_time_1st_revival'] = 73.9e-6

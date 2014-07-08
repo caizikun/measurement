@@ -595,18 +595,18 @@ def rabi(name, IQmod=True):
         print IQmod
     print m.params['ms-1_cntr_frq'] 
 
-    m.params['MW_pulse_durations'] =  np.ones(pts)*200e-9 #np.linspace(0, 10, pts) * 1e-6
-    #m.params['MW_pulse_durations'] =  np.linspace(0, 50, pts) * 1e-9
+    #m.params['MW_pulse_durations'] =  np.ones(pts)*200e-9 #np.linspace(0, 10, pts) * 1e-6
+    m.params['MW_pulse_durations'] =  np.linspace(0, 50, pts) * 1e-9
 
-    #m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9
-    m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.2,pts)#0.55*np.ones(pts)
+    m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9
+    #m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.2,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
-    #m.params['sweep_name'] = 'Pulse durations (ns)'
-    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    m.params['sweep_name'] = 'Pulse durations (ns)'
+    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
-    #m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
+    #m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
     print m.params['sweep_pts']
 
 
@@ -997,7 +997,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(3.0, IQmod = False)
+    run_calibrations(2.0, IQmod = False)
 
     """
     stage 0 : continuous ESR

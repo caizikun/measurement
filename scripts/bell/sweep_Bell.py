@@ -126,6 +126,7 @@ def sweep_bell(name, setup = 'lt3'):
     m=SweepBell(name)
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
 
     m.joint_params = {}
 
@@ -145,7 +146,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=11
+    pts=1
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -198,7 +199,7 @@ def sweep_bell(name, setup = 'lt3'):
     p_aom= qt.instruments['PulseAOM']
     aom_voltage_sweep = np.zeros(pts)
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.55,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(1.0,1.0,pts)*max_power_aom #%power
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
@@ -208,8 +209,8 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['aom_amplitude'] = aom_voltage_sweep
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
-        m.joint_params['opt_pi_pulses'] = 1
-        m.params['RND_during_LDE'] = 0
+        m.joint_params['opt_pi_pulses'] = 2
+        m.params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
 
@@ -249,9 +250,9 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 10000
 
-    th_debug=False
+    th_debug=True
     measure_bs=False
     upload_only = False
 
@@ -265,7 +266,7 @@ def sweep_bell(name, setup = 'lt3'):
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
-    m.setup(debug=th_debug )
+    m.setup(debug=th_debug)
     m.run(autoconfig=False, setup=False,debug=th_debug)    
     m.save()
     if measure_bs:
@@ -277,4 +278,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('Sam_SIL5_Tail', setup = 'lt3')
+    sweep_bell('The111_no1_sil1_heating_check', setup = 'lt1')

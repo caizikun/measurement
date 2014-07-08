@@ -2,7 +2,7 @@
 cfg={}
 
 sample_name = 'THe111_no1'
-sil_name = 'SIL1'
+sil_name = 'SIL9'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -10,7 +10,7 @@ cfg['protocols'] = {'current':name}
 cfg['protocols'][name] = {}
 
 
-cfg['protocols']['The111_no1_SIL1'] = {}
+cfg['protocols']['The111_no1_SIL9'] = {}
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 
@@ -128,7 +128,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters for a general sample ###
 ####################################################
 
-f_msm1_cntr = 2.807277e9            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.8075e9 #2.807277e9            #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -237,7 +237,7 @@ cfg['samples']['Hans_sil1'] = {
     ###########################################
 
 
-cfg['protocols']['The111_no1_SIL1']['AdwinSSRO'] = {
+cfg['protocols']['The111_no1_SIL9']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,
