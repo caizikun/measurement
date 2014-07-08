@@ -11,6 +11,9 @@ class MW_pulse(pulse.Pulse):
         self.MW_channel = MW_channel
         self.PM_channel = PM_channel
         self.channels = [MW_channel, PM_channel]
+        self.second_MW_channel = kw.pop('second_MW_channel', None)
+        if self.second_MW_channel != None:
+            self.channels.append(self.second_MW_channel)
 
         self.amplitude = kw.pop('amplitude', 0.1)
         self.length = kw.pop('length', 1e-6)
@@ -286,10 +289,7 @@ class MW_CORPSE_pulse(MW_pulse, CORPSE_pulse):
     def __init__(self, *arg, **kw):
         MW_pulse.__init__(self, *arg, **kw)
         CORPSE_pulse.__init__(self, *arg, **kw)
-        self.second_MW_channel = kw.pop('second_MW_channel', None)
-        if self.second_MW_channel != None:
-            self.channels.append(self.second_MW_channel)
-   
+           
     def __call__(self, **kw):
         MW_pulse.__call__(self, **kw)
         CORPSE_pulse.__call__(self, **kw)
