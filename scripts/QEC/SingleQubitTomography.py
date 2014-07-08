@@ -30,11 +30,11 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_phase=0, RO_Z=False):
     m.params['Addressed_Carbon'] = 1
     # State to be initialized into 
     m.params['C13_init_state'] = 'up' 
-    m.params['C_init_method'] = 'swap'#'MBI'
+    m.params['C_init_method'] = 'MBI'#'MBI'
 
     m.params['sweep_name'] = 'C_RO_phase' 
 
-    m.params['C_RO_phase'] =  np.linspace(0,360*3,m.params['pts'])+ RO_phase 
+    m.params['C_RO_phase'] =  np.linspace(0,420,m.params['pts'])+ RO_phase 
     m.params['C_RO_Z'] = RO_Z 
 
     m.params['wait_times'] = (np.ones(m.params['pts'])*100e-6+30e-6) #Note: wait time must be atleast carbon init time +5us 
