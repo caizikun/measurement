@@ -18,7 +18,7 @@ params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 params_lt1['cr_mod'] = True
 params_lt1['cr_mod_control_offset']     =  0.0
 params_lt1['cr_mod_control_amp']        =  0.05 #V
-params_lt1['repump_mod_control_offset'] =  7.0
+params_lt1['repump_mod_control_offset'] =  7.2
 params_lt1['repump_mod_control_amp']    =  .5 #V
 
 #CR check modulation pars:
@@ -35,11 +35,11 @@ params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
-params_lt1['Ex_CR_amplitude'] = 5e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =5e-9#10e-9#16e-9              
+params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
+params_lt1['A_CR_amplitude'] =3e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
 params_lt1['A_SP_amplitude'] = 5e-9             
-params_lt1['Ex_RO_amplitude'] = 6e-9
+params_lt1['Ex_RO_amplitude'] = 3e-9
 params_lt1['A_RO_amplitude'] = 0
 params_lt1['repump_amplitude'] = 30e-9 
 
@@ -47,7 +47,7 @@ params_lt1['repump_amplitude'] = 30e-9
 ### pulses and MW stuff LT1
 #####################
 ## general
-f_msm1_cntr_lt1 = 2.828827e9 
+f_msm1_cntr_lt1 = 2.8072e9 
 mw0_lt1 = f_msm1_cntr_lt1
 #f0_lt1 = f_msm1_cntr_lt1 - mw0_lt1
 #params_lt1['ms-1_cntr_frq'] = f_msm1_cntr_lt1
@@ -55,13 +55,21 @@ params_lt1['mw_frq'] = mw0_lt1
 params_lt1['mw_power'] = 20
 params_lt1['MW_pulse_mod_risetime'] = 10e-9
 
-params_lt1['CORPSE_rabi_frequency'] = 8.15e6
-params_lt1['CORPSE_pi_amp'] = 0.8#382
-params_lt1['CORPSE_pi2_amp'] = 0.8#419864
-params_lt1['CORPSE_RND_amp'] = 0.5
+#params_lt1['CORPSE_rabi_frequency'] = 8.15e6
+#params_lt1['CORPSE_pi_amp'] = 0.8#382
+#params_lt1['CORPSE_pi2_amp'] = 0.8#419864
+#params_lt1['CORPSE_RND_amp'] = 0.5
+#params_lt1['RND_angle_0'] = 45
+#params_lt1['RND_angle_1'] = 315
 
-params_lt1['RND_angle_0'] = 45
-params_lt1['RND_angle_1'] = 315
+params_lt3['MW_pi_amp']		   = 0.7669
+params_lt3['MW_pi_duration']   = 120e-9
+params_lt3['MW_pi2_amp']	   = 0.607
+params_lt3['MW_pi2_duration']  = 60e-9
+params_lt3['MW_RND0_amp']	   = 0.751 #TODO Calibrate
+params_lt3['MW_RND0_duration'] = 125e-9 #TODO Calibrate
+params_lt3['MW_RND1_amp']	   = 0.751 #TODO Calibrate
+params_lt3['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 

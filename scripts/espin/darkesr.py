@@ -27,7 +27,8 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
 
     m.params['ssmod_detuning'] = 43e6
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
@@ -83,6 +84,6 @@ def darkesrp1(name):
 
 
 if __name__ == '__main__':
-    #darkesr(SAMPLE_CFG)
+    darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
-    darkesrp1(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)

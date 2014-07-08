@@ -154,7 +154,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=1
+    pts=11
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -197,7 +197,7 @@ def sweep_bell(name, setup = 'lt3'):
             m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9 #what is the correct value ?
             m.params['eom_overshoot1']             = np.ones(pts)*-0.05  #     np.ones(pts)*-0.03 # calibration from 19-03-2014# 
 
-        m.params['eom_pulse_duration']         = np.ones(pts)*20e-9
+        m.params['eom_pulse_duration']         = np.ones(pts)*2e-9
         m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
         m.params['eom_off_duration']           = 150e-9
         m.params['eom_overshoot_duration2']    = 10e-9
@@ -207,20 +207,21 @@ def sweep_bell(name, setup = 'lt3'):
     p_aom= qt.instruments['PulseAOM']
     aom_voltage_sweep = np.zeros(pts)
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(1.0,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.1,1.0,pts)*max_power_aom #%power
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = False 
+    do_tail = True 
     if do_tail:
         m.params['aom_amplitude'] = aom_voltage_sweep
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
-        m.joint_params['opt_pi_pulses'] = 2
-        m.params['RND_during_LDE'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+        m.params['RND_during_LDE'] = 0
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
+        m.joint_params['LDE_element_length'] = 7e-6
 
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
@@ -253,9 +254,9 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 1000
 
-    th_debug=True
+    th_debug=False
     measure_bs=False
     upload_only = False
 
@@ -281,4 +282,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_Heating_opt_rabis', setup = 'lt3')
+    sweep_bell('SAM_SIL5_Heating_opt_rabis', setup = 'lt1')

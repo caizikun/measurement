@@ -59,7 +59,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
     'cr_mod_control_offset'     :   0.0,
     'cr_mod_control_amp'        :   0.05, #V
-    'repump_mod_control_offset' :   7.0,
+    'repump_mod_control_offset' :   7.2,
     'repump_mod_control_amp'    :   .5, #V
     }
 
@@ -128,7 +128,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters for a general sample ###
 ####################################################
 
-f_msm1_cntr = 2.8075e9 #2.807277e9            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.8072e9 #2.807277e9            #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -146,16 +146,16 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'SSRO_repetitions'  : 5000,
     'SSRO_duration'     :  50,
     'SSRO_stop_after_first_photon' : 0,
-    'A_CR_amplitude': 4e-9,#3nW
+    'A_CR_amplitude': 2e-9,#3nW
     'A_RO_amplitude': 0,
-    'A_SP_amplitude': 5e-9,
+    'A_SP_amplitude': 3e-9,
     'CR_duration' :  100,
     'CR_preselect':  1000,
     'CR_probe':      1000,
     'CR_repump':     1000,
-    'Ex_CR_amplitude':  4e-9,#5nW
-    'Ex_RO_amplitude':  5e-9, #15e-9,
-    'Ex_SP_amplitude':  15e-9,
+    'Ex_CR_amplitude':  2e-9,#5nW
+    'Ex_RO_amplitude':  3e-9, #15e-9,
+    'Ex_SP_amplitude':  3e-9,
     'SP_duration'        : 100,
     'SP_duration_ms0' : 100,
     'SP_duration_ms1' : 100,
@@ -170,12 +170,16 @@ cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
         'CORPSE_rabi_frequency' : CORPSE_frq,
-        'CORPSE_amp' : 0.201 ,
-        'CORPSE_pi2_amp':0.770,
-        'CORPSE_pulse_delay': 0e-9,
-        'CORPSE_pi_amp': 0.713,
-        'MW_pi_amp': 0.9,
-        'MW_pi_length': 65e-9,
+        'CORPSE_amp' : 0.201 , #N.C.
+        'CORPSE_pi2_amp':0.770, #N.C.
+        'CORPSE_pulse_delay': 0e-9, #N.C.
+        'CORPSE_pi_amp': 0.713, #N.C. 
+        'MW_pi_amp': 0.9,#N.C.
+        'MW_pi_length': 65e-9,#N.C.
+        'Hermite_pi_length': 120e-9,
+        'Hermite_pi_amp': 0.7669,
+        'Hermite_pi2_length': 60e-9,
+        'Hermite_pi2_amp': 0.607,
         'extra_wait_final_pi2' : -30e-9
         }
 

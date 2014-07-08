@@ -71,11 +71,11 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=CORPSE_pi2
         
     elif pulse_type == 'Hermite':
-        msmt.params['MW_pi_duration'] = 250e-9
-        msmt.params['MW_pi2_duration'] = 125e-9
+        msmt.params['MW_pi_duration'] = 120e-9
+        msmt.params['MW_pi2_duration'] = 60e-9
         if IQmod :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq']-msmt.params['MW_pulse_mod_frequency'] 
-            msmt.params['pulse_pi_amp'] = 0.750
+            msmt.params['pulse_pi_amp'] = 0.7669
             msmt.params['pulse_pi2_amp'] = 0.750
             IQ_Hermite_pi = pulselib.HermitePulse_Envelope_IQ('Hermite pi-pulse',
                     I_channel='MW_Imod',
@@ -692,7 +692,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.8, 0.9, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.75, 0.85, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -897,7 +897,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(7.0, IQmod = False)
+    run_calibrations(5.0, IQmod = False)
 
     """
     stage 0 : continuous ESR
