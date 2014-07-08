@@ -204,10 +204,8 @@ EVENT:
           mode = 2
           timer = -1
         ENDIF
-        IF (( CR_result <> 0 ) AND (first_local > 0)) THEN
-          i = MIN_LONG(cr_counts+1,max_CR_counts)
-          INC(DATA_28[i])
-          Par_80=-99
+        IF (((first_local > 0) AND (CR_result <> 0)) AND (cr_counts<max_CR_counts)) THEN
+          INC(DATA_28[cr_counts+1])
           first_local = 0
         ENDIF
         
@@ -340,7 +338,7 @@ EVENT:
           ENDIF
         ENDIF
       CASE 6 'local SSRO OK, wait for remote SSRO done
-        IF (remote_mode = 4) THEN
+        IF ((remote_mode = 4) OR (wait_for_remote_CR =0)) THEN
           mode = 0 
           remote_mode = 0
           timer = -1

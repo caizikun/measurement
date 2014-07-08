@@ -11,6 +11,9 @@ class MW_pulse(pulse.Pulse):
         self.MW_channel = MW_channel
         self.PM_channel = PM_channel
         self.channels = [MW_channel, PM_channel]
+        self.second_MW_channel = kw.pop('second_MW_channel', None)
+        if self.second_MW_channel != None:
+            self.channels.append(self.second_MW_channel)
 
         self.amplitude = kw.pop('amplitude', 0.1)
         self.length = kw.pop('length', 1e-6)
@@ -286,10 +289,7 @@ class MW_CORPSE_pulse(MW_pulse, CORPSE_pulse):
     def __init__(self, *arg, **kw):
         MW_pulse.__init__(self, *arg, **kw)
         CORPSE_pulse.__init__(self, *arg, **kw)
-        self.second_MW_channel = kw.pop('second_MW_channel', None)
-        if self.second_MW_channel != None:
-            self.channels.append(self.second_MW_channel)
-   
+           
     def __call__(self, **kw):
         MW_pulse.__call__(self, **kw)
         CORPSE_pulse.__call__(self, **kw)
@@ -333,7 +333,7 @@ class GaussianPulse_Envelope_IQ(MW_IQmod_pulse):
         self.std = kw.pop('std',0.1667*self.length)
 
     def __call__(self, *arg, **kw):
-        self.env_amplitude = kw.pop('amplitude', 0.1)
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
         MW_IQmod_pulse.__call__(self, *arg, amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
         self.std = kw.pop('std',0.1667*self.length)
@@ -344,10 +344,40 @@ class GaussianPulse_Envelope_IQ(MW_IQmod_pulse):
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
         else:  
-            env = self.env_amplitude*np.exp(-(((tvals-self.mu)**2)/(2*self.std**2)))
+            t=tvals-tvals[0] 
+            env = self.env_amplitude*np.exp(-(((t-self.mu)**2)/(2*self.std**2)))
             wf = MW_IQmod_pulse.chan_wf(self, chan, tvals)
 
             return env*wf
+
+
+
+class GaussianPulse_Envelope(MW_pulse):
+    def __init__(self, *arg, **kw):
+        self.env_amplitude = kw.pop('amplitude', 0.1)
+        MW_pulse.__init__(self, *arg, amplitude=1., **kw)
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.std = kw.pop('std',0.1667*self.length)
+
+    def __call__(self, *arg, **kw):
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
+        MW_pulse.__call__(self, *arg, amplitude=1., **kw)
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.std = kw.pop('std',0.1667*self.length)
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return MW_pulse.chan_wf(self,chan,tvals)
+
+        else: 
+            t=tvals-tvals[0]  
+            env = self.env_amplitude*np.exp(-(((t-self.mu)**2)/(2*self.std**2)))
+            wf = MW_pulse.chan_wf(self, chan, tvals)
+
+            return env*wf
+
+
 
 class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):
@@ -357,7 +387,7 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
         self.T_herm = kw.pop('T_herm',0.1667*self.length)
 
     def __call__(self, *arg, **kw):
-        self.env_amplitude = kw.pop('amplitude', 0.1)
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
         MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
         self.T_herm = kw.pop('T_herm',0.1667*self.length)
@@ -367,11 +397,38 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
         if chan == self.PM_channel:
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
-        else:  
-            env = self.env_amplitude*(1-0.956*((tvals-self.mu)/self.T_herm)**2)*np.exp(-((tvals-self.mu)/self.T_herm)**2) #literature values
+        else: 
+            t=tvals-tvals[0] 
+            env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
             wf = MW_IQmod_pulse.chan_wf(self, chan, tvals)
 
             return env*wf
+
+
+class HermitePulse_Envelope(MW_pulse):
+    def __init__(self, *arg, **kw):
+        self.env_amplitude = kw.pop('amplitude', 0.1)
+        MW_pulse.__init__(self, *arg,amplitude=1., **kw)
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+
+    def __call__(self, *arg, **kw):
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
+        MW_pulse.__call__(self, *arg, amplitude=1., **kw)
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return MW_pulse.chan_wf(self,chan,tvals)
+
+        else: 
+            t=tvals-tvals[0] 
+            env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
+            wf = MW_pulse.chan_wf(self, chan, tvals)
+            return env*wf
+
 
 
 class ReburpPulse_Envelope_IQ(MW_IQmod_pulse):

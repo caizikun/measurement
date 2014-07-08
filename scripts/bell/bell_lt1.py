@@ -74,7 +74,7 @@ class Bell_LT1(bell.Bell):
         seq.append(name = 'LDE_LT1',
             wfname = LDE_element.name,
             trigger_wait = False,
-            jump_target = 'RO_dummy',
+            #jump_target = 'RO_dummy',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         seq.append(name = 'LDE_timeout',
@@ -146,4 +146,4 @@ def bell_lt1_remote(name):
 
 
 if __name__ == '__main__':
-    bell_lt1_remote('tpqi_parallel')
+    bell_lt1_remote('LT1_pulses')
