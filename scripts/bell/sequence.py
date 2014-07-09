@@ -34,7 +34,7 @@ def pulse_defs_lt3(msmt):
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
-                    amplitude = msmt.params['MW_pi_amp'], #XXXXXXXXXXXX
+                    amplitude = msmt.params['MW_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
@@ -114,7 +114,7 @@ def pulse_defs_lt1(msmt):
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
-                    amplitude = msmt.params['MW_pi_amp'], #XXXXXXXXXXXX
+                    amplitude = msmt.params['MW_pi2_amp'], 
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
@@ -296,7 +296,7 @@ def _LDE_element(msmt, **kw):
             refpulse = 'opt pi 1',
             start = msmt.params['PLU_1_delay'])
 
-    #8 MW pi
+    #8 MW pi 
     if msmt.params['MW_during_LDE'] == 1:
         e.add(msmt.MW_pi, 
             start = msmt.params['MW_1_separation'],

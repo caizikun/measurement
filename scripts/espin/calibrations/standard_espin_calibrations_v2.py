@@ -71,8 +71,8 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=CORPSE_pi2
         
     elif pulse_type == 'Hermite':
-        msmt.params['MW_pi_duration'] = 120e-9
-        msmt.params['MW_pi2_duration'] = 60e-9
+        msmt.params['MW_pi_duration'] = 180e-9
+        msmt.params['MW_pi2_duration'] = 90e-9
         if IQmod :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq']-msmt.params['MW_pulse_mod_frequency'] 
             msmt.params['pulse_pi_amp'] = 0.7669
@@ -95,8 +95,8 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=IQ_Hermite_pi2
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
-            msmt.params['pulse_pi_amp'] = 0.842 # calib. 2014-07-07
-            msmt.params['pulse_pi2_amp'] = 0.751
+            msmt.params['pulse_pi_amp'] = 0.890 # calib. 2014-07-09
+            msmt.params['pulse_pi2_amp'] = 0.709
             
             Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
@@ -567,8 +567,8 @@ class Test_3MW(pulsar_msmt.PulsarMeasurement):
 def rabi(name, IQmod=True):
 
     if IQmod :
-       # m = pulsar_msmt.ElectronRabi(name)
-        m = Test_3MW(name)
+       m = pulsar_msmt.ElectronRabi(name)
+        #m = Test_3MW(name)
     else :
         m = pulsar_msmt.ElectronRabi_Square(name)
 
@@ -582,18 +582,18 @@ def rabi(name, IQmod=True):
     m.params['Ex_SP_amplitude']=0
 
     if IQmod :
-        m.params['MW_pulse_mod_frequency'] = 43e6
-        m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_pulse_mod_frequency'] 
+        m.params['MW_pulse_frequency'] = 43e6
+        m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_pulse_frequency'] 
     else :
         m.params['mw_frq'] = m.params['ms-1_cntr_frq'] 
         print IQmod
     print m.params['ms-1_cntr_frq'] 
 
-    m.params['MW_pulse_durations'] =  np.ones(pts)*395e-9 #np.linspace(0, 10, pts) * 1e-6
-    #m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['MW_pulse_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
+    #m.params['MW_pulse_durations'] =  np.linspace(0, 50, pts) * 1e-9
 
-    #m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.9
-    m.params['MW_pulse_amplitudes'] = np.linspace(0.15,0.25,pts)#0.55*np.ones(pts)
+    #m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.6
+    m.params['MW_pulse_amplitudes'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
     #m.params['sweep_name'] = 'Pulse durations (ns)'
@@ -624,8 +624,8 @@ def dark_esr(name):
     m.params['repetitions']  = 1000
     m.params['range']        = 6e6
     m.params['pts'] = 131
-    m.params['pulse_length'] = 2.3e-6
-    m.params['ssbmod_amplitude'] = 0.04
+    m.params['pulse_length'] = 2.6e-6
+    m.params['ssbmod_amplitude'] = 0.02
     
     m.params['Ex_SP_amplitude']=0
 
@@ -692,7 +692,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.75, 0.85, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.8, 0.95, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -729,7 +729,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.2,0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.3,0.,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -897,7 +897,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(5.0, IQmod = False)
+    run_calibrations(5., IQmod = False)
 
     """
     stage 0 : continuous ESR

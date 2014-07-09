@@ -207,12 +207,12 @@ def sweep_bell(name, setup = 'lt3'):
     p_aom= qt.instruments['PulseAOM']
     aom_voltage_sweep = np.zeros(pts)
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-    aom_power_sweep=linspace(0.1,1.0,pts)*max_power_aom #%power
+    aom_power_sweep=linspace(0.5,1.0,pts)*max_power_aom #%power
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = True 
+    do_tail = False 
     if do_tail:
         m.params['aom_amplitude'] = aom_voltage_sweep
         m.joint_params['LDE_attempts_before_CR'] = 250
@@ -228,11 +228,11 @@ def sweep_bell(name, setup = 'lt3'):
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'MW_pi_amp' 
-        m.params['general_sweep_pts'] = np.linspace(1.0,1.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(0,1.0,pts)
 
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*.75
+        m.params['aom_amplitude'] = np.ones(pts)*.90
 
         m.params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
@@ -282,4 +282,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_Heating_opt_rabis', setup = 'lt1')
+    sweep_bell('SAM_SIL5_Heating_test', setup = 'lt3')
