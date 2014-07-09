@@ -47,7 +47,7 @@ class Gate(object):
 
         self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
 
-        self.dec_duration = kw.pop('dec_duration', None)  # can be specified if a custom dec duration is desired
+        self.dec_duration = kw.pop('dec_duration', None)  # can be specified if a custom dec duration is desired 
 
         # Information on how to combine the gates in the AWG.
         self.wait_for_trigger = kw.pop('wait_for_trigger',False)
@@ -59,8 +59,8 @@ class Gate(object):
         self.C_phases_after_gate = [None]*10
         self.el_state_before_gate = kw.pop('el_state_before_gate',None)
         self.el_state_after_gate = kw.pop('el_state_after_gate',None)
-        if self.Gate_type =='Carbon_Gate' :
-            self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi
+        if self.Gate_type =='Carbon_Gate' : 
+            self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi 
 
         '''
         Description of other attributes that get added by functions
@@ -118,10 +118,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             phase = self.params['X_phase'])
         return pi2
 
-    def _spec_pi2_elt(self):
+    def _spec_pi2_elt(self): 
         '''
-        xpi2 element with custom duration used for testing purposes only
-        uses:
+        xpi2 element with custom duration used for testing purposes only 
+        uses: 
         self.params['cust_pi2_duration']
         self.params['cust_pi2_amp']
         '''
@@ -684,8 +684,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         This condition could be defined stricter when going trough all the files
         '''
         duration = 1e-6
-        if g.wait_time<3e-6:
-            print 'Error: g.wait_time of %s is smaller than 3e-6 for passive wait element' %g.name
+        if g.wait_time<3e-6: 
+            print 'Error: g.wait_time of %s is smaller than 3e-6 for passive wait element' %g.name 
 
         n_wait_reps, tau_remaind = divmod(round(g.wait_time*1e9),duration*1e9) #Rounding to ns
         while n_wait_reps > 50000: #allows for longer durations than max reps in AWG
@@ -733,12 +733,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #in this an element should be added in before
             if Gate.Gate_operation == 'pi2':
                 eP = self._pi2_elt()
-            elif Gate.Gate_operation == 'special_pi2': #NOTE: For testing purposes only !!!
-                eP = self._spec_pi2_elt()
+            elif Gate.Gate_operation == 'special_pi2': #NOTE: For testing purposes only !!! 
+                eP = self._spec_pi2_elt() 
             elif Gate.Gate_operation == 'pi':
                 eP = self._X_elt()
             eP.phase = Gate.phase
-
+        
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
                 length = tau_cut_before-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.)
             T_dec_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
@@ -756,14 +756,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         decoupling_elt = element.Element('%s_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
 
 
-        if N == 0 and Gate.Gate_type == 'electron_Gate':
+        if N == 0 and Gate.Gate_type == 'electron_Gate':  
             T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
-                length = tau_cut_after-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.) #Overwrite length of T_final element
+                length = tau_cut_after-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.) #Overwrite length of T_final element 
 
             decoupling_elt.append(T_initial)
             decoupling_elt.append(eP)
             decoupling_elt.append(T_final)
-        else:
+        else: 
             if Gate.Gate_type == 'electron_Gate':
                 decoupling_elt.append(T_initial)
                 decoupling_elt.append(eP)
@@ -1074,7 +1074,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         return list_of_elements, seq
 
-    # elements generation
+    # elements generation 
 
     def generate_AWG_elements(self,Gate_sequence,pt = 1):
 
@@ -1110,11 +1110,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             C0str = 'C'+str(i)+'_freq_0'
             C1str = 'C'+str(i)+'_freq_1'
             Cdecstr = 'C'+str(i)+'_freq_dec'
-            try:
+            try: 
                 C_freq_0.append(self.params[C0str]*2*np.pi)
                 C_freq_1.append(self.params[C1str]*2*np.pi)
                 C_freq_dec.append (self.params[Cdecstr]*2*np.pi)
-            except:
+            except: 
                 C_freq_1.append(None)
                 C_freq_0.append(None)
                 C_freq_dec.append (None)
@@ -1124,22 +1124,22 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Loops over all elements in the gate sequence and adds g.tau_cut_before and g.tau_cut_after to connection and
             electron gate elements.
-        If there is only a trigger element between two electron gates the trigger elements_duration is extended twice by 1e-6 and
-            that duration is added to the tau_cut_before and after of the respective electron gates.
+        If there is only a trigger element between two electron gates the trigger elements_duration is extended twice by 1e-6 and 
+            that duration is added to the tau_cut_before and after of the respective electron gates.  
 
         '''
         for i,g in enumerate(Gate_sequence):
-            found_trigger = False
+            found_trigger = False 
             if g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
 
                 for g_b in Gate_sequence[i-1::-1]:
                     g.tau_cut_before = 1e-6 # Default value in case it is the first element
-                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the
-                        found_trigger = True
-                        g_t = g_b
+                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the 
+                        found_trigger = True 
+                        g_t = g_b 
                     elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
-                        g_t.elements_duration = g_t.elements_duration +1e-6
-                        g.tau_cut_before = 1e-6
+                        g_t.elements_duration = g_t.elements_duration +1e-6 
+                        g.tau_cut_before = 1e-6 
 
                     elif g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
                         print ( 'Error: There is no decoupling gate or trigger between %s and %s.') %(g.name,g_b.name)
@@ -1148,12 +1148,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         break
                 for g_b in Gate_sequence[i+1::]:
                     g.tau_cut_after = 1e-6 # Default value in case it is the first element
-                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the
-                        found_trigger = True
-                        g_t = g_b
+                    if g_b.Gate_type =='Trigger':  #Checks if there is a trigger between the 
+                        found_trigger = True 
+                        g_t = g_b 
                     elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
-                        g_t.elements_duration = g_t.elements_duration +1e-6
-                        g.tau_cut_after = 1e-6
+                        g_t.elements_duration = g_t.elements_duration +1e-6 
+                        g.tau_cut_after = 1e-6 
                     elif g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
                         print ( 'Error: There is no decoupling gate or trigger between %s and %s.') %(g.name,g_b.name)
                     elif hasattr(g_b, 'tau_cut'):
@@ -1178,7 +1178,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         If g.C_phases_after_gate[i]  is specified for the gate before the function is called this takes priority
         over the phase calculated. This can be used if one wants to reset phase for example in the case of readouts.
         If 'g.phase = None' no phase correction using dynamical decoupling is aplied.
-        if Ren_phase_offset == True: Carbon gates get an extre phase offset
+        if Ren_phase_offset == True: Carbon gates get an extre phase offset 
 
         NOTE: All phases used are in radians. Input phases are in degrees because of convetion.
         NOTE: Phases and electron states are with respect to the IDEAL gate.
@@ -1198,8 +1198,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     g.el_state_before_gate = 'sup' # if nothing added g.el_state_before it defaults to sup.
                 else:
                     g.el_state_before_gate =Gate_sequence[i-1].el_state_after_gate
-
-            if i!= 0:
+            
+            if i!= 0: 
                 g.C_phases_before_gate = Gate_sequence[i-1].C_phases_after_gate
 
             if g.el_state_after_gate ==None:
@@ -1218,8 +1218,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]+ (2*g.tau*g.N)*C_freq_dec[iC]
-                    elif g.C_phases_after_gate[iC] !=None and Ren_phase_offset == True:  #Currently not used
-                        g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC] + self.params['C'+str(iC)+'_Ren_phase_offset']/180.*np.pi
+                    elif g.C_phases_after_gate[iC] !=None and Ren_phase_offset == True:  #Currently not used 
+                        g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC] + self.params['C'+str(iC)+'_Ren_phase_offset']/180.*np.pi  
 
             elif g.Gate_type =='electron_decoupling':
 
@@ -1235,16 +1235,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
                 elif Gate_sequence[i+1].phase == None :
-                    g.dec_duration =0
+                    g.dec_duration =0 
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi #Convert degrees to radian
                     Carbon_index = Gate_sequence[i+1].Carbon_ind
                     if g.C_phases_before_gate[Carbon_index] ==None :
                         g.dec_duration = 0 #
                     else:
-                        phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi)
-                        if ( (phase_diff <= (self.params['min_phase_correct']/180.*np.pi)) or
-                                (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ):
+                        phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi) 
+                        if ( (phase_diff <= (self.params['min_phase_correct']/180.*np.pi)) or 
+                                (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ): 
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
 
@@ -1274,10 +1274,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         elif g.el_state_before_gate == '1':
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.wait_time*C_freq_1[iC])%(2*np.pi)
                         elif g.el_state_before_gate == 'sup':
-                            g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC])%(2*np.pi)
+                            g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC])%(2*np.pi) 
                             # print 'Warning: %s, el state in sup for passive elt' %g.name
             elif g.Gate_type=='Trigger':
-                #NOTE Trigger element phase calc seems to work
+                #NOTE Trigger element phase calc seems to work 
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':
@@ -1295,7 +1295,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
-
+          
 
         return Gate_sequence
 
@@ -1303,7 +1303,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
 class NuclearRamsey(DynamicalDecoupling):
     '''
-    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is
+    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is 
     resonantly controlled using a decoupling sequence.
     ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
     '''
@@ -1388,10 +1388,10 @@ class NuclearRamsey(DynamicalDecoupling):
 
 class NuclearRamsey_v2(DynamicalDecoupling):
     '''
-    Supercedes the Nuclear Ramsey class
-    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is
+    Supercedes the Nuclear Ramsey class 
+    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is 
     resonantly controlled using a decoupling sequence.
-    Decoupling between Ren gates is required to prevent electron dephasing.
+    Decoupling between Ren gates is required to prevent electron dephasing. 
     ---|pi/2| - |Ren| - |Rz| - |Ren| - |pi/2| ---
     '''
     mprefix = 'CarbonRamsey'
@@ -1413,7 +1413,7 @@ class NuclearRamsey_v2(DynamicalDecoupling):
 
             initial_Pi2 = Gate('initial_pi2_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = True,
+                    wait_for_trigger = True, 
                     phase = self.params['X_phase'])
             Ren_a = Gate('Ren_a_'+str(pt), 'Carbon_Gate',
                     Carbon_ind =self.params['addressed_carbon'],
@@ -1425,7 +1425,7 @@ class NuclearRamsey_v2(DynamicalDecoupling):
                     phase = None)
             final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = False,
+                    wait_for_trigger = False, 
                     phase = self.params['X_phase']+180)
 
             RO_Trigger = Gate('RO_Trigger_'+str(pt),'Trigger',el_state_before_gate = '0')
@@ -1439,10 +1439,10 @@ class NuclearRamsey_v2(DynamicalDecoupling):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    '-'*5
+            if debug: 
+                print '*'*10 
+                for g in gate_seq: 
+                    '-'*5 
                     print g.name
                     print g.C_phases_before_gate
                     print g.C_phases_after_gate
@@ -1539,8 +1539,8 @@ class LongNuclearRamsey(DynamicalDecoupling):
 
 class NuclearRamsey_no_elDD(DynamicalDecoupling):
     '''
-    Supercedes the Nuclear Ramsey no el DD class
-    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is
+    Supercedes the Nuclear Ramsey no el DD class 
+    The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is 
     resonantly controlled using a decoupling sequence.
     MBI---|y| - |Ren| - |x|--|Wait| -- |y|- |Ren| - |x| ---RO
     '''
@@ -1563,7 +1563,7 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
 
             initial_Pi2 = Gate('initial_pi2_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = True,
+                    wait_for_trigger = True, 
                     phase = self.params['Y_phase'])
             Ren_a = Gate('Ren_a_'+str(pt), 'Carbon_Gate',
                     Carbon_ind =self.params['addressed_carbon'],
@@ -1571,21 +1571,21 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
 
             pi2_a = Gate('pi2_a_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = False,
+                    wait_for_trigger = False, 
                     phase = self.params['X_phase'])
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['free_evolution_times'][pt])
 
             pi2_b = Gate('pi2_b_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = False,
+                    wait_for_trigger = False, 
                     phase = self.params['Y_phase'])
             Ren_b = Gate('Ren_b'+str(pt), 'Carbon_Gate',
                     Carbon_ind =self.params['addressed_carbon'],
                     phase = None)
             final_Pi2 = Gate('final_pi2_'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
-                    wait_for_trigger = False,
+                    wait_for_trigger = False, 
                     phase = self.params['X_phase']+180)
 
             RO_Trigger = Gate('RO_Trigger_'+str(pt),'Trigger',el_state_before_gate = '0')
@@ -1599,10 +1599,10 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    '-'*5
+            if debug: 
+                print '*'*10 
+                for g in gate_seq: 
+                    '-'*5 
                     print g.name
                     print g.C_phases_before_gate
                     print g.C_phases_after_gate
@@ -1721,14 +1721,15 @@ class MBI_C13(DynamicalDecoupling):
         # print 'carbon init ro wait %s' %self.params['Carbon_init_RO_wait']
         DynamicalDecoupling.autoconfig(self)
 
-    # sub sequence functions
-    def initialize_carbon_sequence(self,
+
+    # sub sequence functions 
+    def initialize_carbon_sequence(self, 
             prefix = 'C_init',
             go_to_element ='MBI_1',
-            initialization_method ='swap',
-            pt = 1,
-            addressed_carbon =1,
-            C_init_state='up',
+            initialization_method ='swap', 
+            pt = 1, 
+            addressed_carbon =1, 
+            C_init_state='up', 
             el_after_init = '0' ):
         '''
         Supports Swap or MBI initialization, does not yet support initalizing in different bases.
@@ -1761,6 +1762,8 @@ class MBI_C13(DynamicalDecoupling):
         C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
+        #TODO_MAR: Remove C_init_Ren statement 
+        C_init_Ren_a.C_phases_after_gate[addressed_carbon] = self.params['C'+str(addressed_carbon)+'_Ren_phase_offset']/180.*np.pi 
 
         C_init_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
@@ -1802,42 +1805,42 @@ class MBI_C13(DynamicalDecoupling):
 
         return carbon_init_seq
 
-    def readout_single_carbon_sequence(self,
-            prefix = 'C_RO_',
-            go_to_element ='next',event_jump_element = 'next',
-            RO_duration = 10e-6,
-            pt = 1, addressed_carbon =1,
-            RO_Z=False,RO_phase = 0,
+    def readout_single_carbon_sequence(self, 
+            prefix = 'C_RO_', 
+            go_to_element ='next',event_jump_element = 'next', 
+            RO_duration = 10e-6, 
+            pt = 1, addressed_carbon =1,  
+            RO_Z=False,RO_phase = 0, 
             el_after_RO = '0' ):
         '''
-        Creates a single carbon readout gate sequence.
-        Does a readout an a single Carbon.
+        Creates a single carbon readout gate sequence. 
+        Does a readout an a single Carbon. 
 
-        Base to readout can be specified by
-        RO_Z True or False
-        RO_phase  in degress
+        Base to readout can be specified by 
+        RO_Z True or False 
+        RO_phase  in degress 
 
         In the case where this function is used to do conditional feed forward the following parameters have to be specified
-        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin
-        go_to_element: determines where to go when no 'click' comes from the adwin.
-        event_jump_element: determines where to jump to when a 'click' comes from the adwin.
+        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin 
+        go_to_element: determines where to go when no 'click' comes from the adwin. 
+        event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
 
-        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches.
+        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
         '''
 
         C_RO_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
-                Carbon_ind = addressed_carbon, phase = RO_phase)
-
+                Carbon_ind = addressed_carbon, phase = RO_phase) 
+        
         C_RO_y = Gate(prefix+str(addressed_carbon)+'y_'+str(pt),
                 'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['Y_phase'])
-        if RO_phase!=None:
-            C_RO_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt),
+        if RO_phase!=None: 
+            C_RO_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt), 
                     'Carbon_Gate',
                     Carbon_ind = addressed_carbon, phase =( RO_phase+90))
-        else:
-            C_RO_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt),
+        else: 
+            C_RO_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_'+str(pt), 
                     'Carbon_Gate',
                     Carbon_ind = addressed_carbon, phase =( RO_phase))
         C_RO_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
@@ -1848,71 +1851,71 @@ class MBI_C13(DynamicalDecoupling):
                 el_state_before_gate = el_after_RO)
 
 
-        if RO_Z == True:
+        if RO_Z == True: 
             carbon_RO_seq =[C_RO_Ren_a,C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_Trigger]
-        else:
-            C_RO_Ren_b.phase = RO_phase
+        else: 
+            C_RO_Ren_b.phase = RO_phase 
             carbon_RO_seq =[C_RO_y, C_RO_Ren_b, C_RO_x,C_RO_Trigger]
 
         return carbon_RO_seq
 
-    def readout_multiple_carbon_sequence(self,
+    def readout_multiple_carbon_sequence(self, 
             prefix = 'C_pRO',
-            go_to_element ='next',event_jump_element = 'next',
-            RO_duration = 10e-6,
-            pt = 1,
-            addressed_carbon =[1,2],
+            go_to_element ='next',event_jump_element = 'next', 
+            RO_duration = 10e-6, 
+            pt = 1, 
+            addressed_carbon =[1,2], 
             RO_Z=[False,True],
-            RO_phase = [0,0],
+            RO_phase = [0,0], 
             el_after_RO = '0' ):
         '''
-        TODO_MAR: Finish readout multiple carbon sequence
+        TODO_MAR: Finish readout multiple carbon sequence 
 
-        Creates a single carbon readout gate sequence.
-        Does a readout an a single Carbon.
+        Creates a single carbon readout gate sequence. 
+        Does a readout an a single Carbon. 
 
-        Base to readout can be specified by
-        RO_Z True or False
-        RO_phase  in degress
+        Base to readout can be specified by 
+        RO_Z True or False 
+        RO_phase  in degress 
 
-        By setting RO_phase = None, for one of the two carbons to be None, that carbon will not be read out.
-        Instead the fucntion readout_single_carbon_sequence is called to read out the other carbon. This allows to perform ex the IX parity measurement.
+        By setting RO_phase = None, for one of the two carbons to be None, that carbon will not be read out. 
+        Instead the fucntion readout_single_carbon_sequence is called to read out the other carbon. This allows to perform ex the IX parity measurement. 
 
         In the case where this function is used to do conditional feed forward the following parameters have to be specified
-        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin
-        go_to_element: determines where to go when no 'click' comes from the adwin.
-        event_jump_element: determines where to jump to when a 'click' comes from the adwin.
+        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin 
+        go_to_element: determines where to go when no 'click' comes from the adwin. 
+        event_jump_element: determines where to jump to when a 'click' comes from the adwin. 
 
         all elements for this sequence start with C_pRO_ as a prefix. where pRO stands for parity  Readout
 
-        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches.
+        NOTE: If used for branching, el_after_RO has to be manually overwritten when generating phase correction for different branches. 
         '''
-        if  RO_phase[0] == None and  RO_phase[1] == None:
+        if  RO_phase[0] == None and  RO_phase[1] == None: 
             print 'NO Carbon selected for readout, No sequence could be generated. in function: readout_multiple_carbon_sequence '
-        elif RO_phase[0] == None:
-            carbon_RO_seq = self.readout_single_carbon_sequence(prefix=prefix,
-            go_to_element =go_to_element,event_jump_element = event_jump_element,
-            RO_duration = RO_duration,
-            pt = pt, addressed_carbon =addressed_carbon[1],
-            RO_Z=RO_Z[1],RO_phase =RO_phase[1],
+        elif RO_phase[0] == None: 
+            carbon_RO_seq = self.readout_single_carbon_sequence(prefix=prefix, 
+            go_to_element =go_to_element,event_jump_element = event_jump_element, 
+            RO_duration = RO_duration, 
+            pt = pt, addressed_carbon =addressed_carbon[1], 
+            RO_Z=RO_Z[1],RO_phase =RO_phase[1], 
             el_after_RO = el_after_RO )
             return carbon_RO_seq
 
-        elif RO_phase[1] == None:
-            carbon_RO_seq = self.readout_single_carbon_sequence(prefix = prefix,
-            go_to_element =go_to_element,event_jump_element = event_jump_element,
-            RO_duration = RO_duration,
-            pt = pt, addressed_carbon =addressed_carbon[0],
-            RO_Z=RO_Z[0],RO_phase =RO_phase[0],
+        elif RO_phase[1] == None: 
+            carbon_RO_seq = self.readout_single_carbon_sequence(prefix = prefix, 
+            go_to_element =go_to_element,event_jump_element = event_jump_element, 
+            RO_duration = RO_duration, 
+            pt = pt, addressed_carbon =addressed_carbon[0], 
+            RO_Z=RO_Z[0],RO_phase =RO_phase[0], 
             el_after_RO = el_after_RO )
             return carbon_RO_seq
 
-
+ 
         C_pRO_x_a = Gate(prefix+str(addressed_carbon[0])+'_x_'+str(pt), 'Carbon_Gate',
             Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
         C_pRO_x_b = Gate(prefix+str(addressed_carbon[1])+'_x_'+str(pt), 'Carbon_Gate',
             Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
-
+       
         C_pRO_init_pi2 = Gate(prefix+'_pi2_a'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
@@ -1921,7 +1924,7 @@ class MBI_C13(DynamicalDecoupling):
             Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
         C_pRO_Ren_b = Gate(prefix+str(addressed_carbon[1])+'_Ren_'+str(pt), 'Carbon_Gate',
             Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
-
+        
         C_pRO_fin_pi2 = Gate(prefix+'_pi2_b'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
                 phase = self.params['X_phase'])
@@ -1929,62 +1932,62 @@ class MBI_C13(DynamicalDecoupling):
                 elements_duration= RO_duration,
                 el_state_after_gate = el_after_RO)
 
-        if RO_Z[0] == True and RO_Z[1] ==True:
+        if RO_Z[0] == True and RO_Z[1] ==True: 
             C_pRO_Ren_a.phase = RO_phase[0]+90
-            C_pRO_Ren_b.phase = RO_phase[1]+90
+            C_pRO_Ren_b.phase = RO_phase[1]+90 
             carbon_pRO_seq = [C_pRO_x_a,C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
         elif RO_Z[0] == True:
-            C_pRO_Ren_a.phase = RO_phase[0]+90
+            C_pRO_Ren_a.phase = RO_phase[0]+90 
             carbon_pRO_seq = [C_pRO_x_a,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
         elif RO_Z[1] == True:
-            C_pRO_Ren_b.phase = RO_phase[1]+90
+            C_pRO_Ren_b.phase = RO_phase[1]+90 
             carbon_pRO_seq = [C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
-        elif RO_Z[0] == False and RO_Z[1] ==False:
+        elif RO_Z[0] == False and RO_Z[1] ==False: 
             carbon_pRO_seq = [C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
         return carbon_pRO_seq
 
-    def multi_qubit_tomography(self,
+    def multi_qubit_tomography(self, 
             prefix = 'Tomo',
             go_to_element='next',
-            event_jump_element = 'next',
-            RO_duration=10e-6,
-            pt = 1,
+            event_jump_element = 'next', 
+            RO_duration=10e-6, 
+            pt = 1, 
             addressed_carbon = [1,2],
-            RO_bases =['X','Y'],
+            RO_bases =['X','Y'], 
             el_after_RO = '0'):
         '''
-        Uses the readout_multiple_carbon_sequence function to generate a multi qubit tomography sequence
-        NOTE: the multi_qubit_tomography function currently only supports 2 qubit tomography sequences
+        Uses the readout_multiple_carbon_sequence function to generate a multi qubit tomography sequence 
+        NOTE: the multi_qubit_tomography function currently only supports 2 qubit tomography sequences 
         '''
         RO_Z =[None] *len(addressed_carbon)
         RO_phase = [None] *len(addressed_carbon)
         len(addressed_carbon)
-        for i in range(len(addressed_carbon)):
+        for i in range(len(addressed_carbon)): 
+            
 
-
-            if RO_bases[i] == 'I':
+            if RO_bases[i] == 'I': 
                 RO_Z[i] =False
-                RO_phase[i] = None
-            elif RO_bases[i] =='X':
+                RO_phase[i] = None 
+            elif RO_bases[i] =='X': 
                 RO_Z[i] = False
                 RO_phase[i] = self.params['C13_X_phase']
-
-            elif RO_bases[i] == 'Y':
+               
+            elif RO_bases[i] == 'Y': 
                 RO_Z[i] = False
                 RO_phase[i] = self.params['C13_Y_phase']
 
-            elif RO_bases[i] == 'Z':
+            elif RO_bases[i] == 'Z': 
                 RO_Z[i] = True
                 RO_phase[i] = 0
-
-        carbon_tomo_seq=self.readout_multiple_carbon_sequence( prefix = prefix,
+        
+        carbon_tomo_seq=self.readout_multiple_carbon_sequence( prefix = prefix, 
             go_to_element =go_to_element,
-            event_jump_element =event_jump_element,
-            RO_duration =RO_duration,
-            pt = pt,
-            addressed_carbon =addressed_carbon,
+            event_jump_element =event_jump_element, 
+            RO_duration =RO_duration, 
+            pt = pt, 
+            addressed_carbon =addressed_carbon, 
             RO_Z=RO_Z,
-            RO_phase = RO_phase,
+            RO_phase = RO_phase, 
             el_after_RO = el_after_RO)
         return carbon_tomo_seq
 
@@ -2023,7 +2026,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
                     initialization_method = self.params['C_init_method'], pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_after_init = '0' )
+                    el_after_init = '0' ) 
             ################################
 
             if self.params['wait_times'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
@@ -2035,10 +2038,10 @@ class NuclearRamseyWithInitialization(MBI_C13):
             C_evol_seq =[wait_gate]
 
             #############################
-            carbon_RO_seq = self.readout_single_carbon_sequence(pt = pt,
-                    addressed_carbon =self.params['Addressed_Carbon'],
+            carbon_RO_seq = self.readout_single_carbon_sequence(pt = pt, 
+                    addressed_carbon =self.params['Addressed_Carbon'], 
                     RO_Z=self.params['C_RO_Z'] ,
-                    RO_phase = self.params['C_RO_phase'][pt],
+                    RO_phase = self.params['C_RO_phase'][pt], 
                     el_after_RO = '0' )
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
@@ -2051,13 +2054,13 @@ class NuclearRamseyWithInitialization(MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
+            if debug: 
+                print '*'*10 
+                for g in gate_seq: 
+                    print g.name 
                     print g.C_phases_before_gate
                     print g.C_phases_after_gate
-                    print '-'*5
+                    print '-'*5 
 
         if upload:
             print ' uploading sequence'
@@ -2069,7 +2072,7 @@ class NuclearRamseyWithInitialization(MBI_C13):
 class NuclearRabiWithInitialization(MBI_C13):
     '''
     This class generates the AWG sequence for a carbon Rabi experiment with nuclear initialization.
-    Sequence is a combination of different subsequences
+    Sequence is a combination of different subsequences 
     1. MBI initialisation
     2. Carbon initialisation
     3. Carbon Rabi evolution
@@ -2108,10 +2111,10 @@ class NuclearRabiWithInitialization(MBI_C13):
             C_evol_seq =[C_Rabi_Ren]
             #############################
 
-            carbon_RO_seq = self.readout_single_carbon_sequence(self,
-                    pt = pt, addressed_carbon =self.params['Addressed_Carbon'],
+            carbon_RO_seq = self.readout_single_carbon_sequence(self, 
+                    pt = pt, addressed_carbon =self.params['Addressed_Carbon'], 
                     RO_Z=False,
-                    RO_phase = self.params['C13_Y_phase'],
+                    RO_phase = self.params['C13_Y_phase'], 
                     el_after_RO = '0' )
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
@@ -2222,7 +2225,7 @@ class Two_QB_Tomography(MBI_C13):
 
     #Acutal sequence is a combination of multiple subsequences
 
-    |N-MBI| -|CinitA|-|CinitB|-|Tomography|
+    |N-MBI| -|CinitA|-|CinitB|-|Tomography| 
     '''
     mprefix = 'single_carbon_initialised'
     adwin_process = 'MBI_multiple_C13'
@@ -2231,9 +2234,8 @@ class Two_QB_Tomography(MBI_C13):
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Two Qubit MBE')
-        # TODO_MAR: Make these statements work with the adwin 
-        self.params['Nr_C_init']= 2
-        self.params['Nr_MBE'] =0
+        self.params['Nr_init_C']= 2
+        self.params['Nr_MBE'] =1
         self.params['Nr_parity_msmts']=0
 
         for pt in range(pts):
@@ -2252,9 +2254,9 @@ class Two_QB_Tomography(MBI_C13):
             gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
 
             carbon_tomo_seq = self.multi_qubit_tomography( go_to_element = 'next',
-                    event_jump_element = 'next',
-                    RO_duration=10e-6,
-                    pt = pt,
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
                     addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
                     RO_bases =self.params['Tomography Bases'][pt])
             gate_seq.extend(carbon_tomo_seq)
@@ -2290,8 +2292,8 @@ class Two_QB_MBE(MBI_C13):
     4. Carbon Tomography Readout
 
 
-                                         --|Tomo A|
-    |elMBI| -|CinitA|-|CinitB|-|Parity|             --wait
+                                         --|Tomo A| 
+    |elMBI| -|CinitA|-|CinitB|-|Parity|             --wait 
                                          --|Tomo B|
 
     '''
@@ -2313,7 +2315,7 @@ class Two_QB_MBE(MBI_C13):
             ###########################################
             #####    Generating the sequence elements      ######
             ###########################################
-            #Elements for the carbon initialisation into 0
+            #Elements for the carbon initialisation into 0 
 
             gate_seq = []
 
@@ -2331,37 +2333,37 @@ class Two_QB_MBE(MBI_C13):
 
             ################################
             # Parity measurements
-            # TODO_MAR: goto and jump cannot jump to statements that do not exist yet...
-            carbon_pRO_seq = self.readout_multiple_carbon_sequence(
-                    pt = pt,
-                    addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']],
+            # TODO_MAR: goto and jump cannot jump to statements that do not exist yet... 
+            carbon_pRO_seq = self.readout_multiple_carbon_sequence( 
+                    pt = pt, 
+                    addressed_carbon =[self.params['Carbon A'], self.params['Carbon B']], 
                     RO_Z=[self.params['measZ_C_A'][pt],self.params['measZ_C_B'][pt]],
-                    RO_phase = [self.params['Phases_C_A'][pt],self.params['Phases_C_B'][pt]],
+                    RO_phase = [self.params['Phases_C_A'][pt],self.params['Phases_C_B'][pt]], 
                     el_after_RO = '0' )
 
             gate_seq.extend(carbon_pRO_seq)
 
             #############################
             #Readout Tomography
-            # TODO_MAR: This is not branched yet.
-            # TODO_MAR: Determine correct bases for alternate (outcome el =1) tomography. Currently these are identical
-            # TODO_MAR: correct jump and goto statements
+            # TODO_MAR: This is not branched yet.  
+            # TODO_MAR: Determine correct bases for alternate (outcome el =1) tomography. Currently these are identical 
+            # TODO_MAR: correct jump and goto statements 
             carbon_tomo_seq_click = self.multi_qubit_tomography( go_to_element = 'next',
-                    event_jump_element = 'next',
-                    RO_duration=10e-6,
-                    pt = pt,
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
                     addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
                     RO_bases =self.params['Tomography Bases'][pt])
-
+            
             carbon_tomo_seq_no_click = self.multi_qubit_tomography( prefix= 'Tomo_n_',
                     go_to_element = 'next',
-                    event_jump_element = 'next',
-                    RO_duration=10e-6,
-                    pt = pt,
+                    event_jump_element = 'next', 
+                    RO_duration=10e-6, 
+                    pt = pt, 
                     addressed_carbon = [self.params['Carbon A'],self.params['Carbon B']],
                     RO_bases =self.params['Tomography Bases'][pt])
 
-            # Make correct jump statements for branching
+            # Make correct jump statements for branching 
             carbon_pRO_seq[-1].go_to = carbon_tomo_seq_no_click[0].name
             carbon_pRO_seq[-1].event_jump = carbon_tomo_seq_click[0].name
 
@@ -2439,7 +2441,7 @@ class Three_QB_MB_QEC(MBI_C13):
 
         #     #enc_Rx =  #TO:  IS THE ERROR HERE IN THE PHASE OR IN THE DURATION?
         #     '''
-        #     TODO_MAR: Definie initial state for 3QB MB QEC
+        #     TODO_MAR: Definie initial state for 3QB MB QEC 
         #     '''
 
 
@@ -2500,8 +2502,8 @@ class Three_QB_MB_QEC(MBI_C13):
         #     ########################
         #     ##  Conditional Feedback
         #     '''
-        #     TODO_MAR:  Code conditional feedback in adwin
-        #     This still needs to be coded and a good way needs to be found to work with the adwin.
+        #     TODO_MAR:  Code conditional feedback in adwin 
+        #     This still needs to be coded and a good way needs to be found to work with the adwin. 
         #     AWG probably does support jumping statements.
         #     '''
 
@@ -2510,7 +2512,7 @@ class Three_QB_MB_QEC(MBI_C13):
         #     #############################
         #     #Readout Tomography
         #     '''
-        #     TODO_MAR: Make RO Tomography
+        #     TODO_MAR: Make RO Tomography 
         #     Readout must be some fancy tomography like RO measurement on all qubits. Currently simple nuclear readout of 1 spin.
         #     '''
 
