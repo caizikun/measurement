@@ -1,6 +1,3 @@
-"""
-Script for a carbon ramsey sequence
-"""
 import numpy as np
 import qt 
 
@@ -41,9 +38,10 @@ def Two_QB_Tomo(name,tau = None):
     # Tomography Readout stuff 
     m.params['Tomography Bases'] = ([
             ['I','X'],['I','Y'],['I','Z'],
-            ['X','X'],['X','Y'],['X','Z'],['X','I'],
-            ['Y','X'],['Y','Y'],['Y','Z'],['Y','I'],
-            ['Z','X'],['Z','Y'],['Z','Z'],['Z','I']])
+            ['X','I'],['Y','I'],['Z','I'],
+            ['X','X'],['X','Y'],['X','Z'],
+            ['Y','X'],['Y','Y'],['Y','Z'],
+            ['Z','X'],['Z','Y'],['Z','Z']])
 
 
 
