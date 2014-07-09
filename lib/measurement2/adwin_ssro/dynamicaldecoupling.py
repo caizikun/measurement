@@ -59,7 +59,7 @@ class Gate(object):
         self.C_phases_after_gate = [None]*10
         self.el_state_before_gate = kw.pop('el_state_before_gate',None)
         self.el_state_after_gate = kw.pop('el_state_after_gate',None)
-        if self.Gate_type =='Carbon_Gate' : 
+        if self.Gate_type =='Carbon_Gate' and self.phase != None: 
             self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi 
 
         '''
