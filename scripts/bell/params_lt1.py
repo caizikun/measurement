@@ -62,14 +62,14 @@ params_lt1['MW_pulse_mod_risetime'] = 10e-9
 #params_lt1['RND_angle_0'] = 45
 #params_lt1['RND_angle_1'] = 315
 
-params_lt3['MW_pi_amp']		   = 0.7669
-params_lt3['MW_pi_duration']   = 120e-9
-params_lt3['MW_pi2_amp']	   = 0.607
-params_lt3['MW_pi2_duration']  = 60e-9
-params_lt3['MW_RND0_amp']	   = 0.751 #TODO Calibrate
-params_lt3['MW_RND0_duration'] = 125e-9 #TODO Calibrate
-params_lt3['MW_RND1_amp']	   = 0.751 #TODO Calibrate
-params_lt3['MW_RND1_duration'] = 125e-9 #TODO Calibrate
+params_lt1['MW_pi_amp']		   = 0.7669
+params_lt1['MW_pi_duration']   = 120e-9
+params_lt1['MW_pi2_amp']	   = 0.607
+params_lt1['MW_pi2_duration']  = 60e-9
+params_lt1['MW_RND0_amp']	   = 0.751 #TODO Calibrate
+params_lt1['MW_RND0_duration'] = 125e-9 #TODO Calibrate
+params_lt1['MW_RND1_amp']	   = 0.751 #TODO Calibrate
+params_lt1['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 
