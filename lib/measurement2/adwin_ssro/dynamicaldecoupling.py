@@ -2233,7 +2233,7 @@ class Two_QB_Tomography(MBI_C13):
         combined_seq = pulsar.Sequence('Two Qubit MBE')
         # TODO_MAR: Make these statements work with the adwin 
         self.params['Nr_C_init']= 2
-        self.params['Nr_MBE'] =1
+        self.params['Nr_MBE'] =0
         self.params['Nr_parity_msmts']=0
 
         for pt in range(pts):

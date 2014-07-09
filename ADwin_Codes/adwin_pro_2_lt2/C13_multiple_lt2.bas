@@ -9,7 +9,6 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 252,283,293,327
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -122,7 +121,7 @@ DIM Nr_C_init as LONG
 
 DIM E_MBE_voltage AS FLOAT
 DIM MBE_threshold AS LONG 
-DIM MBE_duration AS LONG 
+DIM MBE_duration, Nr_MBE AS LONG 
 
 INIT:
   ' ####################
@@ -219,6 +218,7 @@ INIT:
   Nr_C_init = 2 
   MBE_threshold =1
   case_success = 0
+  Nr_MBE = 0
   MBE_duration = 10 'TODO_MAR load these variables from python 
   
 
@@ -253,56 +253,55 @@ EVENT:
 
   IF (wait_time > 0) THEN
     wait_time = wait_time - 1
-  ENDIF 'TODO_MAR: what is the function of the wait_time? Does this prevent continueing to the next mode?
+  ENDIF 'TODO_MAR: what is the function of the wait_time? 
+  ' Does this prevent continueing to the next mode?
 
   ' ##################
   ' Case selector
   ' ##################
   '  TODO_MAR: Check how Else if statements work and where they close to prevent bugs here
   ' TODO_MAR: most certainly bugs here relating to the nr of
-  IF (timer = 0) THEN 
-    IF (mode = 0) THEN
-      IF (case_success =1) THEN 
-        mode = 1  
-        timer = 0  
-      ENDIF
+  IF (timer = 0) THEN 'Start case selector 
+    IF (mode = 0) THEN 'If CR done go to SP-E
+      mode = 1  
+      timer = 0  
     ELSE 
-      IF (mode = 1) THEN 
+      IF (mode = 1) THEN 'If SP-E done go to MBI
         mode =2 
         timer = 0 
       ELSE 
-        IF (mode =2) THEN  
+        IF (mode =2) THEN  'IF MBI succesfull spin pump A  
           IF (case_success =1) THEN
             mode = 3 
             timer = 0
           ELSE 
-            IF (current_MBI_attempt = MBI_attempts_before_CR) THEN
+            IF (current_MBI_attempt = MBI_attempts_before_CR) THEN 'If not succesfull CR check 
               mode = 0
               timer = 0
               current_MBI_attempt = 1
               current_cr_threshold = cr_preselect ' TODO_MAR: Check what this line means
-            ELSE
-              mode = 2 
-              timer = 0 2
+            ELSE 'If not succesfull first few times reset N 
+              mode = 22 
+              timer = 0
               INC(current_MBI_attempt)
             ENDIF
           ENDIF
         ELSE 
-          IF (mode =3) THEN
+          IF (mode =3) THEN ' After spin pump A start C13 init 
             mode = 4
             timer = 0
           ELSE 
-            IF (mode =4) THEN ' start C13 Init
-              IF (C13_MBI_threshold = 0) THEN
+            IF (mode =4) THEN ' If start C13 done goto --
+              IF (C13_MBI_threshold = 0) THEN ' Spin pump if threshold = 0 
                 mode = 6
                 timer = 0
-              ELSE 
+              ELSE ' RO if threshold != 0 
                 mode = 5
                 timer = 0
               ENDIF
                                    
             ELSE 
-              IF (mode = 5) THEN ' C13 Init RO
+              IF (mode = 5) THEN ' If C13 RO succes go to spin pump else back to CR check 
                 IF (case_success = 1) THEN
                   mode = 6
                   timer =0
@@ -312,31 +311,27 @@ EVENT:
                 ENDIF                           
               ELSE 
                 IF (mode = 6) THEN ' C13 Init Spin Pump A 
-                  IF (case_success = 0) THEN
-                    mode = 0
-                    timer = 0
-                    Current_C_init = 1
-                  
-                  Else 
-                    IF (case_success = 1) THEN
-                      IF (Current_C_init = Nr_C_init) THEN 
-                        mode = 7
-                        timer = 0 
-                        Current_C_init =1
-                      ELSE
-                        mode = 4 
-                        timer = 0  
-                        INC(Current_C_init)
-                      ENDIF
-                    ENDIF
+                  IF (Current_C_init = Nr_C_init) THEN 'If all carbon initialized 
+                    IF (Nr_MBE > 0) THEN ' and MBE type measurement go to MBE 
+                      mode = 7
+                    ELSE ' Else go to final RO 
+                      mode = 12 
+                    ENDIF   
+                    Current_C_init =1
+                  ELSE 'If not all Carbons initialised, initialize next one 
+                    mode = 4 
+                    INC(Current_C_init)
                   ENDIF
-                  
+                  timer = 0
+                 
+
                 ELSE 
-                  IF (mode = 7) THEN ' Start MBE
+                  IF (mode = 7) THEN ' If MBE started goto MBE RO 
                     mode = 8 
                     timer =0
                   ELSE 
-                    IF (mode = 8) THEN 'MBE RO
+                    IF (mode = 8) THEN 'If MBE RO succesfull go to Final RO 
+                      ' Parity measuremnets are not yet included (Case 9-11) 
                       IF (case_success = 1) Then
                         mode = 11
                         timer = 0
@@ -353,6 +348,11 @@ EVENT:
                         IF (mode =13)THEN ' Final RO
                           mode = 0
                           timer = 0
+                        ELSE 
+                          IF (mode = 22) THEN' If reset N retry MBI (goto spin pump E) 
+                            mode = 1 
+                            timer = 0 
+                          ENDIF
                         ENDIF
                       ENDIF
                     ENDIF
