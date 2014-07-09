@@ -1761,8 +1761,6 @@ class MBI_C13(DynamicalDecoupling):
         C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
-        #TODO_MAR: Remove C_init_Ren statement
-        C_init_Ren_a.C_phases_after_gate[addressed_carbon] = self.params['C'+str(addressed_carbon)+'_Ren_phase_offset']/180.*np.pi
 
         C_init_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
@@ -2233,6 +2231,7 @@ class Two_QB_Tomography(MBI_C13):
         # #initialise empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Two Qubit MBE')
+        # TODO_MAR: Make these statements work with the adwin 
         self.params['Nr_C_init']= 2
         self.params['Nr_MBE'] =1
         self.params['Nr_parity_msmts']=0
