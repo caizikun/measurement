@@ -9,6 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Foldings                       = 239,250,351,360,380,457,514,537,553,581,605,619,648,656,702
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -122,6 +123,7 @@ DIM Nr_C_init as LONG
 DIM E_MBE_voltage AS FLOAT
 DIM MBE_threshold AS LONG 
 DIM MBE_duration, Nr_MBE AS LONG 
+DIM run_case_selector AS LONG 
 
 INIT:
   ' ####################
@@ -220,7 +222,7 @@ INIT:
   case_success = 0
   Nr_MBE = 0
   MBE_duration = 10 'TODO_MAR load these variables from python 
-  
+  run_case_selector = 0
 
   ' init parameters
   ' Y after the comment means I (wolfgang) checked whether they're actually used
@@ -230,6 +232,8 @@ INIT:
   PAR_77 = 0                      ' current mode (case) Y
   PAR_78 = 0                      ' MBI starts Y
   PAR_80 = 0                      ' ROseq_cntr
+  
+  PAR_60 = 0 ' DEBUGGING 'print' 
 EVENT:
   ' ####################
   ' Event running
@@ -240,74 +244,58 @@ EVENT:
   'Detect if the AWG send a trigger
   if ((awg_in_was_hi = 0) and (awg_in_is_hi > 0)) then
     awg_in_switched_to_hi = 1
+    INC(PAR_60) 
     'TODO_MAR: Only execute this if waiting for AWG trigger change after the rest is working 
   else
     awg_in_switched_to_hi = 0
   endif
-
-  PAR_77 = mode
-
   if(trying_mbi > 0) then
     inc(mbi_timer)
   endif
 
-  IF (wait_time > 0) THEN
-    wait_time = wait_time - 1
-  ENDIF 'TODO_MAR: what is the function of the wait_time? 
   ' Does this prevent continueing to the next mode?
-
   ' ##################
   ' Case selector
   ' ##################
   '  TODO_MAR: Check how Else if statements work and where they close to prevent bugs here
   ' TODO_MAR: most certainly bugs here relating to the nr of
-  IF (timer = 0) THEN 'Start case selector 
+  IF (run_case_selector = 1) THEN 'Start case selector 
     IF (mode = 0) THEN 'If CR done go to SP-E
       mode = 1  
-      timer = 0  
     ELSE 
       IF (mode = 1) THEN 'If SP-E done go to MBI
         mode =2 
-        timer = 0 
       ELSE 
         IF (mode =2) THEN  'IF MBI succesfull spin pump A  
           IF (case_success =1) THEN
-            mode = 3 
-            timer = 0
+            mode = 3
           ELSE 
             IF (current_MBI_attempt = MBI_attempts_before_CR) THEN 'If not succesfull CR check 
               mode = 0
-              timer = 0
               current_MBI_attempt = 1
               current_cr_threshold = cr_preselect ' TODO_MAR: Check what this line means
             ELSE 'If not succesfull first few times reset N 
               mode = 22 
-              timer = 0
               INC(current_MBI_attempt)
             ENDIF
           ENDIF
         ELSE 
           IF (mode =3) THEN ' After spin pump A start C13 init 
             mode = 4
-            timer = 0
           ELSE 
-            IF (mode =4) THEN ' If start C13 done goto --
+            IF (mode = 4) THEN ' If start C13 done goto --
               IF (C13_MBI_threshold = 0) THEN ' Spin pump if threshold = 0 
                 mode = 6
-                timer = 0
               ELSE ' RO if threshold != 0 
                 mode = 5
-                timer = 0
               ENDIF
                                    
             ELSE 
               IF (mode = 5) THEN ' If C13 RO succes go to spin pump else back to CR check 
                 IF (case_success = 1) THEN
                   mode = 6
-                  timer =0
                 ELSE 
                   mode = 0 
-                  timer = 0
                 ENDIF                           
               ELSE 
                 IF (mode = 6) THEN ' C13 Init Spin Pump A 
@@ -321,37 +309,29 @@ EVENT:
                   ELSE 'If not all Carbons initialised, initialize next one 
                     mode = 4 
                     INC(Current_C_init)
-                  ENDIF
-                  timer = 0
-                 
+                  ENDIF               
 
                 ELSE 
                   IF (mode = 7) THEN ' If MBE started goto MBE RO 
                     mode = 8 
-                    timer =0
                   ELSE 
                     IF (mode = 8) THEN 'If MBE RO succesfull go to Final RO 
                       ' Parity measuremnets are not yet included (Case 9-11) 
                       IF (case_success = 1) Then
                         mode = 11
-                        timer = 0
                       ELSE
                         mode = 0  
-                        timer = 0
                       ENDIF
                       
                     ELSE 
                       IF (mode = 12) THEN 'start Final RO
                         mode = 13
-                        timer = 0
                       ELSE 
                         IF (mode =13)THEN ' Final RO
                           mode = 0
-                          timer = 0
                         ELSE 
                           IF (mode = 22) THEN' If reset N retry MBI (goto spin pump E) 
                             mode = 1 
-                            timer = 0 
                           ENDIF
                         ENDIF
                       ENDIF
@@ -364,388 +344,395 @@ EVENT:
         ENDIF
       ENDIF
     ENDIF
+    timer = 0 
+    run_case_selector = 0 
   ENDIF
   
+  PAR_77 = mode
   ' ##################
   ' END of Case selector
   ' ##################
+  
+  IF (wait_time > 0) THEN
+    wait_time = wait_time - 1
+  ELSE
+    case_success = 0
+    SELECTCASE mode
+        
+      CASE 0 'CR check
 
-
-  SELECTCASE mode
-
-    CASE 0 'CR check
-
-      IF ( CR_check(first,repetition_counter) > 0 ) THEN
-        timer = -1
-        case_success = 1
-      ENDIF
-
-    CASE 1    ' Spin pump E before 14N MBI
-      ' turn on E laser and start counting
-
-      IF (timer = 0) THEN
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-
-      ELSE
-        ' turn off the lasers, and read the counter
-        IF (timer = SP_E_duration) THEN
-          P2_CNT_ENABLE(CTR_MODULE,0)                                       ' why enable the counters when just spin pumping ?
-          P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-          ' P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser Why is it turned off if it was never turned on?
-          wait_time = wait_after_pulse_duration
+        IF ( CR_check(first,repetition_counter) > 0 ) THEN
+          run_case_selector = 1
           case_success = 1
-          timer = -1
+          first = 0 
         ENDIF
-      ENDIF
 
-    CASE 2    ' MBI Nitrogen
-      ' MBI starts now; we first need to trigger the AWG to do the selective pi-pulse
-      ' then wait until we receive a trigger indicating that this is done
-      IF(timer=0) THEN
-        INC(MBI_starts)
-        PAR_78 = MBI_starts
+      CASE 1    ' Spin pump E before 14N MBI
+        ' turn on E laser and start counting
 
-        if (current_MBI_attempt = 1) then
-          if(data_25[seq_cntr] = 0) then
-            trying_mbi = 1
-          endif
-          INC(data_25[seq_cntr]) ' number of cycles to success
-        endif
-
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
-        ' make sure we don't accidentally think we're done before getting the trigger
-        next_MBI_stop = -2
-        AWG_is_done = 0
-
-
-      ELSE
-        ' we expect a trigger from the AWG once it has done the MW pulse
-        ' as soon as we assume the AWG has done the MW pulse, we turn on the E-laser,
-        ' and start counting
-        IF(awg_in_switched_to_hi > 0) THEN
-          next_MBI_stop = timer + MBI_duration
-          AWG_is_done = 1
+        IF (timer = 0) THEN
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+
         ELSE
-          IF (AWG_is_done = 1) THEN
-            counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-            IF (counts >= MBI_threshold) THEN
-              P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-              P2_CNT_ENABLE(CTR_MODULE,0)
+          ' turn off the lasers, and read the counter
+          IF (timer = SP_E_duration) THEN
+            P2_CNT_ENABLE(CTR_MODULE,0)                                       ' why enable the counters when just spin pumping ?
+            P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
+            ' P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser Why is it turned off if it was never turned on?
+            wait_time = wait_after_pulse_duration
+            case_success = 1
+            run_case_selector = 1
+          ENDIF
+        ENDIF
 
-              P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger (event jump)
-              CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+      CASE 2    ' MBI Nitrogen
+        ' MBI starts now; we first need to trigger the AWG to do the selective pi-pulse
+        ' then wait until we receive a trigger indicating that this is done
+        IF(timer=0) THEN
+          INC(MBI_starts)
+          PAR_78 = MBI_starts
 
-              DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
+          if (current_MBI_attempt = 1) then
+            if(data_25[seq_cntr] = 0) then
+              trying_mbi = 1
+            endif
+            INC(data_25[seq_cntr]) ' number of cycles to success
+          endif
 
-              case_success = 1
-              wait_time = next_MBI_stop-timer
-              timer = -1
-              current_MBI_attempt = 1
-              trying_mbi = 0
-              ' we want to save the time MBI takes
-              DATA_28[seq_cntr] = mbi_timer
-              mbi_timer = 0
-              ' MBI succeeds if the counts surpass the threshold;
-              ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
-              ' if MBI fails, we
-              ' - try again (until max. number of attempts, after some scrambling)
-              ' - go back to CR checking if max number of attempts is surpassed
-            ELSE
-              IF (timer = next_MBI_stop ) THEN
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+
+
+          ' make sure we don't accidentally think we're done before getting the trigger
+          next_MBI_stop = -2
+          AWG_is_done = 0
+
+
+        ELSE
+
+          ' we expect a trigger from the AWG once it has done the MW pulse
+          ' as soon as we assume the AWG has done the MW pulse, we turn on the E-laser,
+          ' and start counting
+          IF(awg_in_switched_to_hi > 0) THEN
+            next_MBI_stop = timer + MBI_duration
+            AWG_is_done = 1
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          ELSE
+            IF (AWG_is_done = 1) THEN
+              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+              IF (counts >= MBI_threshold) THEN
                 P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
                 P2_CNT_ENABLE(CTR_MODULE,0)
-                INC(MBI_failed)
-                PAR_74 = MBI_failed
-                case_success = 0
-                timer = -1
+
+                P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger (event jump)
+                CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+
+                DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
+
+                case_success = 1
+                wait_time = next_MBI_stop-timer
+                run_case_selector = 1
+                current_MBI_attempt = 1
+                trying_mbi = 0
+                ' we want to save the time MBI takes
+                DATA_28[seq_cntr] = mbi_timer
+                mbi_timer = 0
+                ' MBI succeeds if the counts surpass the threshold;
+                ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
+                ' if MBI fails, we
+                ' - try again (until max. number of attempts, after some scrambling)
+                ' - go back to CR checking if max number of attempts is surpassed
+              ELSE
+                IF (timer = next_MBI_stop ) THEN
+                  P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+                  P2_CNT_ENABLE(CTR_MODULE,0)
+                  INC(MBI_failed)
+                  PAR_74 = MBI_failed
+                  case_success = 0
+                  run_case_selector = 1
+                ENDIF
               ENDIF
             ENDIF
+          ENDIF 
+        ENDIF
+
+      CASE 3    ' Spin pump A  after 14N MBI
+        A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
+        E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]
+        SP_duration = DATA_33[ROseq_cntr]
+
+        IF (timer = 0) THEN
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_MBI+32768) ' turn on A laser, for spin pumping after MBI
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_MBI+32768) ' turn on E laser, for spin pumping after MBI
+        ELSE
+          IF (timer = SP_duration) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            wait_time = wait_after_pulse_duration
+            case_success = 1
+            run_case_selector = 1
           ENDIF
         ENDIF
-      ENDIF
 
-    CASE 3    ' Spin pump A  after 14N MBI
-      A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
-      E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]
-      SP_duration = DATA_33[ROseq_cntr]
-
-      IF (timer = 0) THEN
-        P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_MBI+32768) ' turn on A laser, for spin pumping after MBI
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_MBI+32768) ' turn on E laser, for spin pumping after MBI
-      ELSE
-        IF (timer = SP_duration) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          wait_time = wait_after_pulse_duration
-          case_success = 1
-          timer = -1
+      CASE 4 ' Start C13-init AWG and wait for trigger
+        IF (timer=0) THEN 'Start the AWG sequence
+          'INC(C13_MBI_starts)
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+        ELSE
+          ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
+          IF(awg_in_switched_to_hi > 0) THEN
+            case_success = 1
+            run_case_selector = 1
+          ENDIF
         ENDIF
-      ENDIF
 
-    CASE 4 ' Start C13-init AWG and wait for trigger
+      CASE 5 ' C13 init/MBI RO
 
-      IF (timer=0) THEN 'Start the AWG sequence
-        'INC(C13_MBI_starts)
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-      ELSE
-        ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
-        IF(awg_in_switched_to_hi > 0) THEN
-          case_success = 1
-          timer = -1
+        IF(timer=0) THEN 'Start the laser
+
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
+          ' Needs Carbon Voltage
+
+        ELSE 'Check if we got a count or if we are the end of the RO
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+          IF (counts >= C13_MBI_threshold) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+            P2_CNT_ENABLE(CTR_MODULE,0)
+            ' TODO_MAR: Save count and timer
+
+            case_success =1
+            wait_time = next_MBI_stop-timer
+            run_case_selector = 1
+
+          ELSE
+            IF (timer = C13_MBI_duration ) THEN
+              P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+              P2_CNT_ENABLE(CTR_MODULE,0)
+              case_success =0
+              run_case_selector = 1
+            ENDIF
+          ENDIF
         ENDIF
-      ENDIF
-
-    CASE 5 ' C13 init/MBI RO
-
-      IF(timer=0) THEN 'Start the laser
-
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
-        ' Needs Carbon Voltage
-
-      ELSE 'Check if we got a count or if we are the end of the RO
-        counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-        IF (counts >= C13_MBI_threshold) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-          P2_CNT_ENABLE(CTR_MODULE,0)
-          ' TODO_MAR: Save count and timer
-
-          case_success =1
-          wait_time = next_MBI_stop-timer
-          timer = -1
+      CASE 6 ' Spin pump A after C13 init
+        IF (timer = 0) THEN 'Turn on lasers
+          ' Typically the laser power for one of the two is set to 0 in the msmt params that are loaded
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_C13_MBI+32768) ' turn on A laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_C13_MBI+32768) ' turn on E laser
+          'this signal is never send for sure
+          'Send event to the AWG to signal C13 MBI succes
+          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+          'SP_duration_after_C13 =3
 
         ELSE
-          IF (timer = C13_MBI_duration ) THEN
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-            P2_CNT_ENABLE(CTR_MODULE,0)
-            case_success =0
-            timer = -1
+          ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
+          IF (timer = SP_duration_after_C13) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            wait_time = wait_after_pulse_duration
+            case_success = 1
+            run_case_selector = 1
           ENDIF
         ENDIF
-      ENDIF
-    CASE 6 ' Spin pump A after C13 init
-      IF (timer = 0) THEN 'Turn on lasers
-        ' Typically the laser power for one of the two is set to 0 in the msmt params that are loaded
-        P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_C13_MBI+32768) ' turn on A laser
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_C13_MBI+32768) ' turn on E laser
-        'this signal is never send for sure
-        'Send event to the AWG to signal C13 MBI succes
-        P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
-        'SP_duration_after_C13 =3
 
-      ELSE
-        ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
-        IF (timer = SP_duration_after_C13) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          wait_time = wait_after_pulse_duration
-          case_success = 1
-          timer = -1
-        ENDIF
-      ENDIF
+      CASE 7 ' Start C13 MBE and wait for trigger
+        IF (timer=0) THEN 'Start the AWG sequence
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+        ELSE
+          ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
+          IF(awg_in_switched_to_hi > 0) THEN
+            case_success =1
+            run_case_selector = 1
 
-    CASE 7 ' Start C13 MBE and wait for trigger
-      IF (timer=0) THEN 'Start the AWG sequence
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-      ELSE
-        ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
-        IF(awg_in_switched_to_hi > 0) THEN
-          case_success =1
-          timer = -1
-
-        ENDIF
-      ENDIF
-
-
-    CASE 8 ' C13 MBE RO
-      ' TODO_MAR: store RO results
-      IF (timer = 0) THEN 'Start the laser
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBE_voltage+32768) ' turn on Ex laser
-
-      ELSE 'Check if we got a count or if we are the end of the RO
-        counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
-        ' If enough counts
-        IF (counts >= MBE_threshold) THEN 
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-          P2_CNT_ENABLE(CTR_MODULE,0)
-          wait_time = next_MBI_stop-timer
-          case_success =1
-          timer = -1
-
-        ELSE ' If at the end of RO duration without enough counts
-          IF (timer = MBE_duration ) THEN 
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-            P2_CNT_ENABLE(CTR_MODULE,0)
-            case_success = 0
-            timer = -1
           ENDIF
         ENDIF
-      ENDIF
 
-    CASE 9 ' Spin pump A after C13 MBE
-      ' TODO_MAR: Replace spin pump amplitudes by custom SP amplitudes from msmt params
-      '     now identical to SP amplitudes from case 6
-      IF (timer = 0) THEN
-        ' Typically the laser power for one of the two is set to 0 in the msmt params that are loaded
-        P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_C13_MBI+32768) ' turn on A laser
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_C13_MBI+32768) ' turn on E laser
 
-        'Send event to the AWG to signal C13 MBI succes
+      CASE 8 ' C13 MBE RO
+        ' TODO_MAR: store RO results
+        IF (timer = 0) THEN 'Start the laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBE_voltage+32768) ' turn on Ex laser
 
-        P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
-
-      ELSE
-        ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
-        IF (timer = SP_duration_after_C13) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          wait_time = wait_after_pulse_duration
-
-          case_success = 1
-          timer = -1
-        ENDIF
-      ENDIF
-
-    CASE 10 ' start C13 Parity and wait for trigger
-      IF (timer=0) THEN 'Start the AWG sequence
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
-        CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-        P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-      ELSE
-        ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
-        IF(awg_in_switched_to_hi > 0) THEN
-          case_success =1
-          timer = -1
-        ENDIF
-      ENDIF
-
-    CASE 11 ' C13 Parity RO
-      ' TODO_MAR: store RO results
-      IF(timer=0) THEN 'Start the laser
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
-      ELSE 'Check if we got a count or if we are the end of the RO
-        counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
-        ' If enough counts
-        IF (counts >= C13_MBI_threshold) THEN 'TODO_MAR: replace C13_MBI threshold with Parity threshold
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-          P2_CNT_ENABLE(CTR_MODULE,0)
-          wait_time = next_MBI_stop-timer
-          case_success =1
-          timer = -1
-
-        ELSE ' If at the end of RO duration without enough counts
-          IF (timer = C13_MBI_duration ) THEN  'needs to be changed to C_MBI_duration
+        ELSE 'Check if we got a count or if we are the end of the RO
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
+          ' If enough counts
+          IF (counts >= MBE_threshold) THEN 
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
             P2_CNT_ENABLE(CTR_MODULE,0)
-            case_success = 0
-            timer = -1
+            wait_time = next_MBI_stop-timer
+            case_success =1
+            run_case_selector = 1
+
+          ELSE ' If at the end of RO duration without enough counts
+            IF (timer = MBE_duration ) THEN 
+              P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+              P2_CNT_ENABLE(CTR_MODULE,0)
+              case_success = 0
+              run_case_selector = 1
+            ENDIF
           ENDIF
         ENDIF
-      ENDIF
+
+      CASE 9 ' Spin pump A after C13 MBE
+        ' TODO_MAR: Replace spin pump amplitudes by custom SP amplitudes from msmt params
+        '     now identical to SP amplitudes from case 6
+        IF (timer = 0) THEN
+          ' Typically the laser power for one of the two is set to 0 in the msmt params that are loaded
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_C13_MBI+32768) ' turn on A laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_C13_MBI+32768) ' turn on E laser
+
+          'Send event to the AWG to signal C13 MBI succes
+
+          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+
+        ELSE
+          ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
+          IF (timer = SP_duration_after_C13) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            wait_time = wait_after_pulse_duration
+
+            case_success = 1
+            run_case_selector = 1
+          ENDIF
+        ENDIF
+
+      CASE 10 ' start C13 Parity and wait for trigger
+        IF (timer=0) THEN 'Start the AWG sequence
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+        ELSE
+          ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
+          IF(awg_in_switched_to_hi > 0) THEN
+            case_success =1
+            run_case_selector = 1
+          ENDIF
+        ENDIF
+
+      CASE 11 ' C13 Parity RO
+        ' TODO_MAR: store RO results
+        IF(timer=0) THEN 'Start the laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
+        ELSE 'Check if we got a count or if we are the end of the RO
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
+          ' If enough counts
+          IF (counts >= C13_MBI_threshold) THEN 'TODO_MAR: replace C13_MBI threshold with Parity threshold
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+            P2_CNT_ENABLE(CTR_MODULE,0)
+            wait_time = next_MBI_stop-timer
+            case_success =1
+            run_case_selector = 1
+
+          ELSE ' If at the end of RO duration without enough counts
+            IF (timer = C13_MBI_duration ) THEN  'needs to be changed to C_MBI_duration
+              P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+              P2_CNT_ENABLE(CTR_MODULE,0)
+              case_success = 0
+              run_case_selector = 1
+            ENDIF
+          ENDIF
+        ENDIF
    
-    CASE 12    ' wait for AWG trigger before final RO
+      CASE 12    ' wait for AWG trigger before final RO
 
-      ' we wait for the sequence to be finished. the AWG needs to tell us by a pulse,
-      ' of which we detect the falling edge. Added by THT: "falling edge:, is that correct?
-      ' we then move on to readout
-      IF (awg_in_switched_to_hi > 0) THEN
-        mode = 8
-        timer = -1
-        wait_time = 0
-      ENDIF
-    CASE 13    'Final RO
-      RO_duration = DATA_34[ROseq_cntr]
-      E_RO_Voltage = DATA_36[ROseq_cntr]
+        ' we wait for the sequence to be finished. the AWG needs to tell us by a pulse,
+        ' of which we detect the falling edge. Added by THT: "falling edge:, is that correct?
+        ' we then move on to readout
+        IF (awg_in_switched_to_hi > 0) THEN
+          run_case_selector = 1
+          wait_time = 0
+        ENDIF
+      CASE 13    'Final RO
+        RO_duration = DATA_34[ROseq_cntr]
+        E_RO_Voltage = DATA_36[ROseq_cntr]
 
-      IF (timer = 0) THEN
+        IF (timer = 0) THEN
 
-        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277 * E_RO_voltage + 32768) ' turn on Ex laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277 * E_RO_voltage + 32768) ' turn on Ex laser
 
-      ELSE
-        counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-        IF ((timer = RO_duration) OR (counts > 0)) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
+        ELSE
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+          IF ((timer = RO_duration) OR (counts > 0)) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
 
-          IF (counts > 0) THEN
-            i = repetition_counter
-            INC(DATA_27[i]) 'NOTE_MAR: This is the data that is saved. I should look here for clues on using the rest
-          ENDIF
-
-          wait_time = wait_after_RO_pulse_duration
-          P2_CNT_ENABLE(CTR_MODULE,0)
-
-          INC(ROseq_cntr)
-          par_80 = ROseq_cntr
-
-          INC(repetition_counter)
-          Par_73 = repetition_counter
-
-          IF (ROseq_cntr = nr_of_ROsequences+1) THEN ' this means we're done with one full run
-            INC(seq_cntr)
-            mode = 0
-            timer = -1
-            first = 1
-            ROseq_cntr = 1
-
-            ' we're done once we're at the last repetition and the last RO step
-            IF (repetition_counter = RO_repetitions+1) THEN
-              DEC(repetition_counter)
-              Par_73 = repetition_counter
-              END
+            IF (counts > 0) THEN
+              i = repetition_counter
+              INC(DATA_27[i]) 'NOTE_MAR: This is the data that is saved. I should look here for clues on using the rest
             ENDIF
 
-            'ELSE ' means we're starting the next ROsequence
+            wait_time = wait_after_RO_pulse_duration
+            P2_CNT_ENABLE(CTR_MODULE,0)
+
+            INC(ROseq_cntr)
+            par_80 = ROseq_cntr
+
+            INC(repetition_counter)
+            Par_73 = repetition_counter
+
+            IF (ROseq_cntr = nr_of_ROsequences+1) THEN ' this means we're done with one full run
+              INC(seq_cntr)
+              run_case_selector = 1
+              first = 1
+              ROseq_cntr = 1
+
+              ' we're done once we're at the last repetition and the last RO step
+              IF (repetition_counter = RO_repetitions+1) THEN
+                DEC(repetition_counter)
+                Par_73 = repetition_counter
+                END
+              ENDIF
+
+              'ELSE ' means we're starting the next ROsequence
+            ENDIF
           ENDIF
         ENDIF
-      ENDIF
 
 
 
-    CASE 22 ' Reset N-spin state before re-trying MBI
+      CASE 22 ' Reset N-spin state before re-trying MBI
+        if (timer = 0) then
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_N_randomize_voltage+32768)
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_N_randomize_voltage+32768)
+          P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_N_randomize_voltage+32768)
+        else
+          if (timer = N_randomize_duration) then
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768)
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_off_voltage+32768)
+            P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_off_voltage+32768)
 
-      if (timer = 0) then
-        P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_N_randomize_voltage+32768)
-        P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_N_randomize_voltage+32768)
-        P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_N_randomize_voltage+32768)
-      else
-        if (timer = N_randomize_duration) then
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768)
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_off_voltage+32768)
-          P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_off_voltage+32768)
-
-          case_success =0
-          timer = -1
-          wait_time = wait_after_pulse_duration
+            case_success =0
+            run_case_selector = 1
+            wait_time = wait_after_pulse_duration
+          endif
         endif
-      endif
 
-  endselect
+    endselect
+    INC(timer)
+  ENDIF
+  
 
-  INC(timer)
 
 
 FINISH:

@@ -312,6 +312,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Function used by generate_decoupling_sequence_elements
         Takes the first few lines of code that determine what kind of decoupling scheme is being used and puts it in a  function
+        TODO_MAR: Document limitations and advantages of different decoupling schemes (multiples of 4ns?, lots of elements, very long elements) 
 
         '''
         if Gate.N == 0:
@@ -1161,7 +1162,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         break
         return Gate_sequence
 
-    def track_and_calc_phase(self,Gate_sequence,Ren_phase_offset = False):
+    def track_and_calc_phase(self,Gate_sequence):
         '''
         This function keeps track of phases in a Gate sequence.
         It differs from the version in the parent class DynamicalDecoupling in that it
@@ -1178,7 +1179,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         If g.C_phases_after_gate[i]  is specified for the gate before the function is called this takes priority
         over the phase calculated. This can be used if one wants to reset phase for example in the case of readouts.
         If 'g.phase = None' no phase correction using dynamical decoupling is aplied.
-        if Ren_phase_offset == True: Carbon gates get an extre phase offset 
 
         NOTE: All phases used are in radians. Input phases are in degrees because of convetion.
         NOTE: Phases and electron states are with respect to the IDEAL gate.
@@ -1218,8 +1218,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]+ (2*g.tau*g.N)*C_freq_dec[iC]
-                    elif g.C_phases_after_gate[iC] !=None and Ren_phase_offset == True:  #Currently not used 
-                        g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC] + self.params['C'+str(iC)+'_Ren_phase_offset']/180.*np.pi  
+                    elif g.C_phases_after_gate[iC] !=None:  #Currently not used 
+                        g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC] 
 
             elif g.Gate_type =='electron_decoupling':
 
@@ -1762,8 +1762,6 @@ class MBI_C13(DynamicalDecoupling):
         C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
-        #TODO_MAR: Remove C_init_Ren statement 
-        C_init_Ren_a.C_phases_after_gate[addressed_carbon] = self.params['C'+str(addressed_carbon)+'_Ren_phase_offset']/180.*np.pi 
 
         C_init_x = Gate(prefix+str(addressed_carbon)+'_x_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',

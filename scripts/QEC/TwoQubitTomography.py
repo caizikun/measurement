@@ -20,9 +20,9 @@ def Two_QB_Tomo(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 3 
+    m.params['pts'] = 2
     # Carbon Initialization 
-    m.params['C_init_method'] = 'MBI'
+    m.params['C_init_method'] = 'swap'
     m.params['C13_init_state'] = 'up' 
     m.params['Carbon A'] = 1
     m.params['Carbon B'] = 4  
@@ -53,9 +53,10 @@ def Two_QB_Tomo(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 1
-    m.params['MBI_threshold']           = 0
-    
+    m.params['C13_MBI_threshold']       = 0
+    m.params['MBI_threshold']           = 0 #NOTE: the moment I set MBI threshold t
+
+
     m.params['C13_MBI_RO_duration']     = 30 
     m.params['E_C13_MBI_amplitude']     = 1e-9
 
