@@ -1703,17 +1703,25 @@ class MBI_C13(DynamicalDecoupling):
     gate sequence functions that use carbon initialisation are located in this class
     '''
     def autoconfig(self):
-        self.params['A_SP_voltage_after_C13_MBI'] = \
-            self.A_aom.power_to_voltage(
-                    self.params['A_SP_amplitude_after_C13_MBI'])
+        
+        #Convervting laser powers to AOM voltages 
+        self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_after_C13_MBI'])) 
+        self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
+                    self.params['E_SP_amplitude_after_C13_MBI'])) 
+        self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_C13_MBI_RO_amplitude'])) 
 
-        self.params['E_SP_voltage_after_C13_MBI'] = \
-            self.E_aom.power_to_voltage(
-                    self.params['E_SP_amplitude_after_C13_MBI'])
+        self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_after_MBE'])) 
+        self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
+                    self.params['E_SP_amplitude_after_MBE'])) 
+        self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_MBE_RO_amplitude'])) 
 
-        self.params['E_C13_MBI_voltage'] = \
-            self.E_aom.power_to_voltage(
-                    self.params['E_C13_MBI_amplitude'])
+        self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_Parity_RO_amplitude'])) 
+
 
         self.params['min_dec_duration']= self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 

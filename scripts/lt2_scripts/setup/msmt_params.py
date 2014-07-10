@@ -299,15 +299,53 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
 
 
-'E_C13_MBI_amplitude':               5e-9,
-'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger.
-                                              # The actual time for MBI reps is 5us shorter.
-'C13_MBI_threshold' :                 1,
-'SP_duration_after_C13':              10,
+# 'E_C13_MBI_amplitude':               5e-9,
+# 'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger.
+#                                               # The actual time for MBI reps is 5us shorter.
+# 'C13_MBI_threshold' :                 1,
+# 'SP_duration_after_C13':              10,
 
+
+###################
+# Multiple C13 Init 
+####################
 # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial
 'A_SP_amplitude_after_C13_MBI'  :       5e-9,
 'E_SP_amplitude_after_C13_MBI'  :       0e-9,
+
+'Nr_C13_init':                              1,
+'Nr_MBE':                                   0,
+'Nr_parity_msmts':                          0,
+#Thresholds 
+'MBI_threshold':                              1,
+'C13_MBI_threshold':                          0,
+'MBE_threshold':                              1,
+'Parity_threshold':                           1,
+
+# Durations 
+'C13_MBI_RO_duration':                        30, 
+'SP_duration_after_C13':                      50,
+'MBE_RO_duration':                    10,
+'SP_duration_after_MBE':                     25,
+'Parity_RO_duration':                     10,
+
+# Amplitudes 
+'E_C13_MBI_RO_amplitude':                        1e-9,
+'A_SP_amplitude_after_C13_MBI':                     15e-9,
+'E_SP_amplitude_after_C13_MBI':                     0e-9 ,
+
+'E_MBE_RO_amplitude':                        1e-9,
+'A_SP_amplitude_after_MBE':                     15e-9,
+'E_SP_amplitude_after_MBE':                     0e-9 ,
+
+'E_Parity_RO_amplitude':                        1e-9,
+
+
+
+
+
+
+
 
     #######################
     ###  Carbon control ###

@@ -54,14 +54,14 @@ def Two_QB_Tomo(name,tau = None):
     ##########
     # Overwrite certain params to test
     m.params['Nr_C13_init']= 2
-    m.params['Nr_MBE'] =1
+    m.params['Nr_MBE'] =0
     m.params['Nr_parity_msmts']=0
 
     #Thresholds 
     m.params['MBI_threshold']           = 1
     m.params['C13_MBI_threshold']       = 0
-    m.params['MBE_threshold']  =  1
-    m.params['Parity_threshold'] =   1
+    m.params['MBE_threshold']           = 1
+    m.params['Parity_threshold']        = 1
 
 
     # Durations 

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 233,317
+' Foldings                       = 239,323
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -17,7 +17,7 @@
 ' protocol:
 '   Case selector 
 '   Cases :
-' Nr_C_init= 2
+' Nr_C13_init= 2
 ' Nr_MBE =1
 ' Nr_parity_msmts =0
 
@@ -105,19 +105,21 @@ dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
 'added for C13 initialization
-DIM C13_MBI_threshold, C13_MBI_duration,SP_duration_after_C13 AS LONG
-DIM N_init_C, N_MBE, N_parity_msmts AS LONG
+DIM C13_MBI_threshold, C13_MBI_RO_duration,SP_duration_after_C13 AS LONG
+DIM Nr_C13_init, Nr_MBE, Nr_parity_msmts, Parity_threshold AS LONG
 DIM Carbon_init_cntr, MBE_cntr, parity_msmt_cntr AS LONG
-DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_voltage AS FLOAT
+DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_RO_voltage AS FLOAT
+DIM A_SP_voltage_after_MBE, E_SP_voltage_after_MBE, E_MBE_RO_voltage, E_Parity_RO_voltage as Float 
+DIM SP_duration_after_MBE, Parity_RO_duration as Long
+
 
 'Added for multiple C13 script
 DIM case_success AS LONG
 DIM Current_C_init as LONG
-DIM Nr_C_init as LONG 
+DIM Nr_C13_init as LONG 
 
-DIM E_MBE_voltage AS FLOAT
 DIM MBE_threshold AS LONG 
-DIM MBE_duration, Nr_MBE AS LONG 
+DIM MBE_RO_duration AS LONG 
 DIM run_case_selector AS LONG 
 
 INIT:
@@ -135,25 +137,56 @@ INIT:
   AWG_event_jump_DO_channel    = DATA_20[8]
   MBI_duration                 = DATA_20[9]
   MBI_attempts_before_CR       = DATA_20[10]
-  MBI_threshold                = DATA_20[11]
-  nr_of_ROsequences            = DATA_20[12]
-  wait_after_RO_pulse_duration = DATA_20[13]
-  N_randomize_duration         = DATA_20[14]
-  C13_MBI_threshold            = Data_20[15]
-  C13_MBI_duration             = Data_20[16]
-  SP_duration_after_C13        = Data_20[17]
-  N_init_C  = Data_20[18]
-  N_MBE = Data_20[19]
-  N_parity_msmts = Data_20[20]
+  nr_of_ROsequences            = DATA_20[11]
+  wait_after_RO_pulse_duration = DATA_20[12]
+  N_randomize_duration         = DATA_20[13]
+  
+  Nr_C13_init                  = DATA_20[14]
+  Nr_MBE                       = DATA_20[15]
+  Nr_parity_msmts              = DATA_20[16]
+
+  MBI_threshold                = DATA_20[17]
+  C13_MBI_threshold            = DATA_20[18] 
+  MBE_threshold                = DATA_20[19] 
+  Parity_threshold             = DATA_20[20] 
+ 
+  C13_MBI_RO_duration          = DATA_20[21]
+  SP_duration_after_C13        = DATA_20[22]
+
+  MBE_RO_duration              = DATA_20[23]
+  SP_duration_after_MBE        = DATA_20[24]
+
+  Parity_RO_duration           = DATA_20[25] 
+
+
 
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
   repump_N_randomize_voltage   = DATA_21[5]
+  E_C13_MBI_RO_voltage         = DATA_21[6]  
+  E_SP_voltage_after_C13_MBI   = DATA_21[7]
+  A_SP_voltage_after_C13_MBI   = DATA_21[8]
+
+  E_MBE_RO_voltage             = DATA_21[9]
+  A_SP_voltage_after_MBE       = DATA_21[10]
+  E_SP_voltage_after_MBE       = DATA_21[11]
+
+  E_Parity_RO_voltage          = DATA_21[12]
+
+
+
+
+
+
+
+
+
+
   E_SP_voltage_after_C13_MBI   = DATA_21[6]
   A_SP_voltage_after_C13_MBI   = DATA_21[7]
-  E_C13_MBI_voltage            = DATA_21[8]
+  E_C13_MBI_RO_voltage            = DATA_21[8]
   ' initialize the data arrays
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
@@ -212,11 +245,7 @@ INIT:
 
   'Parameters added for C13 init
   Current_C_init = 1
-  Nr_C_init = 2 
-  MBE_threshold =1
   case_success = 0
-  Nr_MBE = 0
-  MBE_duration = 10 'TODO_MAR load these variables from python 
   run_case_selector = 0
 
   ' init parameters
@@ -286,7 +315,7 @@ EVENT:
           mode = 0 
         ENDIF                           
       Case 6 ' C13 Init Spin Pump A 
-        IF (Current_C_init = Nr_C_init) THEN 'If all carbon initialized 
+        IF (Current_C_init = Nr_C13_init) THEN 'If all carbon initialized 
           IF (Nr_MBE > 0) THEN ' and MBE type measurement go to MBE 
             mode = 7
           ELSE ' Else go to final RO 
@@ -471,7 +500,7 @@ EVENT:
 
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_RO_voltage+32768) ' turn on Ex laser
           ' Needs Carbon Voltage
 
         ELSE 'Check if we got a count or if we are the end of the RO
@@ -486,7 +515,7 @@ EVENT:
             run_case_selector = 1
 
           ELSE
-            IF (timer = C13_MBI_duration ) THEN
+            IF (timer = C13_MBI_RO_duration ) THEN
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
               case_success =0
@@ -537,7 +566,7 @@ EVENT:
         IF (timer = 0) THEN 'Start the laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBE_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBE_RO_voltage+32768) ' turn on Ex laser
 
         ELSE 'Check if we got a count or if we are the end of the RO
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
@@ -550,7 +579,7 @@ EVENT:
             run_case_selector = 1
 
           ELSE ' If at the end of RO duration without enough counts
-            IF (timer = MBE_duration ) THEN 
+            IF (timer = MBE_RO_duration ) THEN 
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
               case_success = 0
@@ -603,7 +632,7 @@ EVENT:
         IF(timer=0) THEN 'Start the laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_RO_voltage+32768) ' turn on Ex laser
         ELSE 'Check if we got a count or if we are the end of the RO
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
           ' If enough counts
@@ -615,7 +644,7 @@ EVENT:
             run_case_selector = 1
 
           ELSE ' If at the end of RO duration without enough counts
-            IF (timer = C13_MBI_duration ) THEN  'needs to be changed to C_MBI_duration
+            IF (timer = C13_MBI_RO_duration ) THEN  'needs to be changed to C_MBI_duration
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
               case_success = 0
