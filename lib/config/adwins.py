@@ -1488,11 +1488,15 @@ config['adwin_lt2_processes'] = {
                     ['C13_MBI_threshold'           ,   1],
                     ['C13_MBI_RO_duration'            ,  10],
                     ['SP_duration_after_C13'       ,  25],
-                    #  NOTE: values should be overwritten from msmt params
-                    ['N_init_C' , 2],
-                    ['N_MBE', 1],
-                    ['N_parity_msmts',0],
-                    ],
+                    ['MBE_threshold'           ,   1],
+                    ['MBE_RO_duration'            ,  10],
+                    ['SP_duration_after_MBE'       ,  25],
+                    ['Parity_threshold'           ,   1],
+                    ['Parity_RO_duration'            ,  10],
+                    ['Nr_C13_init' , 2],
+                    ['Nr_MBE', 1],
+                    ['Nr_parity_msmts',0],
+                    ],# TODO_MAR: add to msmt params and make usefull in Adwin 
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
                 'params_float' : [
@@ -1504,6 +1508,7 @@ config['adwin_lt2_processes'] = {
                     ['E_SP_voltage_after_C13_MBI'   , 0.0],
                     ['A_SP_voltage_after_C13_MBI'   , 0.0],
                     ['E_C13_MBI_voltage'            , 0.0],
+                    # TODO_MAR: Add voltages for MBE and Parity 
 
 
                     ],

@@ -91,8 +91,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
-'Ex_N_randomize_amplitude'              :    20e-9,
-'A_N_randomize_amplitude'               :    20e-9,
+'Ex_N_randomize_amplitude'              :    15e-9,
+'A_N_randomize_amplitude'               :    15e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
 cfg['protocols']['Magnetometry']={

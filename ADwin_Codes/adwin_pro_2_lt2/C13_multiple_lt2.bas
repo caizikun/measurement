@@ -9,19 +9,14 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 238
+' Foldings                       = 233,317
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
 '
 ' protocol:
-'
+'   Case selector 
 '   Cases :
-' TODO_MAR: Document cases
-
-'  Truth table for jumping between cases
-'  See excel TODO_MAR: Document Jumping
-
 ' Nr_C_init= 2
 ' Nr_MBE =1
 ' Nr_parity_msmts =0

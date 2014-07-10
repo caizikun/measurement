@@ -53,21 +53,48 @@ def Two_QB_Tomo(name,tau = None):
 
     ##########
     # Overwrite certain params to test
+    m.params['Nr_C13_init']= 2
+    m.params['Nr_MBE'] =1
+    m.params['Nr_parity_msmts']=0
+
+    #Thresholds 
+    m.params['MBI_threshold']           = 1
     m.params['C13_MBI_threshold']       = 0
-    m.params['MBI_threshold']           = 0 #NOTE: the moment I set MBI threshold t
+    m.params['MBE_threshold']  =  1
+    m.params['Parity_threshold'] =   1
 
 
+    # Durations 
     m.params['C13_MBI_RO_duration']     = 30 
-    m.params['E_C13_MBI_amplitude']     = 1e-9
-
     m.params['SP_duration_after_C13']   = 50
+
+    m.params['MBE_RO_duration']=  10
+    m.params['SP_duration_after_MBE'] =  25
+
+    m.params['Parity_RO_duration'] =  10
+
+
+    # Amplitudes 
+    m.params['E_C13_MBI_RO_amplitude']     = 1e-9
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
     m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
+
+    m.params['E_MBE_RO_amplitude']     = 1e-9
+    m.params['A_SP_amplitude_after_MBE']  = 15e-9
+    m.params['E_SP_amplitude_after_MBE']  = 0e-9 
+
+    m.params['E_Parity_RO_amplitude']     = 1e-9
     
-    # Specific for Parity
-    m.params['N_init_C']= 2
-    m.params['N_MBE'] =1
-    m.params['N_parity_msmts']=0
+
+
+
+
+
+
+
+
+
+
 
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
