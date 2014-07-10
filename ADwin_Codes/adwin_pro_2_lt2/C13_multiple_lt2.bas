@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 238,255,270,277,283,298
+' Foldings                       = 238
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -256,8 +256,6 @@ EVENT:
   ' ##################
   ' Case selector
   ' ##################
-  '  TODO_MAR: Check how Else if statements work and where they close to prevent bugs here
-  ' TODO_MAR: most certainly bugs here relating to the nr of
   IF (run_case_selector = 1) THEN 'Start case selector 
     SelectCase mode 
       Case 0 'If CR done go to SP-E
@@ -464,6 +462,7 @@ EVENT:
           CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
         ELSE
+        
           ' Wait for the AWG trigger that signals the init sequence is done, then spin pump or readout
           IF(awg_in_switched_to_hi > 0) THEN
             case_success = 1

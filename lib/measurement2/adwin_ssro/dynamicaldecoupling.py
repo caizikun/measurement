@@ -1726,6 +1726,7 @@ class MBI_C13(DynamicalDecoupling):
     def initialize_carbon_sequence(self, 
             prefix = 'C_init',
             go_to_element ='MBI_1',
+            wait_for_trigger = True, 
             initialization_method ='swap', 
             pt = 1, 
             addressed_carbon =1, 
@@ -1739,6 +1740,10 @@ class MBI_C13(DynamicalDecoupling):
 
         Supports leaving the electron state in '0' or '1' after the gate by applying an extra X-pulse.
         Electron state after gate = '1'
+
+        NOTE: wait_for_trigger = True/False:
+            The first Carbon init sequence should wait for trigger as this is immediately after an 
+            MBI sequence. All others should NOT wait for a trigger. 
 
         NOTE: There is a limitation if the electron is left in the '1' state the sequence ends with an electron pulse.
             This means that the first element after this sequence cannot be an electron pulse. If this is desired choose
@@ -1756,7 +1761,7 @@ class MBI_C13(DynamicalDecoupling):
 
         C_init_y = Gate(prefix+str(addressed_carbon)+'_y_'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
-                wait_for_trigger = True,
+                wait_for_trigger = wait_for_trigger,
                 phase = C_init_y_phase)
 
         C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_'+str(pt), 'Carbon_Gate',
@@ -2247,6 +2252,7 @@ class Two_QB_Tomography(MBI_C13):
                     initialization_method = 'MBI', pt =pt,
                     addressed_carbon= self.params['Carbon A'])
             carbon_init_seq_2 = self.initialize_carbon_sequence(go_to_element = mbi,
+                    wait_for_trigger = False, 
                     initialization_method = 'MBI', pt =pt,
                     addressed_carbon= self.params['Carbon B'])
             gate_seq.extend(carbon_init_seq_1),gate_seq.extend(carbon_init_seq_2)
