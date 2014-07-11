@@ -71,8 +71,8 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=CORPSE_pi2
         
     elif pulse_type == 'Hermite':
-        msmt.params['MW_pi_duration'] = 120e-9
-        msmt.params['MW_pi2_duration'] = 60e-9
+        msmt.params['MW_pi_duration'] = msmt.params['Hermite_pi_length'] 
+        msmt.params['MW_pi2_duration'] = msmt.params['Hermite_pi2_length'] 
         if IQmod :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq']-msmt.params['MW_pulse_mod_frequency'] 
             msmt.params['pulse_pi_amp'] = 0.7669
@@ -95,8 +95,8 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=IQ_Hermite_pi2
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
-            msmt.params['pulse_pi_amp'] = 0.842 # calib. 2014-07-07
-            msmt.params['pulse_pi2_amp'] = 0.751
+            msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp']  # calib. 2014-07-07
+            msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp'] 
             
             Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
@@ -684,15 +684,15 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['IQmod'] = IQmod
     m.params['multiplicity'] = multiplicity
 
-    pts = 20
+    pts = 16
  
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 1000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.75, 0.85, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.7, 0.85, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -714,7 +714,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
     
-    pts = 21    
+    pts = 15    
     m.params['pts_awg'] = pts
     m.params['repetitions'] = 3000
 
@@ -729,7 +729,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.2,0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.3,0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -806,7 +806,7 @@ def dd_zerothrevival(name, IQmod=True, pulse_type='CORPSE', debug=False) :
     m.params['Ex_SP_amplitude']=0
 
 
-    m.params['number_pulses'] = 1
+    m.params['number_pulses'] = 3
 
     
     if mod(m.params['number_pulses'],2) ==0 :
@@ -818,7 +818,7 @@ def dd_zerothrevival(name, IQmod=True, pulse_type='CORPSE', debug=False) :
 
     
 
-    m.params['evolution_times'] = np.linspace(70e-6, 74e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+    m.params['evolution_times'] = np.linspace(.6e-6, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
 
     # MW pulses
     m.params['pulse_pi2_sweep_amps'] = np.ones(pts)*m.params['pulse_pi2_amp']#0.752#0.738
@@ -893,11 +893,11 @@ def run_calibrations(stage, IQmod):
         ramsey_Corpse(SAMPLE_CFG, IQmod = IQmod, Corpse = Corpse)
 
     if stage == 7.0 :
-        dd_zerothrevival(SAMPLE_CFG, IQmod = IQmod, pulse_type='CORPSE', debug=False)
+        dd_zerothrevival(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=False)
 
 
 if __name__ == '__main__':
-    run_calibrations(5.0, IQmod = False)
+    run_calibrations(7.0, IQmod = False)
 
     """
     stage 0 : continuous ESR
