@@ -27,11 +27,11 @@ def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
 
     ### Sweep parameters
 
-    # m.params['N_list'] = range(8,120,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
-    # m.params['Phases_of_Ren_B'] = np.ones(len(m.params['N_list']))*0 
+    m.params['N_list'] = range(8,120,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
+    m.params['Phases_of_Ren_B'] = np.ones(len(m.params['N_list']))*0 
 
-    m.params['N_list'] = np.ones(21)*4#
-    m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
+    # m.params['N_list'] = np.ones(21)*4#
+    # m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
 
  
     m.params['C'+str(Addressed_Carbon)+'_freq'] =( m.params['C'+str(Addressed_Carbon)+'_freq']-
@@ -43,11 +43,11 @@ def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
  
 
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
-    m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
-    m.params['sweep_name']       = 'Phase'
-    # m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class 
-                                                    #when the sweep name is 'Free Evolution Time (s)' 
-    # m.params['sweep_name'] = 'Free Evolution time (s)' 
+    # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
+    # m.params['sweep_name']       = 'Phase'
+    m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class 
+                                                   # when the sweep name is 'Free Evolution Time (s)' 
+    m.params['sweep_name'] = 'Free Evolution time (s)' 
 
 
 
@@ -55,5 +55,5 @@ def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    Long_Carbon_Ramsey(SAMPLE,Addressed_Carbon = 1)
+    Long_Carbon_Ramsey(SAMPLE,Addressed_Carbon = 4)
 

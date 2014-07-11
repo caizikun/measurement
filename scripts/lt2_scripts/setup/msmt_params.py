@@ -156,7 +156,7 @@ cfg['samples']['Hans_sil1'] = {
 'min_phase_correct' : 3, #in degrees.
                                     # if the phase difference is smaller than +- 5 degrees no decoupling seq to correct for this phase generated
 
-'C1_freq'      :       345.124e3,# -100, #be sure to enter in Hz
+'C1_freq'      :       345.124e3,# be sure to enter in Hz
 'C1_freq_0'   :        325.750e3, 
 'C1_freq_1'   :        360e3,  #approx
 'C1_freq_dec'   :      345.124e3,

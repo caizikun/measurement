@@ -9,7 +9,6 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Foldings                       = 239,323
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -176,17 +175,6 @@ INIT:
   E_Parity_RO_voltage          = DATA_21[12]
 
 
-
-
-
-
-
-
-
-
-  E_SP_voltage_after_C13_MBI   = DATA_21[6]
-  A_SP_voltage_after_C13_MBI   = DATA_21[7]
-  E_C13_MBI_RO_voltage            = DATA_21[8]
   ' initialize the data arrays
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
@@ -321,7 +309,6 @@ EVENT:
           ELSE ' Else go to final RO 
             mode = 12 
           ENDIF   
-          Current_C_init =1
         ELSE 'If not all Carbons initialised, initialize next one 
           mode = 4 
           INC(Current_C_init)
@@ -364,6 +351,7 @@ EVENT:
           run_case_selector = 1
           case_success = 1
           first = 0 
+          Current_C_init =1 ' Reset the Current C index if there was a failure 
         ENDIF
 
       CASE 1    ' Spin pump E before 14N MBI
@@ -537,7 +525,7 @@ EVENT:
 
         ELSE
           ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
-          IF (timer = SP_duration_after_C13) THEN
+          IF (timer >= SP_duration_after_C13) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             wait_time = wait_after_pulse_duration
