@@ -153,9 +153,9 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 180e-9, #2014-07-10
-        'Hermite_pi_amp': 0.890,  #2014-07-10
+        'Hermite_pi_amp': 0.898,  #2014-07-10
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.709, #XXXXXXXXXXXXXX
+        'Hermite_pi2_amp': 0.539,#0.723,
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }

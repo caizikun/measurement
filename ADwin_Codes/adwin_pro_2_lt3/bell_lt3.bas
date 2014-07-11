@@ -61,7 +61,7 @@ DIM remote_mode, remote_delay_time, do_sequences, remote_CR_wait_timer AS LONG
 DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
-DIM wait_for_AWG_done, sequence_wait_time AS LONG
+DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM succes_event_counter AS LONG
 DIM CR_result,first_local AS LONG
 
@@ -79,6 +79,7 @@ INIT:
   PLU_di_channel               = DATA_20[9]
   do_sequences                 = DATA_20[10]
   wait_for_remote_CR           = DATA_20[11]
+  wait_before_RO               = DATA_20[12]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -285,6 +286,7 @@ EVENT:
             remote_mode = 3
             first = 1
             first_local = 1
+            local_wait_time = wait_before_RO
           ELSE  
             IF (wait_for_AWG_done > 0) THEN
               IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN

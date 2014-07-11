@@ -47,7 +47,7 @@ class SweepBell(bell.Bell):
                 eom_pulse =  eom_p)    
             elements.append(LDE_element)
 
-            if self.params['wait_for_PLU']:
+            if self.joint_params['wait_for_PLU']:
                 LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
                 late_RO_element = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = 'late RO element {}'.format(i))
                 elements.append(late_RO_element)
@@ -57,7 +57,7 @@ class SweepBell(bell.Bell):
                 trigger_wait = self.params['trigger_wait'],
                 repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-            if self.params['wait_for_PLU']:
+            if self.joint_params['wait_for_PLU']:
                 self.sweep_bell_seq.append(name= 'late_RO {}'.format(i),
                     wfname = late_RO_element.name )
 
@@ -212,7 +212,7 @@ def sweep_bell(name, setup = 'lt3'):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = True 
+    do_tail = False 
     if do_tail:
         m.params['aom_amplitude'] = np.linspace(0.5,1.0, pts)
         m.joint_params['LDE_attempts_before_CR'] = 250
@@ -227,20 +227,22 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
-        m.params['general_sweep_name'] = 'MW_pi_amp' 
-        m.params['general_sweep_pts'] = np.linspace(0,1.0,pts)
+        m.params['general_sweep_name'] = 'free_precession_offset' 
+        m.params['general_sweep_pts'] = np.linspace(-10e-9,10e-9,pts)
+        m.params['echo_offset'] = 0.e-9
 
-        m.joint_params['LDE_attempts_before_CR'] = 250
+        m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*.90
+        m.params['aom_amplitude'] = np.ones(pts)*.0
 
-        m.params['RND_during_LDE'] = 1
+        m.joint_params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
-        m.params['MW_during_LDE'] = 1
+        m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
 
         # to measure the echo on the 1st revival
         # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
-        m.params['wait_for_PLU'] = 0
+        m.joint_params['wait_for_PLU'] = 0
+        m.joint_params['DD_number_pi_pulses'] = 2
 
         #for the analysis:
         m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
@@ -254,10 +256,10 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 3000
 
-    th_debug=False
-    measure_bs=True
+    th_debug=True
+    measure_bs=False
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -282,4 +284,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_tail_12deg', setup = 'lt3')
+    sweep_bell('SAM_SIL5_echo_0th', setup = 'lt3')

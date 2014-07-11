@@ -12,6 +12,11 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
 joint_params['opt_pulse_separation']    = 600e-9
 
+joint_params['RND_during_LDE'] = 1 
+joint_params['do_echo'] = 1
+joint_params['do_final_MW_rotation'] = 1
+joint_params['wait_for_PLU'] = 1
+joint_params['DD_number_pi_pulses'] = 1 # the maximum number of pi pulses is 3 !!!
 
 joint_params['LDE_element_length']     = 16.e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
@@ -82,25 +87,20 @@ params_lt3['MW_pulse_mod_risetime'] = 20e-9
 #params_lt3['RND_angle_0'] = 90 #0
 #params_lt3['RND_angle_1'] = 90
 
-params_lt3['MW_pi_amp']		   = 0.890 # 2014-07-09
+params_lt3['MW_pi_amp']		   = 0.898 # 2014-07-09
 params_lt3['MW_pi_duration']   = 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp']	   = 0.709 # 2014-07-09
+params_lt3['MW_pi2_amp']	   = 0.523 # 2014-07-09
 params_lt3['MW_pi2_duration']  = 90e-9 # 2014-07-09
-params_lt3['MW_RND0_amp']	   = 0.751 #TODO Calibrate
-params_lt3['MW_RND0_duration'] = 125e-9 #TODO Calibrate
-params_lt3['MW_RND1_amp']	   = 0.751 #TODO Calibrate
-params_lt3['MW_RND1_duration'] = 125e-9 #TODO Calibrate
+params_lt3['MW_RND0_amp']	   = 0.523 #TODO Calibrate
+params_lt3['MW_RND0_duration'] = 90e-9 #TODO Calibrate
+params_lt3['MW_RND1_amp']	   = 0.523 #TODO Calibrate
+params_lt3['MW_RND1_duration'] = 90e-9 #TODO Calibrate
 
 params_lt3['RND_duration'] = 100e-9
 
-params_lt3['RND_during_LDE'] = 1 
-
-params_lt3['do_echo'] = 0
-params_lt3['do_final_MW_rotation'] = 0
-
-params_lt3['wait_for_PLU'] = 0
-params_lt3['free_precession_time_1st_revival'] = 73.9e-6
-
+params_lt3['echo_offset'] = 50e-9
+params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
+params_lt3['wait_before_RO'] = joint_params['wait_for_PLU']*params_lt3['free_precession_time_1st_revival']*1e6+10
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
 # LDE Sequence in the AWGs
@@ -130,7 +130,7 @@ params_lt3['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is
 params_lt3['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] = joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
-params_lt3['echo_offset'] = 11e-9
+
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
