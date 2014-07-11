@@ -385,12 +385,14 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
         MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
         self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.pi2_pulse = kw.pop('pi2_pulse', False)
 
     def __call__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
         MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
         self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.pi2_pulse = kw.pop('pi2_pulse', self.pi2_pulse)
         return self
 
     def chan_wf(self, chan, tvals):
@@ -399,7 +401,11 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
 
         else: 
             t=tvals-tvals[0] 
-            env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
+            # from Warren, 1984, The Journal of Chemical Physics
+            if self.pi2_pulse : # for Hermite pi/2 pulse
+                env = self.env_amplitude*(1-0.667*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) 
+            else : # for Hermite pi pulse
+                env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
             wf = MW_IQmod_pulse.chan_wf(self, chan, tvals)
 
             return env*wf
