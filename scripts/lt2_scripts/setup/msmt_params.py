@@ -160,7 +160,6 @@ cfg['samples']['Hans_sil1'] = {
 'C1_freq_0'   :        325.750e3, 
 'C1_freq_1'   :        360e3,  #approx
 'C1_freq_dec'   :      345.124e3,
-'C1_Ren_phase_offset' : 0,#-15.14 ,
 
 'C1_Ren_tau'    :       [9.420e-6, 6.522e-6],
 'C1_Ren_N'    :         [16      , 10],

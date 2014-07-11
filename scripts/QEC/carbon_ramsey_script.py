@@ -32,7 +32,7 @@ def Carbon_Ramsey(name,tau = None,N=None):
     m.params['addressed_carbon'] = 1 
 
     ### Sweep parmater
-    m.params['free_evolution_times'] = np.linspace(3.2e3,45e3,101).astype(int)*1e-9
+    m.params['free_evolution_times'] = np.linspace(3.2e3,45e3,3).astype(int)*1e-9
     print 'free evolution times: %s' %m.params['free_evolution_times']
     m.params['pts']              = len(m.params['free_evolution_times'])
     m.params['sweep_pts']        = m.params['free_evolution_times']
