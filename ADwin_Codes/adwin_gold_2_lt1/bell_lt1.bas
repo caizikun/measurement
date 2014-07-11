@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -159,7 +159,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             CNT_ENABLE(0)
-            DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
+            'DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             DAC(E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 

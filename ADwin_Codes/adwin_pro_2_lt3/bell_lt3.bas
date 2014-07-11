@@ -224,7 +224,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             P2_CNT_ENABLE(CTR_MODULE, 0)
-            P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
+            'P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 

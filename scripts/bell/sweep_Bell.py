@@ -55,7 +55,7 @@ class SweepBell(bell.Bell):
             self.sweep_bell_seq.append(name = 'Bell sweep {}'.format(i),
                 wfname = LDE_element.name,
                 trigger_wait = self.params['trigger_wait'],
-                repetitions = self.params['LDE_attempts_before_CR'])
+                repetitions = self.joint_params['LDE_attempts_before_CR'])
 
             if self.params['wait_for_PLU']:
                 self.sweep_bell_seq.append(name= 'late_RO {}'.format(i),
@@ -154,59 +154,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=10
-    m.params['pts']=pts
-    
-    #EOM pulse ----------------------------------
-    #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
-    #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
-
-    m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
-    
-    if setup == 'lt3' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
-        m.params['aom_risetime']              = np.ones(pts)*25e-9 # calibration to be done!
-    elif setup == 'lt1' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
-        m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
-
-    if m.params['use_eom_pulse'] == 'raymond-pulse':
-
-        m.params['eom_pulse_amplitude']         = np.ones(pts)*1.45 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-        m.params['eom_pulse_duration']          = np.ones(pts)* 60e-9
-        m.params['eom_trigger_duration']        = 80e-9
-        m.params['eom_trigger_pulse_duration']  = 1e-9
-        m.params['eom_trigger_amplitude']       = 1.0
-        m.params['eom_comp_pulse_amplitude']    = (m.params['eom_trigger_duration']*m.params['eom_off_amplitude'] \
-                                                    +m.params['eom_trigger_pulse_duration']*m.params['eom_pulse_amplitude'] )/m.params['eom_pulse_duration']  
-    elif m.params['use_eom_pulse'] == 'raymond-step': 
-
-        m.params['eom_pulse_amplitude']        = np.ones(pts)*2.9 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-        m.params['eom_pulse_duration']         = np.ones(pts)* 100e-9
-        m.params['eom_trigger_amplitude']      = 1.0
-        m.params['eom_comp_pulse_amplitude']   = (0.5*m.params['eom_pulse_duration']*m.params['eom_pulse_amplitude'] \
-                                                    +m.params['eom_pulse_duration']*m.params['eom_off_amplitude'] )/(2.*m.params['eom_pulse_duration'])  
-    else:#'normal':
-
-        if setup == 'lt3':
-            m.params['eom_pulse_amplitude']        = np.ones(pts)*2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-            m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9
-            m.params['eom_overshoot1']             = np.ones(pts)*-0.03 # calibration from 19-03-2014# 
-        elif setup == 'lt1': 
-            m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
-            m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9 #what is the correct value ?
-            m.params['eom_overshoot1']             = np.ones(pts)*-0.05  #     np.ones(pts)*-0.03 # calibration from 19-03-2014# 
-
-        m.params['eom_pulse_duration']         = np.ones(pts)*2e-9
-        m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
-        m.params['eom_off_duration']           = 150e-9
-        m.params['eom_overshoot_duration2']    = 10e-9
-        m.params['eom_overshoot2']             = 0
-
-    
-    p_aom= qt.instruments['PulseAOM']
-    aom_voltage_sweep = np.zeros(pts)
-    max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
+    pts=11
     m.params['pts']=pts
     
     #EOM pulse ----------------------------------
@@ -260,36 +208,31 @@ def sweep_bell(name, setup = 'lt3'):
     aom_voltage_sweep = np.zeros(pts)
     max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
     aom_power_sweep=linspace(0.5,1.0,pts)*max_power_aom #%power
-    aom_power_sweep=linspace(0.8,0.8,pts)*max_power_aom #%power
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = False 
+    do_tail = True 
     if do_tail:
-        m.params['aom_amplitude'] = aom_voltage_sweep
-        m.params['LDE_attempts_before_CR'] = 250
+        m.params['aom_amplitude'] = np.linspace(0.5,1.0, pts)
+        m.joint_params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
         m.joint_params['opt_pi_pulses'] = 1
         m.params['RND_during_LDE'] = 0
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
-        m.joint_params['LDE_element_length'] = 8e-6
+        m.joint_params['LDE_element_length'] = 7e-6
 
-        m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
-        m.params['sweep_pts'] = aom_power_sweep/max_power_aom
+        m.params['sweep_name'] = 'aom amplitude V' #aom power (percentage/max_power_aom)' 
+        m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'MW_pi_amp' 
         m.params['general_sweep_pts'] = np.linspace(0,1.0,pts)
-        m.params['general_sweep_name'] = 'LDE_attempts_before_CR' 
-        m.params['general_sweep_pts'] = np.linspace(100,10000,pts)
 
-        m.params['LDE_attempts_before_CR'] = 250
-        m.joint_params['LDE_attempts_before_CR'] = np.max(m.params['general_sweep_pts'])
+        m.joint_params['LDE_attempts_before_CR'] = 250
         m.joint_params['opt_pi_pulses'] = 2
         m.params['aom_amplitude'] = np.ones(pts)*.90
-        m.params['aom_amplitude'] = np.ones(pts)*.8
 
         m.params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
@@ -305,7 +248,7 @@ def sweep_bell(name, setup = 'lt3'):
     
     
 
-    m.params['syncs_per_sweep'] = m.params['LDE_attempts_before_CR']  
+    m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     m.params['MIN_SYNC_BIN'] =       5000 
     m.params['MAX_SYNC_BIN'] =       7000
@@ -313,8 +256,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['send_AWG_start'] = 1
     m.params['repetitions'] = 1000
 
-    th_debug=True
-    measure_bs=False
+    th_debug=False
+    measure_bs=True
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -339,4 +282,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_Heating_test', setup = 'lt3')
+    sweep_bell('SAM_SIL5_tail_12deg', setup = 'lt3')

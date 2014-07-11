@@ -399,7 +399,9 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
         if chan == self.PM_channel:
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
-        else: 
+        else: # this enveloppe may not be the best one for a pi/2 pulse, 
+            #cf. Warren, 1984, The Journal of Chemical Physics
+            # Effects of arbitry laser or NMR pulse shapes on population inversion and coherence
             t=tvals-tvals[0] 
             # from Warren, 1984, The Journal of Chemical Physics
             if self.pi2_pulse : # for Hermite pi/2 pulse
