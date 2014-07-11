@@ -22,6 +22,7 @@ def pulse_defs_lt3(msmt):
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
@@ -29,6 +30,15 @@ def pulse_defs_lt3(msmt):
                     amplitude = msmt.params['MW_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+    
+    #msmt.MW_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
+    #                MW_channel = 'MW_Imod',     
+    #                PM_channel = 'MW_pulsemod',
+    #                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+    #                rabi_frequency = 9e6,
+    #                amplitude = 0.517,
+    #               pulse_delay = 2e-9,
+    #                eff_rotation_angle = 180)
 
     msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                     MW_channel='MW_Imod',
@@ -37,6 +47,15 @@ def pulse_defs_lt3(msmt):
                     amplitude = msmt.params['MW_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+
+    #msmt.MW_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi/2-pulse',
+    #                MW_channel = 'MW_Imod',    
+    #                PM_channel = 'MW_pulsemod',
+    #                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+    #                rabi_frequency = 9e6,
+    #                amplitude = 0.543,
+    #                pulse_delay = 2e-9,
+    #                eff_rotation_angle = 90)
 
     msmt.MW_RND0 = pulselib.HermitePulse_Envelope('Hermite RND0-pulse',
                     MW_channel='MW_Imod',
@@ -383,7 +402,7 @@ def _LDE_element(msmt, **kw):
     e_len = e.length()
     #print 'SAMPLES', e.samples
     if e_len != msmt.joint_params['LDE_element_length']:
-        raise Exception('LDE element "{}" has length {:.2e}, but specified length was {:.2e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
+        raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
     return e
 
 

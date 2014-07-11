@@ -212,9 +212,9 @@ def sweep_bell(name, setup = 'lt3'):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = False 
+    do_tail = True 
     if do_tail:
-        m.params['aom_amplitude'] = aom_voltage_sweep
+        m.params['aom_amplitude'] = np.linspace(0.5,1.0, pts)
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
         m.joint_params['opt_pi_pulses'] = 1
@@ -223,8 +223,8 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['MW_during_LDE'] = 0
         m.joint_params['LDE_element_length'] = 7e-6
 
-        m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
-        m.params['sweep_pts'] = aom_power_sweep/max_power_aom
+        m.params['sweep_name'] = 'aom amplitude V' #aom power (percentage/max_power_aom)' 
+        m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'MW_pi_amp' 
@@ -257,7 +257,7 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['repetitions'] = 1000
 
     th_debug=False
-    measure_bs=False
+    measure_bs=True
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -282,4 +282,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_Heating_test', setup = 'lt3')
+    sweep_bell('SAM_SIL5_tail_12deg', setup = 'lt3')

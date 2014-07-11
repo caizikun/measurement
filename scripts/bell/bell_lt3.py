@@ -101,8 +101,8 @@ def full_bell(name):
 
     th_debug = True
     sequence_only = False
-    mw = True
-    measure_lt1 = False
+    mw = False
+    measure_lt1 = True
     measure_bs = True
     do_upload = True
 
@@ -115,10 +115,12 @@ def full_bell(name):
     if not(sequence_only):
         if measure_lt1:
             m.lt1_helper.set_is_running(False)
-            m.lt1_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt1.py')
+            m.lt1_helper.set_measurement_name(name)
+            m.lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
             m.lt1_helper.execute_script()
         if measure_bs:
-            m.bs_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
     
@@ -143,4 +145,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LT3 Sam SIL5 SPCorr_all_MW')   
+    full_bell('LT1_the111no1_Sil1_SPcorr_all_MW_corpse')   
