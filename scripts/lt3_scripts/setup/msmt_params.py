@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.806781e9# +/-   0.000005            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.806887e9# +/-   0.000005            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -120,14 +120,14 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 2e-9,
+		'A_CR_amplitude':				 1.0e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 3e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9,
+		'Ex_CR_amplitude':				 1e-9,
 		'Ex_RO_amplitude':				 2e-9,
 		'Ex_SP_amplitude':				 2e-9,
 		'SP_duration':					 100,
@@ -147,11 +147,15 @@ cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,
     	'CORPSE_amp' : 0.201 ,
-    	'CORPSE_pi2_amp':0.770,
+    	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
-    	'CORPSE_pi_amp': 0.713,
+    	'CORPSE_pi_amp': 0.517,
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
+    	'Hermite_pi_length': 180e-9, #2014-07-10
+        'Hermite_pi_amp': 0.898,  #2014-07-10
+        'Hermite_pi2_length': 90e-9,
+        'Hermite_pi2_amp': 0.539,#0.723,
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }

@@ -47,7 +47,7 @@ class SweepBell(bell.Bell):
                 eom_pulse =  eom_p)    
             elements.append(LDE_element)
 
-            if self.params['wait_for_PLU']:
+            if self.joint_params['wait_for_PLU']:
                 LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
                 late_RO_element = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = 'late RO element {}'.format(i))
                 elements.append(late_RO_element)
@@ -57,7 +57,7 @@ class SweepBell(bell.Bell):
                 trigger_wait = self.params['trigger_wait'],
                 repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-            if self.params['wait_for_PLU']:
+            if self.joint_params['wait_for_PLU']:
                 self.sweep_bell_seq.append(name= 'late_RO {}'.format(i),
                     wfname = late_RO_element.name )
 
@@ -167,7 +167,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*25e-9 # calibration to be done!
     elif setup == 'lt1' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.255#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
 
     if m.params['use_eom_pulse'] == 'raymond-pulse':
@@ -210,12 +210,69 @@ def sweep_bell(name, setup = 'lt3'):
     aom_power_sweep=linspace(0.5,1.0,pts)*max_power_aom #%power
     for i,p in enumerate(aom_power_sweep):
         aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
+    m.params['pts']=pts
+    
+    #EOM pulse ----------------------------------
+    #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
+    #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
+
+    m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
+    
+    if setup == 'lt3' :
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
+        m.params['aom_risetime']              = np.ones(pts)*25e-9 # calibration to be done!
+    elif setup == 'lt1' :
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
+        m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
+
+    if m.params['use_eom_pulse'] == 'raymond-pulse':
+
+        m.params['eom_pulse_amplitude']         = np.ones(pts)*1.45 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+        m.params['eom_pulse_duration']          = np.ones(pts)* 60e-9
+        m.params['eom_trigger_duration']        = 80e-9
+        m.params['eom_trigger_pulse_duration']  = 1e-9
+        m.params['eom_trigger_amplitude']       = 1.0
+        m.params['eom_comp_pulse_amplitude']    = (m.params['eom_trigger_duration']*m.params['eom_off_amplitude'] \
+                                                    +m.params['eom_trigger_pulse_duration']*m.params['eom_pulse_amplitude'] )/m.params['eom_pulse_duration']  
+    elif m.params['use_eom_pulse'] == 'raymond-step': 
+
+        m.params['eom_pulse_amplitude']        = np.ones(pts)*2.9 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+        m.params['eom_pulse_duration']         = np.ones(pts)* 100e-9
+        m.params['eom_trigger_amplitude']      = 1.0
+        m.params['eom_comp_pulse_amplitude']   = (0.5*m.params['eom_pulse_duration']*m.params['eom_pulse_amplitude'] \
+                                                    +m.params['eom_pulse_duration']*m.params['eom_off_amplitude'] )/(2.*m.params['eom_pulse_duration'])  
+    else:#'normal':
+
+        if setup == 'lt3':
+            m.params['eom_pulse_amplitude']        = np.ones(pts)*2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+            m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9
+            m.params['eom_overshoot1']             = np.ones(pts)*-0.03 # calibration from 19-03-2014# 
+        elif setup == 'lt1': 
+            m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
+            m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9 #what is the correct value ?
+            m.params['eom_overshoot1']             = np.ones(pts)*-0.05  #     np.ones(pts)*-0.03 # calibration from 19-03-2014# 
+
+        m.params['eom_pulse_duration']         = np.ones(pts)*2e-9
+        m.params['eom_comp_pulse_amplitude']   = m.params['eom_pulse_amplitude'] 
+        m.params['eom_off_duration']           = 150e-9
+        m.params['eom_overshoot_duration2']    = 10e-9
+        m.params['eom_overshoot2']             = 0
+
+    
+    #p_aom= qt.instruments['PulseAOM']
+    #aom_voltage_sweep = np.zeros(pts)
+    #max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
+    #aom_power_sweep=linspace(0.5,1.0,pts)*max_power_aom #%power
+    #for i,p in enumerate(aom_power_sweep):
+    #    aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
     
 
-    do_tail = False 
+    do_tail = True 
     if do_tail:
-        m.params['aom_amplitude'] = aom_voltage_sweep
+        m.params['aom_amplitude'] = np.linspace(0.5,1.0, pts)
         m.joint_params['LDE_attempts_before_CR'] = 250
+        m.params['aom_amplitude'] = np.linspace(0.5,1.0,pts)#aom_voltage_sweep
+        m.params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
         m.joint_params['opt_pi_pulses'] = 1
         m.params['RND_during_LDE'] = 0
@@ -223,24 +280,28 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['MW_during_LDE'] = 0
         m.joint_params['LDE_element_length'] = 7e-6
 
-        m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
-        m.params['sweep_pts'] = aom_power_sweep/max_power_aom
+        m.params['sweep_name'] = 'aom amplitude V' #aom power (percentage/max_power_aom)' 
+        m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
+        m.params['sweep_name'] = 'aom amp (V)'#'aom power (percentage/max_power_aom)' 
+        m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
-        m.params['general_sweep_name'] = 'MW_pi_amp' 
-        m.params['general_sweep_pts'] = np.linspace(0,1.0,pts)
+        m.params['general_sweep_name'] = 'free_precession_offset' 
+        m.params['general_sweep_pts'] = np.linspace(-10e-9,10e-9,pts)
+        m.params['echo_offset'] = 0.e-9
 
-        m.joint_params['LDE_attempts_before_CR'] = 250
+        m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*.90
+        m.params['aom_amplitude'] = np.ones(pts)*.0
 
-        m.params['RND_during_LDE'] = 1
+        m.joint_params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
-        m.params['MW_during_LDE'] = 1
+        m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
 
         # to measure the echo on the 1st revival
         # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
-        m.params['wait_for_PLU'] = 0
+        m.joint_params['wait_for_PLU'] = 0
+        m.joint_params['DD_number_pi_pulses'] = 2
 
         #for the analysis:
         m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
@@ -254,7 +315,7 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 3000
 
     th_debug=False
     measure_bs=False
@@ -282,4 +343,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_Heating_test', setup = 'lt3')
+    sweep_bell('SAM_SIL5_echo_0th', setup = 'lt3')    sweep_bell('the111_no1_sil1_0V', setup = 'lt1')

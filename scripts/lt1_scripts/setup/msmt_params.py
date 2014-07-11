@@ -59,7 +59,6 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
     'cr_mod_control_offset'     :   0.0,
     'cr_mod_control_amp'        :   0.05, #V
-    'repump_mod_control_offset' :   7.2,
     'repump_mod_control_amp'    :   .5, #V
     }
 
@@ -146,7 +145,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'SSRO_repetitions'  : 5000,
     'SSRO_duration'     :  50,
     'SSRO_stop_after_first_photon' : 0,
-    'A_CR_amplitude': 2e-9,#3nW
+    'A_CR_amplitude': 3e-9,#3nW
     'A_RO_amplitude': 0,
     'A_SP_amplitude': 3e-9,
     'CR_duration' :  100,
@@ -154,8 +153,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  2e-9,#5nW
-    'Ex_RO_amplitude':  3e-9, #15e-9,
-    'Ex_SP_amplitude':  3e-9,
+    'Ex_RO_amplitude':  10e-9, #15e-9,
+    'Ex_SP_amplitude':  10e-9,
     'SP_duration'        : 100,
     'SP_duration_ms0' : 100,
     'SP_duration_ms1' : 100,
@@ -174,12 +173,12 @@ cfg['protocols'][name]['pulses'] = {
         'CORPSE_pi2_amp':0.770, #N.C.
         'CORPSE_pulse_delay': 0e-9, #N.C.
         'CORPSE_pi_amp': 0.713, #N.C. 
-        'MW_pi_amp': 0.9,#N.C.
-        'MW_pi_length': 65e-9,#N.C.
+        'Square_pi_amp': 0.9,#N.C.
+        'Square_pi_length': 65e-9,#N.C.
         'Hermite_pi_length': 120e-9,
-        'Hermite_pi_amp': 0.7669,
+        'Hermite_pi_amp': 0.736,
         'Hermite_pi2_length': 60e-9,
-        'Hermite_pi2_amp': 0.607,
+        'Hermite_pi2_amp': 0.662,
         'extra_wait_final_pi2' : -30e-9
         }
 

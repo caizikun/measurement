@@ -393,6 +393,7 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_duration'               ,  50],
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
+                    ['wait_before_RO'              ,  10],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1858,7 +1859,7 @@ config['adwin_lt3_processes'] = {
                     ['PLU_DI_channel'              ,   1],
                     ['do_sequences'                ,   1],
                     ['wait_for_remote_CR'          ,   1],
-
+                    ['wait_before_RO'              ,  10],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

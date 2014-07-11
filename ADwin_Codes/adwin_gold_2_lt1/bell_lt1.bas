@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -52,7 +52,7 @@ DIM repetition_counter AS LONG
 
 DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
 DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
-DIM wait_for_AWG_done, sequence_wait_time AS LONG
+DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM counts, old_counts AS LONG
 
 DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
@@ -70,6 +70,7 @@ INIT:
   SSRO_duration                 = DATA_20[6]
   wait_for_AWG_done             = DATA_20[7]
   sequence_wait_time            = DATA_20[8]
+  wait_before_RO                = DATA_20[9]
   
 
   E_SP_voltage                 = DATA_21[1]
@@ -159,7 +160,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             CNT_ENABLE(0)
-            DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
+            'DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             DAC(E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 
@@ -195,6 +196,7 @@ EVENT:
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
           first = 1 
           first_local = 1
+          local_wait_time = wait_before_RO
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
             

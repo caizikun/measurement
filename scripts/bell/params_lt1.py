@@ -30,7 +30,7 @@ params_lt1['AWG_success_DI_channel'] = 21
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
-params_lt1['SSRO_duration'] = 50
+params_lt1['SSRO_duration'] = 20
 params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
@@ -38,8 +38,8 @@ params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
 params_lt1['A_CR_amplitude'] =3e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 5e-9             
-params_lt1['Ex_RO_amplitude'] = 3e-9
+params_lt1['A_SP_amplitude'] = 3e-9             
+params_lt1['Ex_RO_amplitude'] = 10e-9
 params_lt1['A_RO_amplitude'] = 0
 params_lt1['repump_amplitude'] = 30e-9 
 
@@ -62,9 +62,9 @@ params_lt1['MW_pulse_mod_risetime'] = 10e-9
 #params_lt1['RND_angle_0'] = 45
 #params_lt1['RND_angle_1'] = 315
 
-params_lt1['MW_pi_amp']		   = 0.7669
+params_lt1['MW_pi_amp']		   = 0.736
 params_lt1['MW_pi_duration']   = 120e-9
-params_lt1['MW_pi2_amp']	   = 0.607
+params_lt1['MW_pi2_amp']	   = 0.662
 params_lt1['MW_pi2_duration']  = 60e-9
 params_lt1['MW_RND0_amp']	   = 0.751 #TODO Calibrate
 params_lt1['MW_RND0_duration'] = 125e-9 #TODO Calibrate
@@ -73,13 +73,9 @@ params_lt1['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 
-params_lt1['RND_during_LDE'] = 1 
 
-params_lt1['do_echo'] = 0
-params_lt1['do_final_MW_rotation'] = 0
-
-params_lt1['wait_for_PLU'] = 0
-params_lt1['free_precession_time_1st_revival'] = 73.9e-6
+params_lt1['free_precession_time_1st_revival'] = 73.2e-6
+params_lt1['wait_before_RO'] = params.joint_params['wait_for_PLU']*params_lt1['free_precession_time_1st_revival']*1e6+10
 
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
@@ -103,9 +99,9 @@ params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt1['AWG_SP_power']            = params_lt1['A_SP_amplitude']
 params_lt1['AWG_RO_power']            = params_lt1['Ex_RO_amplitude']
-params_lt1['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
+params_lt1['AWG_yellow_power']        = 30e-9 #yellow power during SP in LDE on LT
 params_lt1['LDE_SP_duration']         = 5e-6
-params_lt1['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
+params_lt1['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] = params.joint_params['opt_pulse_separation']
