@@ -22,13 +22,24 @@ def pulse_defs_lt3(msmt):
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = False)
+    
+    #msmt.MW_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
+    #                MW_channel = 'MW_Imod',     
+    #                PM_channel = 'MW_pulsemod',
+    #                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+    #                rabi_frequency = 9e6,
+    #                amplitude = 0.517,
+    #               pulse_delay = 2e-9,
+    #                eff_rotation_angle = 180)
 
     msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                     MW_channel='MW_Imod',
@@ -36,22 +47,32 @@ def pulse_defs_lt3(msmt):
                     second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+
+    #msmt.MW_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi/2-pulse',
+    #                MW_channel = 'MW_Imod',    
+    #                PM_channel = 'MW_pulsemod',
+    #                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+    #                rabi_frequency = 9e6,
+    #                amplitude = 0.543,
+    #                pulse_delay = 2e-9,
+    #                eff_rotation_angle = 90)
 
     msmt.MW_RND0 = pulselib.HermitePulse_Envelope('Hermite RND0-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_RND0_amp'],
                     length = msmt.params['MW_RND0_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
     msmt.MW_RND1 = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_RND1_amp'],
                     length = msmt.params['MW_RND1_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
 
     msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
@@ -121,14 +142,12 @@ def pulse_defs_lt1(msmt):
     msmt.MW_RND0 = pulselib.HermitePulse_Envelope('Hermite RND0-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_RND0_amp'],
                     length = msmt.params['MW_RND0_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
     msmt.MW_RND1 = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_RND1_amp'],
                     length = msmt.params['MW_RND1_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
@@ -327,7 +346,7 @@ def _LDE_element(msmt, **kw):
 
 
     # 14 RND generator HOLD OFF
-    if msmt.params['RND_during_LDE'] == 1 and msmt.params['wait_for_PLU'] == 0 :
+    if msmt.joint_params['RND_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 :
         #print 'RND_start', msmt.joint_params['RND_start']
         e.add(msmt.RND_halt_off_pulse,
                 start = msmt.joint_params['RND_start'],
@@ -335,7 +354,7 @@ def _LDE_element(msmt, **kw):
                 name = 'RND')
 
     # 14 RND MW pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.params['wait_for_PLU'] == 0 and msmt.params['do_final_MW_rotation'] == 1:
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 and msmt.joint_params['do_final_MW_rotation'] == 1:
         e.add(msmt.MW_RND0, 
             start = msmt.params['MW_RND_wait'],
             refpulse = 'RND', 
@@ -349,7 +368,7 @@ def _LDE_element(msmt, **kw):
             refpoint_new = 'start',
             name='MW_RND_1')
     #15 RO
-    if msmt.joint_params['RO_during_LDE'] == 1 and msmt.params['wait_for_PLU'] == 0:
+    if msmt.joint_params['RO_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0:
         refpulse = 'MW_RND_0' if  msmt.params['MW_during_LDE'] == 1 else 'RND'
         e.add(pulse.cp(msmt.RO_pulse,
                 amplitude = msmt.params['RO_voltage_AWG'],
@@ -361,7 +380,7 @@ def _LDE_element(msmt, **kw):
             name='RO')
 
     #13 Echo pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.params['wait_for_PLU'] == 0 and msmt.params['do_echo'] == 1:
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 and msmt.joint_params['do_echo'] == 1:
         ref_p_1 = e.pulses['MW_pi']
         ref_p_2 = e.pulses['MW_RND_0']
         #print 'RND MW start:', ref_p_2.effective_start()
@@ -369,12 +388,14 @@ def _LDE_element(msmt, **kw):
         LDE_echo_point = ref_p_1.effective_start()+ msmt.params['MW_1_separation']
         expected_echo_time = (ref_p_2.effective_start()- LDE_echo_point)
         #print 'LDE_echo_point, expected_echo_time: ', LDE_echo_point, expected_echo_time
-        e.add(msmt.MW_pi, 
-            start = -expected_echo_time/2. +msmt.params['echo_offset'],
-            refpulse = 'MW_RND_0', 
-            refpoint = 'start', 
-            refpoint_new = 'center',
-            name='MW_echo_pi')
+        for j in range(msmt.joint_params['DD_number_pi_pulses']):
+            e.add(msmt.MW_pi, 
+                start = -expected_echo_time/(2.*msmt.joint_params['DD_number_pi_pulses'])*(2*j+1) \
+                    +(2*j+1)*msmt.params['free_precession_offset']+msmt.params['echo_offset'],
+                refpulse = 'MW_RND_0', 
+                refpoint = 'start', 
+                refpoint_new = 'center',
+                name='MW_echo_pi_{}'.format(j))
 
 
 
@@ -383,7 +404,7 @@ def _LDE_element(msmt, **kw):
     e_len = e.length()
     #print 'SAMPLES', e.samples
     if e_len != msmt.joint_params['LDE_element_length']:
-        raise Exception('LDE element "{}" has length {:.2e}, but specified length was {:.2e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
+        raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
     return e
 
 
@@ -402,7 +423,7 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
         name = 'initial_delay')
  
     # 14 RND MW pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.params['do_final_MW_rotation'] == 1:
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_final_MW_rotation'] == 1:
         e.add(msmt.MW_RND0, 
             #start = msmt.params['MW_RND_wait'],
             start = msmt.params['free_precession_time_1st_revival']-LDE_echo_point,
@@ -418,7 +439,7 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
             name='MW_RND_1')
     
     # 14 RND generator HOLD OFF
-    if msmt.params['RND_during_LDE'] == 1:
+    if msmt.joint_params['RND_during_LDE'] == 1:
         #print 'RND_start', msmt.joint_params['RND_start']
         e.add(msmt.RND_halt_off_pulse,
                 start = -msmt.params['MW_RND_wait'],
@@ -442,13 +463,14 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
 
 
     #13 Echo pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.params['do_echo'] == 1:
-        e.add(msmt.MW_pi, 
-            start = -msmt.params['free_precession_time_1st_revival']/2.+msmt.params['echo_offset'],
-            refpulse = 'MW_RND_0', 
-            refpoint = 'start', 
-            refpoint_new = 'center',
-            name='MW_echo_pi')
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_echo'] == 1:
+        for j in range(msmt.joint_params['DD_number_pi_pulses']):
+            e.add(msmt.MW_pi, 
+                start = -msmt.params['free_precession_time_1st_revival']/(2.*msmt.joint_params['DD_number_pi_pulses'])*(2*j+1)+msmt.params['echo_offset'],
+                refpulse = 'MW_RND_0', 
+                refpoint = 'start', 
+                refpoint_new = 'center',
+                name='MW_echo_pi_{}'.format(j))
 
     return e
 

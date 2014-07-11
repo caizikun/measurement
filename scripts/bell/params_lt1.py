@@ -73,13 +73,9 @@ params_lt1['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 
-params_lt1['RND_during_LDE'] = 1 
 
-params_lt1['do_echo'] = 0
-params_lt1['do_final_MW_rotation'] = 0
-
-params_lt1['wait_for_PLU'] = 0
-params_lt1['free_precession_time_1st_revival'] = 73.9e-6
+params_lt1['free_precession_time_1st_revival'] = 73.2e-6
+params_lt1['wait_before_RO'] = params.joint_params['wait_for_PLU']*params_lt1['free_precession_time_1st_revival']*1e6+10
 
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
