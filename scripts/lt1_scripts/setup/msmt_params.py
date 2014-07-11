@@ -145,7 +145,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'SSRO_repetitions'  : 5000,
     'SSRO_duration'     :  50,
     'SSRO_stop_after_first_photon' : 0,
-    'A_CR_amplitude': 2e-9,#3nW
+    'A_CR_amplitude': 3e-9,#3nW
     'A_RO_amplitude': 0,
     'A_SP_amplitude': 3e-9,
     'CR_duration' :  100,
@@ -153,8 +153,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  2e-9,#5nW
-    'Ex_RO_amplitude':  4e-9, #15e-9,
-    'Ex_SP_amplitude':  6e-9,
+    'Ex_RO_amplitude':  10e-9, #15e-9,
+    'Ex_SP_amplitude':  10e-9,
     'SP_duration'        : 100,
     'SP_duration_ms0' : 100,
     'SP_duration_ms1' : 100,
