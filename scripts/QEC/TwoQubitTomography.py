@@ -1,6 +1,3 @@
-"""
-Script for a carbon ramsey sequence
-"""
 import numpy as np
 import qt 
 
@@ -23,7 +20,7 @@ def Two_QB_Tomo(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 15 
+    m.params['pts'] = 3 
     # Carbon Initialization 
     m.params['C_init_method'] = 'MBI'
     m.params['C13_init_state'] = 'up' 
@@ -41,9 +38,10 @@ def Two_QB_Tomo(name,tau = None):
     # Tomography Readout stuff 
     m.params['Tomography Bases'] = ([
             ['I','X'],['I','Y'],['I','Z'],
-            ['X','X'],['X','Y'],['X','Z'],['X','I'],
-            ['Y','X'],['Y','Y'],['Y','Z'],['Y','I'],
-            ['Z','X'],['Z','Y'],['Z','Z'],['Z','I']])
+            ['X','I'],['Y','I'],['Z','I'],
+            ['X','X'],['X','Y'],['X','Z'],
+            ['Y','X'],['Y','Y'],['Y','Z'],
+            ['Z','X'],['Z','Y'],['Z','Z']])
 
 
 
@@ -56,7 +54,7 @@ def Two_QB_Tomo(name,tau = None):
     ##########
     # Overwrite certain params to test
     m.params['C13_MBI_threshold']       = 1
-    m.params['MBI_threshold']           = 1
+    m.params['MBI_threshold']           = 0
     
     m.params['C13_MBI_RO_duration']     = 30 
     m.params['E_C13_MBI_amplitude']     = 1e-9
@@ -72,7 +70,7 @@ def Two_QB_Tomo(name,tau = None):
 
 
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
     Two_QB_Tomo(SAMPLE)

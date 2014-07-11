@@ -570,8 +570,8 @@ def set_gate_voltage(v):
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.e-6)
 
-    #single_scan('Sam_SIL5_MW_0V')
-    fast_gate_scan('Sam_SIL5_MW')
+    single_scan('Sam_SIL5_Green')
+    #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
     # repeated_red_scans()

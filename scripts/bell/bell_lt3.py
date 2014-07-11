@@ -143,4 +143,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('Heating test')   
+    full_bell('LT3 Sam SIL5 SPCorr_all_MW')   

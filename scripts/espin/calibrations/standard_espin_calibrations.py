@@ -1103,11 +1103,11 @@ def rabi(name, IQmod=True):
     m.params['MW_pulse_amplitudes'] = np.linspace(0.15,0.25,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
-    #m.params['sweep_name'] = 'Pulse durations (ns)'
-    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    m.params['sweep_name'] = 'Pulse durations (ns)'
+    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
-    #m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
+    #m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
     print m.params['sweep_pts']
 
 
