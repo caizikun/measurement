@@ -15,7 +15,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Long_Carbon_Ramsey(name,tau = None):
+def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
 
     m = DD.LongNuclearRamsey(name)
     funcs.prepare(m)
@@ -34,17 +34,19 @@ def Long_Carbon_Ramsey(name,tau = None):
     m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
 
  
-    m.params['C1_freq'] =m.params['C1_freq']-.5e3# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['C'+str(Addressed_Carbon)+'_freq'] =( m.params['C'+str(Addressed_Carbon)+'_freq']-
+        .5e3)# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
     m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*6
-    m.params['Addressed_Carbon'] = 1 
+    m.params['Addressed_Carbon'] = Addressed_Carbon 
  
 
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     m.params['sweep_pts']        =m.params['Phases_of_Ren_B']
     m.params['sweep_name']       = 'Phase'
-    # m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class when the sweep name is 'Free Evolution Time (s)' 
+    # m.params['sweep_pts']      = np.ones(len(m.params['N_list'])) #NB! This value is overwritten in the measurement class 
+                                                    #when the sweep name is 'Free Evolution Time (s)' 
     # m.params['sweep_name'] = 'Free Evolution time (s)' 
 
 
@@ -53,5 +55,5 @@ def Long_Carbon_Ramsey(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    Long_Carbon_Ramsey(SAMPLE)
+    Long_Carbon_Ramsey(SAMPLE,Addressed_Carbon = 1)
 

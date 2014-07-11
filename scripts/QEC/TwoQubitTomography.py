@@ -11,7 +11,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Two_QB_Tomo(name,tau = None):
+def Two_QB_Tomo(name,tau = None,Carbon_A = 1, Carbon_B = 4, Init_A = 'up', Init_B = 'up',Only_init_first_Carbon = False):
 
     m = DD.Two_QB_Tomography(name)
     funcs.prepare(m)
@@ -20,12 +20,18 @@ def Two_QB_Tomo(name,tau = None):
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 2
+    m.params['pts'] = 15
     # Carbon Initialization 
-    m.params['C_init_method'] = 'swap'
-    m.params['C13_init_state'] = 'up' 
-    m.params['Carbon A'] = 1
-    m.params['Carbon B'] = 4  
+    m.params['Carbon A'] = Carbon_A
+    m.params['C_A_init_method'] = 'swap'
+    m.params['C_A_init_state'] = Init_A
+
+    m.params['Carbon B'] = Carbon_B  
+    m.params['C_B_init_method'] = 'swap'
+    m.params['C_B_init_state'] = Init_B
+
+    m.params['Only_init_first_Carbon'] = Only_init_first_Carbon
+
 
 
     # Initial state for Carbon Parity measurement 
@@ -37,12 +43,18 @@ def Two_QB_Tomo(name,tau = None):
 
     # Tomography Readout stuff 
     m.params['Tomography Bases'] = ([
-            ['I','X'],['I','Y'],['I','Z'],
             ['X','I'],['Y','I'],['Z','I'],
+            ['I','X'],['I','Y'],['I','Z'],
             ['X','X'],['X','Y'],['X','Z'],
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
+    m.params['sweep_name'] = 'Tomography Bases' 
+    m.params['sweep_pts'] =[]
+    for BP in m.params['Tomography Bases']:
+        m.params['sweep_pts'].append(BP[0]+BP[1])
+
+    print m.params['sweep_pts']        
 
 
 
@@ -53,13 +65,17 @@ def Two_QB_Tomo(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['Nr_C13_init']= 2
+    if m.params['Only_init_first_Carbon'] == True: 
+        m.params['Nr_C13_init']= 1
+    else :
+        m.params['Nr_C13_init']= 2
     m.params['Nr_MBE'] =0
     m.params['Nr_parity_msmts']=0
 
     #Thresholds 
     m.params['MBI_threshold']           = 1
-    m.params['C13_MBI_threshold']       = 0
+    m.params['C13_MBI_threshold']       = 0 #Must be same for both. 
+
     m.params['MBE_threshold']           = 1
     m.params['Parity_threshold']        = 1
 
@@ -88,18 +104,15 @@ def Two_QB_Tomo(name,tau = None):
 
 
 
-
-
-
-
-
-
-
-
-
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    Two_QB_Tomo(SAMPLE)
+    Two_QB_Tomo(SAMPLE,Carbon_A = 1, Carbon_B = 4, Init_A = 'up', Init_B = 'up',Only_init_first_Carbon=True)
+
+    Two_QB_Tomo(SAMPLE,Carbon_A = 1, Carbon_B = 4, Init_A = 'down', Init_B = 'up',Only_init_first_Carbon=True)
+
+    Two_QB_Tomo(SAMPLE,Carbon_A = 4, Carbon_B = 1, Init_A = 'up', Init_B = 'up',Only_init_first_Carbon=True)
+
+    Two_QB_Tomo(SAMPLE,Carbon_A = 4, Carbon_B = 1, Init_A = 'down', Init_B = 'up',Only_init_first_Carbon=True)
 
