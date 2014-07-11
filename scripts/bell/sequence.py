@@ -122,7 +122,6 @@ def pulse_defs_lt1(msmt):
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
     msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-    msmt.MW_pi = pulselib.MW_pulse('Hermite pi-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
@@ -130,7 +129,7 @@ def pulse_defs_lt1(msmt):
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
-    msmt.MW_pi2 = pulselib.MW_pulse('Hermite pi/2-pulse',
+    msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
