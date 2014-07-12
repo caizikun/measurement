@@ -131,7 +131,7 @@ def pulse_defs_lt1(msmt):
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
-    msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+    msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi2-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
@@ -189,7 +189,7 @@ def _lt3_sequence_start_element(msmt):
     """
     first element of a two-setup sequence. Sends a trigger to AWG LT1
     """
-    e = element.Element('LT3_start', pulsar = qt.pulsar)
+    e = element.Element('LDE_start', pulsar = qt.pulsar)
     e.append(msmt.T_sync)
     ref_p=e.append(msmt.sync)
     e.append(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt1_start']))

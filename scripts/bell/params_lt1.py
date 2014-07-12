@@ -30,7 +30,7 @@ params_lt1['AWG_success_DI_channel'] = 21
 params_lt1['SP_duration'] = 50
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
-params_lt1['SSRO_duration'] = 50
+params_lt1['SSRO_duration'] = 20
 params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
@@ -39,7 +39,7 @@ params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9
 params_lt1['A_CR_amplitude'] =3e-9#10e-9#16e-9              
 params_lt1['Ex_SP_amplitude'] = 0e-9              
 params_lt1['A_SP_amplitude'] = 3e-9             
-params_lt1['Ex_RO_amplitude'] = 3e-9
+params_lt1['Ex_RO_amplitude'] = 10e-9
 params_lt1['A_RO_amplitude'] = 0
 params_lt1['repump_amplitude'] = 30e-9 
 
@@ -70,14 +70,6 @@ params_lt1['MW_RND0_amp']	   = 0.751 #TODO Calibrate
 params_lt1['MW_RND0_duration'] = 125e-9 #TODO Calibrate
 params_lt1['MW_RND1_amp']	   = 0.751 #TODO Calibrate
 params_lt1['MW_RND1_duration'] = 125e-9 #TODO Calibrate
-params_lt1['MW_pi_amp']		   = 0.7669
-params_lt1['MW_pi_duration']   = 120e-9
-params_lt1['MW_pi2_amp']	   = 0.607
-params_lt1['MW_pi2_duration']  = 60e-9
-params_lt1['MW_RND0_amp']	   = 0.751 #TODO Calibrate
-params_lt1['MW_RND0_duration'] = 125e-9 #TODO Calibrate
-params_lt1['MW_RND1_amp']	   = 0.751 #TODO Calibrate
-params_lt1['MW_RND1_duration'] = 125e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 
@@ -101,7 +93,7 @@ params_lt1['eom_overshoot_duration2']   = 4e-9
 params_lt1['eom_overshoot2']            = -0.00
 params_lt1['aom_risetime']              = 38e-9
 params_lt1['eom_aom_on']                = True
-params_lt1['aom_amplitude']             = 0.8
+params_lt1['aom_amplitude']             = 1.0
 
 params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
