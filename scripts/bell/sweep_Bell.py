@@ -227,8 +227,8 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
-        m.params['general_sweep_name'] = 'free_precession_offset' 
-        m.params['general_sweep_pts'] = np.linspace(-10e-9,10e-9,pts)
+        m.params['general_sweep_name'] = 'free_precession_time_1st_revival' 
+        m.params['general_sweep_pts'] = np.linspace(-7e-6,7e-6,pts)+74e-6*3
         m.params['echo_offset'] = 0.e-9
 
         m.joint_params['LDE_attempts_before_CR'] = 1
@@ -241,8 +241,8 @@ def sweep_bell(name, setup = 'lt3'):
 
         # to measure the echo on the 1st revival
         # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
-        m.joint_params['wait_for_PLU'] = 0
-        m.joint_params['DD_number_pi_pulses'] = 2
+        m.joint_params['wait_for_PLU'] = 1
+        m.joint_params['DD_number_pi_pulses'] = 3
 
         #for the analysis:
         m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
@@ -284,4 +284,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_echo_0th', setup = 'lt3')
+    sweep_bell('SAM_SIL5_echo_1th_2_pi', setup = 'lt3')

@@ -3,36 +3,34 @@
 
 from measurement.scripts.bell.calibrations import bell_funcs
 reload(bell_funcs)
-
-
+import params
 
 ### called at stage 2.0
-def rabi(name, IQmod=True, **kw):
-	'''
-	Rabi oscillations on the 0 <-> -1 transition.
-	You can choose either to use normal square pulses or IQ modulation pulses\n
-	by setting the IQmod parameter.
-	Available keywords : 
-		- 'pts' (default value = 21)
-		- 'sweep_MW_amplitude' : to sweep either the MW pulse amplitude \n
-		or the MW pulse duration (default value = True)
-			- If sweep_MW_amplitude == True, available parameters :
-				- 'MW_pulse_amplitude_min' in V (default value = 0.0 V)
-				- 'MW_pulse_amplitude_max' in V (default value = 0.1 V)
-				- 'MW_pulse_fixed_duration' in s (default value = 100 ns)
-			- If sweep_MW_amplitude == False, available parameters :
-				- 'MW_pulse_duration_min' in s (default value = 0 ns)
-				- 'MW_pulse_duration_max' in s (default value = 100 ns)
-				- 'MW_pulse_fixed_amplitude' in V (default value = 0.05 V)
-	'''
+def rabi(name, IQmod=True, pulse_type = 'Square', debug = False,  **kw):
+    '''
+    Rabi oscillations on the 0 <-> -1 transition.
+    You can choose either to use normal square pulses or IQ modulation pulses\n
+    by setting the IQmod parameter.
+    Available keywords : 
+        - 'pts' (default value = 21)
+        - 'sweep_MW_amplitude' : to sweep either the MW pulse amplitude \n
+        or the MW pulse duration (default value = True)
+            - If sweep_MW_amplitude == True, available parameters :
+                - 'MW_pulse_amplitude_min' in V (default value = 0.0 V)
+                - 'MW_pulse_amplitude_max' in V (default value = 0.1 V)
+                - 'MW_pulse_fixed_duration' in s (default value = 100 ns)
+            - If sweep_MW_amplitude == False, available parameters :
+                - 'MW_pulse_duration_min' in s (default value = 0 ns)
+                - 'MW_pulse_duration_max' in s (default value = 100 ns)
+                - 'MW_pulse_fixed_amplitude' in V (default value = 0.05 V)
+    '''    
 
-    if IQmod :
-        m = pulsar_msmt.ElectronRabi(name)
-    else :
-        m = pulsar_msmt.ElectronRabi_Square(name)
-   
-    # add later params.params_lt3 !!!!
-    funcs.prepare(m)
+    m = pulsar_msmt.GeneralElectronRabi(name)
+    bell_funcs.prepare(m, params = params.params_lt3)
+    pulse, pulse_pi2_not_used = bell_funcs.pulse_defs(m,IQmod,pulse_type )
+
+    m.params['pulse_type'] = pulse_type
+    m.params['IQmod'] = IQmod
 
     pts = kw.pop('pts', 21)
     sweep_MW_amplitude = kw.pop('sweep_MW_amplitude', True )
@@ -48,31 +46,27 @@ def rabi(name, IQmod=True, **kw):
 
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
-	m.params['Ex_SP_amplitude'] = 0 # no SP from ms=0 to ms=1
+    m.params['Ex_SP_amplitude'] = 0 # no SP from ms=0 to ms=1
 
-    if IQmod :
-        m.params['MW_pulse_frequency'] = 43e6 # this name changes a lot 
-        m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_pulse_frequency'] 
-    else :
-        m.params['mw_frq'] = m.params['ms-1_cntr_frq'] 
-    print 'IQ modulation : {0}'.format(IQmod)
-    print 'The effective MW frequency is : {:.6f} GHz'.format(m.params['ms-1_cntr_frq']*1e-9)  
+
+    
+    print 'The effective MW frequency is : {:.6f} GHz'.format(m.params['mw_frq']*1e-9)  
 
     if sweep_MW_amplitude : 
-    	m.params['MW_pulse_amplitudes'] = np.linspace(MW_pulse_amplitude_min, MW_pulse_amplitude_max, pts)
-    	m.params['MW_pulse_durations'] = np.ones(pts)*MW_pulse_fixed_duration
-    	m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
-		m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
-	else : # sweep the MW pulse durations
-		m.params['MW_pulse_durations'] = np.linspace(MW_pulse_duration_min, MW_pulse_duration_max, pts)
-		m.params['MW_pulse_amplitudes'] = np.ones(pts)*MW_pulse_fixed_amplitude
-		m.params['sweep_name'] = 'Pulse durations (ns)'
-    	m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
-    
+        m.params['pulse_sweep_amps'] = np.linspace(MW_pulse_amplitude_min, MW_pulse_amplitude_max, pts)
+        m.params['pulse_sweep_durations'] = np.ones(pts)*MW_pulse_fixed_duration
+        m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+        m.params['sweep_pts'] = m.params['pulse_sweep_amps']
+    else : # sweep the MW pulse durations
+        m.params['pulse_sweep_durations'] = np.linspace(MW_pulse_duration_min, MW_pulse_duration_max, pts)
+        m.params['pulse_sweep_amps'] = np.ones(pts)*MW_pulse_fixed_amplitude
+        m.params['sweep_name'] = 'Pulse durations (ns)'
+        m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
+        
     print 'sweep pts : ', m.params['sweep_pts']
 
 
-    funcs.finish(m, upload=True, debug=False)
+    bell_funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse)
 
 
     print "\nAnalysis suggestion : execfile(r'D:\measuring\\analysis\scripts\espin\electron_rabi_analysis.py')"
@@ -85,10 +79,10 @@ def dark_esr(name, **kw):
     The range center frequency is set by the 'ms-1_cntr_frq' parameter 
     in the parameter dictionary. 
     Available keywords :
-    	- 'pts' (default value = 131)
-    	- 'MW_range' in Hz (default value = 10 MHz)
-    	- 'MW_pulse_duration' in s (default value = 2 us)
-    	- 'MW_pulse_amplitude' in V (default value = 0.03 V)
+        - 'pts' (default value = 131)
+        - 'MW_range' in Hz (default value = 10 MHz)
+        - 'MW_pulse_duration' in s (default value = 2 us)
+        - 'MW_pulse_amplitude' in V (default value = 0.03 V)
     '''
 
     m = pulsar_msmt.DarkESR(name)
@@ -119,7 +113,7 @@ def dark_esr(name, **kw):
 
 
 ### master function
-def run_calibrations(stage, IQmod): 
+def run_calibrations(stage, IQmod, pulse_type, debug = False): 
 
 
     if stage == 0 : # Continuous ESR -> to get coarse ESR frequency
@@ -131,25 +125,25 @@ def run_calibrations(stage, IQmod):
         ssro_calibration.ssrocalibration('SAMPLE_CFG', **params.params_lt3)
 
     if stage == 2.0 : # slow Rabi frequency -> to get pi pulse for dark ESR
-        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pts = 21, sweep_MW_amplitude = True, 
-        	MW_pulse_amplitude_min = 0.0, MW_pulse_amplitude_max = 0.05,
-        	MW_pulse_fixed_duration = 2e-6)
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = pulse_type, pts = 21, sweep_MW_amplitude = True, 
+            MW_pulse_amplitude_min = 0.0, MW_pulse_amplitude_max = 0.05,
+            MW_pulse_fixed_duration = 2e-6, debug = debug)
 
     if stage == 2.5 : #  dark ESR
         print "Starting a dark ESR spectrum"
         dark_esr(SAMPLE_CFG, pts = 131, MW_range = 6e6, 
-        	MW_pulse_duration = 2e-6, MW_pulse_amplitude = 0.03)
+            MW_pulse_duration = 2e-6, MW_pulse_amplitude = 0.03)
         print "Analysis suggestion : execfile(r'D:/measuring/analysis/scripts/espin/dark_esr_analysis.py')"
  
- 	# fast Rabi oscillation -> get the coarse voltage for the CORPSE pi pulse
+     # fast Rabi oscillation -> get the coarse voltage for the CORPSE pi pulse
     if stage == 3.0 : # first, MW pulse duration sweep -> get an idea of the maximum available Rabi frequency
-		rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pts = 21, sweep_MW_amplitude = False, 
-        	MW_pulse_duration_min = 0e-9, MW_pulse_duration_max = 50e-9,
-        	MW_pulse_fixed_amplitude = 0.9)
-	if stage == 3.5 : 
-		rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pts = 21, sweep_MW_amplitude = True, 
-        	MW_pulse_amplitude_min = 0.0, MW_pulse_amplitude_max = 0.05,
-        	MW_pulse_fixed_duration = 2e-6)
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = pulse_type, pts = 21, sweep_MW_amplitude = False, 
+            MW_pulse_duration_min = 0e-9, MW_pulse_duration_max = 50e-9,
+            MW_pulse_fixed_amplitude = 0.9, debug = debug)
+    if stage == 3.5 : 
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = pulse_type, pts = 21, sweep_MW_amplitude = True, 
+            MW_pulse_amplitude_min = 0.0, MW_pulse_amplitude_max = 0.05,
+            MW_pulse_fixed_duration = 2e-6,debug = debug)
 
     if stage == 3.0 :
         calibrate_Pi_CORPSE(SAMPLE_CFG, IQmod = IQmod )
@@ -176,6 +170,6 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(3.0, IQmod = False)
+    run_calibrations(2.0, IQmod = False, pulse_type = 'Square', debug = True)
 
 

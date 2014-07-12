@@ -105,7 +105,6 @@ params_lt3['wait_before_RO'] = joint_params['wait_for_PLU']*params_lt3['free_pre
 
 # LDE Sequence in the AWGs
 
-
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
 params_lt3['eom_pulse_duration']         = 2e-9
 params_lt3['eom_off_amplitude']          = -0.07 
