@@ -82,13 +82,15 @@ def pulse_defs(msmt, IQmod, pulse_type):
                     Q_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
                     length = msmt.params['MW_pi_duration'],
+                    amplitude = msmt.params['pulse_pi_amp'],
                     frequency = msmt.params['MW_pulse_mod_frequency'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
             IQ_Square_pi2 = pulselib.MW_IQmod_pulse('Square pi/2-pulse',
                     I_channel='MW_Imod',
                     Q_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    length = msmt.params['MW_pi_duration'],
+                    length = msmt.params['MW_pi2_duration'],
+                    amplitude = msmt.params['pulse_pi2_amp'],
                     frequency = msmt.params['MW_pulse_mod_frequency'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
             pulse_pi=IQ_Square_pi
@@ -126,6 +128,7 @@ def pulse_defs(msmt, IQmod, pulse_type):
                     I_channel='MW_Imod',
                     Q_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
+                    amplitude = msmt.params['pulse_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     frequency = msmt.params['MW_pulse_mod_frequency'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
@@ -133,6 +136,7 @@ def pulse_defs(msmt, IQmod, pulse_type):
                     I_channel='MW_Imod',
                     Q_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
+                    amplitude = msmt.params['pulse_pi2_amp'],
                     length = msmt.params['MW_pi_duration'],
                     frequency = msmt.params['MW_pulse_mod_frequency'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
@@ -165,15 +169,12 @@ def pulse_defs(msmt, IQmod, pulse_type):
     return pulse_pi, pulse_pi2
 
 
-
-
-
-class DarkESR_CORPSE(pulsar_msmt.PulsarMeasurement):
-    mprefix = 'PulsarDarkESR_CORP'
+class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
+    mprefix = 'GeneralDarkESR'
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
-            int(np.ceil(self.params['pulse_length']*1e6)+15)
+            int(np.ceil(self.params['MW_pi_duration']*1e6)+15)
 
         pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
@@ -182,20 +183,11 @@ class DarkESR_CORPSE(pulsar_msmt.PulsarMeasurement):
             self.params['ssbmod_frq_stop'], self.params['pts']) + \
                 self.params['mw_frq'])*1e-9
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, **kw):
 
         # define the necessary pulses
-        X = pulselib.IQ_CORPSE_pulse('IQ CORPSE pi-pulse',
-            I_channel='MW_Imod', 
-            Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            amplitude = self.params['CORPSE_pi_amp'],
-            length = self.params['pulse_length'],
-            rabi_frequency = self.params['CORPSE_rabi_frequency'],
-            pulse_delay = self.params['CORPSE_pulse_delay'],
-            eff_rotation_angle = self.params['CORPSE_eff_rotation_angle']) 
- 
+        
+        X=kw.get('pulse_pi', None)
 
         T = pulse.SquarePulse(channel='MW_Imod', name='delay')
         T.amplitude = 0.
@@ -209,10 +201,13 @@ class DarkESR_CORPSE(pulsar_msmt.PulsarMeasurement):
             e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
             e.add(T, name='wait')
             e.add(X(frequency=f), refpulse='wait')
+            e.add(pulse.cp(X,
+                frequency=f,
+                refpulse='wait'))
             elements.append(e)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('DarkESR sequence')
+        seq = pulsar.Sequence('DarkESR sequence with {} pulses'.format(self.params['pulse_type']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -221,9 +216,18 @@ class DarkESR_CORPSE(pulsar_msmt.PulsarMeasurement):
             #qt.pulsar.upload(*elements)
             qt.pulsar.program_awg(seq,*elements)
 
+        # program the AWG
+        #qt.pulsar.program_sequence(seq)
 
-class ElectronRamsey(pulsar_msmt.PulsarMeasurement):
-    mprefix = 'ElectronRamsey'
+        # some debugging:
+        # elements[-1].print_overview()
+
+
+
+
+
+class GeneralElectronRamsey(pulsar_msmt.PulsarMeasurement):
+    mprefix = 'GeneralElectronRamsey'
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
@@ -232,45 +236,11 @@ class ElectronRamsey(pulsar_msmt.PulsarMeasurement):
 
         pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, **kw):
 
         # define the necessary pulses
-        if self.params['IQmod'] :
-            if self.params['Corpse']:
-                X = pulselib.IQ_CORPSE_pulse('CORPSE pi/2-pulse',
-                    I_channel = 'MW_Imod', 
-                    Q_channel = 'MW_Qmod',    
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = self.params['MW_pulse_mod_risetime'],
-                    frequency = self.params['mod_frq'],
-                    rabi_frequency = self.params['CORPSE_rabi_frequency'],
-                    #amplitude = self.params['CORPSE_pi2_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 90)
-            else : 
-                X = pulselib.MW_IQmod_pulse('pi/2-pulse',
-                    I_channel='MW_Imod',
-                    Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    frequency = self.params['mod_frq'],
-                    PM_risetime = self.params['MW_pulse_mod_risetime'])
-
-
-        else : 
-            if self.params['Corpse']:
-                X = pulselib.MW_CORPSE_pulse('CORPSE pi/2-pulse',
-                    MW_channel = 'MW_Imod',    
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = self.params['MW_pulse_mod_risetime'],
-                    rabi_frequency = self.params['CORPSE_rabi_frequency'],
-                    #amplitude = self.params['CORPSE_pi_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 90)
-            else :
-                X = pulselib.MW_pulse('pi/2-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    PM_risetime = self.params['MW_pulse_mod_risetime'])
+        
+        X=kw.get('pulse_pi2', None)
 
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 200e-9, amplitude = 0.)
@@ -284,20 +254,18 @@ class ElectronRamsey(pulsar_msmt.PulsarMeasurement):
             e.append(T)
 
             e.append(pulse.cp(X,
-                amplitude = self.params['pi2_amps'][i],
-                phase = self.params['pi2_phases1'][i]))
+                phase = self.params['pulse_sweep_pi2_phases1'][i]))
 
             e.append(pulse.cp(T,
                 length = self.params['evolution_times'][i]))
 
             e.append(pulse.cp(X,
-                amplitude = self.params['pi2_amps'][i],
-                phase = self.params['pi2_phases2'][i]))
+                phase = self.params['pulse_sweep_pi2_phases2'][i]))
 
             elements.append(e)
         return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('ElectronRamsey sequence')
+        seq = pulsar.Sequence('ElectronRamsey sequence with {} pulses'.format(self.params['pulse_type']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -427,9 +395,9 @@ def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 360, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 4000, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*m.params['pulse_pi2_amp']
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.015
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -455,7 +423,7 @@ def dark_esr(name, pulse_type = 'Square', debug = False):
 
     m = GeneralDarkESR(name)
     funcs.prepare(m)
-    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi, pulse_pi2_not_used = pulse_defs(m,True,pulse_type )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = True
@@ -464,52 +432,20 @@ def dark_esr(name, pulse_type = 'Square', debug = False):
     m.params['repetitions']  = 1000
     m.params['Ex_SP_amplitude']=0
 
-    m.params['range']        = 6e6
+    m.params['range']        = 4e6
     m.params['pts'] = 131
 
-    m.params['pulse_length'] = 2.6e-6
-    m.params['pulse_amp'] = 0.02
-    
+    #XXXXXXXXXXXXXXXXXXXXXXX
+    #m.params['MW_pi_duration'] = 2.e-6
+    #m.params['pulse_pi_amp'] = 0.015
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
 
 
-    funcs.finish(m, upload=True, debug=False,  pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
+    funcs.finish(m, upload=True, debug=False,  pulse_pi=pulse_pi)
 
 
-def dark_esr_Corpse(name):
-    '''
-    dark ESR CORPSE + IQmod on the 0 <-> -1 transition
-    '''
-
-    m = DarkESR_CORPSE(name)
-    funcs.prepare(m)
-
-
-    CORPSE_frq = 4.5e6
-    m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    m.params['CORPSE_pi_amp'] = 0.752
-    m.params['CORPSE_eff_rotation_angle'] = 180
-
-    m.params['ssmod_detuning'] = 43e6
-    m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
-    m.params['repetitions']  = 1000
-    m.params['range']        = 8e6
-    m.params['pts'] = 101
-    m.params['pulse_length'] = 2.e-6
-    m.params['ssbmod_amplitude'] = 0.03
-    
-
-    m.params['CORPSE_pulse_delay']=0e-9
-    m.params['Ex_SP_amplitude']=0
-
-
-    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
-    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
-
-
-    funcs.finish(m, upload=True, debug=False)
 
 
 
@@ -533,7 +469,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.85, 0.95, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.41, 0.48, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -555,7 +491,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
     
-    pts = 21    
+    pts = 11    
     m.params['pts_awg'] = pts
     m.params['repetitions'] = 3000
 
@@ -570,7 +506,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.3,0.,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.25,-0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -584,45 +520,31 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
 
 
-def ramsey_Corpse(name, IQmod=True, Corpse = False) :
-    m = ElectronRamsey(name)
+def ramsey(name, IQmod=False, pulse_type = 'Square', debug=False) :
+    
+    m = GeneralElectronRamsey(name)
     funcs.prepare(m)
+    pulse_pi_not_used, pulse_pi2= pulse_defs(m,IQmod,pulse_type )
+
+    m.params['pulse_type'] = pulse_type
+    m.params['IQmod'] = IQmod
 
 
     pts = 128
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
-    print 1/m.params['N_HF_frq']
-
-
-    m.params['IQmod'] = IQmod
-    m.params['Corpse'] = Corpse
-    m.params['cur_MW_channel'] = 'MW_Imod'
-
     m.params['Ex_SP_amplitude']=0
-
+    
     m.params['detuning']  = 3e3
-    if IQmod :
-        CORPSE_frq = 4.5e6
-        m.params['mod_frq'] = 43e6 
-        m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['mod_frq'] -m.params['detuning']
-    else :
-        CORPSE_frq = 9e6
-        m.params['mw_frq'] = m.params['ms-1_cntr_frq'] -m.params['detuning']
-
-    m.params['CORPSE_rabi_frequency'] = CORPSE_frq
-    print IQmod
-
 
     
     #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0, 5000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0, 2000e-9,pts)
     #m.params['evolution_times'] = 5*np.ones (pts)*1e-9
 
     # MW pulses
-    m.params['pi2_amps'] = np.ones(pts)*0.35#0.770#m.params['CORPSE_pi2_amp']
-    m.params['pi2_phases1'] = np.ones(pts) * 0
-    m.params['pi2_phases2'] = 0*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
+    m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * 0
+    m.params['pulse_sweep_pi2_phases2'] = 0*np.ones(pts) #* (90.+15) ##np.linspace(0,360,pts) #np.ones(pts) * 0#
 
     # for the autoanalysis
     m.params['sweep_name'] = 'evolution time (ns)'
@@ -630,7 +552,7 @@ def ramsey_Corpse(name, IQmod=True, Corpse = False) :
     #m.params['sweep_name'] = 'phase second pi2'
     #m.params['sweep_pts'] = m.params['CORPSE_pi2_phases2']
 
-    funcs.finish(m)
+    funcs.finish(m,debug=debug, pulse_pi2=pulse_pi2)
 
 
 def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
@@ -640,26 +562,37 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
-    
-    pts = 31
-    m.params['pts'] = pts
+
     m.params['repetitions'] = 2000
     m.params['Ex_SP_amplitude']=0
-
-
-    m.params['number_pulses'] = 3
-
     
-    if mod(m.params['number_pulses'],2) ==0 :
-        m.params['extra_wait_final_pi2']=np.ones(pts)*m.params['extra_wait_final_pi2']
-        #m.params['extra_wait_final_pi2'] = np.linspace(-100e-9,60e-9,pts)#np.ones(pts)*0
-    else :
-        m.params['extra_wait_final_pi2']=np.ones(pts)*0
-        #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
-
-    
-
-    m.params['evolution_times'] = np.linspace(200e-9, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+    #evolution times:
+    T2_measurement= False
+    if T2_measurement:
+        revivals=7
+        pts_per_revival=5
+        sweep_array = np.array([300e-9])
+        for r in range(1,revivals):
+            sweep_array=np.append(sweep_array, \
+                r*74e-6/2. \
+                + np.linspace(-2e-6, 2e-6, pts_per_revival))/2.
+        print sweep_array
+        pts = len(sweep_array)
+        m.params['evolution_times'] = sweep_array
+    else:
+        pts=31
+        
+        m.params['number_pulses'] = 3
+        if mod(m.params['number_pulses'],2) ==0 :
+            m.params['extra_wait_final_pi2']=np.ones(pts)*m.params['extra_wait_final_pi2']
+            #m.params['extra_wait_final_pi2'] = np.linspace(-100e-9,60e-9,pts)#np.ones(pts)*0
+        else :
+            m.params['extra_wait_final_pi2']=np.ones(pts)*0
+            #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
+        
+        m.params['evolution_times'] = np.linspace(300e-9, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+        
+    m.params['pts'] = pts
 
     # MW pulses
     m.params['pulse_pi2_sweep_amps'] = np.ones(pts)*m.params['pulse_pi2_amp']#0.752#0.738
@@ -711,33 +644,31 @@ def run_calibrations(stage, IQmod, debug = False):
         print "\nExecute SSRO calibration : execfile(r'D:/measuring/scripts/ssro/ssro_calibration.py')"
 
     if stage == 2.0 :
-        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = 'Square', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum"
-        dark_esr(SAMPLE_CFG)
+        dark_esr(SAMPLE_CFG, pulse_type = 'Square', debug = debug)
         print "Analysis suggestion : execfile(r'D:/measuring/analysis/scripts/espin/dark_esr_analysis.py')"
 
 
     if stage == 3.0 :
-        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', multiplicity = 5, debug=debug)
+        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
+                multiplicity = 5, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
 
   
     if stage == 5.0 :
-        #!!! change the Ramsey class to allow to choose between normal pulses
-        # and CORPSE ones, issue with length of normal pulses
-        Corpse = False
-        ramsey_Corpse(SAMPLE_CFG, IQmod = IQmod, Corpse = Corpse)
+        ramsey(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Square', debug = debug)
 
     if stage == 6.0 :
         dd_sequence(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=debug)
 
 
 if __name__ == '__main__':
-    run_calibrations(2., IQmod = False, debug = True)
+    run_calibrations(6.0, IQmod = False, debug = False)
 
     """
     stage 0 : continuous ESR

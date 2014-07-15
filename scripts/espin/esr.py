@@ -11,12 +11,12 @@ SAMPLE = qt.exp_params['samples']['current']
 ##############
 
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps    = 100        #101
-mw_power = -24        #in dBm
-green_power = 3e-6  #10e-6
+steps    = 50        #101
+mw_power = -20      #in dBm
+green_power = 20e-6  #10e-6
 int_time = 25        # in ms
 reps = 100
-center_f = 2.807 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
+center_f = 2.8078 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
 range_f  =  0.010 # in GHz
 
