@@ -2,7 +2,7 @@
 cfg={}
 
 sample_name = 'THe111_no1'
-sil_name = 'SIL9'
+sil_name = 'SIL8'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -10,7 +10,7 @@ cfg['protocols'] = {'current':name}
 cfg['protocols'][name] = {}
 
 
-cfg['protocols']['The111_no1_SIL9'] = {}
+cfg['protocols']['The111_no1_SIL8'] = {}
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 
@@ -87,7 +87,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
         'mw_frq'                :     mw_frq, 
         'mw_power'              :     mw_power,
         'send_AWG_start'        :     1,
-        'MW_pulse_mod_risetime' :     10e-9
+        'MW_pulse_mod_risetime' :     20e-9
         }
 
 ##########################################
@@ -127,7 +127,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters for a general sample ###
 ####################################################
 
-f_msm1_cntr = 2.8072e9 #2.807277e9            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.80715e9 #2.807277e9            #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -175,10 +175,16 @@ cfg['protocols'][name]['pulses'] = {
         'CORPSE_pi_amp': 0.713, #N.C. 
         'Square_pi_amp': 0.9,#N.C.
         'Square_pi_length': 65e-9,#N.C.
-        'Hermite_pi_length': 120e-9,
-        'Hermite_pi_amp': 0.736,
-        'Hermite_pi2_length': 60e-9,
-        'Hermite_pi2_amp': 0.662,
+        'Square_pi2_amp': 0.9,#N.C.
+        'Square_pi2_length': 65e-9,#N.C.
+        'IQ_Square_pi_amp': 0.9,#N.C.
+        'IQ_Square_pi_length': 65e-9,#N.C.
+        'IQ_Square_pi2_amp': 0.9,#N.C.
+        'IQ_Square_pi2_length': 65e-9,#N.C.
+        'Hermite_pi_length': 180e-9,
+        'Hermite_pi_amp': 0.738, #0.775, # calib. 2014-07-11
+        'Hermite_pi2_length': 90e-9,
+        'Hermite_pi2_amp': 0.511, #0.673 calib. 2014-07-11
         'extra_wait_final_pi2' : -30e-9
         }
 
@@ -240,7 +246,7 @@ cfg['samples']['Hans_sil1'] = {
     ###########################################
 
 
-cfg['protocols']['The111_no1_SIL9']['AdwinSSRO'] = {
+cfg['protocols']['The111_no1_SIL8']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 0,

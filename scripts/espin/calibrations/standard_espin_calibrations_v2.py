@@ -160,7 +160,6 @@ def pulse_defs(msmt, IQmod, pulse_type):
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
-            #print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', msmt.params['MW_pi2_duration'], msmt.params['pulse_pi_amp']
             pulse_pi=Hermite_pi
             pulse_pi2=Hermite_pi2
         
@@ -490,11 +489,11 @@ class ElectronRamsey(pulsar_msmt.PulsarMeasurement):
 
 
 
-class DD_ZerothRevival(pulsar_msmt.PulsarMeasurement):
+class DD_GeneralSequence(pulsar_msmt.PulsarMeasurement):
     """
     Class to implement dynamical decoupling sequence and look at the first revival. 
     """
-    mprefix = 'DD_ZerothRevival'
+    mprefix = 'DD_GeneralSequence'
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
@@ -514,7 +513,7 @@ class DD_ZerothRevival(pulsar_msmt.PulsarMeasurement):
         elements = []
         for i in range(self.params['pts']):
 
-            e = element.Element('DD_ZerothRevival_pt-%d' % i, pulsar=qt.pulsar,
+            e = element.Element('DD_GeneralSequence_pt-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
             e.append(T)
 
@@ -549,7 +548,7 @@ class DD_ZerothRevival(pulsar_msmt.PulsarMeasurement):
             elements.append(e)
         
         # create a sequence from the pulses
-        seq = pulsar.Sequence('DD_ZerothRevival sequence with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('DD sequence with {} pulses'.format(self.params['pulse_type']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -662,15 +661,17 @@ def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
 
     m = GeneralElectronRabi(name)
     funcs.prepare(m)
+    m.params['MW_pulse_mod_frequency'] = 43e6
     pulse, pulse_pi2_not_used = pulse_defs(m,IQmod,pulse_type )
 
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
+
   
 
 
-    m.params['pts'] = 21
+    m.params['pts'] = 15
     pts = m.params['pts']
     m.params['repetitions'] = 2000
 
@@ -678,11 +679,11 @@ def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
     m.params['Ex_SP_amplitude']=0
 
 
-    #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 360, pts) * 1e-9
+    #m.params['pulse_sweep_durations'] =  np.ones(pts)*500e-9 #np.linspace(0, 10, pts) * 1e-6
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 40, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*m.params['pulse_pi2_amp']
-    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.4
+    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.1,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
     m.params['sweep_name'] = 'Pulse durations (ns)'
@@ -785,7 +786,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.85, 0.95, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.43, 0.48, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -822,7 +823,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.3,0.,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.4,-0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -885,21 +886,21 @@ def ramsey_Corpse(name, IQmod=True, Corpse = False) :
     funcs.finish(m)
 
 
-def dd_zerothrevival(name, IQmod=True, pulse_type='CORPSE', debug=False) :
-    m = DD_ZerothRevival(name)
+def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
+    m = DD_GeneralSequence(name)
     funcs.prepare(m)
     pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
     
-    pts = 31
+    pts = 21
     m.params['pts'] = pts
     m.params['repetitions'] = 2000
     m.params['Ex_SP_amplitude']=0
 
 
-    m.params['number_pulses'] = 3
+    m.params['number_pulses'] = 1
 
     
     if mod(m.params['number_pulses'],2) ==0 :
@@ -911,7 +912,7 @@ def dd_zerothrevival(name, IQmod=True, pulse_type='CORPSE', debug=False) :
 
     
 
-    m.params['evolution_times'] = np.linspace(200e-9, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+    m.params['evolution_times'] = np.linspace(70e-6, 80e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
 
     # MW pulses
     m.params['pulse_pi2_sweep_amps'] = np.ones(pts)*m.params['pulse_pi2_amp']#0.752#0.738
@@ -961,7 +962,7 @@ def run_calibrations(stage, IQmod, debug = False):
         print "\nExecute SSRO calibration : execfile(r'D:/measuring/scripts/ssro/ssro_calibration.py')"
 
     if stage == 2.0 :
-        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = 'Square', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum"
@@ -973,7 +974,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
 
     if stage == 4.0 :
-        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', multiplicity = 5, debug=debug)
+        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', multiplicity = 1, debug=debug)
 
     if stage == 5.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite')
@@ -986,11 +987,11 @@ def run_calibrations(stage, IQmod, debug = False):
         ramsey_Corpse(SAMPLE_CFG, IQmod = IQmod, Corpse = Corpse)
 
     if stage == 7.0 :
-        dd_zerothrevival(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=False)
+        dd_sequence(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=False)
 
 
 if __name__ == '__main__':
-    run_calibrations(7., IQmod = False, debug = False)
+    run_calibrations(2., IQmod = False, debug = False)
 
     """
     This is CRAP.
