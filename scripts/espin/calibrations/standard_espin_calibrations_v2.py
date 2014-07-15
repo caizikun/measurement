@@ -570,7 +570,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.3,0.,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+linspace(-0.45,-0.25,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -737,7 +737,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2., IQmod = False, debug = True)
+    run_calibrations(2.5, IQmod = False, debug = False)
 
     """
     stage 0 : continuous ESR

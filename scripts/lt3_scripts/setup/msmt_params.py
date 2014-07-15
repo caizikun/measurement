@@ -122,25 +122,25 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 1.0e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 3e-9,
+		'A_SP_amplitude':				 2e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 2e-9,
+		'Ex_RO_amplitude':				 0.5e-9,
 		'Ex_SP_amplitude':				 2e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
-		'SSRO_duration':				 100,
+		'SSRO_duration':				 25,
 		'SSRO_repetitions':				 5000,
 		}
 
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 30}
+	'SSRO_duration' : 15}
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -153,9 +153,9 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 180e-9, #2014-07-10
-        'Hermite_pi_amp': 0.898,  #2014-07-10
+        'Hermite_pi_amp': 0.895,  #2014-07-14
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.539,#0.723,
+        'Hermite_pi2_amp': 0.535,#0.723,
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }

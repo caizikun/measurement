@@ -54,7 +54,7 @@ params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 30#20
+params_lt3['SSRO_duration'] = 15#20
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1
@@ -64,7 +64,7 @@ params_lt3['Ex_CR_amplitude'] = 1e-9#0.5e-9#10e-9#6e-9
 params_lt3['A_CR_amplitude'] =1e-9#10e-9#16e-9              
 params_lt3['Ex_SP_amplitude'] = 0e-9     
 params_lt3['A_SP_amplitude'] = 3e-9             
-params_lt3['Ex_RO_amplitude'] = 2e-9
+params_lt3['Ex_RO_amplitude'] = 4e-9
 params_lt3['A_RO_amplitude'] = 0
 params_lt3['repump_amplitude'] = 50e-6#30e-9 
 
@@ -72,7 +72,7 @@ params_lt3['repump_amplitude'] = 50e-6#30e-9
 ### pulses and MW stuff LT3
 #####################
 ## general
-f_msm1_cntr_lt3 = 2.806887e9
+f_msm1_cntr_lt3 = 2.7e9#2.806887e9
 mw0_lt3 = f_msm1_cntr_lt3
 #f0_lt3 = f_msm1_cntr_lt3 - mw0_lt3
 #params_lt3['ms-1_cntr_frq'] = f_msm1_cntr_lt3
@@ -87,13 +87,13 @@ params_lt3['MW_pulse_mod_risetime'] = 20e-9
 #params_lt3['RND_angle_0'] = 90 #0
 #params_lt3['RND_angle_1'] = 90
 
-params_lt3['MW_pi_amp']		   = 0.898 # 2014-07-09
+params_lt3['MW_pi_amp']		   = 0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp']	   = 0.523 # 2014-07-09
+params_lt3['MW_pi2_amp']	   = 0.535 # 2014-07-09
 params_lt3['MW_pi2_duration']  = 90e-9 # 2014-07-09
-params_lt3['MW_RND0_amp']	   = 0.523 #TODO Calibrate
+params_lt3['MW_RND0_amp']	   = -0.535 #TODO Calibrate
 params_lt3['MW_RND0_duration'] = 90e-9 #TODO Calibrate
-params_lt3['MW_RND1_amp']	   = 0.523 #TODO Calibrate
+params_lt3['MW_RND1_amp']	   = -0.535 #TODO Calibrate
 params_lt3['MW_RND1_duration'] = 90e-9 #TODO Calibrate
 
 params_lt3['RND_duration'] = 100e-9
