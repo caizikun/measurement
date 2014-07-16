@@ -27,18 +27,18 @@ params_lt1['repump_mod_control_amp']    =  .5 #V
 #bell adwin:
 params_lt1['AWG_done_DI_channel'] = 20
 params_lt1['AWG_success_DI_channel'] = 21
-params_lt1['SP_duration'] = 50
+params_lt1['SP_duration'] = 100
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
-params_lt1['SSRO_duration'] = 20
+params_lt1['SSRO_duration'] = 30
 params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
 #adwin powers
 params_lt1['Ex_CR_amplitude'] = 2e-9#10e-9#6e-9             
-params_lt1['A_CR_amplitude'] =3e-9#10e-9#16e-9              
-params_lt1['Ex_SP_amplitude'] = 0e-9              
-params_lt1['A_SP_amplitude'] = 3e-9             
+params_lt1['A_CR_amplitude'] = 3e-9              
+params_lt1['Ex_SP_amplitude'] = 0e-9           
+params_lt1['A_SP_amplitude'] = 5e-9     
 params_lt1['Ex_RO_amplitude'] = 10e-9
 params_lt1['A_RO_amplitude'] = 0
 params_lt1['repump_amplitude'] = 30e-9 
@@ -47,13 +47,13 @@ params_lt1['repump_amplitude'] = 30e-9
 ### pulses and MW stuff LT1
 #####################
 ## general
-f_msm1_cntr_lt1 = 2.8072e9 
+f_msm1_cntr_lt1 = 2.807745e9
 mw0_lt1 = f_msm1_cntr_lt1
 #f0_lt1 = f_msm1_cntr_lt1 - mw0_lt1
 #params_lt1['ms-1_cntr_frq'] = f_msm1_cntr_lt1
 params_lt1['mw_frq'] = mw0_lt1
 params_lt1['mw_power'] = 20
-params_lt1['MW_pulse_mod_risetime'] = 10e-9
+params_lt1['MW_pulse_mod_risetime'] = 20e-9
 
 #params_lt1['CORPSE_rabi_frequency'] = 8.15e6
 #params_lt1['CORPSE_pi_amp'] = 0.8#382
@@ -62,26 +62,25 @@ params_lt1['MW_pulse_mod_risetime'] = 10e-9
 #params_lt1['RND_angle_0'] = 45
 #params_lt1['RND_angle_1'] = 315
 
-params_lt1['MW_pi_amp']		   = 0.775
-params_lt1['MW_pi_duration']   = 120e-9
-params_lt1['MW_pi2_amp']	   = 0.511
-params_lt1['MW_pi2_duration']  = 60e-9
-params_lt1['MW_RND0_amp']	   = 0.511 #TODO Calibrate
-params_lt1['MW_RND0_duration'] = 60e-9 #TODO Calibrate
-params_lt1['MW_RND1_amp']	   = 0.512 #TODO Calibrate
-params_lt1['MW_RND1_duration'] = 60e-9 #TODO Calibrate
+params_lt1['MW_pi_amp']		   = 0.452578
+params_lt1['MW_pi_duration']   = 180e-9
+params_lt1['MW_pi2_amp']	   = 0.295318
+params_lt1['MW_pi2_duration']  = 90e-9
+params_lt1['MW_RND0_amp']	   = 0.295318 #TODO Calibrate
+params_lt1['MW_RND0_duration'] = 90e-9 #TODO Calibrate
+params_lt1['MW_RND1_amp']	   = 0.295318 #TODO Calibrate
+params_lt1['MW_RND1_duration'] = 90e-9 #TODO Calibrate
 
 params_lt1['RND_duration'] = 300e-9
 
-
+params_lt1['echo_offset'] = 0e-9
 params_lt1['free_precession_time_1st_revival'] = 73.2e-6
+#adwin wait time after PLU signal:
 params_lt1['wait_before_RO'] = params.joint_params['wait_for_PLU']*params_lt1['free_precession_time_1st_revival']*1e6+10
 
 #params_lt1['CORPSE_mod_frq'] = f0_lt1
 
 # LDE Sequence in the AWG
-# calibration from 2014-05-30
-
 
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_pulse_amplitude']		= 1.9
@@ -101,12 +100,11 @@ params_lt1['AWG_SP_power']            = params_lt1['A_SP_amplitude']
 params_lt1['AWG_RO_power']            = params_lt1['Ex_RO_amplitude']
 params_lt1['AWG_yellow_power']        = 30e-9 #yellow power during SP in LDE on LT
 params_lt1['LDE_SP_duration']         = 5e-6
-params_lt1['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
+params_lt1['LDE_yellow_duration']     = -1#3e-6 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] = params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
-params_lt1['echo_offset'] = 0.
 
 params_lt1['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] = 1#sync is only for lt3
@@ -118,7 +116,6 @@ params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BA
 params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
 params_lt1['TTTR_read_count'] =    params.joint_params['TTTR_read_count']
-
 params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
 
 params_lt1['measurement_time'] =   24*60*60 #sec = 24 H
