@@ -1118,7 +1118,7 @@ class DD_GeneralSequence(PulsarMeasurement):
 
 
                 last = e.add(pulse.cp(pulse_pi,
-                        amplitude = self.params['pulse_pi_sweep_amps'][i],
+                        amplitude = self.params['pulse_pi_sweep_amps'][i],#*(-1)**np.mod(j+1,2),
                         phase = self.params['pulse_pi_sweep_phases'][j]),
                     refpulse = last,
                     refpoint = 'end' if (j == 0) else 'center',
