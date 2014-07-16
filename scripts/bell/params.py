@@ -15,7 +15,7 @@ joint_params['opt_pulse_separation']    = 600e-9
 joint_params['RND_during_LDE'] = 1 
 joint_params['do_echo'] = 1
 joint_params['do_final_MW_rotation'] = 1
-joint_params['wait_for_PLU'] = 1
+joint_params['wait_for_PLU'] = 0
 joint_params['DD_number_pi_pulses'] = 1 # the maximum number of pi pulses is 3 !!!
 
 joint_params['LDE_element_length']     = 16.e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
@@ -100,6 +100,7 @@ params_lt3['RND_duration'] = 100e-9
 
 params_lt3['echo_offset'] = 50e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
+#adwin wait time after PLU signal:
 params_lt3['wait_before_RO'] = joint_params['wait_for_PLU']*params_lt3['free_precession_time_1st_revival']*1e6+10
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
@@ -125,11 +126,15 @@ params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt3['LDE_SP_duration']         = 5.e-6 
 params_lt3['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
-
 params_lt3['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] = joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] = 50e-9 #wait start RND MW after end of RND halt pulse
 
+params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
+params_lt3['sync_during_LDE'] = 1
+params_lt3['plu_during_LDE'] = 1
+params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
+params_lt3['AWG_wait_for_lt1_start'] =  1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
@@ -137,12 +142,6 @@ params_lt3['PLU_1_delay']             = 1e-9
 params_lt3['PLU_2_delay']             = 1e-9
 params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 150e-9
-
-params_lt3['RO_wait'] = 50e-9 #wait start RO after end of RND MW pulse
-params_lt3['AWG_wait_for_lt1_start'] =  1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
-params_lt3['sync_during_LDE'] = 1
-params_lt3['plu_during_LDE'] = 1
-params_lt3['opt_pulse_start'] = params_lt3['LDE_SP_duration'] +  500e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

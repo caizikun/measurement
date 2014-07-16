@@ -651,14 +651,12 @@ def run_calibrations(stage, IQmod, debug = False):
         dark_esr(SAMPLE_CFG, pulse_type = 'Square', debug = debug)
         print "Analysis suggestion : execfile(r'D:/measuring/analysis/scripts/espin/dark_esr_analysis.py')"
 
-
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
                 multiplicity = 5, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
-
   
     if stage == 5.0 :
         ramsey(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Square', debug = debug)
