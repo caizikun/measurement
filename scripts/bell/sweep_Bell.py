@@ -238,8 +238,8 @@ def sweep_bell(name, setup = 'lt3'):
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'echo_offset' 
-        m.params['general_sweep_pts'] = np.linspace(-50e-9,50e-9,pts)
-        m.joint_params['DD_number_pi_pulses'] = 3
+        m.params['general_sweep_pts'] = np.linspace(-100e-9,100e-9,pts)
+        m.joint_params['DD_number_pi_pulses'] = 2
         m.params['free_precession_offset'] = 0e-9
         if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
             m.params['echo_offset'] = 0.e-9
@@ -297,4 +297,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('SAM_SIL5_echo_0th', setup = 'lt3')    
+    sweep_bell('111-1-1_echo_0th', setup = 'lt1')    
