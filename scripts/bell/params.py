@@ -13,10 +13,10 @@ joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['RND_during_LDE'] = 1 
-joint_params['do_echo'] = 1
-joint_params['do_final_MW_rotation'] = 1
-joint_params['wait_for_PLU'] = 1
-joint_params['DD_number_pi_pulses'] = 1 # the maximum number of pi pulses is 3 !!!
+joint_params['do_echo'] = 0
+joint_params['do_final_MW_rotation'] = 0
+joint_params['wait_for_PLU'] = 0
+joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 
 joint_params['LDE_element_length']     = 16.e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 3e-6
@@ -98,7 +98,7 @@ params_lt3['MW_RND1_duration'] = 90e-9 #TODO Calibrate
 
 params_lt3['RND_duration'] = 100e-9
 
-params_lt3['echo_offset'] = 50e-9
+params_lt3['echo_offset'] = 0e-9 #50 ns
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt3['wait_before_RO'] = joint_params['wait_for_PLU']*params_lt3['free_precession_time_1st_revival']*1e6+10
 params_lt3['free_precession_offset'] = 0

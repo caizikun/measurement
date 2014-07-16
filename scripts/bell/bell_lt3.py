@@ -99,10 +99,10 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = True
+    th_debug = False
     sequence_only = False
-    mw = False
-    measure_lt1 = True
+    mw = True
+    measure_lt1 = False
     measure_bs = True
     do_upload = True
 
@@ -145,4 +145,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LT1_the111no1_Sil1_SPcorr_all_MW_corpse')   
+    full_bell('SAM_spin_photon_corr')   
