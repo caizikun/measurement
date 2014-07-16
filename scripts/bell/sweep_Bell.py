@@ -247,7 +247,7 @@ def sweep_bell(name, setup = 'lt3'):
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*.0
+        m.params['aom_amplitude'] = np.ones(pts)*0.673
 
         m.joint_params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
