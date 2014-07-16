@@ -45,7 +45,7 @@ def pulse_defs_lt3(msmt):
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel = 'MW_Qmod',
-                    amplitude = msmt.params['MW_pi_amp'],#XXXXXX
+                    amplitude = msmt.params['MW_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -62,14 +62,14 @@ def pulse_defs_lt3(msmt):
     msmt.MW_RND0 = pulselib.HermitePulse_Envelope('Hermite RND0-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp'],#XXXXXX
+                    amplitude = msmt.params['MW_RND0_amp'],
                     length = msmt.params['MW_RND0_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
     msmt.MW_RND1 = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
                     MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp'],#XXXXXXX
+                    amplitude = msmt.params['MW_RND1_amp'],
                     length = msmt.params['MW_RND1_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -390,10 +390,13 @@ def _LDE_element(msmt, **kw):
         LDE_echo_point = ref_p_1.effective_start()+ msmt.params['MW_1_separation']
         expected_echo_time = (ref_p_2.effective_start()- LDE_echo_point)
         #print 'LDE_echo_point, expected_echo_time: ', LDE_echo_point, expected_echo_time
+        N_p = msmt.joint_params['DD_number_pi_pulses']
+        index_j = np.linspace(N_p-1, - N_p+1, N_p )
         for j in range(msmt.joint_params['DD_number_pi_pulses']):
             e.add(msmt.MW_pi, 
                 start = -expected_echo_time/(2.*msmt.joint_params['DD_number_pi_pulses'])*(2*j+1) \
-                    +(2*j+1)*msmt.params['free_precession_offset']+msmt.params['echo_offset'],
+                    +msmt.params['free_precession_offset']*index_j[j]\
+                    +msmt.params['echo_offset'],
                 refpulse = 'MW_RND_0', 
                 refpoint = 'start', 
                 refpoint_new = 'center',

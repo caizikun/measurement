@@ -469,7 +469,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.41, 0.48, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.85, 0.95, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -506,7 +506,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.25,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.5,-0.3,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -563,7 +563,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
 
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 6000
     m.params['Ex_SP_amplitude']=0
     
     #evolution times:
@@ -580,7 +580,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
         pts = len(sweep_array)
         m.params['evolution_times'] = sweep_array
     else:
-        pts=31
+        pts=15
         
         m.params['number_pulses'] = 3
         if mod(m.params['number_pulses'],2) ==0 :
@@ -590,7 +590,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
             m.params['extra_wait_final_pi2']=np.ones(pts)*0
             #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
         
-        m.params['evolution_times'] = np.linspace(300e-9, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+        m.params['evolution_times'] = np.linspace(300e-9, 5e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
         
     m.params['pts'] = pts
 

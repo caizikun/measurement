@@ -54,7 +54,7 @@ params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 15#20
+params_lt3['SSRO_duration'] = 25 #15 XXXXXXXXXXXXXXXXXXXXXXXXX
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1
@@ -72,7 +72,7 @@ params_lt3['repump_amplitude'] = 50e-6#30e-9
 ### pulses and MW stuff LT3
 #####################
 ## general
-f_msm1_cntr_lt3 = 2.7e9#2.806887e9
+f_msm1_cntr_lt3 = 2.806887e9
 mw0_lt3 = f_msm1_cntr_lt3
 #f0_lt3 = f_msm1_cntr_lt3 - mw0_lt3
 #params_lt3['ms-1_cntr_frq'] = f_msm1_cntr_lt3
@@ -91,9 +91,9 @@ params_lt3['MW_pi_amp']		   = 0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = 180e-9 # 2014-07-09
 params_lt3['MW_pi2_amp']	   = 0.535 # 2014-07-09
 params_lt3['MW_pi2_duration']  = 90e-9 # 2014-07-09
-params_lt3['MW_RND0_amp']	   = -0.535 #TODO Calibrate
+params_lt3['MW_RND0_amp']	   = 0.535 #TODO Calibrate
 params_lt3['MW_RND0_duration'] = 90e-9 #TODO Calibrate
-params_lt3['MW_RND1_amp']	   = -0.535 #TODO Calibrate
+params_lt3['MW_RND1_amp']	   = 0.535 #TODO Calibrate
 params_lt3['MW_RND1_duration'] = 90e-9 #TODO Calibrate
 
 params_lt3['RND_duration'] = 100e-9
@@ -101,6 +101,7 @@ params_lt3['RND_duration'] = 100e-9
 params_lt3['echo_offset'] = 50e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt3['wait_before_RO'] = joint_params['wait_for_PLU']*params_lt3['free_precession_time_1st_revival']*1e6+10
+params_lt3['free_precession_offset'] = 0
 #params_lt3['CORPSE_mod_frq'] = f0_lt3
 
 # LDE Sequence in the AWGs
