@@ -102,7 +102,7 @@ def full_bell(name):
     th_debug = False
     sequence_only = False
     mw = True
-    measure_lt1 = False
+    measure_lt1 = True
     measure_bs = True
     do_upload = True
 
@@ -145,4 +145,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('SAM_spin_photon_corr')   
+    full_bell('LDE_10m_XX_3pi_2nd_run')   

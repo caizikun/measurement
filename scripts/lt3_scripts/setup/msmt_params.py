@@ -128,16 +128,16 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 0.5e-9,
+		'Ex_RO_amplitude':				 2e-9,
 		'Ex_SP_amplitude':				 2e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
-		'SSRO_duration':				 25,
+		'SSRO_duration':				 40,
 		'SSRO_repetitions':				 5000,
 		}
-
+cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 	'SSRO_duration' : 15}
