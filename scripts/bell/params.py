@@ -13,8 +13,8 @@ joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['RND_during_LDE'] = 1 
-joint_params['do_echo'] = 0
-joint_params['do_final_MW_rotation'] = 0
+joint_params['do_echo'] = 1
+joint_params['do_final_MW_rotation'] = 1
 joint_params['wait_for_PLU'] = 0
 joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 
@@ -25,7 +25,7 @@ joint_params['separate_RO_element'] =  True
 joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0 #WRONG / TODO
-joint_params['MAX_SYNC_BIN'] =       1000
+joint_params['MAX_SYNC_BIN'] =       7000
 joint_params['TTTR_read_count'] = 	 1000 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 
@@ -54,7 +54,7 @@ params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 25 #15 XXXXXXXXXXXXXXXXXXXXXXXXX
+params_lt3['SSRO_duration'] = 25 
 params_lt3['wait_for_AWG_done'] = 0
 #params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1

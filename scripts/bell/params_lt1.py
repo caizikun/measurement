@@ -18,7 +18,6 @@ params_lt1['CR_repump'] = 1000 # 1 for yellow, 1000 for green
 params_lt1['cr_mod'] = True
 params_lt1['cr_mod_control_offset']     =  0.0
 params_lt1['cr_mod_control_amp']        =  0.05 #V
-params_lt1['repump_mod_control_offset'] =  7.2
 params_lt1['repump_mod_control_amp']    =  .5 #V
 
 #CR check modulation pars:
@@ -47,7 +46,7 @@ params_lt1['repump_amplitude'] = 30e-9
 ### pulses and MW stuff LT1
 #####################
 ## general
-f_msm1_cntr_lt1 = 2.807769e9
+f_msm1_cntr_lt1 = 2.807728e9
 mw0_lt1 = f_msm1_cntr_lt1
 #f0_lt1 = f_msm1_cntr_lt1 - mw0_lt1
 #params_lt1['ms-1_cntr_frq'] = f_msm1_cntr_lt1
@@ -62,16 +61,16 @@ params_lt1['MW_pulse_mod_risetime'] = 20e-9
 #params_lt1['RND_angle_0'] = 45
 #params_lt1['RND_angle_1'] = 315
 
-params_lt1['MW_pi_amp']		   = 0.452204
+params_lt1['MW_pi_amp']		   = 0.453
 params_lt1['MW_pi_duration']   = 180e-9
-params_lt1['MW_pi2_amp']	   = 0.293998
+params_lt1['MW_pi2_amp']	   = 0.295
 params_lt1['MW_pi2_duration']  = 90e-9
-params_lt1['MW_RND0_amp']	   = params_lt1['MW_pi2_amp'] #TODO Calibrate
+params_lt1['MW_RND0_amp']	   = -params_lt1['MW_pi2_amp'] #TODO Calibrate
 params_lt1['MW_RND0_duration'] = params_lt1['MW_pi2_duration'] #TODO Calibrate
-params_lt1['MW_RND1_amp']	   = params_lt1['MW_pi2_amp'] #TODO Calibrate
+params_lt1['MW_RND1_amp']	   = -1*params_lt1['MW_pi2_amp'] #TODO Calibrate
 params_lt1['MW_RND1_duration'] = params_lt1['MW_pi2_duration'] #TODO Calibrate
 
-params_lt1['RND_duration'] = 300e-9
+params_lt1['RND_duration'] = 10e-9
 
 params_lt1['echo_offset'] = 0e-9
 params_lt1['free_precession_time_1st_revival'] = 73.2e-6
@@ -100,7 +99,7 @@ params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 params_lt1['AWG_SP_power']            = params_lt1['A_SP_amplitude']
 params_lt1['AWG_RO_power']            = params_lt1['Ex_RO_amplitude']
 params_lt1['AWG_yellow_power']        = 30e-9 #yellow power during SP in LDE on LT
-params_lt1['LDE_SP_duration']         = 5e-6
+params_lt1['LDE_SP_duration']         = 5e-6 
 params_lt1['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1

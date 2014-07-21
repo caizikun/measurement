@@ -51,9 +51,12 @@ def start_bs_counter():
     qt.instruments['bs_helper'].set_is_running(True)
     qt.instruments['bs_helper'].execute_script()
     qt.instruments['counters'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['counters'].set_is_running(True)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
 
 def set_lt1_remote():
     for i in ['labjack', 

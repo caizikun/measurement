@@ -64,6 +64,7 @@ class SweepBell(bell.Bell):
             
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(self.sweep_bell_seq)
+        #qt.pulsar.program_awg(self.sweep_bell_seq,*elements)
 
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
@@ -154,7 +155,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=11
+    pts=1
     m.params['pts']=pts
     
     
@@ -238,16 +239,17 @@ def sweep_bell(name, setup = 'lt3'):
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'echo_offset' 
-        m.params['general_sweep_pts'] = np.linspace(-100e-9,100e-9,pts)
+        m.params['general_sweep_pts'] = np.linspace(-10e-9,-10e-9,pts)
         m.joint_params['DD_number_pi_pulses'] = 2
         m.params['free_precession_offset'] = 0e-9
-        if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
-            m.params['echo_offset'] = 0.e-9
-        print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
+        m.joint_params['do_echo'] = 1
+        #if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
+        #    m.params['echo_offset'] = 0.e-9
+        #print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*0.673
+        m.params['aom_amplitude'] = np.ones(pts)*0.0 #0.673
 
         m.joint_params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 0
@@ -269,7 +271,7 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 6000
+    m.params['repetitions'] = 12000
 
     th_debug=True
     measure_bs=False

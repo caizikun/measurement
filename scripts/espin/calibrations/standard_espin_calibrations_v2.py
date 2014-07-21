@@ -2,6 +2,8 @@
 Work in progress :)
 Anais
 """
+import qt
+import numpy as np
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
@@ -370,7 +372,78 @@ class Test_3MW(pulsar_msmt.PulsarMeasurement):
         # some debugging:
         # elements[-1].print_overview()
 
+class TestLDESequence(pulsar_msmt.PulsarMeasurement):
+    """
+    Class to implement dynamical decoupling sequence and look at the first revival. 
+    """
+    mprefix = 'Test_LDE'
 
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(36)
+
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+
+        pulse_pi=kw.get('pulse_pi', None)
+        pulse_pi2=kw.get('pulse_pi2', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('LDE_test_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            e.add(pulse_pi2,
+                start = 200e-9,
+                name = 'MW_pi_over_2')
+              
+            e.add(pulse_pi,
+                start = 600e-9,
+                refpulse = 'MW_pi_over_2',
+                refpoint = 'end', 
+                refpoint_new = 'end', 
+                name='MW_pi')
+    
+            
+            e.add(pulse.cp(pulse_pi2,
+                    amplitude = -self.params['pulse_pi2_amp']), 
+                start = 4493e-9,
+                refpulse = 'MW_pi_over_2',
+                refpoint = 'end', 
+                refpoint_new = 'start', 
+                name='last_MW_pi_over_2')
+
+            N_p = self.params['number_pulses']
+            index_j = np.linspace(N_p-1, - N_p+1, N_p )
+            for j in range(self.params['number_pulses']):
+                e.add(pulse_pi,  
+                    start = -3473e-9/(2.*self.params['number_pulses'])*(2*j+1) \
+                        +self.params['free_precession_offsets'][i]*index_j[j]\
+                       +self.params['echo_offsets'][i],
+                    refpulse = 'last_MW_pi_over_2', 
+                    refpoint = 'start', 
+                    refpoint_new = 'center',
+                    name='MW_echo_pi_{}'.format(j))
+
+
+            elements.append(e)
+        
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('LDE test with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+        
+        if upload:
+            #    qt.pulsar.upload(*elements)
+            #    qt.pulsar.program_sequence(seq)
+            qt.pulsar.program_awg(seq,*elements)
 
 
 ### called at stage 2.0
@@ -395,9 +468,9 @@ def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 4000, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.015
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.2
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -469,7 +542,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.42, 0.48, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.40, 0.50, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -506,7 +579,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.3,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.25,-0.05,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -535,11 +608,11 @@ def ramsey(name, IQmod=False, pulse_type = 'Square', debug=False) :
     m.params['repetitions'] = 1000
     m.params['Ex_SP_amplitude']=0
     
-    m.params['detuning']  = 3e3
-
+    m.params['detuning']  = 3e6
+    m.params['mw_frq'] -=  m.params['detuning'] 
     
     #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0, 2000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0, 3000e-9,pts)
     #m.params['evolution_times'] = 5*np.ones (pts)*1e-9
 
     # MW pulses
@@ -563,12 +636,12 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
 
-    m.params['repetitions'] = 6000
+    m.params['repetitions'] = 5000
     m.params['Ex_SP_amplitude']=0
     
     #evolution times:
-    T2_measurement= False
-    if T2_measurement:
+    T2_on_revivals_measurement= False
+    if T2_on_revivals_measurement:
         revivals=7
         pts_per_revival=5
         sweep_array = np.array([300e-9])
@@ -580,7 +653,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
         pts = len(sweep_array)
         m.params['evolution_times'] = sweep_array
     else:
-        pts=15
+        pts=31
         
         m.params['number_pulses'] = 3
         if mod(m.params['number_pulses'],2) ==0 :
@@ -590,7 +663,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
             m.params['extra_wait_final_pi2']=np.ones(pts)*0
             #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
         
-        m.params['evolution_times'] = np.linspace(300e-9, 5e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+        m.params['evolution_times'] =np.linspace(300e-9, 5e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
         
     m.params['pts'] = pts
 
@@ -628,8 +701,44 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
     #m.params['sweep_pts'] = m.params['extra_wait_final_pi2']*1e9#m.params['evolution_times']*2*m.params['number_pulses']/1e-6
     #m.params['sweep_name'] = 'phase second pi2'
     #m.params['sweep_pts'] = m.params['CORPSE_pi2_phases2']
+    
 
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
+
+
+def test_lde_sequence(name, IQmod=False, pulse_type='Hermite', debug=False) :
+    m = TestLDESequence(name)
+    funcs.prepare(m)
+    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+
+    m.params['pulse_type'] = pulse_type
+    m.params['IQmod'] = IQmod
+
+    m.params['repetitions'] = 12000
+    m.params['Ex_SP_amplitude']=0
+    
+    pts=1
+    
+    m.params['number_pulses'] = 2 # the 1st pi pulse is added
+    
+    
+    
+    m.params['pts'] = pts
+
+    m.params['free_precession_offsets'] = np.ones(pts)*0.0e-9
+    m.params['echo_offsets'] =  np.linspace(-10,10,pts)*1e-9
+
+
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'echo offset (ns)' #'MW_1_separation (ns)'
+    m.params['sweep_pts'] = m.params['echo_offsets'] 
+    #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX(for hannes)
+    #m.autoconfig()
+    #return m.generate_sequence(upload=False, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
+    funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
+
+
 
 ### master function
 def run_calibrations(stage, IQmod, debug = False): 
@@ -653,7 +762,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
-                multiplicity = 5, debug=debug)
+                multiplicity = 3, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
@@ -664,9 +773,12 @@ def run_calibrations(stage, IQmod, debug = False):
     if stage == 6.0 :
         dd_sequence(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=debug)
 
+    if stage == 7.0 :
+        test_lde_sequence(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=debug)
+
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False, debug = False)
+    run_calibrations(7.0, IQmod = False, debug = False)
 
     """
     stage 0 : continuous ESR
