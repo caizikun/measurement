@@ -36,7 +36,10 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
             self.params['E_RO_voltages_AWG'][i] = \
                     self.E_aom.power_to_voltage(
                             self.params['E_RO_amplitudes_AWG'][i], controller='sec')
-        
+        if qt.pulsar.channels['AOM_Matisse']['type'] == 'marker' and self.params['pts']>1:
+            print 'FastSSRO: WARNING, AOM Matisse is on marker channel, cannot sweep its power!'
+            print 'Setting max RO power'
+            qt.pulsar.set_channel_opt('AOM_Matisse', 'high', self.params['E_RO_voltages_AWG'][-1])
 
     def generate_sequence(self):
 
@@ -100,7 +103,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 15
+    pts = 2
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 1000
 

@@ -43,7 +43,7 @@ class Bell_LT3(bell.Bell):
         LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
         elements.append(LDE_element)
 
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
             late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_LT3')
             elements.append(late_RO)
@@ -55,14 +55,14 @@ class Bell_LT3(bell.Bell):
 
         seq.append(name = 'LDE_LT3',
             wfname = LDE_element.name,
-            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'RO_dummy',
+            jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
             goto_target = 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
         #    wfname = finished_element.name,
         #    goto_target = 'start_LDE')
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             seq.append(name = 'late_RO',
                 wfname = late_RO.name,
                 goto_target = 'start_LDE')
@@ -99,11 +99,11 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = False
+    th_debug = True
     sequence_only = False
-    mw = True
+    mw = False
     measure_lt1 = False
-    measure_bs = True
+    measure_bs = False
     do_upload = True
 
     m=Bell_LT3(name) 
@@ -145,4 +145,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('SAM_spin_photon_corr')   
+    full_bell('Test_for_crach')   

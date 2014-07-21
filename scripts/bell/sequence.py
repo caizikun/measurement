@@ -89,7 +89,7 @@ def pulse_defs_lt3(msmt):
                     aom_amplitude           = msmt.params['aom_amplitude'])
 
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
+    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -170,7 +170,7 @@ def pulse_defs_lt1(msmt):
                     aom_risetime            = msmt.params['aom_risetime'],
                     aom_amplitude           = msmt.params['aom_amplitude'])
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = -2.0, 
+    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -207,7 +207,7 @@ def _lt1_sequence_start_element(msmt):
     """
     first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
     """
-    e = element.Element('LT3_start', pulsar = qt.pulsar)
+    e = element.Element('LT1_start', pulsar = qt.pulsar)
     e.append(pulse.cp(msmt.SP_pulse, length=1e-6, amplitude = 0))
     return e
 
@@ -350,15 +350,16 @@ def _LDE_element(msmt, **kw):
 
 
     # 14 RND generator HOLD OFF
-    if msmt.joint_params['RND_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 :
+    if  msmt.joint_params['wait_for_1st_revival'] == 0:
         #print 'RND_start', msmt.joint_params['RND_start']
-        e.add(msmt.RND_halt_off_pulse,
+        e.add(pulse.cp(msmt.RND_halt_off_pulse,
+                       amplitude = msmt.joint_params['RND_during_LDE']),
                 start = msmt.joint_params['RND_start'],
                 refpulse = 'initial_delay',
                 name = 'RND')
 
     # 14 RND MW pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 and msmt.joint_params['do_final_MW_rotation'] == 1:
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0 and msmt.joint_params['do_final_MW_rotation'] == 1:
         e.add(msmt.MW_RND0, 
             start = msmt.params['MW_RND_wait'],
             refpulse = 'RND', 
@@ -372,8 +373,8 @@ def _LDE_element(msmt, **kw):
             refpoint_new = 'start',
             name='MW_RND_1')
     #15 RO
-    if msmt.joint_params['RO_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0:
-        refpulse = 'MW_RND_0' if  msmt.params['MW_during_LDE'] == 1 else 'RND'
+    if msmt.joint_params['RO_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0:
+        refpulse = 'MW_RND_0' if (msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_final_MW_rotation'] == 1) else 'RND'
         e.add(pulse.cp(msmt.RO_pulse,
                 amplitude = msmt.params['RO_voltage_AWG'],
                 length = msmt.joint_params['LDE_RO_duration']),
@@ -384,7 +385,7 @@ def _LDE_element(msmt, **kw):
             name='RO')
 
     #13 Echo pulse
-    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_PLU'] == 0 and msmt.joint_params['do_echo'] == 1:
+    if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0 and msmt.joint_params['do_echo'] == 1:
         ref_p_1 = e.pulses['MW_pi']
         ref_p_2 = e.pulses['MW_RND_0']
         #print 'RND MW start:', ref_p_2.effective_start()
@@ -392,11 +393,11 @@ def _LDE_element(msmt, **kw):
         LDE_echo_point = ref_p_1.effective_start()+ msmt.params['MW_1_separation']
         expected_echo_time = (ref_p_2.effective_start()- LDE_echo_point)
         #print 'LDE_echo_point, expected_echo_time: ', LDE_echo_point, expected_echo_time
-        N_p = msmt.joint_params['DD_number_pi_pulses']
-        index_j = np.linspace(N_p-1, - N_p+1, N_p )
-        for j in range(msmt.joint_params['DD_number_pi_pulses']):
+        noof_p = msmt.joint_params['DD_number_pi_pulses']
+        index_j = np.linspace(noof_p-1, - noof_p+1, noof_p )
+        for j in range(noof_p):
             e.add(msmt.MW_pi, 
-                start = -expected_echo_time/(2.*msmt.joint_params['DD_number_pi_pulses'])*(2*j+1) \
+                start = -expected_echo_time/(2.*noof_p)*(2*j+1) \
                     +msmt.params['free_precession_offset']*index_j[j]\
                     +msmt.params['echo_offset'],
                 refpulse = 'MW_RND_0', 

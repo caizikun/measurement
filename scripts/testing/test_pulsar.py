@@ -1,0 +1,8 @@
+p=pulse.SquarePulse(channel='sync',length=10e-9, amplitude=1.)
+p2=pulse.SquarePulse(channel='sync',length=10e-9, amplitude=0.)
+e=element.Element('test1', pulsar=qt.pulsar)
+e.add(p)
+e.append(p2)
+seq = pulsar.Sequence('Testseq')
+seq.append(name='Test_el_seq', trigger_wait=True, wfname='test1')
+qt.pulsar.program_awg(seq,e, allow_first_zero=True)
