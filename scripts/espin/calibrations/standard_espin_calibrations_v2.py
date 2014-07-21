@@ -3,6 +3,7 @@ Work in progress :)
 Anais
 """
 #reload all parameters and modules
+import qt
 execfile(qt.reload_current_setup)
 
 # reload all parameters and modules, import classes
@@ -372,7 +373,6 @@ class Test_3MW(pulsar_msmt.PulsarMeasurement):
 
 
 
-
 ### called at stage 2.0
 def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
 
@@ -447,9 +447,6 @@ def dark_esr(name, pulse_type = 'Square', debug = False):
 
 
 
-
-
-
 ### called at stage = 4.0
 def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, debug=False):
 
@@ -469,7 +466,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.42, 0.48, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.1, 0.1, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -506,7 +503,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.3,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.4,-0.2,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -516,9 +513,36 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
     
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
 
+### called at stage = 5.5
+def calibrate_pi4_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, debug=False):
 
+    m = pulsar_msmt.GeneralPiCalibration(name)
+    funcs.prepare(m)
+    pulse_pi_not_used, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi4 = pulse.cp(pulse_pi2,
+            length = 50e-9)
 
+    m.params['pulse_type'] = pulse_type
+    m.params['IQmod'] = IQmod
+    m.params['multiplicity'] = multiplicity
 
+    pts = 20
+ 
+    m.params['Ex_SP_amplitude']=0
+
+    m.params['pts'] = pts
+    m.params['repetitions'] = 2000
+
+    # sweep params
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.4, 0.6, pts) #0.872982*np.ones(pts)#
+    m.params['delay_reps'] = 1
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'MW amplitude (V)'
+    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    m.params['wait_for_AWG_done'] = 1
+    
+    funcs.finish(m, debug=debug, pulse_pi=pulse_pi4)
 
 def ramsey(name, IQmod=False, pulse_type = 'Square', debug=False) :
     
@@ -658,6 +682,9 @@ def run_calibrations(stage, IQmod, debug = False):
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
   
+    if stage == 4.5:
+        calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
+                multiplicity = 1, debug=debug)
     if stage == 5.0 :
         ramsey(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Square', debug = debug)
 
@@ -666,7 +693,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False, debug = False)
+    run_calibrations(4.5, IQmod = False, debug = False)
 
     """
     stage 0 : continuous ESR

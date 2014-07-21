@@ -1007,7 +1007,7 @@ class GeneralPiCalibration(PulsarMeasurement):
 
 class GeneralPi2Calibration(PulsarMeasurement):
     """
-    Do a pi/2 pulse, followed by a pi-pulse; sweep the time between them. 
+    Do a pi/2 pulse, compare to an element with pi/2 + pi-pulse; sweep the pi2 amplitude. 
     generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
     """
     mprefix = 'GeneralPi2Calibration'

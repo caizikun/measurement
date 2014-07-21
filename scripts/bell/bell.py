@@ -19,7 +19,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
     def autoconfig(self, **kw):
 
         self.params['sequence_wait_time'] = self.joint_params['LDE_attempts_before_CR']*self.joint_params['LDE_element_length']*1e6\
-        +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_PLU']+ 20
+        +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_1st_revival']+ 20
         print 'I am the sequence wainting time', self.params['sequence_wait_time']
         pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
 
@@ -61,6 +61,13 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     'entanglement_events',
                     'completed_reps',
                     'total_CR_counts'])
+    def finish(self):
+        h5_joint_params_group = self.h5basegroup.create_group('joint_params')
+        joint_params = self.joint_params.to_dict()
+        for k in joint_params:
+            h5_joint_params_group.attrs[k] = joint_params[k]
+        self.h5data.flush()
+        pulsar_pq.PQPulsarMeasurement.finish(self)
 
 
 #if __name__ == '__main__':

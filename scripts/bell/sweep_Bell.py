@@ -47,7 +47,7 @@ class SweepBell(bell.Bell):
                 eom_pulse =  eom_p)    
             elements.append(LDE_element)
 
-            if self.joint_params['wait_for_PLU']:
+            if self.joint_params['wait_for_1st_revival']:
                 LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
                 late_RO_element = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = 'late RO element {}'.format(i))
                 elements.append(late_RO_element)
@@ -57,7 +57,7 @@ class SweepBell(bell.Bell):
                 trigger_wait = self.params['trigger_wait'],
                 repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-            if self.joint_params['wait_for_PLU']:
+            if self.joint_params['wait_for_1st_revival']:
                 self.sweep_bell_seq.append(name= 'late_RO {}'.format(i),
                     wfname = late_RO_element.name )
 
@@ -135,22 +135,19 @@ def sweep_bell(name, setup = 'lt3'):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
 
-    m.joint_params = {}
+    #m.joint_params = {}
+    for k in params.joint_params:
+        m.joint_params[k] = params.joint_params[k]
 
 
     if setup == 'lt3' :
         for k in params.params_lt3:
             m.params[k] = params.params_lt3[k]
-        for k in params.joint_params:
-            m.params[k] = params.joint_params[k]
-            m.joint_params[k] = params.joint_params[k]
 
     elif setup == 'lt1' :
         for k in params_lt1.params_lt1:
             m.params[k] = params_lt1.params_lt1[k]
-        for k in params.joint_params:
-            m.params[k] = params.joint_params[k]
-            m.joint_params[k] = params.joint_params[k]
+
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
@@ -218,7 +215,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
         m.joint_params['LDE_element_length'] = 7e-6
-        m.joint_params['wait_for_PLU'] = 0
+        m.joint_params['wait_for_1st_revival'] = 0
 
         if do_sweep_aom_power:
             p_aom= qt.instruments['PulseAOM']
@@ -247,15 +244,15 @@ def sweep_bell(name, setup = 'lt3'):
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*0.0#673
+        m.params['aom_amplitude'] = np.ones(pts)*0.#673
 
         m.joint_params['RND_during_LDE'] = 1
-        m.joint_params['RO_during_LDE'] = 0
+        m.joint_params['RO_during_LDE'] = 1
         m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
 
         # to measure the echo on the 1st revival
         # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
-        m.joint_params['wait_for_PLU'] = 0
+        m.joint_params['wait_for_1st_revival'] = 0
 
         #for the analysis:
         m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
@@ -266,7 +263,7 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     m.params['MIN_SYNC_BIN'] =       5000 
-    m.params['MAX_SYNC_BIN'] =       7000
+    m.params['MAX_SYNC_BIN'] =       16000
 
     m.params['send_AWG_start'] = 1
     m.params['repetitions'] = 10000
