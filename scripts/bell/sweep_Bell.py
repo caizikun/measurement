@@ -64,6 +64,7 @@ class SweepBell(bell.Bell):
             
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(self.sweep_bell_seq)
+        #qt.pulsar.program_awg(self.sweep_bell_seq,*elements)
 
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
@@ -239,13 +240,17 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['general_sweep_pts'] = np.linspace(0e-9,0e-9,pts)
         m.joint_params['DD_number_pi_pulses'] = 2
         m.params['free_precession_offset'] = 0e-9
+        m.joint_params['do_echo'] = 1
+        #if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
+        #    m.params['echo_offset'] = 0.e-9
+        #print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
         if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
             m.params['echo_offset'] = 0.e-9
         print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*Belle9)
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
-        m.params['aom_amplitude'] = np.ones(pts)*0.#673
+        m.params['aom_amplitude'] = np.ones(pts)*0.0 #0.673
 
         m.joint_params['RND_during_LDE'] = 1
         m.joint_params['RO_during_LDE'] = 1
