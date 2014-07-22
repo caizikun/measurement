@@ -151,7 +151,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sync_during_LDE'] = 1
         m.params['wait_for_AWG_done'] = 0
 
-    pts=1
+    pts=11
     m.params['pts']=pts
     
     
@@ -162,8 +162,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['use_eom_pulse'] = 'normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     
     if setup == 'lt3' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
-        m.params['aom_risetime']              = np.ones(pts)*25e-9 # calibration to be done!
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.055 #calibration from 19-03-2014
+        m.params['aom_risetime']              = np.ones(pts)*15e-9 # calibration to be done!
     elif setup == 'lt1' :
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*38e-9#42e-9 # calibration to be done!
@@ -204,32 +204,33 @@ def sweep_bell(name, setup = 'lt3'):
 
     
 
-    do_tail = False 
+    do_tail = True 
     do_sweep_aom_power = True
     if do_tail:
         m.joint_params['LDE_attempts_before_CR'] = 250
         m.params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
         m.joint_params['opt_pi_pulses'] = 1
-        m.params['RND_during_LDE'] = 0
+        m.joint_params['RND_during_LDE'] = 0
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
-        m.joint_params['LDE_element_length'] = 7e-6
+        m.joint_params['do_echo'] = 0
+        #m.joint_params['LDE_element_length'] = 7e-6
         m.joint_params['wait_for_1st_revival'] = 0
 
         if do_sweep_aom_power:
             p_aom= qt.instruments['PulseAOM']
             aom_voltage_sweep = np.zeros(pts)
             max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-            aom_power_sweep=linspace(0.5,1.0,pts)*max_power_aom #%power
+            aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
             for i,p in enumerate(aom_power_sweep):
                 aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
             m.params['aom_amplitude'] = aom_voltage_sweep
             m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = aom_power_sweep/max_power_aom
         else:
-            m.params['aom_amplitude'] = np.linspace(0.5,1.0,pts)
-            m.params['sweep_name'] = 'aom amplitude V' #aom power (percentage/max_power_aom)' 
+            m.params['aom_amplitude'] = np.ones(pts)*1.0  #np.linspace(0.5,1.0,pts)
+            m.params['sweep_name'] = 'aom amplitude (V)' #aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
 
     else : 
@@ -240,7 +241,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['free_precession_offset'] = 0e-9
         if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
             m.params['echo_offset'] = 0.e-9
-        print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
+        print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*Belle9)
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
@@ -263,13 +264,13 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     m.params['MIN_SYNC_BIN'] =       5000 
-    m.params['MAX_SYNC_BIN'] =       16000
+    m.params['MAX_SYNC_BIN'] =       7000 # for Bell, 16000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 20000
 
     th_debug=False
-    measure_bs=False
+    measure_bs=True
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -294,4 +295,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('111-1-1_echo_0th', setup = 'lt3')    
+    sweep_bell('Sam_Tail', setup = 'lt3')    

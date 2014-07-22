@@ -14,7 +14,7 @@ reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def pulse_defs(msmt, IQmod, pulse_type):
+def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
 
     if pulse_type == 'CORPSE' :
         if IQmod : 
@@ -145,25 +145,44 @@ def pulse_defs(msmt, IQmod, pulse_type):
             pulse_pi2=IQ_Hermite_pi2
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
-            msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp'] # calib. 2014-07-11
-            msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp']
             
-            Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi_amp'],
-                    length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = False)
+            if Imod_channel : # MW on Imod channel
+                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Imod']
+                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Imod']
+                Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+                        MW_channel='MW_Imod',
+                        PM_channel='MW_pulsemod',
+                        amplitude = msmt.params['pulse_pi_amp'],
+                        length = msmt.params['MW_pi_duration'],
+                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                        pi2_pulse = False)
+    
+                Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                        MW_channel='MW_Imod',
+                        PM_channel='MW_pulsemod',
+                        amplitude = msmt.params['pulse_pi2_amp'],
+                        length = msmt.params['MW_pi2_duration'],
+                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                        pi2_pulse = True)
+            else : # MW on Qmod channel
+                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Qmod']
+                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Qmod']
+                Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+                        MW_channel='MW_Qmod',
+                        PM_channel='MW_pulsemod',
+                        amplitude = msmt.params['pulse_pi_amp'],
+                        length = msmt.params['MW_pi_duration'],
+                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                        pi2_pulse = False)
+    
+                Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                        MW_channel='MW_Qmod',
+                        PM_channel='MW_pulsemod',
+                        amplitude = msmt.params['pulse_pi2_amp'],
+                        length = msmt.params['MW_pi2_duration'],
+                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                        pi2_pulse = True)
 
-            Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi2_amp'],
-                    length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
-            #print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', msmt.params['MW_pi2_duration'], msmt.params['pulse_pi_amp']
             pulse_pi=Hermite_pi
             pulse_pi2=Hermite_pi2
         
@@ -374,15 +393,16 @@ class Test_3MW(pulsar_msmt.PulsarMeasurement):
 
 
 ### called at stage 2.0
-def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
+def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = False):
 
     m = pulsar_msmt.GeneralElectronRabi(name)
     funcs.prepare(m)
-    pulse, pulse_pi2_not_used = pulse_defs(m,IQmod,pulse_type )
+    pulse, pulse_pi2_not_used = pulse_defs(m,IQmod,pulse_type, Imod_channel )
 
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
+    m.params['Imod_channel'] = Imod_channel
   
 
 
@@ -416,17 +436,18 @@ def rabi(name, IQmod=True, pulse_type = 'Square', debug = False):
 
 
 ### called at stage 2.5
-def dark_esr(name, pulse_type = 'Square', debug = False):
+def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     '''
     dark ESR on the 0 <-> -1 transition. 
     '''
 
     m = GeneralDarkESR(name)
     funcs.prepare(m)
-    pulse_pi, pulse_pi2_not_used = pulse_defs(m,True,pulse_type )
+    pulse_pi, pulse_pi2_not_used = pulse_defs(m,True,pulse_type, Imod_channel )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = True
+    m.params['Imod_channel'] = Imod_channel
   
 
     m.params['repetitions']  = 1000
@@ -435,9 +456,8 @@ def dark_esr(name, pulse_type = 'Square', debug = False):
     m.params['range']        = 4e6
     m.params['pts'] = 131
 
-    #XXXXXXXXXXXXXXXXXXXXXXX
-    #m.params['MW_pi_duration'] = 2.e-6
-    #m.params['pulse_pi_amp'] = 0.015
+    m.params['MW_pi_duration'] = 2.e-6
+    m.params['pulse_pi_amp'] = 0.015
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
@@ -448,25 +468,26 @@ def dark_esr(name, pulse_type = 'Square', debug = False):
 
 
 ### called at stage = 4.0
-def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, debug=False):
+def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Square', multiplicity=1, debug=False):
 
     m = pulsar_msmt.GeneralPiCalibration(name)
     funcs.prepare(m)
-    pulse_pi, pulse_pi2_not_used = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi, pulse_pi2_not_used = pulse_defs(m,IQmod,pulse_type, Imod_channel )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
+    m.params['Imod_channel'] = Imod_channel
     m.params['multiplicity'] = multiplicity
 
-    pts = 20
+    pts = 11
  
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.1, 0.1, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -477,17 +498,18 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi)
 
 
-def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
+def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORPSE', debug=False):
     
 
     m = pulsar_msmt.GeneralPi2Calibration(name)
     
     funcs.prepare(m)
-    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type, Imod_channel )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
-    
+    m.params['Imod_channel'] = Imod_channel
+
     pts = 11    
     m.params['pts_awg'] = pts
     m.params['repetitions'] = 3000
@@ -503,7 +525,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.4,-0.2,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.45,-0.3,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -514,16 +536,17 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
 
 ### called at stage = 5.5
-def calibrate_pi4_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, debug=False):
+def calibrate_pi4_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Square', multiplicity=1, debug=False):
 
     m = pulsar_msmt.GeneralPiCalibration(name)
     funcs.prepare(m)
-    pulse_pi_not_used, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi_not_used, pulse_pi2 = pulse_defs(m,IQmod,pulse_type, Imod_channel )
     pulse_pi4 = pulse.cp(pulse_pi2,
             length = 50e-9)
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
+    m.params['Imod_channel'] = Imod_channel
     m.params['multiplicity'] = multiplicity
 
     pts = 20
@@ -544,15 +567,15 @@ def calibrate_pi4_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, 
     
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi4)
 
-def ramsey(name, IQmod=False, pulse_type = 'Square', debug=False) :
+def ramsey(name, IQmod=False, Imod_channel = True, pulse_type = 'Square', debug=False) :
     
     m = GeneralElectronRamsey(name)
     funcs.prepare(m)
-    pulse_pi_not_used, pulse_pi2= pulse_defs(m,IQmod,pulse_type )
+    pulse_pi_not_used, pulse_pi2= pulse_defs(m,IQmod,pulse_type, Imod_channel  )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
-
+    m.params['Imod_channel'] = Imod_channel
 
     pts = 128
     m.params['pts'] = pts
@@ -579,15 +602,16 @@ def ramsey(name, IQmod=False, pulse_type = 'Square', debug=False) :
     funcs.finish(m,debug=debug, pulse_pi2=pulse_pi2)
 
 
-def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
+def dd_sequence(name, IQmod=True, Imod_channel = True, pulse_type='CORPSE', debug=False) :
     m = pulsar_msmt.DD_GeneralSequence(name)
     funcs.prepare(m)
-    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type )
+    pulse_pi, pulse_pi2 = pulse_defs(m,IQmod,pulse_type, Imod_channel )
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
+    m.params['Imod_channel'] = Imod_channel
 
-    m.params['repetitions'] = 6000
+    m.params['repetitions'] = 10000
     m.params['Ex_SP_amplitude']=0
     
     #evolution times:
@@ -604,7 +628,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
         pts = len(sweep_array)
         m.params['evolution_times'] = sweep_array
     else:
-        pts=15
+        pts=11
         
         m.params['number_pulses'] = 3
         if mod(m.params['number_pulses'],2) ==0 :
@@ -614,7 +638,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
             m.params['extra_wait_final_pi2']=np.ones(pts)*0
             #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
         
-        m.params['evolution_times'] = np.linspace(300e-9, 5e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+        m.params['evolution_times'] = np.linspace(300e-9, 10e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
         
     m.params['pts'] = pts
 
@@ -656,7 +680,7 @@ def dd_sequence(name, IQmod=True, pulse_type='CORPSE', debug=False) :
     funcs.finish(m, debug=debug, pulse_pi=pulse_pi, pulse_pi2=pulse_pi2)
 
 ### master function
-def run_calibrations(stage, IQmod, debug = False): 
+def run_calibrations(stage, IQmod, Imod_channel, debug = False): 
 
 
     if stage == 0 :
@@ -668,35 +692,41 @@ def run_calibrations(stage, IQmod, debug = False):
         print "\nExecute SSRO calibration : execfile(r'D:/measuring/scripts/ssro/ssro_calibration.py')"
 
     if stage == 2.0 :
-        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, pulse_type = 'Square', debug = debug)
+        rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
+                pulse_type = 'Square', debug = debug)
 
     if stage == 2.5 :
-        print "Starting a dark ESR spectrum"
-        dark_esr(SAMPLE_CFG, pulse_type = 'Square', debug = debug)
+        print "Starting a dark ESR spectrum" # Error in the se
+        dark_esr(SAMPLE_CFG, Imod_channel = Imod_channel, pulse_type = 'Square', debug = debug)
         print "Analysis suggestion : execfile(r'D:/measuring/analysis/scripts/espin/dark_esr_analysis.py')"
 
     if stage == 3.0 :
-        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
+        calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
+                pulse_type = 'Hermite', 
                 multiplicity = 5, debug=debug)
 
     if stage == 4.0:
-        calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
+        calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
+                pulse_type = 'Hermite', debug = debug)
   
     if stage == 4.5:
-        calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
+        calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
+                pulse_type = 'Hermite', 
                 multiplicity = 1, debug=debug)
     if stage == 5.0 :
-        ramsey(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Square', debug = debug)
+        ramsey(SAMPLE_CFG, IQmod=IQmod, Imod_channel = Imod_channel,
+                pulse_type = 'Square', debug = debug)
 
     if stage == 6.0 :
-        dd_sequence(SAMPLE_CFG, IQmod = IQmod, pulse_type='Hermite', debug=debug)
+        dd_sequence(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
+                pulse_type='Hermite', debug=debug)
 
 
 if __name__ == '__main__':
-    run_calibrations(4.5, IQmod = False, debug = False)
+    run_calibrations(6.0, IQmod = False, Imod_channel = False, debug = False)
 
     """
-    stage 0 : continuous ESR
+    stage 0 : continuous /ESR
             --> central resonance frequency to put in 'f_msm1_cntr' in qt.exp_params 
 
     stage 1 : SSRO calibration

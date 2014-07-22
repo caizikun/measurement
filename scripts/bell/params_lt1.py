@@ -9,6 +9,10 @@ params_lt1 = {}
 ### Hardware stuff
 # params['HH_binsize_T3'] = 8
 #CR:
+name = qt.exp_params['protocols']['current']
+sample_name = qt.exp_params['samples']['current']
+
+
 params_lt1['counter_channel'] 	= qt.exp_params['protocols']['AdwinSSRO']['counter_channel']
 params_lt1['repump_duration'] 	= qt.exp_params['protocols']['AdwinSSRO']['repump_duration'] #500 # 10 for green, 500 for yellow
 params_lt1['repump_amplitude'] 	= qt.exp_params['protocols']['AdwinSSRO']['repump_amplitude']# 30e-9 

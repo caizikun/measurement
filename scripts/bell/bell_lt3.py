@@ -101,9 +101,9 @@ def full_bell(name):
 
     th_debug = True
     sequence_only = False
-    mw = False
+    mw = True
     measure_lt1 = False
-    measure_bs = False
+    measure_bs = True
     do_upload = True
 
     m=Bell_LT3(name) 
