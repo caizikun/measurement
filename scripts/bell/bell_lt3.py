@@ -43,7 +43,7 @@ class Bell_LT3(bell.Bell):
         LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
         elements.append(LDE_element)
 
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
             late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_LT3')
             elements.append(late_RO)
@@ -55,14 +55,14 @@ class Bell_LT3(bell.Bell):
 
         seq.append(name = 'LDE_LT3',
             wfname = LDE_element.name,
-            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'start_LDE',
+            jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
             goto_target = 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
         #    wfname = finished_element.name,
         #    goto_target = 'start_LDE')
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             seq.append(name = 'late_RO',
                 wfname = late_RO.name,
                 goto_target = 'start_LDE')
@@ -72,7 +72,7 @@ class Bell_LT3(bell.Bell):
             goto_target = 'start_LDE')
             
         #qt.pulsar.program_awg(seq,*elements)
-        qt.pulsar.upload(*elements)
+        qt.pulsar.upload(*elements) 
         qt.pulsar.program_sequence(seq)
 
     def stop_measurement_process(self):
@@ -84,6 +84,13 @@ class Bell_LT3(bell.Bell):
         if self.lt1_helper != None:    
             self.lt1_helper.set_is_running(False)
 
+    def reset_plu(self):
+        self.adwin.start_set_dio(dio_no=2, dio_val=0)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=2, dio_val=1)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=2, dio_val=0)
+
     #def finish(self):
     #    ssro.IntegratedSSRO.finish(self)
 
@@ -92,9 +99,9 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = False
+    th_debug = True
     sequence_only = False
-    mw = True
+    mw = False
     measure_lt1 = False
     measure_bs = False
     do_upload = True
@@ -108,10 +115,12 @@ def full_bell(name):
     if not(sequence_only):
         if measure_lt1:
             m.lt1_helper.set_is_running(False)
-            m.lt1_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt1.py')
+            m.lt1_helper.set_measurement_name(name)
+            m.lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
             m.lt1_helper.execute_script()
         if measure_bs:
-            m.bs_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
     
@@ -122,6 +131,7 @@ def full_bell(name):
         return
 
     m.setup(debug=th_debug)
+    m.reset_plu()
 
     if measure_lt1: m.lt1_helper.set_is_running(True)
     m.run(autoconfig=False, setup=False,debug=th_debug)
@@ -135,4 +145,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('Sam_SIL5_correlation')   
+    full_bell('Test_for_crach')   

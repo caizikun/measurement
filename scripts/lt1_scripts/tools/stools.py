@@ -50,9 +50,13 @@ def start_bs_counter():
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
     qt.instruments['bs_helper'].execute_script()
+    qt.instruments['counters'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['counters'].set_is_running(True)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
 
 def set_lt1_remote():
     for i in ['labjack', 
@@ -83,62 +87,27 @@ def init_AWG():
     qt.instruments['AWG'].set_ch3_status('on')
     qt.instruments['AWG'].set_ch4_status('on')
 
-def set_lt1_standalone():
-    global adwin
-    global AWG
-    global counters
-    global master_of_space
-    global optimiz0r
-    global GreenAOM
-    global NewfocusAOM
-    global MatisseAOM
-    global ivvi
+def calibrate_aom_frq_max(name='YellowAOM', pts=21):
+    adwin = qt.instruments['adwin']  
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(0.5) 
+    qt.instruments['powermeter'].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.instruments[name].turn_on()
+    qt.msleep(0.5)
+    cur_v=adwin.get_dac_voltage('yellow_aom_frq')
+    ps=[]
+    vs=[]
+    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+        vs.append(v)
+        adwin.set_dac_voltage(('yellow_aom_frq',v))
+        qt.msleep(0.1)
+        p=qt.instruments['powermeter'].get_power()
+        ps.append(p)
+        print 'V: {:.2f}, P: {:.2g}'.format(v,p)
 
-    AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014', 
-        address='TCPIP0::192.168.0.22::inst0::INSTR', 
-        reset=False, numpoints=1e3)
-
-    adwin = qt.instruments.create('adwin', 'adwin_lt1', 
-            physical_adwin='physical_adwin')
-    
-    counters = qt.instruments.create('counters', 'counters_via_adwin',
-            adwin='adwin')
-    
-    master_of_space = qt.instruments.create('master_of_space',
-            'master_of_space_lt1', adwin='adwin')
-
-    linescan_counts = qt.instruments.create('linescan_counts', 
-            'linescan_counts',  adwin='adwin', mos='master_of_space',
-            counters='counters')
-    
-    scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
-             linescan='linescan_counts', mos='master_of_space',
-            xdim='x', ydim='y', counters='counters')
-     
-    opt1d_counts = qt.instruments.create('opt1d_counts', 
-             'optimize1d_counts', linescan='linescan_counts', 
-            mos='master_of_space', counters='counters')
-
-    optimiz0r = qt.instruments.create('optimiz0r', 'optimiz0r',opt1d_ins=
-            opt1d_counts,mos_ins=master_of_space,dimension_set='lt1')
-  
-    GreenAOM = qt.instruments.create('GreenAOM', 'AOM', 
-            use_adwin='adwin', use_pm= 'powermeter')
-    NewfocusAOM = qt.instruments.create('NewfocusAOM', 'AOM', 
-            use_adwin='adwin', use_pm = 'powermeter')         
-    MatisseAOM = qt.instruments.create('MatisseAOM', 'AOM', 
-            use_adwin='adwin', use_pm = 'powermeter')
-    YellowAOM = qt.instruments.create('YellowAOM', 'AOM', 
-            use_adwin='adwin', use_pm ='powermeter')
-    setup_controller = qt.instruments.create('setup_controller',
-             'setup_controller',
-            use = { 'master_of_space' : 'mos'} )
-    
-    from lib.network import object_sharer as objsh
-    if objsh.start_glibtcp_client('192.168.0.80', port=12002, nretry=3):
-        remote_ins_server = objsh.helper.find_object('qtlab_lasermeister:instrument_server')
-        labjack = qt.instruments.create('labjack', 'Remote_Instrument',
-        remote_name='labjack', inssrv=remote_ins_server)
-        
-
+    max_v=vs[np.argmax(ps)]
+    print 'max power at V: {:.2f}, P: {:.2g}'.format(max_v,max(ps))
+    adwin.set_dac_voltage(('yellow_aom_frq',max_v))
+    qt.instruments[name].turn_off()
+    qt.instruments['PMServo'].move_out()
 

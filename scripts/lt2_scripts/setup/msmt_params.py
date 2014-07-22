@@ -91,8 +91,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
-'Ex_N_randomize_amplitude'              :    20e-9,
-'A_N_randomize_amplitude'               :    20e-9,
+'Ex_N_randomize_amplitude'              :    15e-9,
+'A_N_randomize_amplitude'               :    15e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
 cfg['protocols']['Magnetometry']={
@@ -156,7 +156,7 @@ cfg['samples']['Hans_sil1'] = {
 'min_phase_correct' : 3, #in degrees.
                                     # if the phase difference is smaller than +- 5 degrees no decoupling seq to correct for this phase generated
 
-'C1_freq'      :       345.124e3-100, #be sure to enter in Hz
+'C1_freq'      :       345.124e3,# be sure to enter in Hz
 'C1_freq_0'   :        325.750e3, 
 'C1_freq_1'   :        360e3,  #approx
 'C1_freq_dec'   :      345.124e3,
@@ -190,7 +190,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
 'SSRO_duration'     :  50,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude' : 10e-9, # was 3 e-9 -Machiel25-06-14
+'A_CR_amplitude' : 15e-9, # was 3 e-9 -Machiel25-06-14
 'A_RO_amplitude' : 0,
 'A_SP_amplitude' : 15e-9,
 'CR_duration'    : 50,
@@ -242,6 +242,10 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'fast_pi2_duration'         :   90e-9, #72e-9
 'fast_pi2_amp'              :    0.697519,
 'fast_pi2_mod_frq'          :   f_mod_0,
+
+### Pi/2 pulses, testing purposes only 
+'cust_pi2_duration'    : 720e-9 ,
+'cust_pi2_amp'    : 0.08 , #uses fast_pi2_mod_frq
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
@@ -295,15 +299,53 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 
 
 
-'E_C13_MBI_amplitude':               5e-9,
-'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger.
-                                              # The actual time for MBI reps is 5us shorter.
-'C13_MBI_threshold' :                 1,
-'SP_duration_after_C13':              10,
+# 'E_C13_MBI_amplitude':               5e-9,
+# 'Carbon_init_RO_wait':               15e-6, # Because of delays the time listed here is the time waiting for MBI trigger.
+#                                               # The actual time for MBI reps is 5us shorter.
+# 'C13_MBI_threshold' :                 1,
+# 'SP_duration_after_C13':              10,
 
+
+###################
+# Multiple C13 Init 
+####################
 # We don't want to specify voltages but powers ... Let's see how this works for the other powers.. Not trivial
 'A_SP_amplitude_after_C13_MBI'  :       5e-9,
 'E_SP_amplitude_after_C13_MBI'  :       0e-9,
+
+'Nr_C13_init':                              1,
+'Nr_MBE':                                   0,
+'Nr_parity_msmts':                          0,
+#Thresholds 
+'MBI_threshold':                              1,
+'C13_MBI_threshold':                          0,
+'MBE_threshold':                              1,
+'Parity_threshold':                           1,
+
+# Durations 
+'C13_MBI_RO_duration':                        30, 
+'SP_duration_after_C13':                      50,
+'MBE_RO_duration':                    10,
+'SP_duration_after_MBE':                     25,
+'Parity_RO_duration':                     10,
+
+# Amplitudes 
+'E_C13_MBI_RO_amplitude':                        1e-9,
+'A_SP_amplitude_after_C13_MBI':                     15e-9,
+'E_SP_amplitude_after_C13_MBI':                     0e-9 ,
+
+'E_MBE_RO_amplitude':                        1e-9,
+'A_SP_amplitude_after_MBE':                     15e-9,
+'E_SP_amplitude_after_MBE':                     0e-9 ,
+
+'E_Parity_RO_amplitude':                        1e-9,
+
+
+
+
+
+
+
 
     #######################
     ###  Carbon control ###

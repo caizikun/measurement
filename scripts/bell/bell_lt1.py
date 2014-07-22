@@ -39,6 +39,7 @@ class Bell_LT1(bell.Bell):
             print remote_params
             for k in remote_params:
                 self.params[k] = remote_params[k]
+        self.remote_measurement_helper.set_data_path(self.h5datapath)
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
@@ -53,7 +54,7 @@ class Bell_LT1(bell.Bell):
             bell.Bell.print_measurement_progress(self)
 
     def generate_sequence(self):
-        seq = pulsar.Sequence('BellLT3')
+        seq = pulsar.Sequence('BellLT1')
 
         elements = [] 
 
@@ -115,12 +116,12 @@ def bell_lt1_local(name):
 
 def bell_lt1_remote(name):
 
-    th_debug=True
-    mw = False
+    th_debug=False
+    mw = True
     remote_meas = True
     do_upload = True
 
-    m=Bell_LT1(name) 
+    m=Bell_LT1(name+'_'+Bell_LT1.remote_measurement_helper.get_measurement_name()) 
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
     m.autoconfig()
@@ -141,9 +142,8 @@ def bell_lt1_remote(name):
     if lt3_ready:
         m.run(autoconfig=False, setup=False,debug=th_debug)    
         m.save()
-        m.remote_measurement_helper.set_data_path(m.h5datapath)
         m.finish()
 
 
 if __name__ == '__main__':
-    bell_lt1_remote('tpqi_parallel')
+    bell_lt1_remote('LT1')

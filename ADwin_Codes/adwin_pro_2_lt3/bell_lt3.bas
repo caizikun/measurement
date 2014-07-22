@@ -61,7 +61,7 @@ DIM remote_mode, remote_delay_time, do_sequences, remote_CR_wait_timer AS LONG
 DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
-DIM wait_for_AWG_done, sequence_wait_time AS LONG
+DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM succes_event_counter AS LONG
 DIM CR_result,first_local AS LONG
 
@@ -79,6 +79,7 @@ INIT:
   PLU_di_channel               = DATA_20[9]
   do_sequences                 = DATA_20[10]
   wait_for_remote_CR           = DATA_20[11]
+  wait_before_RO               = DATA_20[12]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -204,10 +205,8 @@ EVENT:
           mode = 2
           timer = -1
         ENDIF
-        IF (( CR_result <> 0 ) AND (first_local > 0)) THEN
-          i = MIN_LONG(cr_counts+1,max_CR_counts)
-          INC(DATA_28[i])
-          Par_80=-99
+        IF (((first_local > 0) AND (CR_result <> 0)) AND (cr_counts<max_CR_counts)) THEN
+          INC(DATA_28[cr_counts+1])
           first_local = 0
         ENDIF
         
@@ -226,7 +225,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             P2_CNT_ENABLE(CTR_MODULE, 0)
-            P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
+            'P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 
@@ -287,6 +286,7 @@ EVENT:
             remote_mode = 3
             first = 1
             first_local = 1
+            local_wait_time = wait_before_RO
           ELSE  
             IF (wait_for_AWG_done > 0) THEN
               IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
@@ -340,7 +340,7 @@ EVENT:
           ENDIF
         ENDIF
       CASE 6 'local SSRO OK, wait for remote SSRO done
-        IF (remote_mode = 4) THEN
+        IF ((remote_mode = 4) OR (wait_for_remote_CR =0)) THEN
           mode = 0 
           remote_mode = 0
           timer = -1

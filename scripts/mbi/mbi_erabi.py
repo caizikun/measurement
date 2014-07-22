@@ -14,11 +14,11 @@ print SAMPLE
 def run(name):
     m = pulsar_mbi_espin.ElectronRabi(name)
     funcs.prepare(m)
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
+    #m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
     
-    print 'MBI threshold =' + str(m.params['MBI_threshold'])
-    print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
-    print 'SSRO_duration =' + str(m.params['SSRO_duration'])
+    #print 'MBI threshold =' + str(m.params['MBI_threshold'])
+    #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
+    #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
     pts = 11
     m.params['pts'] = pts
@@ -55,7 +55,7 @@ def run(name):
 
     # for the autoanalysis
 
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
 if __name__ == '__main__':
     run('hans1_pi2pi_calibr_init-p1_RO-p1')

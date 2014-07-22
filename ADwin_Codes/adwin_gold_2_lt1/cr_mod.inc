@@ -95,6 +95,7 @@ SUB init_CR()
   cr_mode = 0
   cr_timer = 0
   cr_i=2
+  cr_counts=0
   
   'output pars
   PAR_70 = 0                      ' cumulative counts from probe intervals

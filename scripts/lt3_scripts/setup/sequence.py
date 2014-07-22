@@ -21,11 +21,11 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=120e-9, active=True)
+    high=2.0, low=0, offset=0., delay=289e-9, active=True)
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
-    low=-1.0, offset=0., delay=61e-9, active=True)
+    low=-1.0, offset=0., delay=230e-9, active=True)
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
-    low=-1.0, offset=0., delay=61e-9, active=True)
+    low=-1.0, offset=0., delay=230e-9, active=True)
 
 #TH
 qt.pulsar.define_channel(id='ch3_marker1', name='sync', type='marker', 
@@ -37,14 +37,14 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
 #qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0e-9, active=True)
 qt.pulsar.define_channel(id='ch1_marker2', name='RND_halt', type='marker', 
-    high=2.0, low=0, offset=0, delay=0e-9, active=True)
+    high=2.0, low=0, offset=0, delay=100e-9, active=True)
 qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+    high=2.0, low=0, offset=0., delay=125e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Matisse', type='marker', high=1.0,
-    low=0., offset=0., delay=450e-9, active=True) 
+    low=0., offset=0., delay=335e-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
@@ -55,7 +55,7 @@ qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog',
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0., delay=400e-9, active=True)
+    high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True)
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 

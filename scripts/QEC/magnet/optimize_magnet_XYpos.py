@@ -57,7 +57,14 @@ if __name__ == '__main__':
     #calculate steps to do
     #stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [-150,100,100,100] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
+    No_steps = True 
+    if No_steps == True: 
+        steps = [0] 
+    else: 
+        if axis == 'Y_axis':
+            steps = [-100,75,50,75] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
+        elif axis == 'X_axis':
+            steps = [-200,150,100,150] 
 
 
     print 'Moving along %s' %axis 
@@ -196,6 +203,7 @@ if __name__ == '__main__':
     min_fd = (min(fd))
     pos_min_fd = x_fd[fd.index(min_fd)]
     print 'Minumum (%s kHz) located at %s' %(min_fd,pos_min_fd)
+    print 'Current position: (%s) move the magnet: (%s) along the %s' %(sum(steps),pos_min_fd-sum(steps),axis)
     
     p_c = qt.Plot2D(x_fd,fd, 'b-', name='f_centre relative to ZFS', clear=True)
     p_c.add_data(d, coorddim=0, valdim=6,style='rO')

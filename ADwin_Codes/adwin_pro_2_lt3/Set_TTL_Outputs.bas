@@ -8,14 +8,15 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 DIM channel, set AS LONG
 
 INIT:
-  P2_Digprog(DIO_MODULE,11) 'configure DIO 16:23 as input, all other ports as output
+  P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
+ 
   channel=PAR_61    'Number of DIO to set 
   set=PAR_62        'can be 1 or 0
 EVENT:

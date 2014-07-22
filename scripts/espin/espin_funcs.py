@@ -14,6 +14,7 @@ def prepare(m, params=None):
         
         m.params.from_dict(qt.exp_params['samples'][SAMPLE])
         m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+        m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
         m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
         m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
         m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
