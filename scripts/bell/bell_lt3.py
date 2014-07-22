@@ -4,6 +4,7 @@ LT3 script for Measuring a tail with a picoquant time correlator
 
 
 import numpy as np
+import inspect
 import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -91,8 +92,9 @@ class Bell_LT3(bell.Bell):
         qt.msleep(0.1)
         self.adwin.start_set_dio(dio_no=2, dio_val=0)
 
-    #def finish(self):
-    #    ssro.IntegratedSSRO.finish(self)
+    def finish(self):
+        bell.Bell.finish(self)
+        self.add_file(inspect.getsourcefile(bseq))
 
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
