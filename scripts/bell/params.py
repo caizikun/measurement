@@ -14,8 +14,8 @@ joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used
 joint_params['opt_pulse_separation']    = 600e-9
 
 joint_params['RND_during_LDE'] = 0 
-joint_params['do_echo'] = 1
-joint_params['do_final_MW_rotation'] = 1
+joint_params['do_echo'] = 0
+joint_params['do_final_MW_rotation'] = 0
 joint_params['wait_for_1st_revival'] = 0
 joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 
@@ -61,7 +61,7 @@ params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DI_channel'] = 19
 params_lt3['PLU_DI_channel'] = 21
 params_lt3['do_sequences'] = 1
-params_lt3['SSRO_duration'] = 25 #15 
+params_lt3['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
 params_lt3['wait_for_AWG_done'] = 0
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt3['wait_for_remote_CR'] = 1  #NOTE gets set in bell script
@@ -103,14 +103,14 @@ params_lt3['wait_before_RO'] = joint_params['wait_for_1st_revival']*params_lt3['
 # LDE Sequence in the AWGs
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.048 # calibration from 2014-07-22
+params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23
 params_lt3['eom_off_duration']           = 150e-9
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.555 # 2014-07-22
+params_lt3['aom_amplitude']				 = 0.65 # 2014-07-23
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

@@ -37,6 +37,7 @@ class Bell_LT3(bell.Bell):
 
         dummy_element = bseq._dummy_element(self)
         succes_element = bseq._lt3_entanglement_event_element(self)
+        elements.append(succes_element)
         #finished_element = bseq._sequence_finished_element(self)
         start_element = bseq._lt3_sequence_start_element(self)
         elements.append(start_element)
@@ -102,7 +103,7 @@ Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = True
+    th_debug = False
     sequence_only = False
     mw = True
     measure_lt1 = False

@@ -242,7 +242,7 @@ def _lt1_entanglement_event_element(msmt):
 
 def _lt3_entanglement_event_element(msmt):
     
-    e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
+    e= element.Element('Entanglement event element', pulsar=qt.pulsar)
 
     e.append(pulse.cp(msmt.TIQ, length=30e-6))
     #e.append(msmt.adwin_success_pulse)
@@ -369,10 +369,6 @@ def _LDE_element(msmt, **kw):
 
     # 14 RND generator HOLD OFF
     if  msmt.joint_params['RND_during_LDE'] ==1  or (msmt.joint_params['do_final_MW_rotation'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0):
-        print 'RND_start', msmt.joint_params['RND_start'] #XXXX
-        print msmt.joint_params['RND_during_LDE']
-        print msmt.joint_params['do_final_MW_rotation'] == 1
-        print msmt.joint_params['wait_for_1st_revival'] == 0
         e.add(pulse.cp(msmt.RND_halt_off_pulse,
                        amplitude = msmt.joint_params['RND_during_LDE']),
                 start = msmt.joint_params['RND_start'],
