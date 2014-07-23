@@ -55,11 +55,11 @@ params_lt1['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt1['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt1['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt1['MW_pi_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
-params_lt1['MW_pi_amp_Q']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+params_lt1['MW_pi_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Imod'] #0.895 # 2014-07-09
+params_lt1['MW_pi_amp_Q']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Qmod'] #0.895 # 2014-07-09
 params_lt1['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt1['MW_pi2_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt1['MW_pi2_amp_Q']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']# XXXXXXXXXXXXX
+params_lt1['MW_pi2_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Imod']
+params_lt1['MW_pi2_amp_Q']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Qmod']# XXXXXXXXXXXXX
 params_lt1['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt1['MW_RND_amp_I']	   = params_lt1['MW_pi2_amp_I']#TODO Calibrate  -0.487 
 params_lt1['MW_RND_duration_I']= params_lt1['MW_pi2_duration'] #TODO Calibrate 50e-9

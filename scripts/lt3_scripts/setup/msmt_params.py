@@ -135,7 +135,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
-		'SSRO_repetitions':				 10000, # XXXXXXX
+		'SSRO_repetitions':				 5000, 
 		}
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 

@@ -189,7 +189,7 @@ def sweep_bell(name, setup = 'lt3'):
 
         if setup == 'lt3':
             m.params['eom_pulse_amplitude']        = np.ones(pts)*2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-            m.params['eom_overshoot_duration1']    = np.ones(pts)*10e-9
+            m.params['eom_overshoot_duration1']    = np.ones(pts)*20e-9
             m.params['eom_overshoot1']             = np.ones(pts)*-0.03 # calibration from 19-03-2014# 
         elif setup == 'lt1': 
             m.params['eom_pulse_amplitude']        = np.ones(pts)*1.9
@@ -230,7 +230,7 @@ def sweep_bell(name, setup = 'lt3'):
             m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = aom_power_sweep/max_power_aom
         else:
-            m.params['aom_amplitude'] = np.ones(pts)*1.0  #np.linspace(0.5,1.0,pts)
+            m.params['aom_amplitude'] = np.ones(pts)*1.0#0.555 #np.linspace(0.6,1.0,pts)
             m.params['sweep_name'] = 'aom amplitude (V)' #aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = m.params['aom_amplitude']#aom_power_sweep/max_power_aom
 
@@ -264,6 +264,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['sweep_name'] = m.params['general_sweep_name']# 'free_precession_time_1st_revival'#'aom voltage' 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
     
+    print 'sweep points : ', m.params['sweep_pts']
     
 
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
@@ -272,8 +273,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['MAX_SYNC_BIN'] =       7000 # for Bell, 16000
 
     m.params['send_AWG_start'] = 1
-    m.params['repetitions'] = 20000
-
+    m.params['repetitions'] = 10000 
+    
     th_debug=False
     measure_bs=True
     upload_only = False

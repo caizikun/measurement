@@ -44,4 +44,4 @@ def ssrocalibration(name, **additional_params):
     m.finish()
 
 if __name__ == '__main__':
-    ssrocalibration(SAMPLE_CFG+'_PSB')
+    ssrocalibration(SAMPLE_CFG)

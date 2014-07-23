@@ -147,4 +147,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('Test_for_crach')   
+    full_bell('SP_corr_MW_Qmod')   
