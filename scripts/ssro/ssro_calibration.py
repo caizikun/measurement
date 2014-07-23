@@ -44,4 +44,5 @@ def ssrocalibration(name, **additional_params):
     m.finish()
 
 if __name__ == '__main__':
+    stools.turn_off_all_lasers()
     ssrocalibration(SAMPLE_CFG)

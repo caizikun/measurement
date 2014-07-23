@@ -7,6 +7,11 @@ params_lt1 = {}
 
 
 ### Hardware stuff
+name = qt.exp_params['protocols']['current']
+sample_name = qt.exp_params['samples']['current']
+
+
+
 # params['HH_binsize_T3'] = 8
 #CR:
 params_lt1['counter_channel'] 	= qt.exp_params['protocols']['AdwinSSRO']['counter_channel']
@@ -55,9 +60,9 @@ params_lt1['MW_pi_amp']		   = qt.exp_params['protocols'][name]['pulses']['Hermit
 params_lt1['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt1['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']# 0.535 # 2014-07-09
 params_lt1['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt1['MW_RND0_amp']	   = params_lt1['MW_pi2_amp']#TODO Calibrate
+params_lt1['MW_RND0_amp']	   = -params_lt1['MW_pi2_amp']#TODO Calibrate
 params_lt1['MW_RND0_duration'] = params_lt1['MW_pi2_duration'] #TODO Calibrate
-params_lt1['MW_RND1_amp']	   = -params_lt1['MW_pi2_amp']#TODO Calibrate
+params_lt1['MW_RND1_amp']	   = params_lt1['MW_pi2_amp']#TODO Calibrate
 params_lt1['MW_RND1_duration'] = params_lt1['MW_pi2_duration'] #TODO Calibrate
 
 params_lt1['echo_offset'] = 0e-9
@@ -71,12 +76,12 @@ params_lt1['wait_before_RO'] = params.joint_params['wait_for_1st_revival']*param
 params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.255
-params_lt1['eom_overshoot_duration1']   = 10e-9
-params_lt1['eom_overshoot1']            = -0.05
+params_lt1['eom_off_amplitude']         = -.28
+params_lt1['eom_overshoot_duration1']   = 20e-9
+params_lt1['eom_overshoot1']            = -0.04
 params_lt1['eom_overshoot_duration2']   = 4e-9
 params_lt1['eom_overshoot2']            = -0.00
-params_lt1['aom_risetime']              = 38e-9
+params_lt1['aom_risetime']              = 25e-9
 params_lt1['aom_amplitude']             = 1.0
 
 params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
@@ -87,14 +92,14 @@ params_lt1['AWG_yellow_power']        = 30e-9 #yellow power during SP in LDE on 
 params_lt1['LDE_SP_duration']         = 5e-6
 params_lt1['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt1['MW_opt_puls1_separation'] = 100e-9 #distance between the end of the MW and the start of opt puls1
+params_lt1['MW_opt_puls1_separation'] = 150e-9 #distance between the end of the MW and the start of opt puls1
 params_lt1['MW_1_separation'] 	= params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt1['RND_duration']	 	= 250e-9
 params_lt1['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] 	= 1#sync is only for lt3
 params_lt1['plu_during_LDE'] 	= 0 
-params_lt1['opt_pulse_start']	= params.params_lt3['opt_pulse_start'] - 143e-9 #1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt1['opt_pulse_start']	= params.params_lt3['opt_pulse_start'] - 93e-9 #93 1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

@@ -532,7 +532,7 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['IQmod'] = IQmod
     m.params['multiplicity'] = multiplicity
 
-    pts = 20
+    pts = 11
  
     m.params['Ex_SP_amplitude']=0
 
@@ -540,8 +540,8 @@ def calibrate_pi_pulse(name,IQmod=True, pulse_type = 'Square', multiplicity=1, d
     m.params['repetitions'] = 2000
 
     # sweep params
-    #m.params['MW_pulse_amplitudes'] =  np.linspace(0.42, 0.48, pts) #0.872982*np.ones(pts)#
-    m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.1, 0.1, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.35, 0.44, pts) #0.872982*np.ones(pts)#
+    #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
@@ -578,7 +578,7 @@ def calibrate_pi2_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.4,-0.2,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.3,-0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -788,7 +788,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, pulse_type = 'Hermite', 
-                multiplicity = 3, debug=debug)
+                multiplicity = 5, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod, pulse_type = 'Hermite', debug = debug)
@@ -807,7 +807,7 @@ def run_calibrations(stage, IQmod, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.5, IQmod = False, debug = False)
+    run_calibrations(4.0, IQmod = False, debug = False)
 
     """
     stage 0 : continuous ESR
