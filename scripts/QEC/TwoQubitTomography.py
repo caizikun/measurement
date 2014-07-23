@@ -15,7 +15,7 @@ def Two_QB_Tomo(name,tau = None,
         Carbon_A = 1, Carbon_B = 4, 
         Init_A = 'up', Init_B = 'up',
         method_A = 'swap', method_B = 'swap', 
-        Only_init_first_Carbon = False, Only_init_second_Carbon= False, 
+        Only_init_first_Carbon = True, Only_init_second_Carbon= False, 
         probabilistic =0):
 
     m = DD.Two_QB_Tomography(name)
@@ -100,7 +100,7 @@ def Two_QB_Tomo(name,tau = None,
 
 if __name__ == '__main__':
 
-    Two_QB_Tomo(SAMPLE,Carbon_A = 1, Carbon_B = 4, Init_A = 'up', Init_B = 'up',method_A = 'swap',method_B ='swap', probabilistic =1)
+    Two_QB_Tomo(SAMPLE,Carbon_A = 4, Carbon_B = 1, Init_A = 'up', Init_B = 'up',method_A = 'swap',method_B ='swap', probabilistic =1)
    
 
     # Two_QB_Tomo(SAMPLE,Carbon_A = 1, Carbon_B = 4, Init_A = 'up', Init_B = 'down',method_A = 'swap',method_B ='swap', probabilistic = 0 )
