@@ -148,42 +148,24 @@ def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
             
-            if Imod_channel : # MW on Imod channel
-                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Imod']
-                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Imod']
-                Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-                        MW_channel='MW_Imod',
-                        PM_channel='MW_pulsemod',
-                        amplitude = msmt.params['pulse_pi_amp'],
-                        length = msmt.params['MW_pi_duration'],
-                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = False)
-    
-                Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
-                        MW_channel='MW_Imod',
-                        PM_channel='MW_pulsemod',
-                        amplitude = msmt.params['pulse_pi2_amp'],
-                        length = msmt.params['MW_pi2_duration'],
-                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
-            else : # MW on Qmod channel
-                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Qmod']
-                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Qmod']
-                Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-                        MW_channel='MW_Qmod',
-                        PM_channel='MW_pulsemod',
-                        amplitude = msmt.params['pulse_pi_amp'],
-                        length = msmt.params['MW_pi_duration'],
-                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = False)
-    
-                Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
-                        MW_channel='MW_Qmod',
-                        PM_channel='MW_pulsemod',
-                        amplitude = msmt.params['pulse_pi2_amp'],
-                        length = msmt.params['MW_pi2_duration'],
-                        PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+            msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp']
+            msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp']
+            Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
+                    PM_channel='MW_pulsemod',
+                    amplitude = msmt.params['pulse_pi_amp'],
+                    length = msmt.params['MW_pi_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = False)
+
+            Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
+                    PM_channel='MW_pulsemod',
+                    amplitude = msmt.params['pulse_pi2_amp'],
+                    length = msmt.params['MW_pi2_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+            
 
             pulse_pi=Hermite_pi
             pulse_pi2=Hermite_pi2
@@ -561,7 +543,7 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.35, 0.44, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.42, 0.52, pts) #0.872982*np.ones(pts)#
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
@@ -837,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False, debug = False)
+    run_calibrations(4.0, IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR

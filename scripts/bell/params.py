@@ -92,10 +92,7 @@ params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp_I']#TODO Calibrate  -0.48
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
 params_lt3['MW_RND_amp_Q']	   = -params_lt3['MW_pi2_amp_Q']# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
-params_lt3['MW_RND0_amp']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
-params_lt3['MW_RND0_duration'] = params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND1_amp']	   = params_lt3['MW_pi2_amp']# 0.487 
-params_lt3['MW_RND1_duration'] = params_lt3['MW_pi2_duration'] #50e-9
+
 
 params_lt3['echo_offset'] = 0e-9 #50 ns
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time

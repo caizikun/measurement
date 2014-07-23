@@ -149,19 +149,19 @@ def pulse_defs_lt1(msmt):
     msmt.MW_RND_I = pulselib.HermitePulse_Envelope('Hermite RND0-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_RND0_amp'],
-                    length = msmt.params['MW_RND0_duration'],
+                    amplitude = msmt.params['MW_RND_amp_I'],
+                    length = msmt.params['MW_RND_duration_I'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
     msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
                     MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_RND1_amp'],
-                    length = msmt.params['MW_RND1_duration'],
+                    amplitude = msmt.params['MW_RND_amp_Q'],
+                    length = msmt.params['MW_RND_duration_Q'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
 
-    msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
+    msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
                     aom_channel = 'EOM_AOM_Matisse',
                     eom_pulse_duration      = msmt.params['eom_pulse_duration'],
@@ -370,10 +370,6 @@ def _LDE_element(msmt, **kw):
 
     # 14 RND generator HOLD OFF
     if  msmt.joint_params['RND_during_LDE'] ==1  or (msmt.joint_params['do_final_MW_rotation'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0):
-        print 'RND_start', msmt.joint_params['RND_start'] #XXXX
-        print msmt.joint_params['RND_during_LDE']
-        print msmt.joint_params['do_final_MW_rotation'] == 1
-        print msmt.joint_params['wait_for_1st_revival'] == 0
         e.add(pulse.cp(msmt.RND_halt_off_pulse,
                        amplitude = msmt.joint_params['RND_during_LDE']),
                 start = msmt.joint_params['RND_start'],

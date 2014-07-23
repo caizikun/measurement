@@ -174,7 +174,7 @@ def sweep_bell(name, setup = 'lt3'):
     #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
-    m.params['use_eom_pulse'] = 'original' #normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
+    m.params['use_eom_pulse'] = 'normal' #normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     
     if setup == 'lt3' :
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.055 #calibration from 19-03-2014
@@ -219,7 +219,7 @@ def sweep_bell(name, setup = 'lt3'):
 
     
 
-    do_tail = True
+    do_tail = False
     do_sweep_aom_power = True
     if do_tail:
         m.joint_params['LDE_attempts_before_CR'] = 250
@@ -252,7 +252,7 @@ def sweep_bell(name, setup = 'lt3'):
     else : 
         m.params['do_general_sweep']= 1# sweep the parameter defined by general_sweep_name, with the values given by general_sweep_pts
         m.params['general_sweep_name'] = 'echo_offset' 
-        m.params['general_sweep_pts'] = np.linspace(0e-9,0e-9,pts)
+        m.params['general_sweep_pts'] = np.linspace(-100e-9,100e-9,pts)
         m.joint_params['DD_number_pi_pulses'] = 2
         m.params['free_precession_offset'] = 0e-9
         m.joint_params['do_echo'] = 1
@@ -261,14 +261,14 @@ def sweep_bell(name, setup = 'lt3'):
         #print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
         if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
             m.params['echo_offset'] = 0.e-9
-        print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*Belle9)
+        #print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*Belle9)
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
         m.params['aom_amplitude'] = np.ones(pts)*0. #0.673
 
-        m.joint_params['RND_during_LDE'] = 1
-        m.joint_params['RO_during_LDE'] = 1
+        m.joint_params['RND_during_LDE'] = 0
+        m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
         m.joint_params['do_final_MW_rotation'] = 1
 
@@ -290,8 +290,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['send_AWG_start'] = 1
     m.params['repetitions'] = 5000
 
-    th_debug=False
-    measure_bs=True
+    th_debug=True
+    measure_bs=False
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -316,4 +316,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('111-1-1_lde_pulse_test', setup = 'lt1')    
+    sweep_bell('111-1-1_lde_tail', setup = 'lt1')    

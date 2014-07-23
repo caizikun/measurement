@@ -112,3 +112,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
 
+def generate_quantum_random_number():
+    qt.instruments['AWG'].set_ch2_marker1_low(2.)
+    qt.msleep(0.1)
+    qt.instruments['AWG'].set_ch2_marker1_low(0.)
