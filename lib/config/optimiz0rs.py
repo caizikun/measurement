@@ -31,7 +31,7 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 2.,
+                    'scan_length' : 1.,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },

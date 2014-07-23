@@ -36,6 +36,7 @@ class Bell_LT3(bell.Bell):
         elements = [] 
 
         dummy_element = bseq._dummy_element(self)
+        succes_element = bseq._lt3_entanglement_event_element(self)
         #finished_element = bseq._sequence_finished_element(self)
         start_element = bseq._lt3_sequence_start_element(self)
         elements.append(start_element)
@@ -69,7 +70,7 @@ class Bell_LT3(bell.Bell):
                 goto_target = 'start_LDE')
 
         seq.append(name = 'RO_dummy',
-            wfname = dummy_element.name,
+            wfname = succes_element.name,
             goto_target = 'start_LDE')
             
         #qt.pulsar.program_awg(seq,*elements)

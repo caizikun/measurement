@@ -240,7 +240,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
                 DAC(cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
               ELSE
                 cr_counts = CNT_READ(counter_channel)
-                FPar_79 = FPar_79*0.999999+cr_mod_control*(cr_counts-cr_old_counts)
+                FPar_79 = FPar_79*0.99999+cr_mod_control*(cr_counts-cr_old_counts)
                 cr_old_counts=cr_counts
               ENDIF
               DEC(cr_i)
