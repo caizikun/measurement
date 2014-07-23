@@ -36,11 +36,12 @@ if __name__ == '__main__':
     magnet_step_size = 25         # the sample position is checked after each magnet_step_size
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    DESR_range = 3
+    DESR_range = 5.5
     # MHz (ful range = 2*DESR_range)
     pts   = 151
     reps  = 1500
 
+    min_dip_depth = 0.88
     ###########
     ## Start ##
     ###########
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, min_dip_depth=min_dip_depth)
     delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
     # start to list all the measured values
@@ -170,7 +171,7 @@ if __name__ == '__main__':
         
         DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', range_MHz=DESR_range, pts=pts, reps=reps)
         #do the fitting, returns in MHz, input in GHz
-        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+        f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True,min_dip_depth=min_dip_depth)
         delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
         f0.append(f0_temp)
