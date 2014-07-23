@@ -135,7 +135,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
-		'SSRO_repetitions':				 10000, # XXXXXXX
+		'SSRO_repetitions':				 5000, 
 		}
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
@@ -153,11 +153,11 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp_Imod': 0.903, #2014-07-22 
-        'Hermite_pi_amp_Qmod': 0.911, #2014-07-22 
+        'Hermite_pi_amp_Imod': 0.921, #2014-07-23 copied from Q 
+        'Hermite_pi_amp_Qmod': 0.921, #2014-07-23 prev 0.911
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp_Imod': 0.534,#2014-07-22
-        'Hermite_pi2_amp_Qmod': 0.539,# 2014-07-21
+        'Hermite_pi2_amp_Imod': 0.543,#2014-07-23 only on Q
+        'Hermite_pi2_amp_Qmod': 0.543,# 2014-07-23 prev 0.539
         'Hermite_pi4_length': 50e-9,
         'Hermite_pi4_amp': 0.48584,
         'Square_pi_length' : 100e-9, # XXXXXXX not calibrated

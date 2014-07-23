@@ -48,7 +48,6 @@ def pulse_defs_lt3(msmt):
     msmt.MW_pi2_Q = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse-Q',
                     MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
-                    second_MW_channel = 'MW_Qmod',
                     amplitude = msmt.params['MW_pi2_amp_Q'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
@@ -243,7 +242,7 @@ def _lt1_entanglement_event_element(msmt):
 
 def _lt3_entanglement_event_element(msmt):
     
-    e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
+    e= element.Element('Entanglement event element', pulsar=qt.pulsar)
 
     e.append(pulse.cp(msmt.TIQ, length=30e-6))
     #e.append(msmt.adwin_success_pulse)

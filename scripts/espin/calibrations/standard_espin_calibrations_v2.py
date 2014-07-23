@@ -582,7 +582,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.3,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.5,-0.3,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
