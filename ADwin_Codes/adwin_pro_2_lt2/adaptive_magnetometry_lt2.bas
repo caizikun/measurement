@@ -23,6 +23,8 @@
 ' mode  4:  choose optimal phase
 ' -> mode 0
 
+'MAJORITY VOTE!!!!
+
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr.inc
@@ -40,6 +42,7 @@ DIM indiv_ssro[25] AS LONG
 'return
 DIM DATA_24[max_repetitions] AS LONG  ' adaptive phase (0..255)
 DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
+DIM DATA_28[max_repetitions] AS LONG  ' majority vote results
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
 DIM wait_for_AWG_done AS LONG
@@ -99,13 +102,17 @@ INIT:
   A_RO_voltage                 = DATA_21[4]
 
   
-  par_80 = SSRO_stop_after_first_photon
    
   FOR i = 1 TO repetitions*adptv_steps
     DATA_25[i] = 0
   NEXT i
+  
+  FOR i = 1 TO repetitions*adptv_steps
+    DATA_28[i] = 0
+  NEXT i
  
-  FOR i = 1 TO M
+ 
+  FOR i = 1 TO M+2
     indiv_ssro[i]=0
   NEXT i
   
@@ -113,7 +120,7 @@ INIT:
     ch_value[i] = 0
   NEXT i
  
-  FOR i = 1 TO repetitions*adptv_steps*M
+  FOR i = 1 TO repetitions*adptv_steps
     DATA_24[i] = 0
   NEXT i
 
@@ -187,7 +194,7 @@ EVENT:
             ch_value[i+1] = dig_phase
           NEXT i
           
-          'DATA_24 [sweep_index] = 1*ch_value[1]+2*ch_value[2]+4*ch_value[3]+8*ch_value[4]+16*ch_value[5]+32*ch_value[6]+64*ch_value[7]+128*ch_value[8]
+          DATA_24 [sweep_index] = 1*ch_value[1]+2*ch_value[2]+4*ch_value[3]+8*ch_value[4]+16*ch_value[5]+32*ch_value[6]+64*ch_value[7]+128*ch_value[8]
           
           mode = 2                 
           wait_after_pulse = wait_after_pulse_duration
@@ -254,10 +261,11 @@ EVENT:
             indiv_ssro[curr_ssro] = 0 
           endif
                   
-          first=1
-
+          'first=1
+          par_80 = curr_ssro 
+          
           IF (curr_ssro < M) THEN
-            mode = 0
+            mode = 1
             timer = -1
             inc(curr_ssro)
           ELSE
@@ -267,13 +275,14 @@ EVENT:
               p = p + indiv_ssro[i]
             NEXT i
 
-            IF (p>=threshold_majority_vote) THEN
+            IF (p>threshold_majority_vote-1) THEN
               curr_msmnt_result = 1
             ELSE
               curr_msmnt_result = 0
             ENDIF
             
-            DATA_25[sweep_index] = curr_msmnt_result       
+            DATA_25[sweep_index] = p       
+            DATA_28[sweep_index] = curr_msmnt_result       
 
             inc (sweep_index)
             inc(repetition_counter)
@@ -287,7 +296,7 @@ EVENT:
               curr_adptv_step = 1
               inc(rep_index)
                        
-              'reset phase estimation
+              'reset fpga phase 
    
               IF (rep_index > repetitions) THEN
               
@@ -313,10 +322,10 @@ EVENT:
         IF (do_adaptive>0) THEN
           p = 0
           FOR i = 1 TO curr_adptv_step-1
-            p = p + DATA_25[sweep_index-curr_adptv_step+i]*(2^(i-1)) 
+            p = p + DATA_28[sweep_index-curr_adptv_step+i]*(2^(i-1)) 
           NEXT i
           curr_adptv_phase = DATA_27[p + 2^(curr_adptv_step-1)] 'choose tabled phase for decision-tree stored in DATA_27
-          DATA_24[sweep_index] = p + 2^(curr_adptv_step-1) 
+          'DATA_24[sweep_index] = p + 2^(curr_adptv_step-1) 
         ELSE
           curr_adptv_phase = DATA_27[curr_adptv_step]
         ENDIF                

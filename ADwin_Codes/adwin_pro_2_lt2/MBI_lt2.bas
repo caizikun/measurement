@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -62,7 +62,7 @@ DIM MBI_threshold AS LONG
 DIM nr_of_ROsequences AS LONG
 DIM wait_after_RO_pulse_duration AS LONG
 
-DIM E_SP_voltage, A_SP_voltage_after_MBI, E_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM E_SP_voltage, A_SP_voltage, A_SP_voltage_after_MBI, E_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM E_MBI_voltage AS FLOAT
 dim E_N_randomize_voltage, A_N_randomize_voltage, repump_N_randomize_voltage AS FLOAT
 
@@ -110,6 +110,7 @@ INIT:
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
   repump_N_randomize_voltage   = DATA_21[5]
+  A_SP_voltage                 = DATA_21[6]
   
   ' initialize the data arrays
   FOR i = 1 TO max_repetitions
@@ -164,7 +165,7 @@ INIT:
   PAR_77 = 0                      ' current mode (case) Y
   PAR_78 = 0                      ' MBI starts Y
   PAR_80 = 0                      ' ROseq_cntr Y 
-
+  
   
 EVENT:
  
@@ -203,6 +204,7 @@ EVENT:
         
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
         

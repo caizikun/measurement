@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end.
@@ -273,7 +273,7 @@ EVENT:
       Case 0 'If CR done go to SP-E
         mode = 1  
       Case 1 'If SP-E done go to MBI
-        mode =2 
+        mode = 2 
       Case 2 'IF MBI succesfull spin pump A  
         IF (case_success =1) THEN
           mode = 3
@@ -313,28 +313,37 @@ EVENT:
           mode = 4 
           INC(Current_C_init)
         ENDIF               
+      
       Case 7 ' If MBE started goto MBE RO 
         mode = 8 
-      Case 8 'If MBE RO succesfull go to Final RO 
-        ' Parity measuremnets are not yet included (Case 9-11) 
+        
+      Case 8 'If MBE RO succesfull go to SP 
         IF (case_success = 1) Then
-          mode = 11
+          mode = 9
         ELSE
           mode = 0  
         ENDIF
-                     
+      
+      Case 9 'after spinm pumping go to Final RO 
+        ' Parity measurements are not yet included (Case 10-11) 
+        mode = 12
+                   
       Case 12 'start Final RO
         mode = 13
+      
       Case 13 ' Final RO
         mode = 0
+      
       Case 22' If reset N retry MBI (goto spin pump E) 
         mode = 1 
+        
     EndSelect 
-    ' After case is selected, reset some parameters 
+    ' After case is selected, reset parameters 
     timer = 0 
     run_case_selector = 0
     case_success = 0 
     PAR_77 = mode
+ 
   ENDIF
   ' ##################
   ' END of Case selector
@@ -511,6 +520,7 @@ EVENT:
             ENDIF
           ENDIF
         ENDIF
+        
       CASE 6 ' Spin pump A after C13 init
         IF (timer = 0) THEN 'Turn on lasers
           ' Typically the laser power for one of the two is set to 0 in the msmt params that are loaded
@@ -552,7 +562,7 @@ EVENT:
       CASE 8 ' C13 MBE RO
         ' TODO_MAR: store RO results
         IF (timer = 0) THEN 'Start the laser
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)     'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_MBE_RO_voltage+32768) ' turn on Ex laser
 
@@ -563,14 +573,14 @@ EVENT:
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
             P2_CNT_ENABLE(CTR_MODULE,0)
             wait_time = next_MBI_stop-timer
-            case_success =1
+            case_success      = 1
             run_case_selector = 1
 
           ELSE ' If at the end of RO duration without enough counts
             IF (timer = MBE_RO_duration ) THEN 
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
-              case_success = 0
+              case_success      = 0
               run_case_selector = 1
             ENDIF
           ENDIF
@@ -591,7 +601,7 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
 
         ELSE
-          ' when we're done, turn off the laser, send the event to the AWG and proceed to wait until RO
+          ' when we're done, turn off the laser, proceed to wait until RO
           IF (timer = SP_duration_after_C13) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
@@ -650,6 +660,7 @@ EVENT:
           run_case_selector = 1
           wait_time = 0
         ENDIF
+        
       CASE 13    'Final RO
         RO_duration = DATA_34[ROseq_cntr]
         E_RO_Voltage = DATA_36[ROseq_cntr]
