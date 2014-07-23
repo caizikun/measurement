@@ -50,8 +50,8 @@ DIM first AS LONG
 
 DIM repetition_counter AS LONG
 
-DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
-DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
+DIM PLU_success_DI_channel, PLU_succes_DI_pattern AS LONG
+DIM PLU_succes_is_high, PLU_succes_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM counts, old_counts AS LONG
 
@@ -63,7 +63,7 @@ DIM CR_result,first_local AS LONG
 INIT:
   init_CR()
   AWG_done_di_channel           = DATA_20[1]
-  AWG_success_DI_channel        = DATA_20[2]
+  PLU_success_DI_channel        = DATA_20[2]
   SP_duration                   = DATA_20[3]
   local_wait_time_duration      = DATA_20[4]
   remote_CR_trigger_do_channel  = DATA_20[5]
@@ -88,7 +88,7 @@ INIT:
     DATA_27[i] = 0
   NEXT i
     
-  AWG_succes_DI_pattern = 2 ^ AWG_success_DI_channel
+  PLU_succes_DI_pattern = 2 ^ PLU_success_DI_channel
   AWG_done_di_pattern = 2 ^ AWG_done_di_channel
   
   repetition_counter = 0
@@ -182,12 +182,12 @@ EVENT:
       case 4      'waiting for external trigger (AWG succes or timeout)
       
         AWG_done_was_high = AWG_done_is_high
-        AWG_succes_was_high = AWG_succes_is_high
+        PLU_succes_was_high = PLU_succes_is_high
         DIO_register = DIGIN_LONG()
         AWG_done_is_high = (DIO_register AND AWG_done_di_pattern)
-        AWG_succes_is_high = (DIO_register AND AWG_succes_DI_pattern)
+        PLU_succes_is_high = (DIO_register AND PLU_succes_DI_pattern)
         'PAR_80=Par_80+AWG_done_is_high
-        IF ((AWG_succes_was_high = 0) AND (AWG_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
+        IF ((PLU_succes_was_high = 0) AND (PLU_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
           DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
           INC(succes_event_counter)
           INC(Par_77)

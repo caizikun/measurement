@@ -16,9 +16,9 @@ def run(name):
     funcs.prepare(m)
     #m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
     
-    print 'MBI threshold =' + str(m.params['MBI_threshold'])
-    print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
-    print 'SSRO_duration =' + str(m.params['SSRO_duration'])
+    #print 'MBI threshold =' + str(m.params['MBI_threshold'])
+    #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
+    #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
     pts = 51
     m.params['pts'] = pts
@@ -58,7 +58,7 @@ def run(name):
 
     # for the autoanalysis
 
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
 if __name__ == '__main__':
     run('hans1_MBI_desr')

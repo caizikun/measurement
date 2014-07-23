@@ -896,4 +896,257 @@ class Magnetometry(PulsarMeasurement):
 
 
 
+class GeneralElectronRabi(PulsarMeasurement):
+    '''
+    This class generates a sequence of Rabi oscillations.
+    You have to provide the type of pulse.
+    '''
+    mprefix = 'ElectronRabi'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['pulse_sweep_durations'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+        #print 'test'
+        # define the necessary pulses
+
+        X=kw.get('pulse_pi', None)
+
+   
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['pulse_sweep_durations'][i],
+                amplitude = self.params['pulse_sweep_amps'][i]))
+
+            elements.append(e)
+
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            qt.pulsar.program_awg(seq,*elements)
+            #qt.pulsar.upload(*elements)
+
+
+
+class GeneralPiCalibration(PulsarMeasurement):
+    """
+    General Pi pulse calibration, generate_sequence needs to be supplied with a pi_pulse as kw.
+    """
+    mprefix = 'Pi_Calibration'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = 20
+
+        PulsarMeasurement.autoconfig(self)
+
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 200e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+
+        elts = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            e.append(T,
+                pulse.cp(X,
+                    amplitude=self.params['MW_pulse_amplitudes'][i]
+                    ))
+            elts.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elts):           
+            for j in range(self.params['multiplicity']):
+                seq.append(name = e.name+'-{}'.format(j), 
+                    wfname = e.name,
+                    trigger_wait = (j==0))
+                seq.append(name = 'wait-{}-{}'.format(i,j), 
+                    wfname = wait_1us.name, 
+                    repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+
+        # program AWG
+        if upload:
+            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
+            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
+        #qt.pulsar.program_sequence(seq)
+
+        #self.params['sequence_wait_time'] = \
+        #    int(np.ceil(np.max(np.array([e.length() for e in elts])*1e6))+10)
+
+
+
+class GeneralPi2Calibration(PulsarMeasurement):
+    """
+    Do a pi/2 pulse, compare to an element with pi/2 + pi-pulse; sweep the pi2 amplitude. 
+    generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
+    """
+    mprefix = 'GeneralPi2Calibration'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = 30
+
+        PulsarMeasurement.autoconfig(self)
+
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+        TIQ = pulse.SquarePulse(channel='MW_Imod',
+            length = 10e-9, amplitude = 0)
+
+        pulse_pi=kw.get('pulse_pi', None)
+        pulse_pi2=kw.get('pulse_pi2', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+
+        elts = []
+        seq = pulsar.Sequence('{} Pi2 Calibration'.format(self.params['pulse_type']))
+
+        for i in range(self.params['pts_awg']):
+            e = element.Element('{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i), 
+                pulsar = qt.pulsar,
+                global_time=True)
+            e.append(T)
+            e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
+            e.append(pulse.cp(TIQ, length=2e-9))
+            e.append(pulse.cp(pulse_pi))
+            e.append(T)
+            elts.append(e)
+            seq.append(name='{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='synca-{}'.format(i),
+                wfname = sync_elt.name)
+            
+            e = element.Element('{}_Pi2-{}'.format(self.params['pulse_type'],i), 
+                pulsar = qt.pulsar,
+                global_time=True)
+            e.append(T)
+            e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
+            e.append(pulse.cp(TIQ, length=2e-9))
+            e.append(T)
+            elts.append(e)
+            seq.append(name='{}_Pi2-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='syncb-{}'.format(i),
+                wfname = sync_elt.name)
+
+        # program AWG
+        if upload:
+            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
+            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
+        #qt.pulsar.program_sequence(seq)
+
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(np.array([e.length() for e in elts])*1e6))+10)
+
+
         
+class DD_GeneralSequence(PulsarMeasurement):
+    """
+    Class to implement dynamical decoupling sequence and look at the first revival. 
+    """
+    mprefix = 'DD_Sequence'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['evolution_times']*2*self.params['number_pulses'])*1e6)+10)
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+
+        pulse_pi=kw.get('pulse_pi', None)
+        pulse_pi2=kw.get('pulse_pi2', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('DD_ZerothRevival_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            last = e.add(pulse.cp(pulse_pi2,
+                        amplitude = self.params['pulse_pi2_sweep_amps'][i],
+                        phase = self.params['pulse_pi2_sweep_phases1'][i]),
+                    start = 200e-9,
+                    name = 'pi2_1')
+              
+            for j in range(self.params['number_pulses']):
+
+
+                last = e.add(pulse.cp(pulse_pi,
+                        amplitude = self.params['pulse_pi_sweep_amps'][i],#*(-1)**np.mod(j+1,2),
+                        phase = self.params['pulse_pi_sweep_phases'][j]),
+                    refpulse = last,
+                    refpoint = 'end' if (j == 0) else 'center',
+                    refpoint_new = 'center',
+                    start = self.params['evolution_times'][i] if (j == 0) else 2*self.params['evolution_times'][i],
+                    name = 'pi_{}'.format(j))
+
+
+            e.add(pulse.cp(pulse_pi2,
+                    amplitude = self.params['pulse_pi2_sweep_amps'][i],
+                    phase = self.params['pulse_pi2_sweep_phases2'][j]),
+                refpulse = last,
+                refpoint = 'center',
+                refpoint_new = 'start',
+                start = self.params['evolution_times'][i]+self.params['extra_wait_final_pi2'][i],
+                name = 'pi2_2')
+            
+            elements.append(e)
+        
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('DD sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+    
+        qt.pulsar.program_awg(seq,*elements)
+
+        #self.params['sequence_wait_time'] = \
+        #    int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
+        #print 'Adwin sequence waiting time :', self.params['sequence_wait_time'] , '[us]'

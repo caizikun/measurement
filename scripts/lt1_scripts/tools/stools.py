@@ -13,8 +13,9 @@ GREENAOM = 'GreenAOM'
 RED1AOM = 'NewfocusAOM'
 RED2AOM = 'MatisseAOM'
 YELLOWAOM = 'YellowAOM'
+PULSEAOM = 'PulseAOM'
 
-ALLAOMS = [GREENAOM, RED2AOM, RED1AOM, YELLOWAOM]
+ALLAOMS = [GREENAOM, RED2AOM, RED1AOM, YELLOWAOM, PULSEAOM]
 ALLCHECKPWRS = [50e-6, 5e-9, 5e-9, 50e-9]
 ADWINAOMS = [GREENAOM, RED2AOM, RED1AOM, YELLOWAOM]
 AWGAOMS = [RED1AOM, YELLOWAOM]
@@ -51,9 +52,12 @@ def start_bs_counter():
     qt.instruments['bs_helper'].set_is_running(True)
     qt.instruments['bs_helper'].execute_script()
     qt.instruments['counters'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['counters'].set_is_running(True)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
 
 def set_lt1_remote():
     for i in ['labjack', 
@@ -108,3 +112,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
 
+def generate_quantum_random_number():
+    qt.instruments['AWG'].set_ch2_marker1_low(2.)
+    qt.msleep(0.1)
+    qt.instruments['AWG'].set_ch2_marker1_low(0.)

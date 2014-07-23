@@ -581,17 +581,17 @@ def set_gate_voltage(v):
     if v>2000. or v<-2000.:
         print 'Gate voltage too high:',v
         return False
-    return qt.instruments['ivvi'].set_dac2(v)
+    return qt.instruments['ivvi'].set_dac3(v)
 
 
-def fast_gate_scan(name):
-    for v in np.linspace(-400.,-2000.,5):
+def fast_gate_scan(name, vmax):
+    for v in np.linspace(0.,vmax,6):
         if (msvcrt.kbhit() and msvcrt.getch()=='c'): 
                 break
         set_gate_voltage(v)
         qt.instruments['counters'].set_is_running(True)
-        qt.instruments['YellowAOM'].turn_on()
-        while qt.instruments['adwin'].get_countrates()[0]<200:
+        qt.instruments['YellowAOM'].set_power(30e-9)
+        while qt.instruments['adwin'].get_countrates()[0]<1000:
             if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 break
             #print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
@@ -599,7 +599,7 @@ def fast_gate_scan(name):
         print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
         qt.instruments['YellowAOM'].turn_off()
 
-        vname=name+'_{:.1f}V'.format(v*45.)
+        vname=name+'_{:.1f}V'.format(v*45.e-3)
         print 'Running scan ', vname
         single_scan(vname)
         qt.msleep(1)
@@ -626,7 +626,7 @@ def single_scan(name):
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(65, 120, voltage_step=0.01, integration_time_ms=20, power = 0.5e-9)
+    m.red_scan(55, 90, voltage_step=0.02, integration_time_ms=10, power = 0.5e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(50, 80, power = 0.5e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -639,9 +639,12 @@ def debug_scan(name):
 
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
-    single_scan('The111no1_enlarged_Sil1_6th-cool-down')
-    #fast_gate_scan('ThePippin_Sil8_dac3_on24')
-    #repeated_red_scans_hannes()
+    single_scan('The111no1_enlarged_Sil_9th-cool-down')
+    #fast_gate_scan('The111no1_Sil8_dac3_on22',2000)
+    #qt.get_setup_instrument('GreenAOM').set_power(10e-6)
+    #qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
+    #qt.get_setup_instrument('GreenAOM').set_power(0e-6)
+    #fast_gate_scan('The111no1_Sil8_dac3_on24',2000)
 
 
     #green_yellow_during_scan()

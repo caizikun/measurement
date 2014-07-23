@@ -4,6 +4,7 @@ LT3 script for Measuring a tail with a picoquant time correlator
 
 
 import numpy as np
+import inspect
 import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -35,6 +36,8 @@ class Bell_LT3(bell.Bell):
         elements = [] 
 
         dummy_element = bseq._dummy_element(self)
+        succes_element = bseq._lt3_entanglement_event_element(self)
+        elements.append(succes_element)
         #finished_element = bseq._sequence_finished_element(self)
         start_element = bseq._lt3_sequence_start_element(self)
         elements.append(start_element)
@@ -43,7 +46,7 @@ class Bell_LT3(bell.Bell):
         LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
         elements.append(LDE_element)
 
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
             late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_LT3')
             elements.append(late_RO)
@@ -55,20 +58,20 @@ class Bell_LT3(bell.Bell):
 
         seq.append(name = 'LDE_LT3',
             wfname = LDE_element.name,
-            jump_target = 'late_RO' if self.params['wait_for_PLU'] else 'RO_dummy',
+            jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
             goto_target = 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
         #    wfname = finished_element.name,
         #    goto_target = 'start_LDE')
-        if self.params['wait_for_PLU']:
+        if self.joint_params['wait_for_1st_revival']:
             seq.append(name = 'late_RO',
                 wfname = late_RO.name,
                 goto_target = 'start_LDE')
 
         seq.append(name = 'RO_dummy',
-            wfname = dummy_element.name,
+            wfname = succes_element.name,
             goto_target = 'start_LDE')
             
         #qt.pulsar.program_awg(seq,*elements)
@@ -91,18 +94,19 @@ class Bell_LT3(bell.Bell):
         qt.msleep(0.1)
         self.adwin.start_set_dio(dio_no=2, dio_val=0)
 
-    #def finish(self):
-    #    ssro.IntegratedSSRO.finish(self)
+    def finish(self):
+        bell.Bell.finish(self)
+        self.add_file(inspect.getsourcefile(bseq))
 
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 
 def full_bell(name):
 
-    th_debug = True
+    th_debug = False
     sequence_only = False
-    mw = False
-    measure_lt1 = True
+    mw = True
+    measure_lt1 = False
     measure_bs = True
     do_upload = True
 
@@ -145,4 +149,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LT1_the111no1_Sil1_SPcorr_all_MW_corpse')   
+    full_bell('SP_corr_MW_Qmod')   

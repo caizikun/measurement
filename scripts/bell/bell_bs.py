@@ -9,7 +9,7 @@ bs_params = {}
 bs_params['MAX_DATA_LEN']        =   int(100e6)
 bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 bs_params['MIN_SYNC_BIN']        =   int(5e-6*1e12) #5 us 
-bs_params['MAX_SYNC_BIN']        =   int(15e-6*1e12) #15 us
+bs_params['MAX_SYNC_BIN']        =   int(15e-6*1e12) #15 us 
 bs_params['measurement_time']    =   24*60*60 #sec = 24H
 bs_params['measurement_abort_check_interval']    = 1 #sec
 bs_params['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
@@ -54,4 +54,4 @@ def remote_HH_measurement(name):
     m.finish()
     
 if __name__ == '__main__':
-    remote_HH_measurement('tpqi_parallel_BS')
+    remote_HH_measurement('BS')

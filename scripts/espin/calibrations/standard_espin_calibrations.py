@@ -1131,8 +1131,8 @@ def dark_esr(name):
     m.params['repetitions']  = 1000
     m.params['range']        = 6e6
     m.params['pts'] = 131
-    m.params['pulse_length'] = 2.3e-6
-    m.params['ssbmod_amplitude'] = 0.04
+    m.params['pulse_length'] = 0.5e-6
+    m.params['ssbmod_amplitude'] = 0.06
     
     m.params['Ex_SP_amplitude']=0
 
@@ -1629,7 +1629,7 @@ def run_calibrations(stage, IQmod):
 
 
 if __name__ == '__main__':
-    run_calibrations(7.0, IQmod = False)
+    run_calibrations(2.5, IQmod = False)
 
     """
     stage 0 : continuous ESR
