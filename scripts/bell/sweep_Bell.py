@@ -177,8 +177,8 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['use_eom_pulse'] = 'original' #normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     
     if setup == 'lt3' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.07#np.linspace(-0.1,0.05,pts) # calibration from 19-03-2014
-        m.params['aom_risetime']              = np.ones(pts)*25e-9 # calibration to be done!
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.055 #calibration from 19-03-2014
+        m.params['aom_risetime']              = np.ones(pts)*15e-9 # calibration to be done!
     elif setup == 'lt1' :
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.35,-0.2,pts) #np.ones(pts)*-0.28# calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*35e-9#38e-9#42e-9 # calibration to be done!
@@ -226,7 +226,7 @@ def sweep_bell(name, setup = 'lt3'):
         m.params['LDE_attempts_before_CR'] = 250
         m.params['do_general_sweep']= 0
         m.joint_params['opt_pi_pulses'] = 1
-        m.params['RND_during_LDE'] = 0
+        m.joint_params['RND_during_LDE'] = 0
         m.joint_params['RO_during_LDE'] = 0
         m.params['MW_during_LDE'] = 0
         m.joint_params['RND_during_LDE'] = 0
@@ -259,6 +259,9 @@ def sweep_bell(name, setup = 'lt3'):
         #if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
         #    m.params['echo_offset'] = 0.e-9
         #print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*1e9)
+        if np.mod(m.joint_params['DD_number_pi_pulses'],2) == 0 :
+            m.params['echo_offset'] = 0.e-9
+        print 'The echo ffset is set to {} ns.'.format(m.params['echo_offset']*Belle9)
 
         m.joint_params['LDE_attempts_before_CR'] = 1
         m.joint_params['opt_pi_pulses'] = 2
@@ -282,13 +285,13 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     m.params['MIN_SYNC_BIN'] =       5000 
-    m.params['MAX_SYNC_BIN'] =       16000
+    m.params['MAX_SYNC_BIN'] =       7000 # for Bell, 16000
 
     m.params['send_AWG_start'] = 1
     m.params['repetitions'] = 5000
 
     th_debug=False
-    measure_bs=False
+    measure_bs=True
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)

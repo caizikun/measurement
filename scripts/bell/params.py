@@ -13,7 +13,7 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
 joint_params['opt_pulse_separation']    = 600e-9
 
-joint_params['RND_during_LDE'] = 1 
+joint_params['RND_during_LDE'] = 0 
 joint_params['do_echo'] = 1
 joint_params['do_final_MW_rotation'] = 1
 joint_params['wait_for_1st_revival'] = 0
@@ -82,13 +82,19 @@ params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt3['MW_pi_amp']		   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+params_lt3['MW_pi_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+params_lt3['MW_pi_amp_Q']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']# 0.535 # 2014-07-09
+params_lt3['MW_pi2_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt3['MW_pi2_amp_Q']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']# XXXXXXXXXXXXX
 params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
+params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp_I']#TODO Calibrate  -0.487 
+params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
+params_lt3['MW_RND_amp_Q']	   = -params_lt3['MW_pi2_amp_Q']# 0.487 
+params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 params_lt3['MW_RND0_amp']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND0_duration'] = params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND1_amp']	   = -params_lt3['MW_pi2_amp']# 0.487 
+params_lt3['MW_RND1_amp']	   = params_lt3['MW_pi2_amp']# 0.487 
 params_lt3['MW_RND1_duration'] = params_lt3['MW_pi2_duration'] #50e-9
 
 params_lt3['echo_offset'] = 0e-9 #50 ns
@@ -101,14 +107,14 @@ params_lt3['wait_before_RO'] = joint_params['wait_for_1st_revival']*params_lt3['
 # LDE Sequence in the AWGs
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.07 
+params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-21
 params_lt3['eom_off_duration']           = 150e-9
 params_lt3['eom_overshoot_duration1']    = 10e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 25e-9
-params_lt3['aom_amplitude']				 = 0.5
+params_lt3['aom_amplitude']				 = 0.701 # 2014-07-21
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.80686e9# +/-   0.000005            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.80694e9# +/-   0.000005            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -135,7 +135,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
-		'SSRO_repetitions':				 5000,
+		'SSRO_repetitions':				 10000, # XXXXXXX
 		}
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
@@ -152,12 +152,18 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi_amp': 0.517,
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
-    	'Hermite_pi_length': 180e-9, #2014-07-10
-        'Hermite_pi_amp': 0.895832,  #2014-07-18
+    	'Hermite_pi_length': 180e-9, 
+        'Hermite_pi_amp_Imod': 0.903, #2014-07-22 
+        'Hermite_pi_amp_Qmod': 0.911, #2014-07-22 
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.531630,#2014-07-14
+        'Hermite_pi2_amp_Imod': 0.534,#2014-07-22
+        'Hermite_pi2_amp_Qmod': 0.539,# 2014-07-21
         'Hermite_pi4_length': 50e-9,
         'Hermite_pi4_amp': 0.48584,
+        'Square_pi_length' : 100e-9, # XXXXXXX not calibrated
+        'Square_pi2_length' : 50e-9, # XXXXXXX not calibrated
+    	'IQ_Square_pi_amp' : 0.015 , # XXXXXX not calibrated
+    	'IQ_Square_pi2_amp'  : 0.015, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }
