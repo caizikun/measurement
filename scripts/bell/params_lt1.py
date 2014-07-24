@@ -59,8 +59,8 @@ params_lt1['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermit
 params_lt1['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt1['MW_RND_amp_I']	   = params_lt1['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt1['MW_RND_duration_I']= params_lt1['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt1['MW_RND_amp_Q']	   = -params_lt1['MW_pi2_amp']# 0.487 
-params_lt1['MW_RND_duration_Q']= params_lt1['MW_pi2_duration'] #50e-9
+params_lt1['MW_RND_amp_Q']	   = params_lt1['MW_pi_amp']# 0.487 
+params_lt1['MW_RND_duration_Q']= params_lt1['MW_pi_duration'] #50e-9
 
 params_lt1['echo_offset'] = 0e-9
 params_lt1['free_precession_time_1st_revival'] = 73.2e-6
@@ -73,13 +73,13 @@ params_lt1['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.265
+params_lt1['eom_off_amplitude']         = -.25
 params_lt1['eom_overshoot_duration1']   = 20e-9
 params_lt1['eom_overshoot1']            = -0.04
 params_lt1['eom_overshoot_duration2']   = 4e-9
 params_lt1['eom_overshoot2']            = -0.00
 params_lt1['aom_risetime']              = 35e-9
-params_lt1['aom_amplitude']             = 0.7
+params_lt1['aom_amplitude']             = 0.65
 
 params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -93,7 +93,7 @@ params_lt1['MW_opt_puls1_separation'] = 150e-9 #distance between the end of the 
 params_lt1['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt1['RND_duration']	 	= 250e-9
-params_lt1['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
+params_lt1['RO_wait'] 			= 75e-9 + 100e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] 	= 1#sync is only for lt3
 params_lt1['plu_during_LDE'] 	= 0 
 params_lt1['opt_pulse_start']	= 5.5e-6 - 93e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
