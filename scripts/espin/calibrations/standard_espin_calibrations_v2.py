@@ -16,7 +16,7 @@ reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
+def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
 
     if pulse_type == 'CORPSE' :
         if IQmod : 
@@ -147,12 +147,8 @@ def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
             pulse_pi2=IQ_Hermite_pi2
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
-            if Imod_channel :
-                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Imod']
-                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Imod']
-            else :
-                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Qmod']
-                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Qmod']
+            msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp']
+            msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp']
             Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
@@ -603,7 +599,7 @@ def calibrate_pi4_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squa
     funcs.prepare(m)
     pulse_pi_not_used, pulse_pi2 = pulse_defs(m,IQmod,pulse_type, Imod_channel )
     pulse_pi4 = pulse.cp(pulse_pi2,
-            length = 50e-9)
+            length = m.params['Hermite_pi4_length'])
 
     m.params['pulse_type'] = pulse_type
     m.params['IQmod'] = IQmod
@@ -823,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False,Imod_channel=True, debug = False)
+    run_calibrations(4.5, IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR
