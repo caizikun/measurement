@@ -59,10 +59,10 @@ params_lt3['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Herm
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] 
 params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
-params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
-params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
+params_lt3['MW_RND_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_amp'] 
+params_lt3['MW_RND_duration_I']= qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_length'] 
+params_lt3['MW_RND_amp_Q']	   = -qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_amp'] 
+params_lt3['MW_RND_duration_Q']= qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_length'] 
 
 
 params_lt3['echo_offset'] = 0e-9 #50 ns
@@ -82,12 +82,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.65 # 2014-07-23
+params_lt3['aom_amplitude']				 = 0.612 # 2014-07-23
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = params_lt3['Ex_RO_amplitude']
+params_lt3['AWG_RO_power']            = 7.2e-9 # 2014-07-24
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt3['LDE_SP_duration']         = 5.e-6 
 params_lt3['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence

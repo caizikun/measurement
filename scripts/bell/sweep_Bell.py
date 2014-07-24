@@ -157,10 +157,12 @@ def sweep_bell(name, setup = 'lt3'):
         m.joint_params[k] = joint_params.joint_params[k]
 
     if setup == 'lt3' :
+        m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             m.params[k] = params_lt3.params_lt3[k]
 
     elif setup == 'lt1' :
+        m.AWG_RO_AOM = m.E_aom
         for k in params_lt1.params_lt1:
             m.params[k] = params_lt1.params_lt1[k]
 
@@ -239,7 +241,7 @@ def sweep_bell(name, setup = 'lt3'):
             p_aom= qt.instruments['PulseAOM']
             aom_voltage_sweep = np.zeros(pts)
             max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-            aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+            aom_power_sweep=linspace(0.3,0.8,pts)*max_power_aom #%power
             for i,p in enumerate(aom_power_sweep):
                 aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
             m.params['aom_amplitude'] = aom_voltage_sweep
@@ -318,4 +320,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('111-1-1_tail', setup = 'lt1')    
+    sweep_bell('Samy_Tail_PSB_10deg', setup = 'lt3')    
