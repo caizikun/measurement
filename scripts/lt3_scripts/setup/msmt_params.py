@@ -140,7 +140,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 15}
+	'SSRO_duration' : 25}
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -153,10 +153,10 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp_Imod': 0.921, #2014-07-23 copied from Q 
+        'Hermite_pi_amp_Imod': 0.901, #2014-07-24 
         'Hermite_pi_amp_Qmod': 0.921, #2014-07-23 prev 0.911
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp_Imod': 0.543,#2014-07-23 only on Q
+        'Hermite_pi2_amp_Imod': 0.536,#2014-07-24
         'Hermite_pi2_amp_Qmod': 0.543,# 2014-07-23 prev 0.539
         'Hermite_pi4_length': 50e-9,
         'Hermite_pi4_amp': 0.48584,

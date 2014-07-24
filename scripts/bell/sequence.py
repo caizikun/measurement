@@ -67,7 +67,7 @@ def pulse_defs_lt3(msmt):
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
 
-    msmt.eom_pulse = eom_pulses.EOMAOMPulse('Eom Aom Pulse', 
+    msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
                     aom_channel = 'EOM_AOM_Matisse',
                     eom_pulse_duration      = msmt.params['eom_pulse_duration'],

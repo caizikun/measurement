@@ -147,9 +147,12 @@ def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
             pulse_pi2=IQ_Hermite_pi2
         else :
             msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
-            
-            msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp']
-            msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp']
+            if Imod_channel :
+                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Imod']
+                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Imod']
+            else :
+                msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp_Qmod']
+                msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp_Qmod']
             Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
@@ -172,7 +175,7 @@ def pulse_defs(msmt, IQmod, pulse_type,Imod_channel = True):
         
     return pulse_pi, pulse_pi2
 
-
+# some bugs to fix !! 
 class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
     mprefix = 'GeneralDarkESR'
 
@@ -448,6 +451,7 @@ class TestLDESequence(pulsar_msmt.PulsarMeasurement):
             qt.pulsar.program_awg(seq,*elements)
 
 
+
 ### called at stage 2.0
 def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = False):
 
@@ -543,7 +547,7 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.42, 0.52, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.85, 0.95, pts) #0.872982*np.ones(pts)#
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
@@ -614,7 +618,7 @@ def calibrate_pi4_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squa
     m.params['repetitions'] = 2000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.4, 0.6, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.25, 0.5, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
     # for the autoanalysis
