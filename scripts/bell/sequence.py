@@ -23,35 +23,24 @@ def pulse_defs_lt3(msmt):
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
 
-    msmt.MW_pi_I = pulselib.HermitePulse_Envelope('Hermite pi-pulse-I',
+    msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp_I'],
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = False)
-    msmt.MW_pi_Q = pulselib.HermitePulse_Envelope('Hermite pi-pulse-Q',
-                    MW_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp_Q'],
-                    length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = False)
-    
-    msmt.MW_pi2_I = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse-I',
+   
+    msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi2_amp_I'],
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
-    msmt.MW_pi2_Q = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse-Q',
-                    MW_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi2_amp_Q'],
-                    length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
+
     msmt.MW_RND_I = pulselib.HermitePulse_Envelope('Hermite RND-pulse-I',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
@@ -116,32 +105,19 @@ def pulse_defs_lt1(msmt):
         PM_channel = 'MW_pulsemod',
         PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
-    msmt.MW_pi_I = pulselib.HermitePulse_Envelope('Hermite pi-pulse-I',
+    msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp_I'],
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = False)
-    msmt.MW_pi_Q = pulselib.HermitePulse_Envelope('Hermite pi-pulse-Q',
-                    MW_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi_amp_Q'],
-                    length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = False)
-
-    msmt.MW_pi2_I = pulselib.HermitePulse_Envelope('Hermite pi2-pulse-I',
+    msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi2-pulse',
                     MW_channel='MW_Imod',
+                    second_MW_channel='MW_Qmod', 
                     PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi2_amp_I'], 
-                    length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
-    msmt.MW_pi2_Q = pulselib.HermitePulse_Envelope('Hermite pi2-pulse-Q',
-                    MW_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['MW_pi2_amp_Q'], 
+                    amplitude = msmt.params['MW_pi2_amp'], 
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -317,15 +293,12 @@ def _LDE_element(msmt, **kw):
 
     #4 MW pi/2
     if msmt.params['MW_during_LDE'] == 1 :
-        e.add(msmt.MW_pi2_I,
+        e.add(msmt.MW_pi2,
             start = -msmt.params['MW_opt_puls1_separation'],
             refpulse = 'opt pi 1', 
             refpoint = 'start', 
             refpoint_new = 'end',
             name = 'MW_pi_over_2')
-        e.add(msmt.MW_pi2_Q,
-            refpulse = 'MW_pi_over_2', 
-            refpoint = 'start')
     #5 HHsync
     
     #6 plugate 1
@@ -336,15 +309,12 @@ def _LDE_element(msmt, **kw):
 
     #8 MW pi 
     if msmt.params['MW_during_LDE'] == 1:
-        e.add(msmt.MW_pi_I, 
+        e.add(msmt.MW_pi, 
             start = msmt.params['MW_1_separation'],
             refpulse = 'MW_pi_over_2',
             refpoint = 'end', 
             refpoint_new = 'end', 
             name='MW_pi')
-        e.add(msmt.MW_pi_Q, 
-            refpulse = 'MW_pi',
-            refpoint = 'start')
     
     #10 plugate 2
     if msmt.params['plu_during_LDE'] == 1 :
@@ -413,7 +383,7 @@ def _LDE_element(msmt, **kw):
         noof_p = msmt.joint_params['DD_number_pi_pulses']
         index_j = np.linspace(noof_p-1, - noof_p+1, noof_p )
         for j in range(noof_p):
-            e.add(msmt.MW_pi_I, 
+            e.add(msmt.MW_pi, 
                 start = -expected_echo_time/(2.*noof_p)*(2*j+1) \
                     +msmt.params['free_precession_offset']*index_j[j]\
                     +msmt.params['echo_offset'],
@@ -421,9 +391,6 @@ def _LDE_element(msmt, **kw):
                 refpoint = 'start', 
                 refpoint_new = 'center',
                 name='MW_echo_pi_{}'.format(j))
-            e.add(msmt.MW_pi_Q, 
-                refpulse = 'MW_echo_pi_{}'.format(j), 
-                refpoint = 'start')
 
 
 
@@ -493,15 +460,12 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
     #13 Echo pulse
     if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_echo'] == 1:
         for j in range(msmt.joint_params['DD_number_pi_pulses']):
-            e.add(msmt.MW_pi_I, 
+            e.add(msmt.MW_pi, 
                 start = -msmt.params['free_precession_time_1st_revival']/(2.*msmt.joint_params['DD_number_pi_pulses'])*(2*j+1)+msmt.params['echo_offset'],
                 refpulse = 'MW_RND_0', 
                 refpoint = 'start', 
                 refpoint_new = 'center',
                 name='MW_echo_pi_{}'.format(j))
-            e.add(msmt.MW_pi_Q, 
-                refpulse = 'MW_echo_pi_{}'.format(j), 
-                refpoint = 'start')
 
     return e
 

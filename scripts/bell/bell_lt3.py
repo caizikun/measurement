@@ -17,18 +17,20 @@ import bell
 reload(bell)
 import sequence as bseq
 reload(bseq)
-import params
-reload(params)
+import joint_params
+reload(joint_params)
+import params_lt3
+reload(params_lt3)
 
 class Bell_LT3(bell.Bell):
     mprefix = 'Bell_LT3'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
-        for k in params.joint_params:
-            self.joint_params[k] = params.joint_params[k]
-        for k in params.params_lt3:
-            self.params[k] = params.params_lt3[k]
+        for k in joint_params.joint_params:
+            self.joint_params[k] = joint_params.joint_params[k]
+        for k in params_lt3.params_lt3:
+            self.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(self)
 
     def generate_sequence(self):

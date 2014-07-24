@@ -388,7 +388,7 @@ class AOM(Instrument):
 
         if np.isnan(voltage):
             logging.warning(self.get_name() + ' Error: power out of calibration range')
-        
+                    
         return voltage
 
     def voltage_to_power(self, u):

@@ -2,22 +2,15 @@
 This file contains all the lt1 measurement parameters.
 """
 import qt
-import params
-params_lt1 = {}
+import joint_params
 
+params_lt1 = {}
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
 sample_name = qt.exp_params['samples']['current']
 
-
-
-# params['HH_binsize_T3'] = 8
-#CR:
-name = qt.exp_params['protocols']['current']
-sample_name = qt.exp_params['samples']['current']
-
-
+#CR
 params_lt1['counter_channel'] 	= qt.exp_params['protocols']['AdwinSSRO']['counter_channel']
 params_lt1['repump_duration'] 	= qt.exp_params['protocols']['AdwinSSRO']['repump_duration'] #500 # 10 for green, 500 for yellow
 params_lt1['repump_amplitude'] 	= qt.exp_params['protocols']['AdwinSSRO']['repump_amplitude']# 30e-9 
@@ -60,22 +53,20 @@ params_lt1['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt1['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt1['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt1['MW_pi_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Imod'] #0.895 # 2014-07-09
-params_lt1['MW_pi_amp_Q']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Qmod'] #0.895 # 2014-07-09
+params_lt1['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt1['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt1['MW_pi2_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Imod']
-params_lt1['MW_pi2_amp_Q']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Qmod']# XXXXXXXXXXXXX
+params_lt1['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt1['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt1['MW_RND_amp_I']	   = params_lt1['MW_pi2_amp_I']#TODO Calibrate  -0.487 
+params_lt1['MW_RND_amp_I']	   = params_lt1['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt1['MW_RND_duration_I']= params_lt1['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt1['MW_RND_amp_Q']	   = -params_lt1['MW_pi2_amp_Q']# 0.487 
+params_lt1['MW_RND_amp_Q']	   = -params_lt1['MW_pi2_amp']# 0.487 
 params_lt1['MW_RND_duration_Q']= params_lt1['MW_pi2_duration'] #50e-9
 
 params_lt1['echo_offset'] = 0e-9
 params_lt1['free_precession_time_1st_revival'] = 73.2e-6
 params_lt1['free_precession_offset'] = 0.
 #adwin wait time after PLU signal:
-params_lt1['wait_before_RO'] = params.joint_params['wait_for_1st_revival']*params_lt1['free_precession_time_1st_revival']*1e6+10
+params_lt1['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt1['free_precession_time_1st_revival']*1e6+10
 
 
 # LDE Sequence in the AWG
@@ -99,19 +90,19 @@ params_lt1['LDE_SP_duration']         = 5e-6
 params_lt1['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt1['MW_opt_puls1_separation'] = 150e-9 #distance between the end of the MW and the start of opt puls1
-params_lt1['MW_1_separation'] 	= params.joint_params['opt_pulse_separation']
+params_lt1['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt1['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt1['RND_duration']	 	= 250e-9
 params_lt1['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] 	= 1#sync is only for lt3
 params_lt1['plu_during_LDE'] 	= 0 
-params_lt1['opt_pulse_start']	= params.params_lt3['opt_pulse_start'] - 93e-9 #93 1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt1['opt_pulse_start']	= 5.5e-6 - 93e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 
-params_lt1['MAX_DATA_LEN'] =       params.joint_params['MAX_DATA_LEN']
-params_lt1['BINSIZE'] =            params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt1['MIN_SYNC_BIN'] =       params.joint_params['MIN_SYNC_BIN']
-params_lt1['MAX_SYNC_BIN'] =       params.joint_params['MAX_SYNC_BIN']
-params_lt1['TTTR_read_count'] =    params.joint_params['TTTR_read_count']
-params_lt1['measurement_abort_check_interval']    = params.joint_params['measurement_abort_check_interval']
+params_lt1['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
+params_lt1['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+params_lt1['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
+params_lt1['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt1['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
+params_lt1['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 
 params_lt1['measurement_time'] =   24*60*60 #sec = 24 H

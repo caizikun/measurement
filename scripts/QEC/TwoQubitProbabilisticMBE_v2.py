@@ -11,31 +11,31 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, tau = None,
-        Carbon_A = 1, Carbon_B = 4, 
-        Init_A = 'up', Init_B = 'up',
-        Only_init_first_Carbon = True, 
-        Only_init_second_Carbon= False):
+def MBE(name):
 
-    m = DD.Two_QB_Probabilistic_MBE(name)
+    m = DD.Two_QB_Probabilistic_MBE_v2(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
 
-    #### Carbon Initialization settings 
-    m.params['Carbon A']            = Carbon_A
-    m.params['C_A_init_method']     = 'swap'
-    m.params['C_A_init_state']      = Init_A
+    ### Carbons to be used
+    m.params['carbon_list']         = [4,       1]
 
-    m.params['Carbon B']            = Carbon_B  
-    m.params['C_B_init_method']     = 'swap'
-    m.params['C_B_init_state']      = Init_B
+    ### Carbon Initialization settings 
+    m.params['init_method_list']    = ['swap', 'swap']
+    m.params['init_state_list']     = ['up',   'up']
 
-    m.params['Only_init_first_Carbon']      = Only_init_first_Carbon
-    m.params['Only_init_second_Carbon']     = Only_init_second_Carbon
-   
+    m.params['Only_init_first_Carbon']      = True
+    m.params['Only_init_second_Carbon']     = False
+
+    ### MBE settings
+    m.params['Nr_MBE']              =   0
+    m.params['MBE_bases']           = ['X',    'X'] 
+
+
     ### Sweep parameters: the readout basis
-    m.params['reps_per_ROsequence'] = 1000 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 300 
+    #m.params['Tomography Bases'] = 'full'
     m.params['Tomography Bases'] = ([
             ['X','I'],['Y','I'],['Z','I'],
             ['I','X'],['I','Y'],['I','Z'],
@@ -45,9 +45,7 @@ def MBE(name, tau = None,
 
     ### Alternative bases
     #m.params['Tomography Bases'] = ([
-    #        ['X','X'],
-    #        ['Y','Y'],
-    #        ['Z','Z']])
+    #        ['X','X']])
 
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 
@@ -62,23 +60,16 @@ def MBE(name, tau = None,
     m.params['measZ_C_A']= [False]*m.params['pts'] 
     m.params['Phases_C_B'] = np.ones(m.params['pts'])*0
     m.params['measZ_C_B']= [False]*m.params['pts'] 
-
-    m.params['MBE_Bases'] = ['X','X'] 
-    
-    ### Overwrite certain values in msmt_params to test
-    
+    m.params['Nr_parity_msmts'] =   0
+ 
     ### number of Carbon spins to initialize
     if m.params['Only_init_first_Carbon'] or m.params['Only_init_second_Carbon']: 
         m.params['Nr_C13_init'] = 1
-    elif m.params['no_C13_init']:
-        m.params['Nr_C13_init'] = 0
     else :
         m.params['Nr_C13_init'] = 2
     
-    ### number of MBE steps
-    m.params['Nr_MBE']          =   0
-    m.params['Nr_parity_msmts'] =   0
-
+    ### Overwrite certain values in msmt_params to test
+    
     ### Thresholds 
     m.params['MBI_threshold']           = 1
     m.params['C13_MBI_threshold']       = 1  
@@ -108,4 +99,4 @@ def MBE(name, tau = None,
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    MBE(SAMPLE,Carbon_A = 4, Carbon_B = 1, Init_A = 'up', Init_B = 'up' )
+    MBE(SAMPLE)

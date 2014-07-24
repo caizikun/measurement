@@ -14,32 +14,34 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRabiWithInitialization(name,tau = None):
+def Crosstalk(name, RO_phase=0, RO_Z=False):
 
-    m = DD.NuclearRabiWithInitialization(name)
+    m = DD.Crosstalk(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
+    
+    m.params['Carbon_A'] = 1    ### Carbon spin that the Ramsey is performed on
+    m.params['Carbon_B'] = 4    ### Carbon spin that the Rabi/Gate is performed on
+    
+    m.params['reps_per_ROsequence'] = 350 
+    m.params['C13_init_state']      = 'up' 
+    m.params['sweep_name']          = 'Number of pulses'
+    m.params['C_RO_phase']          = RO_phase 
+    m.params['C_RO_Z']              = RO_Z 
+    
+    ### Pulse spacing (overwrite tau to test other DD times)
+    
+    m.params['C4_Ren_tau'] = [6.456e-6]            
+    #m.params['C4_Ren_tau'] = [3.072e-6]
+    #m.params['C1_Ren_tau'] = [9.420e-6]
+
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 350 #Repetitions of each data point
-    m.params['electron_init_state'] = '0'
-
-    m.params['Addressed_Carbon'] = 1
-    m.params['C13_init_state'] = 'up' 
-
-    m.params['sweep_name'] = 'Number of pulses'
-
-    m.params['Rabi_N_Sweep']= np.arange(0,260,12)
-    print m.params['Rabi_N_Sweep']
+    m.params['Rabi_N_Sweep']= np.arange(8,320,24)
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
     m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
-    #############################
-    #!NB: These should go into msmt params
-    #############################
-
-    ##########
-    # Overwrite certain params to test
+    ### Overwrite certain params to test
     m.params['C13_MBI_threshold']       = 1
     m.params['MBI_threshold']           = 1
     
@@ -54,7 +56,12 @@ def NuclearRabiWithInitialization(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    NuclearRabiWithInitialization(SAMPLE)
+      # Tomography 
+    Crosstalk(SAMPLE, RO_phase = 0, RO_Z = False)
+    Crosstalk(SAMPLE,RO_phase = 90, RO_Z = False)
+    Crosstalk(SAMPLE,RO_phase = 0, RO_Z = True)
+
+
 
 
 
