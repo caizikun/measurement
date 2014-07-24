@@ -118,4 +118,3 @@ params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['m
 
 params_lt3['measurement_time'] =   60*60#sec = 60 mins
 
-joint_params.joint_params['RND_start'] = params_lt3['opt_pulse_start']+(joint_params.joint_params['opt_pi_pulses']-1)*joint_params.joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin
