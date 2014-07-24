@@ -177,13 +177,13 @@ def sweep_bell(name, setup = 'lt3'):
     #qt.pulsar.set_channel_opt('EOM_trigger', 'delay', 147e-9)
     #qt.pulsar.set_channel_opt('EOM_trigger', 'high', 2.)#2.0
 
-    m.params['use_eom_pulse'] = 'normal' #normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
+    m.params['use_eom_pulse'] = 'original' #normal'#raymond-step' #'short', 'raymond-pulse', 'raymond-step'
     
     if setup == 'lt3' :
         m.params['eom_off_amplitude']         = np.ones(pts)*-0.055 #calibration from 2014-07-23
         m.params['aom_risetime']              = np.ones(pts)*15e-9 # 
     elif setup == 'lt1' :
-        m.params['eom_off_amplitude']         = np.ones(pts)*-0.28#np.linspace(-0.35,-0.2,pts) #np.ones(pts)*-0.28# calibration from 19-03-2014
+        m.params['eom_off_amplitude']         = np.ones(pts)*-0.265#np.linspace(-0.35,-0.2,pts) #np.ones(pts)*-0.28# calibration from 19-03-2014
         m.params['aom_risetime']              = np.ones(pts)*35e-9#38e-9#42e-9 # calibration to be done!
 
     if m.params['use_eom_pulse'] == 'raymond-pulse':
@@ -248,8 +248,7 @@ def sweep_bell(name, setup = 'lt3'):
             m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = aom_power_sweep/max_power_aom
         else:
-            m.params['aom_amplitude'] = np.ones(pts)*0.88 #np.linspace(0.6,1.0,pts)
-            m.params['eom_off_amplitude'] = np.linspace(-0.08, 0.01, pts)
+            m.params['aom_amplitude'] = np.ones(pts)*0.7 #np.linspace(0.6,1.0,pts)
             m.params['sweep_name'] = 'eom off amplitude (V)' #aom power (percentage/max_power_aom)' 
             m.params['sweep_pts'] = m.params['eom_off_amplitude']#aom_power_sweep/max_power_aom
 

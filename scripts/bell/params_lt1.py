@@ -32,7 +32,7 @@ params_lt1['AWG_success_DI_channel'] = 21
 params_lt1['SP_duration'] = 10
 params_lt1['wait_after_pulse_duration'] = 1
 params_lt1['remote_CR_DO_channel'] = 9
-params_lt1['SSRO_duration'] = 30
+params_lt1['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
 params_lt1['wait_for_AWG_done'] = 1
 params_lt1['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 
@@ -73,13 +73,13 @@ params_lt1['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt1['eom_pulse_amplitude']		= 1.9
 params_lt1['eom_pulse_duration']        = 2e-9
 params_lt1['eom_off_duration']          = 150e-9
-params_lt1['eom_off_amplitude']         = -.28
+params_lt1['eom_off_amplitude']         = -.265
 params_lt1['eom_overshoot_duration1']   = 20e-9
 params_lt1['eom_overshoot1']            = -0.04
 params_lt1['eom_overshoot_duration2']   = 4e-9
 params_lt1['eom_overshoot2']            = -0.00
 params_lt1['aom_risetime']              = 35e-9
-params_lt1['aom_amplitude']             =  0.6
+params_lt1['aom_amplitude']             = 0.9
 
 params_lt1['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

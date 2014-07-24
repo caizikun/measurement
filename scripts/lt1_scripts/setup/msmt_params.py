@@ -154,8 +154,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  2e-9,#5nW
-    'Ex_RO_amplitude':  10e-9, #15e-9,
-    'Ex_SP_amplitude':  10e-9,
+    'Ex_RO_amplitude':  9e-9, #15e-9,
+    'Ex_SP_amplitude':  9e-9,
     'SP_duration'        : 100,
     'SP_duration_ms0' : 100,
     'SP_duration_ms1' : 100,
@@ -164,7 +164,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-    'SSRO_duration' : 30}
+    'SSRO_duration' : 20}
 
 
 CORPSE_frq = 9e6
@@ -181,9 +181,11 @@ cfg['protocols'][name]['pulses'] = {
         'IQ_Square_pi_amp': 0.015,#N.C.
         'IQ_Square_pi2_amp': 0.09,#N.C.
         'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp': 0.4645, # calib. 2014-07-17
+        'Hermite_pi_amp_Imod': 0.4645, # calib. 2014-07-17
+        'Hermite_pi_amp_Qmod': 0.4645, # calib. 2014-07-17
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.304276,# calib. 2014-07-17
+        'Hermite_pi2_amp_Imod': 0.304276,# calib. 2014-07-17
+        'Hermite_pi2_amp_Qmod': 0.304276,# calib. 2014-07-17
         'IQ_Hermite_pi_amp': 0.83398,#0.455, #0.775, # calib. 2014-07-15
         'IQ_Hermite_pi2_amp': 0.415623,#0.455, #0.775, # calib. 2014-07-15
         'extra_wait_final_pi2' : -30e-9

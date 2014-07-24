@@ -20,7 +20,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
         self.params['sequence_wait_time'] = self.joint_params['LDE_attempts_before_CR']*self.joint_params['LDE_element_length']*1e6\
         +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_1st_revival']+ 20
-        print 'I am the sequence wainting time', self.params['sequence_wait_time']
+        print 'I am the sequence waiting time', self.params['sequence_wait_time']
         pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
 
         # add values from AWG calibrations
