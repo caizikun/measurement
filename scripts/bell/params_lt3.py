@@ -2,34 +2,7 @@
 This file contains all the joint and lt3 measurement parameters.
 """
 import qt
-
-joint_params = {}
-
-### default process settings
-joint_params['RO_during_LDE'] = 0
-
-joint_params['opt_pi_pulses'] = 2
-joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
-joint_params['initial_delay']           = 10e-9 ## 2014-06-07 initial delay used to be a joint param. i made it setup specific, to overlap the pulses
-joint_params['opt_pulse_separation']    = 600e-9
-
-joint_params['RND_during_LDE'] = 0 
-joint_params['do_echo'] = 0
-joint_params['do_final_MW_rotation'] = 0
-joint_params['wait_for_1st_revival'] = 0
-joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
-
-joint_params['LDE_element_length']     = 16.e-6+(joint_params['opt_pi_pulses']-2)*joint_params['opt_pulse_separation']  # 9e-6 for TPQI with 5 pulses
-joint_params['LDE_RO_duration'] = 4e-6
-joint_params['separate_RO_element'] =  True
-
-joint_params['MAX_DATA_LEN'] =       int(100e6)
-joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-joint_params['MIN_SYNC_BIN'] =       0 #WRONG / TODO
-joint_params['MAX_SYNC_BIN'] =       7000
-joint_params['TTTR_read_count'] = 	 1000 #s
-joint_params['measurement_abort_check_interval']    = 1. #sec
-
+import joint_params
 
 params_lt3 = {}
 
@@ -82,15 +55,13 @@ params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt3['MW_pi_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Imod'] #0.895 # 2014-07-09
-params_lt3['MW_pi_amp_Q']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp_Qmod'] #0.895 # 2014-07-09
+params_lt3['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Imod']
-params_lt3['MW_pi2_amp_Q']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp_Qmod'] 
+params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] 
 params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp_I']#TODO Calibrate  -0.487 
+params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp_Q']# 0.487 
+params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
 
@@ -98,7 +69,7 @@ params_lt3['echo_offset'] = 0e-9 #50 ns
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt3['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
-params_lt3['wait_before_RO'] = joint_params['wait_for_1st_revival']*params_lt3['free_precession_time_1st_revival']*1e6+10
+params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt3['free_precession_time_1st_revival']*1e6+10
 
 
 # LDE Sequence in the AWGs
@@ -122,7 +93,7 @@ params_lt3['LDE_SP_duration']         = 5.e-6
 params_lt3['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt3['MW_opt_puls1_separation'] = 200e-9 #distance between the end of the MW and the start of opt puls1
-params_lt3['MW_1_separation'] = joint_params['opt_pulse_separation']
+params_lt3['MW_1_separation'] = joint_params.joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] = 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt3['RND_duration'] = 250e-9
 params_lt3['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
@@ -138,13 +109,13 @@ params_lt3['PLU_2_delay']             = 1e-9
 params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 150e-9
 
-params_lt3['MAX_DATA_LEN'] =       joint_params['MAX_DATA_LEN']
-params_lt3['BINSIZE'] =            joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       joint_params['MIN_SYNC_BIN']
-params_lt3['MAX_SYNC_BIN'] =       joint_params['MAX_SYNC_BIN']
-params_lt3['TTTR_read_count'] =    joint_params['TTTR_read_count']
-params_lt3['measurement_abort_check_interval']    = joint_params['measurement_abort_check_interval']
+params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
+params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+params_lt3['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
+params_lt3['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt3['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
+params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   60*60#sec = 60 mins
 
-joint_params['RND_start'] = params_lt3['opt_pulse_start']+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin
+joint_params.joint_params['RND_start'] = params_lt3['opt_pulse_start']+(joint_params.joint_params['opt_pi_pulses']-1)*joint_params.joint_params['opt_pulse_separation'] + 3.3e-6 # = dt(f,BC)-dt(AC) + margin
