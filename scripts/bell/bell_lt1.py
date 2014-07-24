@@ -16,18 +16,19 @@ import bell
 reload(bell)
 import sequence as bseq
 reload(bseq)
+import joint_params
+reload(joint_params)
 import params_lt1
-import params
 reload(params_lt1)
-reload(params)
+
 
 class Bell_LT1(bell.Bell):
     mprefix = 'Bell_LT1'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
-        for k in params.joint_params:
-            self.joint_params[k] = params.joint_params[k]
+        for k in joint_params.joint_params:
+            self.joint_params[k] = joint_params.joint_params[k]
         for k in params_lt1.params_lt1:
             self.params[k] = params_lt1.params_lt1[k]
         bseq.pulse_defs_lt1(self)
@@ -146,4 +147,4 @@ def bell_lt1_remote(name):
 
 
 if __name__ == '__main__':
-    bell_lt1_remote('LT1')
+    bell_lt1_remote('')

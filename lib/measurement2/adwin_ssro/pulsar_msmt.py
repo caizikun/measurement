@@ -584,7 +584,7 @@ class initNitrogen_DarkESR(DarkESR):
         n = element.Element('Nitrogen-init', pulsar=qt.pulsar)
         n.append(pulse.cp(T,length=100e-9))
         n.append(pulse.cp(pi2pi_0,name='pi2pi_first',
-                               frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],
+                               frequency=self.params['MW_modulation_frequency']+2*self.params['N_HF_frq'],
                                amplitude=self.params['pi2pi_mIm1_amp']))
         #n.append(pulse.cp(T,length=1e-6))
         #n.append(pulse.cp(N_pulse,name='RF-first',
@@ -595,7 +595,7 @@ class initNitrogen_DarkESR(DarkESR):
         n.append(SP)
         n.append(pulse.cp(T,length=1e-6))
         n.append(pulse.cp(pi2pi_0, name='pi2pi_second',
-                                   frequency=self.params['MW_modulation_frequency'],#-self.params['N_HF_frq'],
+                                   frequency=self.params['MW_modulation_frequency']+self.params['N_HF_frq'],#-self.params['N_HF_frq'],
                                    amplitude=self.params['pi2pi_mI0_amp']))
         n.append(pulse.cp(T,length=1e-6))
         #n.append(pulse.cp(N_pulse,name='RF-second',
@@ -657,9 +657,9 @@ class MBI(PulsarMeasurement):
             self.repump_aom.power_to_voltage(
                     self.params['repump_N_randomize_amplitude'])
 
-        # self.params['A_SP_voltage'] = \
-        #     self.A_aom.power_to_voltage(
-        #             self.params['A_SP_amplitude'])
+        self.params['A_SP_voltage_before_MBI'] = \
+            self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_before_MBI'])
 
         # Calling autoconfig from sequence.SequenceSSRO and thus
         # from ssro.IntegratedSSRO after defining self.params['repetitions'],
@@ -751,7 +751,7 @@ class MBI(PulsarMeasurement):
     def _MBI_element(self,name ='MBI CNOT'):
         # define the necessary pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 10e-9, amplitude = 0)
+            length = 100e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MBI MW pulse',
             I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
@@ -855,6 +855,7 @@ class Magnetometry(PulsarMeasurement):
                     ('RO_data', sweeps),
                     ('set_phase', sweeps),
                     'completed_reps'])
+
         return
 
     def _Ninit_element(self,name ='N_init'):

@@ -23,7 +23,7 @@
 ' mode  4:  choose optimal phase
 ' -> mode 0
 
-'MAJORITY VOTE!!!!
+'BAYESIAN UPDATE!!!!!!
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -34,7 +34,7 @@
 'init
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
-DIM DATA_27[50000] AS LONG 'adaptive phase decision tree
+DIM DATA_27[500000] AS LONG 'adaptive phase decision tree
 DIM ch[8] AS LONG
 DIM ch_value[8] AS LONG
 DIM indiv_ssro[25] AS LONG
@@ -42,7 +42,6 @@ DIM indiv_ssro[25] AS LONG
 'return
 DIM DATA_24[max_repetitions] AS LONG  ' adaptive phase (0..255)
 DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
-DIM DATA_28[max_repetitions] AS LONG  ' majority vote results
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
 DIM wait_for_AWG_done AS LONG
@@ -65,7 +64,7 @@ DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
 DIM counts, old_counts , threshold_majority_vote AS LONG
 DIM adptv_steps, curr_adptv_phase, dig_phase, curr_adptv_step, rep_index, curr_msmnt_result, curr_ssro, M AS LONG
-DIM t1, p AS LONG
+DIM t1, p, M_count, p0 AS LONG
 
 INIT:  
   init_CR()
@@ -106,11 +105,6 @@ INIT:
   FOR i = 1 TO repetitions*adptv_steps
     DATA_25[i] = 0
   NEXT i
-  
-  FOR i = 1 TO repetitions*adptv_steps
-    DATA_28[i] = 0
-  NEXT i
- 
  
   FOR i = 1 TO M+2
     indiv_ssro[i]=0
@@ -256,9 +250,9 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE,0)
 
           if (counts > 0) then
-            indiv_ssro[curr_ssro] = 1 
+            indiv_ssro[curr_ssro] = 1
           else
-            indiv_ssro[curr_ssro] = 0 
+            indiv_ssro[curr_ssro] = 0
           endif
                   
           'first=1
@@ -270,20 +264,13 @@ EVENT:
             inc(curr_ssro)
           ELSE
             
-            p=0
+            M_count=0
             FOR i = 1 TO M
-              p = p + indiv_ssro[i]
+              M_count = M_count + indiv_ssro[i]
             NEXT i
-
-            IF (p>threshold_majority_vote-1) THEN
-              curr_msmnt_result = 1
-            ELSE
-              curr_msmnt_result = 0
-            ENDIF
             
-            DATA_25[sweep_index] = p       
-            DATA_28[sweep_index] = curr_msmnt_result       
-
+            DATA_25[sweep_index] = M_count
+            
             inc (sweep_index)
             inc(repetition_counter)
             PAR_73 = repetition_counter
@@ -322,10 +309,11 @@ EVENT:
         IF (do_adaptive>0) THEN
           p = 0
           FOR i = 1 TO curr_adptv_step-1
-            p = p + DATA_28[sweep_index-curr_adptv_step+i]*(2^(i-1)) 
+            p = p + DATA_25[sweep_index-curr_adptv_step+i]*((M+1)^(i-1)) 
           NEXT i
-          curr_adptv_phase = DATA_27[p + 2^(curr_adptv_step-1)] 'choose tabled phase for decision-tree stored in DATA_27
-          'DATA_24[sweep_index] = p + 2^(curr_adptv_step-1) 
+          p0 = ((M+1)^(curr_adptv_step-1)-1)/M+1         
+          curr_adptv_phase = DATA_27[p0 + p] 'choose tabled phase for decision-tree stored in DATA_27
+          'DATA_24[sweep_index] = p0+p
         ELSE
           curr_adptv_phase = DATA_27[curr_adptv_step]
         ENDIF                

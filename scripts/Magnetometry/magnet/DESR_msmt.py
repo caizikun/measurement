@@ -15,12 +15,13 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    #m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     m.params['Ex_SP_amplitude']=0.
     if ms == 'msp':
         m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
         m.params['pulse_length'] = 2.5e-6
         m.params['ssbmod_amplitude'] = 0.017
+        print m.params['ssbmod_amplitude']
     elif ms == 'msm':
         print 'Ex_SP_amp is ',m.params['Ex_SP_amplitude']
         m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - 43e6

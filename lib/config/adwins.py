@@ -990,6 +990,7 @@ config['adwin_lt2_processes'] = {
                     ['Ex_N_randomize_voltage'       , 0.0],
                     ['A_N_randomize_voltage'        , 0.0],
                     ['repump_N_randomize_voltage'   , 0.0],
+                    ['A_SP_voltage_before_MBI'      , 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 100,

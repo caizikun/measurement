@@ -18,8 +18,10 @@ reload(bell)
 reload(eom_pulses)
 import sequence as bseq
 reload(bseq)
-import params
-reload(params)
+import joint_params
+reload(joint_params)
+import params_lt3
+reload(params_lt3)
 import params_lt1
 reload(params_lt1)
 
@@ -154,10 +156,9 @@ def sweep_bell(name, setup = 'lt3'):
     for k in params.joint_params:
         m.joint_params[k] = params.joint_params[k]
 
-
     if setup == 'lt3' :
-        for k in params.params_lt3:
-            m.params[k] = params.params_lt3[k]
+        for k in params_lt3.params_lt3:
+            m.params[k] = params_lt3.params_lt3[k]
 
     elif setup == 'lt1' :
         for k in params_lt1.params_lt1:

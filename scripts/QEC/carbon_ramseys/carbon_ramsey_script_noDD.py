@@ -1,38 +1,36 @@
 """
-Script for a carbon ramsey sequence
+Script for a carbon ramsey sequence, without electron DD during the waiting time.
 """
 import numpy as np
 import qt
-import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
-
 reload(DD)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name,tau = None,N=None):
+def Carbon_Ramsey(name, tau = None, N=None):
 
-    # m = DD.NuclearRamsey(name)
-    # m = DD.NuclearRamsey_v2(name)
     m = DD.NuclearRamsey_no_elDD(name)
 
     funcs.prepare(m)
 
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x'
+    m.params['Initial_Pulse']       = 'x'
+    m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     m.params['addressed_carbon'] = 4 
 
-    ### Sweep parmater
+    ### Sweep parameter ###
     m.params['free_evolution_times'] = np.linspace(3.2e3,45e3,41).astype(int)*1e-9
+    
+
     print 'free evolution times: %s' %m.params['free_evolution_times']
     m.params['pts']              = len(m.params['free_evolution_times'])
     m.params['sweep_pts']        = m.params['free_evolution_times']
@@ -59,9 +57,6 @@ def Carbon_Ramsey(name,tau = None,N=None):
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
     print m.params['sweep_pts'] 
-
-
-
 
 if __name__ == '__main__':
     Carbon_Ramsey(SAMPLE)

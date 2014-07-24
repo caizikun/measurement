@@ -3,7 +3,6 @@ Script for a carbon ramsey sequence
 """
 import numpy as np
 import qt
-import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -27,18 +26,18 @@ def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
 
     ### Sweep parameters
 
-    m.params['N_list'] = range(8,120,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
+    m.params['N_list'] = range(8,180,8)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
     m.params['Phases_of_Ren_B'] = np.ones(len(m.params['N_list']))*0 
 
     # m.params['N_list'] = np.ones(21)*4#
     # m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
 
  
-    m.params['C'+str(Addressed_Carbon)+'_freq'] =( m.params['C'+str(Addressed_Carbon)+'_freq']-
-        .5e3)# Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['C'+str(Addressed_Carbon)+'_freq'] = ( 
+        m.params['C'+str(Addressed_Carbon)+'_freq']+.5e3) # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
-    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*6
+    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*8
     m.params['Addressed_Carbon'] = Addressed_Carbon 
  
 

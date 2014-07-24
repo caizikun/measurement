@@ -68,10 +68,11 @@ class AdaptivePhaseEstimation(pulsar_msmt.Magnetometry):
         # sequence
         seq = pulsar.Sequence('Adaptive phase-estimation sequence')
         for i,e in enumerate(elts):
-            seq.append(name = 'Ninit-%d' % i, wfname = Ninit_elt.name,
-                trigger_wait = True, repetitions=self.params['init_repetitions'])
-            seq.append(name = e.name, wfname = e.name,
-                trigger_wait = False)
+            for j in np.arange(self.params['M']):
+                seq.append(name = 'Ninit-dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = Ninit_elt.name,
+                    trigger_wait = True, repetitions=self.params['init_repetitions'])
+                seq.append(name = e.name+'dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = e.name,
+                    trigger_wait = False)
         # program AWG
         if upload:
             qt.pulsar.program_awg(seq, Ninit_elt, *elts , debug=debug)

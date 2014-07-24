@@ -11,23 +11,26 @@ execfile(qt.reload_current_setup)
 
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
+from measurement.lib.config import moss as moscfg
 reload(eom_pulses)
 import bell
 reload(bell)
 import sequence as bseq
 reload(bseq)
-import params
-reload(params)
+import joint_params
+reload(joint_params)
+import params_lt3
+reload(params_lt3)
 
 class Bell_LT3(bell.Bell):
     mprefix = 'Bell_LT3'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
-        for k in params.joint_params:
-            self.joint_params[k] = params.joint_params[k]
-        for k in params.params_lt3:
-            self.params[k] = params.params_lt3[k]
+        for k in joint_params.joint_params:
+            self.joint_params[k] = joint_params.joint_params[k]
+        for k in params_lt3.params_lt3:
+            self.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(self)
 
     def generate_sequence(self):
@@ -87,6 +90,16 @@ class Bell_LT3(bell.Bell):
         if self.lt1_helper != None:    
             self.lt1_helper.set_is_running(False)
 
+    def print_measurement_progress(self):
+        if self.params['compensate_lt3_drift']:
+            drift_constant= -3.8/60./1000. #nm/min-->/60=nm/sec-->/1000 = um/sec
+            drift_v_c=drift_constant/moscfg.config['mos_lt3']['rt_dimensions']['x']['micron_per_volt'] #V/s
+            drift = self.params['measurement_abort_check_interval']*drift_v_c
+            cur_v = self.adwin.get_dac_voltage('atto_x')
+            print 'drift:', drift
+            #self.adwin.set_dac_voltage(('atto_x',cur_v+drift ))
+        bell.Bell.print_measurement_progress(self)
+
     def reset_plu(self):
         self.adwin.start_set_dio(dio_no=2, dio_val=0)
         qt.msleep(0.1)
@@ -100,13 +113,14 @@ class Bell_LT3(bell.Bell):
 
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
+Bell_LT3.mos = qt.instruments['master_of_space']
 
 def full_bell(name):
 
     th_debug = False
     sequence_only = False
     mw = True
-    measure_lt1 = False
+    measure_lt1 = True
     measure_bs = True
     do_upload = True
 
@@ -114,6 +128,7 @@ def full_bell(name):
 
     m.params['MW_during_LDE'] = mw
     m.params['wait_for_remote_CR'] = measure_lt1
+    m.params['compensate_lt3_drift'] = True
 
 
     if not(sequence_only):
@@ -149,4 +164,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('SP_corr_MW_Qmod')   
+    full_bell('LDE_XX_2nd_try_6_with_drift_compensator')   
