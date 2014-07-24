@@ -819,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False,Imod_channel=True, debug = False)
+    run_calibrations(3.0, IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR
