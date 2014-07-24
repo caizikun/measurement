@@ -133,7 +133,7 @@ def calibrate_pi4_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.5,-0.1,pts)
+    sweep_axis = np.linspace(0.25,0.5,pts)
     m.params['pulse_pi4_sweep_amps'] = sweep_axis
 
     m.params['pulse_pi4_sweep_durations']=np.ones(pts)*50e-9
