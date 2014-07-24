@@ -95,6 +95,8 @@ class Bell_LT1(bell.Bell):
     #    ssro.IntegratedSSRO.finish(self)
 
 Bell_LT1.remote_measurement_helper = qt.instruments['remote_measurement_helper']
+Bell_LT1.AWG_RO_AOM = Bell_LT1.E_aom
+
 
 def bell_lt1_local(name):
 

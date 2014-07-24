@@ -114,6 +114,7 @@ class Bell_LT3(bell.Bell):
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 Bell_LT3.mos = qt.instruments['master_of_space']
+Bell_LT3.AWG_RO_AOM = qt.instruments['PulseAOM']
 
 def full_bell(name):
 
