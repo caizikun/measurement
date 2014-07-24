@@ -82,7 +82,7 @@ def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1',
     qt.instruments['PMServo_lt1'].move_out()
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [10e-9, 20e-9, 50e-6,50e-9]):
+    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
     
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):

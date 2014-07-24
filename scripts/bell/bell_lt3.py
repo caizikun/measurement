@@ -165,4 +165,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LDE_XX_2nd_try_6_with_drift_compensator')   
+    full_bell('LocalBell_try1')   
