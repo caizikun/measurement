@@ -19,17 +19,21 @@ def MBE(name):
     '''set experimental parameters'''
 
     ### Carbons to be used
-    m.params['carbon_list']         = [1,      3]
+    m.params['carbon_list']         = [4,       1,      3]
 
     ### Carbon Initialization settings 
-    m.params['init_method_list']    = ['swap', 'swap']    ## 'MBI', 'swap', 'no'
-    m.params['init_state_list']     = ['up',   'down']    ## 'up' or 'down'
+    m.params['init_method_list']    = ['MBI', 'MBI', 'MBI']    ## 'MBI', 'swap', 'no'
+    m.params['init_state_list']     = ['up',   'up', 'up']    ## 'up' or 'down'
 
     m.params['Only_init_first_Carbon']      = False
-    m.params['Only_init_second_Carbon']     = True
+    m.params['Only_init_second_Carbon']     = False
 
-    ### RO bases (sweep parameter)
-    m.params['reps_per_ROsequence'] = 1000 
+    ### MBE settings
+    m.params['Nr_MBE']              = 0
+    m.params['MBE_bases']           = ['X',    'X',   'X' ] 
+
+    ### Sweep parameters: the readout basis
+    m.params['reps_per_ROsequence'] = 300 
     #m.params['Tomography Bases'] = 'full'
     m.params['Tomography Bases'] = ([
             ['X','I'],['Y','I'],['Z','I'],
@@ -39,44 +43,17 @@ def MBE(name):
             ['Z','X'],['Z','Y'],['Z','Z']])
 
     ## Alternative bases
-    # m.params['Tomography Bases'] = ([['I','X'],
-    #        ['I','Y'],
-    #        ['I','Z']])
+    m.params['Tomography Bases'] = ([['X','X'],
+            ['Y','Y'],
+            ['Z','Z']])
 
          ## Alternative bases
-    m.params['Tomography Bases'] = ([['X','I'],
-            ['Y','I'],
-            ['Z','I'], 
-            ['I','X'],
-            ['I','Y'],
-            ['I','Z']])
+    m.params['Tomography Bases'] = ([['Z','I'],
+            ['I','Z'],
+            ['Z','Z']])
+
+
     m.params['pts']                 = len(m.params['Tomography Bases'])
-
-    ### MBE settings
-    m.params['Nr_MBE']              = 0
-    m.params['MBE_bases']           = ['X',    'X'] 
-
-    ### Parity measurement settings  
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Phases_C_A'] = np.ones(m.params['pts'])*0
-    m.params['measZ_C_A']= [False]*m.params['pts'] 
-    m.params['Phases_C_B'] = np.ones(m.params['pts'])*0
-    m.params['measZ_C_B']= [False]*m.params['pts'] 
-    
-
-
-
-
- 
-
-    ### Derive other parameters
-
-    ### number of Carbon spins to initialize
-    if m.params['Only_init_first_Carbon'] or m.params['Only_init_second_Carbon']: 
-        m.params['Nr_C13_init'] = 1
-    else :
-        m.params['Nr_C13_init'] = 2
-    
     m.params['sweep_name']          = 'Tomography Bases' 
     m.params['sweep_pts']           = []
     
@@ -84,9 +61,19 @@ def MBE(name):
         m.params['sweep_pts'].append(BP[0]+BP[1])
     print m.params['sweep_pts']        
 
+    ### Parity measurement settings  
+    m.params['Phases_C_A'] = np.ones(m.params['pts'])*0
+    m.params['measZ_C_A']= [False]*m.params['pts'] 
+    m.params['Phases_C_B'] = np.ones(m.params['pts'])*0
+    m.params['measZ_C_B']= [False]*m.params['pts'] 
+    m.params['Nr_parity_msmts'] =   0
+ 
+    ### number of Carbon spins to initialize
+    if m.params['Only_init_first_Carbon'] or m.params['Only_init_second_Carbon']: 
+        m.params['Nr_C13_init'] = 1
+    else :
+        m.params['Nr_C13_init'] = 2
     
-
-
     ### Overwrite certain values in msmt_params to test
     
     ### Thresholds 
