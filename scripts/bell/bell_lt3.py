@@ -114,6 +114,7 @@ class Bell_LT3(bell.Bell):
 Bell_LT3.bs_helper = qt.instruments['bs_helper']
 Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
 Bell_LT3.mos = qt.instruments['master_of_space']
+Bell_LT3.AWG_RO_AOM = qt.instruments['PulseAOM']
 
 def full_bell(name):
 
@@ -164,4 +165,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LDE_XX_2nd_try_6_with_drift_compensator')   
+    full_bell('LocalBell_try1')   

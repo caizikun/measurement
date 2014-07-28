@@ -153,14 +153,16 @@ def sweep_bell(name, setup = 'lt3'):
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
 
     #m.joint_params = {}
-    for k in params.joint_params:
-        m.joint_params[k] = params.joint_params[k]
+    for k in joint_params.joint_params:
+        m.joint_params[k] = joint_params.joint_params[k]
 
     if setup == 'lt3' :
+        m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             m.params[k] = params_lt3.params_lt3[k]
 
     elif setup == 'lt1' :
+        m.AWG_RO_AOM = m.E_aom
         for k in params_lt1.params_lt1:
             m.params[k] = params_lt1.params_lt1[k]
 
@@ -239,7 +241,7 @@ def sweep_bell(name, setup = 'lt3'):
             p_aom= qt.instruments['PulseAOM']
             aom_voltage_sweep = np.zeros(pts)
             max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-            aom_power_sweep=linspace(0.6,1.0,pts)*max_power_aom #%power
+            aom_power_sweep=linspace(0.3,0.8,pts)*max_power_aom #%power
             for i,p in enumerate(aom_power_sweep):
                 aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
             m.params['aom_amplitude'] = aom_voltage_sweep
@@ -268,8 +270,8 @@ def sweep_bell(name, setup = 'lt3'):
         m.joint_params['opt_pi_pulses'] = 2
         m.params['aom_amplitude'] = np.ones(pts)*0. #0.88
 
-        m.joint_params['RND_during_LDE'] = 0
-        m.joint_params['RO_during_LDE'] = 0
+        m.joint_params['RND_during_LDE'] = 1
+        m.joint_params['RO_during_LDE'] = 1
         m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
         m.joint_params['do_final_MW_rotation'] = 1
 
@@ -287,13 +289,13 @@ def sweep_bell(name, setup = 'lt3'):
     m.params['syncs_per_sweep'] = m.joint_params['LDE_attempts_before_CR']  
 
     m.params['MIN_SYNC_BIN'] =       5000 
-    m.params['MAX_SYNC_BIN'] =       7000 # for Bell, 16000
+    m.params['MAX_SYNC_BIN'] =       16000 # for Bell, 16000
 
     m.params['send_AWG_start'] = 1    
     m.params['repetitions'] = 5000
 
     th_debug=False
-    measure_bs=False
+    measure_bs=True
     upload_only = False
 
     m.params['trigger_wait'] = True#not(debug)
@@ -318,4 +320,4 @@ def sweep_bell(name, setup = 'lt3'):
 
 
 if __name__ == '__main__':
-    sweep_bell('111-1-1_lde_tail', setup = 'lt1')    
+    sweep_bell('Samy_Tail_PSB_10deg', setup = 'lt3')    

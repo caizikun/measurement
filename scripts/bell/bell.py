@@ -28,7 +28,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 self.A_aom.power_to_voltage(
                         self.params['AWG_SP_power'], controller='sec')
         self.params['RO_voltage_AWG'] = \
-                self.E_aom.power_to_voltage(
+                self.AWG_RO_AOM.power_to_voltage(
                         self.params['AWG_RO_power'], controller='sec')
         self.params['yellow_voltage_AWG'] = \
                 self.yellow_aom.power_to_voltage(
