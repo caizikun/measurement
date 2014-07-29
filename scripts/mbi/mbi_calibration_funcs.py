@@ -71,7 +71,7 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95):
     funcs.prepare(m)
 
     # measurement settings
-    pts = 11
+    pts = 21
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
@@ -86,6 +86,11 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95):
     # for the autoanalysis
     m.params['sweep_name'] = 'MW pulse amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amps']
+
+    # ### For msm1 experiments
+    m.params['MBI_threshold'] = 0
+    m.params['Ex_SP_amplitude'] = 0
+    m.params['repump_after_MBI_duration'] = 50
 
     funcs.finish(m)
 
@@ -181,6 +186,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    #cal_fast_pi(SAMPLE_CFG,mult=15,min_pulse_amp =.78, max_pulse_amp =0.84)
-    cal_fast_pi2(SAMPLE_CFG,mult=18 ,min_pulse_amp =0.74, max_pulse_amp =0.80)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=3,min_pulse_amp =.0, max_pulse_amp =0.9)
+    # cal_fast_pi2(SAMPLE_CFG,mult=18 ,min_pulse_amp =0.74, max_pulse_amp =0.80)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)

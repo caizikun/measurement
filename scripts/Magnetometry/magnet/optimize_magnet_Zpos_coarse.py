@@ -58,7 +58,8 @@ if __name__ == '__main__':
     ######################
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
-
+    laser_power = 20e-6
+    
         ### for the first coarse step
     init_range   = 10     #Common: 10 MHz
     init_pts     = 121    #Common: 121
@@ -122,7 +123,7 @@ if __name__ == '__main__':
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
-        GreenAOM.set_power(5e-6)
+        GreenAOM.set_power(laser_power)
         optimiz0r.optimize(dims=['x','y','z'])
         
         
