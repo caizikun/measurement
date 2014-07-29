@@ -1,5 +1,6 @@
 """
 Script for a carbon ramsey sequence
+THT: Does this script has any purpose?
 """
 import numpy as np
 import qt
@@ -33,7 +34,7 @@ def NuclearRamsey_no_elDD(name,tau = None):
     m.params['C4_freq'] = 0#m.params['C1_freq']+100e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
-    m.params['Addressed_Carbon'] = 4 
+    m.params['addressed_carbon'] = 4 
  
     m.params['pts']              = len(m.params['Phases_of_Ren_B'])
     # m.params['sweep_pts']        =m.params['Phases_of_Ren_B']

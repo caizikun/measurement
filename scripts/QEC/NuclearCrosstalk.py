@@ -21,8 +21,8 @@ def Crosstalk(name, RO_phase=0, RO_Z=False):
 
     '''set experimental parameters'''
     
-    m.params['Carbon_A'] = 1    ### Carbon spin that the Ramsey is performed on
-    m.params['Carbon_B'] = 4    ### Carbon spin that the Rabi/Gate is performed on
+    m.params['Carbon_A'] = 3    ### Carbon spin that the Ramsey is performed on
+    m.params['Carbon_B'] = 1    ### Carbon spin that the Rabi/Gate is performed on
     
     m.params['reps_per_ROsequence'] = 350 
     m.params['C13_init_state']      = 'up' 
@@ -32,12 +32,12 @@ def Crosstalk(name, RO_phase=0, RO_Z=False):
     
     ### Pulse spacing (overwrite tau to test other DD times)
     
-    m.params['C4_Ren_tau'] = [6.456e-6]            
+    #m.params['C4_Ren_tau'] = [6.456e-6]            
     #m.params['C4_Ren_tau'] = [3.072e-6]
     #m.params['C1_Ren_tau'] = [9.420e-6]
 
     ### Sweep parameters
-    m.params['Rabi_N_Sweep']= np.arange(8,320,24)
+    m.params['Rabi_N_Sweep']= np.arange(2,40,2)
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
     m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
