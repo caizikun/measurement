@@ -71,6 +71,9 @@ class SweepBell(bell.Bell):
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
 
+    def run(self,**kw):
+        pulsar_pq.PQPulsarMeasurement.run(self, **kw)
+
     def print_measurement_progress(self):
         pulsar_pq.PQPulsarMeasurement.print_measurement_progress(self)
 
