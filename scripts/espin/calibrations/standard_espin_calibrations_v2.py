@@ -171,8 +171,13 @@ def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
         
     return pulse_pi, pulse_pi2
 
-# some bugs to fix !! 
+
 class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
+    '''
+    This class is used to measure ESR in pulse mode.
+    As it only supports IQmod, do not forget to calibrate your pulse with IQ modulation.  
+    '''
+
     mprefix = 'GeneralDarkESR'
 
     def autoconfig(self):
@@ -204,9 +209,6 @@ class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
             e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
             e.add(T, name='wait')
             e.add(X(frequency=f), refpulse='wait')
-            e.add(pulse.cp(X,
-                frequency=f,
-                refpulse='wait'))
             elements.append(e)
 
         # create a sequence from the pulses
@@ -225,55 +227,6 @@ class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
         # some debugging:
         # elements[-1].print_overview()
 
-
-
-
-
-class GeneralElectronRamsey(pulsar_msmt.PulsarMeasurement):
-    mprefix = 'GeneralElectronRamsey'
-
-    def autoconfig(self):
-        self.params['sequence_wait_time'] = \
-            int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
-
-
-        pulsar_msmt.PulsarMeasurement.autoconfig(self)
-
-    def generate_sequence(self, upload=True, **kw):
-
-        # define the necessary pulses
-        
-        X=kw.get('pulse_pi2', None)
-
-        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
-            length = 200e-9, amplitude = 0.)
-
-        # make the elements - one for each ssb frequency
-        elements = []
-        for i in range(self.params['pts']):
-
-            e = element.Element('ElectronRamsey_pt-%d' % i, pulsar=qt.pulsar,
-                global_time = True)
-            e.append(T)
-
-            e.append(pulse.cp(X,
-                phase = self.params['pulse_sweep_pi2_phases1'][i]))
-
-            e.append(pulse.cp(T,
-                length = self.params['evolution_times'][i]))
-
-            e.append(pulse.cp(X,
-                phase = self.params['pulse_sweep_pi2_phases2'][i]))
-
-            elements.append(e)
-        return_e=e
-        # create a sequence from the pulses
-        seq = pulsar.Sequence('ElectronRamsey sequence with {} pulses'.format(self.params['pulse_type']))
-        for e in elements:
-            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-
-
-        qt.pulsar.program_awg(seq,*elements)
 
 
 
@@ -470,11 +423,11 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
     m.params['Ex_SP_amplitude']=0
 
 
-    #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
+    #m.params['pulse_sweep_durations'] =  np.ones(pts)*2000e-9 #np.linspace(0, 10, pts) * 1e-6
     m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.2
-    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.6
+    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.05,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
     m.params['sweep_name'] = 'Pulse durations (ns)'
@@ -497,7 +450,7 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     dark ESR on the 0 <-> -1 transition. 
     '''
 
-    m = GeneralDarkESR(name)
+    m = pulsar_msmt.GeneralDarkESR(name)
     funcs.prepare(m)
     pulse_pi, pulse_pi2_not_used = pulse_defs(m,True,pulse_type, Imod_channel )
 
@@ -513,7 +466,7 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     m.params['pts'] = 131
 
     m.params['MW_pi_duration'] = 2.e-6
-    m.params['pulse_pi_amp'] = 0.015
+    m.params['pulse_pi_amp'] = 0.03
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
@@ -543,7 +496,7 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.39, 0.44, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.55, 0.65, pts) #0.872982*np.ones(pts)#
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
@@ -582,7 +535,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.17,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.15,0.15,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -626,7 +579,7 @@ def calibrate_pi4_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squa
 
 def ramsey(name, IQmod=False, Imod_channel = True, pulse_type = 'Square', debug=False) :
     
-    m = GeneralElectronRamsey(name)
+    m = pulsar_msmt.GeneralElectronRamsey(name)
     funcs.prepare(m)
     pulse_pi_not_used, pulse_pi2= pulse_defs(m,IQmod,pulse_type, Imod_channel  )
 
@@ -634,16 +587,16 @@ def ramsey(name, IQmod=False, Imod_channel = True, pulse_type = 'Square', debug=
     m.params['IQmod'] = IQmod
     m.params['Imod_channel'] = Imod_channel
 
-    pts = 128
+    pts = 250
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
     m.params['Ex_SP_amplitude']=0
     
-    m.params['detuning']  = 3e6
+    m.params['detuning']  = 0.e6
     m.params['mw_frq'] -=  m.params['detuning'] 
     
     #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0, 3000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0, 10000e-9,pts)
     #m.params['evolution_times'] = 5*np.ones (pts)*1e-9
 
     # MW pulses
@@ -795,12 +748,12 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
-                pulse_type = 'Hermite', 
+                pulse_type = 'Square', 
                 multiplicity = 5, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
-                pulse_type = 'Hermite', debug = debug)
+                pulse_type = 'Square', debug = debug)
   
     if stage == 4.5:
         calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
@@ -819,7 +772,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False,Imod_channel=False, debug = False)
+    run_calibrations(5., IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR
