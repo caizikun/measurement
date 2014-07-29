@@ -9,10 +9,9 @@ import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 from measurement.lib.config import moss as moscfg
-reload(eom_pulses)
+
 import bell
 reload(bell)
 import sequence as bseq
