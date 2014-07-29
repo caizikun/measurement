@@ -172,64 +172,6 @@ def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
     return pulse_pi, pulse_pi2
 
 
-class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
-    '''
-    This class is used to measure ESR in pulse mode.
-    As it only supports IQmod, do not forget to calibrate your pulse with IQ modulation.  
-    '''
-
-    mprefix = 'GeneralDarkESR'
-
-    def autoconfig(self):
-        self.params['sequence_wait_time'] = \
-            int(np.ceil(self.params['MW_pi_duration']*1e6)+15)
-
-        pulsar_msmt.PulsarMeasurement.autoconfig(self)
-
-        self.params['sweep_name'] = 'MW frq (GHz)'
-        self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
-            self.params['ssbmod_frq_stop'], self.params['pts']) + \
-                self.params['mw_frq'])*1e-9
-
-    def generate_sequence(self, upload=True, **kw):
-
-        # define the necessary pulses
-        
-        X=kw.get('pulse_pi', None)
-
-        T = pulse.SquarePulse(channel='MW_Imod', name='delay')
-        T.amplitude = 0.
-        T.length = 2e-6
-
-        # make the elements - one for each ssb frequency
-        elements = []
-        for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
-            self.params['ssbmod_frq_stop'], self.params['pts'])):
-
-            e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
-            e.add(T, name='wait')
-            e.add(X(frequency=f), refpulse='wait')
-            elements.append(e)
-
-        # create a sequence from the pulses
-        seq = pulsar.Sequence('DarkESR sequence with {} pulses'.format(self.params['pulse_type']))
-        for e in elements:
-            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-
-        # upload the waveforms to the AWG
-        if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
-
-        # program the AWG
-        #qt.pulsar.program_sequence(seq)
-
-        # some debugging:
-        # elements[-1].print_overview()
-
-
-
-
 
 
 
