@@ -118,3 +118,5 @@ if __name__ == '__main__':
     	sweep_Bell.tail_sweep(SAMPLE_CFG)
     if stage == 6: 
     	print 'Spin-Photon correlations (if necc.)'
+    if stage == 7:
+        execfile('testing/check_awg_triggering.py') 
