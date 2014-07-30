@@ -24,7 +24,7 @@ def NuclearRamseyWithInitialization(name, state = 'up',
    
 
     ### Initialize:
-    m.params['Addressed_Carbon']    = 1
+    m.params['Addressed_Carbon']    = 3
     m.params['C_init_method']       = 'MBI'         #'MBI'->X, 'swap'-> 0 
     m.params['C13_MBI_threshold']   = 1 
     m.params['C13_init_state']      = state         # 'up' or 'down'
@@ -36,25 +36,25 @@ def NuclearRamseyWithInitialization(name, state = 'up',
     m.params['reps_per_ROsequence'] = 500 
     m.params['pts']                 = 25 
     
-    ### sweeping the readout phase
-    # m.params['C_RO_phase']  = RO_phase + np.linspace(0,420,m.params['pts'])  
-    # m.params['C_RO_Z']      = RO_Z 
-    # m.params['wait_times']  = (np.ones(m.params['pts'])*100e-6+30e-6) #Note: wait time must be atleast carbon init time +5us 
-    # m.params['sweep_pts']   = m.params['C_RO_phase'] - RO_phase       #This needs to substracted for the data analysis. 
-    # m.params['sweep_name']  = 'C_RO_phase' 
-
-    ### sweeping the waittime
-    m.params['wait_times']  = np.linspace(130e-6, 130e-6 + 1e-3,m.params['pts']) #Note: wait time must be atleast carbon init time +5us 
-    m.params['C_RO_phase']  = np.ones(m.params['pts'])*RO_phase 
+    ## sweeping the readout phase
+    m.params['C_RO_phase']  = RO_phase + np.linspace(0,720,m.params['pts'])  
     m.params['C_RO_Z']      = RO_Z 
-    m.params['sweep_pts']   = m.params['wait_times']
-    m.params['sweep_name']  = 'evolution time' 
+    m.params['wait_times']  = (np.ones(m.params['pts'])*100e-6+30e-6) #Note: wait time must be atleast carbon init time +5us 
+    m.params['sweep_pts']   = m.params['C_RO_phase'] - RO_phase       #This needs to substracted for the data analysis. 
+    m.params['sweep_name']  = 'C_RO_phase' 
+
+    # ### sweeping the waittime
+    # m.params['wait_times']  = np.linspace(130e-6, 130e-6 + 4e-3,m.params['pts']) #Note: wait time must be atleast carbon init time +5us 
+    # m.params['C_RO_phase']  = np.ones(m.params['pts'])*RO_phase 
+    # m.params['C_RO_Z']      = RO_Z 
+    # m.params['sweep_pts']   = m.params['wait_times']
+    # m.params['sweep_name']  = 'evolution time' 
 
     ##
     if detuning_ms0 != None:
-        m.params['C1_freq_0']   = m.params['C1_freq_0'] - detuning_ms0   
+        m.params['C3_freq_0']   = m.params['C3_freq_0'] - detuning_ms0   
     if detuning_ms1 != None:
-        m.params['C1_freq_1']   = m.params['C1_freq_1'] - detuning_ms1
+        m.params['C3_freq_1']   = m.params['C3_freq_1'] - detuning_ms1
     
     #### Overwrite certain params for quick tests ###
     m.params['C13_MBI_RO_duration']     = 20 

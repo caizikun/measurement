@@ -27,6 +27,9 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['Final_Pulse'] ='-x'
         m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
+
+
+
         Number_of_pulses = N 
         pts = 101
         start    = 2.0e-6  + (kk+start_point)     * (pts-1)*step_size 
@@ -54,7 +57,14 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['tau_list']         = tau_list
         m.params['sweep_pts']        = tau_list*1e6
         m.params['sweep_name']       = 'tau (us)'
+        
 
+        ### For msm1 experiments
+        m.params['MBI_threshold'] = 0
+        m.params['Ex_SP_amplitude'] = 0
+        m.params['SP_E_duration'] = 0
+        m.params['repump_after_MBI_duration'] = 50
+        
         print 'run = ' + str(kk) + ' of ' + str(tot)
         print m.params['sweep_pts']
         print tau_list
@@ -79,8 +89,8 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
 if __name__ == '__main__':
     ## Extend the N=64 measurement to longer tau
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 140)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 90)
+    SimpleDecoupling('Fingerprint_msm1_' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 1)
+    # SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 90)
     
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 1)
 

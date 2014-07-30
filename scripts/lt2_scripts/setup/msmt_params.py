@@ -123,8 +123,8 @@ cfg['protocols']['Magnetometry']={
 
 mw_power = 20
 
-f_msm1_cntr =   2.0249e9            #Electron spin ms=-1 frquency  DO NOT CHANGE THIS!
-f_msp1_cntr =   3.730069e9          #Electron spin ms=+1 frequency DO NOT CHANGE THIS!
+f_msm1_cntr =   2.0249065e9            #Electron spin ms=-1 frquency  DO NOT CHANGE THIS!
+f_msp1_cntr =   3.730069e9             #Electron spin ms=+1 frequency DO NOT CHANGE THIS!
 
 zero_field_splitting = 2.877480e9   # Lowest value obtained for average ms+1 and -1 fregs.
                                     # As measured by Tim & Julia on 20140403 2.877480(5)e9
@@ -135,8 +135,13 @@ Q        = 4.938e6        # from above values. 20140530
 
 mw_mod_frequency = 250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
 
-mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+# # For ms = +1
+# mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
+# mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+
+# For ms = -1
+mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
 cfg['samples']['Hans_sil1'] = {
 'mw_mod_freq'   :       mw_mod_frequency,
@@ -160,27 +165,30 @@ cfg['samples']['Hans_sil1'] = {
 'C1_freq_0'     :   325.787e3,   
 'C1_freq_1'     :   364.570e3,        
 'C1_freq_dec'   :   345.124e3,   
-
+'C1_Ren_extra_phase_correction_list' : np.array([0]*3 + [-132] + [0]*6),
 'C1_Ren_tau'    :   [9.420e-6, 6.522e-6],
 'C1_Ren_N'      :   [18      , 10],
-'C1_Ren_extra_phase_correction_list' : np.array([0]*10),
 
 'C2_freq'       :   339.955e3,
 'C2_Ren_tau'    :   [6.62e-6, 8.088e-6, 9.560e-6],   
 'C2_Ren_N'      :   [26     , 28      , 32],
 
-'C3_freq'       :   309.815e3,
-'C3_Ren_tau'    :   [18.56e-6, 15.328e-6, 16.936e-6],  
+'C3_freq'       :   302.521e3,
+'C3_freq_0'     :   325.775e3,   
+'C3_freq_1'     :   293.888e3,
+'C3_freq_dec'   :   302.521e3, 
+'C3_Ren_extra_phase_correction_list' : np.array([0]*10),    
+'C3_Ren_tau'    :   [18.564e-6, 15.328e-6, 16.936e-6],
 'C3_Ren_N'      :   [14      , 54       , 46],
 
 'C4_freq'       :   348.574e3,   
 'C4_freq_0'     :   325.787e3, 
 'C4_freq_1'     :   370.115e3,  
 'C4_freq_dec'   :   348.574e3,
+'C4_Ren_extra_phase_correction_list' : np.array([0] +[-90] + [0]*8),
 
 'C4_Ren_tau'    :   [6.456e-6   ],
-'C4_Ren_N'      :   [40         ],
-'C4_Ren_extra_phase_correction_list' : np.array([0] +[-90] + [0]*8)}
+'C4_Ren_N'      :   [40         ]}
 
     #######################
     ### SSRO parameters ###
@@ -229,14 +237,24 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'C13_X_phase' :0,
 'C13_Y_phase' :90,
 
-    ### Pi pulses, fast & hard ###
-'fast_pi_duration'          :   160e-9,
-'fast_pi_amp'               :   0.816691,
+#     ### Pi pulses, fast & hard ### for msp1
+# 'fast_pi_duration'          :   160e-9,
+# 'fast_pi_amp'               :   0.816691,
+# 'fast_pi_mod_frq'           :   f_mod_0,
+
+    ### Pi pulses, fast & hard ### for msm1
+'fast_pi_duration'          :   98e-9, ## 97
+'fast_pi_amp'               :   0.8,
 'fast_pi_mod_frq'           :   f_mod_0,
 
-    ### Pi/2 pulses, fast & hard ###
-'fast_pi2_duration'         :   84e-9, 
-'fast_pi2_amp'              :   0.772490,
+#     ### Pi/2 pulses, fast & hard ### for msp1
+# 'fast_pi2_duration'         :   84e-9, 
+# 'fast_pi2_amp'              :   0.772490,
+# 'fast_pi2_mod_frq'          :   f_mod_0,
+
+    ### Pi/2 pulses, fast & hard ### for msm1
+'fast_pi2_duration'         :   50e-9, 
+'fast_pi2_amp'              :   0.8,
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### Pi/2 pulses, testing purposes only, THT: can be removed? 
@@ -248,7 +266,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
 #'AWG_MBI_MW_pulse_amp'      :  0.0128,     ## f_mod = 0e6 
 #'AWG_MBI_MW_pulse_amp'      :  0.0141,     ## f_mod = 40e6 
-'AWG_MBI_MW_pulse_amp'      :   0.0219,     ## f_mod = 250e6 
+# 'AWG_MBI_MW_pulse_amp'      :   0.0219,     ## f_mod = 250e6 (msm1)
+'AWG_MBI_MW_pulse_amp'      :   0.0,#0.0135,     ## f_mod = 250e6 (msp1)
 'AWG_MBI_MW_pulse_duration' :   5500e-9,
 
     ### Corpse pulses ###

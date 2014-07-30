@@ -946,6 +946,58 @@ class GeneralElectronRabi(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+class GeneralDarkESR(PulsarMeasurement):
+    '''
+    This class is used to measure ESR in pulse mode.
+    As it only supports IQmod, do not forget to calibrate your pulse with IQ modulation.  
+    '''
+
+    mprefix = 'GeneralDarkESR'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(self.params['MW_pi_duration']*1e6)+15)
+
+        PulsarMeasurement.autoconfig(self)
+
+        self.params['sweep_name'] = 'MW frq (GHz)'
+        self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
+            self.params['ssbmod_frq_stop'], self.params['pts']) + \
+                self.params['mw_frq'])*1e-9
+
+    def generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        X=kw.get('pulse_pi', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay')
+        T.amplitude = 0.
+        T.length = 2e-6
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
+            self.params['ssbmod_frq_stop'], self.params['pts'])):
+
+            e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
+            e.add(T, name='wait')
+            e.add(X(frequency=f), refpulse='wait')
+            elements.append(e)
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('DarkESR sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            #qt.pulsar.upload(*elements)
+            qt.pulsar.program_awg(seq,*elements)
+
+        # program the AWG
+        #qt.pulsar.program_sequence(seq)\
+
 
 
 class GeneralPiCalibration(PulsarMeasurement):
@@ -1081,6 +1133,58 @@ class GeneralPi2Calibration(PulsarMeasurement):
 
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(np.array([e.length() for e in elts])*1e6))+10)
+
+
+
+class GeneralElectronRamsey(PulsarMeasurement):
+    """
+    General class to implement Ramsey sequence. 
+    generate_sequence needs to be supplied with a pi2_pulse as kw.
+    """
+    mprefix = 'GeneralElectronRamsey'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        X=kw.get('pulse_pi2', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRamsey_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            e.append(pulse.cp(X,
+                phase = self.params['pulse_sweep_pi2_phases1'][i]))
+
+            e.append(pulse.cp(T,
+                length = self.params['evolution_times'][i]))
+
+            e.append(pulse.cp(X,
+                phase = self.params['pulse_sweep_pi2_phases2'][i]))
+
+            elements.append(e)
+        return_e=e
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRamsey sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+
+        qt.pulsar.program_awg(seq,*elements)
 
 
         
