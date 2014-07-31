@@ -133,13 +133,13 @@ N_frq    = 7.13429e6      # not calibrated
 N_HF_frq = 2.196e6        # calibrated 20140320/181319
 Q        = 4.938e6        # from above values. 20140530
 
-mw_mod_frequency = 250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+mw_mod_frequency = 0e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
 
-# # For ms = +1
+# For ms = +1
 # mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 # mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
-# For ms = -1
+# # For ms = -1
 mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
@@ -190,9 +190,9 @@ cfg['samples']['Hans_sil1'] = {
 'C4_Ren_tau'    :   [6.456e-6   ],
 'C4_Ren_N'      :   [40         ]}
 
-    #######################
-    ### SSRO parameters ###
-    #######################
+    ##################################
+    ### Hans Sil01 SSRO parameters ###
+    ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 10000,
@@ -218,7 +218,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO'] = {
     ##################################
 
 cfg['protocols']['Hans_sil1']['AdwinSSRO-integrated'] = {
-'SSRO_duration' : 14,   # was 14 us -Machiel 25-06-14
+'SSRO_duration' : 8,   # was 14 us -Machiel 25-06-14
 'Ex_SP_amplitude':0}
 
     ###########################
@@ -237,24 +237,55 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'C13_X_phase' :0,
 'C13_Y_phase' :90,
 
-#     ### Pi pulses, fast & hard ### for msp1
+
+### nescessary to use the new standard espin script (140729 - Julia, not checked fully yet) 
+'CORPSE_rabi_frequency' : CORPSE_frq,
+# 'CORPSE_amp' : 0.201 ,
+# 'CORPSE_pi2_amp': 1,
+# 'CORPSE_pulse_delay': 0e-9,
+# 'CORPSE_pi_amp': 0.517,
+'MW_pi_amp': 0.8,
+'MW_pi_length': 98e-9,
+'Hermite_pi_length': 154e-9, 
+'Hermite_pi_amp': 0.8,
+'Hermite_pi2_length': 78e-9,
+'Hermite_pi2_amp': 0.8,
+# 'IQ_Hermite_pi_length': 154e-9, 
+'IQ_Hermite_pi_amp': 0.8,
+# 'IQ_Hermite_pi2_length': 78e-9,
+'IQ_Hermite_pi2_amp': 0.8,
+# 'Hermite_pi4_length': 45e-9,
+# 'Hermite_pi4_amp': 0.385,
+'Square_pi_length' : 98e-9, 
+'Square_pi_amp' : 0.8 , 
+'IQ_Square_pi_amp' : 0.8 , 
+'Square_pi2_length' : 50e-9, 
+'Square_pi2_amp'  : 0.8, 
+'IQ_Square_pi2_amp'  : 0.8,
+# 'extra_wait_final_pi2' : -30e-9,
+'MW_pulse_mod_frequency' : f_mod_0,
+
+
+# #     ### Pi pulses, fast & hard ### for msp1
 # 'fast_pi_duration'          :   160e-9,
 # 'fast_pi_amp'               :   0.816691,
 # 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi pulses, fast & hard ### for msm1
-'fast_pi_duration'          :   98e-9, ## 97
-'fast_pi_amp'               :   0.8,
+# 'fast_pi_duration'          :   98e-9, ## fmod = 250
+'fast_pi_duration'          :   32e-9, ## fmod = 0
+'fast_pi_amp'               :   0.783,
 'fast_pi_mod_frq'           :   f_mod_0,
 
-#     ### Pi/2 pulses, fast & hard ### for msp1
+# #     ### Pi/2 pulses, fast & hard ### for msp1
 # 'fast_pi2_duration'         :   84e-9, 
 # 'fast_pi2_amp'              :   0.772490,
 # 'fast_pi2_mod_frq'          :   f_mod_0,
 
-    ### Pi/2 pulses, fast & hard ### for msm1
-'fast_pi2_duration'         :   50e-9, 
-'fast_pi2_amp'              :   0.8,
+    ## Pi/2 pulses, fast & hard ### for msm1
+# 'fast_pi2_duration'         :   50e-9, #fmod = 250
+'fast_pi2_duration'         :   16e-9, #fmod = 0 
+'fast_pi2_amp'              :   0.729,
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### Pi/2 pulses, testing purposes only, THT: can be removed? 
@@ -266,8 +297,8 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
 #'AWG_MBI_MW_pulse_amp'      :  0.0128,     ## f_mod = 0e6 
 #'AWG_MBI_MW_pulse_amp'      :  0.0141,     ## f_mod = 40e6 
-# 'AWG_MBI_MW_pulse_amp'      :   0.0219,     ## f_mod = 250e6 (msm1)
-'AWG_MBI_MW_pulse_amp'      :   0.0,#0.0135,     ## f_mod = 250e6 (msp1)
+'AWG_MBI_MW_pulse_amp'     :  0.0219,     ## f_mod = 250e6 (msp1)
+# 'AWG_MBI_MW_pulse_amp'      :   0.0135,     ## f_mod = 250e6 (msm1)
 'AWG_MBI_MW_pulse_duration' :   5500e-9,
 
     ### Corpse pulses ###
