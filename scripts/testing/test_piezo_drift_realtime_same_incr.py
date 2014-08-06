@@ -125,8 +125,8 @@ def measure_drift(name, time_incr, pts = 100):
 
 if __name__ == '__main__':
 
-    name = 'Drift_constant_time_incr_PIContr_LT3'
-    time_incr = 10 # delay between two optimization step
+    name = 'Drift_incr_20min'
+    time_incr = 20. # delay between two optimization step
     pts = 400*3
     GreenAOM.set_power(5e-6)
     optimiz0r.optimize(dims=['x','y','z'], cycles=1)
