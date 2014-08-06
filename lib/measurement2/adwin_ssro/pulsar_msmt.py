@@ -750,7 +750,7 @@ class MBI(PulsarMeasurement):
     def _MBI_element(self,name ='MBI CNOT'):
         # define the necessary pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-9, amplitude = 0)
+            length = 100e-6, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MBI MW pulse',
             I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
@@ -768,7 +768,7 @@ class MBI(PulsarMeasurement):
         # the actual element
         mbi_element = element.Element(name, pulsar=qt.pulsar)
         mbi_element.append(T)
-        mbi_element.append(X)
+        #mbi_element.append(X)
         mbi_element.append(adwin_sync)
 
         return mbi_element

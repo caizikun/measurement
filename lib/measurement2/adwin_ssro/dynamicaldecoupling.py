@@ -2090,11 +2090,13 @@ class MBI_C13(DynamicalDecoupling):
         go_to_element   = 'next', event_jump_element = 'next'):
 
         '''
-        UNDER DEVELOPMENT THT
         Function to create a general AWG sequence for Carbon spin measurements.
         '''
 
-        ### Check input paramters
+        #############################
+        ### Check input paramters ###
+        #############################
+        
         if (type(go_to_element) != str) and (go_to_element != None):
             go_to_element = go_to_element.name
         
@@ -2113,7 +2115,7 @@ class MBI_C13(DynamicalDecoupling):
             return []
   
         ######################
-        ### Create sequnce ###
+        ### Create sequence ###
         ######################
 
         carbon_RO_seq = []

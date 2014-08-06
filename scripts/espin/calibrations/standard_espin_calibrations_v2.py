@@ -171,11 +171,116 @@ def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
         
     return pulse_pi, pulse_pi2
 
+# some bugs to fix !! 
+class GeneralDarkESR(pulsar_msmt.PulsarMeasurement):
+    mprefix = 'GeneralDarkESR'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(self.params['MW_pi_duration']*1e6)+15)
+
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+        self.params['sweep_name'] = 'MW frq (GHz)'
+        self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
+            self.params['ssbmod_frq_stop'], self.params['pts']) + \
+                self.params['mw_frq'])*1e-9
+
+    def generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        X=kw.get('pulse_pi', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay')
+        T.amplitude = 0.
+        T.length = 2e-6
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
+            self.params['ssbmod_frq_stop'], self.params['pts'])):
+
+            e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
+            e.add(T, name='wait')
+            e.add(X(frequency=f), refpulse='wait')
+            e.add(pulse.cp(X,
+                frequency=f,
+                refpulse='wait'))
+            elements.append(e)
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('DarkESR sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            #qt.pulsar.upload(*elements)
+            qt.pulsar.program_awg(seq,*elements)
+
+        # program the AWG
+        #qt.pulsar.program_sequence(seq)
+
+        # some debugging:
+        # elements[-1].print_overview()
 
 
 
 
-# currently used in the Bell project, to be removed soon 
+
+class GeneralElectronRamsey(pulsar_msmt.PulsarMeasurement):
+    mprefix = 'GeneralElectronRamsey'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
+
+
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        X=kw.get('pulse_pi2', None)
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRamsey_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            e.append(pulse.cp(X,
+                phase = self.params['pulse_sweep_pi2_phases1'][i]))
+
+            e.append(pulse.cp(T,
+                length = self.params['evolution_times'][i]))
+
+            e.append(pulse.cp(X,
+                phase = self.params['pulse_sweep_pi2_phases2'][i]))
+
+            elements.append(e)
+        return_e=e
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRamsey sequence with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+
+        qt.pulsar.program_awg(seq,*elements)
+
+
+
+
+
+
+
 class Test_3MW(pulsar_msmt.PulsarMeasurement):
     mprefix = 'Test'
 
@@ -268,8 +373,6 @@ class Test_3MW(pulsar_msmt.PulsarMeasurement):
         # some debugging:
         # elements[-1].print_overview()
 
-
-# currently used in the Bell project, to be removed soon 
 class TestLDESequence(pulsar_msmt.PulsarMeasurement):
     """
     Class to implement dynamical decoupling sequence and look at the first revival. 
@@ -345,9 +448,6 @@ class TestLDESequence(pulsar_msmt.PulsarMeasurement):
 
 
 
-
-
-
 ### called at stage 2.0
 def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = False):
 
@@ -364,17 +464,17 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
     m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 1000
 
 
     m.params['Ex_SP_amplitude']=0
 
 
-    #m.params['pulse_sweep_durations'] =  np.ones(pts)*2000e-9 #np.linspace(0, 10, pts) * 1e-6
+    #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
     m.params['pulse_sweep_durations'] =  np.linspace(0, 300, pts) * 1e-9
 
     m.params['pulse_sweep_amps'] = np.ones(pts)*0.8
-    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.05,pts)#0.55*np.ones(pts)
+    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
     m.params['sweep_name'] = 'Pulse durations (ns)'
@@ -397,7 +497,7 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     dark ESR on the 0 <-> -1 transition. 
     '''
 
-    m = pulsar_msmt.GeneralDarkESR(name)
+    m = GeneralDarkESR(name)
     funcs.prepare(m)
     pulse_pi, pulse_pi2_not_used = pulse_defs(m,True,pulse_type, Imod_channel )
 
@@ -413,7 +513,7 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     m.params['pts'] = 131
 
     m.params['MW_pi_duration'] = 2.e-6
-    m.params['pulse_pi_amp'] = 0.03
+    m.params['pulse_pi_amp'] = 0.015
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
@@ -435,17 +535,17 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['Imod_channel'] = Imod_channel
     m.params['multiplicity'] = multiplicity
 
-    pts = 21
+    pts = 11
  
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.1, 0.9, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.39, 0.44, pts) #0.872982*np.ones(pts)#
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
-    m.params['delay_reps'] = 15
+    m.params['delay_reps'] = 1
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
@@ -482,7 +582,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.15,0.15,pts)
+    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.17,-0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -526,7 +626,7 @@ def calibrate_pi4_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squa
 
 def ramsey(name, IQmod=False, Imod_channel = True, pulse_type = 'Square', debug=False) :
     
-    m = pulsar_msmt.GeneralElectronRamsey(name)
+    m = GeneralElectronRamsey(name)
     funcs.prepare(m)
     pulse_pi_not_used, pulse_pi2= pulse_defs(m,IQmod,pulse_type, Imod_channel  )
 
@@ -534,16 +634,16 @@ def ramsey(name, IQmod=False, Imod_channel = True, pulse_type = 'Square', debug=
     m.params['IQmod'] = IQmod
     m.params['Imod_channel'] = Imod_channel
 
-    pts = 250
+    pts = 128
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
     m.params['Ex_SP_amplitude']=0
     
-    m.params['detuning']  = 0.e6
+    m.params['detuning']  = 3e6
     m.params['mw_frq'] -=  m.params['detuning'] 
     
     #m.params['evolution_times'] = np.linspace(0,(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0, 10000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0, 3000e-9,pts)
     #m.params['evolution_times'] = 5*np.ones (pts)*1e-9
 
     # MW pulses
@@ -686,7 +786,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 2.0 :
         rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
-                pulse_type = 'Hermite', debug = debug)
+                pulse_type = 'Square', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum" # Error in the se
@@ -696,11 +796,11 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
                 pulse_type = 'Hermite', 
-                multiplicity = 1, debug=debug)
+                multiplicity = 5, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
-                pulse_type = 'Square', debug = debug)
+                pulse_type = 'Hermite', debug = debug)
   
     if stage == 4.5:
         calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
@@ -719,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(3., IQmod = True,Imod_channel=True, debug = False)
+    run_calibrations(2.0, IQmod = False,Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

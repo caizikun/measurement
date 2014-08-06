@@ -1,6 +1,5 @@
 """
-Script for a simple Decoupling sequence
-Based on Electron T1 script
+Script to run nuclear environemnt fingerprint measurements. THT
 """
 import numpy as np
 import qt
@@ -15,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling(name, N, step_size, start_point, tot):
+def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x'):
 
     m = DD.SimpleDecoupling(name)
 
@@ -24,14 +23,11 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         ### Set experimental parameters ###
         m.params['reps_per_ROsequence'] = 500 
         m.params['Initial_Pulse'] ='x'
-        m.params['Final_Pulse'] ='-x'
+        m.params['Final_Pulse'] = final_pulse
         m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-
-
-
         Number_of_pulses = N 
-        pts = 101
+        pts = 51
         start    = 2.0e-6  + (kk+start_point)     * (pts-1)*step_size 
         end      = 2.0e-6  + (kk+1+start_point) * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
@@ -47,7 +43,7 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
             AWG.clear_visa()
             stools.turn_off_all_lt2_lasers()
             qt.msleep(1)
-            GreenAOM.set_power(5e-6)
+            GreenAOM.set_power(20e-6)
             optimiz0r.optimize(dims=['x','y','z','x','y'])
 
             ### Define and print parameters
@@ -59,12 +55,15 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         m.params['sweep_name']       = 'tau (us)'
         
 
-        ### For msm1 experiments
-        m.params['MBI_threshold'] = 0
-        m.params['Ex_SP_amplitude'] = 0
-        m.params['SP_E_duration'] = 0
-        m.params['repump_after_MBI_duration'] = 50
-        
+        if mbi == False:
+            m.params['MBI_threshold'] = 0
+            m.params['Ex_SP_amplitude'] = 0
+            m.params['Ex_MBI_amplitude'] = 0
+            m.params['SP_E_duration'] = 2000
+            
+            m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+            m.params['repump_after_MBI_duration'] = [50]    
+
         print 'run = ' + str(kk) + ' of ' + str(tot)
         print m.params['sweep_pts']
         print tau_list
@@ -82,16 +81,17 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
         qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-    
-        ### Close the fileexperiment in ot out the loop, that is the question, what happens if this is just in?
     m.finish()
 
 if __name__ == '__main__':
-    ## Extend the N=64 measurement to longer tau
-    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 150, tot = 100)
-    SimpleDecoupling('Fingerprint_msm1_' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 1)
-    # SimpleDecoupling('Fingerprint_' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 90)
     
-    #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 1)
+
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 80, final_pulse = '-x', mbi = False)
+      
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 80, final_pulse = '-x', mbi = False)
+
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(64), N=64, step_size = 4e-9, start_point= 0, tot = 100, final_pulse = '-x', mbi = False)
+      
+
 
 
