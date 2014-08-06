@@ -115,6 +115,7 @@ DIM SP_duration_after_MBE, Parity_RO_duration as Long
 'Added for multiple C13 script
 DIM case_success AS LONG
 DIM Current_C_init as LONG
+DIM MBE_counter as LONG
 DIM Nr_C13_init as LONG 
 
 DIM MBE_threshold AS LONG 
@@ -233,6 +234,7 @@ INIT:
 
   'Parameters added for C13 init
   Current_C_init = 1
+  MBE_counter = 0
   case_success = 0
   run_case_selector = 0
 
@@ -317,16 +319,22 @@ EVENT:
       Case 7 ' If MBE started goto MBE RO 
         mode = 8 
         
-      Case 8 'If MBE RO succesfull go to SP 
+      Case 8 'MBE RO  
         IF (case_success = 1) Then
-          mode = 9
+          mode = 9 'If MBE RO succesfull go to SP
+          inc(MBE_counter) 
         ELSE
           mode = 0  
         ENDIF
       
-      Case 9 'after spinm pumping go to Final RO 
-        ' Parity measurements are not yet included (Case 10-11) 
-        mode = 12
+      Case 9 'Spin pumping  
+        
+        IF (MBE_counter = Nr_MBE) Then
+          mode = 12 'After spin pumping go to Final RO
+        ELSE
+          mode = 7 'more MBE steps to do 
+        ENDIF
+                
                    
       Case 12 'start Final RO
         mode = 13
@@ -360,7 +368,8 @@ EVENT:
           run_case_selector = 1
           case_success = 1
           first = 0 
-          Current_C_init =1 ' Reset the Current C index if there was a failure 
+          Current_C_init = 1 ' Reset the Current C index if there was a failure 
+          MBE_counter = 0
         ENDIF
 
       CASE 1    ' Spin pump E before 14N MBI
@@ -654,7 +663,7 @@ EVENT:
       CASE 12    ' wait for AWG trigger before final RO
 
         ' we wait for the sequence to be finished. the AWG needs to tell us by a pulse,
-        ' of which we detect the falling edge. Added by THT: "falling edge:, is that correct?
+        ' of which we detect the falling edge.
         ' we then move on to readout
         IF (awg_in_switched_to_hi > 0) THEN
           run_case_selector = 1

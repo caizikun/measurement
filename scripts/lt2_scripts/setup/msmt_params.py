@@ -133,15 +133,15 @@ N_frq    = 7.13429e6      # not calibrated
 N_HF_frq = 2.196e6        # calibrated 20140320/181319
 Q        = 4.938e6        # from above values. 20140530
 
-mw_mod_frequency = 0e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+mw_mod_frequency = 250e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
 
 # For ms = +1
-# mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
-# mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
+mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
 # # For ms = -1
-mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
-mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+# mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+# mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
 cfg['samples']['Hans_sil1'] = {
 'mw_mod_freq'   :       mw_mod_frequency,
@@ -186,9 +186,9 @@ cfg['samples']['Hans_sil1'] = {
 'C4_freq_1'     :   370.115e3,  
 'C4_freq_dec'   :   348.574e3,
 'C4_Ren_extra_phase_correction_list' : np.array([0] +[-90] + [0]*8),
-
 'C4_Ren_tau'    :   [6.456e-6   ],
 'C4_Ren_N'      :   [40         ]}
+
 
     ##################################
     ### Hans Sil01 SSRO parameters ###
@@ -237,6 +237,9 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'C13_X_phase' :0,
 'C13_Y_phase' :90,
 
+# 'C13_X_phase' :0,
+# 'C13_Y_phase' :270,
+
 
 ### nescessary to use the new standard espin script (140729 - Julia, not checked fully yet) 
 'CORPSE_rabi_frequency' : CORPSE_frq,
@@ -267,26 +270,26 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
 
 # #     ### Pi pulses, fast & hard ### for msp1
-# 'fast_pi_duration'          :   160e-9,
-# 'fast_pi_amp'               :   0.816691,
-# 'fast_pi_mod_frq'           :   f_mod_0,
+'fast_pi_duration'          :   160e-9,
+'fast_pi_amp'               :   0.816691,
+'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi pulses, fast & hard ### for msm1
 # 'fast_pi_duration'          :   98e-9, ## fmod = 250
-'fast_pi_duration'          :   32e-9, ## fmod = 0
-'fast_pi_amp'               :   0.783,
-'fast_pi_mod_frq'           :   f_mod_0,
+# 'fast_pi_duration'          :   32e-9, ## fmod = 0
+# 'fast_pi_amp'               :   0.783,
+# 'fast_pi_mod_frq'           :   f_mod_0,
 
 # #     ### Pi/2 pulses, fast & hard ### for msp1
-# 'fast_pi2_duration'         :   84e-9, 
-# 'fast_pi2_amp'              :   0.772490,
-# 'fast_pi2_mod_frq'          :   f_mod_0,
+'fast_pi2_duration'         :   84e-9, 
+'fast_pi2_amp'              :   0.772490,
+'fast_pi2_mod_frq'          :   f_mod_0,
 
     ## Pi/2 pulses, fast & hard ### for msm1
 # 'fast_pi2_duration'         :   50e-9, #fmod = 250
-'fast_pi2_duration'         :   16e-9, #fmod = 0 
-'fast_pi2_amp'              :   0.729,
-'fast_pi2_mod_frq'          :   f_mod_0,
+# 'fast_pi2_duration'         :   16e-9, #fmod = 0 
+# 'fast_pi2_amp'              :   0.729,
+# 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### Pi/2 pulses, testing purposes only, THT: can be removed? 
 'cust_pi2_duration'    : 720e-9 ,
