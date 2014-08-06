@@ -7,8 +7,17 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.scripts.ssro import ssro_calibration
 reload(ssro_calibration)
-import params
-reload(params)
+from measurement.scripts.bell import joint_params, params_lt3, params_lt1
+reload(joint_params)
+reload(params_lt3)
+reload(params_lt1)
+
+# test to add the analysis
+from analysis.lib.m2.ssro import ssro, mbi, sequence, pqsequence
+reload(ssro)
+from analysis.scripts.espin import analysis_espin_calibration as aec
+reload(aec)
+
 
 
 
@@ -40,147 +49,94 @@ def finish(m, upload=True, debug=False, **kw):
         m.finish()
 
 
-def pulse_defs(msmt, IQmod, pulse_type):
-
-    if pulse_type == 'CORPSE' :
-        msmt.params['pulse_pi_amp'] = msmt.params['MW_pi_amp']
-        msmt.params['pulse_pi2_amp'] = msmt.params['MW_pi2_amp']
-        if IQmod : 
-            CORPSE_frq = 4.5e6
-            msmt.params['CORPSE_rabi_frequency'] = CORPSE_frq
-            msmt.params['mw_frq'] -= msmt.params['MW_pulse_mod_frequency'] 
-            IQ_CORPSE_pi = pulselib.IQ_CORPSE_pulse('CORPSE pi-pulse',
-                    I_channel = 'MW_Imod', 
-                    Q_channel = 'MW_Qmod',    
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
-                    amplitude = msmt.params['pulse_pi_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 180)
-    
-            IQ_CORPSE_pi2 = pulselib.IQ_CORPSE_pulse('CORPSE pi/2-pulse',
-                    I_channel = 'MW_Imod', 
-                    Q_channel = 'MW_Qmod',    
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
-                    amplitude = msmt.params['pulse_pi2_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 90)
-            pulse_pi = IQ_CORPSE_pi
-            pulse_pi2 = IQ_CORPSE_pi2
-        else :
-            CORPSE_frq = 9e6
-            msmt.params['CORPSE_rabi_frequency'] = CORPSE_frq
-
-            CORPSE_pi = pulselib.MW_CORPSE_pulse('CORPSE pi-pulse',
-                    MW_channel = 'MW_Imod',     
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
-                    amplitude = msmt.params['pulse_pi_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 180)
-    
-            CORPSE_pi2 = pulselib.MW_CORPSE_pulse('CORPSE pi/2-pulse',
-                    MW_channel = 'MW_Imod',    
-                    PM_channel = 'MW_pulsemod',
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    rabi_frequency = msmt.params['CORPSE_rabi_frequency'],
-                    amplitude = msmt.params['pulse_pi2_amp'],
-                    pulse_delay = 2e-9,
-                    eff_rotation_angle = 90)
-            pulse_pi=CORPSE_pi
-            pulse_pi2=CORPSE_pi2
-        
-    elif pulse_type == 'Square':
-        msmt.params['MW_pi_duration'] = msmt.params['MW_pi_duration']
-        msmt.params['MW_pi2_duration'] = msmt.params['MW_pi2_duration']
-        msmt.params['pulse_pi_amp'] = msmt.params['MW_pi_amp']
-        msmt.params['pulse_pi2_amp'] = msmt.params['MW_pi2_amp']
-        if IQmod :
-            msmt.params['mw_frq'] -= msmt.params['MW_pulse_mod_frequency'] 
-            IQ_Square_pi = pulselib.MW_IQmod_pulse('Square pi-pulse',
-                    I_channel='MW_Imod',
-                    Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    length = msmt.params['MW_pi_duration'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
-            IQ_Square_pi2 = pulselib.MW_IQmod_pulse('Square pi/2-pulse',
-                    I_channel='MW_Imod',
-                    Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    length = msmt.params['MW_pi_duration'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
-            pulse_pi=IQ_Square_pi
-            pulse_pi2=IQ_Square_pi2
-        else :            
-            Square_pi = pulselib.MW_pulse('Square pi-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi_amp'],
-                    length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
-
-            Square_pi2 = pulselib.MW_pulse('Square pi/2-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi2_amp'],
-                    length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])               
-            pulse_pi=Square_pi
-            pulse_pi2=Square_pi2
+def pulse_defs(msmt, pulse_type):
+       
+    if pulse_type == 'Square':
+        msmt.params['MW_pi_duration'] = msmt.params['Square_pi_length']
+        msmt.params['MW_pi2_duration'] = msmt.params['Square_pi2_length']
+        msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq']-msmt.params['MW_pulse_mod_frequency'] 
+        msmt.params['pulse_pi_amp'] = msmt.params['IQ_Square_pi_amp']
+        msmt.params['pulse_pi2_amp'] = msmt.params['IQ_Square_pi2_amp']
+        IQ_Square_pi = pulselib.MW_IQmod_pulse('Square pi-pulse',
+                I_channel='MW_Imod',
+                Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                length = msmt.params['MW_pi_duration'],
+                amplitude = msmt.params['pulse_pi_amp'],
+                frequency = msmt.params['MW_pulse_mod_frequency'],
+                PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+        IQ_Square_pi2 = pulselib.MW_IQmod_pulse('Square pi/2-pulse',
+                I_channel='MW_Imod',
+                Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                length = msmt.params['MW_pi2_duration'],
+                amplitude = msmt.params['pulse_pi2_amp'],
+                frequency = msmt.params['MW_pulse_mod_frequency'],
+                PM_risetime = msmt.params['MW_pulse_mod_risetime'])
+        pulse_pi=IQ_Square_pi
+        pulse_pi2=IQ_Square_pi2
 
 
     elif pulse_type == 'Hermite':
-        msmt.params['MW_pi_duration'] = msmt.params['MW_pi_duration']
-        msmt.params['MW_pi2_duration'] = msmt.params['MW_pi2_duration']
-        msmt.params['pulse_pi_amp'] = msmt.params['MW_pi_amp']
-        msmt.params['pulse_pi2_amp'] = msmt.params['MW_pi2_amp']
-        if IQmod :
-            msmt.params['mw_frq'] -= msmt.params['MW_pulse_mod_frequency'] 
-            IQ_Hermite_pi = pulselib.HermitePulse_Envelope_IQ('Hermite pi-pulse',
-                    I_channel='MW_Imod',
-                    Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    length = msmt.params['MW_pi_duration'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
-            IQ_Hermite_pi2 = pulselib.HermitePulse_Envelope_IQ('Hermite pi/2-pulse',
-                    I_channel='MW_Imod',
-                    Q_channel='MW_Qmod',
-                    PM_channel='MW_pulsemod',
-                    length = msmt.params['MW_pi_duration'],
-                    frequency = msmt.params['MW_pulse_mod_frequency'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'])
-            pulse_pi=IQ_Hermite_pi
-            pulse_pi2=IQ_Hermite_pi2
-        else :
-            Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi_amp'],
-                    length = msmt.params['MW_pi_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = False)
+        msmt.params['mw_frq'] = msmt.params['ms-1_cntr_frq'] 
+        msmt.params['pulse_pi_amp'] = msmt.params['Hermite_pi_amp']
+        msmt.params['pulse_pi2_amp'] = msmt.params['Hermite_pi2_amp']
 
-            Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
-                    MW_channel='MW_Imod',
-                    PM_channel='MW_pulsemod',
-                    amplitude = msmt.params['pulse_pi2_amp'],
-                    length = msmt.params['MW_pi2_duration'],
-                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
-            #print 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', msmt.params['MW_pi2_duration'], msmt.params['pulse_pi_amp']
-            pulse_pi=Hermite_pi
-            pulse_pi2=Hermite_pi2
+        Hermite_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+                MW_channel='MW_Imod',
+                PM_channel='MW_pulsemod',
+                amplitude = msmt.params['pulse_pi_amp'],
+                length = msmt.params['MW_pi_duration'],
+                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                pi2_pulse = False)
+
+        Hermite_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                MW_channel='MW_Imod',
+                PM_channel='MW_pulsemod',
+                amplitude = msmt.params['pulse_pi2_amp'],
+                length = msmt.params['MW_pi2_duration'],
+                PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                pi2_pulse = True)
+            
+        pulse_pi=Hermite_pi
+        pulse_pi2=Hermite_pi2
     
     else :
         print 'The pulse type you asked for is not defined.'
         
     return pulse_pi, pulse_pi2
+
+
+
+
+def slow_rabi(name, debug = False):
+
+    m = pulsar_msmt.GeneralElectronRabi(name)
+    prepare(m)
+    pulse, pulse_pi2_not_used = pulse_defs(m, pulse_type = 'Square')
+
+
+    m.params['pulse_type'] = 'Square'
+    m.params['IQmod'] = True
+
+  
+    m.params['pts'] = 21
+    pts = m.params['pts']
+    m.params['repetitions'] = 2000
+
+
+    m.params['Ex_SP_amplitude']=0
+
+    #pi pulse of 2 us
+    m.params['pulse_sweep_durations'] =  np.ones(pts)*2000e-9 
+
+    m.params['pulse_sweep_amps'] = np.linspace(0.,0.05,pts)
+
+    # for autoanalysis
+    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+
+    m.params['sweep_pts'] = m.params['pulse_sweep_amps']
+    print 'sweep pts : ', m.params['sweep_pts']
+
+
+    finish(m, upload=True, debug=debug, pulse_pi=pulse)
