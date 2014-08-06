@@ -222,8 +222,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
             if gate_seq[i].Gate_type =='Trigger' :
-                if ((gate_seq[i-1].Gate_type in gates_in_need_of_connecting_elts) and
-                        (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts)):
+                if (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts):
                     ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
         ext_gate_seq.append(gate_seq[-1])

@@ -3,12 +3,12 @@ pi_len 	= 160
 
 C1_freq    = 345.124e3   
 C1_freq_0  = 325.787e3  
-C1_Ren_tau = 9.420e-6
+C1_Ren_tau = 9420
 C1_Ren_N   = 18
 
 C4_freq    = 348.574e3   
 C4_freq_0  = 325.787e3 
-C4_Ren_tau = 6.456e-6 
+C4_Ren_tau = 6456 
 C4_Ren_N   = 40  
 
 
@@ -39,7 +39,7 @@ if 0:
 ### ZZ state, RO ZI ###
 #######################
 
-if 0:
+if 1:
 	### Carbon 4 phases: 
 	### between Ren4_1 - Ren4_2 (count from end pi to start pi, then add pi length and remove 2*tau)
 	t_Ren4_1 = 376 + 5e3 + 5584 + 5e3 + 376 + 2.*pi_len/2. - 2*C4_Ren_tau
@@ -82,41 +82,41 @@ if 0:
 ######################
 ### ZZ state, RO IZ###
 ######################
-
-	### Carbon 4 phases: 
-t_Ren4_1 = 376 + 5e3 + 5584 + 5e3 + 376 + 2.*pi_len/2. - 2*C4_Ren_tau
-t_Ren4_1_periods, t_Ren4_1_phase 	= get_periods_phase(4, t_Ren4_1)
-
-	### Carbon 1 phases: 
-t_Ren1_1 = 340 + 8e3 + 5624 + 8e3 + 340 + 2.*pi_len/2. - 2*C1_Ren_tau
-t_Ren1_1_periods, t_Ren1_1_phase 	= get_periods_phase(1, t_Ren1_1)
-
-t_Ren1_2 	= 340 + 8e3 + 116e3 + 4776 + 8e3 + 340 
-t_Ren1_2_0 	= 340 + 8e3 + 116e3 + 1268 + 2*pi_len/2 - C1_Ren_tau - 694/2. ### The time that the electron was in 0 instead of being DDed
-t_Ren1_2_periods, t_Ren1_2_phase 	= get_periods_phase(1, t_Ren1_2, t_Ren1_2_0)
-
-	### Carbon 1 phases: 
-t_Ren1_3 = 340 + 8e3 + 5624 + 8e3 + 340 + 2.*pi_len/2. - 2*C1_Ren_tau
-t_Ren1_3_periods, t_Ren1_3_phase 	= get_periods_phase(1, t_Ren1_3)
-
-
-
 if 1:
-	print 't_Ren4_1 = ' 			+str(t_Ren4_1) 
-	print 't_Ren4_1_periods = ' 	+str(t_Ren4_1_periods) 
-	print 't_Ren4_1_phase = ' 		+str(t_Ren4_1_phase) 
-	print
-	print 't_Ren1_1 = ' 			+str(t_Ren1_1) 
-	print 't_Ren1_1_periods = ' 	+str(t_Ren1_1_periods) 
-	print 't_Ren1_1_phase = ' 		+str(t_Ren1_1_phase) 
-	print
-	print 't_Ren1_2 = ' 			+str(t_Ren1_2) 
-	print 't_Ren1_2_periods = ' 	+str(t_Ren1_2_periods) 
-	print 't_Ren1_2_phase = ' 		+str(t_Ren1_2_phase) 
-	print
-	print 't_Ren1_3 = ' 			+str(t_Ren1_3) 
-	print 't_Ren1_3_periods = ' 	+str(t_Ren1_3_periods) 
-	print 't_Ren1_3_phase = ' 		+str(t_Ren1_3_phase) 
+	### Carbon 4 phases: 
+	t_Ren4_1 = 376 + 5e3 + 5584 + 5e3 + 376 + 2.*pi_len/2. - 2*C4_Ren_tau
+	t_Ren4_1_periods, t_Ren4_1_phase 	= get_periods_phase(4, t_Ren4_1)
+
+		### Carbon 1 phases: 
+	t_Ren1_1 = 340 + 8e3 + 5624 + 8e3 + 340 + 2.*pi_len/2. - 2*C1_Ren_tau
+	t_Ren1_1_periods, t_Ren1_1_phase 	= get_periods_phase(1, t_Ren1_1)
+
+	t_Ren1_2 	= 340 + 8e3 + 116e3 + 4776 + 8e3 + 340 + 2*pi_len/2 -2*C1_Ren_tau 
+	t_Ren1_2_0 	= 340 + 8e3 + 116e3 + 1268 + 2*pi_len/2 - C1_Ren_tau - 694/2. ### The time that the electron was in 0 instead of being DDed
+	t_Ren1_2_periods, t_Ren1_2_phase 	= get_periods_phase(1, t_Ren1_2, t_Ren1_2_0)
+
+		### Carbon 1 phases: 
+	t_Ren1_3 = 340 + 8e3 + 5624 + 8e3 + 340 + 2.*pi_len/2. - 2*C1_Ren_tau
+	t_Ren1_3_periods, t_Ren1_3_phase 	= get_periods_phase(1, t_Ren1_3)
+
+
+
+	if 1:
+		print 't_Ren4_1 = ' 			+str(t_Ren4_1) 
+		print 't_Ren4_1_periods = ' 	+str(t_Ren4_1_periods) 
+		print 't_Ren4_1_phase = ' 		+str(t_Ren4_1_phase) 
+		print
+		print 't_Ren1_1 = ' 			+str(t_Ren1_1) 
+		print 't_Ren1_1_periods = ' 	+str(t_Ren1_1_periods) 
+		print 't_Ren1_1_phase = ' 		+str(t_Ren1_1_phase) 
+		print
+		print 't_Ren1_2 = ' 			+str(t_Ren1_2) 
+		print 't_Ren1_2_periods = ' 	+str(t_Ren1_2_periods) 
+		print 't_Ren1_2_phase = ' 		+str(t_Ren1_2_phase) 
+		print
+		print 't_Ren1_3 = ' 			+str(t_Ren1_3) 
+		print 't_Ren1_3_periods = ' 	+str(t_Ren1_3_periods) 
+		print 't_Ren1_3_phase = ' 		+str(t_Ren1_3_phase) 
 
 
 
