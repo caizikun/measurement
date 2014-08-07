@@ -102,6 +102,7 @@ params_lt1['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt1['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt1['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
 params_lt1['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt1['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
 params_lt1['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt1['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 
