@@ -1259,7 +1259,7 @@ class DD_GeneralSequence(PulsarMeasurement):
         #print 'Adwin sequence waiting time :', self.params['sequence_wait_time'] , '[us]'
 
 
-class GeneralPi4Calibration(pulsar_msmt.PulsarMeasurement):
+class GeneralPi4Calibration(PulsarMeasurement):
     """
     Do a pi/4 pulse, compare to an element with a pi/2 + pi-pulse + pi/4 echo; sweep the pi4 amplitude.
     generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.

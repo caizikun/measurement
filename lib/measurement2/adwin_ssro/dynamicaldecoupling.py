@@ -2185,7 +2185,7 @@ class MBI_C13(DynamicalDecoupling):
                         phase = self.params['X_phase']))
             elif readout_orientation == 'negative':
                 carbon_RO_seq.append(
-                        Gate(prefix+'_x_pi2_final'+str(pt),'electron_Gate',
+                        Gate(prefix+'_-x_pi2_final'+str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = self.params['X_phase']+180))
 
@@ -2197,7 +2197,7 @@ class MBI_C13(DynamicalDecoupling):
                         phase = self.params['Y_phase']))
             elif readout_orientation == 'negative':
                 carbon_RO_seq.append(
-                        Gate(prefix+'_y_pi2_final'+str(pt),'electron_Gate',
+                        Gate(prefix+'_-y_pi2_final'+str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = self.params['Y_phase']+180))
 

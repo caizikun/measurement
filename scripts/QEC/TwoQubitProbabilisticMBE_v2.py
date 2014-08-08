@@ -11,7 +11,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_RO = 'negative', part = None):
+def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_RO = 'positive', part = None):
 
     m = DD.Two_QB_Probabilistic_MBE_v2(name)
     funcs.prepare(m)
