@@ -63,7 +63,10 @@ class Gate(object):
         self.el_state_before_gate   = kw.pop('el_state_before_gate',None)
         self.el_state_after_gate    = kw.pop('el_state_after_gate',None)
         if self.Gate_type =='Carbon_Gate' and self.phase != None:   #THT: when is self.phase none? Isnt the default 0?
-            self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi
+            if self.phase == 'reset': 
+                self.C_phases_after_gate[self.Carbon_ind] =self.phase 
+            else :
+                self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi
 
         ### In case a gate adds phases to other Carbon spins that cannot be corrected by the precession frq alone
         ### this parameter can add an extra phase correction to each Carbon spin, default is 0.
@@ -222,11 +225,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
             if gate_seq[i].Gate_type =='Trigger' :
-                if ((gate_seq[i-1].Gate_type in gates_in_need_of_connecting_elts) and
-                        (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts)):
-                # TODO_MAR: Remove old statement to ensure correct insertion of phase gate
-                # if ((gate_seq[i-1].Gate_type in gates_in_need_of_connecting_elts) and
-                #         (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts)):
+                if (gate_seq[i+1].Gate_type in gates_in_need_of_connecting_elts):
                     ext_gate_seq.append(Gate('phase_gate_'+str(i)+'_'+str(pt),'Connection_element'))
 
         ext_gate_seq.append(gate_seq[-1])
@@ -489,18 +488,17 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.load_extra_phase_correction_lists(g)
                 
                 for iC in range(len(g.C_phases_before_gate)):
-                    if g.C_phases_before_gate[iC] == None and g.C_phases_after_gate[iC] == None:
+                    if g.C_phases_before_gate[iC] == None and g.C_phases_after_gate[iC] == None :
                         if iC == g.Carbon_ind:
                             g.C_phases_after_gate[iC] = 0
-                        else:
-                            g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC] #THT: unnescessary statement?
+                    elif g.C_phases_after_gate[iC] == 'reset': 
+                        g.C_phases_after_gate[iC] = 0 
+
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = np.mod(  g.C_phases_before_gate[iC]+(2*g.tau*g.N)*C_freq_dec[iC],  2*np.pi)
                         if  g.extra_phase_correction_list[iC] != 0:
                             g.C_phases_after_gate[iC] += g.extra_phase_correction_list[iC]
 
-                    elif g.C_phases_after_gate[iC] !=None:  #Currently not used. THT: because if a phase_after_gate is given, no phase has to be calcualted
-                        g.C_phases_after_gate[iC] =g.C_phases_after_gate[iC]
 
             elif g.Gate_type =='electron_decoupling':
 
@@ -515,7 +513,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
-                elif Gate_sequence[i+1].phase == None :
+                elif Gate_sequence[i+1].phase == None or Gate_sequence[i+1].phase == 'reset':
                     g.dec_duration =0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
@@ -2149,7 +2147,7 @@ class MBI_C13(DynamicalDecoupling):
                 #     first_Z_basis_RO = False
 
                 carbon_RO_seq.append( Gate(prefix + str(carbon_nr) + '_Ren_a_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr, phase = self.params['C13_X_phase'])) #TODO_THT: the first gate does not have a phase gate before it... 
+                        Carbon_ind = carbon_nr, phase = 'reset')) #TODO_THT: the first gate does not have a phase gate before it... 
 
         ### Add initial pi/2 pulse (always) ###
         carbon_RO_seq.append(
