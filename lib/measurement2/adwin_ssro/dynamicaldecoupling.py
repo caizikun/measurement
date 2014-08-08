@@ -274,6 +274,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def determine_connection_element_parameters(self,g):
         '''
         Takes a decoupling duration and returns the 'optimal' tau and N to decouple it
+        NOTE: N of decoupling for connection elements must be multiple of 4 pulses.
+            This is correct by default. If you want to change it be cautious.
+            If N is a multiple of 2 pulses this will create a 180 degree phase offset in the electron pulses because it ends in XY.
         '''
         if g.dec_duration == 0:
             g.N = 0
@@ -332,7 +335,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     #functions for making the elements
 
-
     def generate_MBI_elt(self,Gate):
         '''
         adds MBI_element to Gate object
@@ -359,6 +361,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         These are: the AWG_elements, the number of repetitions N, number of wait reps n,  tau_cut and the total sequence time
         scheme selects the decoupling scheme
         '''
+        #TODO_THT: for single elements add that if multiple of 2 the last pulses are XX instead of XY
         tau = Gate.tau
         N = Gate.N
         Gate.reps = N # Overwrites reps parameter that is used in sequencing
@@ -783,7 +786,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             decoupling_elt.append(T_final)
         Gate.elements = [decoupling_elt]
 
-
     def generate_electron_gate_element(self,Gate):
         '''
         Generates an element that connects to decoupling elements
@@ -963,6 +965,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ### XY4 elements
             ######################
             elif gate.scheme == 'XY4':
+                #TODO_THT: (Possibly) fix that last element is XX instead of XY if only 2 final elements
                 list_of_elements.extend(gate.elements)
                 # initial element
                 seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
@@ -981,6 +984,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #-a-b-(c^2-b^2)^(N/8-1)-c-d-
             ######################
             elif gate.scheme =='XY8':
+                #TODO_THT: fix that last element is XX instead of XY if only 2 final elements
                 list_of_elements.extend(gate.elements)
                 a = gate.elements[0]
                 b= gate.elements[1]
