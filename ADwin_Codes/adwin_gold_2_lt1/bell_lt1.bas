@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -50,9 +50,9 @@ DIM first AS LONG
 
 DIM repetition_counter AS LONG
 
-DIM AWG_success_DI_channel, AWG_succes_DI_pattern AS LONG
-DIM AWG_succes_is_high, AWG_succes_was_high, DIO_register AS LONG
-DIM wait_for_AWG_done, sequence_wait_time AS LONG
+DIM PLU_success_DI_channel, PLU_succes_DI_pattern AS LONG
+DIM PLU_succes_is_high, PLU_succes_was_high, DIO_register AS LONG
+DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM counts, old_counts AS LONG
 
 DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
@@ -63,13 +63,14 @@ DIM CR_result,first_local AS LONG
 INIT:
   init_CR()
   AWG_done_di_channel           = DATA_20[1]
-  AWG_success_DI_channel        = DATA_20[2]
+  PLU_success_DI_channel        = DATA_20[2]
   SP_duration                   = DATA_20[3]
   local_wait_time_duration      = DATA_20[4]
   remote_CR_trigger_do_channel  = DATA_20[5]
   SSRO_duration                 = DATA_20[6]
   wait_for_AWG_done             = DATA_20[7]
   sequence_wait_time            = DATA_20[8]
+  wait_before_RO                = DATA_20[9]
   
 
   E_SP_voltage                 = DATA_21[1]
@@ -87,7 +88,7 @@ INIT:
     DATA_27[i] = 0
   NEXT i
     
-  AWG_succes_DI_pattern = 2 ^ AWG_success_DI_channel
+  PLU_succes_DI_pattern = 2 ^ PLU_success_DI_channel
   AWG_done_di_pattern = 2 ^ AWG_done_di_channel
   
   repetition_counter = 0
@@ -159,7 +160,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             CNT_ENABLE(0)
-            DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
+            'DAC(repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             DAC(E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             DAC(A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 
@@ -181,12 +182,12 @@ EVENT:
       case 4      'waiting for external trigger (AWG succes or timeout)
       
         AWG_done_was_high = AWG_done_is_high
-        AWG_succes_was_high = AWG_succes_is_high
+        PLU_succes_was_high = PLU_succes_is_high
         DIO_register = DIGIN_LONG()
         AWG_done_is_high = (DIO_register AND AWG_done_di_pattern)
-        AWG_succes_is_high = (DIO_register AND AWG_succes_DI_pattern)
+        PLU_succes_is_high = (DIO_register AND PLU_succes_DI_pattern)
         'PAR_80=Par_80+AWG_done_is_high
-        IF ((AWG_succes_was_high = 0) AND (AWG_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
+        IF ((PLU_succes_was_high = 0) AND (PLU_succes_is_high > 0)) THEN  'AWG triggers to start SSRO (ent. event)
           DIGOUT(remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
           INC(succes_event_counter)
           INC(Par_77)
@@ -195,6 +196,7 @@ EVENT:
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
           first = 1 
           first_local = 1
+          local_wait_time = wait_before_RO
         ELSE                  
           IF (wait_for_AWG_done > 0) THEN
             

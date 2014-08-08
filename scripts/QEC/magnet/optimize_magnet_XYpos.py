@@ -36,11 +36,11 @@ if __name__ == '__main__':
     ######################
 
     axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
-    scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
-    no_of_steps      = 5          # with a total of no_of_steps measurment points.
-    magnet_step_size = 50         # the sample position is checked after each magnet_step_size
-    min_counts_before_optimize = 10e3   #optimize position if counts are below this
+    #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
+    #no_of_steps      = 5          # with a total of no_of_steps measurment points.
+    min_counts_before_optimize = 8e3   #optimize position if counts are below this
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
+    laser_power = 20e-6
 
     range_coarse = 5.00
     pts_coarse  = 81   
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     range_fine = 0.25
     pts_fine  = 51   
-    reps_fine   = 2000
+    reps_fine   = 1000
 
     ###########
     ## start ##
@@ -57,10 +57,17 @@ if __name__ == '__main__':
     #calculate steps to do
     #stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    if axis == 'Y_axis':
-        steps = [-100,75,50,75] #[-scan_range/2] + (no_of_steps-1)*[stepsize] 
-    elif axis == 'X_axis':
-        steps = [-200,150,100,150] 
+    No_steps = True 
+    if No_steps == True: 
+        steps = [0] 
+    else: 
+        if axis == 'Y_axis':
+            steps = [-100,75,50,75] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
+            magnet_step_size = 25         # the sample position is checked after each magnet_step_siz 
+        elif axis == 'X_axis':
+            steps = [-300,150,150, 150, 150] 
+            magnet_step_size = 50         # the sample position is checked after each magnet_step_siz
+
 
     print 'Moving along %s' %axis 
     print 'Steps: %s' %steps
@@ -95,7 +102,7 @@ if __name__ == '__main__':
                 mom.step(axis,np.sign(step)*magnet_step_size)
                 print 'magnet stepped by ' + str((i+1)*np.sign(step)*magnet_step_size) + ' out of ' + str(step)
                 qt.msleep(1)
-                GreenAOM.set_power(5e-6)
+                GreenAOM.set_power(laser_power)
                 ins_counters.set_is_running(0)
                 int_time = 1000 
                 cnts = ins_adwin.measure_counts(int_time)[0]
@@ -119,7 +126,12 @@ if __name__ == '__main__':
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
                    
-        qt.msleep(1)
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
         
             #ms=+1 coarse
         DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
@@ -133,6 +145,13 @@ if __name__ == '__main__':
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
         
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+
         f_centre    = (f0m_temp+f0p_temp)/2
         f_diff = (f_centre-ZFS*1e-9)*1e6
 

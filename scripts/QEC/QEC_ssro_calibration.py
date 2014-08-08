@@ -14,18 +14,21 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    
     if RO_power != None: 
         m.params['Ex_RO_amplitude'] = RO_power
     if SSRO_duration != None: 
         m.params['SSRO_duration'] = SSRO_duration
 
+    # ms = 0 calibration
+    m.params['Ex_SP_amplitude'] = 0
     m.run()
     m.save('ms0')
-
+    
     # ms = 1 calibration
     m.params['SP_duration']     = 500
     m.params['A_SP_amplitude']  = 0.
-    m.params['Ex_SP_amplitude'] = 20e-9
+    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
     m.run()
     m.save('ms1')
 

@@ -43,6 +43,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
 
         if self.params['cr_mod']:
             self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()['yellow_aom_frq']
+            self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage('yellow_aom_frq')
             self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
 
         self.params['Ex_CR_voltage'] = \
@@ -119,7 +120,10 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     
     def set_adwin_process_variable_from_params(self,key):
         try:
-                self.adwin_process_params[key] = self.params[key]
+            # Here we can do some checks on the settings in the adwin
+            if np.isnan(self.params[key]):
+                raise Exception('Adwin process variable {} contains NAN'.format(key))
+            self.adwin_process_params[key] = self.params[key]
         except:
             logging.error("Cannot set adwin process variable '%s'" \
                     % key)

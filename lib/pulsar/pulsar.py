@@ -369,9 +369,12 @@ class Pulsar:
         debug=kw.pop('debug', False)
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
+        allow_non_zero_first_point_on_trigger_wait=kw.pop('allow_first_zero',False)
         elt_cnt = len(elements)
         chan_ids = self.get_used_channel_ids()
         packed_waveforms={}
+
+        elements_with_non_zero_first_points=[]
 
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
@@ -407,6 +410,8 @@ class Pulsar:
                 for sid in grp:
                     if grp[sid] != None and grp[sid] in wfs:
                         chan_wfs[sid] = wfs[grp[sid]]
+                        if chan_wfs[sid][0]!=0.:
+                            elements_with_non_zero_first_points.append(element.name)
                     else:
                         chan_wfs[sid] = np.zeros(element.samples())
 
@@ -474,6 +479,9 @@ class Pulsar:
                 logic_jump_l.append(0)
             if elt['trigger_wait']:
                 wait_l.append(1)
+                #if (elt['wfname'] in elements_with_non_zero_first_points) and not(allow_non_zero_first_point_on_trigger_wait):
+                    #print 'warning Trigger wait set for element with a non-zero first point'
+                    #raise Exception('pulsar: Trigger wait set for element {} with a non-zero first point'.format(elt['wfname']))
             else:
                 wait_l.append(0)
 
@@ -482,7 +490,7 @@ class Pulsar:
 
          # setting jump modes and loading the djump table
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
-            raise Exception('The AWG configured does not support dynamic jumping')
+            raise Exception('pulsar: The AWG configured does not support dynamic jumping')
 
         if self.AWG_type in ['opt09']:
             if sequence.djump_table != None:

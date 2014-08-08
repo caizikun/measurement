@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRamseyWithInitialization(name,tau = None):
+def NuclearRamseyWithInitialization(name,tau = None, RO_Z = False):
 
     m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
@@ -24,11 +24,11 @@ def NuclearRamseyWithInitialization(name,tau = None):
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['pts'] = 21
-    m.params['C_init_method'] = 'MBI'
+    m.params['C_init_method'] = 'swap'
 
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'up' 
-    m.params['C_RO_Z'] = False 
+    m.params['C_RO_Z'] = RO_Z 
     
     m.params['sweep_name']       = 'RO_phase_(degree)' 
     # m.params['sweep_name'] = 'wait_times'
@@ -65,7 +65,7 @@ def NuclearRamseyWithInitialization(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 1
+    m.params['C13_MBI_threshold']       = 0
     m.params['MBI_threshold']           = 1
     
     m.params['C13_MBI_RO_duration']     = 31 
@@ -82,5 +82,5 @@ def NuclearRamseyWithInitialization(name,tau = None):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+    NuclearRamseyWithInitialization(SAMPLE, RO_Z = True )
 

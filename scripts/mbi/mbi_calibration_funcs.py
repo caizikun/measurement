@@ -64,14 +64,14 @@ def cal_fast_rabi(name):
     funcs.finish(m)
 
 ### Calibration stage 3
-def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95):
+def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True):
     m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
         'cal_fast_pi_'+name+'_M=%d' % mult)
     #funcs.prepare(m, SIL_NAME)
     funcs.prepare(m)
 
     # measurement settings
-    pts = 11
+    pts = 21
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
@@ -87,23 +87,31 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95):
     m.params['sweep_name'] = 'MW pulse amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amps']
 
+    if mbi == False:
+        m.params['MBI_threshold'] = 0
+        m.params['Ex_SP_amplitude'] = 0
+        m.params['Ex_MBI_amplitude'] = 0
+       
+        m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+        m.params['repump_after_MBI_duration'] = [50] 
+
     funcs.finish(m)
 
-def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95):
+def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True):
     m = pulsar_mbi_espin.ElectronRabi(
         'cal_fast_pi_over_2_'+name+'_M=%d' % mult)
     #funcs.prepare(m, SIL_NAME)
     funcs.prepare(m)
 
     # measurement settings
-    pts = 10
-    m.params['reps_per_ROsequence'] = 500
+    pts = 21
+    m.params['reps_per_ROsequence'] = 1000
     m.params['pts'] = pts
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
-    m.params['MW_pulse_delays'] = np.ones(pts) * 100e-9
+    m.params['MW_pulse_delays'] = np.ones(pts) * 30e-9
 
     # pulses
-    m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))*8
+    m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
     print     m.params['MW_pulse_durations'] 
     m.params['MW_pulse_amps'] = np.linspace(min_pulse_amp,max_pulse_amp,pts)
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
@@ -112,6 +120,14 @@ def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95):
     # for the autoanalysis
     m.params['sweep_name'] = 'MW pulse amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amps']
+
+    if mbi == False:
+        m.params['MBI_threshold'] = 0
+        m.params['Ex_SP_amplitude'] = 0
+        m.params['Ex_MBI_amplitude'] = 0
+       
+        m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+        m.params['repump_after_MBI_duration'] = [50] 
 
     funcs.finish(m)
 
@@ -181,6 +197,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    # cal_fast_pi(SAMPLE_CFG,mult=15,min_pulse_amp =0.75, max_pulse_amp =0.85)
-    cal_fast_pi2(SAMPLE_CFG,mult=6 ,min_pulse_amp =0.07, max_pulse_amp =0.09)
+    #cal_fast_pi(SAMPLE_CFG+'msm1',mult=8,min_pulse_amp =.7, max_pulse_amp =0.9, mbi = False)
+    cal_fast_pi2(SAMPLE_CFG, mult=10 , min_pulse_amp =0.65, max_pulse_amp =0.8, mbi = False)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)
