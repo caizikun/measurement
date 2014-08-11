@@ -571,10 +571,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':
-                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name 
+                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
-                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name 
+                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_1[iC])%(2*np.pi)
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_before_gate[iC]%(2*np.pi)
@@ -2141,13 +2141,13 @@ class MBI_C13(DynamicalDecoupling):
 
         ### Add basis rotations in case of Z-RO ###
         first_Z_basis_RO = True
-        #TODO_MAR: Ask Tim if OK to remove line (not used) 
+        #TODO_MAR: Ask Tim if OK to remove line (not used)
         for kk, carbon_nr in enumerate(carbon_list):
 
             if RO_basis_list[kk] == 'Z':
 
                 carbon_RO_seq.append( Gate(prefix + str(carbon_nr) + '_Ren_a_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr, phase = 'reset')) 
+                        Carbon_ind = carbon_nr, phase = 'reset'))
                         #TODO_THT: the first gate does not have a phase gate before it...
 
         ### Add initial pi/2 pulse (always) ###
@@ -3114,8 +3114,8 @@ class Two_QB_Det_MBE(MBI_C13):
         combined_seq = pulsar.Sequence('Two Qubit MBE')
 
         for pt in range(pts):
-            print 
-            print '-' *20 
+            print
+            print '-' *20
 
             gate_seq = []
 
@@ -3184,7 +3184,7 @@ class Two_QB_Det_MBE(MBI_C13):
 
             RO1 = Tomo_bases
             RO1[4] = ['Y','-Y']
-            #TODO_MAR: Make pretty bases for 1 readout, this is extremely dirty 
+            #TODO_MAR: Make pretty bases for 1 readout, this is extremely dirty
             #print RO1
 
 
@@ -3210,11 +3210,11 @@ class Two_QB_Det_MBE(MBI_C13):
             gate_seq0[-1].go_to     = gate_seq1[-1].name
 
             # Generate the AWG_elements, including all the phase gates for all branches
-            gate_seq  = self.generate_AWG_elements(gate_seq,pt) 
-            gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='0') #Element -2
+            gate_seq  = self.generate_AWG_elements(gate_seq,pt)
+            # gate_seq0[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='0') #Element -2
 
-            # gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements 
-            print 'generating for seq 0' 
+            # gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements
+            print 'generating for seq 0'
             gate_seq0 = self.generate_AWG_elements(gate_seq0,pt)
 
             gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='1') #Element -2
@@ -3230,12 +3230,12 @@ class Two_QB_Det_MBE(MBI_C13):
             print 'seq_merged'
             for g in merged_sequence:
                 print g.name
-                if debug and hasattr(g,'el_state_before_gate'):# != None: 
+                if debug and hasattr(g,'el_state_before_gate'):# != None:
                     # print g.el_state_before_gate
                     print 'el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
-                elif debug: 
-                    print 'does not have attr' 
-                if  debug==True: 
+                elif debug:
+                    print 'does not have attr'
+                if  debug==True:
                     if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
                         print "[ None , None ]"
                     elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
