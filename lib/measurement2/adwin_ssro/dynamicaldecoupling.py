@@ -3214,6 +3214,7 @@ class Two_QB_Det_MBE(MBI_C13):
             gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='0') #Element -2
 
             # gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements 
+            print 'generating for seq 0' 
             gate_seq0 = self.generate_AWG_elements(gate_seq0,pt)
 
             gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='1') #Element -2
