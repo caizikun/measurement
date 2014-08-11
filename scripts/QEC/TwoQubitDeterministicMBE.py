@@ -21,8 +21,10 @@ def MBE(name, carbon_list   = [4, 1],
         mbe_bases           = ['X','X'],
         parity_msmt_basis   = ['X','X'],
 
-        el_RO               = 'positive',
+        el_RO               = 'positive', 
         debug               = True):
+
+    #TODO_MAR: NOTE: what is the el_RO statement doing in this function?!? 
 
     ### TODO THT:  Iwant the carbon init_threshold to be a list as well so that the 
     ### ADWIN runs with different thresholds
@@ -82,7 +84,7 @@ def MBE(name, carbon_list   = [4, 1],
     m.params['electron_readout_orientation'] = el_RO
     for BP in m.params['Tomography Bases']:
         m.params['sweep_pts'].append(BP[0]+BP[1])
-    print m.params['sweep_pts']        
+    print 'Tomography bases: %s' %m.params['sweep_pts']        
 
     ### Overwrite thresholds for quick testing 
     m.params['MBI_threshold']           = 1
@@ -90,7 +92,7 @@ def MBE(name, carbon_list   = [4, 1],
     m.params['MBE_threshold']           = 1
     m.params['Parity_threshold']        = 1
 
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
     
 if __name__ == '__main__':
 

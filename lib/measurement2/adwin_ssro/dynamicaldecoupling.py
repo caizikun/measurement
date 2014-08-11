@@ -87,6 +87,11 @@ class Gate(object):
 
         If there are any attributes being used frequently that are still missing here please add them for documentation
         '''
+    def reset_gate_phase_calculation(self,el_state_before_gate=None,el_state_after_gate = None):
+        self.C_phases_before_gate   = [None]*10
+        self.C_phases_after_gate    = [None]*10
+        self.el_state_before_gate   = el_state_before_gate
+        self.el_state_after_gate    = el_state_after_gate
 
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
@@ -472,7 +477,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             if g.el_state_before_gate == None:
                 if i == 0:                         # At first element, start initialised
-                    g.el_state_before_gate = 'sup' # if nothing added g.el_state_before it defaults to sup.
+                    g.el_state_before_gate = 'sup' # if nothing added g.el_state_before_gate it defaults to sup.
                 else:
                     g.el_state_before_gate =Gate_sequence[i-1].el_state_after_gate
 
@@ -566,8 +571,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':
+                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name 
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
+                            print 'Calculating phase for gate %s for el_state == 0 ' %g.name 
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_1[iC])%(2*np.pi)
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_before_gate[iC]%(2*np.pi)
@@ -2134,12 +2141,14 @@ class MBI_C13(DynamicalDecoupling):
 
         ### Add basis rotations in case of Z-RO ###
         first_Z_basis_RO = True
+        #TODO_MAR: Ask Tim if OK to remove line (not used) 
         for kk, carbon_nr in enumerate(carbon_list):
 
             if RO_basis_list[kk] == 'Z':
 
                 carbon_RO_seq.append( Gate(prefix + str(carbon_nr) + '_Ren_a_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr, phase = 'reset')) #TODO_THT: the first gate does not have a phase gate before it...
+                        Carbon_ind = carbon_nr, phase = 'reset')) 
+                        #TODO_THT: the first gate does not have a phase gate before it...
 
         ### Add initial pi/2 pulse (always) ###
         carbon_RO_seq.append(
@@ -3105,6 +3114,8 @@ class Two_QB_Det_MBE(MBI_C13):
         combined_seq = pulsar.Sequence('Two Qubit MBE')
 
         for pt in range(pts):
+            print 
+            print '-' *20 
 
             gate_seq = []
 
@@ -3173,7 +3184,8 @@ class Two_QB_Det_MBE(MBI_C13):
 
             RO1 = Tomo_bases
             RO1[4] = ['Y','-Y']
-            print RO1
+            #TODO_MAR: Make pretty bases for 1 readout, this is extremely dirty 
+            #print RO1
 
 
             carbon_tomo_seq1 = self.readout_carbon_sequence(
@@ -3198,12 +3210,13 @@ class Two_QB_Det_MBE(MBI_C13):
             gate_seq0[-1].go_to     = gate_seq1[-1].name
 
             # Generate the AWG_elements, including all the phase gates for all branches
-            gate_seq  = self.generate_AWG_elements(gate_seq,pt) #Line could be removed in future
+            gate_seq  = self.generate_AWG_elements(gate_seq,pt) 
+            gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='0') #Element -2
 
-            gate_seq0[len(gate_seq)-1].el_state_before_gate = '0' #Element -1 or -2
+            # gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements 
             gate_seq0 = self.generate_AWG_elements(gate_seq0,pt)
 
-            gate_seq1[len(gate_seq)-1].el_state_before_gate = '1' #Element -1 or -2
+            gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='1') #Element -2
             gate_seq1 = self.generate_AWG_elements(gate_seq1,pt)
 
             # Merge the bracnhes into one AWG sequence
@@ -3216,6 +3229,31 @@ class Two_QB_Det_MBE(MBI_C13):
             print 'seq_merged'
             for g in merged_sequence:
                 print g.name
+                if debug and hasattr(g,'el_state_before_gate'):# != None: 
+                    # print g.el_state_before_gate
+                    print 'el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
+                elif debug: 
+                    print 'does not have attr' 
+                if  debug==True: 
+                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
 
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(merged_sequence, explicit=True)
