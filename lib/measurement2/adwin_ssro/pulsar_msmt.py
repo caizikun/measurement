@@ -6,6 +6,7 @@ import logging
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
+reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 class PulsarMeasurement(ssro.IntegratedSSRO):

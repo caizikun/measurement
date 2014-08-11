@@ -11,7 +11,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_RO = 'positive', part = None):
+def MBE(name, nr_mbe = 0, mbe_bases = ['X','X'], init_states = ['up','up'], el_RO = 'positive', part = None):
 
     m = DD.Two_QB_Probabilistic_MBE_v2(name)
     funcs.prepare(m)
@@ -25,8 +25,7 @@ def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_
     m.params['init_method_list']    = ['swap', 'swap']    ## 'MBI', 'swap', 'mixed'
     m.params['init_state_list']     = init_states #['up',   'up']    ## 'up' or 'down'
 
-
-    m.params['Only_init_first_Carbon']      = False
+    m.params['Only_init_first_Carbon']      = True
     m.params['Only_init_second_Carbon']     = False
 
     m.params['electron_readout_orientation'] = el_RO
@@ -44,27 +43,27 @@ def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
-    m.params['Tomography Bases'] = ([
-           ['Z','Z']])
+    # m.params['Tomography Bases'] = ([
+    #        ['Z','Z']])
 
     # Alternative bases
-    if nr_mbe ==  2 and part == '1_qubit':
-        m.params['Tomography Bases'] = ([
-            ['X','I'],['Y','I'],['Z','I'],
-            ['I','X'],['I','Y'],['I','Z']])
+    # if nr_mbe ==  2 and part == '1_qubit':
+    m.params['Tomography Bases'] = ([
+        ['X','I'],['Y','I'],['Z','I'],
+        ['I','X'],['I','Y'],['I','Z']])
 
-    elif nr_mbe == 2 and part == '2_qubit':   
-        m.params['Tomography Bases'] = ([
-            ['X','X'],['X','Y'],['X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['Z','X'],['Z','Y'],['Z','Z']])
+    # elif nr_mbe == 2 and part == '2_qubit':   
+    #     m.params['Tomography Bases'] = ([
+    #         ['X','X'],['X','Y'],['X','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z'],
+    #         ['Z','X'],['Z','Y'],['Z','Z']])
 
-    if nr_mbe == 3: 
-         m.params['Tomography Bases'] = ([
-               ['Z','I'],
-               ['I','Z'],
-               ['Z','Z']
-               ])
+    # if nr_mbe == 3: 
+    #      m.params['Tomography Bases'] = ([
+    #            ['Z','I'],
+    #            ['I','Z'],
+    #            ['Z','Z']
+    #            ])
 
     m.params['pts']                 = len(m.params['Tomography Bases'])
 
@@ -123,7 +122,7 @@ def MBE(name, nr_mbe = 1 , mbe_bases = ['X','X'], init_states = ['up','up'], el_
 
     m.params['E_Parity_RO_amplitude']     = 1e-9
 
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
 
     # ### Optimize position
     # qt.msleep(2)
