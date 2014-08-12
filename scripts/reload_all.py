@@ -7,11 +7,12 @@ adwin = qt.instruments['adwin']
 reload(adwins_cfg)
 qt.instruments.reload(adwin)
 
-from measurement.lib.pulsar import pulse, element, pulsar, pulselib
+from measurement.lib.pulsar import pulse, element, pulsar, pulselib,eom_pulses
 reload(pulse)
 reload(element)
 reload(pulsar)
 reload(pulselib)
+reload(eom_pulses)
 
 # measurement classes
 from measurement.lib.measurement2 import measurement

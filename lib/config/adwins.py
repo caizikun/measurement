@@ -1527,10 +1527,6 @@ config['adwin_lt2_processes'] = {
                     # TODO_MAR: Add voltages for MBE and Parity 
 
 
-
-
-
-
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 100,
@@ -1546,6 +1542,7 @@ config['adwin_lt2_processes'] = {
                     'MBI_cycles' : 25,
                     'ssro_results' : 27,
                     'MBI_time' : 28,
+                    #'test':29,
                     },
                 },
 
