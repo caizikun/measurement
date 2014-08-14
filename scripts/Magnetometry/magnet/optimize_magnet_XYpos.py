@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     range_fine = 0.25
     pts_fine  = 51   
-    reps_fine   = 2000
+    reps_fine   = 1000
 
     ###########
     ## start ##
@@ -56,10 +56,13 @@ if __name__ == '__main__':
     #calculate steps to do
     stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    steps = [0]#[0, -50, -50]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
+    steps = [0, -100, -100]# -scan_range/2] + (no_of_steps-1)*[stepsize] 
 
 
     print steps
+    print 'test'
+
+    break
 
     #create the lists to save the data to
     f0m = []; u_f0m = []; f0p = [] ;u_f0p = []

@@ -22,7 +22,7 @@ def NuclearRabiWithInitialization(name,tau = None):
     '''set experimental parameters'''
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 350 #Repetitions of each data point
-    
+    m.params['electron_init_state'] = '0'
 
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'up' 

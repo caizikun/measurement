@@ -18,14 +18,10 @@ def ssrocalibration(name, **additional_params):
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(additional_params)
-    print 'test1'
-    
+
     # parameters
     e_sp = m.params['Ex_SP_amplitude'] 
     a_sp =  m.params['A_SP_amplitude']
-
-    print m.params['Ex_CR_amplitude']
-
 
     # ms = 0 calibration
     m.params['SP_duration'] = m.params['SP_duration_ms0']
@@ -44,4 +40,6 @@ def ssrocalibration(name, **additional_params):
     m.finish()
 
 if __name__ == '__main__':
+    stools.turn_off_all_lasers()
     ssrocalibration(SAMPLE_CFG)
+    #ssrocalibration(SAMPLE_CFG)

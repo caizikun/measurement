@@ -117,17 +117,17 @@ config['mos_lt2'] = {
 config['mos_lt3'] = {
 
                 'rt_dimensions'  : {
-                    'x' : {
+                    'x' : {  #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                         'dac' : 'atto_x',
-                        'micron_per_volt' : 1.75,
+                        'micron_per_volt' : 1.25 ,
                         'max_v' : 10.,
                         'min_v' : -10.,
                         'default' : 0.,
                         'origin' : 0.,
                         }, 
-                    'y' : {
+                    'y' : {  #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                         'dac' : 'atto_y',
-                        'micron_per_volt' : 1.25,
+                        'micron_per_volt' : 1.75 ,
                         'min_v' : -10.,
                         'max_v' : 10.,
                         'default' : 0.,

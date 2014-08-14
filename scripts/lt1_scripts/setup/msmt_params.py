@@ -48,7 +48,7 @@ cfg['protocols']['AdwinSSRO']={
     'Ex_off_voltage'            :       0.,
     'A_off_voltage'             :       -0.0,
     'repump_off_voltage'        :       0,
-    'yellow_repump_amplitude'   :       30e-9,
+    'yellow_repump_amplitude'   :       50e-9,
     'yellow_repump_duration'    :       500,
     'yellow_CR_repump'          :       1,
     'green_CR_repump'           :       1000,
@@ -128,7 +128,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters for a general sample ###
 ####################################################
 
-f_msm1_cntr = 2.807769e9#2.807214e9 #2014-07-15- SIL1            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.8078e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
 f_msp1_cntr = 3.753180e9            #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -154,8 +154,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  2e-9,#5nW
-    'Ex_RO_amplitude':  10e-9, #15e-9,
-    'Ex_SP_amplitude':  10e-9,
+    'Ex_RO_amplitude':  9e-9, #15e-9,
+    'Ex_SP_amplitude':  9e-9,
     'SP_duration'        : 100,
     'SP_duration_ms0' : 100,
     'SP_duration_ms1' : 100,
@@ -164,7 +164,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-    'SSRO_duration' : 30}
+    'SSRO_duration' : 20}
 
 
 CORPSE_frq = 9e6
@@ -174,16 +174,16 @@ cfg['protocols'][name]['pulses'] = {
         'CORPSE_pi2_amp':0.770, #N.C.
         'CORPSE_pulse_delay': 0e-9, #N.C.
         'CORPSE_pi_amp': 0.713, #N.C. 
-        'Square_pi_amp': 0.9,#N.C.
-        'Square_pi_length': 2000e-9,#N.C.
-        'Square_pi2_amp': 0.4,#N.C.
-        'Square_pi2_length': 15e-9,#N.C.
+        'Square_pi_amp': 0.406,# calib. 2014-07-17
+        'Square_pi_length': 40e-9,# calib. 2014-07-17
+        'Square_pi2_amp': 0.412,# calib 2014-07-17
+        'Square_pi2_length': 20e-9,# calib. 2014-07-17
         'IQ_Square_pi_amp': 0.015,#N.C.
         'IQ_Square_pi2_amp': 0.09,#N.C.
-        'Hermite_pi_length': 180e-9,
-        'Hermite_pi_amp': 0.452204,#0.455, #0.775, # calib. 2014-07-15
+        'Hermite_pi_length': 180e-9, 
+        'Hermite_pi_amp': 0.42018, #0.4645, # calib. 2014-07-24
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.293998,#0.300, #0.673 calib. 2014-07-11
+        'Hermite_pi2_amp': 0.273,# 0.304276,# calib. 2014-07-24
         'IQ_Hermite_pi_amp': 0.83398,#0.455, #0.775, # calib. 2014-07-15
         'IQ_Hermite_pi2_amp': 0.415623,#0.455, #0.775, # calib. 2014-07-15
         'extra_wait_final_pi2' : -30e-9

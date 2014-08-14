@@ -479,8 +479,9 @@ class Pulsar:
                 logic_jump_l.append(0)
             if elt['trigger_wait']:
                 wait_l.append(1)
-                if (elt['wfname'] in elements_with_non_zero_first_points) and not(allow_non_zero_first_point_on_trigger_wait):
-                    raise Exception('pulsar: Trigger wait set for element {} with a non-zero first point'.format(elt['wfname']))
+                #if (elt['wfname'] in elements_with_non_zero_first_points) and not(allow_non_zero_first_point_on_trigger_wait):
+                    #print 'warning Trigger wait set for element with a non-zero first point'
+                    #raise Exception('pulsar: Trigger wait set for element {} with a non-zero first point'.format(elt['wfname']))
             else:
                 wait_l.append(0)
 

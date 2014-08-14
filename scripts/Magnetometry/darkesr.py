@@ -106,9 +106,9 @@ def init_N_darkesr(name, init_reps):
     m.params['wait_for_AWG_done'] = 1
     m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['wait_after_RO_pulse_duration']=1#10000
-    m.params['repetitions']  = 1000
+    m.params['repetitions']  = 750
     m.params['range']        = 1.5*m.params['N_HF_frq']
-    m.params['pts'] = 41
+    m.params['pts'] = 76
     m.params['pulse_length'] = m.params['AWG_MBI_MW_pulse_duration']
     m.params['ssbmod_amplitude'] = m.params['AWG_MBI_MW_pulse_amp']
     m.params['init_repetitions']=init_reps
@@ -123,8 +123,8 @@ def init_N_darkesr(name, init_reps):
     m.params['RF1_frq'] = 2.667e6
     m.params['RF2_frq'] = 7.234e6
 
-    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
-    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
+    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']+m.params['N_HF_frq']
+    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']+m.params['N_HF_frq']
 
     m.autoconfig()
     m.generate_sequence(upload=True)

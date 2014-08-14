@@ -11,14 +11,14 @@ SAMPLE = qt.exp_params['samples']['current']
 ##############
 
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps    = 50        #101
-mw_power = -20      #in dBm
-green_power = 20e-6  #10e-6
-int_time = 25        # in ms
-reps = 100
-center_f = 2.8078 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
+steps       = 51       #101
+mw_power    = -10       #in dBm
+green_power = 10e-6     #10e-6
+int_time    = 50        # in ms
+reps        = 10
+center_f    = 2.025 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
-range_f  =  0.010 # in GHz
+range_f  =  0.025 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
