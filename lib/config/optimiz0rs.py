@@ -59,6 +59,26 @@ dimension_sets = {
                 'xyonly':['y','x'],
                 },
 
+            'lt4' : {
+                'x' : {
+                    'scan_length' : 1.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'y' : {
+                    'scan_length' : 1.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'z' : {
+                    'scan_length' : 2.0,
+                    'nr_of_points' : 51,#99,
+#                    'pixel_time' : 50,
+                    },
+                'zyx' : ['z','y','x'],
+                'xyonly':['y','x'],
+                },
+
             'rt2' : {
                 'x' : {
                     'scan_length' : 1.,
