@@ -96,6 +96,7 @@ params_lt1['RND_duration']	 	= 250e-9
 params_lt1['RO_wait'] 			= 75e-9 + 100e-9 #wait start RO after end of RND MW pulse
 params_lt1['sync_during_LDE'] 	= 1#sync is only for lt3
 params_lt1['plu_during_LDE'] 	= 0 
+params_lt1['opt_pulse_start']	= 5.5e-6 - 93e-9-1e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 params_lt1['opt_pulse_start']	= 5.5e-6 - 93e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt1['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
