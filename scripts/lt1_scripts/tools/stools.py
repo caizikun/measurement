@@ -81,12 +81,7 @@ def set_lt1_remote():
             logging.warning('could not remove instrument {}'.format(i))
 
 def init_AWG():
-    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
-    qt.pulsar.setup_channels()
-    qt.instruments['AWG'].set_ch1_status('on')
-    qt.instruments['AWG'].set_ch2_status('on')
-    qt.instruments['AWG'].set_ch3_status('on')
-    qt.instruments['AWG'].set_ch4_status('on')
+    qt.instruments['AWG'].initialize_dc_waveforms()
 
 def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin = qt.instruments['adwin']  

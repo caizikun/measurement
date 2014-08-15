@@ -95,7 +95,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
-		'TTTR_read_count':							1000, #s
+		'TTTR_read_count':							1000,#1000, #s
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1#sec
 		}
@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.80687e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.806824e9# +/-   0.00001            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
