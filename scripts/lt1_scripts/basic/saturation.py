@@ -5,11 +5,11 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no1_enlarged_SIL1_PSB_TH_RT'
+name = 'The111no1_enlarged_SIL8_ZPL'
 steps=21
-max_power=95e-6       #[w]
-counter=1  #number of counter
-PQ_count=True    # counting with the HH, assumes apd on channel 0
+max_power=100e-6       #[w]
+counter=3  #number of counter
+PQ_count=False    # counting with the HH, assumes apd on channel 0
 bg_x=-2.          #delta x position of background [um]
 bg_y=-2.            #delta y position of background [um]
 
