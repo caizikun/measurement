@@ -19,8 +19,6 @@ def ssrocalibration(name, **additional_params):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(additional_params)
 
-    print 'Ex RO amplitude' , m.params['Ex_RO_amplitude']*1e9, 'nW'
-    print m.params['SSRO_duration']
     # parameters
     e_sp = m.params['Ex_SP_amplitude'] 
     a_sp =  m.params['A_SP_amplitude']

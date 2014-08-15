@@ -1527,10 +1527,6 @@ config['adwin_lt2_processes'] = {
                     # TODO_MAR: Add voltages for MBE and Parity 
 
 
-
-
-
-
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 100,
@@ -1546,6 +1542,7 @@ config['adwin_lt2_processes'] = {
                     'MBI_cycles' : 25,
                     'ssro_results' : 27,
                     'MBI_time' : 28,
+                    #'test':29,
                     },
                 },
 
@@ -1569,7 +1566,7 @@ config['adwin_lt3_dios'] = {
 
         }
 
-config['adwin_lt3_processes'] = {
+config['adwin_pro_processes'] = {
 
         'linescan' : {
 
@@ -1771,7 +1768,7 @@ config['adwin_lt3_processes'] = {
         # ADwin single-shot readout
         'singleshot' : {
                 'index' : 9,
-                'file' : 'singleshot_lt3.tb9',
+                'file' : 'singleshot.tb9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
@@ -1809,7 +1806,7 @@ config['adwin_lt3_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro_lt3.TB9',
+                'file' : 'integrated_ssro.TB9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -1986,3 +1983,16 @@ config['adwin_rt2_processes'] = {
             },
         },
     }
+
+config['adwin_lt4_dacs'] = { #TODO describe
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        'green_aom' : 4,
+        'yellow_aom' : 5,
+        'matisse_aom' : 6,
+        'newfocus_aom': 7,
+        'gate' : 8,
+        'gate_mod' : 9,
+        'yellow_frq_mod':10,
+        }

@@ -30,10 +30,10 @@ def erabi(name):
     
     m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 1500
     m.params['Ex_SP_amplitude']=0
 
-    sweep_param = 'amplitude'
+    sweep_param = 'length'
 
 
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
@@ -41,15 +41,15 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 300, pts) * 1e-9
+        m.params['MW_pulse_durations'] =  np.linspace(0, 100, pts) * 1e-9
         m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.8
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
 
     elif sweep_param == 'amplitude':    
-        m.params['MW_pulse_durations'] =  np.ones(pts)*5500e-9 
-        m.params['MW_pulse_amplitudes'] = np.linspace(0,0.02,pts)
+        m.params['MW_pulse_durations'] =  np.ones(pts)*98e-9#*5500e-9 
+        m.params['MW_pulse_amplitudes'] = np.linspace(0.1,0.9,pts) #0.02
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
@@ -75,4 +75,4 @@ def erabi(name):
     m.finish()
 
 if __name__ == '__main__':
-    erabi(SAMPLE+'_'+'test')
+    erabi(SAMPLE+'_'+'msm1')

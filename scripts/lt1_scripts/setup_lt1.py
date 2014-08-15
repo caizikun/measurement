@@ -11,7 +11,7 @@ from measurement.scripts.lt1_scripts.tools import stools
 reload(stools)
 
 print 'reload all modules...'
-execfile(os.path.join(qt.config['startdir'],"lt1_scripts/setup/reload_all.py"))
+execfile(os.path.join(qt.config['startdir'],"reload_all.py"))
 
 ####
 print 'reload all measurement parameters and calibrations...'

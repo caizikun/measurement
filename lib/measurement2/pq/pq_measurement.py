@@ -194,7 +194,12 @@ def PQ_decode(data):
 class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
     mprefix = 'PQMeasurementIntegrated'
 
-    def run(self, autoconfig=True, setup=True):
+    def run(self, autoconfig=True, setup=True, debug=False):
+
+        if debug:
+            self.run_debug()
+            return
+
         if autoconfig:
             self.autoconfig()
             
