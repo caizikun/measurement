@@ -99,11 +99,21 @@ def _setup_params(msmt, setup):
         bseq.pulse_defs_lt1(msmt)
     else:
         print 'Sweep_bell: invalid setup:', setup
+
     msmt.params['send_AWG_start'] = 1
     msmt.params['sync_during_LDE'] = 1
     msmt.params['wait_for_AWG_done'] = 0
     msmt.params['do_general_sweep']= 1
-    msmt.params['trigger_wait'] = 1#not(debug)
+    msmt.params['trigger_wait'] = 1
+
+
+
+
+###########################################################################
+###########################measurements####################################
+###########################################################################
+
+
 
 def tail_sweep(name):
     m=SweepBell(name)
