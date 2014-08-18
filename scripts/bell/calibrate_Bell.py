@@ -56,7 +56,7 @@ def calibrate_pi2_pulse(name, debug=False):
     
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
-def calibrate_pi4_pulse(name,IQmod=True, pulse_type = 'CORPSE', debug=False):
+def calibrate_pi4_pulse(name,debug=False):
     m = pulsar_msmt.GeneralPi4Calibration(name)
     sweep_Bell._setup_params(m, setup = qt.current_setup)
     
