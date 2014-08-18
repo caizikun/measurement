@@ -120,4 +120,4 @@ if __name__ == '__main__':
     if stage == 6: 
         print 'Spin-Photon correlations (if necc.)'
     if stage == 7:
-        execfile('testing/check_awg_triggering.py') 
+        execfile('check_awg_triggering.py') 
