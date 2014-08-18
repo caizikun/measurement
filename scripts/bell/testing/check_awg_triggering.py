@@ -50,6 +50,7 @@ def program_test_slave(reset=False):
 def check_triggering():
     pharp=qt.instruments['PH_300']
     pharp.start_histogram_mode()
+    pharp.set_Range(5) # 128 ps binsize
     pharp.StartMeas(int(10 * 1e3)) #10 second measurement
     qt.msleep(0.1)
     print 'starting PicoHarp measurement'
@@ -59,13 +60,18 @@ def check_triggering():
             pharp.StopMeas()
     hist=pharp.get_Block()
     print 'PicoHarp measurement finished'
-    peaks=np.where(hist>100)
-    if len(peaks[0])>10:
+    print hist[hist>0]
+    print where(hist>0)[0]
+    
+    peaks=np.where(hist>0)[0]
+    if (peaks[-1]-peaks[0])>8:
         print 'jittering!'
+    
+    print 'peak at', float(np.mean(peaks))*pharp.get_Resolution()/1000., 'ns'
     x0 =6000
     if np.mean(peaks)<x0 or np.mean(peaks) > x0:
         print 'offset by', np.mean(peaks)- x0
-
+    print 'total counts in hist:', sum(hist)
     return hist
 
 
