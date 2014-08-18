@@ -32,7 +32,7 @@ def program_test_slave(reset=False):
     e.append(T)
     e.append(p_sync)
     e.append(pulse.cp(T, length=5e-6))
-    s= pulsar.Sequence('TEST_AWG_SYNC_LT3')
+    s= pulsar.Sequence('TEST_AWG_SYNC_LT1')
     s.append(name = 'Slave',
                     wfname = e.name,
                     trigger_wait = 1)
@@ -73,11 +73,13 @@ if __name__ == '__main__':
     if qt.current_setup=='lt3':
         lt1_helper = qt.instruments['lt1_helper']
         lt1_helper.set_is_running(False)
-        lt1_helper.set_measurement_name(name)
-        lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
+        lt1_helper.set_measurement_name('awg_check')
+        lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/testing/check_awg_triggering.py')
         lt1_helper.execute_script()
         qt.msleep(1)
         program_test_master(reset=False)
+        qt.msleep(20)
+        qt.instruments['AWG'].stop()
     else:
         program_test_slave(reset=False)
         pq_hist=check_triggering()
