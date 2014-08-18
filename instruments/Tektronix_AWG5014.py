@@ -222,6 +222,7 @@ class Tektronix_AWG5014(Instrument):
         self.add_function('get_error')
         self.add_function('pack_waveform')
         self.add_function('clear_visa')
+        self.add_function('initialize_dc_waveforms')
 
         if reset:
             self.reset()
@@ -665,13 +666,13 @@ class Tektronix_AWG5014(Instrument):
     def import_and_load_waveform_file_to_channel(self, channel_no ,waveform_listname,waveform_filename,type='wfm'):
         self._import_and_load_waveform_file_to_channel(channel_no ,waveform_listname,waveform_filename)
     def _import_and_load_waveform_file_to_channel(self, channel_no ,waveform_listname,waveform_filename,type='wfm'):
-        self._visainstrument.write('mmem:imp "%s","%s",%s'%(waveform_listname, waveform_filename, type))
+        #self._visainstrument.write('mmem:imp "%s","%s",%s'%(waveform_listname, waveform_filename, type))
         self._visainstrument.write('sour%s:wav "%s"' %(channel_no,waveform_listname))
-        i=0
-        while not self._visainstrument.ask("sour%s:wav?" %channel_no) == '"%s"' %waveform_listname:
-            sleep(0.01)
-            i=i+1
-            print i
+        #i=0
+        #while not self._visainstrument.ask("sour%s:wav?" %channel_no) == '"%s"' %waveform_listname:
+        #    sleep(0.01)
+        #    i=i+1
+        #    print i
         return 1
 
 #AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
@@ -1291,7 +1292,17 @@ class Tektronix_AWG5014(Instrument):
     def set_DC_state(self, state=False):
         self._visainstrument.write('AWGControl:DC:state %s' %(int(state)))
 
-
+    # A convenience function:
+    def initialize_dc_waveforms(self):
+        self.set_runmode('CONT')
+        self._visainstrument.write('SOUR1:WAV "*DC"')
+        self._visainstrument.write('SOUR2:WAV "*DC"')
+        self._visainstrument.write('SOUR3:WAV "*DC"')
+        self._visainstrument.write('SOUR4:WAV "*DC"')
+        self.set_ch1_status('on')
+        self.set_ch2_status('on')
+        self.set_ch3_status('on')
+        self.set_ch4_status('on')
 
 
 

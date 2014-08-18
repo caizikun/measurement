@@ -174,13 +174,7 @@ def turn_on_lt3_pulse_path():
     #qt.instruments['PMServo'].move_out()
 
 def init_AWG():
-    #import_and_load_waveform_file_to_channel(channel_no ,waveform_listname,waveform_filename) 4x
-    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
-    qt.pulsar.setup_channels()
-    qt.instruments['AWG'].set_ch1_status('on')
-    qt.instruments['AWG'].set_ch2_status('on')
-    qt.instruments['AWG'].set_ch3_status('on')
-    qt.instruments['AWG'].set_ch4_status('on')
+    qt.instruments['AWG'].initialize_dc_waveforms()
 
 def start_bs_counter():
     qt.instruments['counters'].set_is_running(False)
