@@ -100,7 +100,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def fast_ssro_calibration(name):
 
-    m = FastSSRO('FastSSROCalibration_'+name)
+    m = FastSSRO('FastSSROCalib_'+name)
     m.AWG_RO_AOM = qt.instruments['PulseAOM']
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -120,7 +120,7 @@ def fast_ssro_calibration(name):
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*5*1e-6
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
@@ -133,7 +133,7 @@ def fast_ssro_calibration(name):
 
     debug=False
     measure_bs=False
-    upload=True
+    upload=True#'old_method'
 
     m.autoconfig()
 

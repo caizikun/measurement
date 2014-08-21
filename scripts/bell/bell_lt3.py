@@ -120,7 +120,7 @@ def full_bell(name):
     th_debug = False
     sequence_only = False
     mw = True
-    measure_lt1 = True
+    measure_lt1 = False
     measure_bs = True
     do_upload = True
 
@@ -164,4 +164,4 @@ def full_bell(name):
     m.finish()
 
 if __name__ == '__main__':
-    full_bell('LocalBell_try1')   
+    full_bell('SP_CORR_SAM_SIL5')   

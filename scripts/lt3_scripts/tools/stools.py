@@ -181,9 +181,12 @@ def start_bs_counter():
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
     qt.instruments['bs_helper'].execute_script()
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['counters'].set_is_running(True)
 
 def generate_quantum_random_number():
     qt.instruments['AWG'].set_ch1_marker2_low(2.)

@@ -83,7 +83,7 @@ def check_triggering():
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         if (peaks_width)>.5:
-            ret=ret+'\n'+ 'JITTERING!'
+            ret=ret+'\n'+ 'JITTERING!! Try again with reset=True'
         else:
             ret=ret+'\n'+'No Jitter detected'
         ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
