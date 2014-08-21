@@ -23,7 +23,7 @@ from libc.math cimport floor
 def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] channel not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] special not None,
-    cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] hist not None,
+    cnp.ndarray[cnp.uint32_t, ndim=2, mode='c'] hist not None,
     cnp.uint64_t t_ofl,
     cnp.uint64_t t_lastsync,
     cnp.uint64_t last_sync_number,
