@@ -11,12 +11,12 @@ def turn_off_lasers(names):
     for l in names:
         qt.instruments[l].turn_off()
 
-def turn_off_all_lt3_lasers():
+def turn_off_all_lt4_lasers():
     set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM', 'PulseAOM'])
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])
 
 def turn_off_all_lasers():
-    turn_off_all_lt3_lasers()
+    turn_off_all_lt4_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[adwin].set_simple_counting()
@@ -36,18 +36,9 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def recalibrate_lt1_lasers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'], 
-        awg_names=['NewfocusAOM_lt1', 'YellowAOM_lt1']):
-    turn_off_all_lt1_lasers()
-    for n in names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1')
-    for n in awg_names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1',awg=True)
 
-def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
-    turn_off_all_lt3_lasers()
+def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
+    turn_off_all_lt4_lasers()
     for n in names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin')
@@ -73,18 +64,11 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'],
-    setpoints = [50e-6, 5e-9, 10e-9, 50e-9]):
-    
-    turn_off_all_lt1_lasers()
-    for n,s in zip(names, setpoints):
-        check_power(n, s, 'adwin_lt1', 'powermeter_lt1', 'PMServo_lt1',False)
-    qt.instruments['PMServo_lt1'].move_out()
 
-def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
     setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
     
-    turn_off_all_lt3_lasers()
+    turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
@@ -126,14 +110,9 @@ def check_fast_path_power(powermeter, servo, awg='AWG', chan='ch4_marker1',
     if ret:
         return pwr
 
-def check_fast_path_power_lt1(ret=False, **kw):
-    turn_off_all_lt1_lasers()
-    pwr = check_fast_path_power('powermeter_lt1', 'PMServo_lt1', ret=ret, **kw)
-    if ret:
-        return pwr
 
-def check_fast_path_power_lt3(ret=False, **kw):
-    turn_off_all_lt3_lasers()
+def check_fast_path_power_lt4(ret=False, **kw):
+    turn_off_all_lt4_lasers()
     pwr = check_fast_path_power('powermeter', 'PMServo', ret=ret, **kw)
     if ret:
         return pwr
@@ -146,7 +125,7 @@ def set_lt1_optimization_powers():
 
 
 
-def turn_on_lt3_pulse_path():
+def turn_on_lt4_pulse_path():
     #qt.instruments['PMServo'].move_in()
     p=pulse.SinePulse(channel='EOM_Matisse', name='pp', length=100e-6, frequency=1/(100e-6), amplitude = 1.8)
     opt = 'offset' if qt.pulsar.channels['EOM_AOM_Matisse']['type']=='analog' else 'low'
@@ -174,7 +153,13 @@ def turn_on_lt3_pulse_path():
     #qt.instruments['PMServo'].move_out()
 
 def init_AWG():
-    qt.instruments['AWG'].initialize_dc_waveforms()
+    #import_and_load_waveform_file_to_channel(channel_no ,waveform_listname,waveform_filename) 4x
+    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    qt.pulsar.setup_channels()
+    qt.instruments['AWG'].set_ch1_status('on')
+    qt.instruments['AWG'].set_ch2_status('on')
+    qt.instruments['AWG'].set_ch3_status('on')
+    qt.instruments['AWG'].set_ch4_status('on')
 
 def start_bs_counter():
     qt.instruments['counters'].set_is_running(False)

@@ -17,24 +17,10 @@ import bell
 reload(bell)
 import sequence as bseq
 reload(bseq)
-import joint_params
-reload(joint_params)
-import params_lt3
-reload(params_lt3)
-import params_lt1
-reload(params_lt1)
 
 class SweepBell(bell.Bell):
     adwin_process = pulsar_pq.PQPulsarMeasurement.adwin_process
     
-    def __init__(self, name):
-        bell.Bell.__init__(self,name)
-        self.params['send_AWG_start'] = 1    
-        self.params['sync_during_LDE'] = 1
-        self.params['wait_for_AWG_done'] = 0
-        self.params['do_general_sweep']= 1
-        self.params['trigger_wait'] = 1#not(debug)
-
     def generate_sequence(self):
   
         self.sweep_bell_seq = pulsar.Sequence('Bell_sweep')
@@ -86,15 +72,27 @@ SweepBell.bs_helper = qt.instruments['bs_helper']
 
 def _setup_params(msmt, setup):
     msmt.params['setup']=setup
+    msmt.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    msmt.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+
+    
+    if not(hasattr(msmt,'joint_params')):
+        msmt.joint_params = {}
+    import joint_params
+    reload(joint_params)
     for k in joint_params.joint_params:
-    msmt.joint_params[k] = joint_params.joint_params[k]
+        msmt.joint_params[k] = joint_params.joint_params[k]
 
     if setup == 'lt3' :
+        import params_lt3
+        reload(params_lt3)
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             msmt.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(msmt)
     elif setup == 'lt1' :
+        import params_lt1
+        reload(params_lt1)
         msmt.AWG_RO_AOM = msmt.E_aom
         for k in params_lt1.params_lt1:
             msmt.params[k] = params_lt1.params_lt1[k]
@@ -102,11 +100,26 @@ def _setup_params(msmt, setup):
     else:
         print 'Sweep_bell: invalid setup:', setup
 
+    msmt.params['send_AWG_start'] = 1
+    msmt.params['sync_during_LDE'] = 1
+    msmt.params['wait_for_AWG_done'] = 0
+    msmt.params['do_general_sweep']= 1
+    msmt.params['trigger_wait'] = 1
+
+
+
+
+###########################################################################
+###########################measurements####################################
+###########################################################################
+
+
+
 def tail_sweep(name):
     m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    _setup_params(m, setup = qt.current_setup)
 
-    pts=11
+    pts=7
     m.params['pts']=pts
     m.params['repetitions'] = 5000
 
@@ -128,7 +141,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=linspace(0.3,0.8,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(0.5,1.,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -146,7 +159,7 @@ def tail_sweep(name):
 
 def echo_sweep(name):
     m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    _setup_params(m, setup = qt.current_setup)
 
     pts=11
     m.params['pts']=pts
@@ -170,7 +183,7 @@ def echo_sweep(name):
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
 
     m.params['free_precession_offset'] = 0e-9
-    m.aparms['echo_offset'] = 0e-9
+    m.params['echo_offset'] = 0e-9
     m.params['general_sweep_name'] = 'echo_offset'
     m.params['general_sweep_pts'] = np.linspace(-100e-9, 100e-9, pts)
 
@@ -182,7 +195,7 @@ def echo_sweep(name):
 
 def rnd_echo_ro(name):
     m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    _setup_params(m, setup = qt.current_setup)
 
     pts=1
     m.params['pts']=pts
@@ -213,7 +226,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
         return
     if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
-            m.bs_helper.set_measurement_name(name)
+            m.bs_helper.set_measurement_name(m.name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
     m.setup(debug=th_debug)
@@ -227,4 +240,6 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    sweep_bell('Samy_Tail_PSB_10deg', setup = 'lt3')    
+    tail_sweep('The111no1_sil8_12deg') 
+    #echo_sweep('Sammy_echo_check')
+    #rnd_echo_ro('Sammy_RND_check')
