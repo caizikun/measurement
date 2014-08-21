@@ -1,5 +1,6 @@
 import qt
-import numpy
+import numpy as np
+import time
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
