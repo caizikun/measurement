@@ -122,7 +122,7 @@ def full_bell(name):
     mw = True
     measure_lt1 = False
     measure_bs = True
-    do_upload = True
+    do_upload = False
 
     m=Bell_LT3(name) 
 
