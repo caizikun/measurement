@@ -1,0 +1,25 @@
+from time import sleep, time
+import numpy as np
+from instrument import Instrument
+import logging
+import qt
+
+class OKOTech_DM(Instrument): #1
+    '''
+    This is the driver for the OKOTech Deformable mirror, controlled by the EDAC40  
+    (Aug 2014 - Machiel Blok)
+
+    Usage:
+    Initialize with
+    <name> = qt.instruments.create('name', 'OKOTech_DM',dac=qt.instruments[<dac_instrument_name>])
+    
+    status:
+     1) create this driver!=> is never finished
+    TODO:
+    '''
+
+    def __init__(self, name,dac): #2
+         # Initialize wrapper
+        logging.info(__name__ + ' : Initializing instrument OKOTech DM')
+        Instrument.__init__(self, name, tags=['physical'])
+        self._dac=dac
