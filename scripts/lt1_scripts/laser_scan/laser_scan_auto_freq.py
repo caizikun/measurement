@@ -167,7 +167,7 @@ class Scan(LaserFrequencyScan):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
-        self.physical_adwin=qt.get_setup_instrument('physical_adwin_lt2')
+        self.physical_adwin=qt.get_setup_instrument('physical_adwin')
         self.mw = qt.get_setup_instrument('SMB100')
         self.labjack= qt.get_setup_instrument('labjack')
 
@@ -639,7 +639,7 @@ def debug_scan(name):
 
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
-    single_scan('The111no1_enlarged_Sil_9th-cool-down')
+    single_scan('The111no1_enlarged_Sil8_10th-cool-down')
     #fast_gate_scan('The111no1_Sil8_dac3_on22',2000)
     #qt.get_setup_instrument('GreenAOM').set_power(10e-6)
     #qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)

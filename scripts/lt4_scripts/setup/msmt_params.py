@@ -95,7 +95,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
-		'TTTR_read_count':							1000,#1000, #s
+		'TTTR_read_count':							1000, #s
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1#sec
 		}
@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.806767e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.80693e9# +/-   0.00001            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -122,14 +122,14 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 1.0e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 10e-9,
+		'A_SP_amplitude':				 2e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 3e-9,
-		'Ex_SP_amplitude':				 4e-9,
+		'Ex_RO_amplitude':				 2e-9,
+		'Ex_SP_amplitude':				 2e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
@@ -140,7 +140,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 15}
+	'SSRO_duration' : 25}
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -153,11 +153,11 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp': 0.8994, #2014-08-21
+        'Hermite_pi_amp': 0.901, #2014-07-24 
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.532742,#2014-08-21
+        'Hermite_pi2_amp': 0.536,#2014-07-24
         'Hermite_pi4_length': 45e-9,
-        'Hermite_pi4_amp': 0.373683, # 2014-08-21
+        'Hermite_pi4_amp': 0.385, # 2014-07-24
         'Square_pi_length' : 50e-9, # calib. 2014-07-25
       	'Square_pi_amp' : 0.594 , # calib. for pi pulse of 50 ns 2014-07-25
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 

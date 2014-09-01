@@ -162,7 +162,7 @@ class LaserFrequencyScan:
 
 class Scan(LaserFrequencyScan):
 
-    def __init__(self, name='LT1', red_labjack_dac_nr=2, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
+    def __init__(self, name='LT4', red_labjack_dac_nr=0, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
@@ -186,7 +186,7 @@ class Scan(LaserFrequencyScan):
         self.get_counts = self.adwin.measure_counts
         self.counter_channel = 0
         self.red_wm_channel = red_wm_channel
-        self.red_voltage_frequency_relation_sign = -1
+        self.red_voltage_frequency_relation_sign = 1 #### 2014-08-14 for newfocus this is negative, DL maybe positive?
 
 
         self.yellow_voltage_frequency_relation_sign = 1
@@ -552,7 +552,7 @@ def single_scan(name):
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(68, 95, voltage_step=0.01, integration_time_ms=20, power = 2e-9)  #0.6e-9
+    m.red_scan(55, 75, voltage_step=0.01, integration_time_ms=20, power = 10e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
     #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -568,9 +568,9 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.2e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(10e-6)
 
-    single_scan('Sam_SIL5_Green')
+    single_scan('The111_no2_Sil2_LT4_Green_0V_gate_C5_ground_C4')
     #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)

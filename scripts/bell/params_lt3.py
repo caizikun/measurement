@@ -59,10 +59,12 @@ params_lt3['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Herm
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] 
 params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt3['MW_RND_amp_I']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_amp'] 
-params_lt3['MW_RND_duration_I']= qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_length'] 
-params_lt3['MW_RND_amp_Q']	   = -qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_amp'] 
-params_lt3['MW_RND_duration_Q']= qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_length'] 
+params_lt3['MW_pi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_amp'] 
+params_lt3['MW_pi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi4_length']#90e-9 # 2014-07-09
+params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi4_amp']
+params_lt3['MW_RND_duration_I']= params_lt3['MW_pi4_duration']
+params_lt3['MW_RND_amp_Q']	   = -params_lt3['MW_pi4_amp']
+params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi4_duration']
 
 
 params_lt3['echo_offset'] = 0e-9 #50 ns
@@ -87,7 +89,7 @@ params_lt3['aom_amplitude']				 = 0.62 # 2014-07-23
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 7.2e-9 # 2014-07-24
+params_lt3['AWG_RO_power']            = 5e-9 # 2014-07-24
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt3['LDE_SP_duration']         = 5.e-6 
 params_lt3['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
