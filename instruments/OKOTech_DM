@@ -4,7 +4,7 @@ from instrument import Instrument
 import logging
 import qt
 
-class OKOTech_DM(Instrument): #1
+class OKOTech_DM(Instrument): 
     '''
     This is the driver for the OKOTech Deformable mirror, controlled by the EDAC40  
     (Aug 2014 - Machiel Blok)
@@ -16,10 +16,24 @@ class OKOTech_DM(Instrument): #1
     status:
      1) create this driver!=> is never finished
     TODO:
+    - make better system for updating current dac values (see master of space)
     '''
 
-    def __init__(self, name,dac): #2
+    def __init__(self, name,dac): 
          # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument OKOTech DM')
-        Instrument.__init__(self, name, tags=['physical'])
+        Instrument.__init__(self, name, tags=['virtual'])
         self._dac=dac
+
+        #Variables, keeping track of voltage properties per pin
+        self.dac_values = [0]*40
+        self.offset = [int('0x8000',16)]*40
+        self.gain = [int('0xFFFF',16)]*40
+        self.global_offset = int('0x1FFF',16)
+        self.voltage_ref=0
+
+
+    def get_current_voltage(self,pin_nr):
+        DAC_CODE=self.dac_values[pin_nr-1]*(self.gain[pin_nr-1]+1)+self.dac_offset[pin_nr-1]-2**15
+        VOUT=4*VREF*((DAC_CODE/2**16)-(self.gloval_offset/2**14)
+        return VOUT

@@ -61,7 +61,7 @@ class EDAC40(Instrument):
 
         # To add functions that are externally available
         self.add_function('close')
-        self.add_function('set_single')
+        self.add_function('set_single_pin')
         self.add_function('set_all_pins')         
         self.add_function('set_all_to_constant')  
         self.add_function('restore_defaults') 
@@ -216,7 +216,7 @@ class EDAC40(Instrument):
             chan_vals[self.mult_pin_conversion_table[nr+1]]=val
             print 'log chan' , self.mult_pin_conversion_table[nr+1]
         return chan_vals
-    def set_single_pin(self,command_code,pin,chan_values):
+    def set_single_pin(self,command_code,pin,chan_value):
         """
         Set property of a single pin.
         To calculate the final output (VOUT):
@@ -242,7 +242,8 @@ class EDAC40(Instrument):
         if channel<0:
             print 'Error: pin %d is defined as ground. ' % pin
         else:
-            self.set_single(command_code,channel,value)
+            self.set_single(command_code,channel,chan_value)
+
     def set_all_pins(self,command_code,pin_values):
         """
         Set a property of all pins to a unique value.
