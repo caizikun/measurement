@@ -169,7 +169,7 @@ class Pulsar:
                 channel_cfg['CHANNEL_SKEW_%s' %n[-1]] = self.channels[c]['skew']
             elif self.channels[c]['type'] == 'marker':
                 channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
-                channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
+                channel_cfg['MARKER2_METHOD_%s'%n[2]] = 2
                 channel_cfg['MARKER%s_LOW_%s'%(n[-1],n[2])] = self.channels[c]['low']
                 channel_cfg['MARKER%s_HIGH_%s'%(n[-1],n[2])] = self.channels[c]['high']
                 channel_cfg['MARKER%s_SKEW_%s'%(n[-1],n[2])] = self.channels[c]['skew']
