@@ -13,7 +13,7 @@ def turn_off_lasers(names):
 
 def turn_off_all_lt4_lasers():
     set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM']) ### XXX Still have to add yellow and pulse
 
 def turn_off_all_lasers():
     turn_off_all_lt4_lasers()
