@@ -31,10 +31,10 @@ class SweepBell(bell.Bell):
             if self.params['do_general_sweep'] :
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
 
-            if self.params['setup'] == 'lt3':
-                bseq.pulse_defs_lt3(self)
-            elif self.params['setup'] == 'lt1':
-                bseq.pulse_defs_lt1(self)    
+            if self.params['setup'] == 'lt4':
+                bseq.pulse_defs_lt4(self)
+            elif self.params['setup'] == 'lt3':
+                bseq.pulse_defs_lt3(self)    
 
             LDE_element = bseq._LDE_element(self, 
                 name = 'Bell sweep element {}'.format(i))    
@@ -83,20 +83,20 @@ def _setup_params(msmt, setup):
     for k in joint_params.joint_params:
         msmt.joint_params[k] = joint_params.joint_params[k]
 
-    if setup == 'lt3' :
+    if setup == 'lt4' :
+        import params_lt4
+        reload(params_lt4)
+        msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
+        for k in params_lt4.params_lt4:
+            msmt.params[k] = params_lt4.params_lt4[k]
+        bseq.pulse_defs_lt4(msmt)
+    elif setup == 'lt3' :
         import params_lt3
         reload(params_lt3)
-        msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
+        msmt.AWG_RO_AOM = msmt.E_aom
         for k in params_lt3.params_lt3:
             msmt.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(msmt)
-    elif setup == 'lt1' :
-        import params_lt1
-        reload(params_lt1)
-        msmt.AWG_RO_AOM = msmt.E_aom
-        for k in params_lt1.params_lt1:
-            msmt.params[k] = params_lt1.params_lt1[k]
-        bseq.pulse_defs_lt1(msmt)
     else:
         print 'Sweep_bell: invalid setup:', setup
 
