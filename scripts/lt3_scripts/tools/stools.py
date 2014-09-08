@@ -177,6 +177,11 @@ def init_AWG():
     qt.instruments['AWG'].initialize_dc_waveforms()
 
 def start_bs_counter():
+    if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
+        print 'ZPL APDs on'
+    else:
+        print 'ZPL APDs could not be turned on!'
     qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
@@ -187,6 +192,11 @@ def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['counters'].set_is_running(True)
+    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
+        print 'ZPL APDs off'
+    else:
+        print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
     qt.instruments['AWG'].set_ch1_marker2_low(2.)
