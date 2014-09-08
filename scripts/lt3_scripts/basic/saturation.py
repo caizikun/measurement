@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL2_PSB_MM'
-steps=16
-max_power=150e-6       #[w]
+name = 'Pippin_SIL8_PSB_MM'
+steps=31
+max_power=250e-6       #[w]
 counter=1 #number of counter
 PQ_count= True    # counting with the HH, assumes apd on channel 0
-bg_x=-3.0          #delta x position of background [um]
-bg_y=-0.0           #delta y position of background [um]
+bg_x=-2.0          #delta x position of background [um]
+bg_y=-2.0           #delta y position of background [um]
 
 #instruments
 if PQ_count:

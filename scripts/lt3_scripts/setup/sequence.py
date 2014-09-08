@@ -76,6 +76,10 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].g
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,
         'TRIGGER_SOURCE'            :   1,    # External | Internal
+        'CLOCK_SOURCE'              :   1,    # Internal | External
+        'REFERENCE_SOURCE'          :   2,    # Internal | External
+        'EXTERNAL_REFERENCE_TYPE'   :   1,    # Fixed | Variable
+        'REFERENCE_CLOCK_FREQUENCY_SELECTION':1, #10 MHz | 20 MHz | 100 MHz
         'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
