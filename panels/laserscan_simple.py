@@ -14,7 +14,7 @@ from panel import Panel
 from ui_laserscan_simple import Ui_Panel
 
 from PyQt4 import QtCore
-from PyQt4.Qwt5.Qwt import QwtPlot as Qwt
+#from PyQt4.Qwt5.Qwt import QwtPlot as Qwt
 
 class LaserscanPanel(Panel):
     def __init__(self, parent, *arg, **kw):

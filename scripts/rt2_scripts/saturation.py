@@ -6,13 +6,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111No1_enlarged_SIL18_MM'
+name = 'The111No2_enlarged_SIL2_SM'
 steps=31
-max_power=400e-6       #[w]
+max_power=450e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
-bg_x=-2.5          #delta x position of background [um]
-bg_y=-2.0            #delta y position of background [um]
+bg_x=-1.0          #delta x position of background [um]
+bg_y=-1.0            #delta y position of background [um]
 
 #instruments
 if PQ_count:
