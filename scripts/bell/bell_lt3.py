@@ -92,7 +92,7 @@ class Bell_lt3(bell.Bell):
 
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
-Bell_lt3.AWG_RO_AOM = Bell_lt3.E_aom
+Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom
 
 
 def bell_lt3_local(name):
