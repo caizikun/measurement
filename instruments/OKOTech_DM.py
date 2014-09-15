@@ -31,7 +31,14 @@ class OKOTech_DM(Instrument):
         self.gain = [65535]*40
         self.global_offset = 8191
         self.voltage_ref=3
+        self._V_min=-6
+        self._V_max=6
 
+        # TO DO: for now this driver only uses DAC value. should implement gain, global offset and offset per pin as well.
+        dac.set_all(0,0)
+        dac.set_all(1,32768)
+        dac.set_all(2,65545)
+        dac.set_all(3,8191)
 
         # To add functions that are externally available
         self.add_function('get_current_voltage')
@@ -39,20 +46,30 @@ class OKOTech_DM(Instrument):
         self.add_function('set_voltage_single_pin')
 
     def get_current_voltage(self,pin_nr):
-        VOUT=4*self.voltage_ref*((self.dac_values[pin_nr-1]/np.uint16(2**16))-(self.global_offset/float(2**14-1)))
-        return VOUT
+        return self.dac_values[pin_nr-1]
 
-    def value_from_voltage(self,pin_nr,voltage):
-        print 'global part', self.global_offset/float(2**14-1)
-        print 'total part',self.global_offset/float(2**14-1)+voltage/float(4*self.voltage_ref)
-        DAC_CODE =(4*self.global_offset+(2**16-1)*voltage/float(4*self.voltage_ref))
-        print DAC_CODE
-        dac_value=np.uint16((DAC_CODE+(2**15-1)-self.offset[pin_nr-1])/float(self.gain[pin_nr-1]+1))
-        print 'set %d Volt to pin nr %d ' %(voltage,pin_nr)
-        print 'value from voltage: ', dac_value
+    def voltage_from_dac_value(self,dac_value):
+        voltage=4*self.voltage_ref*(dac_value-32767/(2**16-1)
+        return voltage
+
+    def value_from_voltage(self,voltage):
+        dac_value =np.uint16((2**16-1)*0.5+(2**16-1)*voltage/float(4*self.voltage_ref))
         return dac_value
+    '''
+    #TO DO: make this function work with offset and gain as well
+    def value_from_voltage(self,pin_nr,voltage):
+        dac_value =(4*self.global_offset+(2**16-1)*voltage/float(4*self.voltage_ref))
+        dac_value=np.uint16((DAC_CODE+(2**15-1)-self.offset[pin_nr-1])/float(self.gain[pin_nr-1]+1))
+        return dac_value
+    '''
 
     def set_voltage_single_pin(self,pin_nr,voltage):
-        dac_value=self.value_from_voltage(pin_nr,voltage)
-        #self._dac.set_single_pin(1,pin_nr-1,dac_value)
-        self.dac_values[pin_nr-1] = dac_value
+        if (voltage > self._V_max) or (voltage < self._V_min):
+            print 'Error, %d Volt is out of range (V max %d , V min %d)' %(voltage,self._V_max,self._V_min)
+        else:
+            dac_value=self.value_from_voltage(pin_nr,voltage)
+            self._dac.set_single_pin(0,pin_nr-1,dac_value)
+            self.dac_values[pin_nr-1] = dac_value
+
+
+
