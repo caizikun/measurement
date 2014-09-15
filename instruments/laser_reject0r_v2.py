@@ -7,6 +7,7 @@ from analysis.lib.fitting import fit, common
 import instrument_helper
 from lib import config
 from measurement.lib.config import rotation_mounts as rotcfg
+from scipy import optimize
 
 class laser_reject0r_v2(Instrument):  
 
@@ -136,7 +137,7 @@ class laser_reject0r_v2(Instrument):
                 self.move(waveplate, dx , quick_scan=True)
             qt.msleep(0.01) 
 
-            y = self._adwin.get_countrates()[self._zpl_counter-1]
+            y = self._measure_counts()
             
             Y[i]=y
             qtdata.add_data_point(x, y)
@@ -182,7 +183,7 @@ class laser_reject0r_v2(Instrument):
                 dx = X[i]-X[i-1]
                 self.move(waveplate, dx , **kw)
             qt.msleep(0.5)
-            y = self._adwin.get_countrates()[self._zpl_counter-1]
+            y = self._measure_counts()
             
             Y[i]=y
             qtdata.add_data_point(x, y)
@@ -233,14 +234,18 @@ class laser_reject0r_v2(Instrument):
         return True
     
     def optimize_all(self, cycles, **kw):
+
+        opt_method = kw.pop('opt_method','optimize')
+
         for i in range(cycles):
             for wp in self._waveplates:
                 if msvcrt.kbhit() and msvcrt.getch() =='c':
                     return False
-                if not(self.optimize(wp, **kw)):
-                    return False
+                getattr(self,opt_method)(wp, **kw)
         return True
 
+    def _measure_counts(self, counts_avg=1):
+         return self._adwin.get_countrates()[self._zpl_counter-1]
 
     def _fit(self,X,Y, qtplot):
         
@@ -269,15 +274,16 @@ class laser_reject0r_v2(Instrument):
         dataplot.add(qtdata, 'b-', coorddim = 0, valdim = 2)
         return qtdata, dataplot
 
-    def jog_optimize(self, waveplate, speed=3, directions=[1,-1]):
+    def jog_optimize(self, waveplate, directions=[1,-1], counts_avg=10, min_count_break=-1):
         """
         For each given direction, scan the given waveplate at given speed
-        until the counts start rising.
+        until the counts start rising or a minimum number of counts (min_count_break) is reached
+        The counts can be averaged to reduce noise.
         """
         if waveplate not in self._rotation_cfg.keys():
             print 'Unknown waveplate', waveplate
             return False
-
+        speed=3
         wp_channel = self._rotation_cfg[waveplate]['channel']
         wp_axis = self._rotation_cfg[waveplate]['axis']
         if self._prev_wp_channel!=wp_channel:
@@ -287,18 +293,30 @@ class laser_reject0r_v2(Instrument):
             
         self._set_red_power(self.get_first_time_red_power())
         for d in directions:
-            y = self._adwin.get_countrates()[self._zpl_counter-1]
-            y1=y*1.2
+            avg=0.
+            for j in range(counts_avg):
+                avg=avg+self._measure_counts()
+                qt.msleep(0.1)
+            avg=avg/counts_avg
+            y = avg
+            y1=y
             self._rotator.set('jog%d'%wp_axis,np.sign(d)*int(speed))
             qt.msleep(0.2)
             i=0
             while 1:
-                y = self._adwin.get_countrates()[self._zpl_counter-1]
+                for j in range(counts_avg):
+                    cts=self._measure_counts()
+                    if cts < min_count_break:
+                        break
+                        i=10 #stop we found a good spot!
+                    avg=avg+cts
+                    qt.msleep(0.1)
+                avg=avg/counts_avg
+                y = avg
                 if (y > self.get_cnt_threshold())  or  (msvcrt.kbhit() and msvcrt.getch() =='q'):
                     self._set_red_power(0)
-                    i=10
+                    i=10 #stop!
                     break
-
                 if(y>y1): break
                 y1=y
                 qt.msleep(0.1)
@@ -306,6 +324,61 @@ class laser_reject0r_v2(Instrument):
                 #print i
             if i>2: break
         self._rotator.set('jog%d'%wp_axis,0)
+
+    def step_optimize(self, waveplate, stepsize=0.1, directions=[1,-1],counts_avg=10,min_count_break=-1, **kw):
+        """
+        For each given direction, step the given waveplate with given stepsize (deg)
+        until the counts start rising, or a minimum number of counts (min_count_break) is reached
+        The counts can be averaged to reduce noise.
+        """
+        if waveplate not in self._rotation_cfg.keys():
+            print 'Unknown waveplate', waveplate
+            return False
+        self._set_red_power(self.get_first_time_red_power())
+        for d in directions:
+            avg=0.
+            for j in range(counts_avg):
+                avg=avg+self._measure_counts()
+                qt.msleep(0.1)
+            avg=avg/counts_avg
+            y = avg
+            y1=y
+            
+            i=0
+            while 1:
+                self.move(waveplate,d*stepsize, **kw)
+                qt.msleep(0.1)
+                for j in range(counts_avg):
+                    avg=avg+self._measure_counts()
+                    qt.msleep(0.1)
+                avg=avg/counts_avg
+                y = avg
+                if (y<min_count_break) or (y > self.get_cnt_threshold())  or  (msvcrt.kbhit() and msvcrt.getch() =='q'):
+                    self._set_red_power(0)
+                    i=-1 #stop!
+                    break
+                if(y>y1): break
+                y1=y
+                qt.msleep(0.1)
+                i=i+1
+                #print i
+            if i>2: 
+                self.move(waveplate,-d*stepsize, **kw)
+                break
+            if i<0:
+                break
+
+    def brent_optimize(waveplate,tolerance=100,max_cycles=10,counts_avg=10,**kw):
+        self._x0=0
+        def f(x):
+            self._x0=self._x0+x
+            self.move(waveplate,x-self._x0, **kw)
+            for j in range(counts_avg):
+                    avg=avg+self._measure_counts()
+                    qt.msleep(0.1)
+            avg=avg/counts_avg
+            return avg
+        optimize.brent(f,tol=tolerance, maxiter=max_cycles)
 
     def reset_wp_channel(self):
         self._prev_wp_channel = 'none'

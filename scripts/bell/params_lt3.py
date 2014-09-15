@@ -20,18 +20,18 @@ params_lt3['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt3['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt3['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump']
 
-params_lt3['cr_mod'] = True
+params_lt3['cr_mod'] = False
 params_lt3['cr_mod_control_offset']     =  0.0
 params_lt3['cr_mod_control_amp']        =  0.05 #V
 params_lt3['repump_mod_control_offset'] =  7.2
 params_lt3['repump_mod_control_amp']    =  .5 #V
 
 #bell adwin:
-params_lt3['AWG_done_DI_channel'] = 20
-params_lt3['AWG_success_DI_channel'] = 21
+params_lt3['AWG_done_DI_channel'] = 9
+params_lt3['AWG_success_DI_channel'] = 17
 params_lt3['SP_duration'] = 10
 params_lt3['wait_after_pulse_duration'] = 1
-params_lt3['remote_CR_DO_channel'] = 9
+params_lt3['remote_CR_DO_channel'] = 12
 params_lt3['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
 params_lt3['wait_for_AWG_done'] = 1
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
@@ -70,30 +70,30 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
-params_lt3['eom_pulse_amplitude']		= 1.9
-params_lt3['eom_pulse_duration']        = 2e-9
-params_lt3['eom_off_duration']          = 150e-9
-params_lt3['eom_off_amplitude']         = -.25
-params_lt3['eom_overshoot_duration1']   = 20e-9
-params_lt3['eom_overshoot1']            = -0.04
-params_lt3['eom_overshoot_duration2']   = 4e-9
-params_lt3['eom_overshoot2']            = -0.00
-params_lt3['aom_risetime']              = 35e-9
-params_lt3['aom_amplitude']             = 0.65
+params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+params_lt3['eom_pulse_duration']         = 2e-9
+params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23
+params_lt3['eom_off_duration']           = 150e-9
+params_lt3['eom_overshoot_duration1']    = 20e-9
+params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
+params_lt3['eom_overshoot_duration2']    = 10e-9
+params_lt3['eom_overshoot2']             = 0
+params_lt3['aom_risetime']				 = 15e-9
+params_lt3['aom_amplitude']				 = 0.65 # 2014-07-23
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 30e-9#params_lt3['Ex_RO_amplitude']
-params_lt3['AWG_yellow_power']        = 30e-9 #yellow power during SP in LDE on LT
+params_lt3['AWG_RO_power']            = 10e-9#params_lt3['Ex_RO_amplitude']
+params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
-params_lt3['LDE_yellow_duration']     = 3e-6 # if this is < 0, no yellow pulse is added to the sequence
+params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['MW_opt_puls1_separation'] = 150e-9 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 200e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt3['RND_duration']	 	= 250e-9
-params_lt3['RO_wait'] 			= 75e-9 + 100e-9 #wait start RO after end of RND MW pulse
+params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 0 
 params_lt3['opt_pulse_start']	= 5.5e-6 - 93e-9-1e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)

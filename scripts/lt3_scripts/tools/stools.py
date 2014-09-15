@@ -12,7 +12,6 @@ def turn_off_lasers(names):
         qt.instruments[l].turn_off()
 
 def turn_off_all_lt3_lasers():
-    set_simple_counting(['adwin'])
     turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM', 'PulseAOM'])
 
 def turn_off_all_lasers():

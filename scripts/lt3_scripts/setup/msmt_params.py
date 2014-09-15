@@ -49,7 +49,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_amp'    :   .5, #V
 	}
 
-yellow = False
+yellow = True
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
