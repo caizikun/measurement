@@ -1993,6 +1993,6 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'matisse_aom' : 6,
         'newfocus_aom': 7,
         'gate' : 8,
-        'gate_mod' : 9,
+        'gate_2' : 9,
         'yellow_frq_mod':10,
         }
