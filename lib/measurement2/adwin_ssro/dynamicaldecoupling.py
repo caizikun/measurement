@@ -8,7 +8,6 @@ import qt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
-
 class Gate(object):
     '''
     The class for Gate objects that are used routinely in generating gate sequences.
@@ -88,7 +87,8 @@ class Gate(object):
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
-    This is a general class for decoupling gate sequences used in addressing Carbon -13 atoms. It contains functions needed for generating the pulse sequences for the AWG.
+    This is a general class for decoupling gate sequences used in addressing Carbon -13 atoms. 
+    It contains functions needed for generating the pulse sequences for the AWG.
     It makes extensive use of the Gate class also found in this file.
     It is a child of PulsarMeasurment.MBI
     '''
@@ -328,7 +328,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 g.N = int((k+1)*self.params['dec_pulse_multiple'])
                 # print 'found the following decoupling tau: %s, N: %s' %(tau,g.N)
                 break
-            elif k == 79 and tau>self.params['max_dec_tau']:
+            elif k == 39 and tau>self.params['max_dec_tau']:
                 print 'Error: decoupling duration (%s) to large, for %s pulses decoupling tau (%s) larger than max decoupling tau (%s)' %(g.dec_duration,k,tau,self.params['max_dec_tau'])
         return g
 
@@ -1366,8 +1366,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         return Gate_sequence
 
-
-
 class NuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is
@@ -1520,7 +1518,6 @@ class NuclearRamsey_v2(DynamicalDecoupling):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-
 class LongNuclearRamsey(DynamicalDecoupling):
     '''
     The NuclearRamsey class performs a ramsey experiment on a nuclear spin that is resonantly controlled using a decoupling sequence.
@@ -1599,8 +1596,6 @@ class LongNuclearRamsey(DynamicalDecoupling):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-
-
 class NuclearRamsey_no_elDD(DynamicalDecoupling):
     '''
     Supercedes the Nuclear Ramsey no el DD class
@@ -1676,7 +1671,6 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
-
 
 class SimpleDecoupling(DynamicalDecoupling):
     '''
@@ -2734,7 +2728,6 @@ class Two_QB_Probabilistic_MBE(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-
 class Two_QB_Probabilistic_MBE_v2(MBI_C13):
     '''
     This class is to test multiple carbon initialization and Tomography.
@@ -2863,9 +2856,6 @@ class Two_QB_Probabilistic_MBE_v2(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-
-
-
 class Two_QB_Det_MBE(MBI_C13):
     '''
     TODO_MAR: Multiple branches depending on outcome
@@ -2971,7 +2961,6 @@ class Two_QB_Det_MBE(MBI_C13):
 
         else:
             print 'upload = false, no sequence uploaded to AWG'
-
 
 class Three_QB_MB_QEC(MBI_C13):
     '''
