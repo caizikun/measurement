@@ -1527,10 +1527,6 @@ config['adwin_lt2_processes'] = {
                     # TODO_MAR: Add voltages for MBE and Parity 
 
 
-
-
-
-
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 100,
@@ -1546,6 +1542,7 @@ config['adwin_lt2_processes'] = {
                     'MBI_cycles' : 25,
                     'ssro_results' : 27,
                     'MBI_time' : 28,
+                    #'test':29,
                     },
                 },
 
@@ -1569,7 +1566,7 @@ config['adwin_lt3_dios'] = {
 
         }
 
-config['adwin_lt3_processes'] = {
+config['adwin_pro_processes'] = {
 
         'linescan' : {
 
@@ -1642,6 +1639,22 @@ config['adwin_lt3_processes'] = {
             'file' : 'init_data.TB5',
             },
 
+        'mod_position' : {
+            'index' : 5,
+            'file' : 'mod_position.TB5',
+            'par'  : {
+                'cur_pos_mod_dac'           : 64,
+                'pos_mod_activate'          : 65,
+            },
+            'fpar': {
+                'pos_mod_err'    : 64,
+                'pos_mod_min_err': 65,
+            },
+            'data_float' : {
+                'atto_positions' : 16
+                },
+        },
+
  # ADwin CR check. This process can not run stand-alone and should be included in another adwin script/process
         'cr_check' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
@@ -1698,15 +1711,13 @@ config['adwin_lt3_processes'] = {
                     'noof_cr_checks'            : 72,
                     'cr_below_threshold_events' : 79,
                     'repump_counts'             : 76,
-                    'pos_mod_activate'          : 65,
                     'repump_mod_activate'       : 66,
                     'cr_mod_activate'           : 67,
-                    'cur_pos_mod_dac'           : 64,
                     },
                     'fpar' : {
                     'repump_mod_err' : 78,
                     'cr_mod_err'     : 79,
-                    'pos_mod_err'    : 64,
+
 
                     },
             'params_long' : [           # keep order!!!!!!!!!!!!!
@@ -1735,9 +1746,6 @@ config['adwin_lt3_processes'] = {
                     ['repump_mod_control_amp'   ,   0.0],
                     ['cr_mod_control_offset'    ,   0.0],
                     ['cr_mod_control_amp'       ,   0.0],
-                    ['pos_mod_control_amp'      ,  0.03],
-                    ['pos_mod_fb'               ,   0.1],
-                    ['pos_mod_min_counts'       ,  300.]
                     ],
                 'params_float_index'  : 31,
                 'data_long' : {
@@ -1745,9 +1753,6 @@ config['adwin_lt3_processes'] = {
                     'CR_after' : 23,
                     'statistics' : 26,
                     },
-                'data_float' : {
-                    'atto_positions' : 16
-                    }
                 },        
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
         # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
@@ -1771,7 +1776,7 @@ config['adwin_lt3_processes'] = {
         # ADwin single-shot readout
         'singleshot' : {
                 'index' : 9,
-                'file' : 'singleshot_lt3.tb9',
+                'file' : 'singleshot.tb9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
@@ -1809,7 +1814,7 @@ config['adwin_lt3_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro_lt3.TB9',
+                'file' : 'integrated_ssro.TB9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -1986,3 +1991,16 @@ config['adwin_rt2_processes'] = {
             },
         },
     }
+
+config['adwin_lt4_dacs'] = { #TODO describe
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        'green_aom' : 4,
+        'yellow_aom' : 5,
+        'matisse_aom' : 6,
+        'newfocus_aom': 7,
+        'gate' : 8,
+        'gate_2' : 9,
+        'yellow_frq_mod':10,
+        }

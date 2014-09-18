@@ -14,7 +14,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def MBE(name, tau = None,
         Carbon_A = 1, Carbon_B = 4, 
         Init_A = 'up', Init_B = 'up',
-        Only_init_first_Carbon = True, 
+        Only_init_first_Carbon = False, 
         Only_init_second_Carbon= False):
 
     m = DD.Two_QB_Probabilistic_MBE(name)
@@ -35,7 +35,7 @@ def MBE(name, tau = None,
     m.params['Only_init_second_Carbon']     = Only_init_second_Carbon
    
     ### Sweep parameters: the readout basis
-    m.params['reps_per_ROsequence'] = 1000 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Tomography Bases'] = ([
             ['X','I'],['Y','I'],['Z','I'],
             ['I','X'],['I','Y'],['I','Z'],
@@ -43,8 +43,8 @@ def MBE(name, tau = None,
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
-    ### Alternative bases
-    #m.params['Tomography Bases'] = ([
+    # ### Alternative bases
+    # m.params['Tomography Bases'] = ([
     #        ['X','X'],
     #        ['Y','Y'],
     #        ['Z','Z']])
@@ -70,8 +70,8 @@ def MBE(name, tau = None,
     ### number of Carbon spins to initialize
     if m.params['Only_init_first_Carbon'] or m.params['Only_init_second_Carbon']: 
         m.params['Nr_C13_init'] = 1
-    elif m.params['no_C13_init']:
-        m.params['Nr_C13_init'] = 0
+    # elif m.params['no_C13_init']:
+    #     m.params['Nr_C13_init'] = 0
     else :
         m.params['Nr_C13_init'] = 2
     

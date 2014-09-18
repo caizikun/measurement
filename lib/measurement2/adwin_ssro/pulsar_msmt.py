@@ -6,6 +6,7 @@ import logging
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
+reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 class PulsarMeasurement(ssro.IntegratedSSRO):
@@ -140,16 +141,13 @@ class DarkESR(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
-
-        # program the AWG
-        #qt.pulsar.program_sequence(seq)
-
-        # some debugging:
-        # elements[-1].print_overview()
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 class ElectronRabi(PulsarMeasurement):
@@ -197,14 +195,11 @@ class ElectronRabi(PulsarMeasurement):
 
         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*elements)
-            #qt.pulsar.upload(*elements)
-
-        # program the AWG
-        #qt.pulsar.program_sequence(seq)
-
-        # some debugging:
-        # elements[-1].print_overview()
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
         
 
 class ElectronRabi_Square(PulsarMeasurement):
@@ -248,10 +243,13 @@ class ElectronRabi_Square(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*elements)
-            #qt.pulsar.upload(*elements)
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 
@@ -310,17 +308,14 @@ class ElectronRamseyCORPSE(PulsarMeasurement):
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
         # upload the waveforms to the AWG
-        #if upload:
-        #    qt.pulsar.upload(*elements)
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
-        # program the AWG
-        #qt.pulsar.program_sequence(seq)
-        #return return_e.normalized_waveforms()
-        #For faster uploading, use:
-        qt.pulsar.program_awg(seq,*elements)
 
-        # some debugging:
-        # elements[-1].print_overview()
 class ElectronRamsey(PulsarMeasurement):
     mprefix = 'ElectronRamsey'
 
@@ -401,9 +396,13 @@ class ElectronRamsey(PulsarMeasurement):
             else:
                 seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*elements)
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 class ElectronT1(PulsarMeasurement):
@@ -494,9 +493,13 @@ class ElectronT1(PulsarMeasurement):
                 else:
                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=True)
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*list_of_elements)
+            if upload=='old_method':
+                qt.pulsar.upload(*list_of_elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*list_of_elements)
 
 
 
@@ -618,16 +621,13 @@ class initNitrogen_DarkESR(DarkESR):
             elements.append(e)
             seq.append(name=e.name, wfname=e.name, trigger_wait=False)  
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(*elements)
-            qt.pulsar.program_awg(seq,*elements)
-
-        # program the AWG
-        #qt.pulsar.program_sequence(seq)
-
-        # some debugging:
-        # elements[-1].print_overview()
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 class MBI(PulsarMeasurement):
@@ -751,7 +751,7 @@ class MBI(PulsarMeasurement):
     def _MBI_element(self,name ='MBI CNOT'):
         # define the necessary pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-6, amplitude = 0)
+            length = 100e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MBI MW pulse',
             I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
@@ -769,7 +769,7 @@ class MBI(PulsarMeasurement):
         # the actual element
         mbi_element = element.Element(name, pulsar=qt.pulsar)
         mbi_element.append(T)
-        #mbi_element.append(X)
+        mbi_element.append(X)
         mbi_element.append(adwin_sync)
 
         return mbi_element
@@ -939,11 +939,17 @@ class GeneralElectronRabi(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-        # upload the waveforms to the AWG
+         # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*elements)
-            #qt.pulsar.upload(*elements)
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
+
+
+#XXXXXXXXXXXXXXXXXXXXXXXXXXX check this class
 class GeneralDarkESR(PulsarMeasurement):
     '''
     This class is used to measure ESR in pulse mode.
@@ -1025,18 +1031,18 @@ class GeneralPiCalibration(PulsarMeasurement):
             length = 10e-6, amplitude = 2)
         sync_elt.append(adwin_sync)
 
-        elts = []
+        elements = []
         for i in range(self.params['pts']):
             e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
             e.append(T,
                 pulse.cp(X,
                     amplitude=self.params['MW_pulse_amplitudes'][i]
                     ))
-            elts.append(e)
+            elements.append(e)
 
         # sequence
         seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
-        for i,e in enumerate(elts):           
+        for i,e in enumerate(elements):           
             for j in range(self.params['multiplicity']):
                 seq.append(name = e.name+'-{}'.format(j), 
                     wfname = e.name,
@@ -1046,15 +1052,15 @@ class GeneralPiCalibration(PulsarMeasurement):
                     repetitions = self.params['delay_reps'])
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
-
-        # program AWG
+        elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
-            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
-        #qt.pulsar.program_sequence(seq)
-
-        #self.params['sequence_wait_time'] = \
-        #    int(np.ceil(np.max(np.array([e.length() for e in elts])*1e6))+10)
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 
@@ -1063,7 +1069,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
     Do a pi/2 pulse, compare to an element with pi/2 + pi-pulse; sweep the pi2 amplitude. 
     generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
     """
-    mprefix = 'GeneralPi2Calibration'
+    mprefix = 'Pi2_Calibration'
 
     def autoconfig(self):
         self.params['sequence_wait_time'] = 30
@@ -1089,7 +1095,8 @@ class GeneralPi2Calibration(PulsarMeasurement):
             length = 10e-6, amplitude = 2)
         sync_elt.append(adwin_sync)
 
-        elts = []
+        elements = []
+
         seq = pulsar.Sequence('{} Pi2 Calibration'.format(self.params['pulse_type']))
 
         for i in range(self.params['pts_awg']):
@@ -1101,7 +1108,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
             e.append(pulse.cp(TIQ, length=2e-9))
             e.append(pulse.cp(pulse_pi))
             e.append(T)
-            elts.append(e)
+            elements.append(e)
             seq.append(name='{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i),
                 wfname = e.name,
                 trigger_wait=True)
@@ -1115,21 +1122,24 @@ class GeneralPi2Calibration(PulsarMeasurement):
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
             e.append(pulse.cp(TIQ, length=2e-9))
             e.append(T)
-            elts.append(e)
+            elements.append(e)
             seq.append(name='{}_Pi2-{}'.format(self.params['pulse_type'],i),
                 wfname = e.name,
                 trigger_wait=True)
             seq.append(name='syncb-{}'.format(i),
                 wfname = sync_elt.name)
-
-        # program AWG
+        elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
         if upload:
-            #qt.pulsar.upload(sync_elt, wait_1us, *elts)
-            qt.pulsar.program_awg(seq, sync_elt, wait_1us, *elts )
-        #qt.pulsar.program_sequence(seq)
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
         self.params['sequence_wait_time'] = \
-            int(np.ceil(np.max(np.array([e.length() for e in elts])*1e6))+10)
+            int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
 
 
 
@@ -1180,8 +1190,13 @@ class GeneralElectronRamsey(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-
-        qt.pulsar.program_awg(seq,*elements)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
         
@@ -1248,9 +1263,200 @@ class DD_GeneralSequence(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
-    
-        qt.pulsar.program_awg(seq,*elements)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
-        #self.params['sequence_wait_time'] = \
-        #    int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
-        #print 'Adwin sequence waiting time :', self.params['sequence_wait_time'] , '[us]'
+class GeneralPi4Calibration(PulsarMeasurement):
+    """
+    Do a pi/2 pulse, compare to an element with a pi/4 + pi-pulse + pi/4 echo; sweep the pi4 amplitude.
+    generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
+    """
+    mprefix = 'GeneralPi4Calibration_1'
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+        TIQ = pulse.SquarePulse(channel='MW_Imod',
+            length = 10e-9, amplitude = 0)
+
+        pulse_pi=kw.get('pulse_pi', None)
+        pulse_pi2=kw.get('pulse_pi2', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+
+        elements = []
+        seq = pulsar.Sequence('{} Pi4 Calibration 1'.format(self.params['pulse_type']))
+
+        for i in range(self.params['pts_awg']):
+            e = element.Element('{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i), 
+                pulsar = qt.pulsar,
+                global_time=True)
+
+            e.append(T)
+
+            last = e.add(pulse.cp(pulse_pi2,
+                        length= self.params['pulse_pi4_sweep_durations'][i],
+                        amplitude = self.params['pulse_pi4_sweep_amps'][i],
+                        phase = self.params['pulse_pi4_sweep_phases'][i]),
+                    start = 200e-9,
+                    name = 'pi2_1')
+             
+            j=0
+
+            last = e.add(pulse_pi,
+                refpulse = last,
+                refpoint = 'end', #XXXX if (j == 0) else 'center',
+                refpoint_new = 'center',
+                start = self.params['evolution_times'][i],
+                name = 'pi_{}'.format(j))
+
+            e.add(pulse.cp(pulse_pi2,
+                    length= self.params['pulse_pi4_sweep_durations'][i],
+                    amplitude = self.params['pulse_pi4_sweep_amps'][i],
+                    phase = self.params['pulse_pi4_sweep_phases'][i]),
+                refpulse = last,
+                refpoint = 'center',
+                refpoint_new = 'start',#'start',
+                start = self.params['evolution_times'][i]+self.params['extra_wait_final_pi4'][i],
+                name = 'pi4_2')
+
+            elements.append(e)
+            seq.append(name='{}_Pi4_Pi_Pi4-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='synca-{}'.format(i),
+                wfname = sync_elt.name)
+            
+            e = element.Element('{}_Pi2-{}'.format(self.params['pulse_type'],i),
+                pulsar = qt.pulsar,
+                global_time=True)
+            e.append(T)
+            e.append(pulse_pi2)
+            e.append(pulse.cp(TIQ, length=2e-9))
+            e.append(T)
+            elements.append(e)
+            seq.append(name='{}_Pi2-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='syncb-{}'.format(i),
+                wfname = sync_elt.name)
+        elements.append(wait_1us)
+        elements.append(sync_elt)
+        # program AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
+
+
+
+class GeneralPi4Calibration_2(PulsarMeasurement):
+    """
+    Do a pi/4 pulse, compare to an element with a pi/2 + pi-pulse + pi/4 echo; sweep the pi4 amplitude.
+    generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
+    """
+    mprefix = 'GeneralPi4Calibration_2'
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+        TIQ = pulse.SquarePulse(channel='MW_Imod',
+            length = 10e-9, amplitude = 0)
+
+        pulse_pi=kw.get('pulse_pi', None)
+        pulse_pi2=kw.get('pulse_pi2', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+
+        elements = []
+        seq = pulsar.Sequence('{} Pi4 Calibration_2'.format(self.params['pulse_type']))
+
+        for i in range(self.params['pts_awg']):
+            e = element.Element('{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i), 
+                pulsar = qt.pulsar,
+                global_time=True)
+
+            e.append(T)
+
+            last = e.add(pulse_pi2,
+                    start = 200e-9,
+                    name = 'pi2_1')
+             
+            j=0
+
+            last = e.add(pulse_pi,
+                refpulse = last,
+                refpoint = 'end', #XXXX if (j == 0) else 'center',
+                refpoint_new = 'center',
+                start = self.params['evolution_times'][i],
+                name = 'pi_{}'.format(j))
+
+            e.add(pulse.cp(pulse_pi2,
+                    length= self.params['pulse_pi4_sweep_durations'][i],
+                    amplitude = self.params['pulse_pi4_sweep_amps'][i],
+                    phase = self.params['pulse_pi4_sweep_phases'][i]),
+                refpulse = last,
+                refpoint = 'center',
+                refpoint_new = 'start',#'start',
+                start = self.params['evolution_times'][i]+self.params['extra_wait_final_pi4'][i],
+                name = 'pi4_2')
+
+            elements.append(e)
+            seq.append(name='{}_Pi4_Pi_Pi4-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='synca-{}'.format(i),
+                wfname = sync_elt.name)
+            
+            e = element.Element('{}_Pi4-{}'.format(self.params['pulse_type'],i),
+                pulsar = qt.pulsar,
+                global_time=True)
+            e.append(T)
+            e.append(pulse.cp(pulse_pi2,
+                    length= self.params['pulse_pi4_sweep_durations'][i],
+                    amplitude = self.params['pulse_pi4_sweep_amps'][i],
+                    phase = self.params['pulse_pi4_sweep_phases'][i]))
+            e.append(pulse.cp(TIQ, length=2e-9))
+            e.append(T)
+            elements.append(e)
+            seq.append(name='{}_Pi2-{}'.format(self.params['pulse_type'],i),
+                wfname = e.name,
+                trigger_wait=True)
+            seq.append(name='syncb-{}'.format(i),
+                wfname = sync_elt.name)
+        elements.append(wait_1us)
+        elements.append(sync_elt)
+        # program AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)

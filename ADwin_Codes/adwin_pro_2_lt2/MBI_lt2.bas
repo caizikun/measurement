@@ -190,7 +190,6 @@ EVENT:
         ENDIF 
       
       CASE 1    ' E spin pumping
-        ' turn on E laser and start counting
         
         IF (timer = 0) THEN
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser

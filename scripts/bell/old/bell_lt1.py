@@ -9,9 +9,8 @@ import msvcrt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-reload(eom_pulses)
+
 import bell
 reload(bell)
 import sequence as bseq
@@ -91,8 +90,6 @@ class Bell_LT1(bell.Bell):
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(seq)
 
-    #def finish(self):
-    #    ssro.IntegratedSSRO.finish(self)
 
 Bell_LT1.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 Bell_LT1.AWG_RO_AOM = Bell_LT1.E_aom
@@ -123,10 +120,14 @@ def bell_lt1_remote(name):
     mw = True
     remote_meas = True
     do_upload = True
-
-    m=Bell_LT1(name+'_'+Bell_LT1.remote_measurement_helper.get_measurement_name()) 
+    remote_name=Bell_LT1.remote_measurement_helper.get_measurement_name()
+    m=Bell_LT1(name+'_'+remote_name) 
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
+    if 'XXSPCORRXX' in remote_name:
+        m.joint_params['RO_during_LDE']=0
+        m.joint_params['do_echo'] = 0
+        m.joint_params['do_final_MW_rotation'] = 0
     m.autoconfig()
 
     if do_upload:

@@ -8,6 +8,8 @@ import qt
 import msvcrt
 import instrument_helper
 import numpy as np
+from scipy import optimize
+from measurement.lib.tools import optimization
 
 class convex_optimiz0r(Instrument):
 
@@ -35,6 +37,66 @@ class convex_optimiz0r(Instrument):
 
     def _tetra_volume(self, V):
         return 1/6.*np.abs(np.linalg.det(V[0:3]-V[3]))
+
+    def optimize_new(self,xyz_range=[.5,0.5,1.0], xyz_tolerance_factor=0.002, max_cycles=15, 
+                  cnt=1, int_time=50, speed=2000, 
+                  do_final_countrate_check=True, method='simplex'):
+
+        pos = np.array([self.mos.get_x(), self.mos.get_y(), self.mos.get_z()])
+        old_cnt = self.adwin.measure_counts(int_time)[cnt-1]
+        search_range=np.array(xyz_range)
+        tolerance=search_range*xyz_tolerance_factor
+
+
+        def f(pos):
+            return self._measure_at_position(pos,int_time,cnt,speed)
+
+        if method == 'simplex':
+            tetra=np.array([[ 0, 0, 0],
+                            [ 1, 1, 1],
+                            [ 1,-1,-1],
+                            [-1, 1,-1],
+                            ],dtype=np.float)
+
+            V=pos+tetra*search_range
+            new_pos = optimization.simplex_method(f,V,max_cycles=max_cycles,tolerance=tolerance)
+        elif method == 'fmin':
+            new_pos = optimize.fmin(f,pos,maxfun=max_cycles, xtol=tolerance, retall=False)
+        elif method == 'fmin-powell':
+            new_pos = optimize.fmin_powell(f,pos,maxfun=max_cycles, xtol=tolerance, retall=False)
+        else:
+            print 'unknown optiisation method'
+            new_pos=pos
+        if do_final_countrate_check:
+          print "Proposed position x change %d nm" % \
+                        (1000*new_pos[0]-1000*pos[0])
+          print "Proposed position y change %d nm" % \
+                        (1000*new_pos[1]-1000*pos[1])
+          print "Proposed position z change %d nm" % \
+                        (1000*new_pos[2]-1000*pos[2])
+          new_cnt = self._measure_at_position(new_pos, int_time, cnt, speed/2.)
+          print 'Old countrates', old_cnt/(int_time/1000.)
+          print 'New countrates', new_cnt/(int_time/1000.)
+          if new_cnt>old_cnt:
+            print 'New position accepted'
+          else:
+            print 'Old position kept'
+            self.mos.move_to_xyz_pos(('x','y','z'),pos,speed,blocking=True)
+
+        else:
+          print "Position x changed %d nm" % \
+                          (1000*new_pos[0]-1000*pos[0])
+          print "Position y changed %d nm" % \
+                          (1000*new_pos[1]-1000*pos[1])
+          print "Position z changed %d nm" % \
+                          (1000*new_pos[2]-1000*pos[2])
+          print 'Old countrates', old_cnt/(int_time/1000.)
+          print  "Countrates at new position: %d" % \
+                      (float(self._measure_at_position(new_pos, int_time,cnt, speed))/(int_time/1000.))
+
+
+
+
 
     def optimize(self,xyz_range=[.5,0.5,1.0], xyz_tolerance_factor=0.002, max_cycles=15, 
                   cnt=1, int_time=50, speed=2000, 
