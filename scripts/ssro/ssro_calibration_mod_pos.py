@@ -21,19 +21,19 @@ def ssrocalibration(name):
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
 
-    m.params['atto_positions'] = [m.adwin.get_dac_voltage('atto_x'), m.adwin.get_dac_voltage('atto_y'), m.adwin.get_dac_voltage('atto_z')]
-
+    m.params['pos_mod_scan_length'] = 200
+    m.params['pos_mod_atto_x'] = m.adwin.get_dac_voltage('atto_x')
+    m.params['pos_mod_atto_y'] = m.adwin.get_dac_voltage('atto_y')
+    m.params['pos_mod_atto_z'] = m.adwin.get_dac_voltage('atto_z')
+    
         # parameters
     e_sp = m.params['Ex_SP_amplitude'] 
     a_sp =  m.params['A_SP_amplitude']
-
-    print m.params['Ex_CR_amplitude']
 
     # ms = 0 calibration
     m.params['SP_duration'] = m.params['SP_duration_ms0']
     m.params['Ex_SP_amplitude'] = 0.
     m.params['A_SP_amplitude'] = a_sp
-    m.adwin.start_mod_position(atto_positions=m.params['atto_positions'])
     m.run()
     m.save('ms0')
 
@@ -44,14 +44,15 @@ def ssrocalibration(name):
     #m.run()
     #m.save('ms1')
 
-    m.params['atto_positions_after'] = m.adwin.get_mod_position_var(('atto_positions',3))
+    m.params['atto_positions_after'] = m.adwin_var(('atto_positions',3))
     #print m.params['atto_positions_after'] 
+    #print m.params['pos_mod_atto_x'],m.params['pos_mod_atto_y'],m.params['pos_mod_atto_z']
     m.adwin.set_dac_voltage(('atto_x',m.params['atto_positions_after'][0]))
     m.adwin.set_dac_voltage(('atto_y',m.params['atto_positions_after'][1]))
     m.adwin.set_dac_voltage(('atto_z',m.params['atto_positions_after'][2]))
     qt.instruments['master_of_space'].init_positions_from_adwin_dacs()
 
-    m.run()
+    #m.run()
     m.save('ms1')
 
     m.finish()
@@ -67,5 +68,5 @@ if __name__ == '__main__':
     x2=qt.instruments['master_of_space'].get_x()*1000
     y2=qt.instruments['master_of_space'].get_y()*1000
     z2=qt.instruments['master_of_space'].get_z()*1000
-    print 'moved [nm]:', int(x-x2), int(y-y2), int(z-z2)
+    print 'moved [nm]:', int(x2-x), int(y2-y), int(z2-z)
 

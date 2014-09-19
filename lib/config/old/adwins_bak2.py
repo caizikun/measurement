@@ -314,6 +314,8 @@ config['adwin_lt1_processes'] = {
                     },
                 },
 
+
+
         'ssro_multiple_RO' : {
                 'index' : 9,
                 'file' : 'integrated_ssro_multiple_RO_lt1.TB9',
@@ -405,6 +407,93 @@ config['adwin_lt1_processes'] = {
                     'MBI_cycles' : 25,
                     'ssro_results' : 27,
                     'MBI_time' : 28,
+                    },
+                },
+
+        'teleportation' : {
+
+                'info' : """
+                    Teleportation master control. LT1 is local, LT2 is remote.
+                    """,
+                'index' : 9,
+                'file' : 'lt1_teleportation_control.TB9',
+                'params_long' : [           #Keep order!!!
+                    ['counter_channel'              ,       1],
+                    ['repump_laser_DAC_channel'     ,       3],
+                    ['E_laser_DAC_channel'          ,       6],
+                    ['A_laser_DAC_channel'          ,       7],
+                    ['CR_duration'                  ,      50],
+                    ['CR_threshold_preselect'       ,      30],
+                    ['CR_threshold_probe'           ,      10],
+                    ['repump_duration'              ,     100],
+                    ['E_SP_duration'                ,      50],
+                    ['SSRO_duration'                ,      20],
+                    ['ADwin_lt2_trigger_do_channel' ,       2],
+                    ['ADWin_lt2_di_channel'         ,       1],
+                    ['AWG_lt1_trigger_do_channel'   ,       1],
+                    ['AWG_lt1_di_channel'           ,       3],
+                    ['PLU_arm_do_channel'           ,      10],
+                    ['PLU_di_channel'               ,       2],
+                    ['MBI_duration'                 ,       4],
+                    ['CR_repump'                    ,    1000],
+                    ['AWG_lt1_event_do_channel'     ,       3],
+                    ['AWG_lt2_RO1_bit_channel'      ,       1],
+                    ['AWG_lt2_RO2_bit_channel'      ,       0],
+                    ['AWG_lt2_do_DD_bit_channel'    ,       2],
+                    ['AWG_lt2_strobe_channel'       ,       9],
+                    ['A_SP_duration'                ,       5],
+                    ['do_sequences'                 ,       1],
+                    ['CR_probe_max_time'            , 1000000],
+                    ['MBI_threshold'                ,       1],
+                    ['max_MBI_attempts'             ,       1],
+                    ['N_randomize_duration'         ,      50],
+                    ['wait_before_send_BSM_done'    ,      30],
+                    ],
+                'params_long_index'    : 20,
+                'params_long_length'   : 40,
+                'params_float' : [
+                    ['repump_voltage'               ,   0.0],
+                    ['repump_off_voltage'           ,     0],
+                    ['E_CR_voltage'                 ,   0.0],
+                    ['A_CR_voltage'                 ,   0.0],
+                    ['E_SP_voltage'                 ,   0.0],
+                    ['A_SP_voltage'                 ,   0.0],
+                    ['E_RO_voltage'                 ,   0.0],
+                    ['A_RO_voltage'                 ,   0.0],
+                    ['E_off_voltage'                ,   0.0],
+                    ['A_off_voltage'                ,   0.0],
+                    ['E_N_randomize_voltage',           0.0],
+                    ['A_N_randomize_voltage',           0.0],
+                    ['repump_N_randomize_voltage',      0.0],
+                    ],
+                'params_float_index'    : 21,
+                'params_float_length'   : 10,
+                'par' : {
+                    'CR_preselect'  : 75,
+                    'CR_probe'      : 68,
+                    'completed_reps' : 77,
+                    'total_CR_counts': 70,
+                    'noof_repumps'   : 71,
+                    'noof_cr_checks' : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts' : 76,
+                    'noof_starts' : 78,
+                    'kill_by_CR' : 50,
+                    },
+                'data_long' : {
+                    'CR_hist_time_out' : 7,
+                    'CR_hist_all' : 8,
+                    'repump_hist_time_out' : 9,
+                    'repump_hist_all' : 10,
+                    'CR_after' : 23,
+                    'statistics' : 28,
+                    'SSRO1_results' : 24,
+                    'SSRO2_results' : 26,
+                    # 'PLU_Bell_states' : 25, we took that out for now (oct 7, 2013)
+                    'CR_before' : 27,
+                    'CR_probe_timer': 29,
+                    'CR_probe_timer_all': 30,
+                    'CR_timer_lt2': 31,
                     },
                 },
         }
@@ -868,6 +957,81 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
+
+
+
+        'general_pulses_sweep' : {
+                'index' : 9,
+                'file' : 'general_pulses_sweep.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   4],
+                    ['dac1_channel'                ,   7],
+                    ['dac2_channel'                ,   6],
+                    ['dac3_channel'                ,   8],
+                    ['max_element'                 ,   4],
+                    ['cycle_duration'              , 300],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['max_sweep'                   ,  10],
+                    ['sweep_channel'               ,   7],
+                    ['do_sweep_duration'           ,   0],
+                    ['sweep_element'               ,  10],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 11,
+                'par' : {
+                    'repetition_counter'      : 73,
+                    'total_counts'            : 15,
+                    },
+                'data_float': {
+                    'dac1_voltages'             : 21,
+                    'dac2_voltages'             : 22,
+                    'dac3_voltages'             : 23,
+                    'sweep_voltages'            : 26,
+                    },
+                'data_long': {
+                    'counter_on'                : 24,
+                    'element_durations'         : 25,
+                    'results'                   : 30,
+                    'histogram'                 : 31,
+                    'counter'                   : 32,
+                    'sweep_durations'           : 27,
+                    },
+                },
+
+        'general_pulses_repeat' : {
+                'index' : 9,
+                'file' : 'general_pulses_repeat.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   4],
+                    ['dac1_channel'                ,   7],
+                    ['dac2_channel'                ,   6],
+                    ['dac3_channel'                ,   8],
+                    ['max_element'                 ,   4],
+                    ['cycle_duration'              , 300],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['max_repetitions'             ,10000],
+                    ['timed_element'               ,   1],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 11,
+                'par' : {
+                    'repetition_counter'      : 72,
+                    'total_counts'            : 70,
+                    },
+                'data_float': {
+                    'dac1_voltages'             : 21,
+                    'dac2_voltages'             : 22,
+                    'dac3_voltages'             : 23,
+                    },
+                'data_long': {
+                    'counter_on'                : 24,
+                    'element_durations'         : 25,
+                    'results'                   : 30,
+                    'histogram'                 : 31,
+                    'first_count'               : 32,
+                    },
+                },
+
         'MBI_Multiple_RO' : {  #with conditional repump, resonant, MBI
                 'index' : 9,
                 'file' : 'MBI_Multiple_RO_lt2.TB9',
@@ -1061,6 +1225,71 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
+        'teleportation' : {
+                'index' : 9,
+                'file' : 'lt2_teleportation.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ey_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,  50],
+                    ['CR_duration'                 ,  50],
+                    ['CR_preselect'                ,  40],
+                    ['teleportation_repetitions'   ,1000],
+                    ['SSRO_lt2_duration'           ,  50],
+                    ['CR_probe'                    ,  40],
+                    ['CR_repump'                   ,1000],
+                    ['Adwin_lt1_do_channel'        ,   8],
+                    ['Adwin_lt1_di_channel'        ,  17],
+                    ['AWG_lt2_di_channel'          ,  16],
+                    ['freq_AOM_DAC_channel'        ,  4],
+                    ['CR_probe_max_time'        , 1000000],
+                    ],
+                'params_long_index' : 20,
+                'params_long_length': 25,
+                'params_float' : [
+                    ['repump_voltage'              , 0.0],
+                    ['repump_off_voltage'          , 0.0],
+                    ['Ey_CR_voltage'               , 0.0],
+                    ['A_CR_voltage'                , 0.0],
+                    ['Ey_SP_voltage'               , 0.0],
+                    ['A_SP_voltage'                , 0.0],
+                    ['Ey_RO_voltage'               , 0.0],
+                    ['A_RO_voltage'                , 0.0],
+                    ['Ey_off_voltage'              , 0.0],
+                    ['A_off_voltage'               , 0.0],
+                    ['repump_freq_offset'          , 5.0],
+                    ['repump_freq_amplitude'       , 4.0]
+                    ],
+                'params_float_index' : 21,
+                'params_float_length': 12,
+                'par': {
+                    'completed_reps' : 77,
+                    'total_CR_counts': 70,
+                    'get_noof_cr_checks' : 72,
+                    'get_cr_below_threshold_events': 71,
+                    'repump_counts': 76,
+                    'noof_repumps': 66,
+                    'kill_by_CR' : 50,
+                    },
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after'  : 23,
+                    'CR_hist'   : 24,
+                    'repump_hist_time_out' : 9,
+                    'repump_hist_all' : 10,
+                    'SSRO_lt2_data' : 25,
+                    'statistics'    : 26,
+                    'CR_probe_timer' : 28,
+                    'CR_hist_time_out' : 29,
+                    },
+                'data_float': {
+                    'repump_freq_voltages'      : 19,
+                    'repump_freq_counts'        : 27,
+                    },
+                },
+
         #gate modulation
         'check_trigger_from_lt1' : {
                 'index' : 9,
@@ -1213,6 +1442,7 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
+
         }
 
 config['adwin_lt3_dacs'] = {
@@ -1302,6 +1532,23 @@ config['adwin_pro_processes'] = {
             'index' : 5,
             'file' : 'init_data.TB5',
             },
+
+        'mod_position' : {
+            'index' : 5,
+            'file' : 'mod_position.TB5',
+            'par'  : {
+                'counter_value'             : 59,
+                'cur_pos_mod_dac'           : 64,
+                'pos_mod_activate'          : 65,
+            },
+            'fpar': {
+                'pos_mod_err'    : 64,
+                'pos_mod_min_err': 65,
+            },
+            'data_float' : {
+                'atto_positions' : 16
+                },
+        },
 
         'cr_linescan' : {
             'index' : 2,
@@ -1435,10 +1682,10 @@ config['adwin_pro_processes'] = {
                 },
 
          # ADwin CR check. This process can not run stand-alone and should be included in another adwin script/process
-        'cr_check_pos_scan' : {
+        'cr_check_mod_pos' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
-            'file' : 'cr_mod_pos_scan.inc',
+            'file' : 'cr_mod_position.inc',
             'par' : {
                 'CR_preselect'              : 75,
                 'CR_probe'                  : 68,
@@ -1450,9 +1697,8 @@ config['adwin_pro_processes'] = {
                 'repump_counts'             : 76,
                 'repump_mod_activate'       : 66,
                 'cr_mod_activate'           : 67,
-                'cur_pos_scan_dac'          : 64,#0 do deactivate
-                'cr_per_pos_step'           : 65,
-                'activate_position_scan'    : 59,   
+                'cur_pos_mod_dac'           : 64,#0 do deactivate
+                'pos_mod_feedback_activate' : 59,
                 },
             'fpar' : {
                 'repump_mod_err' : 78,
@@ -1487,6 +1733,9 @@ config['adwin_pro_processes'] = {
                 ['repump_mod_control_amp'   ,   0.0],#V
                 ['cr_mod_control_offset'    ,   0.0],#V
                 ['cr_mod_control_amp'       ,   0.0],#V
+                ['pos_mod_control_amp'      ,  0.03],#V
+                ['pos_mod_P'                ,   0.1],#PID P
+                ['pos_mod_min_error'       ,  0.03],#V
                 ['pos_mod_atto_x'           ,    0.],#auto set
                 ['pos_mod_atto_y'           ,    0.],#auto set
                 ['pos_mod_atto_z'           ,    0.],#auto set
@@ -1498,8 +1747,7 @@ config['adwin_pro_processes'] = {
                     'statistics' : 26,
                     },
             'data_float' : {
-                    'atto_positions' : 16,
-                    'scan_array' : 17,
+                    'atto_positions' : 16
                     }
                 },        
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
