@@ -23,6 +23,7 @@ reload(params_lt3)
 
 class Bell_lt3(bell.Bell):
     mprefix = 'Bell_lt3'
+    adwin_process = 'bell_lt3'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
