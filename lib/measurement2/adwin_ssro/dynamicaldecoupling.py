@@ -87,11 +87,6 @@ class Gate(object):
 
         If there are any attributes being used frequently that are still missing here please add them for documentation
         '''
-    def reset_gate_phase_calculation(self,el_state_before_gate=None,el_state_after_gate = None):
-        self.C_phases_before_gate   = [None]*10
-        self.C_phases_after_gate    = [None]*10
-        self.el_state_before_gate   = el_state_before_gate
-        self.el_state_after_gate    = el_state_after_gate
 
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
@@ -3168,8 +3163,8 @@ class Two_QB_Det_MBE(MBI_C13):
             else:
                 Tomo_bases = self.params['Tomography Bases']
 
-            gate_seq0 = []; gate_seq0.extend(gate_seq) ### Branch for ms=0 outcome
-            gate_seq1 = []; gate_seq1.extend(gate_seq) ### Branch for ms=1 outcome
+            gate_seq0 = copy.deepcopy(gate_seq)
+            gate_seq1 = copy.deepcopy(gate_seq)
 
             carbon_tomo_seq0 = self.readout_carbon_sequence(
                     prefix              = 'Tomo0',
@@ -3209,20 +3204,23 @@ class Two_QB_Det_MBE(MBI_C13):
             gate_seq1.append(Rome)
             gate_seq0[-1].go_to     = gate_seq1[-1].name
 
-            # Generate the AWG_elements, including all the phase gates for all branches
-            gate_seq  = self.generate_AWG_elements(gate_seq,pt)
-            # gate_seq0[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='0') #Element -2
+            ################################################################
+            ### Generate the AWG_elements, including all the phase gates for all branches###
+            ################################################################
 
-            # gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements
-            print 'generating for seq 0'
+            gate_seq  = self.generate_AWG_elements(gate_seq,pt)
+
+            print 'generating elements for seq 0'
+            gate_seq0[len(gate_seq)-2].el_state_before_gate = '0' #Element -2, because MBI was added in generate AWG elements
             gate_seq0 = self.generate_AWG_elements(gate_seq0,pt)
 
-            gate_seq1[len(gate_seq)-2].reset_gate_phase_calculation(el_state_before_gate ='1') #Element -2
+            print 'generating elements for seq 1'
+            gate_seq1[len(gate_seq)-2].el_state_before_gate = '1' #Element -2, because MBI was added in generate AWG elements
             gate_seq1 = self.generate_AWG_elements(gate_seq1,pt)
 
             # Merge the bracnhes into one AWG sequence
             merged_sequence = []
-            merged_sequence.extend(gate_seq)
+            merged_sequence.extend(gate_seq)                #TODO_MAR: remove gate_seq and add gate_seq1 to gate_seq0 without common part
             merged_sequence.extend(gate_seq0[len(gate_seq):])
             merged_sequence.extend(gate_seq1[len(gate_seq):])
 
@@ -3234,7 +3232,7 @@ class Two_QB_Det_MBE(MBI_C13):
                     # print g.el_state_before_gate
                     print 'el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
                 elif debug:
-                    print 'does not have attr'
+                    print 'does not have attribute el_state_before_gate'
                 if  debug==True:
                     if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
                         print "[ None , None ]"
