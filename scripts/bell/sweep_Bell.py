@@ -163,7 +163,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=11
+    pts=15
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
@@ -175,19 +175,20 @@ def echo_sweep(name):
     m.joint_params['opt_pi_pulses'] = 2
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1
-    m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.joint_params['DD_number_pi_pulses'] = 1
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
+    # see PPT 2014-07-14_DataMeeting_PulseCalibration for scheme
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
 
     m.params['free_precession_offset'] = 0e-9
-    m.params['echo_offset'] = 0e-9
+    m.params['echo_offset'] = 48e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-100e-9, 100e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(30e-9, 70e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -218,7 +219,7 @@ def rnd_echo_ro(name):
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = True)
 
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
@@ -242,6 +243,6 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('Pippin_sil8_Eom_off_voltage_sweep') 
-    #echo_sweep('Sammy_echo_check')
+    #tail_sweep('Pippin_sil8_Eom_off_voltage_sweep') 
+    echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('Sammy_RND_check')

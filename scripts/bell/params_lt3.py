@@ -108,3 +108,5 @@ params_lt3['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H
+
+

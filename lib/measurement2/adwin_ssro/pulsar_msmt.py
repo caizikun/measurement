@@ -949,7 +949,6 @@ class GeneralElectronRabi(PulsarMeasurement):
 
 
 
-#XXXXXXXXXXXXXXXXXXXXXXXXXXX check this class
 class GeneralDarkESR(PulsarMeasurement):
     '''
     This class is used to measure ESR in pulse mode.
