@@ -9,7 +9,6 @@ reload(T2_tools_bell)
 
 
 class Bell(pulsar_pq.PQPulsarMeasurement):
-    adwin_process = 'bell'
     mprefix = 'Bell'
 
     def __init__(self, name):

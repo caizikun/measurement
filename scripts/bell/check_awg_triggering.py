@@ -58,11 +58,12 @@ def check_triggering():
     remote_helper=qt.instruments['remote_measurement_helper']
     remote_helper.set_is_running(True)
     pharp=qt.instruments['PH_300']
+    pharp.OpenDevice()
     pharp.start_histogram_mode()
     pharp.ClearHistMem()
     pharp.set_Range(4) # 64 ps binsize
-    pharp.set_CFDLevel0(50)
-    pharp.set_CFDLevel1(50)
+    #pharp.set_CFDLevel0(50)
+    #pharp.set_CFDLevel1(50)
     qt.msleep(1)
     pharp.StartMeas(int(3 * 1e3)) #10 second measurement
     qt.msleep(0.1)
@@ -110,11 +111,12 @@ if __name__ == '__main__':
     reset=False
     if qt.current_setup=='lt4':
         qt.instruments['AWG'].stop()
-        program_test_master(reset=reset)
         lt3_helper = qt.instruments['lt3_helper']
         lt3_helper.set_is_running(False)
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
-        lt3_helper.execute_script()      
+        lt3_helper.execute_script()
+        program_test_master(reset=reset)
+        qt.msleep(1)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'

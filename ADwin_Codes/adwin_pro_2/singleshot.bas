@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -24,12 +24,12 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      1000000
 
-'init
+'init     
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
 
@@ -56,7 +56,7 @@ DIM repetition_counter AS LONG
 DIM AWG_done_DI_pattern AS LONG
 DIM counts, old_counts AS LONG
 
-INIT:
+LOWINIT:
   init_CR()
   AWG_start_DO_channel         = DATA_20[1]
   AWG_done_DI_channel          = DATA_20[2]

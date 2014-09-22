@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Hans_SIL1_LT4_PSB_MM_PQ_tau-spad_apd'
+name = 'Hans_SIL8_LT4_PSB_MM_PQ_tau-spad_apd'
 steps=31
 max_power=210e-6       #[w]
 counter=1 #number of counter
 PQ_count= True    # counting with the HH, assumes apd on channel 0
-bg_x=1        #delta x position of background [um]
-bg_y=2           #delta y position of background [um]
+bg_x=-2        #delta x position of background [um]
+bg_y=-2          #delta y position of background [um]
 
 #instruments
 if PQ_count:

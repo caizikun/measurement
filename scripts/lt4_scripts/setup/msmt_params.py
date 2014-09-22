@@ -41,12 +41,12 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-cfg['protocols']['AdwinSSRO']['cr_mod'] = False
+cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
-	'cr_mod_control_offset'     :   0.0,
+	'cr_mod_control_offset'     :   0.0,#V
 	'cr_mod_control_amp'        :   0.05, #V
-	'repump_mod_control_offset' :   5.4,
-	'repump_mod_control_amp'    :   .5, #V
+	'repump_mod_control_offset' :   7.35, #V#note automatically set in AdwinSSRO.autoconfig()
+	'repump_mod_control_amp'    :   .5, #V 
 	}
 
 yellow=True
@@ -120,14 +120,14 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 5.0e-9,
+		'A_CR_amplitude':			 	 10e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 5e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 5e-9,
+		'Ex_CR_amplitude':				 7e-9,
 		'Ex_RO_amplitude':				 5e-9,
 		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 100,
