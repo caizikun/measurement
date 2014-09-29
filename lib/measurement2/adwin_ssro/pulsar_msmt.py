@@ -947,6 +947,8 @@ class GeneralElectronRabi(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+
+
 class GeneralDarkESR(PulsarMeasurement):
     '''
     This class is used to measure ESR in pulse mode.

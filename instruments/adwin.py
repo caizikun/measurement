@@ -339,7 +339,7 @@ class adwin(Instrument):
                 else:
                     if 'include_cr_process' in proc:
                         return getattr(self, 'get_'+proc['include_cr_process']+'_var')(name,*arg,**kw)
-                    self._log_warning('Cannot get var: Unknown variable: ' + name)
+                    self._log_warning('Cannot get var: Unknown variable: ' + str(name))
                     return False
 
         f.__name__ = funcname

@@ -30,7 +30,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
         for i in range(self.params['pts']/2):
             
             self.params['E_SP_voltages_AWG'][i] = \
-                    self.E_aom.power_to_voltage(
+                    self.AWG_RO_AOM.power_to_voltage(
                             self.params['E_SP_amplitudes_AWG'][i], controller='sec')
 
             self.params['E_RO_voltages_AWG'][i] = \
@@ -109,18 +109,18 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 7
+    pts = 11
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 2000
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,4,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,50,pts)*m.params['Ex_RO_amplitude']
     m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*5*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
@@ -161,4 +161,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Samy_w_PulseAOM')
+    fast_ssro_calibration('The111no2_SIL2_w_PulseAOM')

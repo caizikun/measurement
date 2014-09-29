@@ -13,20 +13,13 @@
 #DEFINE max_repetitions 500000
 #DEFINE max_CR_duration   250
 #DEFINE max_repump_duration 2000
-#DEFINE position_scan_length 100
-#DEFINE pos_mod_min_dac 1
-#DEFINE pos_mod_max_dac 3
-#DEFINE pos_mod_min_dac_v -10.0
-#DEFINE pos_mod_max_dac_v 10.0
 
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
-DIM DATA_16[3] AS FLOAT 'positioner offsets in/out
 
-DIM DATA_17[position_scan_length] AS FLOAT 'repump freq voltage sine
-DIM DATA_18[max_repump_duration] AS FLOAT 'AT EM_LOCAL 'repump freq voltage sine
-DIM DATA_19[max_CR_duration] AS FLOAT 'AT EM_LOCAL 'CR gate voltage sine
+DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
+DIM DATA_19[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine
 
 'return
 'used in cr.inc
@@ -35,7 +28,8 @@ DIM DATA_23[max_repetitions] AS LONG ' CR counts after sequence
 DIM DATA_26[max_stat] AS LONG         ' statistics
 
 DIM cr_mode, cr_timer, cr_i AS LONG
-DIM cr_counts, cr_old_counts AS LONG
+DIM cr_counts, cr_old_counts, total_CR_counts AS LONG
+DIM cr_r_counts, cr_r_old_counts AS LONG
 DIM CR_probe, CR_preselect, CR_repump, current_CR_threshold AS LONG
 DIM repumps, CR_failed, total_repump_counts AS LONG
 DIM repump_duration, CR_duration AS LONG
@@ -45,15 +39,11 @@ DIM E_laser_DAC_channel, A_laser_DAC_channel, repump_laser_DAC_channel AS LONG
 
 DIM repump_mod_DAC_channel, cr_mod_DAC_channel AS LONG
 DIM repump_mod_activated, cr_mod_activated AS LONG
-DIM pos_mod_DAC_channel, pos_mod_timer, pos_mod_activated AS LONG
 
 DIM repump_voltage, repump_off_voltage, E_CR_voltage, A_CR_voltage, E_off_voltage, A_off_voltage AS FLOAT
 
-DIM cr_mod_control_offset, cr_mod_control_amp, cr_mod_control AS FLOAT
+DIM cr_mod_control_offset, cr_mod_control_amp, cr_mod_control, cr_mod_control_avg, cr_mod_control_avg_part AS FLOAT
 DIM repump_mod_control,repump_mod_control_offset, repump_mod_control_amp AS FLOAT
-DIM pos_mod_control_offset, pos_mod_control_amp, pos_mod_control, pos_mod_fb AS FLOAT
-DIM pos_mod_control_offset_x, pos_mod_control_offset_y, pos_mod_control_offset_z AS FLOAT
-DIM pos_mod_err, pos_mod_min_err AS FLOAT
 
 
 SUB init_CR()
@@ -80,9 +70,7 @@ SUB init_CR()
   repump_mod_control_amp       = DATA_31[8]  '1.0 - 2.0
   cr_mod_control_offset        = DATA_31[9]  '0.0
   cr_mod_control_amp           = DATA_31[10] '0.1 
-  pos_mod_control_amp          = DATA_31[11] '0.03
-  pos_mod_fb                   = DATA_31[12] '0.1
-  pos_mod_min_err              = DATA_31[13] '300
+  cr_mod_control_avg           = DATA_31[11]
   
   FOR cr_i = 1 TO max_repetitions
     DATA_22[cr_i] = 0
@@ -100,24 +88,18 @@ SUB init_CR()
     DATA_19[cr_i] = Sin(-3.14+2*3.14*cr_i/CR_duration)
   NEXT cr_i
   'fill data_17 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
-  FOR cr_i = 1 TO position_scan_length
-    DATA_17[cr_i] = Sin(-3.14+2*3.14*cr_i/position_scan_length)
-  NEXT cr_i
-  
-  pos_mod_timer = 0
-  pos_mod_err = pos_mod_min_err + 1.
-  pos_mod_DAC_channel = pos_mod_min_dac
-  pos_mod_control_offset = DATA_16[pos_mod_DAC_channel]
-  
+   
   counter_pattern     = 2 ^ (counter_channel-1)
   total_repump_counts = 0
+  total_CR_counts = 0
   CR_failed           = 0
   repumps             = 0
   cr_wait_after_pulse    = 0
   cr_mode = 0
   cr_timer = 0
   cr_i=2
-  pos_mod_activated = 0
+  cr_counts=0
+  cr_mod_control_avg_part = 1.-1./cr_mod_control_avg
   
   'output pars
   PAR_70 = 0                      ' cumulative counts from probe intervals
@@ -129,8 +111,6 @@ SUB init_CR()
 
   FPar_78 = 0.0                   ' current repump modulation error signal
   FPar_79 = 0.0                   ' current CR modulation error signal
-  par_64 = 0                      ' current pos_mod_DAC_channel 
-  FPar_64 = 0.0                   ' current position modulation error signal
   
   'control pars
   Par_75 = CR_preselect
@@ -138,8 +118,6 @@ SUB init_CR()
   par_69 = CR_repump
   par_66 = 0                      ' activate repump modulation
   par_67 = 0                      ' activate cr gate modulation
-  par_65 = 0                      ' activate position modulation
-  FPar_65 = pos_mod_min_err       ' current position modulation error signal minumum 
   'before continueing to the next positioner dac
   
 ENDSUB
@@ -156,56 +134,10 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
 
     SELECTCASE cr_mode 
         
-        
-      CASE 0 'position optimisation  
-        
-        IF (pos_mod_activated > 0) THEN
-          IF (pos_mod_timer< position_scan_length) THEN
-            INC(pos_mod_timer)
-          ELSE
-            IF ((pos_mod_err< pos_mod_min_err) AND (pos_mod_err > (-1.0*pos_mod_min_err))) THEN
-              pos_mod_err = 0.0
-              DATA_16[pos_mod_DAC_channel] = pos_mod_control_offset
-              IF (pos_mod_DAC_channel < pos_mod_max_dac) THEN
-                INC(pos_mod_DAC_channel)
-                FPar_80 = pos_mod_control_offset
-              ELSE
-                pos_mod_DAC_channel = Par_64
-                PAR_65 = 0 'pos_mod_activated = 0
-              ENDIF
-              pos_mod_control_offset = DATA_16[pos_mod_DAC_channel]
-            ENDIF
-            pos_mod_timer = 1
-          ENDIF
-          pos_mod_control = DATA_17[pos_mod_timer]
-          pos_mod_control_offset = pos_mod_control_offset + (pos_mod_fb * pos_mod_err / repump_duration / 10000000. )
-          IF ((pos_mod_control_offset > pos_mod_min_dac_v) AND (pos_mod_control_offset < pos_mod_max_dac_v)) THEN
-            P2_DAC(DAC_MODULE,pos_mod_DAC_channel, 3277*(pos_mod_control_amp*pos_mod_control+pos_mod_control_offset)+32768) ' put current voltage on freq mod aom
-          ELSE
-            FPar_80 = pos_mod_control_offset
-            PAR_80 = -11
-            END
-          ENDIF
-        ELSE
-          IF (pos_mod_timer > 1) THEN
-            pos_mod_timer = 1
-            P2_DAC(DAC_MODULE,pos_mod_DAC_channel, 3277*(pos_mod_control_offset)+32768)
-          ENDIF
-        ENDIF
-        pos_mod_activated            = PAR_65
-        pos_mod_min_err              = FPar_65
-        FPar_64                      = pos_mod_err
-        PAR_64                       = pos_mod_DAC_channel 
-        cr_mode = 1
-        cr_timer = -1
-        
-        '--------------------------------
-      CASE 1    ' green repump
+      CASE 0    ' repump
               
         IF (cr_timer = 0) THEN
           CR_repump                    = PAR_69
-          pos_mod_activated            = PAR_65
-          repump_mod_activated         = PAR_66
           IF (cr_counts < CR_repump)  THEN  'only repump 
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
             P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
@@ -213,12 +145,13 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             repumps = repumps + 1
             inc(par_71)
             '------------repump modulation control
-            cr_old_counts = 0
+            repump_mod_activated         = PAR_66
+            cr_r_old_counts = 0
             cr_i=0
             repump_mod_control_amp = -1.0*repump_mod_control_amp
             '--------------------------------
           ELSE
-            cr_mode = 2
+            cr_mode = 1
             cr_timer = -1
             current_CR_threshold = CR_preselect
           ENDIF
@@ -228,42 +161,37 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           IF (cr_timer = repump_duration) THEN
             
             P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
-            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+            cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
             P2_CNT_ENABLE(CTR_MODULE,0)
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
             
-            total_repump_counts = total_repump_counts + cr_counts
+            total_repump_counts = total_repump_counts + cr_r_counts
             PAR_76 = total_repump_counts
             
-            cr_mode = 2
+            cr_mode = 1
             cr_timer = -1
             cr_wait_after_pulse = cr_wait_after_pulse_duration
             current_cr_threshold = CR_preselect
-            
-            'pos mod control---------
-            IF (pos_mod_activated > 0)  THEN
-              pos_mod_err = pos_mod_err*0.9999+pos_mod_control*(cr_counts)
-            ENDIF
-            
+                        
           ELSE 
             IF (repump_mod_activated>0) THEN
+
               '------------repump modulation control
               IF (cr_i = 0) THEN
                 cr_i = 2
                 repump_mod_control=DATA_18[cr_timer]
-                P2_DAC(DAC_MODULE_2,repump_mod_DAC_channel, 3277*(repump_mod_control_amp*repump_mod_control+repump_mod_control_offset)+32768) ' put current voltage on freq mod aom
+                P2_DAC_2(repump_mod_DAC_channel, 3277*(repump_mod_control_amp*repump_mod_control+repump_mod_control_offset)+32768) ' put current voltage on freq mod aom
               ELSE
-                cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-                FPar_78=FPar_78*0.9999+repump_mod_control*repump_mod_control_amp*(cr_counts-cr_old_counts)
-                cr_old_counts=cr_counts
+                cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+                FPar_78=FPar_78*0.9999+repump_mod_control*repump_mod_control_amp*(cr_r_counts-cr_r_old_counts)
+                cr_r_old_counts=cr_r_counts
               ENDIF
               DEC(cr_i)
             ENDIF          
           ENDIF
         ENDIF
-      
-      CASE 2    ' E/A laser CR check
         
+      CASE 1  ' ----cr modulation control before CR check
         IF (cr_timer = 0) THEN
           CR_preselect                 = PAR_75
           CR_probe                     = PAR_68
@@ -272,62 +200,65 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          INC(PAR_72)
-          '------------cr modulation control
-          cr_old_counts = 0
-          'cr_mod_control_amp = -1.0*cr_mod_control_amp
-          cr_i=0
-          '-------
-        ELSE 
-          
-          IF (cr_timer = CR_duration) THEN
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
-            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-            P2_CNT_ENABLE(CTR_MODULE,0)
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
-            PAR_70 = PAR_70 + cr_counts
-            
-            IF (first_cr > 0) THEN ' first CR after SSRO sequence
-              DATA_23[repetition_index] = cr_counts
-            ENDIF
-                 
-            'pos mod control---------
-            IF (pos_mod_activated > 0)  THEN
-              pos_mod_err = pos_mod_err*0.9999+pos_mod_control*(cr_counts)
-              cr_mode = 0
-            ELSE                
-              IF (cr_counts < current_cr_threshold) THEN
-                cr_mode = 1
-                inc(CR_failed)
-                inc(PAR_79)
-              ELSE
-                cr_mode = 2
-                CR_check = 1
-                DATA_22[repetition_index+1] = cr_counts  ' CR before nEt SSRO sequence
-                current_cr_threshold = CR_probe
-              ENDIF
-            ENDIF
-            cr_timer = -1
-            cr_wait_after_pulse = cr_wait_after_pulse_duration
-            
+          IF (cr_mod_activated > 0) THEN
+            cr_old_counts = 0
+            'cr_mod_control_amp = -1.0*cr_mod_control_amp
+            cr_i=0
           ELSE
-            IF (cr_mod_activated > 0) THEN
-
-              '------------cr modulation control
-              IF (cr_i = 0) THEN
-                cr_i = 2
-                cr_mod_control=DATA_19[cr_timer] 
-                P2_DAC(DAC_MODULE_2,cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
-              ELSE
-                cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-                FPar_79 = FPar_79*0.999999+cr_mod_control*(cr_counts-cr_old_counts)
-                cr_old_counts=cr_counts
-              ENDIF
-              DEC(cr_i)
+            cr_mode = 2 '---goto normal CR check
+          ENDIF
+        ELSE
+          IF (cr_timer = CR_duration) THEN
+            cr_mode = 2 '---goto normal CR check
+            cr_timer = 0
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter - we do not take the counts during the modulation fase into account
+            ' maybe we could make this a setting: for SSRO it is fine to take the counts uring the modulation into account, for TPQI we need to clear here
+          ELSE  
+            '------------cr modulation control
+            IF (cr_i = 0) THEN
+              cr_i = 2
+              cr_mod_control=DATA_19[cr_timer]
+              P2_DAC_2(cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
+            ELSE
+              cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+              FPar_79 = FPar_79*cr_mod_control_avg_part+cr_mod_control*(cr_counts-cr_old_counts)
+              cr_old_counts=cr_counts
             ENDIF
+            DEC(cr_i)
           ENDIF
         ENDIF
+        
+      CASE 2    ' E/A laser CR check
+                 
+        IF (cr_timer = CR_duration) THEN
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+          cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+          P2_CNT_ENABLE(CTR_MODULE,0)
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
+          total_CR_counts = total_CR_counts + cr_counts
+          PAR_70 = total_CR_counts
+          Inc(Par_72)
+          IF (first_cr > 0) THEN ' first CR after SSRO sequence
+            DATA_23[repetition_index] = cr_counts
+            first_cr=0
+          ENDIF
+                  
+          IF (cr_counts < current_cr_threshold) THEN
+            cr_mode = 0
+            CR_check = -1
+            inc(CR_failed)
+            inc(PAR_79)
+          ELSE
+            cr_mode = 1
+            CR_check = 1
+            DATA_22[repetition_index+1] = cr_counts  ' CR before nEt SSRO sequence
+            current_cr_threshold = CR_probe
+          ENDIF
+          cr_timer = -1
+          cr_wait_after_pulse = cr_wait_after_pulse_duration
+        ENDIF
+        
     ENDSELECT
     inc(cr_timer)
   ENDIF

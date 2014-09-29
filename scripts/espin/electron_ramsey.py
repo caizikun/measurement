@@ -55,11 +55,12 @@ def electronramsey(name):
     m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
-    pts = 51
+    pts = 101
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
     #m.params['wait_for_AWG_done']=1
-    m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
+    #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
+    m.params['evolution_times'] = np.linspace(0,3000e-9,pts)
 
     # MW pulses
     m.params['detuning']  = 0.0e6

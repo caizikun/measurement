@@ -129,11 +129,10 @@ if __name__ == '__main__':
     elif stage == 5: #rnd_echo_ro tests fast ssro, DD and RND generation
         print 'First optimize on ZPL, and do rejection!'
         sweep_Bell.tail_sweep(SAMPLE_CFG)
-        print 'set params_lt1/3 aom_amplitude'
+        print 'set params_lt3/3 aom_amplitude'
     elif stage == 6: 
         print 'Spin-Photon correlations (if necc.)'
-        print 'execfile bell_lt3.py with either measure_lt1=False, \
-               or with lt3 thresholds to 0 '
+        print 'in bell_lt4 script!'
         print 'and do not forget to progam the PLU'
     elif stage == 7:
         execfile('check_awg_triggering.py')

@@ -120,10 +120,14 @@ def bell_lt1_remote(name):
     mw = True
     remote_meas = True
     do_upload = True
-
-    m=Bell_LT1(name+'_'+Bell_LT1.remote_measurement_helper.get_measurement_name()) 
+    remote_name=Bell_LT1.remote_measurement_helper.get_measurement_name()
+    m=Bell_LT1(name+'_'+remote_name) 
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
+    if 'XXSPCORRXX' in remote_name:
+        m.joint_params['RO_during_LDE']=0
+        m.joint_params['do_echo'] = 0
+        m.joint_params['do_final_MW_rotation'] = 0
     m.autoconfig()
 
     if do_upload:
