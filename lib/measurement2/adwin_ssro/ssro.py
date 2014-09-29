@@ -42,9 +42,9 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                 [self.repump_aom.get_pri_channel()]    
 
         if self.params['cr_mod']:
-            self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()['yellow_aom_frq']
-            self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage('yellow_aom_frq')
-            self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
+            self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()[self.params['repump_mod_control_dac']]
+            self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage(self.params['repump_mod_control_dac'])
+            self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()[self.params['cr_mod_control_dac']]#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
 
         self.params['Ex_CR_voltage'] = \
                 self.E_aom.power_to_voltage(

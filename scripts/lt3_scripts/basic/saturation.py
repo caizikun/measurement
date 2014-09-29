@@ -5,11 +5,11 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL8_ZPL_at_EWI'
+name = 'Pippin_SIL3_MM'
 steps=21
-max_power=250e-6       #[w]
-counter=3 #number of counter
-PQ_count= False    # counting with the HH, assumes apd on channel 0
+max_power=150e-6       #[w]
+counter=1 #number of counter
+PQ_count= True    # counting with the HH, assumes apd on channel 0
 bg_x=-2.0          #delta x position of background [um]
 bg_y=-2.0           #delta y position of background [um]
 
