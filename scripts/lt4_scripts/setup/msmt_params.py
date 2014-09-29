@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      80e-9,
+		'yellow_repump_amplitude':      50e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -105,7 +105,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.80693e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.806179e9# +/-   0.00001            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -120,14 +120,14 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 10e-9,
+		'A_CR_amplitude':			 	 5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 5e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 7e-9,
+		'Ex_CR_amplitude':				 5e-9,
 		'Ex_RO_amplitude':				 5e-9,
 		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 100,
