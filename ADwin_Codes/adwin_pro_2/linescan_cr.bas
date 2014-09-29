@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -16,7 +16,6 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
-#Include Math.inc
 
 #DEFINE max_scan_length 1000
 ' scan settings
@@ -25,7 +24,7 @@ DIM PxTime, StepSize AS FLOAT
 
 ' what to do for each pixel; 
 ' 1=counting, 0=nothing, 2=counting + record supplemental data per px from fpar2 3=read counters from par45-48 (for use with resonant counting);
-DIM PxAction, scan_average, current_scan_direction AS INTEGER
+DIM PxAction, scan_average, current_scan_direction, first AS INTEGER
 dim scan_activated as integer
 
 ' The numbers of the involved DACs (adwin only has 8)
@@ -70,7 +69,7 @@ LOWINIT:
   IF (PxAction = 0) THEN
     scan_average = 1
   ELSE
-    scan_average = 2*round((PAR_64+1)/2)-1 'number of avg should be uneven!
+    scan_average = 2*ROUND((PAR_64+1)/2)-1 'number of avg should be uneven!
   ENDIF
   
   wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),1)
@@ -98,6 +97,7 @@ LOWINIT:
   counter1=0
   scan_activated = 0
   current_scan_direction = 1
+  first = 0
   
   IF (NoOfSteps = 0) THEN 
     EXIT
@@ -143,7 +143,7 @@ EVENT:
       Processdelay = 300
       DEC(timer)
     ELSE
-      IF ( CR_check(scan_activated,CurrentStep) <> 0 ) THEN
+      IF ( CR_check(first,CurrentStep) <> 0 ) THEN
         IF ((PAR_59 > 0) OR (scan_activated>0)) THEN
           scan_activated = 1
           DEC(timer)

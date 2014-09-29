@@ -30,6 +30,7 @@ def load_cr_linsescan(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['cr_linescan'])
     m.run()
 
 def unload_cr_linescan():
@@ -38,5 +39,6 @@ def unload_cr_linescan():
 
 if __name__ == '__main__':
     stools.turn_off_all_lasers()
+    qt.instruments['counters'].set_is_running(False)
     load_cr_linsescan(SAMPLE_CFG)
     #unload_cr_linescan()

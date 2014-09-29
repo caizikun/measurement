@@ -20,10 +20,9 @@ params_lt3['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt3['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt3['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump']
 
-params_lt3['cr_mod'] = False
+params_lt3['cr_mod'] = True #XXX this should be true in case of cr mod!!
 params_lt3['cr_mod_control_offset']     =  0.0
 params_lt3['cr_mod_control_amp']        =  0.05 #V
-params_lt3['repump_mod_control_offset'] =  7.2
 params_lt3['repump_mod_control_amp']    =  .5 #V
 
 #bell adwin:
@@ -108,3 +107,5 @@ params_lt3['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H
+
+

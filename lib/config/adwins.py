@@ -1225,7 +1225,7 @@ config['adwin_lt3_dacs'] = {
         'newfocus_aom': 7,
         'gate' : 8,
         'gate_mod' : 9,
-        'yellow_frq_mod':10,
+        'yellow_aom_frq':10,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1425,6 +1425,7 @@ config['adwin_pro_processes'] = {
                     ['repump_mod_control_amp'   ,   0.0],
                     ['cr_mod_control_offset'    ,   0.0],
                     ['cr_mod_control_amp'       ,   0.0],
+                    ['cr_mod_control_avg_pts'   ,   100000.],
                     ],
                 'params_float_index'  : 31,
                 'data_long' : {
@@ -1563,7 +1564,7 @@ config['adwin_pro_processes'] = {
         'integrated_ssro' : {
                 'index' : 9,
                 'file' : 'integrated_ssro.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],

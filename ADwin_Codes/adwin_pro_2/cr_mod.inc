@@ -42,7 +42,7 @@ DIM repump_mod_activated, cr_mod_activated AS LONG
 
 DIM repump_voltage, repump_off_voltage, E_CR_voltage, A_CR_voltage, E_off_voltage, A_off_voltage AS FLOAT
 
-DIM cr_mod_control_offset, cr_mod_control_amp, cr_mod_control AS FLOAT
+DIM cr_mod_control_offset, cr_mod_control_amp, cr_mod_control, cr_mod_control_avg, cr_mod_control_avg_part AS FLOAT
 DIM repump_mod_control,repump_mod_control_offset, repump_mod_control_amp AS FLOAT
 
 
@@ -70,6 +70,7 @@ SUB init_CR()
   repump_mod_control_amp       = DATA_31[8]  '1.0 - 2.0
   cr_mod_control_offset        = DATA_31[9]  '0.0
   cr_mod_control_amp           = DATA_31[10] '0.1 
+  cr_mod_control_avg           = DATA_31[11]
   
   FOR cr_i = 1 TO max_repetitions
     DATA_22[cr_i] = 0
@@ -98,6 +99,7 @@ SUB init_CR()
   cr_timer = 0
   cr_i=2
   cr_counts=0
+  cr_mod_control_avg_part = 1.-1./cr_mod_control_avg
   
   'output pars
   PAR_70 = 0                      ' cumulative counts from probe intervals
@@ -219,7 +221,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               P2_DAC_2(cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
             ELSE
               cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-              FPar_79 = FPar_79*0.99999+cr_mod_control*(cr_counts-cr_old_counts)
+              FPar_79 = FPar_79*cr_mod_control_avg_part+cr_mod_control*(cr_counts-cr_old_counts)
               cr_old_counts=cr_counts
             ENDIF
             DEC(cr_i)
