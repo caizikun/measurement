@@ -23,7 +23,7 @@ reload(params_lt4)
 
 class Bell_lt4(bell.Bell):
     mprefix = 'Bell_lt4'
-    adwin_process = 'bell_lt3'
+    adwin_process = 'bell_lt4'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
@@ -123,8 +123,20 @@ def full_bell():
              th_debug      = True,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = False,
+             measure_lt3   = True,
              measure_bs    = True,
+             do_upload     = True,
+             compensate_lt4_drift=False)
+
+def pulse_overlap(name):
+    m = Bell_lt4(name) 
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = False,
              do_upload     = True,
              compensate_lt4_drift=False)
 
@@ -175,7 +187,7 @@ def bell_lt4(name,
         if measure_lt3:
             m.lt3_helper.set_is_running(False)
             m.lt3_helper.set_measurement_name(name)
-            m.lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt3.py')
+            m.lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt3.py')
             m.lt3_helper.execute_script()
         if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
@@ -207,5 +219,6 @@ def bell_lt4(name,
 
 if __name__ == '__main__':
     #full_bell('SP_CORR_SAM_SIL5')   
-    SP_lt4('SP_CORR_SAM_SIL5')
+    #SP_lt4('SP_CORR_SAM_SIL5')
+    pulse_overlap('fist_try')
     #SP_lt3('SP_CORR_the111no1_sil1')

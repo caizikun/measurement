@@ -11,7 +11,7 @@ from scipy import optimize
 
 class laser_reject0r_v2(Instrument):  
 
-    def __init__(self, name, rotator, adwin, red_laser=None, rotation_config_name='waveplates_lt3',
+    def __init__(self, name, rotator, adwin, red_laser=None, rotation_config_name='',
                 waveplates=['zpl_half','zpl_quarter']):
         Instrument.__init__(self, name)
 

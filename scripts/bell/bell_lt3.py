@@ -117,7 +117,7 @@ def bell_lt3_local(name):
 
 def bell_lt3_remote(name):
 
-    th_debug=False
+    th_debug=True
     mw = True
     remote_meas = True
     do_upload = True

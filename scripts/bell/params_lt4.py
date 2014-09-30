@@ -20,11 +20,11 @@ params_lt4['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt4['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt4['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump'] # 1 for yellow, 1000 for green
 
-params_lt4['cr_mod'] 			= False
-#CR check modulation pars:
-#to be implemented
-#
-#
+params_lt4['cr_mod'] 			= True
+params_lt4['cr_mod_control_offset']     =  0.0
+params_lt4['cr_mod_control_amp']        =  0.05 #V
+params_lt4['repump_mod_control_amp']    =  .5 #V
+
 
 #bell adwin:
 params_lt4['AWG_start_DO_channel'] = 9
@@ -74,17 +74,18 @@ params_lt4['free_precession_offset'] = 0
 params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt4['free_precession_time_1st_revival']*1e6+10
 
 
-# LDE Sequence in the AWGs
-params_lt4['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-params_lt4['eom_pulse_duration']         = 2e-9
-params_lt4['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23
-params_lt4['eom_off_duration']           = 150e-9
-params_lt4['eom_overshoot_duration1']    = 20e-9
-params_lt4['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
-params_lt4['eom_overshoot_duration2']    = 10e-9
-params_lt4['eom_overshoot2']             = 0
-params_lt4['aom_risetime']				 = 15e-9
-params_lt4['aom_amplitude']				 = 0.65 # 2014-07-23
+# LDE Sequence in the AWGs # params taken from the previous LT1 params
+params_lt4['eom_pulse_amplitude']		= 1.9
+params_lt4['eom_pulse_duration']        = 2e-9
+params_lt4['eom_off_duration']          = 150e-9
+params_lt4['eom_off_amplitude']         = -.25
+params_lt4['eom_overshoot_duration1']   = 20e-9
+params_lt4['eom_overshoot1']            = -0.04
+params_lt4['eom_overshoot_duration2']   = 4e-9
+params_lt4['eom_overshoot2']            = -0.00
+params_lt4['aom_risetime']              = 15e-9
+params_lt4['aom_amplitude']             = 0.65
+
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

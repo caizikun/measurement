@@ -25,4 +25,4 @@ joint_params['MAX_SYNC_BIN'] =       16000
 joint_params['MAX_HIST_SYNC_BIN'] =  8000
 joint_params['TTTR_read_count'] = 	 1000 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
-joint_params['RND_start'] = 5.5e-6+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] +1.6e-6 -0.4e-6 #dt(AC)- RND_duration - MW_RND_wait #XXXXX+ 3.3e-6 # = dt(f,BC)-dt(AC) + margin
+joint_params['RND_start'] = 5.5e-6+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] + 3.3e-6 #dt(AC)- RND_duration - MW_RND_wait #XXXXX # = dt(f,BC)-dt(AC) + margin
