@@ -20,11 +20,13 @@ params_lt4['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt4['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt4['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump'] # 1 for yellow, 1000 for green
 
-params_lt4['cr_mod'] 			= True
-params_lt4['cr_mod_control_offset']     =  0.0
-params_lt4['cr_mod_control_amp']        =  0.05 #V
-params_lt4['repump_mod_control_amp']    =  .5 #V
-
+params_lt4['cr_mod'] 				    =  True# qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
+params_lt4['cr_mod_control_dac']		=  qt.exp_params['protocols']['cr_mod']['cr_mod_control_dac']
+params_lt4['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] #XXX this should be true in case of cr mod!!
+params_lt4['cr_mod_control_amp']        =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_amp'] 
+params_lt4['cr_mod_control_avg_pts']    =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_avg_pts']
+params_lt4['repump_mod_control_amp']    =  qt.exp_params['protocols']['cr_mod']['repump_mod_control_amp'] 
+params_lt4['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['repump_mod_control_dac']
 
 #bell adwin:
 params_lt4['AWG_start_DO_channel'] = 9
@@ -103,7 +105,7 @@ params_lt4['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE'] = 1
 params_lt4['plu_during_LDE'] = 1
 params_lt4['opt_pulse_start'] = params_lt4['LDE_SP_duration'] +  500e-9
-params_lt4['AWG_wait_for_lt3_start'] =  1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+params_lt4['AWG_wait_for_lt3_start'] =  8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9
