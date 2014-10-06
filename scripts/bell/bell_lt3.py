@@ -69,23 +69,23 @@ class Bell_lt3(bell.Bell):
         LDE_element = bseq._LDE_element(self, name='LDE_lt3')   
         elements.append(LDE_element)
         
-        seq.append(name = 'start_LDE',
-            trigger_wait = True,
-            wfname = start_element.name)
+        #seq.append(name = 'start_LDE',
+        #    trigger_wait = True,
+        #    wfname = start_element.name)
 
         seq.append(name = 'LDE_lt3',
             wfname = LDE_element.name,
-            trigger_wait = False,
+            trigger_wait = True,
             jump_target = 'RO_dummy',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         seq.append(name = 'LDE_timeout',
             wfname = finished_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_lt3')
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_lt3')
             
         #qt.pulsar.program_awg(seq,*elements)
         qt.pulsar.upload(*elements)
@@ -117,8 +117,8 @@ def bell_lt3_local(name):
 
 def bell_lt3_remote(name):
 
-    th_debug=False
-    mw = True
+    th_debug=True
+    mw = False
     remote_meas = True
     do_upload = True
     remote_name=Bell_lt3.remote_measurement_helper.get_measurement_name()

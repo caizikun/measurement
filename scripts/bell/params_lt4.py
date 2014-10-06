@@ -20,11 +20,13 @@ params_lt4['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt4['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt4['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump'] # 1 for yellow, 1000 for green
 
-params_lt4['cr_mod'] 			= False
-#CR check modulation pars:
-#to be implemented
-#
-#
+params_lt4['cr_mod'] 				    =  True# qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
+params_lt4['cr_mod_control_dac']		=  qt.exp_params['protocols']['cr_mod']['cr_mod_control_dac']
+params_lt4['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] #XXX this should be true in case of cr mod!!
+params_lt4['cr_mod_control_amp']        =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_amp'] 
+params_lt4['cr_mod_control_avg_pts']    =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_avg_pts']
+params_lt4['repump_mod_control_amp']    =  qt.exp_params['protocols']['cr_mod']['repump_mod_control_amp'] 
+params_lt4['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['repump_mod_control_dac']
 
 #bell adwin:
 params_lt4['AWG_start_DO_channel'] = 9
@@ -74,17 +76,18 @@ params_lt4['free_precession_offset'] = 0
 params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt4['free_precession_time_1st_revival']*1e6+10
 
 
-# LDE Sequence in the AWGs
-params_lt4['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
-params_lt4['eom_pulse_duration']         = 2e-9
-params_lt4['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23
-params_lt4['eom_off_duration']           = 150e-9
-params_lt4['eom_overshoot_duration1']    = 20e-9
-params_lt4['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
-params_lt4['eom_overshoot_duration2']    = 10e-9
-params_lt4['eom_overshoot2']             = 0
-params_lt4['aom_risetime']				 = 15e-9
-params_lt4['aom_amplitude']				 = 0.65 # 2014-07-23
+# LDE Sequence in the AWGs # params taken from the previous LT1 params
+params_lt4['eom_pulse_amplitude']		= 1.9
+params_lt4['eom_pulse_duration']        = 2e-9
+params_lt4['eom_off_duration']          = 150e-9
+params_lt4['eom_off_amplitude']         = -.25
+params_lt4['eom_overshoot_duration1']   = 20e-9
+params_lt4['eom_overshoot1']            = -0.04
+params_lt4['eom_overshoot_duration2']   = 4e-9
+params_lt4['eom_overshoot2']            = -0.00
+params_lt4['aom_risetime']              = 15e-9
+params_lt4['aom_amplitude']             = 0.65
+
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -102,7 +105,7 @@ params_lt4['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE'] = 1
 params_lt4['plu_during_LDE'] = 1
 params_lt4['opt_pulse_start'] = params_lt4['LDE_SP_duration'] +  500e-9
-params_lt4['AWG_wait_for_lt3_start'] =  1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+params_lt4['AWG_wait_for_lt3_start'] =  8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9
@@ -115,6 +118,7 @@ params_lt4['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt4['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt4['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
 params_lt4['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt4['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
 params_lt4['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
 params_lt4['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt4['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']

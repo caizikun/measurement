@@ -23,7 +23,7 @@ bs_params['pulse_stop_bin']  = 5000
 bs_params['tail_start_bin']  = 6000
 bs_params['tail_stop_bin']   = 100000
 
-class Bell_BS(pq.PQMeasurement):#bell.Bell):
+class Bell_BS(bell.Bell):
 
     mprefix = 'Bell_BS'
 
@@ -38,9 +38,11 @@ class Bell_BS(pq.PQMeasurement):#bell.Bell):
         self.remote_measurement_helper.set_is_running(True)
 
     def print_measurement_progress(self):
-        #self.adwin_ins_lt4.Set_Par(51, np.sum(self.hist[self.params['pulse_start_bin'] : self.params['pulse_stop_bin'] ,:]))
-        #self.adwin_ins_lt4.Set_Par(52, np.sum(self.hist[self.params['tail_start_bin']  : self_params['tail_stop_bin']  ,:]))
-        pass
+        pulse_cts= np.sum(self.hist[self.params['pulse_start_bin'] : self.params['pulse_stop_bin'] ,:])
+        tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
+        self.adwin_ins_lt4.Set_Par(51, int(tail_cts))
+        self.adwin_ins_lt4.Set_Par(52, int(pulse_cts))
+        
 
     def measurement_process_running(self):
         return self.remote_measurement_helper.get_is_running()
@@ -58,11 +60,11 @@ Bell_BS.adwin_ins_lt4 = qt.instruments['physical_adwin_lt4']
 
 def remote_HH_measurement(name):
     debug=False
-    m=Bell_BS(name+'_'+qt.instruments['remote_measurement_helper'].get_measurement_name())
+    m=Bell_BS(name+qt.instruments['remote_measurement_helper'].get_measurement_name())
     for k in bs_params:
         m.params[k] = bs_params[k]
     m.run(setup=False,debug=debug)
     m.finish()
     
 if __name__ == '__main__':
-    remote_HH_measurement('BS')
+    remote_HH_measurement('')

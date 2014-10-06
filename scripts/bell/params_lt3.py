@@ -20,10 +20,14 @@ params_lt3['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt3['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt3['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump']
 
-params_lt3['cr_mod'] = True #XXX this should be true in case of cr mod!!
-params_lt3['cr_mod_control_offset']     =  0.0
-params_lt3['cr_mod_control_amp']        =  0.05 #V
-params_lt3['repump_mod_control_amp']    =  .5 #V
+params_lt3['cr_mod'] 				    =  True#qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
+params_lt3['cr_mod_control_dac']		=  qt.exp_params['protocols']['cr_mod']['cr_mod_control_dac']
+params_lt3['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] #XXX this should be true in case of cr mod!!
+params_lt3['cr_mod_control_amp']        =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_amp'] 
+params_lt3['cr_mod_control_avg_pts']    =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_avg_pts'] 
+params_lt3['repump_mod_control_amp']    =  qt.exp_params['protocols']['cr_mod']['repump_mod_control_amp'] 
+params_lt3['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['repump_mod_control_dac']
+
 
 #bell adwin:
 params_lt3['AWG_done_DI_channel'] = 9
@@ -95,13 +99,13 @@ params_lt3['RND_duration']	 	= 250e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 0 
-params_lt3['opt_pulse_start']	= 5.5e-6 - 93e-9-1e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
-params_lt3['opt_pulse_start']	= 5.5e-6 - 93e-9 #93 SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2.423e-6 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
 params_lt3['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt3['MIN_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
 params_lt3['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
 params_lt3['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
