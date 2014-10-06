@@ -23,7 +23,7 @@ joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION
 joint_params['MIN_SYNC_BIN'] =       7000 #WRONG / TODO
 joint_params['MAX_SYNC_BIN'] =       16000
 joint_params['MIN_HIST_SYNC_BIN'] =  5000
-joint_params['MAX_HIST_SYNC_BIN'] =  7000
+joint_params['MAX_HIST_SYNC_BIN'] =  15000
 joint_params['TTTR_read_count'] = 	 1000 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 joint_params['RND_start'] = 5.5e-6+(joint_params['opt_pi_pulses']-1)*joint_params['opt_pulse_separation'] + 3.3e-6 #dt(AC)- RND_duration - MW_RND_wait #XXXXX # = dt(f,BC)-dt(AC) + margin
