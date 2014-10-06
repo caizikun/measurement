@@ -134,9 +134,24 @@ def pulse_overlap(name):
              m,
              th_debug      = True,
              sequence_only = False,
-             mw            = True,
+             mw            = False,
              measure_lt3   = True,
              measure_bs    = False,
+             do_upload     = True,
+             compensate_lt4_drift=False)
+
+def TPQI(name):
+    m = Bell_lt4(name) 
+    m.joint_params['RO_during_LDE']=0
+    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['LDE_attempts_before_CR'] = 1000
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = True,
              do_upload     = True,
              compensate_lt4_drift=False)
 

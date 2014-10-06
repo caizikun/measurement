@@ -65,8 +65,8 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     qt.msleep(1)
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'GreenAOM'],
+    setpoints = [5e-9, 10e-9, 50e-9,50e-6]):
     
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):

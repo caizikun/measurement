@@ -47,7 +47,7 @@ cfg['protocols']['cr_mod']={
 	'cr_mod_control_offset'     :   0.0,
 	'cr_mod_control_amp'        :   0.1, #V
 	'cr_mod_control_avg_pts'	:   500000.,
-	'repump_mod_control_offset' :   5.4, #not gets set automatically
+	'repump_mod_control_offset' :   5.4, #note gets set automatically
 	'repump_mod_control_amp'    :   .5, #V
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
@@ -123,16 +123,16 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 5e-9,
+		'A_CR_amplitude':			 	 6e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 10e-9,
-		'CR_duration' :				 	 100,
+		'CR_duration' :				 	 50,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 5e-9,
-		'Ex_RO_amplitude':				 5e-9,
-		'Ex_SP_amplitude':				 5e-9,
+		'Ex_RO_amplitude':				 1e-9,
+		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
@@ -170,3 +170,12 @@ cfg['protocols'][name]['pulses'] = {
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }
+
+cfg['protocols'][name]['cr_linescan'] = {
+		'A_CR_amplitude':				 6e-9,
+		'CR_duration' :				 	 100,
+		'CR_preselect':					 1000,
+		'CR_probe':						 1000,
+		'CR_repump':					 1000,
+		'Ex_CR_amplitude':				 5e-9,
+		}
