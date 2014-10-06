@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -105,7 +105,7 @@ INIT:
   P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off E laser
 
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
-  P2_CNT_MODE(CTR_MODULE,counter_channel,00001000b) 'configure counter
+  P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
 
   P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO)
   P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel,0)

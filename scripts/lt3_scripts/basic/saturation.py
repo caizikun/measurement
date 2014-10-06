@@ -5,9 +5,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL3_ZPL_at_EWI_optim_pos_on_PSB'
+name = 'Pippin_SIL3_ZPL_at_EWI_pos_optim_on_MM_PSB'
 steps=21
-max_power=150e-6       #[w]
+max_power=250e-6       #[w]
 counter=3 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=-2.0          #delta x position of background [um]
