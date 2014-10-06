@@ -1,5 +1,5 @@
 
-if False:
+if True:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
     _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_gate=  lambda: qt.instruments['adwin'].get_dac_voltage('gate')
@@ -15,7 +15,7 @@ if True:
             set_ctrl_func=_setctrl_yellow_freq , get_val_func=_getval_yellow_freq , get_ctrl_func=_getctrl_yellow_freq, 
             ctrl_minval=0, ctrl_maxval=40.)
 
-if False:
+if True:
     set_eprime_func = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     get_eprime_func = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     get_E_y_func = lambda: qt.instruments['physical_adwin'].Get_FPar(43)

@@ -1,9 +1,11 @@
 import qt
+import os
 from instrument import Instrument
 import numpy as np
 import gobject
 import instrument_helper
 import types
+from lib import config
 from analysis.lib.nv import nvlevels
 
 class E_primer(Instrument):
@@ -29,6 +31,33 @@ class E_primer(Instrument):
 
         self._timer=-1
 
+    # override from config    ----------   
+        cfg_fn = os.path.abspath(
+                os.path.join(qt.config['ins_cfg_path'], name+'.cfg'))
+        if not os.path.exists(cfg_fn):
+            _f = open(cfg_fn, 'w')
+            _f.write('')
+            _f.close()
+        self._parlist = ['read_interval', 'E_y', 'offset']
+        self.ins_cfg = config.Config(cfg_fn)
+        self.load_cfg()
+        self.save_cfg()
+
+    def get_all(self):
+        for n in self._parlist:
+            self.get(n)
+        
+    def load_cfg(self):
+        params_from_cfg = self.ins_cfg.get_all()
+        for p in params_from_cfg:
+            if p in self._parlist:
+                self.set(p, value=self.ins_cfg.get(p))
+
+    def save_cfg(self):
+        for param in self._parlist:
+            value = self.get(param)
+            self.ins_cfg[param] = value 
+
     #--------------get_set        
 
     def _optimize(self,*arg):
@@ -43,7 +72,7 @@ class E_primer(Instrument):
                 F_Ex_0=self._F_E_0,F_Y_0=self._F_Y_0,F_Ex = F_E,F_Y =F_Y)
         E_prime_freq = levels[0]
         self._strain_splitting = levels[3]-levels[2] 
-        self._set_eprime_func(E_prime_freq+self.get_offset())
+        self._set_eprime_func(E_prime_freq-self.get_offset())
         #print E_prime_freq,self._get_eprime_func()
 
         return True
@@ -56,13 +85,13 @@ class E_primer(Instrument):
             return False
         self.set_is_running(True)
 
-        E_prime_0 = self._get_eprime_func()
+        E_prime_0 = self._get_eprime_func()+self.get_offset()
         self._F_E_0 = self._get_E_func()
         self._F_Y_0 = self._get_Y_func()
         
         ms0_level=2 if self.get_E_y() else 3
         #print ms0_level
-        Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=0.1)
+        Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=0.01)
         #print Ey,Ex
         self._strain_split_0 = Ex-Ey
         self._strain_splitting = Ex-Ey
@@ -76,3 +105,10 @@ class E_primer(Instrument):
         self.set_is_running(False)
         return gobject.source_remove(self._timer)
 
+    def remove(self):
+        self.stop()
+        Instrument.remove(self)
+
+    def reload(self):
+        self.stop()
+        Instrument.reload(self)
