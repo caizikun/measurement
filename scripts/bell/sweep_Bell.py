@@ -62,8 +62,8 @@ class SweepBell(bell.Bell):
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
 
-    def run(self,**kw):
-        pulsar_pq.PQPulsarMeasurement.run(self, **kw)
+    #def run(self,**kw):
+    #    pulsar_pq.PQPulsarMeasurement.run(self, **kw)
 
     def print_measurement_progress(self):
         pulsar_pq.PQPulsarMeasurement.print_measurement_progress(self)
@@ -129,19 +129,19 @@ def tail_sweep(name):
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 7e-6
+    m.joint_params['LDE_element_length'] = 9e-6
     m.joint_params['do_final_MW_rotation'] = 0
     m.joint_params['wait_for_1st_revival'] = 0
 
-    m.params['MIN_SYNC_BIN'] =       10 
-    m.params['MAX_SYNC_BIN'] =       7000 
+    m.params['MIN_SYNC_BIN'] =       5000
+    m.params['MAX_SYNC_BIN'] =       8300 
 
     do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.3,.7,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(0.3000,1,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -228,7 +228,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     if upload_only:
         return
     if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
             m.bs_helper.set_measurement_name(m.name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -243,6 +243,6 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('Hans_sil1_8deg_SM_on_PSB') 
+    tail_sweep('testing') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('Sammy_RND_check')
