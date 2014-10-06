@@ -38,8 +38,8 @@ qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker',
     high=2.0, low=0, offset=0., delay=0e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker2', name='RND_halt', type='marker', 
     high=2.0, low=0, offset=0, delay=100e-9, active=True)
-#qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0., delay=125e-9, active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 
+    high=2.0, low=0, offset=0., delay=125e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
@@ -51,11 +51,11 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=624e-9, active=True) #617 ns for normal pulses
+    high=1.0, low=-1.0, offset=0.0, delay=458e-9, active=True) #617 ns for normal pulses
 #qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
-qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
+qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True)
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())

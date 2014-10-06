@@ -191,6 +191,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         self.h5data.flush()
 
         self.PQ_ins.StopMeas()
+        
         print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')

@@ -1,11 +1,23 @@
 
+#if True:
+#    _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
+#    _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
+#    _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
+#    pidgate = qt.instruments.create('pidgate', 'pid_controller_v4', 
+#            set_ctrl_func=_setctrl_gate , get_val_func=_getval_gate , get_ctrl_func=_getctrl_gate, 
+#            ctrl_minval=-1800, ctrl_maxval=-800)
+
+
 if True:
-    _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
+    _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac4(x)
     _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
-    _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
+    _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac4()
     pidgate = qt.instruments.create('pidgate', 'pid_controller_v4', 
             set_ctrl_func=_setctrl_gate , get_val_func=_getval_gate , get_ctrl_func=_getctrl_gate, 
-            ctrl_minval=-1600, ctrl_maxval=-1200)
+            ctrl_minval=-400, ctrl_maxval=400)
+
+
+
 
 if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)

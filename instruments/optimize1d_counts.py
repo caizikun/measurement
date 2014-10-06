@@ -298,7 +298,11 @@ class optimize1d_counts(CyclopeanInstrument):
                     self._fit_error = False
                     ret = False
                     print '(%s) optimize failed!' % self.get_name()
-                    self._opt_pos = p[cr.tolist().index(max(cr))]
+                    if array(cr).max() == 0.:
+                        print 'no counts in linescan'
+                        self._opt_pos = self._opt_pos_prev
+                    else:
+                        self._opt_pos = p[cr.tolist().index(max(cr))]
             
             self.get_fit_result()
 
