@@ -26,7 +26,7 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.ndarray[cnp.uint32_t, ndim=2, mode='c'] hist not None,
     cnp.uint64_t t_ofl,
     cnp.uint64_t t_lastsync,
-    cnp.uint64_t last_sync_number,
+    cnp.uint32_t last_sync_number,
     cnp.uint64_t min_sync_time,
     cnp.uint64_t max_sync_time,
     cnp.uint64_t min_hist_sync_time,
@@ -83,8 +83,8 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
         if _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
             if special[k] == 0: #we only save clicks in this histogram, no markers.
-                hist[_sync_time,channel[k]] += 1
-        if _sync_time > min_sync_time and _sync_time > max_sync_time:
+                hist[_sync_time-min_hist_sync_time,channel[k]] += 1
+        if _sync_time > min_sync_time and _sync_time < max_sync_time:
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
             hhspecial[l] = special[k]
