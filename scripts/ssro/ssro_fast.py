@@ -115,13 +115,13 @@ def fast_ssro_calibration(name):
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,50,pts)*m.params['Ex_RO_amplitude']
-    m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,3,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_durations_AWG']    =    np.ones(pts)*20e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
     m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
@@ -161,4 +161,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('The111no2_SIL2_w_PulseAOM')
+    fast_ssro_calibration('Pippin_SIL3_Ex_10deg')

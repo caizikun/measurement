@@ -1,5 +1,5 @@
 
-if True:
+if False:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
     _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
@@ -19,7 +19,7 @@ if True:
 
 
 
-if True:
+if False:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getval_yellow_freq = lambda: qt.instruments['physical_adwin'].Get_FPar(78)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
@@ -30,7 +30,7 @@ if True:
 if True:
     set_eprime_func = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     get_eprime_func = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
-    get_E_y_func = lambda: qt.instruments['physical_adwin'].Get_FPar(44)
+    get_E_y_func = lambda: qt.instruments['physical_adwin'].Get_FPar(43)
     get_Y_func= lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     e_primer = qt.instruments.create('e_primer', 'E_primer', 
         set_eprime_func=set_eprime_func,

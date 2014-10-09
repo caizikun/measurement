@@ -119,7 +119,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=9
     m.params['pts']=pts
     m.params['repetitions'] = 15000
 
