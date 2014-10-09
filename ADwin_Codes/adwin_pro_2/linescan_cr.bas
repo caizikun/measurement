@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -140,14 +140,14 @@ EVENT:
     timer = wait_time
   ELSE
     IF (timer = wait_time) THEN
-      Processdelay = 300
+      Processdelay = 300 'maybe set the initial process delay to this value?
       DEC(timer)
     ELSE
       IF ( CR_check(first,CurrentStep) <> 0 ) THEN
         IF ((PAR_59 > 0) OR (scan_activated>0)) THEN
           scan_activated = 1
           DEC(timer)
-          counter1 = counter1 + cr_counts + cr_old_counts + cr_r_counts
+          counter1 = counter1 + cr_counts + cr_old_counts + cr_r_counts ' CR counts + CR counts during modulation + repump counts
         ENDIF 
       ENDIF
     ENDIF
@@ -157,4 +157,3 @@ EVENT:
     
 FINISH:
   finish_CR()  
-  Par_49 = 0  'tell resonant counting process to stop summing its data into par 45-48  

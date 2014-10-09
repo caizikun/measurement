@@ -5,8 +5,8 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL3_ZPL_EWI_pos_optim_CRcounts'
-steps=31
+name = 'Pippin_SIL3_ZPL_EWI_pos_CR_opt_xyonly'
+steps=21
 max_power=200e-6       #[w]
 counter=3 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0

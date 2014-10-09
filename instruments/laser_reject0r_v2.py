@@ -7,6 +7,7 @@ from analysis.lib.fitting import fit, common
 import instrument_helper
 from lib import config
 from measurement.lib.config import rotation_mounts as rotcfg
+reload(rotcfg)
 from scipy import optimize
 
 class laser_reject0r_v2(Instrument):  

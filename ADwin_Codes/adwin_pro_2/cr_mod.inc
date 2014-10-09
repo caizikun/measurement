@@ -200,8 +200,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+          cr_old_counts = 0
           IF (cr_mod_activated > 0) THEN
-            cr_old_counts = 0
             'cr_mod_control_amp = -1.0*cr_mod_control_amp
             cr_i=0
           ELSE
