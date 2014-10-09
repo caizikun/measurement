@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -66,6 +66,10 @@ LOWINIT:
   NoOfSteps = PAR_2
   PxTime = FPAR_1
   PxAction = PAR_3
+  IF (NoOfSteps = 0) THEN 
+    EXIT
+  ENDIF
+  
   IF (PxAction = 0) THEN
     scan_average = 1
   ELSE
@@ -99,9 +103,7 @@ LOWINIT:
   current_scan_direction = 1
   first = 0
   
-  IF (NoOfSteps = 0) THEN 
-    EXIT
-  ENDIF
+
 EVENT:
   IF (timer = 0) THEN
     PROCESSDELAY = 30000

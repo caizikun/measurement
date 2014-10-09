@@ -86,7 +86,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.65
+params_lt4['aom_amplitude']             = 0.75 #2014-10-07
 
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
@@ -118,7 +118,7 @@ params_lt4['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt4['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
 params_lt4['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
 params_lt4['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
-params_lt4['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
+params_lt4['MIN_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
 params_lt4['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
 params_lt4['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
 params_lt4['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
