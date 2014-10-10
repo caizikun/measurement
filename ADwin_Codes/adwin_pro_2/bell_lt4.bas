@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277513  DASTUD\tud277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -66,7 +66,7 @@ DIM succes_event_counter AS LONG
 DIM CR_result,first_local AS LONG
 
 
-INIT:
+LOWINIT:
   init_CR()
   AWG_start_DO_channel         = DATA_20[1]
   AWG_done_DI_channel          = DATA_20[2]
@@ -145,50 +145,50 @@ INIT:
 
 EVENT:
 
-  if (remote_delay_time > 0) then  
-    dec(remote_delay_time)
-  ELSE
-    Par_60 = remote_mode
-    selectcase remote_mode
-    
-      case 0 'start remote CR check (automatically)
-        IF (wait_for_remote_CR > 0) THEN
-          remote_mode = 1
-          remote_CR_wait_timer = 0
-          remote_delay_time = 5
-        ELSE
-          remote_mode = 2
-        ENDIF
-                                              
-      case 1 'remote CR check running
+  'if (remote_delay_time > 0) then  
+  '  dec(remote_delay_time)
+  'ELSE
+  '  Par_60 = remote_mode
+  '  selectcase remote_mode
+  '  
+  '    case 0 'start remote CR check (automatically)
+  '      IF (wait_for_remote_CR > 0) THEN
+  '        remote_mode = 1
+  '        remote_CR_wait_timer = 0
+  '        remote_delay_time = 5
+  '      ELSE
+  '        remote_mode = 2
+  '      ENDIF
+  '                                            
+  '    case 1 'remote CR check running
+  '    
+  '      ' check state of other adwin and whether it has changed to ready
+  '      remote_CR_was_high = remote_CR_is_high
+  '      remote_CR_is_high =0' ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
+  '           
+  '      IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round. 
+  '        'P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0)
+  '        'remote_CR_is_high = 0
+  '        remote_mode = 2
+  '        INC(Par_64)
+  '      ENDIF             
+  '    
+  '    case 2 'remote CR OK, remote adwin waiting
+  '    
+  '    case 3 'remote SSRO running
+  '      ' check state of other adwin and whether it has changed to ready
+  '      remote_CR_was_high = remote_CR_is_high
+  '      remote_CR_is_high = ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
+  '                   
+  '      IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round.
+  '        'remote_CR_is_high = 0 
+  '        remote_mode = 4
+  '      ENDIF
+  '              
+  '    case 4 'remote SSRO OK, remote adwin waiting
       
-        ' check state of other adwin and whether it has changed to ready
-        remote_CR_was_high = remote_CR_is_high
-        remote_CR_is_high = ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
-             
-        IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round. 
-          'P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0)
-          'remote_CR_is_high = 0
-          remote_mode = 2
-          INC(Par_64)
-        ENDIF             
-      
-      case 2 'remote CR OK, remote adwin waiting
-      
-      case 3 'remote SSRO running
-        ' check state of other adwin and whether it has changed to ready
-        remote_CR_was_high = remote_CR_is_high
-        remote_CR_is_high = ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
-                     
-        IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round.
-          'remote_CR_is_high = 0 
-          remote_mode = 4
-        ENDIF
-                
-      case 4 'remote SSRO OK, remote adwin waiting
-      
-    endselect
-  endif
+  '  endselect
+  'endif
   
   IF (local_wait_time > 0) THEN
     DEC(local_wait_time)
@@ -199,16 +199,16 @@ EVENT:
       CASE 0 'CR check
         CR_result = CR_check(first,succes_event_counter+1)
         IF ( CR_result > 0 ) THEN
-          IF (Par_63 > 0) THEN
-            END
-          ENDIF
+          '          IF (Par_63 > 0) THEN
+          '            END
+          '          ENDIF
           mode = 2
           timer = -1
         ENDIF
-        IF (((first_local > 0) AND (CR_result <> 0)) AND (cr_counts<max_CR_counts)) THEN
-          INC(DATA_28[cr_counts+1])
-          first_local = 0
-        ENDIF
+        'IF (((first_local > 0) AND (CR_result <> 0)) AND (cr_counts<max_CR_counts)) THEN
+        '  INC(DATA_28[cr_counts+1])
+        '  first_local = 0
+        'ENDIF
         
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN

@@ -144,14 +144,14 @@ def TPQI(name):
     m = Bell_lt4(name) 
     m.joint_params['RO_during_LDE']=0
     m.joint_params['opt_pi_pulses'] = 15
-    m.joint_params['LDE_attempts_before_CR'] = 1000
+    m.joint_params['LDE_attempts_before_CR'] = 500
     bell_lt4(name, 
              m,
              th_debug      = True,
              sequence_only = False,
              mw            = False,
-             measure_lt3   = True,
-             measure_bs    = True,
+             measure_lt3   = False,
+             measure_bs    = False,
              do_upload     = True,
              compensate_lt4_drift=False)
 
@@ -233,7 +233,8 @@ def bell_lt4(name,
 
 
 if __name__ == '__main__':
+    TPQI('on_resonance_run_1')
     #full_bell('SP_CORR_SAM_SIL5')   
     #SP_lt4('SP_CORR_SAM_SIL5')
-    pulse_overlap('fist_try')
+    #pulse_overlap('fist_try')
     #SP_lt3('SP_CORR_the111no1_sil1')
