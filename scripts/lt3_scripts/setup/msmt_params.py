@@ -173,10 +173,10 @@ cfg['protocols'][name]['pulses'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 10e-9,
+		'A_CR_amplitude':				 6e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 5e-9,
+		'Ex_CR_amplitude':				 3e-9,
 		}
