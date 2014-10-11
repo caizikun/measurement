@@ -34,6 +34,9 @@ class Bell_BS(bell.Bell):
             self.params[k] = remote_params[k]
         self.remote_measurement_helper.set_data_path(self.h5datapath)
 
+    def setup(self):
+        pq.PQMeasurement.setup(self)
+
     def start_measurement_process(self):
         self.remote_measurement_helper.set_is_running(True)
 
@@ -63,7 +66,7 @@ def remote_HH_measurement(name):
     m=Bell_BS(name+qt.instruments['remote_measurement_helper'].get_measurement_name())
     for k in bs_params:
         m.params[k] = bs_params[k]
-    m.run(setup=False,debug=debug)
+    m.run(debug=debug)
     m.finish()
     
 if __name__ == '__main__':
