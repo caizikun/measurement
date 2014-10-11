@@ -121,7 +121,7 @@ if __name__ == '__main__':
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'
                 break
-            qt.msleep(.5)
+            qt.msleep(2)
         qt.instruments['AWG'].stop()
         print lt3_helper.get_measurement_name()
     else:

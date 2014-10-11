@@ -57,7 +57,7 @@ DIM repetition_counter AS LONG
 
 DIM counts, old_counts AS LONG
 
-DIM remote_mode, check_remote, do_sequences, remote_CR_wait_timer AS LONG
+DIM remote_mode, remote_delay_time, do_sequences, remote_CR_wait_timer AS LONG
 DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
@@ -103,7 +103,7 @@ LOWINIT:
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   PLU_di_pattern = 2 ^ PLU_di_channel
   remote_CR_trigger_di_pattern = 2 ^ remote_CR_trigger_di_channel
-  remote_CR_is_high = 0
+  remote_CR_is_high = 1
   
   repetition_counter  = 0
   first               = 0
@@ -112,7 +112,7 @@ LOWINIT:
   remote_CR_wait_timer = 0
   
   remote_mode  = 0
-  check_remote = 1
+  remote_delay_time = 0
   
   succes_event_counter = 0
     
@@ -140,11 +140,14 @@ LOWINIT:
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter
   
+  PAR_80 = 20*wait_for_remote_CR
+  
 
 EVENT:
 
-  IF (check_remote > 0) THEN
-
+  if (remote_delay_time > 0) then  
+    dec(remote_delay_time)
+  ELSE
     Par_60 = remote_mode
     selectcase remote_mode
     
@@ -152,10 +155,10 @@ EVENT:
         IF (wait_for_remote_CR > 0) THEN
           remote_mode = 1
           remote_CR_wait_timer = 0
+          remote_delay_time = 5
         ELSE
           remote_mode = 2
         ENDIF
-        check_remote = 0
                                               
       case 1 'remote CR check running
       
@@ -165,9 +168,8 @@ EVENT:
              
         IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round. 
           'P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0)
-          remote_CR_is_high = 0
+          'remote_CR_is_high = 0
           remote_mode = 2
-          check_remote = 0
           INC(Par_64)
         ENDIF             
       
@@ -179,14 +181,17 @@ EVENT:
         remote_CR_is_high = ((P2_DIGIN_LONG(DIO_MODULE)) AND (remote_CR_trigger_di_pattern))
                      
         IF ((remote_CR_was_high = 0) AND (remote_CR_is_high > 0)) THEN ' ADwin switched to high during last round.
-          remote_CR_is_high = 0 
+          'remote_CR_is_high = 0 
           remote_mode = 4
-          check_remote = 0
         ENDIF
                 
       case 4 'remote SSRO OK, remote adwin waiting
       
-    ENDSELECT
+    endselect
+  endif
+  
+  IF (local_wait_time > 0) THEN
+    DEC(local_wait_time)
   ELSE
     Par_61 = mode
     SELECTCASE mode
@@ -207,6 +212,7 @@ EVENT:
         
       CASE 2    ' Ex or A laser spin pumping
         IF (timer = 0) THEN
+          'P2_DAC(DAC_MODULE, repump_laser_DAC_channel, 3277*repump_voltage+32768) ' turn on Ex laser XXXXXX
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768)   ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,  counter_pattern)    'clear counter
@@ -219,6 +225,7 @@ EVENT:
           old_counts = counts
           IF (timer = SP_duration) THEN
             P2_CNT_ENABLE(CTR_MODULE, 0)
+            'P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*0+32768) ' turn off Ex laser XXXXXX
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
 
@@ -237,16 +244,15 @@ EVENT:
             remote_mode = 0
           else      
             mode = 4
+            local_wait_time = 5 ' we need to make sure that the AWG is receptive for triggering now!
             DATA_27[succes_event_counter + 1] = remote_CR_wait_timer   ' save CR timer just before LDE sequence
           endif        
           timer = -1
-        ELSE
-          check_remote = 1      
-        ENDIF
+        ENDIF      
     
       case 4 ' trigger LDE, then wait for timeout (AWG) OR success (PLU)
       
-        IF (timer = 5) THEN ' we need to make sure that the AWG is receptive for triggering now!
+        IF (timer = 0) THEN
           
           INC(repetition_counter)
           INC(par_73)
@@ -254,6 +260,12 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel, 1) ' trigger the AWG to start LDE
           CPU_SLEEP(9)
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel, 0)
+          
+          'P2_DIGOUT(DIO_MODULE,PLU_arm_do_channel, 1) ' arm the PLU once at the beginning of the LDE sequence
+          'CPU_SLEEP(9)
+          'P2_DIGOUT(DIO_MODULE,PLU_arm_do_channel, 0)
+          
+          ' par_60 = (DIGIN_EDGE(1) AND (PLU_di_channel_in_bit))
         
         ELSE
           
@@ -322,23 +334,23 @@ EVENT:
             
             mode = 6
             timer = -1
+            
+            local_wait_time = local_wait_time_duration
                      
           ENDIF
         ENDIF
-        
       CASE 6 'local SSRO OK, wait for remote SSRO done
         IF ((remote_mode = 4) OR (wait_for_remote_CR =0)) THEN
           mode = 0 
           remote_mode = 0
           timer = -1
-        ENDIF   
-        check_remote=1   
+        ENDIF      
     ENDSELECT
-  ENDIF
-  
     
-  INC(timer)
-  INC(remote_CR_wait_timer)
+    INC(timer)
+    INC(remote_CR_wait_timer)
+    
+  ENDIF
   
 FINISH:
   finish_CR()

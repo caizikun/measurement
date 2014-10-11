@@ -122,6 +122,7 @@ def bell_lt3_remote(name):
     remote_meas = True
     do_upload = True
     remote_name=Bell_lt3.remote_measurement_helper.get_measurement_name()
+    print 'Running',remote_name
     m=Bell_lt3(name+'_'+remote_name) 
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
@@ -129,6 +130,11 @@ def bell_lt3_remote(name):
         m.joint_params['RO_during_LDE']=0
         m.joint_params['do_echo'] = 0
         m.joint_params['do_final_MW_rotation'] = 0
+
+    if 'TPQI' in remote_name:
+        m.joint_params['RO_during_LDE']=0
+        m.joint_params['opt_pi_pulses'] = 15
+        m.joint_params['LDE_attempts_before_CR'] = 250
     m.autoconfig()
 
     if do_upload:
