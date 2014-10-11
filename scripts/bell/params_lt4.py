@@ -86,13 +86,13 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.502 #2014-10-10
+params_lt4['aom_amplitude']             = 0.53 #2014-10-11
 
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 5e-9 # 2014-07-24
+params_lt4['AWG_RO_power']            = 2e-9 # 2014-07-24
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence

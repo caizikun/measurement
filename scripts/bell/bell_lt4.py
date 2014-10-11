@@ -6,6 +6,7 @@ lt4 script for Measuring a tail with a picoquant time correlator
 import numpy as np
 import inspect
 import qt
+import time
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
@@ -98,7 +99,7 @@ class Bell_lt4(bell.Bell):
             cur_v = self.adwin.get_dac_voltage('atto_x')
             print 'drift:', drift
             #self.adwin.set_dac_voltage(('atto_x',cur_v+drift ))
-        bell.Bell.print_measurement_progress(self)
+        #bell.Bell.print_measurement_progress(self)
 
     def reset_plu(self):
         self.adwin.start_set_dio(dio_no=2, dio_val=0)
@@ -141,17 +142,18 @@ def pulse_overlap(name):
              compensate_lt4_drift=False)
 
 def TPQI(name):
-    m = Bell_lt4(name) 
+    name= 'TPQI_'+name
+    m = Bell_lt4(name)
     m.joint_params['RO_during_LDE']=0
     m.joint_params['opt_pi_pulses'] = 15
-    m.joint_params['LDE_attempts_before_CR'] = 500
+    m.joint_params['LDE_attempts_before_CR'] = 250
     bell_lt4(name, 
              m,
              th_debug      = True,
              sequence_only = False,
              mw            = False,
-             measure_lt3   = False,
-             measure_bs    = False,
+             measure_lt3   = True,
+             measure_bs    = True,
              do_upload     = True,
              compensate_lt4_drift=False)
 
@@ -205,7 +207,7 @@ def bell_lt4(name,
             m.lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt3.py')
             m.lt3_helper.execute_script()
         if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -218,6 +220,11 @@ def bell_lt4(name,
 
     m.setup(debug=th_debug)
     m.reset_plu()
+    
+    print '='*10
+    print name
+    print 'Measreument started: ', time.strftime('%H:%M')
+    print '='*10
 
     if measure_lt3: m.lt3_helper.set_is_running(True)
     m.run(autoconfig=False, setup=False,debug=th_debug)
@@ -233,7 +240,7 @@ def bell_lt4(name,
 
 
 if __name__ == '__main__':
-    TPQI('on_resonance_run_1')
+    TPQI('on_resonance_run_2')
     #full_bell('SP_CORR_SAM_SIL5')   
     #SP_lt4('SP_CORR_SAM_SIL5')
     #pulse_overlap('fist_try')
