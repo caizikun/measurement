@@ -32,6 +32,7 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 
 	PQ_ins.StartMeas(int(meas_time))
 	qt.msleep(approx_int_time)
+	print 'starting HH counter, press q to quit...'
 
 	while(PQ_ins.get_MeasRunning()):
 		if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
