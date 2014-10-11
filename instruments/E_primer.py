@@ -10,7 +10,7 @@ from analysis.lib.nv import nvlevels
 
 class E_primer(Instrument):
 
-    def __init__(self, name, set_eprime_func,get_eprime_func,get_E_func,get_Y_func, **kw):
+    def __init__(self, name, set_eprime_func,get_eprime_func,get_E_func,get_Y_func,set_strain_splitting_func, **kw):
         Instrument.__init__(self, name)
        
         ins_pars  = {'read_interval'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET,'unit':'s', 'val': 1.},
@@ -28,6 +28,7 @@ class E_primer(Instrument):
         self._get_Y_func=get_Y_func
         self._set_eprime_func = set_eprime_func
         self._get_eprime_func = get_eprime_func
+        self._set_strain_splitting_func = set_strain_splitting_func
 
         self._timer=-1
 
@@ -72,8 +73,9 @@ class E_primer(Instrument):
                 F_Ex_0=self._F_E_0,F_Y_0=self._F_Y_0,F_Ex = F_E,F_Y =F_Y)
         E_prime_freq = levels[0]
         self._strain_splitting = levels[3]-levels[2] 
+        self._set_strain_splitting_func(self._strain_splitting)
         self._set_eprime_func(E_prime_freq-self.get_offset())
-        #print E_prime_freq,self._get_eprime_func()
+        
 
         return True
 
