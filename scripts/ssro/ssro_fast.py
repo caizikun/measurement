@@ -17,7 +17,6 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
     def autoconfig(self, **kw):
         self.params['send_AWG_start'] = 1
-        self.params['wait_for_AWG_done'] = 1
         pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
         self.params['A_SP_voltage_AWG'] = \
                     self.A_aom.power_to_voltage(
@@ -30,7 +29,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
         for i in range(self.params['pts']/2):
             
             self.params['E_SP_voltages_AWG'][i] = \
-                    self.E_aom.power_to_voltage(
+                    self.AWG_RO_AOM.power_to_voltage(
                             self.params['E_SP_amplitudes_AWG'][i], controller='sec')
 
             self.params['E_RO_voltages_AWG'][i] = \
@@ -41,7 +40,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
             print 'Setting max RO power'
             qt.pulsar.set_channel_opt('EOM_AOM_Matisse', 'high', self.params['E_RO_voltages_AWG'][-1])
 
-    def generate_sequence(self):
+    def generate_sequence(self, upload=True):
 
         SP_A_pulse         =         pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
         SP_E_pulse        =       pulse.SquarePulse(channel = 'EOM_AOM_Matisse',  amplitude = 1.0)
@@ -87,15 +86,22 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
             seq.append(name='SSRO-ms1-{}'.format(i), wfname=e1.name, trigger_wait=True)
             seq.append(name='finished-ms1-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
-            
-        qt.pulsar.program_awg(seq,*elements)
+        
+
+
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def fast_ssro_calibration(name):
 
-    m = FastSSRO('FastSSROCalibration_'+name)
+    m = FastSSRO('FastSSROCalib_'+name)
     m.AWG_RO_AOM = qt.instruments['PulseAOM']
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -106,17 +112,17 @@ def fast_ssro_calibration(name):
 
     pts = 11
     m.params['pts'] = 2*pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 2000
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,4,pts)*m.params['Ex_RO_amplitude']
-    m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,3,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_durations_AWG']    =    np.ones(pts)*20e-6
 
-    m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']*3
+    m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
@@ -128,14 +134,15 @@ def fast_ssro_calibration(name):
 
     debug=False
     measure_bs=False
-    upload=True
+    upload=True#'old_method'
+
+    m.params['wait_for_AWG_done'] = 0
+    m.params['sequence_wait_time'] = max(m.params['E_RO_durations_AWG']*1e6) + max(m.params['E_SP_durations_AWG']*1e6) + 20
+    print 'sequence_wait_time', m.params['sequence_wait_time']
 
     m.autoconfig()
-
-    if upload:
-        m.generate_sequence()
-    
-
+    m.generate_sequence(upload=upload)
+   
     m.setup(mw=False, debug=debug)
     m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
     print m.params['MAX_SYNC_BIN']
@@ -157,4 +164,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Samy_w_PulseAOM')
+    fast_ssro_calibration('Hans_SIL1_Pulse_AOMe')

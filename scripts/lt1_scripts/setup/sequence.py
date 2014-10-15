@@ -75,7 +75,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
-        'TRIGGER_INPUT_THRESHOLD'   :   1.4,  # V
+        'TRIGGER_INPUT_THRESHOLD'   :   0.6,  # V
         'EVENT_INPUT_IMPEDANCE'     :   2,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
         'EVENT_INPUT_THRESHOLD'     :   1.4,  #V

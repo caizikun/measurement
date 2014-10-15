@@ -471,9 +471,9 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 300, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 4000, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.8
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.02
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -512,8 +512,8 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     m.params['range']        = 4e6
     m.params['pts'] = 131
 
-    m.params['MW_pi_duration'] = 2.e-6
-    m.params['pulse_pi_amp'] = 0.015
+    m.params['MW_pi_duration'] = 1.1e-6
+    m.params['pulse_pi_amp'] = 0.03
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
@@ -819,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.0, IQmod = False,Imod_channel=False, debug = False)
+    run_calibrations(2.0, IQmod = True,Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

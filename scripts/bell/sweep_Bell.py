@@ -17,24 +17,10 @@ import bell
 reload(bell)
 import sequence as bseq
 reload(bseq)
-import joint_params
-reload(joint_params)
-import params_lt3
-reload(params_lt3)
-import params_lt1
-reload(params_lt1)
 
 class SweepBell(bell.Bell):
     adwin_process = pulsar_pq.PQPulsarMeasurement.adwin_process
     
-    def __init__(self, name):
-        bell.Bell.__init__(self,name)
-        self.params['send_AWG_start'] = 1    
-        self.params['sync_during_LDE'] = 1
-        self.params['wait_for_AWG_done'] = 0
-        self.params['do_general_sweep']= 1
-        self.params['trigger_wait'] = 1#not(debug)
-
     def generate_sequence(self):
   
         self.sweep_bell_seq = pulsar.Sequence('Bell_sweep')
@@ -45,10 +31,10 @@ class SweepBell(bell.Bell):
             if self.params['do_general_sweep'] :
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
 
-            if self.params['setup'] == 'lt3':
-                bseq.pulse_defs_lt3(self)
-            elif self.params['setup'] == 'lt1':
-                bseq.pulse_defs_lt1(self)    
+            if self.params['setup'] == 'lt4':
+                bseq.pulse_defs_lt4(self)
+            elif self.params['setup'] == 'lt3':
+                bseq.pulse_defs_lt3(self)    
 
             LDE_element = bseq._LDE_element(self, 
                 name = 'Bell sweep element {}'.format(i))    
@@ -76,8 +62,8 @@ class SweepBell(bell.Bell):
     def save(self):
         pulsar_pq.PQPulsarMeasurement.save(self)
 
-    def run(self,**kw):
-        pulsar_pq.PQPulsarMeasurement.run(self, **kw)
+    #def run(self,**kw):
+    #    pulsar_pq.PQPulsarMeasurement.run(self, **kw)
 
     def print_measurement_progress(self):
         pulsar_pq.PQPulsarMeasurement.print_measurement_progress(self)
@@ -86,29 +72,56 @@ SweepBell.bs_helper = qt.instruments['bs_helper']
 
 def _setup_params(msmt, setup):
     msmt.params['setup']=setup
-    for k in joint_params.joint_params:
-    msmt.joint_params[k] = joint_params.joint_params[k]
+    msmt.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    msmt.params.from_dict(qt.exp_params['protocols']['cr_mod'])
 
-    if setup == 'lt3' :
+    
+    if not(hasattr(msmt,'joint_params')):
+        msmt.joint_params = {}
+    import joint_params
+    reload(joint_params)
+    for k in joint_params.joint_params:
+        msmt.joint_params[k] = joint_params.joint_params[k]
+
+    if setup == 'lt4' :
+        import params_lt4
+        reload(params_lt4)
+        msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
+        for k in params_lt4.params_lt4:
+            msmt.params[k] = params_lt4.params_lt4[k]
+        bseq.pulse_defs_lt4(msmt)
+    elif setup == 'lt3' :
+        import params_lt3
+        reload(params_lt3)
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             msmt.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(msmt)
-    elif setup == 'lt1' :
-        msmt.AWG_RO_AOM = msmt.E_aom
-        for k in params_lt1.params_lt1:
-            msmt.params[k] = params_lt1.params_lt1[k]
-        bseq.pulse_defs_lt1(msmt)
     else:
         print 'Sweep_bell: invalid setup:', setup
 
-def tail_sweep(name):
-    m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    msmt.params['send_AWG_start'] = 1
+    msmt.params['sync_during_LDE'] = 1
+    msmt.params['wait_for_AWG_done'] = 0
+    msmt.params['do_general_sweep']= 1
+    msmt.params['trigger_wait'] = 1
 
-    pts=11
+
+
+
+###########################################################################
+###########################measurements####################################
+###########################################################################
+
+
+
+def tail_sweep(name):
+    m=SweepBell('tail_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
+
+    pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 15000
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -116,19 +129,19 @@ def tail_sweep(name):
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 7e-6
+    m.joint_params['LDE_element_length'] = 9e-6
     m.joint_params['do_final_MW_rotation'] = 0
     m.joint_params['wait_for_1st_revival'] = 0
 
-    m.params['MIN_SYNC_BIN'] =       5000 
-    m.params['MAX_SYNC_BIN'] =       7000 
+    m.params['MIN_SYNC_BIN'] =       5000
+    m.params['MAX_SYNC_BIN'] =       8300 
 
     do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=linspace(0.3,0.8,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(0.3,1.,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -137,42 +150,45 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        m.params['general_sweep_name'] = 'aom_amplitude' #eom_off_amplitude
-        m.params['general_sweep_pts'] = np.linspace(0.2,1.0,pts)
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        m.params['general_sweep_pts'] = np.linspace(-0.6,0.1,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+
 
     run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
 
 def echo_sweep(name):
-    m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    m=SweepBell('echo_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
 
-    pts=11
+    pts=15
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
-    m.params['MW_during_LDE'] = 1 # the maximum number of pi pulses is 3 !!!
+    m.params['MW_during_LDE'] = 1 
     m.joint_params['do_final_MW_rotation'] = 1
     m.joint_params['LDE_attempts_before_CR'] = 1
     m.joint_params['opt_pi_pulses'] = 2
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1
-    m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.joint_params['DD_number_pi_pulses'] = 1
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
+    # see PPT 2014-07-14_DataMeeting_PulseCalibration for scheme
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
 
     m.params['free_precession_offset'] = 0e-9
-    m.aparms['echo_offset'] = 0e-9
+    m.params['echo_offset'] = 48e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-100e-9, 100e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(30e-9, 70e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -181,12 +197,12 @@ def echo_sweep(name):
     run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
 def rnd_echo_ro(name):
-    m=SweepBell(name)
-    _setup_params(msmt, setup = qt.current_setup)
+    m=SweepBell('RND_RO_'+name)
+    _setup_params(m, setup = qt.current_setup)
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 400
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -203,7 +219,7 @@ def rnd_echo_ro(name):
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = True)
 
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
@@ -212,8 +228,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     if upload_only:
         return
     if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
-            m.bs_helper.set_measurement_name(name)
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
+            m.bs_helper.set_measurement_name(m.name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
     m.setup(debug=th_debug)
@@ -227,4 +243,6 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    sweep_bell('Samy_Tail_PSB_10deg', setup = 'lt3')    
+    tail_sweep('tail_lt3_PippinSil3') 
+    #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
+    #rnd_echo_ro('Sammy_RND_check')
