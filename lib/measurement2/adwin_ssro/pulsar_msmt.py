@@ -893,6 +893,32 @@ class Magnetometry(PulsarMeasurement):
         return n
 
 
+    def _MBI_element(self,name ='MBI_CNOT'):
+        # define the necessary pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+
+        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod',
+            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+            length = self.params['AWG_MBI_MW_pulse_duration'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \
+                + self.params['AWG_wait_for_adwin_MBI_duration']),
+            amplitude = 2)
+
+        # the actual element
+        mbi_element = element.Element(name, pulsar=qt.pulsar)
+        mbi_element.append(T)
+        mbi_element.append(X)
+        mbi_element.append(adwin_sync)
+
+        return mbi_element
+
 
 
 

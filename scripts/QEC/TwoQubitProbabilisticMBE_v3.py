@@ -22,7 +22,7 @@ def MBE(name, carbon_list   = [4, 1],
         mbe_bases           = ['X','X'],
         MBE_threshold       = 1,
         el_RO               = 'positive',
-        debug               = False):
+        debug               = True):
 
     ### TODO THT: I want the carbon init_threshold to be a list as well so that the 
     ### ADWIN runs with different thresholds
