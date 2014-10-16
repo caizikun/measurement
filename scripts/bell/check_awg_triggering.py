@@ -32,7 +32,7 @@ def program_test_master(reset=False):
     qt.instruments['AWG'].start()
 
 def program_test_slave(reset=False):
-    T = pulse.SquarePulse('sync', length=200e-9, amplitude = 0)
+    T = pulse.SquarePulse('sync', length=10e-9, amplitude = 0)
     p_sync = pulse.SquarePulse('sync', length=50e-9, amplitude = 1)
 
     e=element.Element('Test_trigger', pulsar=qt.pulsar)
@@ -62,8 +62,8 @@ def check_triggering():
     pharp.start_histogram_mode()
     pharp.ClearHistMem()
     pharp.set_Range(4) # 64 ps binsize
-    #pharp.set_CFDLevel0(50)
-    #pharp.set_CFDLevel1(50)
+    pharp.set_CFDLevel0(50)
+    pharp.set_CFDLevel1(50)
     qt.msleep(1)
     pharp.StartMeas(int(3 * 1e3)) #10 second measurement
     qt.msleep(0.1)

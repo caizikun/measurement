@@ -135,7 +135,7 @@ LOWINIT:
   Par_61 = -1                      'local mode
   Par_62 = 0                       'AWG signal timeouts (no ent. events)
   PAR_63 = 0                       'stop flag
-  Par_64 = 0                       'ADWIN LT1 READY TRIGGER
+  'Par_64 = 0                       'ADWIN LT1 READY TRIGGER
   
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter
@@ -168,7 +168,7 @@ EVENT:
           remote_CR_is_high = 0
           remote_mode = 2
           check_remote = 0
-          INC(Par_64)
+          'INC(Par_64)
         ENDIF             
       
       case 2 'remote CR OK, remote adwin waiting

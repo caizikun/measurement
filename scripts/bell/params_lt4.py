@@ -30,9 +30,9 @@ params_lt4['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['re
 
 #bell adwin:
 params_lt4['AWG_start_DO_channel'] = 9
-params_lt4['AWG_done_DI_channel'] = 17
+params_lt4['AWG_done_DI_channel'] = 18
 params_lt4['SP_duration'] = 10
-params_lt4['wait_after_pulse_duration'] = 1
+params_lt4['wait_after_pulse_duration'] = 3
 params_lt4['remote_CR_DI_channel'] = 19
 params_lt4['PLU_DI_channel'] = 21
 params_lt4['do_sequences'] = 1

@@ -21,11 +21,11 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=289e-9, active=True)
+    high=2.0, low=0, offset=0., delay=297e-9, active=True) # previous:289; measured 242e-9 on the scope made an error??2014-10-13
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=230e-9, active=True)
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
-    low=-1.0, offset=0., delay=230e-9, active=True)
+    low=-1.0, offset=0., delay=230e-9, active=True)# note measured delay on fast scope 2014-10-13: 59 ns
 
 #TH
 qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', 
@@ -48,7 +48,7 @@ qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker',
 #    low=0., offset=0., delay=335e-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
-    low=-2.0, offset=0., delay=200e-9, active=True)
+    low=-2.0, offset=0., delay=200e-9, active=True) #measured delay on apd's (tail) 2014-10-13: 40 ns
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
     high=1.0, low=-1.0, offset=0.0, delay=458e-9, active=True) #617 ns for normal pulses

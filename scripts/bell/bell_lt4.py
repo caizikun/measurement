@@ -34,6 +34,7 @@ class Bell_lt4(bell.Bell):
             self.params[k] = params_lt4.params_lt4[k]
         bseq.pulse_defs_lt4(self)
 
+
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt4')
 
@@ -54,6 +55,11 @@ class Bell_lt4(bell.Bell):
             LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
             late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_lt4')
             elements.append(late_RO)
+        elif self.joint_params['TPQI_normalisation_measurement']:
+            self.params['opt_pulse_start'] = self.params['opt_pulse_start'] + 300e-9
+            TPQI_normalisation_element = bseq._LDE_element(self, name='LDE_lt4_TPQI_norm')
+            self.params['opt_pulse_start'] = self.params['opt_pulse_start'] - 300e-9
+            elements.append(TPQI_normalisation_element)
 
 
         seq.append(name = 'start_LDE',
@@ -63,7 +69,7 @@ class Bell_lt4(bell.Bell):
         seq.append(name = 'LDE_lt4',
             wfname = LDE_element.name,
             jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
-            goto_target = 'start_LDE',
+            goto_target = 'start_LDE_2' if self.joint_params['TPQI_normalisation_measurement'] else 'start_LDE',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         #seq.append(name = 'LDE_timeout',
@@ -73,6 +79,15 @@ class Bell_lt4(bell.Bell):
             seq.append(name = 'late_RO',
                 wfname = late_RO.name,
                 goto_target = 'start_LDE')
+        elif self.joint_params['TPQI_normalisation_measurement']:
+            seq.append(name = 'start_LDE_2',
+            trigger_wait = True,
+            wfname = start_element.name)
+            seq.append(name = 'LDE_lt4_TPQI_norm',
+            wfname = TPQI_normalisation_element.name,
+            jump_target = 'RO_dummy',
+            goto_target = 'start_LDE',
+            repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
@@ -146,7 +161,7 @@ def TPQI(name):
     m = Bell_lt4(name)
     m.joint_params['RO_during_LDE']=0
     m.joint_params['opt_pi_pulses'] = 15
-    m.joint_params['LDE_attempts_before_CR'] = 250
+    m.joint_params['TPQI_normalisation_measurement'] = True
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -240,7 +255,7 @@ def bell_lt4(name,
 
 
 if __name__ == '__main__':
-    TPQI('on_resonance_run_2')
+    TPQI('run_7')
     #full_bell('SP_CORR_SAM_SIL5')   
     #SP_lt4('SP_CORR_SAM_SIL5')
     #pulse_overlap('fist_try')

@@ -81,6 +81,17 @@ class Bell_lt3(bell.Bell):
 
         seq.append(name = 'LDE_timeout',
             wfname = finished_element.name,
+            goto_target = 'LDE_lt3_TPQI_norm' if self.joint_params['TPQI_normalisation_measurement'] else 'LDE_lt3')
+
+        if self.joint_params['TPQI_normalisation_measurement']:
+            seq.append(name = 'LDE_lt3_TPQI_norm',
+            trigger_wait = True,
+            wfname = LDE_element.name,
+            jump_target = 'RO_dummy',
+            repetitions = self.joint_params['LDE_attempts_before_CR'])
+
+            seq.append(name = 'LDE_timeout_2',
+            wfname = finished_element.name,
             goto_target = 'LDE_lt3')
 
         seq.append(name = 'RO_dummy',
@@ -126,6 +137,7 @@ def bell_lt3_remote(name):
     m=Bell_lt3(name+'_'+remote_name) 
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
+
     if 'XXSPCORRXX' in remote_name:
         m.joint_params['RO_during_LDE']=0
         m.joint_params['do_echo'] = 0
@@ -134,7 +146,8 @@ def bell_lt3_remote(name):
     if 'TPQI' in remote_name:
         m.joint_params['RO_during_LDE']=0
         m.joint_params['opt_pi_pulses'] = 15
-        m.joint_params['LDE_attempts_before_CR'] = 250
+        m.joint_params['TPQI_normalisation_measurement']=True
+    
     m.autoconfig()
 
     if do_upload:
