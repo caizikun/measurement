@@ -108,11 +108,11 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.80901e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.808997e9# +/-   0.000005           #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
-N_HF_frq = 2.19e6        #calibrated 20140320/181319
+N_HF_frq = 2.198e6        #calibrated 20140320/181319
 C_split  = 0.847e6 
 
 cfg['samples'][sample_name] = {
@@ -132,18 +132,18 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9,
 		'Ex_RO_amplitude':				 3e-9, 
-		'Ex_SP_amplitude':				 5e-9,
+		'Ex_SP_amplitude':				 0.5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
-		'SSRO_repetitions':				 10000, 
+		'SSRO_repetitions':				 5000, 
 		}
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 18}
+	'SSRO_duration' : 10} #18
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {

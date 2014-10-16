@@ -65,9 +65,10 @@ params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 5
 params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi_amp']# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi_duration'] #50e-9
 
+params_lt3['DD_number_pi_pulses'] = 2 # TO CHOOSE 
 params_lt3['echo_offset'] = 0e-9
-params_lt3['free_precession_time_1st_revival'] = 73.2e-6
-params_lt3['free_precession_offset'] = 0.
+params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
+params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
 params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt3['free_precession_time_1st_revival']*1e6+10
 
