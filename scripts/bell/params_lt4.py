@@ -105,7 +105,7 @@ params_lt4['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE'] = 1
 params_lt4['plu_during_LDE'] = 1
 params_lt4['opt_pulse_start'] = params_lt4['LDE_SP_duration'] +  500e-9 #DONT CHANGE THIS
-params_lt4['AWG_wait_for_lt3_start'] =  9343e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+params_lt4['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9

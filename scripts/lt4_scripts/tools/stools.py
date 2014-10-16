@@ -183,11 +183,14 @@ def generate_quantum_random_number():
     qt.instruments['AWG'].set_ch3_marker2_low(0.)
 
 def reset_plu():
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
-    qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
-    qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
+        qt.msleep(0.1)
+        qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
+        qt.msleep(0.3)
+        qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
+        print 'Plu reset complete'
+    else:
+        print 'plu reset failed'
 
 
 def calibrate_aom_frq_max(name='YellowAOM', pts=21):

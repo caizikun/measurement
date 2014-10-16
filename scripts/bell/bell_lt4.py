@@ -107,14 +107,7 @@ class Bell_lt4(bell.Bell):
             self.lt3_helper.set_is_running(False)
 
     def print_measurement_progress(self):
-        if self.params['compensate_lt4_drift']:
-            drift_constant= -3.8/60./1000. #nm/min-->/60=nm/sec-->/1000 = um/sec
-            drift_v_c=drift_constant/moscfg.config['mos_lt4']['rt_dimensions']['x']['micron_per_volt'] #V/s
-            drift = self.params['measurement_abort_check_interval']*drift_v_c
-            cur_v = self.adwin.get_dac_voltage('atto_x')
-            print 'drift:', drift
-            #self.adwin.set_dac_voltage(('atto_x',cur_v+drift ))
-        #bell.Bell.print_measurement_progress(self)
+        pass
 
     def reset_plu(self):
         self.adwin.start_set_dio(dio_no=2, dio_val=0)
@@ -132,74 +125,6 @@ Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
 Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
 
-def full_bell():
-    m = Bell_lt4(name) 
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = True,
-             measure_lt3   = True,
-             measure_bs    = True,
-             do_upload     = True,
-             compensate_lt4_drift=False)
-
-def pulse_overlap(name):
-    m = Bell_lt4(name) 
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = False,
-             measure_lt3   = True,
-             measure_bs    = False,
-             do_upload     = True,
-             compensate_lt4_drift=False)
-
-def TPQI(name):
-    name= 'TPQI_'+name
-    m = Bell_lt4(name)
-    m.joint_params['RO_during_LDE']=0
-    m.joint_params['opt_pi_pulses'] = 15
-    m.joint_params['TPQI_normalisation_measurement'] = True
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = False,
-             measure_lt3   = True,
-             measure_bs    = True,
-             do_upload     = True,
-             compensate_lt4_drift=False)
-
-def SP_lt4(name):
-    m = Bell_lt4(name)
-    m.joint_params['RO_during_LDE']=1#we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
-    m.joint_params['do_echo'] = 0
-    m.joint_params['do_final_MW_rotation'] = 0
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = True,
-             measure_lt3   = False,
-             measure_bs    = True,
-             do_upload     = True,
-             compensate_lt4_drift=False)
-
-def SP_lt3(name):
-    m = Bell_lt4()
-    name=name+'XXSPCORRXX'
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = True,
-             measure_lt3   = True,
-             measure_bs    = True,
-             do_upload     = True,
-             compensate_lt4_drift=False)
-
 def bell_lt4(name, 
              m,
              th_debug,
@@ -208,11 +133,10 @@ def bell_lt4(name,
              measure_lt3,
              measure_bs,
              do_upload,
-             compensate_lt4_drift):
+             ):
 
     m.params['MW_during_LDE'] = mw
     m.params['wait_for_remote_CR'] = measure_lt3
-    m.params['compensate_lt4_drift'] = compensate_lt4_drift
 
 
     if not(sequence_only):
@@ -254,9 +178,86 @@ def bell_lt4(name,
 
 
 
+def full_bell(name):
+    name='full_Bell'+name
+    m = Bell_lt4(name) 
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def pulse_overlap(name):
+    m = Bell_lt4(name) 
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
+def TPQI(name):
+    name= 'TPQI_'+name
+    m = Bell_lt4(name)
+    m.joint_params['RO_during_LDE']=0
+    m.joint_params['do_echo'] = 0
+    m.joint_params['do_final_MW_rotation'] = 0
+    m.joint_params['RND_during_LDE'] = 0
+    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['TPQI_normalisation_measurement'] = True
+    m.joint_params['LDE_element_length'] = 10.e-6+(m.joint_params['opt_pi_pulses']-2)*m.joint_params['opt_pulse_separation']
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+    name='SPCORR_'+name
+    m = Bell_lt4(name)
+    m.joint_params['do_echo'] = 0
+    m.joint_params['do_final_MW_rotation'] = 0
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = False,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def SP_lt3(name):
+    name='SPCORR_'+name
+    m = Bell_lt4(name)
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+
 if __name__ == '__main__':
-    TPQI('run_7')
-    #full_bell('SP_CORR_SAM_SIL5')   
-    #SP_lt4('SP_CORR_SAM_SIL5')
-    #pulse_overlap('fist_try')
-    #SP_lt3('SP_CORR_the111no1_sil1')
+    #stools.reset_plu()
+
+    #TPQI('run_test')
+    #full_bell('test_run')   
+    #SP_lt4('test')
+    pulse_overlap('fist_try')
+    #
+    #SP_lt3('Pippip_sil3')

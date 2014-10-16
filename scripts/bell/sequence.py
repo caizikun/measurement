@@ -196,7 +196,7 @@ def _lt3_sequence_start_element(msmt):
 
 def _lt3_sequence_finished_element(msmt):
     """
-    last element of a two-setup sequence. Sends a trigger to ADwin lt4.
+    last element of a two-setup sequence. Sends a trigger to ADwin lt3.
     """
     e = element.Element('LDE_finished', pulsar = qt.pulsar)
     e.append(msmt.TIQ)
@@ -225,6 +225,15 @@ def _lt4_entanglement_event_element(msmt):
 
     e.append(pulse.cp(msmt.TIQ, length=30e-6))
     #e.append(msmt.adwin_success_pulse)
+    return e
+
+def _lt4_sequence_finished_element(msmt):
+    """
+    last element of a two-setup sequence. Sends a trigger to ADwin lt4.
+    """
+    e = element.Element('LDE_finished', pulsar = qt.pulsar)
+    e.append(msmt.TIQ)
+    e.append(msmt.adwin_trigger_pulse)
     return e
 
 def _lt4_wait_1us_element(msmt):
@@ -471,45 +480,3 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
                 name='MW_echo_pi_{}'.format(j))
 
     return e
-
-
-def _lt4_first_pi2(msmt, **kw):
-    init_ms1 = kw.pop('init_ms1', False)
-    # around each pulse I make an element with length 1600e-9; 
-    # the centre of the pulse is in the centre of the element.
-    # this helps me to introduce the right waiting times, counting from centre of the pulses
-    CORPSE_pi2_wait_length = msmt.params['CORPSE_pi2_wait_length'] #- (msmt.MW_pi2.length - 2*msmt.params['MW_pulse_mod_risetime'])/2 
-
-    first_pi2_elt = element.Element('first_pi2_elt', pulsar= qt.pulsar, 
-        global_time = True, time_offset = 0.)
-
-    first_pi2_elt.append(pulse.cp(msmt.T, length = 100e-9))
-    
-    if init_ms1:
-        first_pi2_elt.append(pulse.cp(msmt.MW_pi))
-        first_pi2_elt.append(pulse.cp(msmt.T, length = 100e-9))
-    
-    first_pi2_elt.append(pulse.cp(msmt.MW_pi2))
-    first_pi2_elt.append(pulse.cp(msmt.T, 
-        length =  CORPSE_pi2_wait_length))
-
-    return first_pi2_elt
-
-def _lt4_final_pi2(msmt, name, time_offset, **kw):
-    extra_t_before_pi2 = kw.pop('extra_t_before_pi2', 0)
-    CORPSE_pi2_phase = kw.pop('CORPSE_pi2_phase', 0)
-
-    # around each pulse I make an element with length 1600e-9; 
-    # the centre of the pulse is in the centre of the element.
-    # this helps me to introduce the right waiting times, counting from centre of the pulses
-    CORPSE_pi2_wait_length = msmt.params['CORPSE_pi2_wait_length'] #- (msmt.MW_pi2.length - 2*msmt.params['MW_pulse_mod_risetime'])/2 
-
-    second_pi2_elt = element.Element('second_pi2_elt-{}'.format(name), pulsar= qt.pulsar, 
-        global_time = True, time_offset = time_offset)
-    second_pi2_elt.append(pulse.cp(msmt.T, 
-        length = CORPSE_pi2_wait_length + extra_t_before_pi2))
-    second_pi2_elt.append(pulse.cp(msmt.MW_pi2, 
-        phase = CORPSE_pi2_phase))
-    second_pi2_elt.append(pulse.cp(msmt.T, length =  100e-9 ))           
-
-    return second_pi2_elt
