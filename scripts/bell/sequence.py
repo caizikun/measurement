@@ -176,7 +176,10 @@ def _lt4_sequence_start_element(msmt):
     e = element.Element('LDE_start', pulsar = qt.pulsar)
     e.append(msmt.T_sync)
     ref_p=e.append(msmt.sync)
-    e.append(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt3_start']))
+    e.add(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt3_start']),
+        refpulse=ref_p,
+        refpoint='start'
+        )
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=100e-9)
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
