@@ -113,6 +113,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
         self.hist = np.zeros((hist_length,2), dtype='u4')
+        self.marker_events = 0
 
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
@@ -154,6 +155,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 MIN_HIST_SYNC_BIN,MAX_HIST_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+
                 if newlength > 0:
 
                     dset_hhtime.resize((current_dset_length+newlength,))
@@ -170,6 +172,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
                     current_dset_length += newlength
                     self.h5data.flush()
+                    self.marker_events += np.sum(hhspecial)
 
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
