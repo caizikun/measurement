@@ -86,7 +86,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         t_ofl = np.uint64(0)
         t_lastsync = np.uint64(0)
         last_sync_number = np.uint32(0)
-        new_sync_number = 0
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
@@ -97,7 +96,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
 
-        print 'run PQ measurement, TTTR_read_count xxxxxxxxxx', TTTR_read_count
+        print 'run PQ measurement, TTTR_read_count', TTTR_read_count
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
@@ -131,13 +130,12 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                         self.stop_measurement_process()
                 else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
-                    if new_sync_number == last_sync_number: 
+                    if newlength == 0: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
             
                 _timer=time.time()
 
-            last_sync_number=new_sync_number
 
             _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
 
@@ -149,7 +147,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
                 hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
-                    newlength, t_ofl, t_lastsync, new_sync_number = \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist,
                                                 t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
