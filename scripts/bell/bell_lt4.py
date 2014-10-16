@@ -159,7 +159,7 @@ def TPQI(name):
 
 def SP_lt4(name):
     m = Bell_lt4(name)
-    m.joint_params['RO_during_LDE']=0
+    m.joint_params['RO_during_LDE']=1#we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
     m.joint_params['do_echo'] = 0
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 

@@ -30,8 +30,8 @@ params_lt3['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['re
 
 
 #bell adwin:
-params_lt3['AWG_done_DI_channel'] = 9
-params_lt3['AWG_success_DI_channel'] = 17
+params_lt3['AWG_done_DI_channel'] = 17
+params_lt3['AWG_success_DI_channel'] = 9
 params_lt3['SP_duration'] = 10
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DO_channel'] = 12
@@ -99,7 +99,7 @@ params_lt3['RND_duration']	 	= 250e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 0 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2.423e-6 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2.211e-6 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

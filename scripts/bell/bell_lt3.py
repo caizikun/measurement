@@ -127,7 +127,7 @@ def bell_lt3_remote(name):
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
     if 'XXSPCORRXX' in remote_name:
-        m.joint_params['RO_during_LDE']=0
+        m.joint_params['RO_during_LDE']=1#we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
         m.joint_params['do_echo'] = 0
         m.joint_params['do_final_MW_rotation'] = 0
 

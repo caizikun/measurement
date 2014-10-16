@@ -114,6 +114,24 @@ def _setup_params(msmt, setup):
 ###########################################################################
 
 
+def tune(name):
+
+    m=SweepBell('tail_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
+
+    pts=1
+    m.params['pts']=pts
+    m.params['repetitions'] = 100000
+
+    m.joint_params['RO_during_LDE']=0
+    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['LDE_attempts_before_CR'] = 250
+    m.params['MW_during_LDE'] = 0
+
+    m.params['general_sweep_name'] = 'aom_amplitude' 
+    m.params['general_sweep_pts'] = [.5]
+
+    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
 def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
@@ -121,7 +139,7 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 15000
+    m.params['repetitions'] = 1500
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -163,9 +181,9 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=15
+    pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
@@ -186,9 +204,9 @@ def echo_sweep(name):
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
 
     m.params['free_precession_offset'] = 0e-9
-    m.params['echo_offset'] = 48e-9
+    m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(30e-9, 70e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(40e-9, 60e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -243,6 +261,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_PippinSil3') 
+    #tail_sweep('tail_lt3_PippinSil3') 
+    tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('Sammy_RND_check')
