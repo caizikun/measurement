@@ -5,7 +5,7 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL3_ZPL_at_EWI_pos_optim_on_CR'
+name = 'Pippin_SIL3_ZPL_EWI_optim_on_PSB'
 steps=21
 max_power=250e-6       #[w]
 counter=3 #number of counter

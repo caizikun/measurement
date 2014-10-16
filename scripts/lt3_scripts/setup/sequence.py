@@ -23,7 +23,7 @@ qt.pulsar.clock = 1e9
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=289e-9, active=True)
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
-    low=-1.0, offset=0., delay=230e-9, active=True)
+    low=-1.0, offset=0., delay=230e-9, active=True)  #230e-9
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
     low=-1.0, offset=0., delay=230e-9, active=True)
 
