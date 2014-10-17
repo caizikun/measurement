@@ -11,7 +11,7 @@ if False:
 
 #Stabilize the gate using information from the gate modulation:
 # tuning MW with the signal of the D1 gate
-if True:
+if False:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac4(x)
     _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac4()
@@ -44,7 +44,7 @@ if False:
 
 
 #Stabilize the Taper frequency using information from the gate modulation:
-if False:
+if True:
     _setctrl_taper_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(53,x)
     _getval_taper_freq = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_taper_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(44)

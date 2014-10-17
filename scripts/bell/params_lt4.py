@@ -68,7 +68,6 @@ params_lt4['MW_RND_duration_I']= params_lt4['MW_pi4_duration']
 params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_pi4_amp']
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi4_duration']
 
-params_lt4['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 params_lt4['echo_offset'] = 0e-9 #50 ns
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
