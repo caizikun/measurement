@@ -165,7 +165,9 @@ def bell_lt4(name,
     print 'Measreument started: ', time.strftime('%H:%M')
     print '='*10
 
-    if measure_lt3: m.lt3_helper.set_is_running(True)
+    if measure_lt3: 
+        m.lt3_helper.set_is_running(True)
+        qt.msleep(2)
     m.run(autoconfig=False, setup=False,debug=th_debug)
     m.save()
 
@@ -258,6 +260,6 @@ if __name__ == '__main__':
     #TPQI('run_test')
     #full_bell('test_run')   
     #SP_lt4('test')
-    pulse_overlap('fist_try')
+    #pulse_overlap('fist_try')
     #
-    #SP_lt3('Pippip_sil3')
+    SP_lt3('Pippip_sil3')
