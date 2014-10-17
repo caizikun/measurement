@@ -86,6 +86,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         t_ofl = np.uint64(0)
         t_lastsync = np.uint64(0)
         last_sync_number = np.uint32(0)
+        _length = 0
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
@@ -118,7 +119,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
         _timer=time.time()
-
+        ii=0
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
@@ -130,7 +131,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                         self.stop_measurement_process()
                 else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
-                    if newlength == 0: 
+                    ii+=1
+                    print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
+                    self._keystroke_check('abort')
+                    if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
             
