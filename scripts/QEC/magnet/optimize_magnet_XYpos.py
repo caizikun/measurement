@@ -45,11 +45,11 @@ if __name__ == '__main__':
 
     range_coarse  = 6.00
     pts_coarse    = 81   
-    reps_coarse   = 75 #750
+    reps_coarse   = 750 #750
 
     range_fine  = 0.30
     pts_fine    = 51   
-    reps_fine   = 100#1000
+    reps_fine   = 1000#1000
 
     ###########
     ## start ##
