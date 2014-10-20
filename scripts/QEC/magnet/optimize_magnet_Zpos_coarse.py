@@ -56,14 +56,15 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
-    safemode=True 
+    safemode=False 
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
         ### for the first coarse step
     init_range   = 12     #Common: 10 MHz
     init_pts     = 121    #Common: 121
-    init_reps    = 750   #Common: 500
+    init_reps    = 500   #Common: 500
+
         ### for the remainder of the steps
     repeat_range = 4.5
     repeat_pts   = 81
@@ -146,7 +147,7 @@ if __name__ == '__main__':
         iterations_list.append(iterations)
         
         print 'Measured frequency = ' + str(f0_temp) + ' GHz +/- ' + str(u_f0_temp*1e6) + ' kHz'
-        print 'Difference = ' + str(abs(f0_temp*1e6-current_f_msm1*1e-3)) + ' kHz'
+        print 'Difference = ' + str(f0_temp*1e6-current_f_msm1*1e-3) + ' kHz'
     
         # To cleanly exit the optimization
         print '--------------------------------'
