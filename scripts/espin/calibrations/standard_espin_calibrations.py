@@ -376,7 +376,7 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 60, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 50, pts) * 1e-9
 
     m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
@@ -440,15 +440,15 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['Imod_channel'] = Imod_channel
     m.params['multiplicity'] = multiplicity
 
-    pts = 21
+    pts = 11
  
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.8, 1.0, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  m.params['pulse_pi_amp']+np.linspace(-0.1,0.1,pts) 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 
@@ -487,7 +487,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.4,-0.1,pts)
+    sweep_axis =  m.params['pulse_pi2_amp']+np.linspace(-0.1,0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -724,7 +724,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(6.0, IQmod = False,Imod_channel=True, debug = False)
+    run_calibrations(4.0, IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR

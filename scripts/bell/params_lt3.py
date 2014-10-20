@@ -30,8 +30,8 @@ params_lt3['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['re
 
 
 #bell adwin:
-params_lt3['AWG_done_DI_channel'] = 9
-params_lt3['AWG_success_DI_channel'] = 17
+params_lt3['AWG_done_DI_channel'] = 17
+params_lt3['AWG_success_DI_channel'] = 9
 params_lt3['SP_duration'] = 10
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DO_channel'] = 12
@@ -66,8 +66,8 @@ params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi_amp']# 0.487
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi_duration'] #50e-9
 
 params_lt3['echo_offset'] = 0e-9
-params_lt3['free_precession_time_1st_revival'] = 73.2e-6
-params_lt3['free_precession_offset'] = 0.
+params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
+params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
 params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']*params_lt3['free_precession_time_1st_revival']*1e6+10
 
@@ -82,12 +82,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.52 # 2014
+params_lt3['aom_amplitude']				 = 0.486 # 2014-10-17
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 10e-9#params_lt3['Ex_RO_amplitude']
+params_lt3['AWG_RO_power']            = 8e-9#params_lt3['Ex_RO_amplitude'] 8nW calibrated on 2014-10-16
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
@@ -99,7 +99,7 @@ params_lt3['RND_duration']	 	= 250e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 0 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2.423e-6 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC)
 
 params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 

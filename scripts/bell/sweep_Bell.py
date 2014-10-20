@@ -114,6 +114,24 @@ def _setup_params(msmt, setup):
 ###########################################################################
 
 
+def tune(name):
+
+    m=SweepBell('tail_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
+
+    pts=1
+    m.params['pts']=pts
+    m.params['repetitions'] = 100000
+
+    m.joint_params['RO_during_LDE']=0
+    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['LDE_attempts_before_CR'] = 250
+    m.params['MW_during_LDE'] = 0
+
+    m.params['general_sweep_name'] = 'aom_amplitude' 
+    m.params['general_sweep_pts'] = [.5]
+
+    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
 def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
@@ -121,7 +139,7 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 15000
+    m.params['repetitions'] = 150000
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -141,7 +159,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.3,1.,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(.3,1.,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -163,7 +181,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=15
+    pts=21
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
@@ -175,7 +193,7 @@ def echo_sweep(name):
     m.joint_params['opt_pi_pulses'] = 2
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1
-    m.joint_params['DD_number_pi_pulses'] = 1
+    m.joint_params['DD_number_pi_pulses'] = 2
     m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
@@ -186,9 +204,9 @@ def echo_sweep(name):
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
 
     m.params['free_precession_offset'] = 0e-9
-    m.params['echo_offset'] = 48e-9
+    m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(30e-9, 70e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-150e-9, 100e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -243,6 +261,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_PippinSil3') 
+    tail_sweep('pulse_and_afterpulsing') 
+    #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('Sammy_RND_check')

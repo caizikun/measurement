@@ -17,7 +17,7 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 
 ### General settings for AdwinSSRO
 cfg['protocols']['AdwinSSRO']={
-		'AWG_done_DI_channel':          17,
+		'AWG_done_DI_channel':          18,
 		'AWG_event_jump_DO_channel':    8,
 		'AWG_start_DO_channel':         9,
 		'counter_channel':              1,
@@ -108,7 +108,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.806179e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.806536e9#  +/-   0.000009            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -155,7 +155,7 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi_amp': 0.517,
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
-    	'Hermite_pi_length': 180e-9, 
+    	'Hermite_pi_length': 220e-9, 
         'Hermite_pi_amp': 0.901, #2014-07-24 
         'Hermite_pi2_length': 90e-9,
         'Hermite_pi2_amp': 0.536,#2014-07-24
