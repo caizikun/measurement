@@ -137,6 +137,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
+                
             
                 _timer=time.time()
 
