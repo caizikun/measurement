@@ -72,7 +72,7 @@ class LaserFrequencyScan:
 
         p = qt.Plot2D(d, 'r-', title='Frq (left) vs Voltage (bottom)', plottitle=self.mprefix,
                 name='Laser Scan', clear=True, coorddim=0, valdim=1, maxtraces=1)
-        p.add(d, 'b-', title='Counts (right) vs Frq (top)', coorddim=1, valdim=2,
+        p.add(d, 'bo', title='Counts (right) vs Frq (top)', coorddim=1, valdim=2,
                 right=True, top=True)
         p.set_x2tics(True)
         p.set_y2tics(True)
@@ -128,9 +128,10 @@ class LaserFrequencyScan:
                 p.set_maxtraces(2)
                 try:
                     from analysis.lib.nv import nvlevels
+                    reload(nvlevels)
                     Ey_line=float(raw_input('Ey line?')) #GHz
                     Ex_line=float(raw_input('Ex line?')) #GHz
-                    lx,ly=nvlevels.get_ES_ExEy_plottable(Ex_line,Ey_line,max(d.get_data()[:,2]))
+                    lx,ly=nvlevels.get_ES_ExEy_plottable(Ex_line,Ey_line,max(d.get_data()[:,2]),B_field=[self.Bz,0.,0.])
                     tit=str('Frequency (GHz) lines: [%2.2f,%2.2f,%2.2f,%2.2f,%2.2f,%2.2f] ' % tuple(nvlevels.get_ES_ExEy(Ex_line,Ey_line)))
                     p.add(lx,ly,right=True, top=True, title=tit)
                 except ValueError:
@@ -253,8 +254,8 @@ class YellowLaserScan(LabjackAdwinLaserScan):
 class RedLaserScan(LabjackAdwinLaserScan):
     def __init__(self, name, labjack_dac_nr):
         LabjackAdwinLaserScan.__init__(self, name,labjack_dac_nr)
-        self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
-        #self.set_laser_power = qt.instruments['MatisseAOM'].set_power
+        # self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
+        self.set_laser_power = qt.instruments['MatisseAOM'].set_power
         self.set_yellow_repump_power = qt.instruments['YellowAOM'].set_power
         self.set_red_repump_power = qt.instruments['MatisseAOM'].set_power
         self.set_repump_power = qt.instruments['GreenAOM'].set_power
@@ -328,11 +329,13 @@ def yellow_laser_scan(name):
         m.finish_scan()
 
 def red_laser_scan(name):
-    labjack_dac_nr = 2 # 2 is coarse and 3 is fine for NF
+    labjack_dac_nr = 4 # 2 is coarse and 3 is fine for NF
     m = RedLaserScan(name,labjack_dac_nr)
 
+    m.Bz = 401.4
+
     # Hardware setup
-    m.wm_channel = 3 #1 for matisse
+    m.wm_channel = 7 #1 for matisse, 7 is for NF_LT1_2
     m.frq_offset = 0
     m.frq_factor = 1
     m.counter_channel = 0
@@ -340,14 +343,14 @@ def red_laser_scan(name):
     # MW setup
         #MW source 1
     m.use_mw = True
-    m.mw_frq =  qt.exp_params['samples']['Hans_sil4']['ms-1_cntr_frq']
-    m.mw_power = -6
+    m.mw_frq =  qt.exp_params['samples']['111_1_sil18']['ms-1_cntr_frq']
+    m.mw_power = -5
     print 'MW freq:' +str(m.mw_frq)
 
         #MW source 2
     m.use_mw_2 = True
-    m.mw_2_frq =  qt.exp_params['samples']['Hans_sil4']['ms+1_cntr_frq']
-    m.mw_2_power = -6
+    m.mw_2_frq =  qt.exp_params['samples']['111_1_sil18']['ms+1_cntr_frq']
+    m.mw_2_power = -4
     print 'MW_2 freq:' +str(m.mw_2_frq)
 
     # repump setup
@@ -357,19 +360,19 @@ def red_laser_scan(name):
     m.yellow_repump_duration = 4 #seconds
 
     m.use_repump_during = False
-    m.repump_power_during = 0.05e-6 #0.05e-6
+    m.repump_power_during = 0.4e-6 #0.05e-6
 
     m.repump_power = 200e-6
     m.repump_duration = 0.5 # seconds
 
     #Scan setup
-    m.laser_power = 10e-9 # 30e-9 SIL4 Hans
-    m.integration_time = 300 # ms
+    m.laser_power = 2e-9 # 30e-9 SIL4 Hans
+    m.integration_time = 40 # ms
     m.min_v = -9
     m.max_v = 9
-    m.v_step=0.01
-    m.start_frequency = 58  #GHz
-    m.stop_frequency  = 76  #GHz
+    m.v_step=0.005 # 0.01
+    m.start_frequency = 70  #GHz wrt 470.4 THz
+    m.stop_frequency  = 100  #GHz
 
 
     #Gate scan setup
@@ -393,7 +396,7 @@ if __name__=='__main__':
 
     #for ii in range(10):
     stools.turn_off_all_lt2_lasers()
-    red_laser_scan('Hans_sil1_line_scan_green')
+    red_laser_scan('111_No1_SIL18_line_scan_green')
         #yellow_laser_scan('yellow_1nW')
 
 

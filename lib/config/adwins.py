@@ -701,7 +701,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
                     ['sweep_length'                ,   1],
-                    ['wait_after_RO_pulse_duration',1],
+                    ['wait_after_RO_pulse_duration',   1],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -818,7 +818,7 @@ config['adwin_lt2_processes'] = {
 
         'adaptive_magnetometry' : {
                 'index' : 9,
-                'file' : 'adaptive_magnetometry_lt2.TB9',
+                'file' : 'adaptive_magnetometry_MBI_lt2.TB9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -845,6 +845,8 @@ config['adwin_lt2_processes'] = {
                     ['do_phase_calibr'             ,   1],
                     ['M'                           ,   1], #number of measurements per adaptive step
                     ['threshold_majority_vote'     ,   0],
+                    ['reps_majority_vote'          ,   1],
+                    ['do_MBI'                      ,   0],
                     
                     ],
                 'params_long_index'  : 20,

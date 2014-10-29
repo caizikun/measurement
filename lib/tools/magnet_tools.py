@@ -70,7 +70,7 @@ def get_magnet_position(msm1_freq=current_f_msm1,msp1_freq = current_f_msp1,ms =
     if ms is 'plus':
         B_field = convert_f_to_Bz(freq=msp1_freq)
     if solve_by == 'list':
-        d = np.linspace(10.0,10.2,10**5+1) # ! this is the right domain for B around 304 G
+        d = np.linspace(8.7,9.5,10**5+1) # ! this is the right domain for B around 304 G
         B_field_difference = np.zeros(len(d))
         for j in [int(i) for i in np.linspace(0,len(d)-1,len(d))]:
             B_field_difference[j] = abs(B_field-get_field_at_position(d[j]))
@@ -105,6 +105,7 @@ def get_all(freq_ms_m1=current_f_msm1, freq_ms_p1=current_f_msp1):
     average_frq = calc_ZFS(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
     print '(f_ms=-1 + f_ms=+1)/2 = ' + str(average_frq*1e-9) + ' GHz'
     print 'Zero field splitting  = ' + str(ZFS*1e-9) + ' GHz'
+    print 'Difference from ZFS = ' + str(average_frq*1e-3-ZFS*1e-3 )+ ' kHz'
     calculated_B_field = get_B_field(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1)
     print 'Current B field = '+str(calculated_B_field)+ ' G'
     calculated_position = get_magnet_position(msm1_freq=freq_ms_m1, msp1_freq=freq_ms_p1,ms = 'plus',solve_by = 'list')
@@ -114,6 +115,9 @@ def get_all(freq_ms_m1=current_f_msm1, freq_ms_p1=current_f_msp1):
 
 def steps_to_frequency(freq=current_f_msp1,freq_id=current_f_msp1, ms = 'plus',solve = 'distance'):
     '''determine the steps needed to go to a certain frequency (freq_id)'''
+    print freq_id
+    print freq
+    print nm_per_step
     if solve == 'distance':
         position = get_magnet_position(msm1_freq=freq,msp1_freq=freq,ms = ms,solve_by = 'list')
         print 'Magnet distance to NV: ' +str(position)
