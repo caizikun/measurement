@@ -1,10 +1,11 @@
 import qt
 import numpy as np
 import time
+import logging
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.cython.PQ_T2_tools import T2_tools_bell
+from measurement.lib.cython.PQ_T2_tools import T2_tools_bell, T2_tools_v2
 reload(T2_tools_bell)
 
 
@@ -87,6 +88,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         t_lastsync = np.uint64(0)
         last_sync_number = np.uint32(0)
         _length = 0
+        #cur_length = 0 #DEBUG!
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
@@ -108,7 +110,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
         dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
-            (0,), 'u4', maxshape=(None,))      
+            (0,), 'u4', maxshape=(None,))          
         current_dset_length = 0
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
@@ -120,6 +122,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         self.start_measurement_process()
         _timer=time.time()
         ii=0
+        k_error_message = 0
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
@@ -137,26 +140,45 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
-            
+
                 _timer=time.time()
 
 
             _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
 
             if _length > 0:
-                if _length == T2_READMAX:
+                if _length == TTTR_read_count: 
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
+                    k_error_message += 1
+                    print 'number of error messages :', k_error_message , '\n'
+
+
+                if self.PQ_ins.get_Flag_FifoFull():
+                    print 'warning Fifo full'
+
+                if self.PQ_ins.get_Flag_Overflow():
+                    print 'warning Overflow'
+
+                if self.PQ_ins.get_Flag_SyncLost():
+                    print 'missing sync'
 
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
-                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
-                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                if self.params['setup'] in ('lt4', 'lt3'):
+                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                else:        
+                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist,
                                                 t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 MIN_HIST_SYNC_BIN,MAX_HIST_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                                                T2_WRAPAROUND,T2_TIMEFACTOR) 
 
                 if newlength > 0:
 

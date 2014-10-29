@@ -232,7 +232,7 @@ def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot t
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = False,
@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
     #TPQI('run_test')
     #full_bell('test_run')   
-    #SP_lt4('test')
-    #pulse_overlap('fist_try')
+    #SP_lt4('SP_Hans_test_TH_TTread_12800_no_hist_with_save')
+    pulse_overlap('FinalDelay')
     #
-    SP_lt3('Pippip_sil3')
+    #SP_lt3('Pippip_sil3_TH_testing')

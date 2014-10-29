@@ -104,14 +104,14 @@ def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
             msmt.params['pulse_pi2_amp'] = msmt.params['Square_pi2_amp']
             
             Square_pi = pulselib.MW_pulse('Square pi-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['pulse_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
             Square_pi2 = pulselib.MW_pulse('Square pi/2-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['pulse_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
@@ -376,7 +376,7 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 50, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
 
     m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
@@ -389,8 +389,8 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
     m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
     print m.params['sweep_pts']
 
-
-    funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse)
+    print Imod_channel
+    funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse, Imod_channel = Imod_channel)
 
 
     print "\nAnalysis suggestion : execfile(r'D:\measuring\\analysis\scripts\espin\electron_rabi_analysis.py')"
@@ -691,7 +691,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 2.0 :
         rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
-                pulse_type = 'Square', debug = debug)
+                pulse_type = 'Hermite', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum" # Error in the se
@@ -724,7 +724,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(4.0, IQmod = False,Imod_channel=True, debug = False)
+    run_calibrations(2.0, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

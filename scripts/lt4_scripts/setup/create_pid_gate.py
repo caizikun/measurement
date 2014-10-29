@@ -20,8 +20,10 @@ if True:
     get_eprime_func = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     get_E_y_func = lambda: qt.instruments['physical_adwin'].Get_FPar(43)
     get_Y_func= lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    set_strain_splitting_func = lambda x: qt.instruments['physical_adwin'].Set_FPar(77,x)
     e_primer = qt.instruments.create('e_primer', 'E_primer', 
         set_eprime_func=set_eprime_func,
         get_eprime_func=get_eprime_func,
         get_E_func=get_E_y_func,
-        get_Y_func=get_Y_func)
+        get_Y_func=get_Y_func,
+        set_strain_splitting_func=set_strain_splitting_func)

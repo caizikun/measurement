@@ -75,6 +75,8 @@ class PQMeasurement(m2.Measurement):
         t_lastsync = 0
         last_sync_number = 0
         _length = 0
+        
+
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
@@ -94,7 +96,8 @@ class PQMeasurement(m2.Measurement):
         dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
         dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
-            (0,), 'u4', maxshape=(None,))      
+            (0,), 'u4', maxshape=(None,))
+  
         current_dset_length = 0
 
         self.start_keystroke_monitor('abort',timer=False)
@@ -123,6 +126,8 @@ class PQMeasurement(m2.Measurement):
                 _timer=time.time()
 
             _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+
+           
             #ll[_length]+=1 #XXX
             if _length > 0:
                 if _length == T2_READMAX:
@@ -130,6 +135,8 @@ class PQMeasurement(m2.Measurement):
                             could indicate too low transfer rate resulting in buffer overflow.')
 
                 _t, _c, _s = PQ_decode(_data[:_length])
+
+                
 
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
