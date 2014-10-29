@@ -106,9 +106,9 @@ def check_triggering():
     remote_helper.set_is_running(False)
 
 
-
 if __name__ == '__main__':
-    reset=False
+    reset=True
+    print 'exec at LT3'
     if qt.current_setup=='lt4':
         qt.instruments['AWG'].stop()
         lt3_helper = qt.instruments['lt3_helper']
