@@ -22,7 +22,7 @@ def run(name, mbi = True):
 
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1500
+    m.params['reps_per_ROsequence'] = 500
 
     sweep_duration=True
     sweep_detuning=False
@@ -38,7 +38,7 @@ def run(name, mbi = True):
     if sweep_duration:        
     # MW pulses
         m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
-        m.params['MW_pulse_durations']  = np.linspace(0,100e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
+        m.params['MW_pulse_durations']  = np.linspace(0,200e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
         m.params['sweep_name'] = 'MW pulse duration (ns)'
         m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
         if mbi == False:
@@ -68,6 +68,6 @@ def run(name, mbi = True):
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run('hans1_MBI_desr',mbi = False)
+    run('nr1_sil18_MBI_desr',mbi = True)
     #run('hans1_calib_MBI')
 

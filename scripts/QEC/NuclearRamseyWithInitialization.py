@@ -21,9 +21,11 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_Z = False):
 
     '''set experimental parameters'''
 
+
+
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = 21
+    m.params['pts'] = 5
     m.params['C_init_method'] = 'swap'
 
     m.params['Addressed_Carbon'] = 1
@@ -55,30 +57,16 @@ def NuclearRamseyWithInitialization(name,tau = None, RO_Z = False):
 
         print 'C1_init_phase_offset %s'%    m.params['C1_init_phase_offset']
 
-
-
-
-    #############################
-    #!NB: These should go into msmt params
-    #############################
-
-
     ##########
     # Overwrite certain params to test
     m.params['C13_MBI_threshold']       = 0
-    m.params['MBI_threshold']           = 1
-    
     m.params['C13_MBI_RO_duration']     = 31 
     m.params['E_C13_MBI_amplitude']     = 1e-9
 
-    # m.params['C1_init_phase_offset'] = 0
-
-
-    m.params['SP_duration_after_C13']   = 50
+    m.params['SP_duration_after_C13']         = 50
     m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
     m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
     
-    # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':

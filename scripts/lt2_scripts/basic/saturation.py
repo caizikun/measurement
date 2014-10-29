@@ -6,13 +6,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Sil_1_Hans_FS_APD'
+name = 'Sil_12_No1_FS_APD'
 steps= 15
-max_power=40e-6       #[w]
+max_power=300e-6       #[w]
 counter=1         #number of counter
 PH_count=False    #counting with the HH, assumes apd on channel 0
-bg_x=3.0         #delta x position of background [um]
-bg_y=2.0             #delta y position of background [um]
+bg_x=1.0        #delta x position of background [um]
+bg_y=0.0             #delta y position of background [um]
 
 #instruments
 if PH_count:

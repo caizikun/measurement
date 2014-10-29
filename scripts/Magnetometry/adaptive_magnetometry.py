@@ -46,7 +46,6 @@ def rabi (name='', fpga=False):
     m.params['wait_for_AWG_done'] = 1
     m.params['wait_after_RO_pulse_duration']=1#10000
     m.params['Ex_SP_amplitude'] = 0
-    m.params['init_repetitions'] = 100
     m.params['M'] = 1
 
     nr_adptv_steps = 21
@@ -82,9 +81,9 @@ def rabi (name='', fpga=False):
 
     m.autoconfig()
     m.generate_sequence(upload=True)
-    m.run()
-    m.save()
-    m.finish()
+    #m.run()
+    #m.save()
+    #m.finish()
 
 
 def ramsey (name, fix_tau = None, phase = None,test_only_awg=False):
@@ -282,6 +281,101 @@ def adaptive (name, do_adaptive = False, detuning=0, M=1, thr = None):
     m.finish()
 
 
+def adaptive_MBI (name, do_adaptive = False, detuning=0, N=1, M=1, maj_reps = 1, maj_thr = 0):
+
+    '''
+    initializes N-spin, ramsey experiment with phases stored in the decision-tree array. Parameters:
+    - nr_adptv_steps
+    - M: nr of msmnts per adaptive step (Bayesian update)
+    - maj_thr: threshold for majoprity vote
+    - maj_reps: repetitions majority vote
+    - do_MBI = True: N-init by MBI, do_MBI = False: deterministic N-init
+    '''
+
+    n = 'adaptive_magnetometry_det='+str(detuning/1e6)+'MHz_M='+str(M)+'_'+name    
+    if (not(do_adaptive)):
+        n = 'non_'+n
+    
+    m = pulsar_mgnt.AdaptivePhaseEstimation(n)
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols']['Magnetometry'])
+    
+    print 'MW mod frequency:', m.params['MW_modulation_frequency']/1e6, ' MHz'
+    m.params['Ex_SP_amplitude'] = 0
+    m.params['wait_for_AWG_done'] = 1
+    m.params['wait_after_RO_pulse_duration']=1#10000
+
+    nr_adptv_steps = N
+    m.params['M'] = M
+    m.params['threshold_majority_vote'] = maj_thr
+    m.params['reps_majority_vote'] = maj_reps
+
+    if do_adaptive:
+        m.params['do_adaptive'] = 1
+        m.params['do_phase_calibr'] = 0
+    else:
+        m.params['do_adaptive'] = 0
+        m.params['do_phase_calibr'] = 1
+
+    m.params['min_phase'] = 0
+    m.params['adptv_steps'] = nr_adptv_steps
+    m.params['repetitions'] = 500
+ 
+    pi2_mw_dur = m.params['AWG_pi2_duration']
+    pi2_fpga_dur =m.params['fpga_pi2_duration']
+
+    m.params['MW_pulse_mod_frqs'] = np.ones(nr_adptv_steps)*m.params['MW_modulation_frequency']
+    m.params['MW_pulse_amps'] = m.params['MW_pi_pulse_amp']*np.ones(nr_adptv_steps)
+    m.params['MW_pulse_durations'] = pi2_mw_dur*np.ones(nr_adptv_steps)
+    m.params['ramsey_time'] = 1e-9*(2**(nr_adptv_steps - np.arange(nr_adptv_steps)-1))
+
+    det=30.015e6+detuning
+    phase_offset = 40+90
+    
+    #load adaptive table
+    a = np.load ('D:/measuring/measurement/scripts/Magnetometry/adaptive_tables/cappellaro_expT2_N='+str(nr_adptv_steps)+'.npz')    
+    adaptv_phases = -a['table'][:-2]
+
+    m.params['phases_detuning']=det*360*m.params['ramsey_time']+phase_offset
+
+    phase_det = []
+    for i in np.arange(nr_adptv_steps):
+        #Bayesian update table
+        phase_det = phase_det + (((m.params['M']+1)**(i))*[m.params['phases_detuning'][i]])
+        #Majority vote table
+        #phase_det = phase_det + ((2**(i))*[m.params['phases_detuning'][i]])
+    phase_det = np.array(phase_det)
+    
+    #Do actual adaptive protocol
+    phases = np.mod(phase_det + adaptv_phases, 360)
+    
+    #Non adaptive
+    #phases = np.mod(phase_det, 360)
+
+    m.params['fpga_mw_duration'] = pi2_fpga_dur*np.ones(nr_adptv_steps)        
+    m.params['MW_only_by_awg'] =  False
+    m.params['sweep_pts'] = m.params['ramsey_time']*1e9
+    m.params['sweep_name'] = 'free evolution time [ns]'
+    #m.params['sweep_pts'] = np.arange(nr_adptv_steps)*m.params['delta_phase']
+    #m.params['sweep_name'] = 'phase fpga pulse [deg]'
+
+    phases=phases*255/360    
+    m.autoconfig()
+    m.generate_sequence(upload=True)
+    adwin.set_adaptive_magnetometry_var(phases=np.array(phases).astype(int))
+    m.run()
+    m.save()
+    m.finish()
+
+
+
+
+
 def test(name):
     m = pulsar_mgnt.AdaptivePhaseEstimation(name)
     nr_adptv_steps=11
@@ -295,7 +389,7 @@ if __name__ == '__main__':
     #    ramsey (name='det+500KHz', tau = t)
 
     #test('test')
-    adaptive (name = 'N15_nonadaptive_baysian_update_analysis', do_adaptive=True, detuning = 0e6, M=31, thr=None)
-    #rabi (name = 'init=100reps_correctedPi2pi_mod_frq', fpga=True)
+    #adaptive (name = 'N15_nonadaptive_baysian_update_analysis', do_adaptive=True, detuning = 0e6, M=31, thr=None)
+    rabi (name = 'test', fpga=True)
     #adaptive_real_time (name='test')
 

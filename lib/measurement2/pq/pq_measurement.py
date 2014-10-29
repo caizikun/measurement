@@ -134,6 +134,12 @@ class PQMeasurement(m2.Measurement):
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
 
+                if self.PQ_ins.get_Flag_FifoFull():
+                    print 'warning Fifo full'
+
+                if self.PQ_ins.get_Flag_Overflow():
+                    print 'warning Overflow'
+
                 _t, _c, _s = PQ_decode(_data[:_length])
 
                 
@@ -179,6 +185,7 @@ class PQMeasurement(m2.Measurement):
         self.PQ_ins.StopMeas()
         #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
         #self.h5data.flush()#XXX
+        
         print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
