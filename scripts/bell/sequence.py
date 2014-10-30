@@ -164,7 +164,8 @@ def pulse_defs_lt3(msmt):
     msmt.RO_pulse = pulse.SquarePulse(channel = 'EOM_AOM_Matisse', amplitude = 0.0)
     msmt.yellow_pulse = pulse.SquarePulse(channel = 'AOM_Yellow', amplitude = 1.0)
 
-
+    msmt.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = 1.0, 
+                                    length = msmt.params['PLU_gate_duration'])
 
     return True
 

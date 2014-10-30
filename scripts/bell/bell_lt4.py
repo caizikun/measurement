@@ -7,6 +7,7 @@ import numpy as np
 import inspect
 import qt
 import time
+import check_awg_triggering as JitterCheck
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
@@ -232,7 +233,7 @@ def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot t
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = False,
@@ -253,13 +254,45 @@ def SP_lt3(name):
              do_upload     = True,
              )
 
+def JitterCheck_Bell():
+    if qt.current_setup=='lt4':
+        jitterDetected=False
+        qt.instruments['AWG'].stop()
+        lt3_helper = qt.instruments['lt3_helper']
+        lt3_helper.set_is_running(False)
+        lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
+        lt3_helper.execute_script()
+        JitterCheck.program_test_master(reset=False)
+        qt.msleep(1)      
+        while lt3_helper.get_is_running():
+            if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                print 'measurement aborted'
+                break
+            qt.msleep(2)
+        qt.instruments['AWG'].stop()
+        output = lt3_helper.get_measurement_name()
+        print output
+        if 'JITTERING' in output:
+            jitterDetected=True
+        return jitterDetected
+    else:
+        print 'execute this file from LT4 only!'
+        return True       
+
 
 if __name__ == '__main__':
-    #stools.reset_plu()
+    #execfile('check_awg_triggering.py')
+    DoJitterCheck = False
+    if DoJitterCheck:
+        jitterDetected=JitterCheck_Bell()
+        
+    else: jitterDetected = False        
+    
 
-    #TPQI('run_test')
-    #full_bell('test_run')   
-    #SP_lt4('test')
-    #pulse_overlap('fist_try')
-    #
-    SP_lt3('Pippip_sil3')
+    if not(jitterDetected):
+        #stools.reset_plu()
+        #TPQI('run_test')
+        #full_bell('test_run')   
+        #SP_lt4('SP_Hans_test_TH_TTread_12800_no_hist_with_save')
+        pulse_overlap('FinalDelay')
+        #SP_lt3('Pippip_sil3_TH_testing')

@@ -29,7 +29,7 @@ if False:
             ctrl_minval=0., ctrl_maxval=35.)
 
 #Stabilize the Newfocus frequency using information from the taper & yellow frequencies (measured on local WM):
-if False:
+if True:
     set_eprime_func = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     get_eprime_func = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     get_E_y_func = lambda: qt.instruments['physical_adwin'].Get_FPar(43)
@@ -44,7 +44,7 @@ if False:
 
 
 #Stabilize the Taper frequency using information from the gate modulation:
-if True:
+if False:
     _setctrl_taper_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(53,x)
     _getval_taper_freq = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_taper_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(44)

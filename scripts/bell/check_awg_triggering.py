@@ -5,7 +5,6 @@ import msvcrt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 def program_test_master(reset=False):
-
     T = pulse.SquarePulse('sync', length=200e-9, amplitude = 0)
     p_sync = pulse.SquarePulse('sync', length=50e-9, amplitude = 1)
 
@@ -24,6 +23,7 @@ def program_test_master(reset=False):
                     trigger_wait = 0,
                     repetitions=10)
     if reset:
+        print 'RESETTING AWG'
         qt.pulsar.program_awg(s,e,e2)
     else:
         qt.pulsar.upload(e,e2)
@@ -34,7 +34,6 @@ def program_test_master(reset=False):
 def program_test_slave(reset=False):
     T = pulse.SquarePulse('sync', length=10e-9, amplitude = 0)
     p_sync = pulse.SquarePulse('sync', length=50e-9, amplitude = 1)
-
     e=element.Element('Test_trigger', pulsar=qt.pulsar)
     e.append(T)
     e.append(p_sync)
@@ -44,6 +43,7 @@ def program_test_slave(reset=False):
                     wfname = e.name,
                     trigger_wait = 1)
     if reset:
+        print 'RESETTING AWG'
         qt.pulsar.program_awg(s,e)
     else:
         qt.pulsar.upload(e)
@@ -55,6 +55,7 @@ def program_test_slave(reset=False):
 
 
 def check_triggering():
+    jitterDetected = False
     remote_helper=qt.instruments['remote_measurement_helper']
     remote_helper.set_is_running(True)
     pharp=qt.instruments['PH_300']
@@ -84,7 +85,8 @@ def check_triggering():
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         if (peaks_width)>.5:
-            ret=ret+'\n'+ 'JITTERING!! Try again with reset=True'
+            ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with reset=True'
+            jitterDetected=True
         else:
             ret=ret+'\n'+'No Jitter detected'
         ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
@@ -104,18 +106,17 @@ def check_triggering():
     remote_helper.set_data_path(fp)
     remote_helper.set_measurement_name(ret)
     remote_helper.set_is_running(False)
-
-
+    return jitterDetected
 
 if __name__ == '__main__':
-    reset=False
+    resetAWG=False
     if qt.current_setup=='lt4':
         qt.instruments['AWG'].stop()
         lt3_helper = qt.instruments['lt3_helper']
         lt3_helper.set_is_running(False)
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
         lt3_helper.execute_script()
-        program_test_master(reset=reset)
+        program_test_master(reset=resetAWG)
         qt.msleep(1)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
@@ -123,8 +124,13 @@ if __name__ == '__main__':
                 break
             qt.msleep(2)
         qt.instruments['AWG'].stop()
-        print lt3_helper.get_measurement_name()
+        output = lt3_helper.get_measurement_name()
+        print output
+        if 'JITTERING' in output:
+            jitterDetected=True
+        else: jitterDetected =False
     else:
-        program_test_slave(reset=reset)
-        check_triggering()
+        program_test_slave(reset=resetAWG)
+        jitterDetected = check_triggering()
         qt.instruments['AWG'].stop()
+    print 'jitterDetected ', jitterDetected

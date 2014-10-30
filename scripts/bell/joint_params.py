@@ -21,10 +21,10 @@ joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !
 
 joint_params['MAX_DATA_LEN'] =       int(100e6)
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-joint_params['MIN_SYNC_BIN'] =       9000 #WRONG / TODO
+joint_params['MIN_SYNC_BIN'] =       1000 #WRONG / TODO
 joint_params['MAX_SYNC_BIN'] =       15000
 joint_params['MIN_HIST_SYNC_BIN'] =  1
 joint_params['MAX_HIST_SYNC_BIN'] =  15000
-joint_params['TTTR_read_count'] = 	 1000 #s
+joint_params['TTTR_read_count'] = 	 12800#*128#1000 #131072 #s
 joint_params['measurement_abort_check_interval']    = 1. #sec
 joint_params['RND_start'] = 10065e-9+200e-9# = dt(f,BC)-dt(AC) + margin
