@@ -163,21 +163,14 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        print 'before stop adwin process'
         self.stop_adwin_process()
-        print 'before sleep'    
         # qt.msleep(1)
-        print 'after sleep'
-        print 'after stop adwin process'
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['SSRO_repetitions']))
-        print 'after final completed reps adwin process'
 
     def save(self, name='ssro'):
-        print 'before save adwin process'
         reps = self.adwin_var('completed_reps')
-        print 'after save adwin process'
         self.save_adwin_data(name,
                 [   ('CR_before', reps),
                     ('CR_after', reps),
@@ -198,16 +191,12 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             
         if save_ins_settings:
             self.save_instrument_settings_file()
-        print 'before start counters'    
         qt.instruments['counters'].set_is_running(True)
-        print 'after start counters'
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
         
-        print 'before adwin controlled msmt finish'    
         m2.AdwinControlledMeasurement.finish(self)
-        print 'after adwin controlled msmt finish'
 
 class AdwinSSROAlternCR(AdwinSSRO):   
     adwin_process = 'singleshot_altern_CR'
