@@ -88,7 +88,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 3.5
+    stage = 5
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     if   stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'

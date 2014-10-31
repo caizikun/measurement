@@ -41,6 +41,15 @@ def pulse_defs_lt4(msmt):
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
 
+    msmt.MW_BellAngle = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                    MW_channel='MW_Imod',
+                    PM_channel='MW_pulsemod',
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi2_amp']*msmt.params['MW_BellStateFactor'],
+                    length = msmt.params['MW_pi2_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+
     msmt.MW_RND_I = pulselib.HermitePulse_Envelope('Hermite RND-pulse-I',
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
@@ -118,6 +127,14 @@ def pulse_defs_lt3(msmt):
                     second_MW_channel='MW_Qmod', 
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['MW_pi2_amp'], 
+                    length = msmt.params['MW_pi2_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+    msmt.MW_BellAngle = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                    MW_channel='MW_Imod',
+                    PM_channel='MW_pulsemod',
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi2_amp']*(2-msmt.params['MW_BellStateFactor']),
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -306,12 +323,12 @@ def _LDE_element(msmt, **kw):
 
     #4 MW pi/2
     if msmt.params['MW_during_LDE'] == 1 :
-        e.add(msmt.MW_pi2,
+        e.add(msmt.MW_BellAngle,
             start = -msmt.params['MW_opt_puls1_separation'],
             refpulse = 'opt pi 1', 
             refpoint = 'start', 
             refpoint_new = 'end',
-            name = 'MW_pi_over_2')
+            name = 'MW_BellAngle')
     #5 HHsync
     
     #6 plugate 1
@@ -324,7 +341,7 @@ def _LDE_element(msmt, **kw):
     if msmt.params['MW_during_LDE'] == 1:
         e.add(msmt.MW_pi, 
             start = msmt.params['MW_1_separation'],
-            refpulse = 'MW_pi_over_2',
+            refpulse = 'MW_BellAngle',
             refpoint = 'end', 
             refpoint_new = 'end', 
             name='MW_pi')
