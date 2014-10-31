@@ -63,10 +63,10 @@ if __name__ == '__main__':
         steps = [0] 
     else: 
         if axis == 'Y_axis':
-            steps = [200,200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
+            steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
             magnet_step_size = 100         # the sample position is checked after each magnet_step_siz 
         elif axis == 'X_axis':
-            steps = [150] 
+            steps = [150, 150, 150] 
             magnet_step_size = 150         # the sample position is checked after each magnet_step_siz
 
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
         
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
@@ -183,55 +183,58 @@ if __name__ == '__main__':
         print 'Difference to ZFS = '+ str((f_centre-ZFS*1e-9)*1e6)+ 'kHz'
         print 'Measured B_field is: Bz = '+str(Bz_measured)+ ' G ,Bx = '+str(Bx_measured)+ ' G'
         print '-----------------------------'
+
+
+    if No_steps == False: 
    
-    qt.mstart()
+        qt.mstart()
 
-    d = qt.Data(name=SAMPLE_CFG+'_magnet_optimization_' + axis)
-    
-
-
-    d.add_coordinate('position')
-    d.add_value('ms-1 transition frequency (GHz)')
-    d.add_value('ms+1 transition frequency error (GHz)')
-    d.add_value('ms-1 transition frequency (GHz)')
-    d.add_value('ms+1 transition frequency error (GHz)')
-    d.add_value('center frequency (GHz)')
-    d.add_value('Difference to set ZFS (kHz)')
-    d.add_value('measured Bx field (G)')
-    d.add_value('measured Bz field (G)')
-
-    
-    # #fitting
-
-    # if len(f_diff_list) != 1:  #Should add some kind of if statement if only one point is measured to prevent the program from crashing here.  
-    p0, fitfunc, fitfunc_str = common.fit_parabole(g_o=5,g_A=1,g_c=0)
-    fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
-    # print 'minimum at steps = '+str(fit_result['params_dict']['c'])
-    # # print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
-
-    # print positions  
-    d.create_file()
-    filename=d.get_filepath()[:-4]
-    d.add_data_point(positions, f0m,u_f0m,f0p,u_f0p,f_centre_list,f_diff_list,Bx_field_measured,Bz_field_measured)
+        d = qt.Data(name=SAMPLE_CFG+'_magnet_optimization_' + axis)
+        
 
 
-    # to do show error bars
-    positions[0] = positions[0] + 0.00001 #for some reason the plot below cannot handle twice the same x-coordinate
-    
-    fd = zeros(1000)
-    x_fd = linspace(min(positions),max(positions),1000)
-    if type(fit_result) != type(False):
-        fd = fit_result['fitfunc'](x_fd)
-        fd = fd.tolist()
+        d.add_coordinate('position')
+        d.add_value('ms-1 transition frequency (GHz)')
+        d.add_value('ms+1 transition frequency error (GHz)')
+        d.add_value('ms-1 transition frequency (GHz)')
+        d.add_value('ms+1 transition frequency error (GHz)')
+        d.add_value('center frequency (GHz)')
+        d.add_value('Difference to set ZFS (kHz)')
+        d.add_value('measured Bx field (G)')
+        d.add_value('measured Bz field (G)')
+
+        
+        # #fitting
+
+        # if len(f_diff_list) != 1:  #Should add some kind of if statement if only one point is measured to prevent the program from crashing here.  
+        p0, fitfunc, fitfunc_str = common.fit_parabole(g_o=5,g_A=1,g_c=0)
+        fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
+        # print 'minimum at steps = '+str(fit_result['params_dict']['c'])
+        # # print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
+
+        # print positions  
+        d.create_file()
+        filename=d.get_filepath()[:-4]
+        d.add_data_point(positions, f0m,u_f0m,f0p,u_f0p,f_centre_list,f_diff_list,Bx_field_measured,Bz_field_measured)
 
 
-    min_fd = (min(fd))
-    pos_min_fd = x_fd[fd.index(min_fd)]
-    print 'Minumum (%s kHz) located at %s' %(min_fd,pos_min_fd)
-    print 'Current position: (%s) move the magnet: (%s) along the %s' %(sum(steps),pos_min_fd-sum(steps),axis)
-    
-    p_c = qt.Plot2D(x_fd,fd, 'b-', name='f_centre relative to ZFS', clear=True)
-    p_c.add_data(d, coorddim=0, valdim=6,style='rO')
-    p_c.save_png(filename+'.png')
-    d.close_file()
-    qt.mend()
+        # to do show error bars
+        positions[0] = positions[0] + 0.00001 #for some reason the plot below cannot handle twice the same x-coordinate
+        
+        fd = zeros(1000)
+        x_fd = linspace(min(positions),max(positions),1000)
+        if type(fit_result) != type(False):
+            fd = fit_result['fitfunc'](x_fd)
+            fd = fd.tolist()
+
+
+        min_fd = (min(fd))
+        pos_min_fd = x_fd[fd.index(min_fd)]
+        print 'Minumum (%s kHz) located at %s' %(min_fd,pos_min_fd)
+        print 'Current position: (%s) move the magnet: (%s) along the %s' %(sum(steps),pos_min_fd-sum(steps),axis)
+        
+        p_c = qt.Plot2D(x_fd,fd, 'b-', name='f_centre relative to ZFS', clear=True)
+        p_c.add_data(d, coorddim=0, valdim=6,style='rO')
+        p_c.save_png(filename+'.png')
+        d.close_file()
+        qt.mend()

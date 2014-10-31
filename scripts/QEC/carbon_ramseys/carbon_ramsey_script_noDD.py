@@ -25,10 +25,10 @@ def Carbon_Ramsey(name, tau = None, N=None):
     m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 1
+    m.params['addressed_carbon'] = 2
 
     ### Sweep parameter ###
-    m.params['free_evolution_times'] = np.linspace(3.2e3,30e3,51).astype(int)*1e-9
+    m.params['free_evolution_times'] = np.linspace(3.2e3,35e3,51).astype(int)*1e-9
     
 
     print 'free evolution times: %s' %m.params['free_evolution_times']
@@ -36,14 +36,15 @@ def Carbon_Ramsey(name, tau = None, N=None):
     m.params['sweep_pts']        = m.params['free_evolution_times']
     m.params['sweep_name']       = 'Free evolution time'
 
-    if N ==None: 
-        m.params['C_Ren_N'] = m.params['C1_Ren_N'][0]  
-    else:
-        m.params['C_Ren_N'] = N
-    if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C1_Ren_tau'][0]
-    else: 
-        m.params['C_Ren_tau'] = tau 
+
+    # if N ==None: 
+    #     m.params['C_Ren_N'] = m.params['C5_Ren_N'][0]  
+    # else:
+    #     m.params['C_Ren_N'] = N
+    # if tau ==None: 
+    #     m.params['C_Ren_tau'] = m.params['C5_Ren_tau'][0]
+    # else: 
+    #     m.params['C_Ren_tau'] = tau 
 
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)

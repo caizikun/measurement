@@ -197,6 +197,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    #cal_fast_pi(SAMPLE_CFG+'msm1',mult=8,min_pulse_amp =.7, max_pulse_amp =0.9, mbi = False)
-    cal_fast_pi2(SAMPLE_CFG, mult=12, min_pulse_amp = 0.74-0.05, max_pulse_amp =0.74+0.05, mbi = True)
+    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp =0.801227-0.04, max_pulse_amp =0.801227+0.04, mbi = True)
+    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.8034-0.04, max_pulse_amp =0.8034+0.04, mbi = True)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)
