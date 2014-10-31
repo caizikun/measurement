@@ -6,7 +6,6 @@ import bell
 reload(bell)
 
 
-
 bs_params = {}
 bs_params['MAX_DATA_LEN']        =   int(100e6)
 bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
