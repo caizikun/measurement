@@ -12,20 +12,25 @@ import measurement.lib.measurement2.measurement as m2
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+
+import measurement.scripts.mbi.mbi_funcs as funcs
+reload(funcs)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def erabi(name):
     m = pulsar_msmt.ElectronRabi(name)
+    funcs.prepare(m) 
 
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['pulses'])
+    # NOTE: Replaced all the m.params.from_dict statements with funcs.prepare(m) 
+    # m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['pulses'])
 
 
     m.params['pts'] = 31
@@ -41,7 +46,7 @@ def erabi(name):
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
     elif 1:
-        m.params['MW_pulse_durations'] =  np.linspace(0,50e-6,pts)
+        m.params['MW_pulse_durations'] =  np.linspace(0,10e-6,pts)
         m.params['MW_pulse_amplitudes'] = np.ones(pts)*m.params['AWG_MBI_MW_pulse_amp']
         m.params['sweep_name'] = 'MW_pulse_durations (us)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e6

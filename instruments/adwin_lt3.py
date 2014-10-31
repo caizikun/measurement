@@ -15,11 +15,11 @@ class adwin_lt3(adwin):
     def __init__(self, name, **kw):
         adwin.__init__(self, name, 
                 adwin = qt.instruments['physical_adwin'], 
-                processes = adwinscfg.config['adwin_lt3_processes'],
+                processes = adwinscfg.config['adwin_pro_processes'],
                 default_processes=['counter', 'set_dac', 'set_dio', 'linescan'], 
                 dacs=adwinscfg.config['adwin_lt3_dacs'], 
                 tags=['virtual'],
-                process_subfolder = qt.config['adwin_lt3_subfolder'], **kw)
+                process_subfolder = qt.config['adwin_pro_subfolder'], **kw)
         
         
         self.add_function('set_resonant_counting')
@@ -142,7 +142,7 @@ class adwin_lt3(adwin):
             self._dac_voltages[n] = stop_voltages[i]
         self.save_cfg()
 
-    def speed2px(self, dac_names, target_voltages, speed=5000, pxtime=5,
+    def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,
             minsteps=10):
         """
         Parameters:

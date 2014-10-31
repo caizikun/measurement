@@ -6,7 +6,7 @@ convlist=[
 		('DIGOUT(','P2_DIGOUT(DIO_MODULE,'),
 		('CNT_CLEAR(','P2_CNT_CLEAR(CTR_MODULE,'),
 		('CNT_READ(','P2_CNT_READ(CTR_MODULE,'),
-		('DIGIN(','(P2_DIGIN_LONG(DIO_MODULE) AND '),
+		('DIGIN_LONG(','(P2_DIGIN_LONG(DIO_MODULE'),
 		('#INCLUDE ADwinGoldII.inc', '#INCLUDE ADwinPro_All.inc')
 	]
 
@@ -33,6 +33,6 @@ if __name__ == '__main__':
 	#conversion (source,target), 0 = gold, 1 = pro 
 	#--> (0,1) = gold to pro
 	#--> (1,0) = pro to gold
-	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2_lt2\cr.inc',
-			r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\cr.inc', 
-			conversion=(1,0))
+	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\cr_mod.inc',
+			r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2\cr_mod.inc', 
+			conversion=(0,1))

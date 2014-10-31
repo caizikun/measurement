@@ -35,7 +35,7 @@ class Pulsar:
 
     ### channel handling
     def define_channel(self, id, name, type, delay, offset,
-            high, low, active):
+            high, low, active, skew=0):
 
         _doubles = []
         for c in self.channels:
@@ -54,6 +54,7 @@ class Pulsar:
             'high' : high,
             'low' : low,
             'active' : active,
+            'skew'   : skew,
             }
 
     def set_channel_opt(self, name, option, value):
@@ -165,11 +166,13 @@ class Pulsar:
                 o = (self.channels[c]['high'] + self.channels[c]['low'])/2.
                 channel_cfg['ANALOG_AMPLITUDE_%s' %n[-1]] = a
                 channel_cfg['ANALOG_OFFSET_%s' %n[-1]] = o
+                channel_cfg['CHANNEL_SKEW_%s' %n[-1]] = self.channels[c]['skew']
             elif self.channels[c]['type'] == 'marker':
                 channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
-                channel_cfg['MARKER1_METHOD_%s'%n[2]] = 2
+                channel_cfg['MARKER2_METHOD_%s'%n[2]] = 2
                 channel_cfg['MARKER%s_LOW_%s'%(n[-1],n[2])] = self.channels[c]['low']
                 channel_cfg['MARKER%s_HIGH_%s'%(n[-1],n[2])] = self.channels[c]['high']
+                channel_cfg['MARKER%s_SKEW_%s'%(n[-1],n[2])] = self.channels[c]['skew']
             #elif self.channels[c]['type'] == 'dc':
             #    channel_cfg['DC_OUTPUT_LEVEL_%s'%n[-1]] = self.channels[c]['level']
 
@@ -250,7 +253,7 @@ class Pulsar:
 
             # upload to AWG
             self.AWG.send_waveform(chan_wfs[id], chan_wfs[id+'_marker1'],
-                chan_wfs[id+'_marker2'], wfname, self.clock)#here is wehere gijs' code comes in!
+                chan_wfs[id+'_marker2'], wfname)#, self.clock)#here is wehere gijs' code comes in!
             self.AWG.import_waveform_file(wfname, wfname, type='wfm')
 
         _t = time.time() - _t0
@@ -366,9 +369,12 @@ class Pulsar:
         debug=kw.pop('debug', False)
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
+        allow_non_zero_first_point_on_trigger_wait=kw.pop('allow_first_zero',False)
         elt_cnt = len(elements)
         chan_ids = self.get_used_channel_ids()
         packed_waveforms={}
+
+        elements_with_non_zero_first_points=[]
 
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
@@ -404,6 +410,8 @@ class Pulsar:
                 for sid in grp:
                     if grp[sid] != None and grp[sid] in wfs:
                         chan_wfs[sid] = wfs[grp[sid]]
+                        if chan_wfs[sid][0]!=0.:
+                            elements_with_non_zero_first_points.append(element.name)
                     else:
                         chan_wfs[sid] = np.zeros(element.samples())
 
@@ -419,6 +427,11 @@ class Pulsar:
         #sequence programming ----------------------------------------------------------
 
         _t0 = time.time()
+        if sequence.element_count() >8000:
+            print "Error: trying to program '%s' (%d element(s))...\n Sequence contains more than 8000 elements, Aborting" \
+                % (sequence.name, sequence.element_count()),
+            return 
+
 
         print "Programming '%s' (%d element(s))...\n" \
             % (sequence.name, sequence.element_count()),
@@ -466,6 +479,9 @@ class Pulsar:
                 logic_jump_l.append(0)
             if elt['trigger_wait']:
                 wait_l.append(1)
+                #if (elt['wfname'] in elements_with_non_zero_first_points) and not(allow_non_zero_first_point_on_trigger_wait):
+                    #print 'warning Trigger wait set for element with a non-zero first point'
+                    #raise Exception('pulsar: Trigger wait set for element {} with a non-zero first point'.format(elt['wfname']))
             else:
                 wait_l.append(0)
 
@@ -474,7 +490,7 @@ class Pulsar:
 
          # setting jump modes and loading the djump table
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
-            raise Exception('The AWG configured does not support dynamic jumping')
+            raise Exception('pulsar: The AWG configured does not support dynamic jumping')
 
         if self.AWG_type in ['opt09']:
             if sequence.djump_table != None:
@@ -501,7 +517,6 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
-
         self.AWG.send_awg_file(filename,awg_file)
 
         self.AWG.load_awg_file(filename)

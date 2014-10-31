@@ -66,6 +66,7 @@ SUB init_CR()
   cr_wait_after_pulse    = 0
   cr_mode = 0
   cr_timer = 0
+  cr_counts = 0 
   
   PAR_70 = 0                      ' cumulative counts from probe intervals
   PAR_71 = 0                      ' number of repumps
@@ -143,12 +144,12 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             P2_CNT_ENABLE(CTR_MODULE,0)
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
             PAR_70 = PAR_70 + cr_counts
-            
+           
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
               DATA_23[repetition_index] = cr_counts
               first_cr=0
             ENDIF
-                      
+                     
             IF (cr_counts < current_cr_threshold) THEN
               cr_mode = 0
               inc(CR_failed)

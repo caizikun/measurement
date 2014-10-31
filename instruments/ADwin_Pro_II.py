@@ -100,6 +100,7 @@ class ADwin_Pro_II(Instrument): #1
         return ret
 
     def Load(self, filename):
+        #print 'filename', filename
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADBload(filename,self._address,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
@@ -113,19 +114,23 @@ class ADwin_Pro_II(Instrument): #1
         return data
 
     def Get_Data_Long(self, index, start, count):
+        
         ErrorMsg=c_int32(0)
         data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
         success = self._adwin32.e_Get_Data(data.ctypes.data,2,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
+            print 'Get_Data_Long:idx, start, ct', index, start, count
             logging.warning(__name__ + ' : error in ADwin.Get_Data_Long: %s'%ErrorMsg.value)
         return data
 
     def Set_Data_Long(self, data=numpy.array, index=numpy.int32, 
             start=numpy.int32, count=numpy.int32):
+        
         ErrorMsg=c_int32(0)
         success = self._adwin32.e_Set_Data(data.ctypes.data,2,index,start,
                 count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
+            print 'Set_Data_Long: index:',index, 'data', data, 'type', type(data) ,'start', start, 'count', count
             logging.warning(__name__ + ' : error in ADwin.Set_Data_Long: %s'%ErrorMsg.value)
 
     def Get_Data_Float(self, index, start, count):
@@ -138,6 +143,7 @@ class ADwin_Pro_II(Instrument): #1
 
     def Set_Data_Float(self, data=numpy.array, index=numpy.int32, 
             start=numpy.int32, count=numpy.int32):
+        #print 'Set_Data_Float: index:',index, 'data', data,'start', start, 'count', count
         ErrorMsg=c_int32(0)        
         # Auto type conversion
         d=numpy.array(data,numpy.single)

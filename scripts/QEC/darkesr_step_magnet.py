@@ -11,7 +11,7 @@ import msvcrt
 
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 # import the dESR fit
 from analysis.lib.fitting import dark_esr_auto_analysis

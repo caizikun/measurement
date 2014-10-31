@@ -2,6 +2,103 @@ import numpy as np
 import pulse
 import pulsar
 
+class OriginalEOMAOMPulse(pulse.Pulse):
+    def __init__(self, name, eom_channel, aom_channel,  **kw):
+        pulse.Pulse.__init__(self, name)
+        self.eom_channel = eom_channel
+        self.aom_channel = aom_channel
+
+        self.channels = [eom_channel,aom_channel]
+                                               
+        self.eom_pulse_duration        = kw.pop('eom_pulse_duration'      ,2e-9) 
+        self.eom_off_duration          = kw.pop('eom_off_duration'        ,150e-9)
+        self.eom_off_amplitude         = kw.pop('eom_off_amplitude'       ,-.25)
+        self.eom_pulse_amplitude       = kw.pop('eom_pulse_amplitude'     ,1.2)
+        self.eom_overshoot_duration1   = kw.pop('eom_overshoot_duration1' ,10e-9)
+        self.eom_overshoot1            = kw.pop('eom_overshoot1'          ,-0.03)
+        self.eom_overshoot_duration2   = kw.pop('eom_overshoot_duration2' ,4e-9)
+        self.eom_overshoot2            = kw.pop('eom_overshoot2'          ,-0.03)
+        self.aom_risetime              = kw.pop('aom_risetime'            ,23e-9)
+        self.aom_amplitude             = kw.pop('aom_amplitude'           ,1.0)
+
+        self.start_offset   = self.eom_off_duration
+        self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration
+        self.length         = 4*self.eom_off_duration+2.*self.eom_pulse_duration                                      
+        
+    def __call__(self,  **kw):
+        self.eom_pulse_duration        = kw.pop('eom_pulse_duration'      ,self.eom_pulse_duration) 
+        self.eom_off_duration          = kw.pop('eom_off_duration'        ,self.eom_off_duration)
+        self.eom_off_amplitude         = kw.pop('eom_off_amplitude'       ,self.eom_off_amplitude)
+        self.eom_pulse_amplitude       = kw.pop('eom_pulse_amplitude'     ,self.eom_pulse_amplitude)
+        self.eom_overshoot_duration1   = kw.pop('eom_overshoot_duration1' ,self.eom_overshoot_duration1)
+        self.eom_overshoot1            = kw.pop('eom_overshoot1'          ,self.eom_overshoot1)
+        self.eom_overshoot_duration2   = kw.pop('eom_overshoot_duration2' ,self.eom_overshoot_duration2)
+        self.eom_overshoot2            = kw.pop('eom_overshoot2'          ,self.eom_overshoot2)
+        self.aom_risetime              = kw.pop('aom_risetime'            ,self.aom_risetime)
+        self.aom_amplitude             = kw.pop('aom_amplitude'           ,1.0)
+        
+        self.start_offset   = self.eom_off_duration
+        self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration        
+        self.length         = 4*self.eom_off_duration + 2*self.eom_pulse_duration
+
+        return self
+        
+       
+    def chan_wf(self, channel, tvals):
+        
+        tvals -= tvals[0]
+        tvals = np.round(tvals, pulsar.SIGNIFICANT_DIGITS) 
+        
+        if channel == self.eom_channel:
+
+            off_time1_start     = 0
+            off_time1_stop      = np.where(tvals <= self.eom_off_duration)[0][-1]
+            opt_pulse_stop      = np.where(tvals <= np.round(
+                self.eom_off_duration+self.eom_pulse_duration, 
+                    pulsar.SIGNIFICANT_DIGITS))[0][-1]
+            
+            overshoot1_stop     = np.where(tvals <= np.round(self.eom_off_duration + \
+                                    self.eom_pulse_duration + \
+                                    self.eom_overshoot_duration1,
+                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
+            
+            overshoot2_stop     = np.where(tvals <= np.round(self.eom_off_duration + \
+                                    self.eom_pulse_duration + self.eom_overshoot_duration1 + \
+                                    self.eom_overshoot_duration2,
+                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
+            
+            off_time2_stop      = np.where(tvals <= np.round(self.eom_off_duration + \
+                                    self.eom_pulse_duration + \
+                                     self.eom_off_duration,
+                                        pulsar.SIGNIFICANT_DIGITS))[0][-1]
+    
+            #print len(tvals)
+            wf = np.zeros(len(tvals)/2)
+            wf[off_time1_start:off_time1_stop] += self.eom_off_amplitude
+            wf[off_time1_stop:opt_pulse_stop]  += self.eom_pulse_amplitude
+            wf[opt_pulse_stop:overshoot1_stop] += self.eom_overshoot1
+            wf[overshoot1_stop:overshoot2_stop]+= self.eom_overshoot2
+            wf[opt_pulse_stop:off_time2_stop]  += self.eom_off_amplitude
+
+            #compensation_pulse
+            wf = np.append(wf,-wf)
+
+
+        if channel == self.aom_channel:
+
+            wf = np.zeros(len(tvals))
+
+            pulse_start = np.where(tvals <= np.round(self.eom_off_duration-self.aom_risetime, 
+                pulsar.SIGNIFICANT_DIGITS))[0][-1]
+            pulse_stop  = np.where(tvals <= np.round(self.eom_off_duration + \
+                            self.eom_pulse_duration + self.aom_risetime, 
+                                pulsar.SIGNIFICANT_DIGITS))[0][-1]
+
+            wf[pulse_start:pulse_stop] += self.aom_amplitude
+            
+        return wf
+
+
 class EOMAOMPulse(pulse.Pulse):
     def __init__(self, name, eom_channel, aom_channel,  **kw):
         pulse.Pulse.__init__(self, name)
@@ -22,7 +119,6 @@ class EOMAOMPulse(pulse.Pulse):
         self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
         self.aom_risetime              = kw.pop('aom_risetime'            ,23e-9)
         self.aom_amplitude             = kw.pop('aom_amplitude'           ,1.0)
-        self.aom_on                    = kw.pop('aom_on'                  ,True)
 
         self.start_offset   = self.eom_off_duration
         self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration
@@ -41,7 +137,6 @@ class EOMAOMPulse(pulse.Pulse):
         self.eom_comp_pulse_duration   = kw.pop('eom_comp_pulse_duration' ,self.eom_pulse_duration)
         self.aom_risetime              = kw.pop('aom_risetime'            ,self.aom_risetime)
         self.aom_amplitude             = kw.pop('aom_amplitude'           ,self.aom_amplitude )
-        self.aom_on                    = kw.pop('aom_on'                  ,self.aom_on )
         
         self.start_offset   = self.eom_off_duration
         self.stop_offset    = 3*self.eom_off_duration+self.eom_pulse_duration        
@@ -111,7 +206,7 @@ class EOMAOMPulse(pulse.Pulse):
                             self.eom_pulse_duration + self.aom_risetime, 
                                 pulsar.SIGNIFICANT_DIGITS))[0][-1]
 
-            wf[pulse_start:pulse_stop] += self.aom_amplitude*self.aom_on 
+            wf[pulse_start:pulse_stop] += self.aom_amplitude
             
         return wf
                 

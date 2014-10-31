@@ -338,10 +338,12 @@ class AOM(Instrument):
         a, xc, k = np.copysign(np.max(y), V_max + V_min), np.copysign(.1, V_max + V_min), np.copysign(5., V_max + V_min)
         fitres = fit.fit1d(x,y, common.fit_AOM_powerdependence, 
                 a, xc, k, do_print=True, ret=True)
-     
-        fd = np.zeros(len(x))        
-        if type(fitres) != type(False):
-            p1 = fitres['params_dict']
+
+        
+        fd = np.zeros(len(x))
+       
+        if fitres['success']==True:    
+            p1 = fitres['params_dict']       
             self.set_cal_a(p1['a'])
             self.set_cal_xc(p1['xc'])
             self.set_cal_k(p1['k'])
@@ -388,7 +390,7 @@ class AOM(Instrument):
 
         if np.isnan(voltage):
             logging.warning(self.get_name() + ' Error: power out of calibration range')
-        
+                    
         return voltage
 
     def voltage_to_power(self, u):

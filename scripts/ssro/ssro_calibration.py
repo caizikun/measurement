@@ -10,40 +10,28 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def ssrocalibration(name):
+def ssrocalibration(name, **additional_params):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
+
+    
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    m.params.from_dict(additional_params)
+
     # parameters
-    m.params['SSRO_repetitions'] = 5000
-    m.params['SSRO_duration']       = 100
-    m.params['SSRO_stop_after_first_photon']= 0
-
-
-    m.params['CR_preselect']    = 1000
-    m.params['CR_repump']       = 1000
-    m.params['CR_probe']        = 1000
-
-    e_sp = 60e-9 #60e-9
-    a_sp=  70e-9
-    ro_amp=40e-9
-
-    #m.params['green_rempump_duration']=150
-    #m.params['green_repump_amplitude'] = 30e-6
-    print m.params['Ex_CR_amplitude']
-
+    e_sp = m.params['Ex_SP_amplitude'] 
+    a_sp =  m.params['A_SP_amplitude']
 
     # ms = 0 calibration
-    m.params['SP_duration']=10
-    m.params['Ex_RO_amplitude']=ro_amp
+    m.params['SP_duration'] = m.params['SP_duration_ms0']
     m.params['Ex_SP_amplitude'] = 0.
     m.params['A_SP_amplitude'] = a_sp
     m.run()
     m.save('ms0')
 
     # ms = 1 calibration
-    m.params['SP_duration']=100
+    m.params['SP_duration'] = m.params['SP_duration_ms1']
     m.params['A_SP_amplitude'] = 0
     m.params['Ex_SP_amplitude'] = e_sp
     m.run()
@@ -52,4 +40,6 @@ def ssrocalibration(name):
     m.finish()
 
 if __name__ == '__main__':
+    stools.turn_off_all_lasers()
     ssrocalibration(SAMPLE_CFG)
+    #ssrocalibration(SAMPLE_CFG)

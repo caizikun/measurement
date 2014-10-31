@@ -8,7 +8,7 @@ import msvcrt
 import numpy as np
 import qt
 
-from measurement.lib.measurement2.adwin_ssro.pulsar import PulsarMeasurement
+from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools
 
@@ -34,6 +34,9 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
 
     def measurement_process_running(self):
         return self.adwin_process_running()
+
+    def run(self, **kw):
+        pq.PQMeasurement.run(self,**kw)
 
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    

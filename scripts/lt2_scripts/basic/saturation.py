@@ -6,9 +6,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Sil_4_Hans_MM_APD'
+name = 'Sil_1_Hans_FS_APD'
 steps= 15
-max_power=400e-6       #[w]
+max_power=40e-6       #[w]
 counter=1         #number of counter
 PH_count=False    #counting with the HH, assumes apd on channel 0
 bg_x=3.0         #delta x position of background [um]

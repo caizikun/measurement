@@ -3,12 +3,11 @@ config['adwin_lt1_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
         'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
-        'green_aom': 4,
-        'gate' : 5, #not yet connected
+        'yellow_aom_frq': 4,
+        'gate_mod' : 5, #not yet connected
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
         'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
-        'yellow_aom' : 3,
         }
 
 config['adwin_lt1_dios'] = {
@@ -183,7 +182,7 @@ config['adwin_lt1_processes'] = {
                 },
 
         # ADwin CR check. This process can not run stand-alone and should be included in another adwin script/process
-        'cr_check_mod' : {
+        'cr_check_mod_pos' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
             'file' : 'cr_mod.inc',
@@ -247,12 +246,68 @@ config['adwin_lt1_processes'] = {
                     'atto_positions' : 16
                     }
                 },
+# ADwin CR check. This process can not run stand-alone and should be included in another adwin script/process
+        'cr_check_mod' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_mod.inc',
+            'par' : {
+                    'CR_preselect'              : 75,
+                    'CR_probe'                  : 68,
+                    'CR_repump'                 : 69,
+                    'total_CR_counts'           : 70,
+                    'noof_repumps'              : 71,
+                    'noof_cr_checks'            : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts'             : 76,
+                    'repump_mod_activate'       : 66,
+                    'cr_mod_activate'           : 67,
+                    },
+                    'fpar' : {
+                    'repump_mod_err' : 78,
+                    'cr_mod_err'     : 79,
+
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ['repump_mod_DAC_channel'      ,   7],
+                    ['cr_mod_DAC_channel'          ,   8],
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'           ,   0.8],
+                    ['repump_off_voltage'       ,  0.07],
+                    ['Ex_CR_voltage'            ,   0.8],
+                    ['A_CR_voltage'             ,   0.8],
+                    ['Ex_off_voltage'           ,   0.0],
+                    ['A_off_voltage'            , -0.08],
+                    ['repump_mod_control_offset',   0.0],
+                    ['repump_mod_control_amp'   ,   0.0],
+                    ['cr_mod_control_offset'    ,   0.0],
+                    ['cr_mod_control_amp'       ,   0.0],
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                },
 
         # ADwin single-shot readout
         'singleshot' : {
                 'index' : 9,
                 'file' : 'singleshot_lt1.tb9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
                     'ssro_counts' : 74,
@@ -290,7 +345,7 @@ config['adwin_lt1_processes'] = {
         'integrated_ssro' : {
                 'index' : 9,
                 'file' : 'integrated_ssro_lt1.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],
@@ -328,7 +383,7 @@ config['adwin_lt1_processes'] = {
         'bell' : {
                 'index' : 9,
                 'file' : 'bell_lt1.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_done_DI_channel'         ,   8],
                     ['AWG_success_DI_channel'         ,   8],
@@ -338,13 +393,14 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_duration'               ,  50],
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
+                    ['wait_before_RO'              ,  10],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
                 'params_float' : [
-                    ['E_SP_voltage'        , 0.8],
+                    ['Ex_SP_voltage'        , 0.8],
                     ['A_SP_voltage'        , 0.8],
-                    ['E_RO_voltage'        , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'        , 0.8],
                     ],
                 'params_float_index'  : 21,
@@ -360,6 +416,7 @@ config['adwin_lt1_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
@@ -837,6 +894,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
                     ['sweep_length'                ,   1],
+                    ['wait_after_RO_pulse_duration',1],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -932,6 +990,7 @@ config['adwin_lt2_processes'] = {
                     ['Ex_N_randomize_voltage'       , 0.0],
                     ['A_N_randomize_voltage'        , 0.0],
                     ['repump_N_randomize_voltage'   , 0.0],
+                    ['A_SP_voltage_before_MBI'      , 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 100,
@@ -941,7 +1000,6 @@ config['adwin_lt2_processes'] = {
                     'current mode': 77,
                     'MBI start': 78,
                     'ROseq_cntr': 80,
-
                     },
                 'data_long' : {
                     'MBI_attempts' : 24,
@@ -950,6 +1008,61 @@ config['adwin_lt2_processes'] = {
                     'MBI_time' : 28,
                     },
                 },
+
+        'adaptive_magnetometry' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_phase_calibr'             ,   1],
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
+                    
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    'phases':27,
+                    },
+                },
+
+
+
 
         'general_pulses_sweep' : {
                 'index' : 9,
@@ -1289,6 +1402,151 @@ config['adwin_lt2_processes'] = {
                 'fpar': {}
                 },
 
+        ###########################
+        ### QEC Carbon Control ####
+        ###########################
+
+        'MBI_single_C13' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'C13_single_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   0],
+                    ['AWG_done_DI_channel'         ,   9],
+                    ['SP_E_duration'               , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['sweep_length'                ,  10],
+                    ['cycle_duration'              , 300],
+                    ['AWG_event_jump_DO_channel'   ,   6],
+                    ['MBI_duration'                ,   1],
+                    ['max_MBI_attempts'            ,   1],
+                    ['MBI_threshold'               ,   0],
+                    ['nr_of_ROsequences'           ,   1],
+                    ['wait_after_RO_pulse_duration',   3],
+                    ['N_randomize_duration'        ,  50],
+                    ['C13_MBI_threshold'           ,   1],
+                    ['C13_MBI_RO_duration'            ,  10],
+                    ['SP_duration_after_C13'       ,  25],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8],
+                    ['Ex_MBI_voltage'               , 0.8],
+                    ['Ex_N_randomize_voltage'       , 0.0],
+                    ['A_N_randomize_voltage'        , 0.0],
+                    ['repump_N_randomize_voltage'   , 0.0],
+                    ['E_SP_voltage_after_C13_MBI'   , 0.0],
+                    ['A_SP_voltage_after_C13_MBI'   , 0.0],
+                    ['E_C13_MBI_RO_voltage'            , 0.0],
+
+
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 74,
+                    'current mode': 77,
+                    'MBI start': 78,
+                    'ROseq_cntr': 80,
+                    },
+                'data_long' : {
+                    'MBI_attempts' : 24,
+                    'MBI_cycles' : 25,
+                    'ssro_results' : 27,
+                    'MBI_time' : 28,
+                    },
+                },
+
+        'MBI_multiple_C13' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'C13_multiple_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   0],  #1
+                    ['AWG_done_DI_channel'         ,   9],  #2
+                    ['SP_E_duration'               , 100],  #3
+                    ['wait_after_pulse_duration'   ,   1],  #4
+                    ['repetitions'                 ,1000],  #5
+                    ['sweep_length'                ,  10],  #6
+                    ['cycle_duration'              , 300],  #7
+                    ['AWG_event_jump_DO_channel'   ,   6],  #8
+                    ['MBI_duration'                ,   1],  #9
+                    ['max_MBI_attempts'            ,   1],  #10
+                    ['nr_of_ROsequences'           ,   1],  #11
+                    ['wait_after_RO_pulse_duration',   3],  #12
+                    ['N_randomize_duration'        ,  50],  #13 
+
+                    ['Nr_C13_init'                 ,  2],   #14
+                    ['Nr_MBE'                      ,  1],   #15
+                    ['Nr_parity_msmts'             ,  0],   #16
+                      #Thresholds 
+                    ['MBI_threshold'               ,  1],   #17
+                    ['C13_MBI_threshold'           ,  0],   #18 
+                    ['MBE_threshold'               ,  1],   #19 
+                    ['Parity_threshold'            ,  1],   #20 
+                    # Durations 
+                    ['C13_MBI_RO_duration'         , 30],   #21 
+                    ['SP_duration_after_C13'       , 25],   #22
+
+                    ['MBE_RO_duration'             ,  10],  #23
+                    ['SP_duration_after_MBE'       ,  25],  #24
+
+                    ['Parity_RO_duration'          ,  10],  #25 
+
+                    ],# TODO_MAR: add to msmt params and make usefull in Adwin 
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8], #1
+                    ['Ex_MBI_voltage'               , 0.8], #2
+                    ['Ex_N_randomize_voltage'       , 0.0], #3
+                    ['A_N_randomize_voltage'        , 0.0], #4
+                    ['repump_N_randomize_voltage'   , 0.0], #5
+                    ['E_C13_MBI_RO_voltage'         , 0.0], #6  
+                    ['E_SP_voltage_after_C13_MBI'   , 0.0], #7
+                    ['A_SP_voltage_after_C13_MBI'   , 0.0], #8
+
+                    ['E_MBE_RO_voltage'           , 1e-9], #9
+                    ['A_SP_voltage_after_MBE'     , 15e-9],#10
+                    ['E_SP_voltage_after_MBE'     , 0e-9], #11
+
+                    ['E_Parity_RO_voltage'        , 1e-9], #12
+                    
+
+                    # TODO_MAR: Add voltages for MBE and Parity 
+
+
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 74,
+                    'current mode': 77,
+                    'MBI start': 78,
+                    'ROseq_cntr': 80,
+                    },
+                'data_long' : {
+                    'MBI_attempts' : 24,
+                    'MBI_cycles' : 25,
+                    'ssro_results' : 27,
+                    'MBI_time' : 28,
+                    #'test':29,
+                    },
+                },
+
+
         }
 
 config['adwin_lt3_dacs'] = {
@@ -1299,14 +1557,16 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom' : 5,
         'matisse_aom' : 6,
         'newfocus_aom': 7,
-        'not_in_use' : 8,
+        'gate' : 8,
+        'gate_mod' : 9,
+        'yellow_frq_mod':10,
         }
 
 config['adwin_lt3_dios'] = {
 
         }
 
-config['adwin_lt3_processes'] = {
+config['adwin_pro_processes'] = {
 
         'linescan' : {
 
@@ -1421,6 +1681,71 @@ config['adwin_lt3_processes'] = {
                     'statistics' : 26,
                     },
                 },
+
+         'cr_check_mod' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_mod.inc',
+            'par' : {
+                    'CR_preselect'              : 75,
+                    'CR_probe'                  : 68,
+                    'CR_repump'                 : 69,
+                    'total_CR_counts'           : 70,
+                    'noof_repumps'              : 71,
+                    'noof_cr_checks'            : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts'             : 76,
+                    'pos_mod_activate'          : 65,
+                    'repump_mod_activate'       : 66,
+                    'cr_mod_activate'           : 67,
+                    'cur_pos_mod_dac'           : 64,
+                    },
+                    'fpar' : {
+                    'repump_mod_err' : 78,
+                    'cr_mod_err'     : 79,
+                    'pos_mod_err'    : 64,
+
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ['repump_mod_DAC_channel'      ,   7],
+                    ['cr_mod_DAC_channel'          ,   8],
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'           ,   0.8],
+                    ['repump_off_voltage'       ,  0.07],
+                    ['Ex_CR_voltage'            ,   0.8],
+                    ['A_CR_voltage'             ,   0.8],
+                    ['Ex_off_voltage'           ,   0.0],
+                    ['A_off_voltage'            , -0.08],
+                    ['repump_mod_control_offset',   0.0],
+                    ['repump_mod_control_amp'   ,   0.0],
+                    ['cr_mod_control_offset'    ,   0.0],
+                    ['cr_mod_control_amp'       ,   0.0],
+                    ['pos_mod_control_amp'      ,  0.03],
+                    ['pos_mod_fb'               ,   0.1],
+                    ['pos_mod_min_counts'       ,  300.]
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                'data_float' : {
+                    'atto_positions' : 16
+                    }
+                },        
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
         # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
         # Not sure if this function is then needed. - Machiel 30-12-'13'
@@ -1443,7 +1768,7 @@ config['adwin_lt3_processes'] = {
         # ADwin single-shot readout
         'singleshot' : {
                 'index' : 9,
-                'file' : 'singleshot_lt3.tb9',
+                'file' : 'singleshot.tb9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'par' : {
                     'completed_reps' : 73,
@@ -1481,7 +1806,7 @@ config['adwin_lt3_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro_lt3.TB9',
+                'file' : 'integrated_ssro.TB9',
                 'include_cr_process' : 'cr_check', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -1531,7 +1856,8 @@ config['adwin_lt3_processes'] = {
                     ['sequence_wait_time'          ,  10],
                     ['PLU_DI_channel'              ,   1],
                     ['do_sequences'                ,   1],
-
+                    ['wait_for_remote_CR'          ,   1],
+                    ['wait_before_RO'              ,  10],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1555,6 +1881,7 @@ config['adwin_lt3_processes'] = {
                     'SP_hist' : 24,
                     'RO_data' : 25,
                     'CR_timer': 27,
+                    'CR_hist':  28,
                     },
                 },
 
@@ -1656,3 +1983,16 @@ config['adwin_rt2_processes'] = {
             },
         },
     }
+
+config['adwin_lt4_dacs'] = { #TODO describe
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        'green_aom' : 4,
+        'yellow_aom' : 5,
+        'matisse_aom' : 6,
+        'newfocus_aom': 7,
+        'gate' : 8,
+        'gate_mod' : 9,
+        'yellow_frq_mod':10,
+        }

@@ -158,7 +158,13 @@ def set_GreenAOM_power_lt1(power):
 
 
 
-
+def init_AWG():
+    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    qt.pulsar.setup_channels()
+    qt.instruments['AWG'].set_ch1_status('on')
+    qt.instruments['AWG'].set_ch2_status('on')
+    qt.instruments['AWG'].set_ch3_status('on')
+    qt.instruments['AWG'].set_ch4_status('on')
 
 
 

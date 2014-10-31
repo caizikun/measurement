@@ -82,7 +82,7 @@ def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1',
     qt.instruments['PMServo_lt1'].move_out()
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [10e-9, 20e-9, 50e-6,50e-9]):
+    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
     
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
@@ -147,7 +147,7 @@ def set_lt1_optimization_powers():
 
 
 def turn_on_lt3_pulse_path():
-    qt.instruments['PMServo'].move_in()
+    #qt.instruments['PMServo'].move_in()
     p=pulse.SinePulse(channel='EOM_Matisse', name='pp', length=100e-6, frequency=1/(100e-6), amplitude = 1.8)
     opt = 'offset' if qt.pulsar.channels['EOM_AOM_Matisse']['type']=='analog' else 'low'
 
@@ -171,4 +171,41 @@ def turn_on_lt3_pulse_path():
     qt.instruments['AWG'].stop()
     qt.instruments['AWG'].set_runmode('CONT')
     qt.pulsar.set_channel_opt('EOM_AOM_Matisse', opt, 0.0)
+    #qt.instruments['PMServo'].move_out()
 
+def init_AWG():
+    qt.instruments['AWG'].initialize_dc_waveforms()
+
+def start_bs_counter():
+    if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
+        print 'ZPL APDs on'
+    else:
+        print 'ZPL APDs could not be turned on!'
+    qt.instruments['counters'].set_is_running(False)
+    qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
+    qt.instruments['bs_helper'].set_is_running(True)
+    qt.instruments['bs_helper'].execute_script()
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
+
+def stop_bs_counter():
+    qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['counters'].set_is_running(True)
+    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
+        print 'ZPL APDs off'
+    else:
+        print 'ZPL APDs could not be turned off!'
+
+def generate_quantum_random_number():
+    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.msleep(0.1)
+    qt.instruments['AWG'].set_ch1_marker2_low(0.)
+
+def reset_plu():
+    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)

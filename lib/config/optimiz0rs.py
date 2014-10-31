@@ -21,17 +21,17 @@ dimension_sets = {
             
             'lt1' : {
                 'x' : {
-                    'scan_length' : 1.,
+                    'scan_length' : 0.5,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 1.,
+                    'scan_length' : 0.5,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 2.,
+                    'scan_length' : 1.,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
@@ -51,7 +51,27 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 4.,
+                    'scan_length' : 2.0,
+                    'nr_of_points' : 51,#99,
+#                    'pixel_time' : 50,
+                    },
+                'zyx' : ['z','y','x'],
+                'xyonly':['y','x'],
+                },
+
+            'lt4' : {
+                'x' : {
+                    'scan_length' : 0.7,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'y' : {
+                    'scan_length' : 0.7,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'z' : {
+                    'scan_length' : 1.3,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },
@@ -71,7 +91,7 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 4.,
+                    'scan_length' : 1.5,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },

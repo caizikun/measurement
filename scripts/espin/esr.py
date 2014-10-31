@@ -4,19 +4,21 @@ import numpy as np
 
 execfile(qt.reload_current_setup)
 
+SAMPLE = qt.exp_params['samples']['current']
+
 ##############
 ### Inputs ###
 ##############
 
-name='ESR_SIL1_Hans_LT2'
-steps    = 75        #101
-mw_power = -6        #in dBm
-green_power = 10e-6  #10e-6
-int_time = 25        # in ms
-reps = 10
-center_f =   qt.exp_params['samples']['Hans_sil1']['ms-1_cntr_frq']*1e-9 # in GHz
+name='ESR_'+ qt.exp_params['protocols']['current']
+steps       = 51       #101
+mw_power    = -10       #in dBm
+green_power = 10e-6     #10e-6
+int_time    = 50        # in ms
+reps        = 10
+center_f    = 2.82 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
-range_f  =  0.030 # in GHz
+range_f  =  0.04 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
