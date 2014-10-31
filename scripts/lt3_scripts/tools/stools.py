@@ -12,7 +12,6 @@ def turn_off_lasers(names):
         qt.instruments[l].turn_off()
 
 def turn_off_all_lt3_lasers():
-    set_simple_counting(['adwin'])
     turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM', 'PulseAOM'])
 
 def turn_off_all_lasers():
@@ -209,3 +208,27 @@ def reset_plu():
     qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
     qt.msleep(0.1)
     qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+
+def calibrate_aom_frq_max(name='YellowAOM', pts=21):
+    adwin = qt.instruments['adwin']  
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(0.5) 
+    qt.instruments['powermeter'].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.instruments[name].turn_on()
+    qt.msleep(0.5)
+    cur_v=adwin.get_dac_voltage('yellow_aom_frq')
+    ps=[]
+    vs=[]
+    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+        vs.append(v)
+        adwin.set_dac_voltage(('yellow_aom_frq',v))
+        qt.msleep(0.1)
+        p=qt.instruments['powermeter'].get_power()
+        ps.append(p)
+        print 'V: {:.2f}, P: {:.3g}'.format(v,p)
+
+    max_v=vs[np.argmax(ps)]
+    print 'max power at V: {:.3f}, P: {:.2g}'.format(max_v,max(ps))
+    adwin.set_dac_voltage(('yellow_aom_frq',max_v))
+    qt.instruments[name].turn_off()
+    qt.instruments['PMServo'].move_out()

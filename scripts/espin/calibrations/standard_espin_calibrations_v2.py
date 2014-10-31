@@ -471,9 +471,9 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*100e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 300, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 400, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.8
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.6,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -512,8 +512,8 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     m.params['range']        = 4e6
     m.params['pts'] = 131
 
-    m.params['MW_pi_duration'] = 2.e-6
-    m.params['pulse_pi_amp'] = 0.015
+    m.params['MW_pi_duration'] = 1.1e-6
+    m.params['pulse_pi_amp'] = 0.03
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['MW_pulse_mod_frequency'] + m.params['range']
@@ -543,7 +543,7 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.39, 0.44, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  np.linspace(0.75, 0.95, pts) #0.872982*np.ones(pts)#
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 1
 
@@ -786,7 +786,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 2.0 :
         rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
-                pulse_type = 'Square', debug = debug)
+                pulse_type = 'Hermite', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum" # Error in the se
@@ -796,7 +796,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
                 pulse_type = 'Hermite', 
-                multiplicity = 5, debug=debug)
+                multiplicity = 1, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
@@ -819,7 +819,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.0, IQmod = False,Imod_channel=False, debug = False)
+    run_calibrations(3.0, IQmod = False,Imod_channel=True, debug = False)
 
     """
     stage 0 : continuous /ESR

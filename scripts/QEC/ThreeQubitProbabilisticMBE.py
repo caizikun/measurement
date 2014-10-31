@@ -19,11 +19,11 @@ def MBE(name):
     '''set experimental parameters'''
 
     ### Carbons to be used
-    m.params['carbon_list']         = [4,       1,      3]
+    m.params['carbon_list']         = [1]#[4,       1,      3]
 
     ### Carbon Initialization settings 
-    m.params['init_method_list']    = ['MBI', 'MBI', 'MBI']    ## 'MBI', 'swap', 'no'
-    m.params['init_state_list']     = ['up',   'up', 'up']    ## 'up' or 'down'
+    m.params['init_method_list']    = ['swap']#['MBI', 'MBI', 'MBI']    ## 'MBI', 'swap', 'no'
+    m.params['init_state_list']     = ['up']#,   'up', 'up']    ## 'up' or 'down'
 
     m.params['Only_init_first_Carbon']      = False
     m.params['Only_init_second_Carbon']     = False
@@ -43,15 +43,9 @@ def MBE(name):
             ['Z','X'],['Z','Y'],['Z','Z']])
 
     ## Alternative bases
-    m.params['Tomography Bases'] = ([['X','X'],
-            ['Y','Y'],
-            ['Z','Z']])
-
-         ## Alternative bases
-    m.params['Tomography Bases'] = ([['Z','I'],
-            ['I','Z'],
-            ['Z','Z']])
-
+    m.params['Tomography Bases'] = ([['X'],
+            ['Y'],
+            ['Z']])
 
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 

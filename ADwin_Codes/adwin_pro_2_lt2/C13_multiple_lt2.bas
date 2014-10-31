@@ -42,6 +42,9 @@
 #DEFINE max_time        10000
 #DEFINE max_mbi_steps     100
 
+#DEFINE max_nr_of_Carbon_init_steps 20 
+#DEFINE max_nr_of_Carbon_MBE_steps 20
+
 ' ####################
 ' Declaration of variables
 ' ####################
@@ -55,8 +58,8 @@ DIM DATA_35[max_sequences] AS FLOAT               ' A SP after MBI voltages
 DIM DATA_36[max_sequences] AS FLOAT               ' E RO voltages
 DIM DATA_38[max_sequences] AS LONG                ' sequence wait times
 DIM DATA_39[max_sequences] AS FLOAT               ' E SP after MBI voltages
-DIM DATA_37[max_sequences] AS LONG                ' NOT USED, use for C13 MBI threshold list?
-
+'DIM DATA_37[max_sequences] AS LONG                ' C13 MBI threshold list?
+DIM DATA_40[max_sequences] AS LONG                ' C13 MBI threshold list?
 
 'return (output parameters)
 'what do we want: 
@@ -70,10 +73,22 @@ DIM DATA_37[max_sequences] AS LONG                ' NOT USED, use for C13 MBI th
 '     Total C13-MBE pass and fails for each step
 
 
-DIM DATA_24[max_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle
-DIM DATA_25[max_repetitions] AS LONG ' number of cycles before success
-DIM DATA_27[max_repetitions] AS LONG ' SSRO counts
-DIM DATA_28[max_repetitions] AS LONG ' time needed until mbi success (in process cycles)
+DIM DATA_27[max_repetitions] AS LONG ' Final SSRO result 
+
+DIM DATA_24[max_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle 
+DIM DATA_25[1] AS LONG ' Data array to store the number of N initialization START events 
+DIM DATA_28[1] AS LONG ' Data array to store the number of N initialization SUCCES events 
+
+'C13 measurement data
+DIM DATA_29[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number of carbon initialization START events 
+DIM DATA_32[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number of carbon initialization SUCCES events 
+
+'C13 MBE data
+DIM DATA_41[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE START events 
+DIM DATA_42[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE SUCCES events 
+
+'C13 Parity data
+DIM DATA_43[max_repetitions] AS LONG 'Parity measurement outcomes (NOTE: multiple parity measurements are stored in a single array of length Nr_parity * repetitions
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
@@ -105,15 +120,13 @@ DIM ROseq_cntr AS LONG
 dim next_MBI_stop, next_MBI_laser_stop, AWG_is_done as long
 dim current_MBI_attempt as long
 dim MBI_attempts_before_CR as long
-dim mbi_timer as long
-dim trying_mbi as long
 dim N_randomize_duration as long
 
 dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
 'added for C13 initialization
-DIM C13_MBI_threshold, C13_MBI_RO_duration,SP_duration_after_C13 AS LONG
+DIM C13_MBI_threshold, C13_MBI_RO_state, C13_MBI_RO_duration,SP_duration_after_C13 AS LONG
 DIM Nr_C13_init, Nr_MBE, Nr_parity_msmts, Parity_threshold AS LONG
 DIM Carbon_init_cntr, MBE_cntr, parity_msmt_cntr AS LONG
 DIM A_SP_voltage_after_C13_MBI, E_SP_voltage_after_C13_MBI, E_C13_MBI_RO_voltage AS FLOAT
@@ -157,21 +170,21 @@ INIT:
   Nr_MBE                       = DATA_20[15]
   Nr_parity_msmts              = DATA_20[16]
 
-  ' floats
-
   MBI_threshold                = DATA_20[17]
-  C13_MBI_threshold            = DATA_20[18] 
-  MBE_threshold                = DATA_20[19] 
-  Parity_threshold             = DATA_20[20] 
+  MBE_threshold                = DATA_20[18] 
+  Parity_threshold             = DATA_20[19] 
  
-  C13_MBI_RO_duration          = DATA_20[21]
-  SP_duration_after_C13        = DATA_20[22]
+  C13_MBI_RO_duration          = DATA_20[20]
+  SP_duration_after_C13        = DATA_20[21]
 
-  MBE_RO_duration              = DATA_20[23]
-  SP_duration_after_MBE        = DATA_20[24]
+  MBE_RO_duration              = DATA_20[22]
+  SP_duration_after_MBE        = DATA_20[23]
 
-  Parity_RO_duration           = DATA_20[25] 
+  Parity_RO_duration           = DATA_20[24] 
+  C13_MBI_RO_state             = DATA_20[25]
 
+
+  ' floats
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]
   E_N_randomize_voltage        = DATA_21[3]
@@ -188,13 +201,27 @@ INIT:
   E_Parity_RO_voltage          = DATA_21[12]
 
 
+
   ' initialize the data arrays
+  DATA_25[1] = 0
+  DATA_28[1] = 0
+
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
-    DATA_25[i] = 0
-    DATA_28[i] = 0
     DATA_27[i] = 0
+    DATA_43[i] = 0
   NEXT i
+  
+  FOR i = 1 TO max_nr_of_Carbon_init_steps
+    DATA_29[i] = 0
+    DATA_32[i] = 0
+  NEXT i  
+
+  FOR i = 1 TO max_nr_of_Carbon_init_steps
+    DATA_41[i] = 0
+    DATA_42[i] = 0
+  NEXT i  
+
 
   ' ####################
   ' Initializing variables to set values
@@ -202,7 +229,7 @@ INIT:
 
   MBI_failed          = 0
   MBI_starts          = 0
-  repetition_counter  = 1
+  repetition_counter  = 1  ' Counts the number of completed runs of the measurement sequence (from CR-check to Final RO)
   first               = 0
   wait_time           = 0
   stop_MBI            = -2 ' wait_for_MBI_pulse + MBI_duration
@@ -234,8 +261,6 @@ INIT:
   tmp = P2_Digin_Edge(DIO_MODULE,0)
   mode = 0
   timer = 0
-  mbi_timer = 0
-  trying_mbi = 0
   processdelay = cycle_duration
 
   awg_in_is_hi = 0
@@ -265,11 +290,6 @@ EVENT:
   ' ####################
   ' Event running
   ' ####################
- 
-  'MBI counter
-  if(trying_mbi > 0) then
-    inc(mbi_timer)
-  endif
 
   ' #############
   ' Case selector
@@ -313,11 +333,15 @@ EVENT:
       CASE 6 'C13 MBI readout // go to SP-A OR CR-Check 
         IF (case_success = 1) THEN
           mode = 7
+                  
         ELSE 
           mode = 0 
         ENDIF
                                  
       CASE 7 'Spin pump A // go to next C13 MBI OR MBE/Parity OR final RO  
+        
+        INC(DATA_32[Current_C_init]) 'Count the number of C13 MBI succes for this MBI step
+        
         IF (Current_C_init = Nr_C13_init) THEN 'If all carbon initialized 
           IF (Nr_MBE > 0) THEN  
             mode = 8 'to MBE
@@ -330,7 +354,8 @@ EVENT:
           ENDIF   
         ELSE  
           mode = 5 ' to next Carbon MBI 
-          INC(Current_C_init)
+          INC(Current_C_init) ' go to next C13 init
+          C13_MBI_threshold = DATA_40[Current_C_init] 'go to next C13 init threshold
         ENDIF               
       
       CASE 8 'Start C13 MBE seq and wait for trigger // go to MBE RO 
@@ -399,7 +424,8 @@ EVENT:
           run_case_selector = 1
           case_success = 1
           first = 0 
-          Current_C_init = 1 ' Reset the Current C index if there was a failure 
+          Current_C_init = 1                          'Reset the Current C index if there was a failure 
+          C13_MBI_threshold = DATA_40[Current_C_init] 'Also go back to first init threshold
           MBE_counter = 0
           Parity_msmnt_counter =0  
         ENDIF
@@ -426,12 +452,7 @@ EVENT:
           INC(MBI_starts)
           PAR_78 = MBI_starts
 
-          IF (current_MBI_attempt = 1) THEN
-            IF(data_25[repetition_counter] = 0) THEN
-              trying_mbi = 1
-            ENDIF
-          ENDIF
-          INC(data_25[repetition_counter]) ' Total number of MBI attempts before succes
+          INC(data_25[1]) ' Total number of N MBI attempts 
 
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
           CPU_SLEEP(9)                                  ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -467,18 +488,16 @@ EVENT:
           CPU_SLEEP(9)                                        ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
 
-          DATA_24[repetition_counter] = current_MBI_attempt ' number of attempts needed in the successful cycle
+          DATA_24[repetition_counter] = current_MBI_attempt ' number of attempts needed since last CR check
+          INC(DATA_28[1]) 
 
           case_success = 1
           run_case_selector = 1
                     
           wait_time = MBI_duration-timer
           current_MBI_attempt = 1
-          trying_mbi = 0
+                      
           
-          'save the time MBI takes
-          DATA_28[repetition_counter] = mbi_timer
-          mbi_timer = 0
     
         ELSE
           IF (timer = MBI_duration-1) THEN
@@ -513,6 +532,9 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
           CPU_SLEEP(9)                                  ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+          
+          INC(DATA_29[Current_C_init]) 'Count the total number of C13 starts for this initialization steps        
+          
         ELSE
           
           awg_in_was_hi = awg_in_is_hi
@@ -537,7 +559,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_RO_voltage+32768) ' turn on Ex laser
           ' Needs Carbon Voltage
-
+          
         ELSE 'Check if we got a count or if we are the end of the RO
           counts = P2_CNT_READ(CTR_MODULE, counter_channel)
           IF (counts >= C13_MBI_threshold) THEN
@@ -545,15 +567,29 @@ EVENT:
             P2_CNT_ENABLE(CTR_MODULE,0)
             ' TODO_MAR: Save count and timer
 
-            case_success =1
+            IF (C13_MBI_RO_state = 1) THEN
+              case_success = 0
+            ENDIF
+            IF (C13_MBI_RO_state = 0) THEN
+              case_success = 1
+            ENDIF
+            
             wait_time = next_MBI_stop-timer
             run_case_selector = 1
-
+            
           ELSE
             IF (timer = C13_MBI_RO_duration ) THEN
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
-              case_success =0
+                            
+              IF (C13_MBI_RO_state = 1) THEN
+                case_success = 1
+              ENDIF
+              
+              IF (C13_MBI_RO_state = 0) THEN
+                case_success = 0
+              ENDIF
+                            
               run_case_selector = 1
             ENDIF
           ENDIF
@@ -578,11 +614,14 @@ EVENT:
           ENDIF
         ENDIF
 
-      CASE 8 'Start C13 MBI seq and wait for trigger // go to MBE RO
+      CASE 8 'Start C13 MBE seq and wait for trigger // go to MBE RO
         IF (timer=0) THEN 'Start the AWG sequence
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' send AWG trigger
           CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+          
+          INC(DATA_41[MBE_counter]) ' count the number of MBE starts
+          
         ELSE
           
           awg_in_was_hi = awg_in_is_hi
@@ -616,6 +655,8 @@ EVENT:
             wait_time = next_MBI_stop-timer
             case_success      = 1
             run_case_selector = 1
+            
+            INC(DATA_42[MBE_counter]) ' count the number of MBE successes
 
           ELSE ' If at the end of RO duration without enough counts
             IF (timer = MBE_RO_duration ) THEN 
@@ -671,20 +712,23 @@ EVENT:
         IF(timer=0) THEN 'Start the laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_Parity_RO_voltage+32768) ' turn on Ex laser 'THT-change to parity voltage
-        
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_Parity_RO_voltage+32768) ' turn on Ex laser 
+                  
         ELSE 
-          IF (timer = parity_RO_duration ) THEN  'THT-change to parity duration
+          IF (timer = parity_RO_duration ) THEN  
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
             
             counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
-            P2_CNT_ENABLE(CTR_MODULE,0)
+            P2_CNT_ENABLE(CTR_MODULE,0) 'Turn off counter
+                  
+            IF (counts = 0) THEN 'Jump AWG to alternative branch if RO result 0 counts (ms=1)
+              P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
+              CPU_SLEEP(9)                                       ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+              P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
+            ELSE
+              INC(DATA_43[(repetition_counter-1) * Nr_parity_msmts + Parity_msmnt_counter +1])        
+            ENDIF 
             
-            'IF (counts = 0) THEN 'Jump AWG to alternative branch if RO result 0 counts (ms=1)
-            '  P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,1)  ' AWG trigger
-            '  CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            '  P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
-            'ENDIF
             run_case_selector = 1
         
           ENDIF
@@ -715,7 +759,7 @@ EVENT:
                               
         ENDIF
         
-      CASE 14    'Final RO // go tto CR check
+      CASE 14    'Final RO // go to CR check
         
         counts = P2_CNT_READ(CTR_MODULE, counter_channel)
         IF ((timer = RO_duration-1) OR (counts > 0)) THEN

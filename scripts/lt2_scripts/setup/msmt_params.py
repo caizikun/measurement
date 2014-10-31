@@ -6,13 +6,18 @@ cfg={}
 ### Set current NV center ###
 #############################
 
-cfg['samples']      = {'current':'Hans_sil1'}
-cfg['protocols']    = {'current':'Hans_sil1'}
+cfg['samples']      = {'current':'111_1_sil18'}
+cfg['protocols']    = {'current':'111_1_sil18'}
+
+# cfg['samples']      = {'current':'Hans_sil1'}
+# cfg['protocols']    = {'current':'Hans_sil1'}
 
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
+cfg['protocols']['111_1_sil18'] = {}
 
 print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
+
 
 ###################################
 ### General settings for magnet ###
@@ -20,7 +25,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 
 ### Asummes a cylindrical magnet
 cfg['magnet']={
-'nm_per_step'       :   73.,    ## Z-movement, for 24 V and 200 Hz
+'nm_per_step'       :   66.1,  ## Z-movement, for 24 V and 200 Hz (was 83.22, updated 141030 JC)
 'radius'            :   5.,     ## millimeters
 'thickness'         :   4.,     ## millimeters
 'strength_constant' :   1.3}    ## Tesla
@@ -46,7 +51,7 @@ cfg['protocols']['AdwinSSRO']={
 'green_repump_duration'     :       50, 
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
-'wait_after_RO_pulse_duration':     3,
+'wait_after_RO_pulse_duration':     3,   
 'wait_after_pulse_duration' :       3,      ## Wait time after turning off the lasers (E, A pump, etc)
 'cr_wait_after_pulse_duration':     2,
 'wait_for_AWG_done'         :       0,
@@ -113,6 +118,277 @@ cfg['protocols']['Magnetometry']={
 'AWG_to_adwin_ttl_trigger_duration'     :   1e-6,
 'threshold_majority_vote'               :   1}
 
+
+
+
+
+
+######################
+### 111 No1 SIL 18 ###
+######################
+
+    ##################################################
+    ### 111 No1 SIL 18: V and frequency parameters ###
+    ##################################################
+
+mw_power = 20
+
+f_msm1_cntr =   1.746666e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
+f_msp1_cntr =   4.008589e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
+                
+zero_field_splitting = 2.877623e9   # not calibrated #contains + 2*N_hf
+                                    
+
+N_frq    = 7.13429e6      # not calibrated
+N_HF_frq = 2.182e6 # was2.196e6       
+Q        = 4.938e6        # not calibrated
+
+mw_mod_frequency = 250e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+
+# For ms = +1
+mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequency
+
+# # For ms = -1
+# mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+# mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+
+cfg['samples']['111_1_sil18'] = {
+'mw_mod_freq'   :       mw_mod_frequency,
+'mw_frq'        :       mw_freq_MBI,
+'mw_power'      :       mw_power,
+'ms-1_cntr_frq' :       f_msm1_cntr,
+'ms+1_cntr_frq' :       f_msp1_cntr,
+'zero_field_splitting': zero_field_splitting,
+'Q_splitting'   :       Q,
+'g_factor'      :       2.8025e6, #Hz/Gauss
+'g_factor_C13'  :       1.0705e3, #Hz/Gauss
+'g_factor_N14'  :       0.3077e3, #Hz/Gauss
+'N_0-1_splitting_ms-1': N_frq,
+'N_HF_frq'      :       N_HF_frq,
+
+    ###########################################
+    ### 111 No1 Sil 18: nuclear spin params ###
+    ###########################################
+
+'C1_freq'       :   450.153e3,   
+'C1_freq_0'     :   431.918e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.027e3,           
+'C1_Ren_extra_phase_correction_list' :  0*np.array([0] + [-8.2] +[60]+[0]*2+[62.4]+ 4*[0]),
+'C1_Ren_tau'    :   [4.994e-6],
+'C1_Ren_N'      :   [34],
+
+'C5_freq'       :   419.594e3,   
+'C5_freq_0'     :   431.918e3,  
+'C5_freq_1'     :   408.320e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[97.3]+[68.4]+[0]*2+[0.0]+[0]*4), 
+'C5_Ren_tau'    :   [8.926e-6],
+'C5_Ren_N'      :   [38],
+
+'C2_freq'       :   422.415e3,   
+'C2_freq_0'     :   431.918e3,  
+'C2_freq_1'     :   413.383e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[26.5]+[17.3]+[0]*2+[85.8]+[0]*4), 
+'C2_Ren_tau'    :   [10.058e-6],
+'C2_Ren_N'      :   [18]
+}
+
+    #####################################
+    ###111 No1 SIL 18 SSRO parameters ###
+    #####################################
+
+cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
+'SSRO_repetitions'  : 5000,
+'SSRO_duration'     :  100,
+'SSRO_stop_after_first_photon' : 0,
+'A_CR_amplitude' : 25e-9, 
+'A_RO_amplitude' : 0,
+'A_SP_amplitude' : 40e-9,
+'CR_duration'    : 50,
+'CR_preselect'   : 1000,
+'CR_probe'       : 1000,
+'CR_repump'      : 1000,
+'Ex_CR_amplitude': 5e-9,   
+'Ex_RO_amplitude': 15e-9,   
+'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
+'SP_duration'    : 450,     #THT: Hardcoded in the ADWIN to be maximum 500
+'SP_duration_ms0': 500,     #only for specific scripts
+'SP_duration_ms1': 500,     #only for specific scripts
+'SP_filter_duration' : 0 }
+
+    ##################################
+    ### Integrated SSRO parameters ###
+    ##################################
+
+cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
+'SSRO_duration' : 30, 
+'Ex_SP_amplitude':0}
+
+
+    ###########################
+    ### pulse parameters ###
+    ###########################
+
+f_mod_0     = cfg['samples']['111_1_sil18']['mw_mod_freq']
+
+cfg['protocols']['111_1_sil18']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+
+'X_phase'                   :   90,
+'Y_phase'                   :   0,
+
+# 'C13_X_phase' :0,
+# 'C13_Y_phase' :90,
+
+'C13_X_phase' :0,
+'C13_Y_phase' :270,
+
+'MW_pulse_mod_frequency' : f_mod_0,
+
+# #     ### Pi pulses, fast & hard 
+'fast_pi_duration'          :   64e-9,
+'fast_pi_amp'               :   0.805293,
+'fast_pi_mod_frq'           :   f_mod_0,
+
+    ### Pi/2 pulses, fast & hard 
+'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'fast_pi2_amp'              :   0.80393,
+'fast_pi2_mod_frq'          :   f_mod_0,
+
+    ### MBI pulses ###
+'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
+'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
+'AWG_MBI_MW_pulse_amp'      :   0.0141,     ## f_mod = 250e6 (msp1)
+'AWG_MBI_MW_pulse_duration' :   3000e-9}
+
+    ###############################
+    ### Nitrogen MBI parameters ###
+    ###############################
+
+cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
+
+    #Spin pump before MBI
+'Ex_SP_amplitude'           :           18e-9,
+'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
+'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
+
+    #MBI readout power and duration
+'Ex_MBI_amplitude'          :           1e-9,
+'MBI_duration'              :           60,
+
+    #Repump after succesfull MBI
+'repump_after_MBI_duration' :           [100],
+'repump_after_MBI_A_amplitude':         [40e-9],
+'repump_after_MBI_E_amplitude':         [0e-9],
+
+    #MBI parameters
+'max_MBI_attempts'          :           3,    # The maximum number of MBI attempts before going back to CR check
+'MBI_threshold'             :           1,
+'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+'repump_after_E_RO_duration':           15,
+'repump_after_E_RO_amplitude':          15e-9}
+
+    #############################
+    ### C13  init and control ###
+    #############################
+
+cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
+
+#C13-MBI  
+'C13_MBI_threshold_list':               [1],
+'C13_MBI_RO_duration':                  30,  
+'E_C13_MBI_RO_amplitude':               1e-9,
+'SP_duration_after_C13':                100,
+'A_SP_amplitude_after_C13_MBI':         15e-9,
+'E_SP_amplitude_after_C13_MBI':         0e-9,
+'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+                
+#C13-MBE  
+'MBE_threshold':                        1,
+'MBE_RO_duration':                      30,
+'E_MBE_RO_amplitude':                   1e-9,
+'SP_duration_after_MBE':                100,
+'A_SP_amplitude_after_MBE':             15e-9,
+'E_SP_amplitude_after_MBE':             0e-9 ,
+
+#C13-parity msmnts
+'Parity_threshold':                     1,
+'Parity_RO_duration':                   50,
+'E_Parity_RO_amplitude':                3e-9,
+
+'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
+'min_dec_tau'         : 20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],
+'max_dec_tau'         : 0.4e-6, #0.35e-6, #Based on measurement for fingerprint at low tau
+'dec_pulse_multiple'  : 4       #lowest multiple of 4 pulses
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #################
 ### Hans sil1 ###
 #################
@@ -136,8 +412,8 @@ Q        = 4.938e6        # from above values. 20140530
 mw_mod_frequency = 250e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
 
 # For ms = +1
-mw_freq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
-mw_freq_MBI = f_msp1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
+mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq    # Initialized frequency
 
 # # For ms = -1
 # mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
@@ -163,8 +439,7 @@ cfg['samples']['Hans_sil1'] = {
 
 'C1_freq'       :   345.124e3,   
 'C1_freq_0'     :   325.787e3,   
-'C1_freq_1'     :   364.570e3,        
-'C1_freq_dec'   :   345.124e3,   
+'C1_freq_1'     :   364.570e3,           
 'C1_Ren_extra_phase_correction_list' : np.array([0]*3 + [-132] + [0]*6),
 'C1_Ren_tau'    :   [9.420e-6, 6.522e-6],
 'C1_Ren_N'      :   [18      , 10],
@@ -175,8 +450,7 @@ cfg['samples']['Hans_sil1'] = {
 
 'C3_freq'       :   302.521e3,
 'C3_freq_0'     :   325.775e3,   
-'C3_freq_1'     :   293.888e3,
-'C3_freq_dec'   :   302.521e3, 
+'C3_freq_1'     :   293.888e3, 
 'C3_Ren_extra_phase_correction_list' : np.array([0]*10),    
 'C3_Ren_tau'    :   [18.564e-6, 15.328e-6, 16.936e-6],
 'C3_Ren_N'      :   [14      , 54       , 46],
@@ -184,7 +458,6 @@ cfg['samples']['Hans_sil1'] = {
 'C4_freq'       :   348.574e3,   
 'C4_freq_0'     :   325.787e3, 
 'C4_freq_1'     :   370.115e3,  
-'C4_freq_dec'   :   348.574e3,
 'C4_Ren_extra_phase_correction_list' : np.array([0] +[-90] + [0]*8),
 'C4_Ren_tau'    :   [6.456e-6   ],
 'C4_Ren_N'      :   [40         ]}
@@ -234,11 +507,11 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
 
-'C13_X_phase' :0,
-'C13_Y_phase' :90,
-
 # 'C13_X_phase' :0,
-# 'C13_Y_phase' :270,
+# 'C13_Y_phase' :90,
+
+'C13_X_phase' :0,
+'C13_Y_phase' :270,
 
 
 ### nescessary to use the new standard espin script (140729 - Julia, not checked fully yet) 
@@ -322,8 +595,8 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+MBI'] ={
 'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
 
     #MBI readout power and duration
-'Ex_MBI_amplitude'          :           3e-9,
-'MBI_duration'              :           20,
+'Ex_MBI_amplitude'          :           1e-9,
+'MBI_duration'              :           30,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [20],
@@ -401,7 +674,7 @@ cfg['protocols']['Hans_sil1']['AdwinSSRO+C13'] = {
 ########################
 ### MAGNETOMETRY #######
 ########################
-'''
+
 CORPSE_frq=  6.8e6
 MW_mod_magnetometry=30e6
 f_msm1_cntr = 2.024900e9             #Electron spin ms=-1 frquency
@@ -413,8 +686,9 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'mw_power'      :       20,
 'ms-1_cntr_frq':       f_msm1_cntr,
 'ms+1_cntr_frq':       f_msp1_cntr,
-### Laser duration and powers etc ###
 
+
+### Laser duration and powers etc ###
 'SSRO_duration'     :  25.,
 'Ex_RO_amplitude':  20e-9,
 'Ex_SP_amplitude'  : 20e-9,
@@ -430,7 +704,6 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'wait_after_RO_pulse_duration':2,
 'wait_after_pulse_duration':2,
 'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
-
 'SSRO_stop_after_first_photon':0,
 
 ### Corpse pulses ###
@@ -452,6 +725,7 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'AWG_MBI_MW_pulse_duration' :   2000e-9,#3300e-9,
 
 #MBI readout power and duration
+'do_MBI'                    :           True,
 'Ex_MBI_amplitude'          :           5e-9,
 'MBI_duration'              :           7,
 'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
@@ -463,9 +737,10 @@ cfg['protocols']['Hans_sil1']['Magnetometry'] ={
 'pi2pi_mI0_duration':394e-9,
 'MW_pi_pulse_amp': 0.9,
 'AWG_pi2_duration': 40e-9,
-'fpga_pi2_duration': 39e-9
+'fpga_pi2_duration': 39e-9,
+'init_repetitions':100,
 }
-'''
+
 
 
 

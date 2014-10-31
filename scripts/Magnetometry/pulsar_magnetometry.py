@@ -10,7 +10,10 @@ class AdaptivePhaseEstimation(pulsar_msmt.Magnetometry):
 
     def generate_sequence(self, upload=True, debug=False):
         # MBI element
-        Ninit_elt = self._Ninit_element()
+        if self.params['do_MBI']:
+            init_elt = self._MBI_element()
+        else:
+            init_elt = self._Ninit_element()
 
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
@@ -64,17 +67,26 @@ class AdaptivePhaseEstimation(pulsar_msmt.Magnetometry):
             elts.append(e)
 
         print 'Elements created...'
-        print 'N-spin init repetitions:', self.params['init_repetitions']
         # sequence
         seq = pulsar.Sequence('Adaptive phase-estimation sequence')
         for i,e in enumerate(elts):
             for j in np.arange(self.params['M']):
-                seq.append(name = 'Ninit-dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = Ninit_elt.name,
-                    trigger_wait = True, repetitions=self.params['init_repetitions'])
-                seq.append(name = e.name+'dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = e.name,
+                if self.params['do_MBI']:
+                    seq.append(name = 'MBI-dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = init_elt.name,
+                        trigger_wait = True, repetitions=1)
+                    seq.append(name = e.name+'dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = e.name,
+                    trigger_wait = True)
+ 
+                else:
+                    seq.append(name = 'Ninit-dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = init_elt.name,
+                        trigger_wait = True, repetitions=self.params['init_repetitions'])
+                    seq.append(name = e.name+'dp_%(v0)d-adptvStep_%(v1)d' % {"v0":i, "v1":j}, wfname = e.name,
                     trigger_wait = False)
-        # program AWG
+ 
+       # program AWG
         if upload:
-            qt.pulsar.program_awg(seq, Ninit_elt, *elts , debug=debug)
+            qt.pulsar.program_awg(seq, init_elt, *elts , debug=debug)
             print 'Done uploading!!'
         
+
+

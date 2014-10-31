@@ -51,8 +51,8 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 2.0,
-                    'nr_of_points' : 51,#99,
+                    'scan_length' : 4.0,
+                    'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'zyx' : ['z','y','x'],
@@ -61,12 +61,12 @@ dimension_sets = {
 
             'lt4' : {
                 'x' : {
-                    'scan_length' : 0.7,
+                    'scan_length' : 0.6,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 0.7,
+                    'scan_length' : 1.1,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },

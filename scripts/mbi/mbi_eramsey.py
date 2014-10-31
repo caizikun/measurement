@@ -2,16 +2,18 @@ import qt
 import numpy as np
 from measurement.lib.measurement2.adwin_ssro import pulsar_mbi_espin
 
+execfile(qt.reload_current_setup)
 import mbi.mbi_funcs as funcs
 reload(funcs)
 
-SIL_NAME = 'hans-sil1'
+
+SIL_NAME = 'nr1_sil18'
 
 def run(name):
     m = pulsar_mbi_espin.ElectronRamsey(name)
     funcs.prepare(m, SIL_NAME)
 
-    pts = 81
+    pts = 61
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
 

@@ -18,7 +18,7 @@ execfile(qt.reload_current_setup)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 nm_per_step = qt.exp_params['magnet']['nm_per_step']
-current_f_msp1 = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']
+current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 
 def darkesr(name, range_MHz, pts, reps):
 
@@ -29,7 +29,7 @@ def darkesr(name, range_MHz, pts, reps):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
@@ -39,7 +39,7 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.04
+    m.params['ssbmod_amplitude'] = 0.01
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -56,14 +56,15 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
-    safemode=False 
+    safemode=True
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
         ### for the first coarse step
     init_range   = 12     #Common: 10 MHz
     init_pts     = 121    #Common: 121
-    init_reps    = 750   #Common: 500
+    init_reps    = 500   #Common: 500
+
         ### for the remainder of the steps
     repeat_range = 4.5
     repeat_pts   = 81
@@ -82,9 +83,9 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
             qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
-    delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
+    delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
     # start to list all the measured values
     iterations = 0
@@ -97,7 +98,7 @@ if __name__ == '__main__':
     
     while abs(delta_f0_temp) > opimization_target:
         d_steps.append(int(round(mt.steps_to_frequency(freq=f0_temp*1e9,
-                freq_id=current_f_msp1, ms = 'plus'))))
+                freq_id=current_f_msm1, ms = 'plus'))))
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
@@ -136,9 +137,9 @@ if __name__ == '__main__':
         darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps)
         
         #Determine frequency and B-field --> this fit programme returns in MHz, needs input GHz
-        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9,
+        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9,
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
-        delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
+        delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
         f0.append(f0_temp)
         u_f0.append(u_f0_temp)
@@ -146,7 +147,7 @@ if __name__ == '__main__':
         iterations_list.append(iterations)
         
         print 'Measured frequency = ' + str(f0_temp) + ' GHz +/- ' + str(u_f0_temp*1e6) + ' kHz'
-        print 'Difference = ' + str(abs(f0_temp*1e6-current_f_msp1*1e-3)) + ' kHz'
+        print 'Difference = ' + str(f0_temp*1e6-current_f_msm1*1e-3) + ' kHz'
     
         # To cleanly exit the optimization
         print '--------------------------------'

@@ -25,8 +25,9 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 nm_per_step = qt.exp_params['magnet']['nm_per_step']
-current_f_msp1 = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']
-current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
+f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
+f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
+N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
 ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
 if __name__ == '__main__':
@@ -35,20 +36,20 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
+    axis = 'Y_axis'               # X usually moves 2x slower than Y (current settings)  
     #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
-    #no_of_steps      = 5          # with a total of no_of_steps measurment points.
-    min_counts_before_optimize = 8e3   #optimize position if counts are below this
+    #no_of_steps      = 5               # with a total of no_of_steps measurment points.
+    min_counts_before_optimize = 5e4    #optimize position if counts are below this
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
-    laser_power = 20e-6
+    laser_power = 10e-6
 
-    range_coarse = 5.00
-    pts_coarse  = 81   
-    reps_coarse   = 500
+    range_coarse  = 6.00
+    pts_coarse    = 81   
+    reps_coarse   = 750 #750
 
-    range_fine = 0.25
-    pts_fine  = 51   
-    reps_fine   = 1000
+    range_fine  = 0.30
+    pts_fine    = 51   
+    reps_fine   = 1000#1000
 
     ###########
     ## start ##
@@ -57,16 +58,16 @@ if __name__ == '__main__':
     #calculate steps to do
     #stepsize = scan_range/(no_of_steps-1) 
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
-    No_steps = True 
+    No_steps = True
     if No_steps == True: 
         steps = [0] 
     else: 
         if axis == 'Y_axis':
-            steps = [-100,75,50,75] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
-            magnet_step_size = 25         # the sample position is checked after each magnet_step_siz 
+            steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
+            magnet_step_size = 100         # the sample position is checked after each magnet_step_siz 
         elif axis == 'X_axis':
-            steps = [-300,150,150, 150, 150] 
-            magnet_step_size = 50         # the sample position is checked after each magnet_step_siz
+            steps = [150, 150, 150] 
+            magnet_step_size = 150         # the sample position is checked after each magnet_step_siz
 
 
     print 'Moving along %s' %axis 
@@ -80,13 +81,14 @@ if __name__ == '__main__':
     f_diff_list = []
     positions = []
     pos = 0
+
     
     for k in range(len(steps)):
         
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
@@ -97,6 +99,10 @@ if __name__ == '__main__':
         if step == 0:
             print 'step = 0, made no steps'
         else:
+            if abs(step)/magnet_step_size == 0: 
+                print 'check your magnet stepsize!'
+                break
+
             for i in range(abs(step)/magnet_step_size):
                 print 'step by ' + str(np.sign(step)*magnet_step_size)
                 mom.step(axis,np.sign(step)*magnet_step_size)
@@ -113,42 +119,47 @@ if __name__ == '__main__':
                 qt.msleep(0.5)
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
+
+                    
             optimiz0r.optimize(dims=['x','y','z'])
 
         #measure both frequencies
             #ms=-1 coarse
         DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', 
-                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
-            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
+            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='right')
             #ms=-1 fine
+        
         DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9 - N_hyperfine)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single()
+        f0m_temp = f0m_temp + N_hyperfine*1e-9
                    
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
         
             #ms=+1 coarse
         DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
-                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
-                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True)
+                range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9)
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='left')
             #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single(current_f_msp1*1e-9)
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9 + N_hyperfine)
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single()
+        f0p_temp = f0p_temp - N_hyperfine*1e-9
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
         
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
@@ -172,55 +183,58 @@ if __name__ == '__main__':
         print 'Difference to ZFS = '+ str((f_centre-ZFS*1e-9)*1e6)+ 'kHz'
         print 'Measured B_field is: Bz = '+str(Bz_measured)+ ' G ,Bx = '+str(Bx_measured)+ ' G'
         print '-----------------------------'
+
+
+    if No_steps == False: 
    
-    qt.mstart()
+        qt.mstart()
 
-    d = qt.Data(name=SAMPLE_CFG+'_magnet_optimization_' + axis)
-    
-
-
-    d.add_coordinate('position')
-    d.add_value('ms-1 transition frequency (GHz)')
-    d.add_value('ms+1 transition frequency error (GHz)')
-    d.add_value('ms-1 transition frequency (GHz)')
-    d.add_value('ms+1 transition frequency error (GHz)')
-    d.add_value('center frequency (GHz)')
-    d.add_value('Difference to set ZFS (kHz)')
-    d.add_value('measured Bx field (G)')
-    d.add_value('measured Bz field (G)')
-
-    
-    # #fitting
-
-    # if len(f_diff_list) != 1:  #Should add some kind of if statement if only one point is measured to prevent the program from crashing here.  
-    p0, fitfunc, fitfunc_str = common.fit_parabole(g_o=5,g_A=1,g_c=0)
-    fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
-    # print 'minimum at steps = '+str(fit_result['params_dict']['c'])
-    # # print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
-
-    # print positions  
-    d.create_file()
-    filename=d.get_filepath()[:-4]
-    d.add_data_point(positions, f0m,u_f0m,f0p,u_f0p,f_centre_list,f_diff_list,Bx_field_measured,Bz_field_measured)
+        d = qt.Data(name=SAMPLE_CFG+'_magnet_optimization_' + axis)
+        
 
 
-    # to do show error bars
-    positions[0] = positions[0] + 0.00001 #for some reason the plot below cannot handle twice the same x-coordinate
-    
-    fd = zeros(1000)
-    x_fd = linspace(min(positions),max(positions),1000)
-    if type(fit_result) != type(False):
-        fd = fit_result['fitfunc'](x_fd)
-        fd = fd.tolist()
+        d.add_coordinate('position')
+        d.add_value('ms-1 transition frequency (GHz)')
+        d.add_value('ms+1 transition frequency error (GHz)')
+        d.add_value('ms-1 transition frequency (GHz)')
+        d.add_value('ms+1 transition frequency error (GHz)')
+        d.add_value('center frequency (GHz)')
+        d.add_value('Difference to set ZFS (kHz)')
+        d.add_value('measured Bx field (G)')
+        d.add_value('measured Bz field (G)')
+
+        
+        # #fitting
+
+        # if len(f_diff_list) != 1:  #Should add some kind of if statement if only one point is measured to prevent the program from crashing here.  
+        p0, fitfunc, fitfunc_str = common.fit_parabole(g_o=5,g_A=1,g_c=0)
+        fit_result = fit.fit1d(positions, f_diff_list, None, p0=p0, fitfunc = fitfunc, ret=True, fixed=[])
+        # print 'minimum at steps = '+str(fit_result['params_dict']['c'])
+        # # print 'So step magnet '+str(fit_result['params_dict']['c']-scan_range/2)+' to go to optimum'
+
+        # print positions  
+        d.create_file()
+        filename=d.get_filepath()[:-4]
+        d.add_data_point(positions, f0m,u_f0m,f0p,u_f0p,f_centre_list,f_diff_list,Bx_field_measured,Bz_field_measured)
 
 
-    min_fd = (min(fd))
-    pos_min_fd = x_fd[fd.index(min_fd)]
-    print 'Minumum (%s kHz) located at %s' %(min_fd,pos_min_fd)
-    print 'Current position: (%s) move the magnet: (%s) along the %s' %(sum(steps),pos_min_fd-sum(steps),axis)
-    
-    p_c = qt.Plot2D(x_fd,fd, 'b-', name='f_centre relative to ZFS', clear=True)
-    p_c.add_data(d, coorddim=0, valdim=6,style='rO')
-    p_c.save_png(filename+'.png')
-    d.close_file()
-    qt.mend()
+        # to do show error bars
+        positions[0] = positions[0] + 0.00001 #for some reason the plot below cannot handle twice the same x-coordinate
+        
+        fd = zeros(1000)
+        x_fd = linspace(min(positions),max(positions),1000)
+        if type(fit_result) != type(False):
+            fd = fit_result['fitfunc'](x_fd)
+            fd = fd.tolist()
+
+
+        min_fd = (min(fd))
+        pos_min_fd = x_fd[fd.index(min_fd)]
+        print 'Minumum (%s kHz) located at %s' %(min_fd,pos_min_fd)
+        print 'Current position: (%s) move the magnet: (%s) along the %s' %(sum(steps),pos_min_fd-sum(steps),axis)
+        
+        p_c = qt.Plot2D(x_fd,fd, 'b-', name='f_centre relative to ZFS', clear=True)
+        p_c.add_data(d, coorddim=0, valdim=6,style='rO')
+        p_c.save_png(filename+'.png')
+        d.close_file()
+        qt.mend()

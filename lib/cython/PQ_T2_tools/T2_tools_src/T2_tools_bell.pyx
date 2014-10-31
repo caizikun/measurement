@@ -12,30 +12,33 @@ Bell:
 """
 
 import cython
-import time
+#import time
 import numpy as np
-from cython.view cimport array as cvarray
+#from cython.view cimport array as cvarray
 cimport numpy as cnp
-from libc.math cimport floor
+#from libc.math cimport floor
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
+def Bell_live_filter(
+    cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] channel not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] special not None,
     cnp.ndarray[cnp.uint32_t, ndim=2, mode='c'] hist not None,
     cnp.uint64_t t_ofl,
     cnp.uint64_t t_lastsync,
-    cnp.uint64_t last_sync_number,
+    cnp.uint32_t last_sync_number,
     cnp.uint64_t min_sync_time,
     cnp.uint64_t max_sync_time,
+    cnp.uint64_t min_hist_sync_time,
     cnp.uint64_t max_hist_sync_time,
     cnp.uint64_t wraparound,
     cnp.uint64_t t2_time_factor):
     """
-    This is a specialized form of PQ data recordeing, alowing to reeive part of the data 
-    in a histogrammed form (the data arriving between min_sync_time and max_hist_sync_time), 
-    and part of the data (between max_hist_sync_time and max_sync_time) in standard - per event - form.
+    This is a specialized form of PQ data recording, alowing to receive part of the data 
+    in a histogrammed form (the data arriving between min_hist_sync_time and max_hist_sync_time), 
+    and part of the data (between min_sync_time and max_sync_time) in standard - per event - 
+    form. The two regions are allowed to overlap.
     This function expects as input decoded HH data:
     - an array with time information,
     - an array for the channel,
@@ -58,6 +61,7 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
 
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
+    cdef cnp.uint64_t Hist_SyncTimediff
     cdef cnp.uint64_t length = time.shape[0]
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] sync_time = np.empty((length,), dtype='u8')
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] hhtime = np.empty((length,), dtype='u8')
@@ -74,22 +78,20 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
         # since the last sync; also, save the sync number, this can be handy for
         # filtering
         if special[k] == 1 and channel[k] == 0:
-            t_lastsync = (time[k] + t_ofl) / t2_time_factor # the factor 2 comes from an extra bit. see HH docs.
+            t_lastsync = (time[k] + t_ofl) / t2_time_factor # the t2_time_factor comes from an extra bit for the HH. see HH docs.
             last_sync_number += 1
             continue
-        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
-        if _sync_time < min_sync_time or _sync_time > max_sync_time:
-            continue
-        if _sync_time < max_hist_sync_time:
-            if special[k] == 0: #we only save clicks in this histogram, no markers.
-                hist[_sync_time,channel[k]] += 1
-            continue
 
-        hhtime[l] = (t_ofl + time[k]) / t2_time_factor
-        hhchannel[l] = channel[k]
-        hhspecial[l] = special[k]
-        sync_time[l] = _sync_time
-        sync_number[l] = last_sync_number
-        l += 1
+        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
+        Hist_SyncTimediff= _sync_time - min_hist_sync_time
+        if Hist_SyncTimediff > 0 and _sync_time < max_hist_sync_time and special[k] == 0:  #we only save clicks in this histogram, no markers.
+            hist[Hist_SyncTimediff,channel[k]] += 1
+        if _sync_time > min_sync_time and _sync_time < max_sync_time:
+            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+            hhchannel[l] = channel[k]
+            hhspecial[l] = special[k]
+            sync_time[l] = _sync_time
+            sync_number[l] = last_sync_number
+            l += 1
 
     return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number

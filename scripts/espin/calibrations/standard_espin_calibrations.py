@@ -104,14 +104,14 @@ def pulse_defs(msmt, IQmod, pulse_type, Imod_channel = True):
             msmt.params['pulse_pi2_amp'] = msmt.params['Square_pi2_amp']
             
             Square_pi = pulselib.MW_pulse('Square pi-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['pulse_pi_amp'],
                     length = msmt.params['MW_pi_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'])
 
             Square_pi2 = pulselib.MW_pulse('Square pi/2-pulse',
-                    MW_channel='MW_Imod',
+                    MW_channel='MW_Imod' if Imod_channel else 'MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['pulse_pi2_amp'],
                     length = msmt.params['MW_pi2_duration'],
@@ -375,22 +375,22 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
 
-    m.params['pulse_sweep_durations'] =  np.ones(pts)*25e-9 #np.linspace(0, 10, pts) * 1e-6
-    #m.params['pulse_sweep_durations'] =  np.linspace(0, 300, pts) * 1e-9
+    #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
 
-    #m.params['pulse_sweep_amps'] = np.ones(pts)*0.8
-    m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
+    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
-    #m.params['sweep_name'] = 'Pulse durations (ns)'
-    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    m.params['sweep_name'] = 'Pulse durations (ns)'
+    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    m.params['sweep_pts'] = m.params['pulse_sweep_amps']
-    #m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
+    #m.params['sweep_pts'] = m.params['pulse_sweep_amps']
+    m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
     print m.params['sweep_pts']
 
-
-    funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse)
+    print Imod_channel
+    funcs.finish(m, upload=True, debug=debug, pulse_pi=pulse, Imod_channel = Imod_channel)
 
 
     print "\nAnalysis suggestion : execfile(r'D:\measuring\\analysis\scripts\espin\electron_rabi_analysis.py')"
@@ -400,6 +400,7 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     '''
     dark ESR on the 0 <-> -1 transition. 
+    This class uses IQ modulation, so set the amplitude for the IQ pi pulse and the length.
     '''
 
     m = pulsar_msmt.GeneralDarkESR(name)
@@ -417,7 +418,6 @@ def dark_esr(name, Imod_channel = True, pulse_type = 'Square', debug = False):
     m.params['range']        = 6e6
     m.params['pts'] = 131
 
-    m.params['MW_pi_duration'] = 1.e-6
     # Be careful, this class uses IQ modulation, so set the amplitude for the IQ pi pulse.
 
     m.params['ssbmod_frq_start'] = m.params['MW_pulse_mod_frequency'] - m.params['range']
@@ -440,15 +440,15 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['Imod_channel'] = Imod_channel
     m.params['multiplicity'] = multiplicity
 
-    pts = 21
+    pts = 11
  
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  np.linspace(0.9, 1.0, pts) #0.872982*np.ones(pts)#
+    m.params['MW_pulse_amplitudes'] =  m.params['pulse_pi_amp']+np.linspace(-0.1,0.1,pts) 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 
@@ -474,7 +474,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     pts = 11    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 3000
+    m.params['repetitions'] = 5000
 
     # we do actually two msmts for every sweep point, that's why the awg gets only half of the 
     # pts;
@@ -487,7 +487,7 @@ def calibrate_pi2_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'CORP
 
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis =  m.params['pulse_pi_amp']+np.linspace(-0.2,0.05,pts)
+    sweep_axis =  m.params['pulse_pi2_amp']+np.linspace(-0.1,0.1,pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -590,9 +590,9 @@ def dd_sequence(name, IQmod=True, Imod_channel = True, pulse_type='CORPSE', debu
         pts = len(sweep_array)
         m.params['evolution_times'] = sweep_array
     else:
-        pts=15
+        pts=31
         
-        m.params['number_pulses'] = 3
+        m.params['number_pulses'] = 1
         if mod(m.params['number_pulses'],2) ==0 :
             m.params['extra_wait_final_pi2']=np.ones(pts)*m.params['extra_wait_final_pi2']
             #m.params['extra_wait_final_pi2'] = np.linspace(-100e-9,60e-9,pts)#np.ones(pts)*0
@@ -600,7 +600,7 @@ def dd_sequence(name, IQmod=True, Imod_channel = True, pulse_type='CORPSE', debu
             m.params['extra_wait_final_pi2']=np.ones(pts)*0
             #m.params['extra_wait_final_pi2'] = np.linspace(-30e-9,30e-9,pts)
         
-        m.params['evolution_times'] = np.linspace(300e-9, 5e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
+        m.params['evolution_times'] = np.linspace(420e-9, 4e-6,pts)/(2.*m.params['number_pulses']) #np.linspace(300e-9*2.*m.params['number_pulses'], 100e-6,pts)/(2.*m.params['number_pulses'])
         
     m.params['pts'] = pts
 
@@ -622,7 +622,7 @@ def dd_sequence(name, IQmod=True, Imod_channel = True, pulse_type='CORPSE', debu
         for i in range(m.params['number_pulses']):
             m.params['pulse_pi_sweep_phases'][i]= 90*0**mod((mod(i+1,2)+(i+1)/4),2)
 #
-    m.params['first_pi_phase'] = 90
+    m.params['first_pi_phase'] = 0
     if m.params['first_pi_phase'] != m.params['pulse_pi_sweep_phases'][0]:
         m.params['pulse_pi_sweep_phases'] = abs(m.params['pulse_pi_sweep_phases']- 90)
 
@@ -691,7 +691,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 2.0 :
         rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
-                pulse_type = 'Square', debug = debug)
+                pulse_type = 'Hermite', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum" # Error in the se
@@ -701,11 +701,11 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
                 pulse_type = 'Hermite', 
-                multiplicity = 5, debug=debug)
+                multiplicity = 1, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
-                pulse_type = 'Square', debug = debug)
+                pulse_type = 'Hermite', debug = debug)
   
     if stage == 4.5:
         calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
@@ -724,7 +724,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(5., IQmod = False,Imod_channel=True, debug = False)
+    run_calibrations(2.0, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

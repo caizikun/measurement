@@ -23,6 +23,7 @@ reload(params_lt3)
 
 class Bell_lt3(bell.Bell):
     mprefix = 'Bell_lt3'
+    adwin_process = 'bell_lt3'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
@@ -68,23 +69,34 @@ class Bell_lt3(bell.Bell):
         LDE_element = bseq._LDE_element(self, name='LDE_lt3')   
         elements.append(LDE_element)
         
-        seq.append(name = 'start_LDE',
-            trigger_wait = True,
-            wfname = start_element.name)
+        #seq.append(name = 'start_LDE',
+        #    trigger_wait = True,
+        #    wfname = start_element.name)
 
         seq.append(name = 'LDE_lt3',
             wfname = LDE_element.name,
-            trigger_wait = False,
+            trigger_wait = True,
             jump_target = 'RO_dummy',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
         seq.append(name = 'LDE_timeout',
             wfname = finished_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_lt3_TPQI_norm' if self.joint_params['TPQI_normalisation_measurement'] else 'LDE_lt3')
+
+        if self.joint_params['TPQI_normalisation_measurement']:
+            seq.append(name = 'LDE_lt3_TPQI_norm',
+            trigger_wait = True,
+            wfname = LDE_element.name,
+            jump_target = 'RO_dummy',
+            repetitions = self.joint_params['LDE_attempts_before_CR'])
+
+            seq.append(name = 'LDE_timeout_2',
+            wfname = finished_element.name,
+            goto_target = 'LDE_lt3')
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_lt3')
             
         #qt.pulsar.program_awg(seq,*elements)
         qt.pulsar.upload(*elements)
@@ -92,46 +104,57 @@ class Bell_lt3(bell.Bell):
 
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
-Bell_lt3.AWG_RO_AOM = Bell_lt3.E_aom
+Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom
 
 
-def bell_lt3_local(name):
+def bell_lt3(name):
 
-    upload_only=False
+    remote_meas = True
+    upload_only = False
+
+    if remote_meas:
+        remote_name=Bell_lt3.remote_measurement_helper.get_measurement_name()
+        name=name+remote_name
+    
+    m=Bell_lt3(name) 
+
     th_debug=True
     mw = False
-    remote_meas = False
-
-    m=Bell_lt3(name) 
-    m.params['MW_during_LDE'] = mw
-    m.params['remote_measurement'] = remote_meas
-    m.autoconfig()
-    m.generate_sequence()
-    
-    if not(upload_only):
-        m.setup(debug=th_debug)
-        m.run(autoconfig=False, setup=False,debug=th_debug)    
-        m.save()
-        m.finish()
-
-def bell_lt3_remote(name):
-
-    th_debug=False
-    mw = True
-    remote_meas = True
     do_upload = True
-    remote_name=Bell_lt3.remote_measurement_helper.get_measurement_name()
-    m=Bell_lt3(name+'_'+remote_name) 
+    if remote_meas:
+        if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+            m.joint_params['do_echo'] = 0
+            m.joint_params['do_final_MW_rotation'] = 0
+            th_debug = False
+            mw=True
+        elif 'TPQI' in remote_name:
+            m.joint_params['RO_during_LDE']=0
+            m.joint_params['do_echo'] = 0
+            m.joint_params['do_final_MW_rotation'] = 0
+            m.joint_params['RND_during_LDE'] = 0
+            m.joint_params['opt_pi_pulses'] = 15
+            m.joint_params['TPQI_normalisation_measurement']=True
+            m.joint_params['LDE_element_length'] = 10e-6+(m.joint_params['opt_pi_pulses']-2)*m.joint_params['opt_pulse_separation']
+            th_debug = True
+            mw=False
+        elif 'full_Bell' in remote_name:
+            th_debug = False
+            mw=True
+        else:
+            print 'using standard local settings'
+            #raise Exception('Unknown remote measurement: '+ remote_name)
+
+    print 'Running',name
+
+   
     m.params['MW_during_LDE'] = mw
     m.params['remote_measurement'] = remote_meas
-    if 'XXSPCORRXX' in remote_name:
-        m.joint_params['RO_during_LDE']=0
-        m.joint_params['do_echo'] = 0
-        m.joint_params['do_final_MW_rotation'] = 0
+
     m.autoconfig()
 
-    if do_upload:
-        m.generate_sequence()
+    m.generate_sequence()
+    if upload_only:
+        return
     
     m.setup(debug=th_debug)
     lt4_ready = False
@@ -150,4 +173,4 @@ def bell_lt3_remote(name):
 
 
 if __name__ == '__main__':
-    bell_lt3_remote('')
+    bell_lt3('')

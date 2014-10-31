@@ -87,7 +87,9 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
             seq.append(name='SSRO-ms1-{}'.format(i), wfname=e1.name, trigger_wait=True)
             seq.append(name='finished-ms1-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
-            
+        
+
+
         if upload:
             if upload=='old_method':
                 qt.pulsar.upload(*elements)
@@ -111,17 +113,17 @@ def fast_ssro_calibration(name):
 
     pts = 11
     m.params['pts'] = 2*pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 5000
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,50,pts)*m.params['Ex_RO_amplitude']
-    m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,3,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_durations_AWG']    =    np.ones(pts)*30e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15*1e-6
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15e-6  # after, check with 5 us
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6*2
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
@@ -135,11 +137,13 @@ def fast_ssro_calibration(name):
     measure_bs=False
     upload=True#'old_method'
 
-    m.autoconfig()
-
-    m.generate_sequence(upload=upload)
     
+    #m.params['sequence_wait_time'] = max(m.params['E_RO_durations_AWG']*1e6) + max(m.params['E_SP_durations_AWG']*1e6) + 20
+    print 'sequence_wait_time', m.params['sequence_wait_time']
 
+    m.autoconfig()
+    m.generate_sequence(upload=upload)
+   
     m.setup(mw=False, debug=debug)
     m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
     print m.params['MAX_SYNC_BIN']
@@ -161,4 +165,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('The111no2_SIL2_w_PulseAOM')
+    fast_ssro_calibration('Pippin_SIL3_Pulse_AOM')
