@@ -62,8 +62,8 @@ params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermit
 params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi_amp']# 0.487 
-params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi_duration'] #50e-9
+params_lt3['MW_RND_amp_Q']	   = 0#params_lt3['MW_pi_amp']# 0.487 
+params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
 params_lt3['echo_offset'] = 0e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
@@ -82,7 +82,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.486 # 2014-10-17
+params_lt3['aom_amplitude']				 = 0.509 # 2014-10-29, PulseAOM max power : 40 nW
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -100,6 +100,13 @@ params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
 params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+
+params_lt3['PLU_gate_duration']       = 200e-9#70e-9
+params_lt3['PLU_gate_3_duration']     = 40e-9
+params_lt3['PLU_1_delay']             = 1e-9
+params_lt3['PLU_2_delay']             = 1e-9
+params_lt3['PLU_3_delay']             = 50e-9
+params_lt3['PLU_4_delay']             = 150e-9
 
 params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
