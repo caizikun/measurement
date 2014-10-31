@@ -7,10 +7,9 @@ import numpy as np
 import inspect
 import qt
 import time
-import check_awg_triggering as JitterCheck
+from measurement.scripts.bell import check_awg_triggering as JitterChecker
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 from measurement.lib.config import moss as moscfg
 
@@ -110,12 +109,12 @@ class Bell_lt4(bell.Bell):
     def print_measurement_progress(self):
         pass
 
-    def reset_plu(self):
-        self.adwin.start_set_dio(dio_no=2, dio_val=0)
-        qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=2, dio_val=1)
-        qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=2, dio_val=0)
+    #def reset_plu(self):
+    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
+    #    qt.msleep(0.1)
+    #    self.adwin.start_set_dio(dio_no=2, dio_val=1)
+    #    qt.msleep(0.1)
+    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
 
     def finish(self):
         bell.Bell.finish(self)
@@ -159,7 +158,7 @@ def bell_lt4(name,
         return
 
     m.setup(debug=th_debug)
-    m.reset_plu()
+    #m.reset_plu()
     
     print '='*10
     print name
@@ -236,7 +235,7 @@ def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot t
              th_debug      = False,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = False,
+             measure_lt3   = True,
              measure_bs    = True,
              do_upload     = True,
              )
@@ -254,45 +253,25 @@ def SP_lt3(name):
              do_upload     = True,
              )
 
-def JitterCheck_Bell():
-    if qt.current_setup=='lt4':
-        jitterDetected=False
-        qt.instruments['AWG'].stop()
-        lt3_helper = qt.instruments['lt3_helper']
-        lt3_helper.set_is_running(False)
-        lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
-        lt3_helper.execute_script()
-        JitterCheck.program_test_master(reset=False)
-        qt.msleep(1)      
-        while lt3_helper.get_is_running():
-            if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
-                print 'measurement aborted'
-                break
-            qt.msleep(2)
-        qt.instruments['AWG'].stop()
-        output = lt3_helper.get_measurement_name()
-        print output
-        if 'JITTERING' in output:
-            jitterDetected=True
-        return jitterDetected
-    else:
-        print 'execute this file from LT4 only!'
-        return True       
-
-
 if __name__ == '__main__':
-    #execfile('check_awg_triggering.py')
     DoJitterCheck = False
-    if DoJitterCheck:
-        jitterDetected=JitterCheck_Bell()
+    ResetPlu = True   
         
-    else: jitterDetected = False        
+    if ResetPlu:
+        stools.reset_plu()
+
+    if DoJitterCheck:
+        jitterDetected = JitterChecker.do_jitter_test(False)
+        print 'Here comes the result of the jitter test: jitter detected = '+ jitterDetected
+    else: 
+        jitterDetected = False
+        print 'I will skip the jitter test.'
     
 
     if not(jitterDetected):
-        #stools.reset_plu()
         #TPQI('run_test')
-        #full_bell('test_run')   
-        #SP_lt4('SP_Hans_test_TH_TTread_12800_no_hist_with_save')
-        pulse_overlap('FinalDelay')
-        #SP_lt3('Pippip_sil3_TH_testing')
+        full_bell('FirstBellRun')   
+        #SP_lt4('SPCorrelationsLT4')
+        #pulse_overlap('FinalDelay')
+        #SP_lt3('SPCorrelationsLT3_short_readcount13679')
+        pass

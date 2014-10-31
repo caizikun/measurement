@@ -1161,7 +1161,7 @@ config['adwin_lt2_processes'] = {
                     ['Nr_parity_msmts'             ,  0],   #16
                       #Thresholds 
                     ['MBI_threshold'               ,  1],   #17
-                    ['C13_MBI_threshold'           ,  0],   #18 
+                    # ['C13_MBI_threshold'           ,  0],   #18 
                     ['MBE_threshold'               ,  1],   #19 
                     ['Parity_threshold'            ,  1],   #20 
                     # Durations 
@@ -1171,7 +1171,8 @@ config['adwin_lt2_processes'] = {
                     ['MBE_RO_duration'             ,  10],  #23
                     ['SP_duration_after_MBE'       ,  25],  #24
 
-                    ['Parity_RO_duration'          ,  10],  #25 
+                    ['Parity_RO_duration'          ,  10],  #25
+                    ['C13_MBI_RO_state'              ,  0 ],  #26
 
                     ],# TODO_MAR: add to msmt params and make usefull in Adwin 
                 'params_long_index'  : 20,
@@ -1207,11 +1208,15 @@ config['adwin_lt2_processes'] = {
                     'ROseq_cntr': 80,
                     },
                 'data_long' : {
-                    'MBI_attempts' : 24,
-                    'MBI_cycles' : 25,
+                    'N_MBI_attempts' : 24,  #attempts since CR check, in success run
+                    'N_MBI_starts' : 25,
+                    'N_MBI_success' : 28,
                     'ssro_results' : 27,
-                    'MBI_time' : 28,
-                    #'test':29,
+                    'C13_MBI_starts' : 29,
+                    'C13_MBI_success' : 32,
+                    'C13_MBE_starts' : 41,
+                    'C13_MBE_success': 42,
+                    'parity_RO_results': 43,
                     },
                 },
 

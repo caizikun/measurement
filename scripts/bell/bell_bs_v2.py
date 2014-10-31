@@ -33,6 +33,7 @@ class Bell_BS(bell.Bell):
         for k in remote_params:
             self.params[k] = remote_params[k]
         self.remote_measurement_helper.set_data_path(self.h5datapath)
+        
 
     def setup(self):
         pq.PQMeasurement.setup(self)

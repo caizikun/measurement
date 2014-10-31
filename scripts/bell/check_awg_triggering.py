@@ -108,8 +108,7 @@ def check_triggering():
     remote_helper.set_is_running(False)
     return jitterDetected
 
-if __name__ == '__main__':
-    resetAWG=False
+def do_jitter_test(resetAWG=False):
     if qt.current_setup=='lt4':
         qt.instruments['AWG'].stop()
         lt3_helper = qt.instruments['lt3_helper']
@@ -117,12 +116,12 @@ if __name__ == '__main__':
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
         lt3_helper.execute_script()
         program_test_master(reset=resetAWG)
-        qt.msleep(1)      
+        qt.msleep(0.2)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'
                 break
-            qt.msleep(2)
+            qt.msleep(0.2)
         qt.instruments['AWG'].stop()
         output = lt3_helper.get_measurement_name()
         print output
@@ -133,4 +132,9 @@ if __name__ == '__main__':
         program_test_slave(reset=resetAWG)
         jitterDetected = check_triggering()
         qt.instruments['AWG'].stop()
-    print 'jitterDetected ', jitterDetected
+    return jitterDetected
+
+
+if __name__ == '__main__':
+    testResult=do_jitter_test(False)
+    print 'jitterDetected ', testResult

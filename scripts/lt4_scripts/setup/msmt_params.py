@@ -156,11 +156,11 @@ cfg['protocols'][name]['pulses'] = {
     	'MW_pi_amp': 0.86,
     	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 220e-9, 
-        'Hermite_pi_amp': 0.812, #2014-10-28 
+        'Hermite_pi_amp': 0.825, #2014-10-30
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.6397, #2014-10-28
+        'Hermite_pi2_amp': 0.648, #2014-10-30
         'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
-        'Hermite_Npi4_amp': 0.917, #pi/4 0.4629,  # 2014-10-28
+        'Hermite_Npi4_amp': 0.925, #pi/4 0.4629,  # 2014-10-30
         'Square_pi_length' : 50e-9, # calib. 2014-07-25
       	'Square_pi_amp' : 0.594 , # calib. for pi pulse of 50 ns 2014-07-25
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 

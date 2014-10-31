@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
+def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 5):
 
     m = DD.LongNuclearRamsey(name)
     funcs.prepare(m)
@@ -26,17 +26,17 @@ def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 1):
 
     ### Sweep parameters
 
-    m.params['N_list'] = range(4,320,20)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
+    m.params['N_list'] = range(4,320,24)# np.ones(len(m.params['Phases_of_Ren_B']))*4 #
     m.params['Phases_of_Ren_B'] = np.ones(len(m.params['N_list']))*0 
 
     # m.params['N_list'] = np.ones(21)*4#
     # m.params['Phases_of_Ren_B'] = np.linspace(0,360*2,21)  
  
     m.params['C'+str(Addressed_Carbon)+'_freq'] = ( 
-        m.params['C'+str(Addressed_Carbon)+'_freq']+0.25e3) # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+        m.params['C'+str(Addressed_Carbon)+'_freq']+0.1e3) # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
-    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*8
+    m.params['tau_list']           = np.ones(len(m.params['N_list']) )*tau_larmor*16
     m.params['Addressed_Carbon']   = Addressed_Carbon 
  
 

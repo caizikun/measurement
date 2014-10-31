@@ -9,15 +9,14 @@ cfg={}
 cfg['samples']      = {'current':'111_1_sil18'}
 cfg['protocols']    = {'current':'111_1_sil18'}
 
+# cfg['samples']      = {'current':'Hans_sil1'}
+# cfg['protocols']    = {'current':'Hans_sil1'}
+
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 cfg['protocols']['111_1_sil18'] = {}
 
 print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
-
-
-
-
 
 
 ###################################
@@ -26,7 +25,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 
 ### Asummes a cylindrical magnet
 cfg['magnet']={
-'nm_per_step'       :   83.22,    ## Z-movement, for 24 V and 200 Hz
+'nm_per_step'       :   66.1,  ## Z-movement, for 24 V and 200 Hz (was 83.22, updated 141030 JC)
 'radius'            :   5.,     ## millimeters
 'thickness'         :   4.,     ## millimeters
 'strength_constant' :   1.3}    ## Tesla
@@ -52,7 +51,7 @@ cfg['protocols']['AdwinSSRO']={
 'green_repump_duration'     :       50, 
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
-'wait_after_RO_pulse_duration':     3,
+'wait_after_RO_pulse_duration':     3,   
 'wait_after_pulse_duration' :       3,      ## Wait time after turning off the lasers (E, A pump, etc)
 'cr_wait_after_pulse_duration':     2,
 'wait_for_AWG_done'         :       0,
@@ -168,20 +167,31 @@ cfg['samples']['111_1_sil18'] = {
 'N_0-1_splitting_ms-1': N_frq,
 'N_HF_frq'      :       N_HF_frq,
 
-    ######################################
-    ### Hans sil1: nuclear spin params ###
-    ######################################
+    ###########################################
+    ### 111 No1 Sil 18: nuclear spin params ###
+    ###########################################
 
-'C1_freq'       :   450.557e3,   
-'C1_freq_0'     :   433.018e3,   
-'C1_freq_1'     :   469.130e3,        
-'C1_freq_dec'   :   450.684e3,   
-'C1_Ren_extra_phase_correction_list' : np.array([0]*10),
+'C1_freq'       :   450.153e3,   
+'C1_freq_0'     :   431.918e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.027e3,           
+'C1_Ren_extra_phase_correction_list' :  0*np.array([0] + [-8.2] +[60]+[0]*2+[62.4]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
-'C1_Ren_N'      :   [34]
+'C1_Ren_N'      :   [34],
+
+'C5_freq'       :   419.594e3,   
+'C5_freq_0'     :   431.918e3,  
+'C5_freq_1'     :   408.320e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[97.3]+[68.4]+[0]*2+[0.0]+[0]*4), 
+'C5_Ren_tau'    :   [8.926e-6],
+'C5_Ren_N'      :   [38],
+
+'C2_freq'       :   422.415e3,   
+'C2_freq_0'     :   431.918e3,  
+'C2_freq_1'     :   413.383e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[26.5]+[17.3]+[0]*2+[85.8]+[0]*4), 
+'C2_Ren_tau'    :   [10.058e-6],
+'C2_Ren_N'      :   [18]
 }
-
-
 
     #####################################
     ###111 No1 SIL 18 SSRO parameters ###
@@ -201,8 +211,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'Ex_CR_amplitude': 5e-9,   
 'Ex_RO_amplitude': 15e-9,   
 'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 1000,
-
+'SP_duration'    : 450,     #THT: Hardcoded in the ADWIN to be maximum 500
 'SP_duration_ms0': 500,     #only for specific scripts
 'SP_duration_ms1': 500,     #only for specific scripts
 'SP_filter_duration' : 0 }
@@ -238,12 +247,12 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 
 # #     ### Pi pulses, fast & hard 
 'fast_pi_duration'          :   64e-9,
-'fast_pi_amp'               :   0.801227,
+'fast_pi_amp'               :   0.805293,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
-'fast_pi2_duration'         :   34e-9, 
-'fast_pi2_amp'              :   0.745698,
+'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'fast_pi2_amp'              :   0.80393,
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -287,18 +296,19 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-MBI  
-'C13_MBI_threshold':                    1,
-'C13_MBI_RO_duration':                  30, 
-'SP_duration_after_C13':                50,
+'C13_MBI_threshold_list':               [1],
+'C13_MBI_RO_duration':                  30,  
+'E_C13_MBI_RO_amplitude':               1e-9,
+'SP_duration_after_C13':                100,
 'A_SP_amplitude_after_C13_MBI':         15e-9,
-'E_SP_amplitude_after_C13_MBI':         0e-9 ,
-
+'E_SP_amplitude_after_C13_MBI':         0e-9,
+'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+                
 #C13-MBE  
 'MBE_threshold':                        1,
 'MBE_RO_duration':                      30,
-'E_MBE_RO_amplitude':                   3e-9,
-'SP_duration_after_MBE':                50,
-'E_C13_MBI_RO_amplitude':               1e-9,
+'E_MBE_RO_amplitude':                   1e-9,
+'SP_duration_after_MBE':                100,
 'A_SP_amplitude_after_MBE':             15e-9,
 'E_SP_amplitude_after_MBE':             0e-9 ,
 
@@ -310,8 +320,54 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
 'min_dec_tau'         : 20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],
 'max_dec_tau'         : 0.4e-6, #0.35e-6, #Based on measurement for fingerprint at low tau
-'dec_pulse_multiple'  : 4 #lowest multiple of 4 pulses
+'dec_pulse_multiple'  : 4       #lowest multiple of 4 pulses
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -383,8 +439,7 @@ cfg['samples']['Hans_sil1'] = {
 
 'C1_freq'       :   345.124e3,   
 'C1_freq_0'     :   325.787e3,   
-'C1_freq_1'     :   364.570e3,        
-'C1_freq_dec'   :   345.124e3,   
+'C1_freq_1'     :   364.570e3,           
 'C1_Ren_extra_phase_correction_list' : np.array([0]*3 + [-132] + [0]*6),
 'C1_Ren_tau'    :   [9.420e-6, 6.522e-6],
 'C1_Ren_N'      :   [18      , 10],
@@ -395,8 +450,7 @@ cfg['samples']['Hans_sil1'] = {
 
 'C3_freq'       :   302.521e3,
 'C3_freq_0'     :   325.775e3,   
-'C3_freq_1'     :   293.888e3,
-'C3_freq_dec'   :   302.521e3, 
+'C3_freq_1'     :   293.888e3, 
 'C3_Ren_extra_phase_correction_list' : np.array([0]*10),    
 'C3_Ren_tau'    :   [18.564e-6, 15.328e-6, 16.936e-6],
 'C3_Ren_N'      :   [14      , 54       , 46],
@@ -404,7 +458,6 @@ cfg['samples']['Hans_sil1'] = {
 'C4_freq'       :   348.574e3,   
 'C4_freq_0'     :   325.787e3, 
 'C4_freq_1'     :   370.115e3,  
-'C4_freq_dec'   :   348.574e3,
 'C4_Ren_extra_phase_correction_list' : np.array([0] +[-90] + [0]*8),
 'C4_Ren_tau'    :   [6.456e-6   ],
 'C4_Ren_N'      :   [40         ]}
