@@ -35,4 +35,4 @@ for i in zoom:
   j=j+1
   k=k+1
   print 'scan ready2' 
-  print 'hell222222'
+  print 'hell222'
