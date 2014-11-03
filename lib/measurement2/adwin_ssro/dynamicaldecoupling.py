@@ -23,7 +23,7 @@ class Gate(object):
         connection/phase gates: 'Connection_element' , 'electron_Gate',
         decoupling gates:  'Carbon_Gate', 'electron_decoupling'
         misc gates: 'passive_elt', (also has tau_cut)
-        special gates: 'mbi', 'Trigger'
+        special gates: 'mbi', 'Trigger', 'electron_repump'
         '''
         self.name       = name
         self.prefix     = name          ### Default prefix is identical to name, can be overwritten
@@ -45,7 +45,7 @@ class Gate(object):
         self.length         = kw.pop('length',0)            ### For electron gates, sets length in case of 'general'
 
         #Scheme is used both for generating decoupling elements aaswell as the combine to sequence command
-        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi']:
+        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi','electron_repump']:
             self.scheme = 'single_element'
         else:
             self.scheme = kw.pop('scheme','auto')
@@ -582,6 +582,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     # The MBI element is always first and should not have anything to do with C_phases
                     if g.C_phases_after_gate[iC] ==None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
+
+            elif g.Gate_type =='electron_repump':
+                for iC in range(len(g.C_phases_before_gate)):
+                    if (g.C_phases_after_gate[iC]==None) and (g.C_phases_before_gate[iC] !=None):
+                        if g.el_state_before_gate =='0':
+                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+g.elements_duration*C_freq_0[iC])%(2*np.pi)
+                        elif g.el_state_before_gate=='1':
+                            print 'calculating repump correction for the electronic state in ms=-1'
+                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+(g.elements_duration-g.)*C_freq_0[iC])%(2*np.pi)
+            
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
@@ -1135,6 +1145,34 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         Gate.elements = [e]
 
+    def generate_electron_repump_element(self,Gate):
+        '''
+        Generate a laser pulse on the marker channel for the newfocus_AOM
+        this additionally adds a dead time afterwards for the AOM delay.
+        Requires Gate to have the following attributes:
+        Gate_type, duration, repump_power,
+        '''
+
+        Gate_type = Gate.Gate_type
+        power= Gate.repump_power
+        duration= Gate.duration
+
+        repump_pulse=pulse.SquarePulse(channel='AOM_Newfocus', length=duration, name='electron_repump', amplitude=1.)
+        AOM_delay=pulse.SquarePulse(channel='AOM_Newfocus', length=qt.pulsar.channels['AOM_Newfocus']['delay'], name='wait_AOM_delay', amplitude=0.)
+        
+        e = element.Element('%s_electron_repump' %(Gate_type),  pulsar=qt.pulsar, global_time = True)
+        e.append(repump_pulse)
+        e.append(AOM_delay)
+
+        Gate.elements=[e]
+
+        #qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
+        #high=0.4, low=0.0, offset=0., delay=466e-9, active=True)
+
+        #TODO for other functions in the DD class:
+        # - add this gate type in track_and_calc_phase such that the phase get's accurately detected.
+        # - add calculation for the repump power and put it into the generation of the marker trigger.
+
     ### function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):
         '''
@@ -1354,6 +1392,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_MBI_elt(g)
             elif g.Gate_type == 'Trigger':
                 self.generate_trigger_elt(g)
+            elif g.Gate_type == 'electron_repump':
+                self.generate_electron_repump_element(g)
 
         Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
         self.get_tau_cut_for_connecting_elts(Gate_sequence)

@@ -16,7 +16,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearT1(name,tau = None):
 
-    m = DD.NuclearT1(name)
+    m = DD.NuclearT1_v2(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
@@ -39,15 +39,15 @@ def NuclearT1(name,tau = None):
 
     ##########
     # Overwrite certain params to test
-    m.params['C13_MBI_threshold']       = 0
-    m.params['MBI_threshold']           = 1
+    # m.params['C13_MBI_threshold']       = 0
+    # m.params['MBI_threshold']           = 1
     
-    m.params['C13_MBI_RO_duration']     = 30 
-    m.params['E_C13_MBI_amplitude']     = 1e-9
+    # m.params['C13_MBI_RO_duration']     = 30 
+    # m.params['E_C13_MBI_amplitude']     = 1e-9
 
-    m.params['SP_duration_after_C13']   = 50
-    m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
-    m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
+    # m.params['SP_duration_after_C13']   = 50
+    # m.params['A_SP_amplitude_after_C13_MBI']  = 15e-9
+    # m.params['E_SP_amplitude_after_C13_MBI']  = 0e-9 
     
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
     funcs.finish(m, upload =True, debug=False)
