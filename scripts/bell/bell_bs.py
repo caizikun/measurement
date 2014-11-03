@@ -2,7 +2,7 @@ import qt
 import numpy as np
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.pq.pq_measurement as pq
-import bell
+import bell 
 reload(bell)
 
 
@@ -38,8 +38,8 @@ class Bell_BS(pq.PQMeasurement):#bell.Bell):
         self.remote_measurement_helper.set_is_running(True)
 
     def print_measurement_progress(self):
-        #self.adwin_ins_lt4.Set_Par(51, np.sum(self.hist[self.params['pulse_start_bin'] : self.params['pulse_stop_bin'] ,:]))
-        #self.adwin_ins_lt4.Set_Par(52, np.sum(self.hist[self.params['tail_start_bin']  : self_params['tail_stop_bin']  ,:]))
+        self.adwin_ins_lt4.Set_Par(51, np.sum(self.hist[self.params['pulse_start_bin'] : self.params['pulse_stop_bin'] ,:])) # was a comment AR
+        self.adwin_ins_lt4.Set_Par(52, np.sum(self.hist[self.params['tail_start_bin']  : self_params['tail_stop_bin']  ,:])) # was a comment AR
         pass
 
     def measurement_process_running(self):
