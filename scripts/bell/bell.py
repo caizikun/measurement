@@ -153,6 +153,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 MIN_HIST_SYNC_BIN,MAX_HIST_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                print ' Im here for debugging '
 
                 if newlength > 0:
 
