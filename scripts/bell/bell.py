@@ -147,6 +147,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
             #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
 
             _length = 0
+            entanglement_markers = 0
             _data = np.array([],dtype = 'uint32')
             for j in range(TH_RepetitiveReadouts):
                 cur_length, cur_data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
@@ -170,23 +171,25 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
-                if qt.current_setup in ('lt4', 'lt3'):
-                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                        newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
-                else:        
-                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
-                        newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist,
-                                                t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                MIN_HIST_SYNC_BIN,MAX_HIST_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR) 
+                #if qt.current_setup in ('lt4', 'lt3'):
+                #    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                #        newlength, t_ofl, t_lastsync, last_sync_number = \
+                #        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                #                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                #                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                #else:        
+                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                    newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
+                    T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist,
+                                            t_ofl, t_lastsync, last_sync_number,
+                                            MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                            MIN_HIST_SYNC_BIN,MAX_HIST_SYNC_BIN,
+                                            T2_WRAPAROUND,T2_TIMEFACTOR) 
 
                 if newlength > 0:
-
+                    if new_entanglement_markers > 0:
+                        entanglement_markers += new_entanglement_markers
+                        print 'SUCCESSFUL ENTANGLEMENT!!! Event No ' + entanglement_markers
                     dset_hhtime.resize((current_dset_length+newlength,))
                     dset_hhchannel.resize((current_dset_length+newlength,))
                     dset_hhspecial.resize((current_dset_length+newlength,))
