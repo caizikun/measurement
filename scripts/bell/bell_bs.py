@@ -62,7 +62,7 @@ def remote_HH_measurement(name):
     for k in bs_params:
         m.params[k] = bs_params[k]
     m.run(setup=False,debug=debug)
-    m.finish()
+    m.finish() 
     
 if __name__ == '__main__':
     remote_HH_measurement('BS')
