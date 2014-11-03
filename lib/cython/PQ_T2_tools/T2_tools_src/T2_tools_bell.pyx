@@ -8,16 +8,16 @@ Wolfgang Pfaff
 2014: Bas Hensen :
     - NOTE THESE FILES DO NOT WORK FOR THE PicoHARP instrument.
 Bell: 
-    - Combined Histogrmming and T2 measurement
+    - Combined Histogramming and T2 measurement
 """
-
+ 
 import cython
 #import time
 import numpy as np
 #from cython.view cimport array as cvarray
 cimport numpy as cnp
 #from libc.math cimport floor
-
+ 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def Bell_live_filter(
@@ -59,6 +59,7 @@ def Bell_live_filter(
     and overflow information (absolute overflow time and time of the last sync).
     """
 
+    cdef cnp.uint64_t EntanglementMarkers =0
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
     cdef cnp.uint64_t Hist_SyncTimediff
@@ -74,24 +75,28 @@ def Bell_live_filter(
             t_ofl += wraparound
             continue
 
-        # syncs are basically pointless -- we only need for each element the time
-        # since the last sync; also, save the sync number, this can be handy for
-        # filtering
-        if special[k] == 1 and channel[k] == 0:
-            t_lastsync = (time[k] + t_ofl) / t2_time_factor # the t2_time_factor comes from an extra bit for the HH. see HH docs.
+        if special[k] == 1 and channel[k] == 0: # This is a SYNC event
+            t_lastsync = (time[k] + t_ofl) / t2_time_factor      #the t2_time_factor comes from an extra bit for the HH. see HH docs.
             last_sync_number += 1
             continue
 
-        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
-        Hist_SyncTimediff= _sync_time - min_hist_sync_time
-        if Hist_SyncTimediff > 0 and _sync_time < max_hist_sync_time and special[k] == 0:  #we only save clicks in this histogram, no markers.
-            hist[Hist_SyncTimediff,channel[k]] += 1
-        if _sync_time > min_sync_time and _sync_time < max_sync_time:
+        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync           
+
+        # now calculate the histogram (note that only photons are saved, but no markers)
+        if special[k] == 0 and _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
+            hist[_sync_time - min_hist_sync_time,channel[k]] += 1
+
+        if special[k] == 1 or (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
+            if channel == 4:
+                EntanglementMarkers += 1
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
             hhspecial[l] = special[k]
             sync_time[l] = _sync_time
             sync_number[l] = last_sync_number
             l += 1
+            continue
 
-    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number
+        
+
+    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number, EntanglementMarkers
