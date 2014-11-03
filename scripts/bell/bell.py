@@ -205,7 +205,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     current_dset_length += newlength
                     self.h5data.flush()
                     self.marker_events += np.sum(hhspecial)
-
+ 
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
                     dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 

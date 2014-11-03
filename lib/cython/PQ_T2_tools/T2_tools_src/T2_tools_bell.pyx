@@ -10,7 +10,7 @@ Wolfgang Pfaff
 Bell: 
     - Combined Histogramming and T2 measurement
 """
-
+ 
 import cython
 #import time
 import numpy as np
