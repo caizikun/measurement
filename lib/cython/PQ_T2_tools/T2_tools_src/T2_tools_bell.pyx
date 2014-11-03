@@ -17,7 +17,7 @@ import numpy as np
 #from cython.view cimport array as cvarray
 cimport numpy as cnp
 #from libc.math cimport floor
-
+ 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def Bell_live_filter(
