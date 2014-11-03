@@ -58,7 +58,7 @@ def Bell_live_filter(
     - relative time to the last previous sync (in bins)
     and overflow information (absolute overflow time and time of the last sync).
     """
-
+ 
     cdef cnp.uint64_t EntanglementMarkers =0
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
