@@ -20,7 +20,8 @@ cimport numpy as cnp
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
+def Bell_live_filter(
+    cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] channel not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] special not None,
     cnp.ndarray[cnp.uint32_t, ndim=2, mode='c'] hist not None,
@@ -34,7 +35,7 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.uint64_t wraparound,
     cnp.uint64_t t2_time_factor):
     """
-    This is a specialized form of PQ data recordeing, alowing to receive part of the data 
+    This is a specialized form of PQ data recording, alowing to receive part of the data 
     in a histogrammed form (the data arriving between min_hist_sync_time and max_hist_sync_time), 
     and part of the data (between min_sync_time and max_sync_time) in standard - per event - 
     form. The two regions are allowed to overlap.
@@ -60,6 +61,7 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
 
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
+    cdef cnp.uint64_t Hist_SyncTimediff
     cdef cnp.uint64_t length = time.shape[0]
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] sync_time = np.empty((length,), dtype='u8')
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] hhtime = np.empty((length,), dtype='u8')
@@ -81,9 +83,9 @@ def Bell_live_filter(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
             continue
 
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
-        if _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
-            if special[k] == 0: #we only save clicks in this histogram, no markers.
-                hist[_sync_time-min_hist_sync_time,channel[k]] += 1
+        Hist_SyncTimediff= _sync_time - min_hist_sync_time
+        if Hist_SyncTimediff > 0 and _sync_time < max_hist_sync_time and special[k] == 0:  #we only save clicks in this histogram, no markers.
+            hist[Hist_SyncTimediff,channel[k]] += 1
         if _sync_time > min_sync_time and _sync_time < max_sync_time:
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]

@@ -58,8 +58,8 @@ def calibrate_pi2_pulse(name, debug=False):
     
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
-def calibrate_pi4_pulse(name,debug=False):
-    m = pulsar_msmt.GeneralPi4Calibration(name)
+def calibrate_Npi4_pulse(name,debug=False):
+    m = pulsar_msmt.GeneralNPi4Calibration(name)
     sweep_Bell._setup_params(m, setup = qt.current_setup)
     
     pts = 11 
@@ -73,22 +73,22 @@ def calibrate_pi4_pulse(name,debug=False):
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
 
-    sweep_axis = m.params['MW_pi4_amp'] + np.linspace(-0.1, 0.1, pts) 
-    m.params['pulse_pi4_sweep_amps'] = sweep_axis
+    sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.1, 0.1, pts) 
+    m.params['pulse_Npi4_sweep_amps'] = sweep_axis
 
-    m.params['pulse_pi4_sweep_durations']=np.ones(pts)*m.params['MW_pi4_duration']
-    m.params['pulse_pi4_sweep_phases'] = np.zeros(pts)
+    m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
+    m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
     m.params['evolution_times'] = np.ones(pts)*500e-9
-    m.params['extra_wait_final_pi4'] = np.ones(pts)*0.
+    m.params['extra_wait_final_Npi4'] = np.ones(pts)*0.
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'MW pi/4 amp (V)'
+    m.params['sweep_name'] = 'MW Npi/4 amp (V)'
     m.params['sweep_pts'] = np.sort(np.append(sweep_axis,sweep_axis))
 
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 3.4
+    stage = 5
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     if   stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
@@ -121,8 +121,8 @@ if __name__ == '__main__':
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2')
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
-        calibrate_pi4_pulse(SAMPLE_CFG)
-        print 'set msmt_params Hermite_pi4_amp'
+        calibrate_Npi4_pulse(SAMPLE_CFG)
+        print 'set msmt_params Hermite_Npi4_amp'
     elif stage == 4.1: #echo sweep tests DD
         sweep_Bell.echo_sweep(SAMPLE_CFG)
         print 'set params_ltx echo_offset (should be 0 ns)'

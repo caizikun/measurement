@@ -175,7 +175,7 @@ def tail_sweep(name):
 
 
 
-    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
@@ -237,7 +237,7 @@ def rnd_echo_ro(name):
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = True)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
@@ -261,7 +261,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('pulse_and_afterpulsing') 
+    tail_sweep('tail_lt4_Hans') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('Sammy_RND_check')
