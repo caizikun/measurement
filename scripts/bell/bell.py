@@ -5,8 +5,10 @@ import logging
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.cython.PQ_T2_tools import T2_tools_bell, T2_tools_v2
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v2 , T2_tools_bell
 reload(T2_tools_bell)
+reload(T2_tools_v2)
+
 
 
 class Bell(pulsar_pq.PQPulsarMeasurement):
@@ -117,6 +119,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
         self.hist = np.zeros((hist_length,2), dtype='u4')
         self.marker_events = 0
+        new_entanglement_markers = 0
 
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
@@ -143,11 +146,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 print 'current sync, dset length:', last_sync_number, current_dset_length
 
                 _timer=time.time()
-
-            #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-
             _length = 0
             entanglement_markers = 0
+
+            #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count) # Old code before inserting the TH_RepetitiveReadouts
             _data = np.array([],dtype = 'uint32')
             for j in range(TH_RepetitiveReadouts):
                 cur_length, cur_data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
@@ -171,6 +173,17 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
+                #if qt.current_setup in ('lt4', 'lt3'):
+                #    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                #        newlength, t_ofl, t_lastsync, last_sync_number = \
+                #        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                #                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                #                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                #else:       
+                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                    newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
+                    T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                    MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR) 
 
                 if qt.current_setup in ('lt4', 'lt3'):
                     print 'I am the setup : ', qt.current_setup, '\n'
@@ -229,7 +242,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
         self.PQ_ins.StopMeas()
         
-        print 'PQ total datasets, events last dataset, last sync number, markers:', rawdata_idx, current_dset_length, last_sync_number, self.marker_events
+        print 'PQ total datasets, events last dataset, last sync number, markers, entanglement:', rawdata_idx, current_dset_length, last_sync_number, self.marker_events, entanglement_markers
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
