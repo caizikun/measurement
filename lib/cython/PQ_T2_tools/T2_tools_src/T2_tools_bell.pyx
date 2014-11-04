@@ -14,6 +14,7 @@ Bell:
 import cython
 #import time
 import numpy as np
+reload(np)
 #from cython.view cimport array as cvarray
 cimport numpy as cnp
 #from libc.math cimport floor
@@ -87,7 +88,7 @@ def Bell_live_filter(
             hist[_sync_time - min_hist_sync_time,channel[k]] += 1
 
         if special[k] == 1 or (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
-            if channel == 4:
+            if channel[k] == 4:
                 EntanglementMarkers += 1
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
