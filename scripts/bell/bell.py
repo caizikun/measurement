@@ -179,7 +179,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if qt.current_setup in ('lt4', 'lt3'):
                     hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                         newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_bell_LTSetups.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                        T2_tools_bell_LTSetups.Bell_live_filter(_t, _c, _s, self.hist,t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR)
                 else:       
