@@ -271,7 +271,7 @@ if __name__ == '__main__':
     if not(jitterDetected):
         #TPQI('run_test')
         #full_bell('Debug')   
-        SP_lt4('Debug')
+        #SP_lt4('Debug')
         #pulse_overlap('FinalDelay')
-        #SP_lt3('debug')
+        SP_lt3('debug')
         pass

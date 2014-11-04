@@ -96,7 +96,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
         MIN_HIST_SYNC_BIN = np.uint64(self.params['MIN_HIST_SYNC_BIN'])
         MAX_HIST_SYNC_BIN = np.uint64(self.params['MAX_HIST_SYNC_BIN'])
-        TH_RepetitiveReadouts = self.params['TH_RepetitiveReadouts']
+        if qt.current_setup in ('lt4', 'lt3'):
+            TH_RepetitiveReadouts = self.params['TH_RepetitiveReadouts']
+        else: 
+            TH_RepetitiveReadouts = 1
         TTTR_read_count = self.params['TTTR_read_count']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
@@ -105,15 +108,15 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         print 'run PQ measurement, TTTR_read_count', TTTR_read_count
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
-            (0,), 'u8', maxshape=(None,))
+            (0,), 'u8', maxshape=(None,))#, compression='gzip', compression_opts=9)
         dset_hhchannel = self.h5data.create_dataset('PQ_channel-{}'.format(rawdata_idx), 
-            (0,), 'u1', maxshape=(None,))
+            (0,), 'u1', maxshape=(None,))#, compression='gzip', compression_opts=9)
         dset_hhspecial = self.h5data.create_dataset('PQ_special-{}'.format(rawdata_idx), 
-            (0,), 'u1', maxshape=(None,))
+            (0,), 'u1', maxshape=(None,))#, compression='gzip', compression_opts=9)
         dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
-            (0,), 'u8', maxshape=(None,))
+            (0,), 'u8', maxshape=(None,))#, compression='gzip', compression_opts=9)
         dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
-            (0,), 'u4', maxshape=(None,))          
+            (0,), 'u4', maxshape=(None,))#, compression='gzip', compression_opts=9)          
         current_dset_length = 0
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
@@ -147,6 +150,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
                 _timer=time.time()
             _length = 0
+            newlength = 0
             entanglement_markers = 0
 
             #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count) # Old code before inserting the TH_RepetitiveReadouts
@@ -157,7 +161,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 _data = np.hstack((_data,cur_data[:cur_length]))
 
             if _length > 0:
-                if _length == TH_RepetitiveReadouts * TTTR_read_count: 
+                if _length ==  TH_RepetitiveReadouts * TTTR_read_count: 
                     k_error_message += 1
                     logging.warning('TTTR record length is maximum length.')
                     #print 'number of TTTR warnings:', k_error_message , '\n'
@@ -173,17 +177,18 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
-                #if qt.current_setup in ('lt4', 'lt3'):
-                #    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                #        newlength, t_ofl, t_lastsync, last_sync_number = \
-                #        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                #                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                #                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
-                #else:       
-                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
-                    newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
-                    T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
-                    MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR) 
+                if qt.current_setup in ('lt4', 'lt3'):
+                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                else:       
+                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
+                        T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                        MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR) 
+
 
                 if newlength > 0:
                     if new_entanglement_markers > 0:
@@ -208,15 +213,15 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
                     dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
-                        (0,), 'u8', maxshape=(None,))
+                        (0,), 'u8', maxshape=(None,))#, compression='gzip', compression_opts=4)
                     dset_hhchannel = self.h5data.create_dataset('PQ_channel-{}'.format(rawdata_idx), 
-                        (0,), 'u1', maxshape=(None,))
+                        (0,), 'u1', maxshape=(None,))#, compression='gzip', compression_opts=4)
                     dset_hhspecial = self.h5data.create_dataset('PQ_special-{}'.format(rawdata_idx), 
-                        (0,), 'u1', maxshape=(None,))
+                        (0,), 'u1', maxshape=(None,))#, compression='gzip', compression_opts=4)
                     dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
-                        (0,), 'u8', maxshape=(None,))
+                        (0,), 'u8', maxshape=(None,))#, compression='gzip', compression_opts=4)
                     dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
-                        (0,), 'u4', maxshape=(None,))         
+                        (0,), 'u4', maxshape=(None,))#, compression='gzip', compression_opts=4)         
                     current_dset_length = 0
 
                     self.h5data.flush()

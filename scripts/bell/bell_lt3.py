@@ -118,7 +118,7 @@ def bell_lt3(name):
     
     m=Bell_lt3(name) 
 
-    th_debug=True
+    th_debug=False
     mw = False
     do_upload = True
     if remote_meas:
