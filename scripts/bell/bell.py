@@ -5,11 +5,10 @@ import logging
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v2 , T2_tools_bell
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v2 , T2_tools_bell, T2_tools_bell_LTSetups
 reload(T2_tools_bell)
 reload(T2_tools_v2)
-
-
+reload(T2_tools_bell_LTSetups)
 
 class Bell(pulsar_pq.PQPulsarMeasurement):
     mprefix = 'Bell'
@@ -180,9 +179,9 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if qt.current_setup in ('lt4', 'lt3'):
                     hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                         newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                        T2_tools_bell_LTSetups.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                                                T2_WRAPAROUND,T2_TIMEFACTOR)
                 else:       
                     hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                         newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
