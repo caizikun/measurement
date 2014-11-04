@@ -19,7 +19,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearRamseyWithInitialization(name, 
-        carbon_nr           = 1,               
+        carbon_nr           = 2,               
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         debug               = False):
@@ -39,9 +39,10 @@ def NuclearRamseyWithInitialization(name,
     ####################################
     
         # 1A - Rotating frame with detuning
-    # detuning = 0.2e3
+    # detuning = 5e3
+    # m.params['add_wait_gate'] = True
     # m.params['pts'] = 21
-    # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
+    # m.params['free_evolution_time'] = 350e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
@@ -64,6 +65,7 @@ def NuclearRamseyWithInitialization(name,
     ### Option 2; Sweep RO phase at set time ###
     ############################################
     m.params['pts'] = 21
+    m.params['add_wait_gate'] = False
     m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
     m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
 
@@ -81,7 +83,7 @@ def NuclearRamseyWithInitialization(name,
     m.params['Nr_parity_msmts']   = 0
 
   
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
     NuclearRamseyWithInitialization(SAMPLE)
