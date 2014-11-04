@@ -70,25 +70,19 @@ def Bell_live_filter(
     cdef cnp.ndarray[cnp.uint8_t, ndim=1, mode='c'] hhspecial = np.empty((length,), dtype='u1')
     cdef cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] sync_number = np.empty((length,), dtype='u4')
 
-    for k in range(length):
+    for k in range(length): 
+        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
         if channel[k] == 63:
             t_ofl += wraparound
             continue
 
-        if special[k] == 1 and channel[k] == 0: # This is a SYNC event
+        elif special[k] == 1 and channel[k] == 0: # This is a SYNC event
             t_lastsync = (time[k] + t_ofl) / t2_time_factor      #the t2_time_factor comes from an extra bit for the HH. see HH docs.
             last_sync_number += 1
-            continue
+            continue        
 
-        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync           
-
-        # now calculate the histogram (note that only photons are saved, but no markers)
-        if special[k] == 0 and _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
-            hist[_sync_time - min_hist_sync_time,channel[k]] += 1
-
-        if special[k] == 1 or (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
-            if channel == 4:
-                EntanglementMarkers += 1
+        elif special[k] == 1 and channel[k] == 4:  # This is an entanglement event
+            EntanglementMarkers+=1
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
             hhspecial[l] = special[k]
@@ -97,6 +91,24 @@ def Bell_live_filter(
             l += 1
             continue
 
-        
+        # now calculate the histogram (only photons are saved, but no markers)
+        elif special[k] == 0 and _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
+            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+            hhchannel[l] = channel[k]
+            hhspecial[l] = special[k]
+            sync_time[l] = _sync_time
+            sync_number[l] = last_sync_number
+            l += 1
+            hist[_sync_time - min_hist_sync_time,channel[k]] += 1
+            continue
+
+        elif special[k] == 1 or (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
+            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+            hhchannel[l] = channel[k]
+            hhspecial[l] = special[k]
+            sync_time[l] = _sync_time
+            sync_number[l] = last_sync_number
+            l += 1
+            continue
 
     return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number, EntanglementMarkers
