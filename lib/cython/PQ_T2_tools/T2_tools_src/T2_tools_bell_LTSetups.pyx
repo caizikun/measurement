@@ -7,10 +7,8 @@ Wolfgang Pfaff
 
 2014: Bas Hensen :
     - NOTE THESE FILES DO NOT WORK FOR THE PicoHARP instrument.
-Bell: 
-    - Combined Histogramming and T2 measurement
 """
- 
+
 import cython
 #import time
 import numpy as np
@@ -30,15 +28,9 @@ def Bell_live_filter(
     cnp.uint32_t last_sync_number,
     cnp.uint64_t min_sync_time,
     cnp.uint64_t max_sync_time,
-    cnp.uint64_t min_hist_sync_time,
-    cnp.uint64_t max_hist_sync_time,
     cnp.uint64_t wraparound,
     cnp.uint64_t t2_time_factor):
     """
-    This is a specialized form of PQ data recording, alowing to receive part of the data 
-    in a histogrammed form (the data arriving between min_hist_sync_time and max_hist_sync_time), 
-    and part of the data (between min_sync_time and max_sync_time) in standard - per event - 
-    form. The two regions are allowed to overlap.
     This function expects as input decoded HH data:
     - an array with time information,
     - an array for the channel,
@@ -72,19 +64,28 @@ def Bell_live_filter(
 
     for k in range(length): 
 
-        if channel[k] == 63:
-            t_ofl += wraparound
-            continue
+        if special[k] == 1:
+            if channel[k] == 63:
+                t_ofl += wraparound
+                continue
 
-        elif special[k] == 1 and channel[k] == 0: # This is a SYNC event
-            t_lastsync = (time[k] + t_ofl) / t2_time_factor      #the t2_time_factor comes from an extra bit for the HH. see HH docs.
-            last_sync_number += 1
-            continue    
+            elif channel[k] == 0: # This is a SYNC event
+                t_lastsync = (time[k] + t_ofl) / t2_time_factor      #the t2_time_factor comes from an extra bit for the HH. see HH docs.
+                last_sync_number += 1
+                continue
 
-        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync    
+            else:  # This is a marker event
+                _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
+                hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+                hhchannel[l] = channel[k]
+                hhspecial[l] = special[k]
+                sync_time[l] = _sync_time
+                sync_number[l] = last_sync_number
+                l += 1
+                continue
 
-        if special[k] == 1 and channel[k] == 4:  # This is an entanglement event
-            EntanglementMarkers+=1
+        _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync         
+        if (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
             hhspecial[l] = special[k]
@@ -93,24 +94,4 @@ def Bell_live_filter(
             l += 1
             continue
 
-        # now calculate the histogram (only photons are saved, but no markers)
-        elif special[k] == 0 and _sync_time > min_hist_sync_time and _sync_time < max_hist_sync_time:
-            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
-            hhchannel[l] = channel[k]
-            hhspecial[l] = special[k]
-            sync_time[l] = _sync_time
-            sync_number[l] = last_sync_number
-            l += 1
-            #hist[_sync_time - min_hist_sync_time,channel[k]] += 1
-            continue
-
-        elif special[k] == 1 or (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
-            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
-            hhchannel[l] = channel[k]
-            hhspecial[l] = special[k]
-            sync_time[l] = _sync_time
-            sync_number[l] = last_sync_number
-            l += 1
-            continue
-
-    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number, EntanglementMarkers
+    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], sync_number[:l], l, t_ofl, t_lastsync, last_sync_number

@@ -249,7 +249,8 @@ def SP_lt3(name):
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
-             measure_bs    = True,
+             measure_bs    = True
+            ,
              do_upload     = True,
              )
 
@@ -271,7 +272,7 @@ if __name__ == '__main__':
     if not(jitterDetected):
         #TPQI('run_test')
         #full_bell('Debug')   
-        #SP_lt4('Debug')
+        SP_lt4('Debug')
         #pulse_overlap('FinalDelay')
-        SP_lt3('debug')
+        #SP_lt3('SPCORR_lt3')
         pass
