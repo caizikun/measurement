@@ -7,7 +7,7 @@ import msvcrt
 #measurement parameters
 name = 'Pippin_SIL3_ZPL_EWI_optim_on_PSB'
 steps=21
-max_power=250e-6       #[w]
+max_power=220e-6       #[w]
 counter=3 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=-2.0          #delta x position of background [um]

@@ -6,7 +6,6 @@ import bell
 reload(bell)
 
 
-
 bs_params = {}
 bs_params['MAX_DATA_LEN']        =   int(100e6)
 bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
@@ -33,6 +32,7 @@ class Bell_BS(bell.Bell):
         for k in remote_params:
             self.params[k] = remote_params[k]
         self.remote_measurement_helper.set_data_path(self.h5datapath)
+        
 
     def setup(self):
         pq.PQMeasurement.setup(self)

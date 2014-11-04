@@ -50,7 +50,7 @@ class EDAC40(Instrument):
         #Get ip address
         self._ip = self.find_device(MAC_address)          
         self._c_ip=ctypes.create_string_buffer(self._ip)
-
+        
         #Open device connection
         self._use_UDP = True
         self.open(self._c_ip,self._use_UDP)
@@ -78,7 +78,7 @@ class EDAC40(Instrument):
         self.single_pin_conversion_table[22]=20
         self.single_pin_conversion_table[21]=21
 
-        # mult_pin_conversion_table[pin_nr] = set_mult_chan_nr 
+        # mult_pin_conversion_table[pin_nr] = set_mult_chan_nr  
         # Probably device dependent. pin 0 doesnt exist, pin 2 is ground
         # NOTE: very weird: according to manual this should contain numbers between 0 and 39. Instead I only get it working with an array twice as long, using only the even numbers between 0 and 79
         #                               #0-20
@@ -211,10 +211,10 @@ class EDAC40(Instrument):
         chan_vals=[-1]*80
         print len(self.mult_pin_conversion_table)
         for nr,val in enumerate(pin_vals):
-            print 'nr',nr
-            print 'val',val
+            #print 'nr',nr
+            #print 'val',val
             chan_vals[self.mult_pin_conversion_table[nr+1]]=val
-            print 'log chan' , self.mult_pin_conversion_table[nr+1]
+            #print 'log chan' , self.mult_pin_conversion_table[nr+1]
         return chan_vals
     def set_single_pin(self,command_code,pin,chan_value):
         """

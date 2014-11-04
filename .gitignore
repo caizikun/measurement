@@ -18,3 +18,4 @@ CPLD
 *.vi
 *.bmp
 *.png
+/hardware/EDAC40
