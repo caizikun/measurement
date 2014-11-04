@@ -22,7 +22,6 @@ def Bell_live_filter(
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] time not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] channel not None,
     cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] special not None,
-    cnp.ndarray[cnp.uint32_t, ndim=2, mode='c'] hist not None,
     cnp.uint64_t t_ofl,
     cnp.uint64_t t_lastsync,
     cnp.uint32_t last_sync_number,
@@ -35,7 +34,6 @@ def Bell_live_filter(
     - an array with time information,
     - an array for the channel,
     - an array containing the special bit,
-    - 1 x (N x 2) array to histogram the data in. N = max_hist_sync_time - min_hist_sync_time.
     and overflow information: 
     - the current overflow time,
     - and the time of the last sync. (both start with zero and get updated by
@@ -46,7 +44,6 @@ def Bell_live_filter(
     - the absolute time since msmt start (in bins)
     - channel
     - special bit,
-    - the updated (N x 2) histrogram array
     - relative time to the last previous sync (in bins)
     and overflow information (absolute overflow time and time of the last sync).
     """
@@ -54,7 +51,6 @@ def Bell_live_filter(
     cdef cnp.uint64_t EntanglementMarkers =0
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
-    cdef cnp.uint64_t Hist_SyncTimediff
     cdef cnp.uint64_t length = time.shape[0]
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] sync_time = np.empty((length,), dtype='u8')
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] hhtime = np.empty((length,), dtype='u8')
