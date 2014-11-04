@@ -1886,7 +1886,9 @@ class MBI_C13(DynamicalDecoupling):
             pt                      = 1,
             addressed_carbon        = 1,
             C_init_state            = 'up',
-            el_RO_result            = '0' ):
+            el_RO_result            = '0',
+            el_after_init           = '0'):
+        
         '''
         By THT
         Supports Swap or MBI initialization
@@ -1927,11 +1929,11 @@ class MBI_C13(DynamicalDecoupling):
                 go_to = go_to_element,
                 el_state_before_gate = el_RO_result)
 
-        ### TODO: THT, temporary fix that removed pi-puls that is bugged 
-        # C_init_elec_X = Gate(prefix+str(addressed_carbon)+'_elec_X'+str(pt),'electron_Gate',
-        #         Gate_operation='pi',
-        #         phase = self.params['X_phase'],
-        #         el_state_after_gate = '1')
+        ## TODO: THT, temporary fix that removed pi-puls that is bugged 
+        C_init_elec_X = Gate(prefix+str(addressed_carbon)+'_elec_X'+str(pt),'electron_Gate',
+                Gate_operation='pi',
+                phase = self.params['X_phase'],
+                el_state_after_gate = '1')
 
         ### Set sequence
         if initialization_method == 'swap':  ## Swap initializes into 1 or 0
@@ -1946,8 +1948,9 @@ class MBI_C13(DynamicalDecoupling):
             return False
 
         ### TODO: THT, temporary fix for pi-pulse in Trigger, later redo trigger element workings
-        # if el_after_init =='1':
-        #     carbon_init_seq.append(C_init_elec_X)
+        ### I uncommented this part of the initialization for the Carbon T1 measurements. Norbert 20141104
+        if el_after_init =='1':
+            carbon_init_seq.append(C_init_elec_X)
 
         return carbon_init_seq
 
@@ -2514,7 +2517,8 @@ class NuclearT1(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_RO_result = str(self.params['C13_MBI_RO_state']))
+                    el_RO_result = str(self.params['C13_MBI_RO_state'],
+                    el_after_init = str(self.params['el_after_init'])))
 
             #Elements for T1 evolution
 
