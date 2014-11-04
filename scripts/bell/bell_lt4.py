@@ -249,12 +249,13 @@ def SP_lt3(name):
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
-             measure_bs    = True,
+             measure_bs    = True
+            ,
              do_upload     = True,
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
+    DoJitterCheck = True
     ResetPlu = True   
         
     if ResetPlu:
@@ -262,7 +263,7 @@ if __name__ == '__main__':
 
     if DoJitterCheck:
         jitterDetected = JitterChecker.do_jitter_test(False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ jitterDetected
+        #print 'Here comes the result of the jitter test: jitter detected = '+ jitterDetected
     else: 
         jitterDetected = False
         print 'I will skip the jitter test.'
@@ -270,8 +271,8 @@ if __name__ == '__main__':
 
     if not(jitterDetected):
         #TPQI('run_test')
-        full_bell('FirstBellRun')   
-        #SP_lt4('SPCorrelationsLT4')
+        #full_bell('Debug')   
+        #SP_lt4('Debug')
         #pulse_overlap('FinalDelay')
-        #SP_lt3('SPCorrelationsLT3_short_readcount13679')
+        SP_lt3('SPCORR_lt3_SSRO171801')
         pass

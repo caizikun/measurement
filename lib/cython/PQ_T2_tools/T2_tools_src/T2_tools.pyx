@@ -9,6 +9,7 @@ Wolfgang Pfaff
 import cython
 import time
 import numpy as np
+reload(np)
 from cython.view cimport array as cvarray
 cimport numpy as cnp
 
