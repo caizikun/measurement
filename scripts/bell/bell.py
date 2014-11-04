@@ -5,7 +5,8 @@ import logging
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v2 , T2_tools_bell
+from measurement.lib.cython.PQ_T2_tools import T2_tools_bell
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 reload(T2_tools_bell)
 reload(T2_tools_v2)
 
@@ -183,7 +184,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                         T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
-                else:       
+                else:       #
                     hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                         newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
                         T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
