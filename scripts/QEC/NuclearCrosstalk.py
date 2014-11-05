@@ -21,8 +21,8 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
 
     '''set experimental parameters'''
     
-    m.params['Carbon_A'] = 5    ### Carbon spin that the Ramsey is performed on
-    m.params['Carbon_B'] = 1    ### Carbon spin that the Rabi/Gate is performed on
+    m.params['Carbon_A'] = 1    ### Carbon spin that the Ramsey is performed on
+    m.params['Carbon_B'] = 5    ### Carbon spin that the Rabi/Gate is performed on
     
     m.params['reps_per_ROsequence'] = 500 
     m.params['C13_init_state']      = 'up' 

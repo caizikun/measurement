@@ -58,19 +58,8 @@ DIM DATA_35[max_sequences] AS FLOAT               ' A SP after MBI voltages
 DIM DATA_36[max_sequences] AS FLOAT               ' E RO voltages
 DIM DATA_38[max_sequences] AS LONG                ' sequence wait times
 DIM DATA_39[max_sequences] AS FLOAT               ' E SP after MBI voltages
-'DIM DATA_37[max_sequences] AS LONG                ' C13 MBI threshold list?
-DIM DATA_40[max_sequences] AS LONG                ' C13 MBI threshold list?
-
-'return (output parameters)
-'what do we want: 
-'     1) Final SSRO counts[seq_cnt]
-'     2) Arrival times for C13-MBI and MBE steps
-'     3) Results for all C13-MBI and MBE steps
-
-'PARs 
-'     Total N-MBI pass and fails 
-'     Total C13-MBI pass and fails for each step
-'     Total C13-MBE pass and fails for each step
+DIM DATA_37[max_sequences] AS LONG                ' Not used?
+DIM DATA_40[max_sequences] AS LONG                ' C13 MBI threshold list
 
 
 DIM DATA_27[max_repetitions] AS LONG ' Final SSRO result 
@@ -362,7 +351,7 @@ EVENT:
         mode = 9 
         
       CASE 9 'MBE RO // go to SP-A OR back to CR check 
-        IF (case_success = 1) Then
+        IF (case_success = 1) Then '1 for ms = 0, 0 for ms =-1
           mode = 10  'to SP-A
           inc(MBE_counter) 
         ELSE
@@ -496,9 +485,7 @@ EVENT:
                     
           wait_time = MBI_duration-timer
           current_MBI_attempt = 1
-                      
-          
-    
+                 
         ELSE
           IF (timer = MBI_duration-1) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
@@ -565,7 +552,6 @@ EVENT:
           IF (counts >= C13_MBI_threshold) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
             P2_CNT_ENABLE(CTR_MODULE,0)
-            ' TODO_MAR: Save count and timer
 
             IF (C13_MBI_RO_state = 1) THEN
               case_success = 0
@@ -620,7 +606,7 @@ EVENT:
           CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
           
-          INC(DATA_41[MBE_counter]) ' count the number of MBE starts
+          INC(DATA_41[MBE_counter+1]) ' count the number of MBE starts
           
         ELSE
           
@@ -656,7 +642,7 @@ EVENT:
             case_success      = 1
             run_case_selector = 1
             
-            INC(DATA_42[MBE_counter]) ' count the number of MBE successes
+            INC(DATA_42[MBE_counter+1]) ' count the number of MBE successes
 
           ELSE ' If at the end of RO duration without enough counts
             IF (timer = MBE_RO_duration ) THEN 
@@ -678,7 +664,7 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_event_jump_DO_channel,0)
 
         ELSE
-          IF (timer = SP_duration_after_C13) THEN
+          IF (timer = SP_duration_after_MBE) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             wait_time = wait_after_pulse_duration
@@ -714,11 +700,11 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_Parity_RO_voltage+32768) ' turn on Ex laser 
                   
-        ELSE 
-          IF (timer = parity_RO_duration ) THEN  
+        ELSE
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counters
+           
+          IF ((counts >0) OR (timer = parity_RO_duration )) THEN  
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-            
-            counts = P2_CNT_READ(CTR_MODULE, counter_channel) ' Read counter
             P2_CNT_ENABLE(CTR_MODULE,0) 'Turn off counter
                   
             IF (counts = 0) THEN 'Jump AWG to alternative branch if RO result 0 counts (ms=1)

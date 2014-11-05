@@ -11,14 +11,17 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def MBE(name, carbon_list   = [1,5],               
         
-        carbon_init_list        = [1,5],
+        carbon_init_list        = [5,1],
         carbon_init_states      = 2*['up'], 
-        carbon_init_methods     = 2*['MBI'],
-        carbon_init_thresholds  = 2*[1],  
+        carbon_init_methods     = 2*['swap'], 
+        carbon_init_thresholds  = 2*[0],  
 
         number_of_MBE_steps = 0,
         mbe_bases           = ['X','X'],
         MBE_threshold       = 1,
+
+        number_of_parity_msmnts = 0,
+        parity_msmnts_threshold = 1, 
 
         el_RO               = 'positive',
         debug               = False):
@@ -28,30 +31,24 @@ def MBE(name, carbon_list   = [1,5],
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
-
     ''' set experimental parameters '''
 
     m.params['reps_per_ROsequence'] = 500 
 
-    # if 0: #JUST FOR NOW TURN OF SPIN PUMPING TO COMPARE TO DETERMINSTIC MBE
-    #     m.params['A_SP_amplitude_after_MBE'] = 0e-9
-    #     m.params['MBE_RO_duration']          = 50            
-
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
 
-    ### Carbon Initialization params 
+    ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
-    m.params['init_method_list']    = carbon_init_methods    ## 'MBI', 'swap', 'mixed'
+    m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
     m.params['Nr_C13_init']         = len(carbon_init_list)
 
-    ### MBE settings
-    m.params['Nr_MBE']              = number_of_MBE_steps 
-    m.params['MBE_bases']           = mbe_bases
+    ##################################
+    ### RO bases (sweep parameter) ###
+    ##################################
 
-    ### RO bases (sweep parameter)
-    #m.params['Tomography Bases'] = 'full'
+    # # m.params['Tomography Bases'] = 'full'
     m.params['Tomography Bases'] = ([
             ['X','I'],['Y','I'],['Z','I'],
             ['I','X'],['I','Y'],['I','Z'],
@@ -60,26 +57,56 @@ def MBE(name, carbon_list   = [1,5],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
     # m.params['Tomography Bases'] = ([
+    #         ['X','I'],['Y','I'],['Z','I'],
+    #         ['I','X'],['I','Y'],['I','Z']])
+
+    # m.params['Tomography Bases'] = ([
+    #         ['X','X'],['X','Y'],['X','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z'],
+    #         ['Z','X'],['Z','Y'],['Z','Z']])
+    
+    # m.params['Tomography Bases'] = ([
     #         ['X','I'],['Y','I'],['Z','I']])
+
+    # m.params['Tomography Bases'] = ([
+    #         ['X','I','I'],['Y','I','I'],['Z','I','I'],
+    #         ['I','X','I'],['I','Y','I'],['I','Z','I'],
+    #         ['I','I','X'],['I','I','Y'],['I','I','Z']])
+
+
+    if m.params['Tomography Bases'] == 'full':
+        m.params['Tomography Bases'] = m.get_tomography_bases(nr_of_carbons = len(m.params['carbon_list']))
+        
+    ####################
+    ### MBE settings ###
+    ####################
+
+    m.params['Nr_MBE']              = number_of_MBE_steps 
+    m.params['MBE_bases']           = mbe_bases
+    m.params['MBE_threshold']       = MBE_threshold
+    
+    ###################################
+    ### Parity measurement settings ###
+    ###################################
+
+    m.params['Nr_parity_msmts']     = number_of_parity_msmnts
+    m.params['Parity_threshold']    = parity_msmnts_threshold
+    
 
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 
     m.params['sweep_pts']           = []
-
-    ### Parity measurement settings, not used yet, but needed as ADWIN script already loads this  
-    m.params['Nr_parity_msmts'] = 0
-
+    
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
     for BP in m.params['Tomography Bases']:
-        m.params['sweep_pts'].append(BP[0]+BP[1])
+        if len(carbon_list) == 2:
+            m.params['sweep_pts'].append(BP[0]+BP[1])
+        elif len(carbon_list) == 3:
+            m.params['sweep_pts'].append(BP[0]+BP[1]+BP[2])
     print m.params['sweep_pts']        
-
-    # m.params['C13_MBI_threshold']       = carbon_init_thresholds
-    m.params['MBE_threshold']           = MBE_threshold
-    m.params['Parity_threshold']        = 1
-    
+  
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
