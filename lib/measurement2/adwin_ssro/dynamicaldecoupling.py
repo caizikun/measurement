@@ -591,14 +591,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if g.C_phases_after_gate[iC] ==None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
 
-            elif g.Gate_type =='electron_repump':
-                for iC in range(len(g.C_phases_before_gate)):
-                    if (g.C_phases_after_gate[iC]==None) and (g.C_phases_before_gate[iC] !=None):
-                        if g.el_state_before_gate =='0':
-                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+g.elements_duration*C_freq_0[iC])%(2*np.pi)
-                        elif g.el_state_before_gate=='1':
-                            print 'calculating repump correction for the electronic state in ms=-1'
-                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+(g.elements_duration-g.)*C_freq_0[iC])%(2*np.pi)
+            # elif g.Gate_type =='electron_repump':
+            #     for iC in range(len(g.C_phases_before_gate)):
+            #         if (g.C_phases_after_gate[iC]==None) and (g.C_phases_before_gate[iC] !=None):
+            #             if g.el_state_before_gate =='0':
+            #                 g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+g.elements_duration*C_freq_0[iC])%(2*np.pi)
+            #             elif g.el_state_before_gate=='1':
+            #                 print 'calculating repump correction for the electronic state in ms=-1'
+            #                 g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+(g.elements_duration-g.)*C_freq_0[iC])%(2*np.pi)
             
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
@@ -2638,8 +2638,8 @@ class NuclearT1(MBI_C13):
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_RO_result = str(self.params['C13_MBI_RO_state'],
-                    el_after_init = str(self.params['el_after_init'])))
+                    el_RO_result = str(self.params['C13_MBI_RO_state']),
+                    el_after_init = str(self.params['el_after_init']))
 
             #Elements for T1 evolution
 
@@ -2651,7 +2651,8 @@ class NuclearT1(MBI_C13):
             #############################
             #Readout in the Z basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
-
+            
+            #TODO make the read-out use the general Carbon RO sequencer function NK 20141104
 
             if self.params['electron_readout_orientation'] == 'positive':
                 extra_phase = 0
@@ -2667,7 +2668,7 @@ class NuclearT1(MBI_C13):
                     phase = self.params['Y_phase']+extra_phase)
             C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Addressed_Carbon'],
-                    phase = self.params['C13_Y_phase'])
+                    phase = self.params['C13_Y_phase']+180)
             C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = self.params['X_phase'])

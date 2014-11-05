@@ -211,7 +211,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'Ex_CR_amplitude': 5e-9,   
 'Ex_RO_amplitude': 15e-9,   
 'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 450,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration'    : 100,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     #only for specific scripts
 'SP_duration_ms1': 500,     #only for specific scripts
 'SP_filter_duration' : 0 }
