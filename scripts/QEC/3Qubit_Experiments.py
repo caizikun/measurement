@@ -17,7 +17,7 @@ def MBE(name, carbon_list   = [1,5,2],
         carbon_init_thresholds  = 3*[0],  
 
         number_of_MBE_steps = 1,
-        logic_state         = 'Z',
+        logic_state         = 'X',
         mbe_bases           = ['Y','Y','Y'],
         MBE_threshold       = 1,
 
@@ -100,9 +100,11 @@ if __name__ == '__main__':
     Tomo_bases2 = ([['I','I','X'],['X','X','I'],['I','X','X'],['X','I','X']])
 
 
-    Tomo_bases = ([ ['X','I','I'],['Y','I','I'],['Z','I','I'],
+    Tomo_bases = ([
+            ['X','I','I'],['Y','I','I'],['Z','I','I'],
             ['I','X','I'],['I','Y','I'],['I','Z','I'],
             ['I','I','X'],['I','I','Y'],['I','I','Z'],
+
             ['X','X','I'],['X','Y','I'],['X','Z','I'],
             ['Y','X','I'],['Y','Y','I'],['Y','Z','I'],
             ['Z','X','I'],['Z','Y','I'],['Z','Z','I'],
@@ -131,10 +133,23 @@ if __name__ == '__main__':
     Tomo_bases_X = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Z'], ['Y','Z','Y'], ['Z','Y','Y'], ['Z','Z','Z']])
     Tomo_bases_Y = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Y'], ['Y','Z','Z'], ['Z','Y','Z'], ['Z','Z','Y']])
 
-    # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases1)
-    # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases1)
+    # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases_X)
+    # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases_X)
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive',Tomo_bases = Tomo_bases_Z)
-    MBE(SAMPLE + 'negative', el_RO= 'negative',Tomo_bases = Tomo_bases_Z)
 
+    for state in ['Z','mZ','X','mX','Y','mY']:
+        logic_state = state
+
+        for k in range(len(Tomo_bases)/7):
+            tomo = Tomo_bases[0+k*7:7+k*7]
+
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(10)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+
+            MBE(SAMPLE +'_state_'+logic_state+'positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
+            MBE(SAMPLE +'_state_'+logic_state+'negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
 

@@ -43,7 +43,7 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
-    m.params['free_evolution_time'] = 350e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
+    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
@@ -466,7 +466,7 @@ if n == 1:
 	# fit
 	f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
 	              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
-	              frequency = 1/127., phase =0, 
+	              frequency = 1/90., phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,

@@ -2651,7 +2651,7 @@ class NuclearT1(MBI_C13):
             #############################
             #Readout in the Z basis
             # print 'ro phase = ' + str( self.params['C_RO_phase'][pt])
-            
+
             #TODO make the read-out use the general Carbon RO sequencer function NK 20141104
 
             if self.params['electron_readout_orientation'] == 'positive':
@@ -3244,5 +3244,248 @@ class Three_QB_QEC(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class Three_QB_det_QEC(MBI_C13):
+    '''
+    #Sequence
+                                              --|Tomography00|
+                                --|Parity_b_0|
+                                              --|Tomography01|                               
+    |N-MBI| -|Cinits|-|Parity_a|
+                                              --|Tomography10|
+                                --|Parity_b_1|
+                                              --|Tomography11|
+    '''
+    mprefix = 'Deterministic_MBE_Tomography'
+    adwin_process = 'MBI_multiple_C13'
 
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Two Qubit MBE')
+
+        for pt in range(pts):
+            print
+            print '-' *20
+
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+            gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk])
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+
+            ### Create logical state 
+
+            for kk in range(self.params['Nr_MBE']):
+                print '3C_init_'
+                probabilistic_MBE_seq =     self.logic_init_seq(
+                        prefix              = '3C_init_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        RO_trigger_duration = 150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['3qb_logical_state'] ,
+                        go_to_element       = mbi, 
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive',
+                        phase_error         = self.params['phase_error'][pt])           
+
+                gate_seq.extend(probabilistic_MBE_seq)
+
+            ### Parity msmt 1
+            Parity_seq_a = self.readout_carbon_sequence(
+                        prefix              = 'Parity_a' + str(kk+1),
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_a_carbon_list'],
+                        RO_basis_list       = self.params['Parity_a_carbon_list'],
+                        el_RO_result         = '0')
+
+            gate_seq.extend(Parity_seq_a)
+
+            #############################
+            gate_seq0 = copy.deepcopy(gate_seq)
+            gate_seq1 = copy.deepcopy(gate_seq)
+
+             ### Parity msmt 1
+            Parity_seq_b0 = self.readout_carbon_sequence(
+                        prefix              = 'Parity_b0' + str(kk+1),
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_b_carbon_list'],
+                        RO_basis_list       = self.params['Parity_b_carbon_list'],
+                        el_RO_result         = '0')
+
+            Parity_seq_b1 = self.readout_carbon_sequence(
+                        prefix              = 'Parity_b1' + str(kk+1),
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_b_carbon_list'],
+                        RO_basis_list       = self.params['Parity_b_carbon_list'],
+                        el_RO_result         = '0')                                
+
+            gate_seq0.extend(Parity_seq_b0)
+            gate_seq1.extend(Parity_seq_b1)
+
+            gate_seq00 = copy.deepcopy(gate_seq0)
+            gate_seq01 = copy.deepcopy(gate_seq0)
+            gate_seq10 = copy.deepcopy(gate_seq1)
+            gate_seq11 = copy.deepcopy(gate_seq1)           
+
+            carbon_tomo_seq00 = self.readout_carbon_sequence(
+                    prefix              = 'Tomo00',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases_00'],
+                    readout_orientation = self.params['electron_readout_orientation_00'])
+            
+            gate_seq00.extend(carbon_tomo_seq00)
+
+            carbon_tomo_seq01 = self.readout_carbon_sequence(
+                    prefix              = 'Tomo01',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases_01'],
+                    readout_orientation = self.params['electron_readout_orientation_01'])
+            gate_seq01.extend(carbon_tomo_seq01)
+
+            carbon_tomo_seq10 = self.readout_carbon_sequence(
+                    prefix              = 'Tomo10',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases_10'],
+                    readout_orientation = self.params['electron_readout_orientation_10'])
+            gate_seq10.extend(carbon_tomo_seq10)
+
+            carbon_tomo_seq11 = self.readout_carbon_sequence(
+                    prefix              = 'Tomo11',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases_11'],
+                    readout_orientation = self.params['electron_readout_orientation_11'])
+            gate_seq11.extend(carbon_tomo_seq11)
+
+            # Make jump statements for branching to two different ROs
+            Parity_seq_a[-1].go_to       = Parity_seq_b0[0].name
+            Parity_seq_a[-1].event_jump  = Parity_seq_b1[0].name
+
+            Parity_seq_b0[-1].go_to       = carbon_tomo_seq00[0].name
+            Parity_seq_b0[-1].event_jump  = carbon_tomo_seq01[0].name
+
+            Parity_seq_b1[-1].go_to       = carbon_tomo_seq10[0].name
+            Parity_seq_b1[-1].event_jump  = carbon_tomo_seq11[0].name
+
+            # In the end all roads lead to Rome
+            Rome = Gate('Rome_'+str(pt),'passive_elt',
+                    wait_time = 3e-6)
+            gate_seq11.append(Rome)
+            gate_seq00[-1].go_to     = gate_seq11[-1].name
+            gate_seq01[-1].go_to     = gate_seq11[-1].name
+            gate_seq10[-1].go_to     = gate_seq11[-1].name
+
+            ################################################################
+            ### Generate the AWG_elements, including all the phase gates for all branches###
+            ################################################################
+
+            gate_seq  = self.generate_AWG_elements(gate_seq,pt)
+
+            print 'generating elements for seq 00'
+            gate_seq00[len(gate_seq)-2].el_state_before_gate =  '0' #Element -2, because MBI was added in generate AWG elements
+            gate_seq00[len(gate_seq0)-2].el_state_before_gate = '0' #Element -2
+            gate_seq00 = self.generate_AWG_elements(gate_seq00,pt)
+
+            print 'generating elements for seq 01'
+            gate_seq01[len(gate_seq)-2].el_state_before_gate =  '0' #Element -2, because MBI was added in generate AWG elements
+            gate_seq01[len(gate_seq0)-2].el_state_before_gate = '1' #Element -2
+            gate_seq01 = self.generate_AWG_elements(gate_seq01,pt)
+            
+            print 'generating elements for seq 10'
+            gate_seq10[len(gate_seq)-2].el_state_before_gate =  '1' #Element -2, because MBI was added in generate AWG elements
+            gate_seq10[len(gate_seq1)-2].el_state_before_gate = '0' #Element -2
+            gate_seq10 = self.generate_AWG_elements(gate_seq00,pt)
+
+            print 'generating elements for seq 11'
+            gate_seq11[len(gate_seq)-2].el_state_before_gate =  '1' #Element -2, because MBI was added in generate AWG elements
+            gate_seq11[len(gate_seq1)-2].el_state_before_gate = '1' #Element -2
+            gate_seq11 = self.generate_AWG_elements(gate_seq00,pt)
+
+            # Merge the bracnhes into one AWG sequence
+            merged_sequence = []
+            merged_sequence.extend(gate_seq)                  #TODO: remove gate_seq and add gate_seq1 to gate_seq0 without common part
+            merged_sequence.extend(gate_seq00[len(gate_seq):])
+            merged_sequence.extend(gate_seq01[len(gate_seq):])
+            merged_sequence.extend(gate_seq10[len(gate_seq):])
+            merged_sequence.extend(gate_seq11[len(gate_seq):])
+
+            print '*'*10
+            print 'seq_merged'
+            for g in merged_sequence:
+                print g.name
+                if debug and hasattr(g,'el_state_before_gate'):# != None:
+                    # print g.el_state_before_gate
+                    print 'el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
+                elif debug:
+                    print 'does not have attribute el_state_before_gate'
+                if  debug==True:
+                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(merged_sequence, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
