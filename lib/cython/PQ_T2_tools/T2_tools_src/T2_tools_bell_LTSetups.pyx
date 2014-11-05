@@ -81,7 +81,7 @@ def Bell_live_filter(
                 continue
 
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync         
-        if (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all markers and photons in ROI
+        if (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all photons in ROI
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
             hhspecial[l] = special[k]
