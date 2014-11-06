@@ -175,7 +175,7 @@ def tail_sweep(name):
 
 
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)

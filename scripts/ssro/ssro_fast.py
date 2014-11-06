@@ -165,4 +165,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Pippin_SIL3_Pulse_AOM')
+    fast_ssro_calibration('test_TH260P')

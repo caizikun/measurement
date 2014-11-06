@@ -36,8 +36,8 @@ T2_TIMEFACTOR               = 1
 MEASCTRL_CONT_EXTTRIG       = 5
 MESACTRL_CONT_CTCTRIG       = 6
 
-EDGE_RISING                 = 1
-EDGE_FALLING                = 0
+EDGE_RISING                 = 0
+EDGE_FALLING                = 1
 CFDZERO                     = 0
 
 FLAG_OVERFLOW               = 0x0001  #histo mode only
@@ -95,7 +95,7 @@ class TimeHarp_TH260P(Instrument): #1
     TODO:
      2) Test T2/T3 modes
     '''
-    def __init__(self, name, DeviceIndex = 0, TimingMode = 0): #2  #Timing mode 0 means ps time resolution, 1 means 2.5ns
+    def __init__(self, name, DeviceIndex = 0, TimingMode = 1): #2  #Timing mode 0 means ps time resolution, 1 means 2.5ns
         # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument TH260P')
         Instrument.__init__(self, name, tags=['physical'])
@@ -120,20 +120,20 @@ class TimeHarp_TH260P(Instrument): #1
         self.add_parameter('ResolutionPS', flags = Instrument.FLAG_GET, type=types.FloatType)
         self.add_parameter('BaseResolutionPS', flags = Instrument.FLAG_GET, type=types.FloatType)
         self.add_parameter('MaxBinSteps', flags = Instrument.FLAG_GET, type=types.IntType)
-        self.add_parameter('SyncEdgeTrg', flags = Instrument.FLAG_SET, type=types.IntType,
+        self.add_parameter('SyncCFD', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=DISCRMIN, maxval=DISCRMAX)
 
         self.add_parameter('SyncChannelOffset', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=CHANOFFSMIN, maxval=CHANOFFSMAX)
-        self.add_parameter('InputEdgeTrg', flags = Instrument.FLAG_SET, type=types.IntType,
+        self.add_parameter('InputCFD', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=DISCRMIN, maxval=DISCRMAX)
 
         self.add_parameter('InputChannelOffset', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=CHANOFFSMIN, maxval=CHANOFFSMAX)
         self.add_parameter('HistoLen', flags = Instrument.FLAG_SET, type=types.IntType,
                            minval=0, maxval=MAXLENCODE)
-        self.add_parameter('InputEdgeTrg0', flags = Instrument.FLAG_SET, type=types.IntType)
-        self.add_parameter('InputEdgeTrg1', flags = Instrument.FLAG_SET, type=types.IntType)
+        self.add_parameter('InputCFD0', flags = Instrument.FLAG_SET, type=types.IntType)
+        self.add_parameter('InputCFD1', flags = Instrument.FLAG_SET, type=types.IntType)
         self.add_parameter('CountRate0', flags = Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('CountRate1', flags = Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('ElapsedMeasTimePS', flags = Instrument.FLAG_GET, type=types.FloatType)
@@ -153,7 +153,7 @@ class TimeHarp_TH260P(Instrument): #1
         self.add_parameter('T2_WRAPAROUND', flags = Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('T2_TIMEFACTOR', flags = Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('T2_READMAX', flags = Instrument.FLAG_GET, type=types.IntType)
-        self.add_parameter('TimingMode', flags = Instrument.FLAG_SET, type=types.IntType)
+        #self.add_parameter('TimingMode', flags = Instrument.FLAG_SET, type=types.IntType)
         
         self.add_function('start_histogram_mode')
         self.add_function('start_T2_mode')
@@ -168,7 +168,7 @@ class TimeHarp_TH260P(Instrument): #1
         self._do_set_DeviceIndex(DeviceIndex)
         self.OpenDevice()
         qt.msleep(1)
-        self._TH260.TH260_SetTimingMode(DeviceIndex, self.TimingMode)
+        self._TH260.TH260_SetTimingMode(DeviceIndex, TimingMode)
         if self.start_histogram_mode():
 
             self.Model = numpy.array([16*' '])
@@ -192,16 +192,16 @@ class TimeHarp_TH260P(Instrument): #1
 
             self._do_get_NumOfInputChannels()
             
-            self._do_set_SyncEdgeTrg(200)
+            self._do_set_SyncCFD(-200)
 
             self._do_set_SyncChannelOffset(0)
 
             self._do_set_Channel(0)
-            self._do_set_InputEdgeTrg(200)
+            self._do_set_InputCFD(-200)
             self._do_set_InputChannelOffset(0)
             
             self._do_set_Channel(1)
-            self._do_set_InputEdgeTrg(200)
+            self._do_set_InputCFD(-200)
             self._do_set_InputChannelOffset(0)
            
             self._do_set_SyncDiv(1)
@@ -434,11 +434,21 @@ class TimeHarp_TH260P(Instrument): #1
     def OpenDevice(self):
         SerialNr = numpy.array([8*' '])
 #        print ('Opening HydraHarp Device no. %s'%self.DevIdx)            
-        success = self._TH260.TH260_OpenDevice(self.DevIdx, SerialNr.ctypes.data)
+        open_success = self._TH260.TH260_OpenDevice(self.DevIdx, SerialNr.ctypes.data)
+        init_success = self._TH260.TH260_Initialize(self.DevIdx, MODE_T2)
+        success = open_success and init_success
         self.SerialNr = SerialNr
 #        print ('HydraHarp serial no. %s'%self.SerialNr)            
         if success != 0:
             logging.warning(__name__ + ' : OpenDevice failed, check that TimeHarp software is not running.')
+            self.get_ErrorString(success)
+            return False
+        return True
+
+    def initialize(self):
+        sucess = self._TH260.TH260_Initialize(self.DevIdx, MODE_T2)
+        if success != 0:
+            logging.warning(__name__ + ' : Device initialization failed.')
             self.get_ErrorString(success)
             return False
         return True
