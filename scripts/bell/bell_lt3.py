@@ -1,16 +1,15 @@
 """
-LT3 script for Measuring a tail with a picoquant time correlator
+lt4 script for Measuring a tail with a picoquant time correlator
 """
 
 
 import numpy as np
-import inspect
 import qt
+import msvcrt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.config import moss as moscfg
 
 import bell
 reload(bell)
@@ -21,8 +20,10 @@ reload(joint_params)
 import params_lt3
 reload(params_lt3)
 
-class Bell_LT3(bell.Bell):
-    mprefix = 'Bell_LT3'
+
+class Bell_lt3(bell.Bell):
+    mprefix = 'Bell_lt3'
+    adwin_process = 'bell_lt3'
 
     def __init__(self, name):
         bell.Bell.__init__(self,name)
@@ -32,136 +33,144 @@ class Bell_LT3(bell.Bell):
             self.params[k] = params_lt3.params_lt3[k]
         bseq.pulse_defs_lt3(self)
 
+    def autoconfig(self, **kw):
+        bell.Bell.autoconfig(self, **kw)
+        if self.params['remote_measurement']:
+            remote_params = self.remote_measurement_helper.get_measurement_params()
+            print remote_params
+            for k in remote_params:
+                self.params[k] = remote_params[k]
+        self.remote_measurement_helper.set_data_path(self.h5datapath)
+
+    def measurement_process_running(self):
+        if self.params['remote_measurement']:
+            return self.remote_measurement_helper.get_is_running()
+        else:
+            return self.adwin_process_running()
+
+    def print_measurement_progress(self):
+        if self.params['remote_measurement']:
+            pass
+        else:
+            bell.Bell.print_measurement_progress(self)
+
     def generate_sequence(self):
-        seq = pulsar.Sequence('BellLT3')
+        seq = pulsar.Sequence('Belllt3')
 
         elements = [] 
 
-        dummy_element = bseq._dummy_element(self)
-        succes_element = bseq._lt3_entanglement_event_element(self)
-        elements.append(succes_element)
-        #finished_element = bseq._sequence_finished_element(self)
+        #dummy_element = bseq._dummy_element(self)
+        finished_element = bseq._lt3_sequence_finished_element(self)
         start_element = bseq._lt3_sequence_start_element(self)
+        succes_element = bseq._lt3_entanglement_event_element(self)
         elements.append(start_element)
-        #elements.append(finished_element)
-        elements.append(dummy_element)
-        LDE_element = bseq._LDE_element(self, name='LDE_LT3')   
+        elements.append(finished_element)
+        elements.append(succes_element)
+        LDE_element = bseq._LDE_element(self, name='LDE_lt3')   
         elements.append(LDE_element)
+        
+        #seq.append(name = 'start_LDE',
+        #    trigger_wait = True,
+        #    wfname = start_element.name)
 
-        if self.joint_params['wait_for_1st_revival']:
-            LDE_echo_point = LDE_element.length()- (LDE_element.pulses['MW_pi'].effective_start()+ self.params['MW_1_separation'])
-            late_RO = bseq._1st_revival_RO(self, LDE_echo_point = LDE_echo_point, name = '1st_revival_RO_LT3')
-            elements.append(late_RO)
-
-
-        seq.append(name = 'start_LDE',
-            trigger_wait = True,
-            wfname = start_element.name)
-
-        seq.append(name = 'LDE_LT3',
+        seq.append(name = 'LDE_lt3',
             wfname = LDE_element.name,
-            jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
-            goto_target = 'start_LDE',
+            trigger_wait = True,
+            jump_target = 'RO_dummy',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-        #seq.append(name = 'LDE_timeout',
-        #    wfname = finished_element.name,
-        #    goto_target = 'start_LDE')
-        if self.joint_params['wait_for_1st_revival']:
-            seq.append(name = 'late_RO',
-                wfname = late_RO.name,
-                goto_target = 'start_LDE')
+        seq.append(name = 'LDE_timeout',
+            wfname = finished_element.name,
+            goto_target = 'LDE_lt3_TPQI_norm' if self.joint_params['TPQI_normalisation_measurement'] else 'LDE_lt3')
+
+        if self.joint_params['TPQI_normalisation_measurement']:
+            seq.append(name = 'LDE_lt3_TPQI_norm',
+            trigger_wait = True,
+            wfname = LDE_element.name,
+            jump_target = 'RO_dummy',
+            repetitions = self.joint_params['LDE_attempts_before_CR'])
+
+            seq.append(name = 'LDE_timeout_2',
+            wfname = finished_element.name,
+            goto_target = 'LDE_lt3')
 
         seq.append(name = 'RO_dummy',
             wfname = succes_element.name,
-            goto_target = 'start_LDE')
+            goto_target = 'LDE_lt3')
             
         #qt.pulsar.program_awg(seq,*elements)
-        qt.pulsar.upload(*elements) 
+        qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(seq)
 
-    def stop_measurement_process(self):
-        bell.Bell.stop_measurement_process(self)
 
-        # signal BS and LT1 to stop as well
-        if self.bs_helper != None:
-            self.bs_helper.set_is_running(False)
-        if self.lt1_helper != None:    
-            self.lt1_helper.set_is_running(False)
-
-    def print_measurement_progress(self):
-        if self.params['compensate_lt3_drift']:
-            drift_constant= -3.8/60./1000. #nm/min-->/60=nm/sec-->/1000 = um/sec
-            drift_v_c=drift_constant/moscfg.config['mos_lt3']['rt_dimensions']['x']['micron_per_volt'] #V/s
-            drift = self.params['measurement_abort_check_interval']*drift_v_c
-            cur_v = self.adwin.get_dac_voltage('atto_x')
-            print 'drift:', drift
-            #self.adwin.set_dac_voltage(('atto_x',cur_v+drift ))
-        bell.Bell.print_measurement_progress(self)
-
-    def reset_plu(self):
-        self.adwin.start_set_dio(dio_no=2, dio_val=0)
-        qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=2, dio_val=1)
-        qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=2, dio_val=0)
-
-    def finish(self):
-        bell.Bell.finish(self)
-        self.add_file(inspect.getsourcefile(bseq))
-
-Bell_LT3.bs_helper = qt.instruments['bs_helper']
-Bell_LT3.lt1_helper = qt.instruments['lt1_helper']
-Bell_LT3.mos = qt.instruments['master_of_space']
-Bell_LT3.AWG_RO_AOM = qt.instruments['PulseAOM']
-
-def full_bell(name):
-
-    th_debug = False
-    sequence_only = False
-    mw = True
-    measure_lt1 = False
-    measure_bs = True
-    do_upload = False
-
-    m=Bell_LT3(name) 
-
-    m.params['MW_during_LDE'] = mw
-    m.params['wait_for_remote_CR'] = measure_lt1
-    m.params['compensate_lt3_drift'] = True
+Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
+Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom
 
 
-    if not(sequence_only):
-        if measure_lt1:
-            m.lt1_helper.set_is_running(False)
-            m.lt1_helper.set_measurement_name(name)
-            m.lt1_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_lt1.py')
-            m.lt1_helper.execute_script()
-        if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
-            m.bs_helper.set_measurement_name(name)
-            m.bs_helper.set_is_running(True)
-            m.bs_helper.execute_script()
+def bell_lt3(name):
+
+    remote_meas = True
+    upload_only = False
+
+    if remote_meas:
+        remote_name=Bell_lt3.remote_measurement_helper.get_measurement_name()
+        name=name+remote_name
     
+    m=Bell_lt3(name) 
+
+    th_debug=False
+    mw = False
+    do_upload = True
+    if remote_meas:
+        if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+            m.joint_params['do_echo'] = 0
+            m.joint_params['do_final_MW_rotation'] = 0
+            th_debug = False
+            mw=True
+        elif 'TPQI' in remote_name:
+            m.joint_params['RO_during_LDE']=0
+            m.joint_params['do_echo'] = 0
+            m.joint_params['do_final_MW_rotation'] = 0
+            m.joint_params['RND_during_LDE'] = 0
+            m.joint_params['opt_pi_pulses'] = 15
+            m.joint_params['TPQI_normalisation_measurement']=True
+            m.joint_params['LDE_element_length'] = 10e-6+(m.joint_params['opt_pi_pulses']-2)*m.joint_params['opt_pulse_separation']
+            th_debug = True
+            mw=False
+        elif 'full_Bell' in remote_name:
+            th_debug = False
+            mw=True
+        else:
+            print 'using standard local settings'
+            #raise Exception('Unknown remote measurement: '+ remote_name)
+
+    print 'Running',name
+
+   
+    m.params['MW_during_LDE'] = mw
+    m.params['remote_measurement'] = remote_meas
+
     m.autoconfig()
-    if do_upload:
-        m.generate_sequence()
-    if sequence_only: 
+
+    m.generate_sequence()
+    if upload_only:
         return
-
+    
     m.setup(debug=th_debug)
-    m.reset_plu()
+    lt4_ready = False
+    while(1):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+            break
+        if m.remote_measurement_helper.get_is_running():
+            lt4_ready = True
+            qt.msleep(2)
+            break
+        qt.msleep(1)
+    if lt4_ready:
+        m.run(autoconfig=False, setup=False,debug=th_debug)    
+        m.save()
+        m.finish()
 
-    if measure_lt1: m.lt1_helper.set_is_running(True)
-    m.run(autoconfig=False, setup=False,debug=th_debug)
-    m.save()
-
-    if measure_lt1:
-         m.params['lt1_data_path'] = m.lt1_helper.get_data_path()
-    if measure_bs:
-        m.params['bs_data_path'] = m.bs_helper.get_data_path()
-
-    m.finish()
 
 if __name__ == '__main__':
-    full_bell('SP_CORR_SAM_SIL5')   
+    bell_lt3('')

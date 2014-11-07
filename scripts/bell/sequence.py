@@ -3,7 +3,7 @@ import qt
 import numpy as np
 
 
-def pulse_defs_lt3(msmt):
+def pulse_defs_lt4(msmt):
 
     # a waiting pulse on the MW pulsemod channel
     msmt.T = pulse.SquarePulse(channel='MW_pulsemod',
@@ -37,6 +37,15 @@ def pulse_defs_lt3(msmt):
                     PM_channel='MW_pulsemod',
                     second_MW_channel='MW_Qmod', 
                     amplitude = msmt.params['MW_pi2_amp'],
+                    length = msmt.params['MW_pi2_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+
+    msmt.MW_BellAngle = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                    MW_channel='MW_Imod',
+                    PM_channel='MW_pulsemod',
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi2_amp']*msmt.params['MW_BellStateFactor'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -89,7 +98,7 @@ def pulse_defs_lt3(msmt):
 
     return True
 
-def pulse_defs_lt1(msmt):
+def pulse_defs_lt3(msmt):
 
     # a waiting pulse on the MW pulsemod channel
     msmt.T = pulse.SquarePulse(channel='MW_pulsemod',
@@ -118,6 +127,14 @@ def pulse_defs_lt1(msmt):
                     second_MW_channel='MW_Qmod', 
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['MW_pi2_amp'], 
+                    length = msmt.params['MW_pi2_duration'],
+                    PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+                    pi2_pulse = True)
+    msmt.MW_BellAngle = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
+                    MW_channel='MW_Imod',
+                    PM_channel='MW_pulsemod',
+                    second_MW_channel='MW_Qmod', 
+                    amplitude = msmt.params['MW_pi2_amp']*(2-msmt.params['MW_BellStateFactor']),
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -161,39 +178,43 @@ def pulse_defs_lt1(msmt):
     msmt.sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
     msmt.SP_pulse = pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
-    msmt.RO_pulse = pulse.SquarePulse(channel = 'AOM_Matisse', amplitude = 0.0)
+    msmt.RO_pulse = pulse.SquarePulse(channel = 'EOM_AOM_Matisse', amplitude = 0.0)
     msmt.yellow_pulse = pulse.SquarePulse(channel = 'AOM_Yellow', amplitude = 1.0)
 
-
+    msmt.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = 1.0, 
+                                    length = msmt.params['PLU_gate_duration'])
 
     return True
 
 ## single elements
-def _lt3_sequence_start_element(msmt):
+def _lt4_sequence_start_element(msmt):
     """
-    first element of a two-setup sequence. Sends a trigger to AWG LT1
+    first element of a two-setup sequence. Sends a trigger to AWG lt3
     """
     e = element.Element('LDE_start', pulsar = qt.pulsar)
     e.append(msmt.T_sync)
     ref_p=e.append(msmt.sync)
-    e.append(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt1_start']))
+    e.add(pulse.cp(msmt.T_sync, length=msmt.params['AWG_wait_for_lt3_start']),
+        refpulse=ref_p,
+        refpoint='start'
+        )
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=100e-9)
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
     ref_p=e.add(pulse.cp(msmt.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
     return e
 
-def _lt1_sequence_start_element(msmt):
+def _lt3_sequence_start_element(msmt):
     """
-    first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt3, before starting lde
+    first element of a two-setup sequence. Sends waits an additional time after receiving the trigger from lt4, before starting lde
     """
-    e = element.Element('LT1_start', pulsar = qt.pulsar)
+    e = element.Element('lt3_start', pulsar = qt.pulsar)
     e.append(pulse.cp(msmt.SP_pulse, length=1e-6, amplitude = 0))
     return e
 
-def _lt1_sequence_finished_element(msmt):
+def _lt3_sequence_finished_element(msmt):
     """
-    last element of a two-setup sequence. Sends a trigger to ADwin LT3.
+    last element of a two-setup sequence. Sends a trigger to ADwin lt3.
     """
     e = element.Element('LDE_finished', pulsar = qt.pulsar)
     e.append(msmt.TIQ)
@@ -208,7 +229,7 @@ def _dummy_element(msmt):
     e.append(pulse.cp(msmt.T_sync, length=msmt.joint_params['LDE_element_length']))
     return e
 
-def _lt1_entanglement_event_element(msmt):
+def _lt3_entanglement_event_element(msmt):
     
     e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
 
@@ -216,7 +237,7 @@ def _lt1_entanglement_event_element(msmt):
     #e.append(msmt.adwin_success_pulse)
     return e
 
-def _lt3_entanglement_event_element(msmt):
+def _lt4_entanglement_event_element(msmt):
     
     e= element.Element('Entanglement event element', pulsar=qt.pulsar)
 
@@ -224,7 +245,16 @@ def _lt3_entanglement_event_element(msmt):
     #e.append(msmt.adwin_success_pulse)
     return e
 
-def _lt3_wait_1us_element(msmt):
+def _lt4_sequence_finished_element(msmt):
+    """
+    last element of a two-setup sequence. Sends a trigger to ADwin lt4.
+    """
+    e = element.Element('LDE_finished', pulsar = qt.pulsar)
+    e.append(msmt.TIQ)
+    e.append(msmt.adwin_trigger_pulse)
+    return e
+
+def _lt4_wait_1us_element(msmt):
     """
     A 1us empty element we can use to replace 'real' elements for certain modes.
     """
@@ -236,7 +266,7 @@ def _lt3_wait_1us_element(msmt):
 def _LDE_element(msmt, **kw):
     """
     This element contains the LDE part, i.e., spin pumping and MW pulses
-    for the LT3 NV and the optical pi pulses as well as all the markers for HH and PLU.
+    for the lt4 NV and the optical pi pulses as well as all the markers for HH and PLU.
     """
 
     # variable parameters
@@ -293,12 +323,12 @@ def _LDE_element(msmt, **kw):
 
     #4 MW pi/2
     if msmt.params['MW_during_LDE'] == 1 :
-        e.add(msmt.MW_pi2,
+        e.add(msmt.MW_BellAngle,
             start = -msmt.params['MW_opt_puls1_separation'],
             refpulse = 'opt pi 1', 
             refpoint = 'start', 
             refpoint_new = 'end',
-            name = 'MW_pi_over_2')
+            name = 'MW_BellAngle')
     #5 HHsync
     
     #6 plugate 1
@@ -311,7 +341,7 @@ def _LDE_element(msmt, **kw):
     if msmt.params['MW_during_LDE'] == 1:
         e.add(msmt.MW_pi, 
             start = msmt.params['MW_1_separation'],
-            refpulse = 'MW_pi_over_2',
+            refpulse = 'MW_BellAngle',
             refpoint = 'end', 
             refpoint_new = 'end', 
             name='MW_pi')
@@ -468,45 +498,3 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
                 name='MW_echo_pi_{}'.format(j))
 
     return e
-
-
-def _lt3_first_pi2(msmt, **kw):
-    init_ms1 = kw.pop('init_ms1', False)
-    # around each pulse I make an element with length 1600e-9; 
-    # the centre of the pulse is in the centre of the element.
-    # this helps me to introduce the right waiting times, counting from centre of the pulses
-    CORPSE_pi2_wait_length = msmt.params['CORPSE_pi2_wait_length'] #- (msmt.MW_pi2.length - 2*msmt.params['MW_pulse_mod_risetime'])/2 
-
-    first_pi2_elt = element.Element('first_pi2_elt', pulsar= qt.pulsar, 
-        global_time = True, time_offset = 0.)
-
-    first_pi2_elt.append(pulse.cp(msmt.T, length = 100e-9))
-    
-    if init_ms1:
-        first_pi2_elt.append(pulse.cp(msmt.MW_pi))
-        first_pi2_elt.append(pulse.cp(msmt.T, length = 100e-9))
-    
-    first_pi2_elt.append(pulse.cp(msmt.MW_pi2))
-    first_pi2_elt.append(pulse.cp(msmt.T, 
-        length =  CORPSE_pi2_wait_length))
-
-    return first_pi2_elt
-
-def _lt3_final_pi2(msmt, name, time_offset, **kw):
-    extra_t_before_pi2 = kw.pop('extra_t_before_pi2', 0)
-    CORPSE_pi2_phase = kw.pop('CORPSE_pi2_phase', 0)
-
-    # around each pulse I make an element with length 1600e-9; 
-    # the centre of the pulse is in the centre of the element.
-    # this helps me to introduce the right waiting times, counting from centre of the pulses
-    CORPSE_pi2_wait_length = msmt.params['CORPSE_pi2_wait_length'] #- (msmt.MW_pi2.length - 2*msmt.params['MW_pulse_mod_risetime'])/2 
-
-    second_pi2_elt = element.Element('second_pi2_elt-{}'.format(name), pulsar= qt.pulsar, 
-        global_time = True, time_offset = time_offset)
-    second_pi2_elt.append(pulse.cp(msmt.T, 
-        length = CORPSE_pi2_wait_length + extra_t_before_pi2))
-    second_pi2_elt.append(pulse.cp(msmt.MW_pi2, 
-        phase = CORPSE_pi2_phase))
-    second_pi2_elt.append(pulse.cp(msmt.T, length =  100e-9 ))           
-
-    return second_pi2_elt

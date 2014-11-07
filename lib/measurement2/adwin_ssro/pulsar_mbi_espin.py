@@ -14,7 +14,7 @@ class ElectronRabi(pulsar_msmt.MBI):
 
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-9, amplitude = 0)
+            length = 1000e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
             I_channel = 'MW_Imod',
@@ -65,13 +65,13 @@ class ElectronRabi(pulsar_msmt.MBI):
 class ElectronRamsey(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRamsey'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug = False):
         # MBI element
         mbi_elt = self._MBI_element()
 
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-9, amplitude = 0)
+            length = 1000e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
             I_channel = 'MW_Imod',
@@ -121,8 +121,7 @@ class ElectronRamsey(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, *elts)
-        qt.pulsar.program_sequence(seq)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
 
 class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'

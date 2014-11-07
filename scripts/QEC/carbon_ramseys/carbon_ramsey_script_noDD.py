@@ -25,10 +25,10 @@ def Carbon_Ramsey(name, tau = None, N=None):
     m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 3 
+    m.params['addressed_carbon'] = 2
 
     ### Sweep parameter ###
-    m.params['free_evolution_times'] = np.linspace(3.2e3,60e3,81).astype(int)*1e-9
+    m.params['free_evolution_times'] = np.linspace(3.2e3,35e3,51).astype(int)*1e-9
     
 
     print 'free evolution times: %s' %m.params['free_evolution_times']
@@ -36,23 +36,15 @@ def Carbon_Ramsey(name, tau = None, N=None):
     m.params['sweep_pts']        = m.params['free_evolution_times']
     m.params['sweep_name']       = 'Free evolution time'
 
-    if N ==None: 
-        m.params['C_Ren_N'] = m.params['C3_Ren_N'][0]  
-    else:
-        m.params['C_Ren_N'] = N
-    if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C3_Ren_tau'][0]
-    else: 
-        m.params['C_Ren_tau'] = tau 
 
-
-    #############################
-    #!NB: These should go into msmt params
-    #############################
-    m.params['min_dec_tau'] = 20e-9 + m.params['fast_pi_duration']/2.0
-    m.params['max_dec_tau'] = 0.35e-6 #Based on simulation for fingerprint at low tau
-    m.params['dec_pulse_multiple'] = 4#lowest multiple of 4 pulses
-
+    # if N ==None: 
+    #     m.params['C_Ren_N'] = m.params['C5_Ren_N'][0]  
+    # else:
+    #     m.params['C_Ren_N'] = N
+    # if tau ==None: 
+    #     m.params['C_Ren_tau'] = m.params['C5_Ren_tau'][0]
+    # else: 
+    #     m.params['C_Ren_tau'] = tau 
 
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)

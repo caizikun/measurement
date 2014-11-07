@@ -8,15 +8,13 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 	approx_int_time  = 0.1#s
 	PQ_ins = qt.instruments['HH_400']
 
-	adwin_ins_lt1 = qt.instruments['physical_adwin_lt1']
+	adwin_ins_lt4 = qt.instruments['physical_adwin_lt4']
 	adwin_ins_lt3 = qt.instruments['physical_adwin_lt3']
 
-	adwin_par_lt1 = 43
+	adwin_par_lt4 = 43
 	adwin_par_lt3 = 43
 
 	meas_helper = qt.instruments['remote_measurement_helper']
-
-
 
 	if PQ_ins.OpenDevice():
 	    PQ_ins.start_T2_mode()
@@ -34,10 +32,8 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 
 	PQ_ins.StartMeas(int(meas_time))
 	qt.msleep(approx_int_time)
-	#ofl=0
-	#cts0=0
-	#cts1=0
-	#ii=0
+	print 'starting HH counter, press q to quit...'
+
 	while(PQ_ins.get_MeasRunning()):
 		if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
 		if not(meas_helper.get_is_running()): break
@@ -47,6 +43,33 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 		if length > 2:
 			if length > 131070:
 				print 'WARNING: TTTR length == max TTTR length. get TTTR rate to slow?'
+
+			int_time = wraparound * len(np.where(channel == 63)[0]) / t2_time_factor * bin_time
+			ch0_countrates = float(len(np.where(np.logical_and(special == 0, channel == 0))[0]))/(int_time)
+			ch1_countrates = float(len(np.where(np.logical_and(special == 0, channel == 1))[0]))/(int_time)
+			#print ch0_countrates, ch1_countrates
+			adwin_ins_lt4.Set_Par(adwin_par_lt4, int(ch0_countrates+ch1_countrates))
+			adwin_ins_lt3.Set_Par(adwin_par_lt3, int(ch0_countrates+ch1_countrates))
+			qt.msleep(approx_int_time)
+
+	#print ofl, cts0, cts1, ii
+	PQ_ins.StopMeas()
+	meas_helper.set_is_running(False)
+
+
+if __name__=='__main__':
+	qt.instruments['broadcast0r'].stop()
+	measure_and_broadcast_countrates()
+	#qt.instruments['broadcast0r'].start()
+
+
+
+	#ofl=0
+	#cts0=0
+	#cts1=0
+	#ii=0
+
+
 			#for i in range(length):
 			#	if special[i] == 0 and channel[i]==0:
 			#		cts0+=1
@@ -73,21 +96,3 @@ def measure_and_broadcast_countrates(): #TODO clean up print and debug statement
 			#print len(np.where(np.logical_and(special == 0, channel == 0))[0])
 			#print len(np.where(np.logical_and(special == 0, channel == 1))[0])
 			#print len(np.where(np.logical_and(special == 0, channel > 1))[0])
-
-			int_time = wraparound * len(np.where(channel == 63)[0]) / t2_time_factor * bin_time
-			ch0_countrates = float(len(np.where(np.logical_and(special == 0, channel == 0))[0]))/(int_time)
-			ch1_countrates = float(len(np.where(np.logical_and(special == 0, channel == 1))[0]))/(int_time)
-			#print ch0_countrates, ch1_countrates
-			adwin_ins_lt1.Set_Par(adwin_par_lt1, int(ch0_countrates+ch1_countrates))
-			adwin_ins_lt3.Set_Par(adwin_par_lt3, int(ch0_countrates+ch1_countrates))
-			qt.msleep(approx_int_time)
-
-	#print ofl, cts0, cts1, ii
-	PQ_ins.StopMeas()
-	meas_helper.set_is_running(False)
-
-
-if __name__=='__main__':
-	qt.instruments['broadcast0r'].stop()
-	measure_and_broadcast_countrates()
-	#qt.instruments['broadcast0r'].start()

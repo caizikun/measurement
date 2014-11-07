@@ -13,7 +13,7 @@ def turn_off_lasers(names):
 
 def turn_off_all_lt4_lasers():
     set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM']) ### XXX Still have to add yellow and pulse
 
 def turn_off_all_lasers():
     turn_off_all_lt4_lasers()
@@ -65,8 +65,8 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     qt.msleep(1)
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'GreenAOM'],
+    setpoints = [5e-9, 10e-9, 50e-9,50e-6]):
     
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
@@ -153,31 +153,66 @@ def turn_on_lt4_pulse_path():
     #qt.instruments['PMServo'].move_out()
 
 def init_AWG():
-    #import_and_load_waveform_file_to_channel(channel_no ,waveform_listname,waveform_filename) 4x
-    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
-    qt.pulsar.setup_channels()
-    qt.instruments['AWG'].set_ch1_status('on')
-    qt.instruments['AWG'].set_ch2_status('on')
-    qt.instruments['AWG'].set_ch3_status('on')
-    qt.instruments['AWG'].set_ch4_status('on')
+    qt.instruments['AWG'].initialize_dc_waveforms()
 
 def start_bs_counter():
+    if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
+        print 'ZPL APDs on'
+    else:
+        print 'ZPL APDs could not be turned on!'
     qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
     qt.instruments['bs_helper'].execute_script()
+    qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['counters'].set_is_running(True)
+    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
+        qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
+        print 'ZPL APDs off'
+    else:
+        print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.instruments['AWG'].set_ch3_marker2_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch1_marker2_low(0.)
+    qt.instruments['AWG'].set_ch3_marker2_low(0.)
 
 def reset_plu():
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
-    qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
-    qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
+        qt.msleep(0.1)
+        qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
+        qt.msleep(0.3)
+        qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
+        print 'Plu reset complete'
+    else:
+        print 'plu reset failed'
+
+
+def calibrate_aom_frq_max(name='YellowAOM', pts=21):
+    adwin = qt.instruments['adwin']  
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(0.5) 
+    qt.instruments['powermeter'].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.instruments[name].turn_on()
+    qt.msleep(0.5)
+    cur_v=adwin.get_dac_voltage('yellow_aom_frq')
+    ps=[]
+    vs=[]
+    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+        vs.append(v)
+        adwin.set_dac_voltage(('yellow_aom_frq',v))
+        qt.msleep(0.1)
+        p=qt.instruments['powermeter'].get_power()
+        ps.append(p)
+        print 'V: {:.2f}, P: {:.3g}'.format(v,p)
+
+    max_v=vs[np.argmax(ps)]
+    print 'max power at V: {:.3f}, P: {:.2g}'.format(max_v,max(ps))
+    adwin.set_dac_voltage(('yellow_aom_frq',max_v))
+    qt.instruments[name].turn_off()
+    qt.instruments['PMServo'].move_out()

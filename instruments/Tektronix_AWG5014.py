@@ -739,12 +739,7 @@ class Tektronix_AWG5014(Instrument):
                 head_str.write(self._pack_record(k,sequence_cfg[k],self.AWG_FILE_FORMAT_HEAD[k]))
             else:
                 logging.warning('AWG: ' + k + ' not recognized as valid AWG setting')
-        #head_str.write(self._pack_record('EVENT_JUMP_MODE',2,'h'))
-        #head_str.write(self._pack_record('TABLE_JUMP_STROBE',1,'h'))
-        #head_str.write(self._pack_record('TABLE_JUMP_DEFINITION',[2,3],'ll'))
-        #'EVENT_JUMP_MODE'           :   'h',#EVENT JUMP | DYNAMIC JUMP
-        #'TABLE_JUMP_STROBE'         :   'h',#On
-        #'TABLE_JUMP_DEFINITION'     :   'l' #
+
         #channel settings
         ch_record_str = StringIO()
         for k in channel_cfg.keys():

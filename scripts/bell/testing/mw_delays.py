@@ -16,12 +16,12 @@ X = pulselib.MW_pulse('pulse',
             MW_channel='MW_Imod',
             PM_channel='MW_pulsemod',
             amplitude=0.9,
-            length = 200e-9,
+            length = 52e-9,
             PM_risetime = 10e-9)
 
 X2 = pulse.SquarePulse('MW_Imod','small_pulse',
-            amplitude=0.1,
-            length = 100e-9)
+            amplitude=0.2,
+            length = 200e-9)
 
 
 e=element.Element('Sinde', pulsar=qt.pulsar)

@@ -4,19 +4,20 @@ from analysis.lib.fitting import fit as fit
 from analysis.lib.fitting import fit,esr
 from numpy import array
 
-name_gen='ESR_SIL1_Hans_LT2'
-steps   = 71         #101
-mw_power = -6        #in dBm
-green_power = 10e-6  
-int_time = 50        # in ms
-reps = 10
-center_f_list =  [2.025,3.711]    # in GHz #Ms = -1 #Ms = +1
-range_f  =  0.050           # in GHz
+name_gen    ='ESR_SIL18_111_No1_LT'
+steps   = 101         #101
+mw_power = -10        #in dBm
+green_power = 30e-6  
+int_time = 100        # in ms
+reps = 20
+center_f_list =  [1.755, 4.005]    # in GHz #Ms = -1 #Ms = +1
+range_f  =  0.070           # in GHz
+
 
 f0 = [0,0]
 u_f0 = [0,0]
 #generate list of frequencies
-for ii in range(size(center_f_list)): # so that it runs twice
+for ii in range(size(center_f_list)):
     center_f = center_f_list[ii]
 
     f_list = linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
@@ -131,6 +132,5 @@ for ii in range(size(center_f_list)): # so that it runs twice
         B_field = (expected_Dgs-f0[0])/2.8
 
         print 'Calculated center frequency for ms = +1 is: ' +str(round(f0[1]*1e-3,5)) +'+/-' +str(round(u_f0[1]*1e-3,2))+ ' GHz'
-
-        print 'Calculated ground state splitting is: ' + str(round(expected_Dgs*1e-3,5)) +'+/-'+ str(round(error_Dgs,2))+ ' MHz'
+        print 'Calculated relative average is: ' + str(round(expected_Dgs - 2.87e3,2)) +' +/-'+ str(round(error_Dgs,2))+ ' MHz'
         print 'Calculated magnetic field is: ' + str(round(B_field,1)) + ' G'
