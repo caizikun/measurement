@@ -124,7 +124,7 @@ def tune(name):
     m.params['repetitions'] = 100000
 
     m.joint_params['RO_during_LDE']=0
-    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['opt_pi_pulses'] = 10
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.params['MW_during_LDE'] = 0
 
@@ -137,9 +137,9 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=10
     m.params['pts']=pts
-    m.params['repetitions'] = 150000
+    m.params['repetitions'] = 2000
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -175,7 +175,7 @@ def tail_sweep(name):
 
 
 
-    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
@@ -183,7 +183,7 @@ def echo_sweep(name):
 
     pts=21
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
@@ -220,7 +220,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 400
+    m.params['repetitions'] = 1500
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1

@@ -40,6 +40,7 @@ class QuTau(Instrument):
         self.add_function('freeze_buffers')
         self.add_function('start_write_timestamps')
         self.add_function('stop_write_timestamps')
+        self.add_function('get_countrate')
 
         self.add_function('close')
 
@@ -166,6 +167,8 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         return self.err_dict[ans]
 
+    def get_countrate():
+        return 0
 
     def switch_termination(self, on): #OK!
         """

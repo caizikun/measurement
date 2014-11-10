@@ -45,7 +45,7 @@ def pulse_defs_lt4(msmt):
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel='MW_Qmod', 
-                    amplitude = msmt.params['MW_pi2_amp']*msmt.params['MW_BellStateFactor'],
+                    amplitude = msmt.params['MW_pi2_amp']*msmt.params['MW_BellStateOffset'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
@@ -134,7 +134,7 @@ def pulse_defs_lt3(msmt):
                     MW_channel='MW_Imod',
                     PM_channel='MW_pulsemod',
                     second_MW_channel='MW_Qmod', 
-                    amplitude = msmt.params['MW_pi2_amp']*(2-msmt.params['MW_BellStateFactor']),
+                    amplitude = msmt.params['MW_pi2_amp']+msmt.params['MW_BellStateOffset'],
                     length = msmt.params['MW_pi2_duration'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
                     pi2_pulse = True)
