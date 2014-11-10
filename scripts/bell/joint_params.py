@@ -13,14 +13,13 @@ joint_params['RND_during_LDE'] = 1
 joint_params['do_echo'] = 1
 joint_params['do_final_MW_rotation'] = 1
 joint_params['wait_for_1st_revival'] = 0
-joint_params['BellStateFactor'] = 1
 
 joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 joint_params['LDE_element_length']     = 15.e-6 # 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 4e-6
 joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 
-joint_params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+joint_params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
 joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 joint_params['MIN_SYNC_BIN'] =       0
 joint_params['MAX_SYNC_BIN'] =       20000
