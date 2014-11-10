@@ -847,7 +847,7 @@ config['adwin_lt2_processes'] = {
                     ['threshold_majority_vote'     ,   0],
                     ['reps_majority_vote'          ,   1],
                     ['do_MBI'                      ,   0],
-                    
+
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1154,27 +1154,28 @@ config['adwin_lt2_processes'] = {
                     ['max_MBI_attempts'            ,   1],  #10
                     ['nr_of_ROsequences'           ,   1],  #11
                     ['wait_after_RO_pulse_duration',   3],  #12
-                    ['N_randomize_duration'        ,  50],  #13 
+                    ['N_randomize_duration'        ,  50],  #13
 
                     ['Nr_C13_init'                 ,  2],   #14
                     ['Nr_MBE'                      ,  1],   #15
                     ['Nr_parity_msmts'             ,  0],   #16
-                      #Thresholds 
+                      #Thresholds
                     ['MBI_threshold'               ,  1],   #17
-                    # ['C13_MBI_threshold'           ,  0],   #18 
-                    ['MBE_threshold'               ,  1],   #19 
-                    ['Parity_threshold'            ,  1],   #20 
-                    # Durations 
-                    ['C13_MBI_RO_duration'         , 30],   #21 
+                    # ['C13_MBI_threshold'           ,  0],   #18
+                    ['MBE_threshold'               ,  1],   #19
+                    ['Parity_threshold'            ,  1],   #20
+                    # Durations
+                    ['C13_MBI_RO_duration'         , 30],   #21
                     ['SP_duration_after_C13'       , 25],   #22
 
                     ['MBE_RO_duration'             ,  10],  #23
                     ['SP_duration_after_MBE'       ,  25],  #24
 
-                    ['Parity_RO_duration'          ,  10],  #25
+                    ['Parity_RO_duration'          ,  100],  #25
                     ['C13_MBI_RO_state'              ,  0 ],  #26
 
-                    ],# TODO_MAR: add to msmt params and make usefull in Adwin 
+                    ],
+
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
                 'params_float' : [
@@ -1183,7 +1184,7 @@ config['adwin_lt2_processes'] = {
                     ['Ex_N_randomize_voltage'       , 0.0], #3
                     ['A_N_randomize_voltage'        , 0.0], #4
                     ['repump_N_randomize_voltage'   , 0.0], #5
-                    ['E_C13_MBI_RO_voltage'         , 0.0], #6  
+                    ['E_C13_MBI_RO_voltage'         , 0.0], #6
                     ['E_SP_voltage_after_C13_MBI'   , 0.0], #7
                     ['A_SP_voltage_after_C13_MBI'   , 0.0], #8
 
@@ -1192,9 +1193,9 @@ config['adwin_lt2_processes'] = {
                     ['E_SP_voltage_after_MBE'     , 0e-9], #11
 
                     ['E_Parity_RO_voltage'        , 1e-9], #12
-                    
 
-                    # TODO_MAR: Add voltages for MBE and Parity 
+
+                    # TODO_MAR: Add voltages for MBE and Parity
 
 
                     ],
@@ -1460,7 +1461,7 @@ config['adwin_pro_processes'] = {
                 'cr_mod_activate'           : 67,
                 'cur_pos_scan_dac'          : 64,#0 do deactivate
                 'cr_per_pos_step'           : 65,
-                'activate_position_scan'    : 59,   
+                'activate_position_scan'    : 59,
                 },
             'fpar' : {
                 'repump_mod_err' : 78,
@@ -1509,7 +1510,7 @@ config['adwin_pro_processes'] = {
                     'atto_positions' : 16,
                     'scan_array' : 17,
                     }
-                },        
+                },
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
         # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
         # Not sure if this function is then needed. - Machiel 30-12-'13'
