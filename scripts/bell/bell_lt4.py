@@ -8,6 +8,7 @@ import inspect
 import qt
 import time
 from measurement.scripts.bell import check_awg_triggering as JitterChecker
+reload(JitterChecker)
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
@@ -255,15 +256,15 @@ def SP_lt3(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
-    ResetPlu = True   
+    DoJitterCheck = True
+    ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
 
     if DoJitterCheck:
-        jitterDetected = JitterChecker.do_jitter_test(False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ jitterDetected
+        jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
+        print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
     else: 
         jitterDetected = False
         print 'I will skip the jitter test.'
@@ -271,8 +272,8 @@ if __name__ == '__main__':
 
     if not(jitterDetected):
         #TPQI('run_test')
-        #full_bell('Debug')   
+        full_bell('FirstEverLFBT_Run9')   
         #SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
-        SP_lt3('SPCORR_lt3')
+        #SP_lt3('SPCORR_lt3')
         pass

@@ -110,6 +110,7 @@ def check_triggering():
 
 def do_jitter_test(resetAWG=False):
     if qt.current_setup=='lt4':
+        print 'Starting Jitter Test LT4, reset= ' + str(resetAWG)
         qt.instruments['AWG'].stop()
         lt3_helper = qt.instruments['lt3_helper']
         lt3_helper.set_is_running(False)
@@ -129,6 +130,7 @@ def do_jitter_test(resetAWG=False):
             jitterDetected=True
         else: jitterDetected =False
     else:
+        print 'Starting Jitter Test LT3, reset= ' + str(resetAWG)
         program_test_slave(reset=resetAWG)
         jitterDetected = check_triggering()
         qt.instruments['AWG'].stop()
@@ -136,5 +138,5 @@ def do_jitter_test(resetAWG=False):
 
 
 if __name__ == '__main__':
-    testResult=do_jitter_test(False)
+    testResult=do_jitter_test(resetAWG=False)
     print 'jitterDetected ', testResult

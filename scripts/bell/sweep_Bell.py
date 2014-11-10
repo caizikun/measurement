@@ -173,8 +173,6 @@ def tail_sweep(name):
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-
-
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
@@ -261,7 +259,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_Pippin') 
+    tail_sweep('tail_lt4_Hans1') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')
