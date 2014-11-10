@@ -69,41 +69,37 @@ if __name__ == '__main__':
 
     
     ## Carbon up and down
-    # NuclearT1(SAMPLE + 'up_positive_C1_elState0',carbon_state = 'up', 
-    #         electron_RO = 'positive', carbon = 1,
-    #         el_RO_result = 0,
-    #         el_after_init=0)
+    NuclearT1(SAMPLE + 'up_positive_C1_elState0',carbon_state = 'up', 
+            electron_RO = 'positive', carbon = 1,
+            el_RO_result = 0,
+            el_after_init=0)
 
-    # NuclearT1(SAMPLE + 'up_positive_C1_elState1',carbon_state = 'up', 
-    #         electron_RO = 'positive', carbon = 1,
-    #         el_RO_result = 0,
-    #         el_after_init=0)
-
-    # NuclearT1(SAMPLE + 'up_negative_C1',carbon_state = 'up', 
-    #     electron_RO = 'negative', carbon = 1,
-    #     el_RO_result = 0)
+    NuclearT1(SAMPLE + 'up_positive_C1_elState1',carbon_state = 'up', 
+            electron_RO = 'positive', carbon = 1,
+            el_RO_result = 0,
+            el_after_init=0)
 
     #######
     # List of consecutive measurements, planned for the night 20141104
     #######
     
-    C13_list = [1,5]
-    eRo_List = ['positive','negative']
-    el_init_list = [0,1]
-    timing_points_list = [[0.0006,0.05,11],[0.05,0.5,11],[0.5,1.0,6]]
+    # C13_list = [1,5]
+    # eRo_List = ['positive','negative']
+    # el_init_list = [0,1]
+    # timing_points_list = [[0.0006,0.05,11],[0.05,0.5,11],[0.5,1.0,6]]
 
 
-    for C in C13_list:
-        for t_list in timing_points_list:
-            for eRo in eRo_List:
-                for el_init in el_init_list:
-                    GreenAOM.set_power(10e-6)
-                    optimiz0r.optimize(dims=['x','y','z','x','y'])
-                    msmt_string = eRo + '_C'+ str(C) + '_el_state' +  str(el_init) + 'longestTime' + str(t_list[1])
-                    NuclearT1(SAMPLE + 'up_'+ msmt_string,carbon_state = 'up', 
-                        electron_RO = eRo, carbon = C,
-                        el_RO_result = 0,
-                        el_after_init=el_init,
-                        pts=t_list[2],
-                        short_time=t_list[0],
-                        long_time=t_list[1])
+    # for C in C13_list:
+    #     for t_list in timing_points_list:
+    #         for eRo in eRo_List:
+    #             for el_init in el_init_list:
+    #                 GreenAOM.set_power(10e-6)
+    #                 optimiz0r.optimize(dims=['x','y','z','x','y'])
+    #                 msmt_string = eRo + '_C'+ str(C) + '_el_state' +  str(el_init) + 'longestTime' + str(t_list[1])
+    #                 NuclearT1(SAMPLE + 'up_'+ msmt_string,carbon_state = 'up', 
+    #                     electron_RO = eRo, carbon = C,
+    #                     el_RO_result = 0,
+    #                     el_after_init=el_init,
+    #                     pts=t_list[2],
+    #                     short_time=t_list[0],
+    #                     long_time=t_list[1])

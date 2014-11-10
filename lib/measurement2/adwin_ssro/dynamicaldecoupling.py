@@ -591,14 +591,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if g.C_phases_after_gate[iC] ==None:
                         g.C_phases_after_gate[iC] = g.C_phases_before_gate[iC]
 
-            # elif g.Gate_type =='electron_repump':
-            #     for iC in range(len(g.C_phases_before_gate)):
-            #         if (g.C_phases_after_gate[iC]==None) and (g.C_phases_before_gate[iC] !=None):
-            #             if g.el_state_before_gate =='0':
-            #                 g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+g.elements_duration*C_freq_0[iC])%(2*np.pi)
-            #             elif g.el_state_before_gate=='1':
-            #                 print 'calculating repump correction for the electronic state in ms=-1'
-            #                 g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+(g.elements_duration-g.)*C_freq_0[iC])%(2*np.pi)
+            elif g.Gate_type =='electron_repump':
+                for iC in range(len(g.C_phases_before_gate)):
+                    if (g.C_phases_after_gate[iC]==None) and (g.C_phases_before_gate[iC] !=None):
+                        if g.el_state_before_gate =='0':
+                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+g.elements_duration*C_freq_0[iC])%(2*np.pi)
+                        elif g.el_state_before_gate=='1':
+                            print 'calculating repump correction for the electronic state in ms=-1'
+                            g.C_phases_after_gate[iC]=(g.C_phases_before_gate[iC]+(g.elements_duration-g.char_repump_time)*C_freq_0[iC])%(2*np.pi)
             
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
@@ -1179,7 +1179,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         power= Gate.repump_power
         duration= Gate.duration
 
-        repump_pulse=pulse.SquarePulse(channel='AOM_Newfocus', length=duration, name='electron_repump', amplitude=1.)
+        repump_pulse=pulse.SquarePulse(channel='AOM_Newfocus', length=duration-qt.pulsar.channels['AOM_Newfocus']['delay'], name='electron_repump', amplitude=1.)
         AOM_delay=pulse.SquarePulse(channel='AOM_Newfocus', length=qt.pulsar.channels['AOM_Newfocus']['delay'], name='wait_AOM_delay', amplitude=0.)
         
         e = element.Element('%s_electron_repump' %(Gate_type),  pulsar=qt.pulsar, global_time = True)
@@ -1192,6 +1192,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         #high=0.4, low=0.0, offset=0., delay=466e-9, active=True)
 
         #TODO for other functions in the DD class:
+        # - figure out what DELAY actually does when configuring the sequence for the AWG!! 
         # - add this gate type in track_and_calc_phase such that the phase get's accurately detected.
         # - add calculation for the repump power and put it into the generation of the marker trigger.
 
@@ -2681,6 +2682,144 @@ class NuclearT1(MBI_C13):
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
             gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
             ############
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+class NuclearT1_repumping(MBI_C13):
+
+    '''
+    This class generates the AWG sequence for a C13 T1 experiment under repetitive repumping of the electornic spin to ms=0.
+    1. MBI initialisation
+    2. Carbon initialisation 
+    3. Carbon T1 evolution under repetitive repumping to a desired NV spin-state (atm only ms=0 possible)
+    4. Carbon Z-Readout
+
+    Additionally offers the possibility to flip the electronic state to ms=-1 with a mw Pi pulse after repumping.
+    '''
+
+    mprefix = 'CarbonT1_repumping'
+
+    def generate_sequence(self, upload=True,debug=False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('CarbonT1_rep')
+
+
+        # set the output power of the repumping AOM to the desired 
+        #qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['A_SP_amplitude'],controller='sec'))
+        #
+        #########################################################################################################################
+        #TODO before running this sequence: 
+        # - check power assignment for AOM by the AWG (above)
+        # - check the validity of the while loop which reduces the numbe rof repump repetitions (exit condition ever fulfilled?)#
+        # - upload simple sequence and check the correct placement of the waiting times, repumping and electron pi pulses.
+        #########################################################################################################################
+
+
+        for pt in range(pts):
+
+            gate_seq = []
+
+
+            #####################################################
+            #####    Generating the sequence elements      ######
+            #####################################################
+            #Elements for the nitrogen and carbon initialisation
+
+
+            #omit the nitrogen initialization comepletely? Will this cause trouble with the ADWIN?
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+            gate_seq.extend(mbi_seq)
+
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'swap', pt =pt,
+                    addressed_carbon= self.params['Addressed_Carbon'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_RO_result = str(self.params['C13_MBI_RO_state']),
+                    el_after_init = str(self.params['el_after_init']))
+
+
+            gate_seq.extend(carbon_init_seq)
+
+            #########################################################
+            #Apply repumping scheme/ interleave with waiting gates! #
+            #########################################################
+
+
+            # This while statement reduces the repump repetitions until... 
+            # every repumping event will be interleaved by a wait time of at least 10 us.
+
+            while (self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait']-self.params['repetitive_SP_A_duration']*self.params['repump_repetitions']*1e-6)/self.params['repump_repetitions'] < 10e-6:
+                self.params['repump_repetitions']-=1 #decrement repump repetitions. Too much repumping for a decent spacing.
+
+            
+            #wait_time between every repumping cycle, if additional e- gate, subtract that time as well.
+            cycle_wait = (self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait']-self.params['repetitive_SP_A_duration']*(self.params['repump_repetitions']+1)*1e-6)/self.params['repump_repetitions']
+
+            electron_repump_seq=[]
+
+
+            C_rep_pump=Gate('C_rep_pump'+str(pt),'electron_repump',
+                duration=self.params['repetitive_SP_A_duration'], #needs to be in us?? or in s??
+                )
+            C_rep_Pi=Gate('C_rep_pi'+str(pt),'electron_Gate',
+                Gate_operation='pi') 
+
+            # if additional e- gate, subtract that time as well.
+            if self.params['el_after_init'] == 1:
+                cycle_wait = cycle_wait-C_rep_Pi.duration
+
+
+            C_rep_wait=Gate('C_rep_wait'+str(pt),'passive_elt',
+                wait_time=cycle_wait)
+
+            for i in range(self.params['repump_repetitions'][pt]):
+                if i==0:
+                        electron_repumpseq.extend([C_rep_wait])
+                else:
+                    if self.params['el_after_init']==1: #pi pulse to ms = -1
+                        electron_repump_seq.extend([C_rep_wait,C_rep_Pi,C_rep_pump])
+                    else:
+                        electron_repump_seq.extend([C_rep_wait,C_rep_pump])
+
+            gate_seq.extend(electron_repump_seq)
+
+
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                    wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])  
+
+            ###########################
+            # Readout  in the Z basis #
+            ###########################
+
+
+            carbon_RO_seq = self.readout_carbon_sequence(self,
+                    pt=pt,
+                    addressed_carbon=[self.params['Addressed_Carbon']],
+                    RO_basis_list = ['Z'],
+                    RO_trigger_duration = 10e-6 #is this a good value? Always used in TOMO measurements. Norbert
+                    go_to_element = None,
+                    event_jump_element = None,
+                    readout_orientation = self.params['electron_readout_orientation'])
+            
+            gate_seq.extend(carbon_RO_seq)
+
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
             #Convert elements to AWG sequence and add to combined list
