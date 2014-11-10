@@ -19,7 +19,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearRamseyWithInitialization(name, 
-        carbon_nr           = 2,               
+        carbon_nr           = 5,               
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         debug               = False):
@@ -39,7 +39,7 @@ def NuclearRamseyWithInitialization(name,
     ####################################
     
         # 1A - Rotating frame with detuning
-    detuning = 0.5e3
+    detuning = 2e3
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])

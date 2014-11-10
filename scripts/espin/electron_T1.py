@@ -17,7 +17,7 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def T1(name):
+def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
 
     m = pulsar_msmt.ElectronT1(name)
 
@@ -34,13 +34,7 @@ def T1(name):
     m.params['T1_readout_state'] = 'ms=0' #currently 'ms=0' or 'ms=-1'
     m.params['wait_times'] =  np.linspace(0,1e3,6) #in us, values must be divisible by the repeat element
     m.params['wait_time_repeat_element'] = 100      #in us, this element is repeated to create the wait times
-    m.params['repetitions'] = 100
-
-        #Spin pumping and readout
-    #m.params['SP_duration'] = 250
-    #m.params['Ex_RO_amplitude'] = 8e-9 #10e-9
-    #m.params['A_SP_amplitude'] = 40e-9
-    #m.params['Ex_SP_amplitude'] = 0.
+    m.params['repetitions'] = 500
 
         #Plot parameters
     m.params['sweep_name'] = 'Times (ms)'
@@ -57,9 +51,14 @@ def T1(name):
 
     '''generate sequence'''
     m.generate_sequence(upload=True)
-    m.run()
-    m.save('ms0')
-    m.finish()
+    #m.run()
+    #m.save('ms0')
+    #m.finish()
 
 if __name__ == '__main__':
-    T1(SAMPLE+'_'+'')
+    
+
+    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
+    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=0', T1_readout_state = 'ms=-1')
+    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')
+    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')

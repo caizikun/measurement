@@ -172,23 +172,23 @@ cfg['samples']['111_1_sil18'] = {
     ###########################################
 
 'C1_freq'       :   450.153e3,   
-'C1_freq_0'     :   431.900e3, #2 Hz uncertainty   
-'C1_freq_1'     :   469.175e3,           
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-13.6] +[35.1]+[0]*2+[67.7]+ 4*[0]),
+'C1_freq_0'     :   431.943e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.010e3,           
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-16.7] +[33.2]+[0]*2+[63.0]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [34],
 
 'C5_freq'       :   419.594e3,   
-'C5_freq_0'     :   431.900e3,  
-'C5_freq_1'     :   408.118e3,           
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[87.4]+[101.4]+[0]*2+[2.0]+[0]*4), 
+'C5_freq_0'     :   431.943e3,  
+'C5_freq_1'     :   408.298e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[89.5]+[97.4]+[0]*2+[-2.6]+[0]*4), 
 'C5_Ren_tau'    :   [8.926e-6],
 'C5_Ren_N'      :   [38],
 
 'C2_freq'       :   422.415e3,   
-'C2_freq_0'     :   431.900e3,  
-'C2_freq_1'     :   413.629e3,           
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[44.9]+[29.0]+[0]*2+[69.7]+[0]*4), 
+'C2_freq_0'     :   431.943e3,  
+'C2_freq_1'     :   413.461e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[46.3]+[20.1]+[0]*2+[65.0]+[0]*4), 
 'C2_Ren_tau'    :   [10.058e-6],
 'C2_Ren_N'      :   [18]
 }

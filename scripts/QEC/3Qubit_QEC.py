@@ -25,7 +25,7 @@ def MBE(name, carbon_list   = [1,5,2],
         parity_msmnts_threshold = 1, 
 
         el_RO               = 'positive',
-        debug               = False,
+        debug               = True,
         Tomo_bases          = ['Z','-Y','Z']):
 
     m = DD.Three_QB_QEC(name)

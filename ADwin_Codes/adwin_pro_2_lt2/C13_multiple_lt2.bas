@@ -161,7 +161,7 @@ INIT:
 
   MBI_threshold                = DATA_20[17]
   MBE_threshold                = DATA_20[18] 
-  Parity_threshold             = DATA_20[19] 
+  Parity_threshold             = DATA_20[19] ' Not used! remove? THT, JC
  
   C13_MBI_RO_duration          = DATA_20[20]
   SP_duration_after_C13        = DATA_20[21]
