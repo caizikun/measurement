@@ -2725,7 +2725,7 @@ class NuclearT1_repumping(MBI_C13):
         #########################################################################################################################
         #TODO before running this sequence: 
         # - check power assignment for AOM by the AWG (above)
-        # - check the validity of the while loop which reduces the numbe rof repump repetitions (exit condition ever fulfilled?)#
+        # - check the validity of the while loop which reduces the number of repump repetitions (exit condition ever fulfilled?)#
         # - upload simple sequence and check the correct placement of the waiting times, repumping and electron pi pulses.
         #########################################################################################################################
 

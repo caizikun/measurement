@@ -37,10 +37,10 @@ def T1(name):
     m.params['repetitions'] = 100
 
         #Spin pumping and readout
-    #m.params['SP_duration'] = 250
-    #m.params['Ex_RO_amplitude'] = 8e-9 #10e-9
-    #m.params['A_SP_amplitude'] = 40e-9
-    #m.params['Ex_SP_amplitude'] = 0.
+    m.params['SP_duration'] = 250
+    m.params['Ex_RO_amplitude'] = 8e-9 #10e-9
+    m.params['A_SP_amplitude'] = 40e-9
+    m.params['Ex_SP_amplitude'] = 0.
 
         #Plot parameters
     m.params['sweep_name'] = 'Times (ms)'
@@ -50,7 +50,7 @@ def T1(name):
         #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
 
-    m.autoconfig()
+    # m.autoconfig()
 
     print 'initial_state: ' + m.params['T1_initial_state']
     print 'readout_state: ' + m.params['T1_readout_state']
@@ -58,8 +58,8 @@ def T1(name):
     '''generate sequence'''
     m.generate_sequence(upload=True)
     m.run()
-    m.save('ms0')
+    m.save('ms=0')
     m.finish()
 
 if __name__ == '__main__':
-    T1(SAMPLE+'_'+'')
+    T1('SAMPLE'+'_'+'')
