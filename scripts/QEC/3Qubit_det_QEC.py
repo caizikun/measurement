@@ -11,22 +11,21 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def MBE(name, carbon_list   = [1,5,2],               
         
-        carbon_init_list        = [2,5,1],
-        carbon_init_states      = 3*['up'], 
-        carbon_init_methods     = 3*['swap'], 
-        carbon_init_thresholds  = 3*[0],  
+        carbon_init_list              = [2,5,1],
+        carbon_init_states            = 3*['up'], 
+        carbon_init_methods           = 3*['swap'], 
+        carbon_init_thresholds        = 3*[0],  
 
-        number_of_MBE_steps        = 1,
-        logic_state                = 'X',
-        mbe_bases                  = ['Y','Y','Y'],
-        MBE_threshold               = 1,
-        RO_C                        = 1,
+        number_of_MBE_steps           = 1,
+        logic_state                   = 'Y',
+        mbe_bases                     = ['Y','Y','Y'],
+        MBE_threshold                 = 1,
+        RO_C                          = 1,
 
-        number_of_parity_msmnts = 2,
+        number_of_parity_msmnts       = 2,
 
-        el_RO_0               = 'positive',
-        el_RO_1               = 'negative',
-        debug                 = False):
+        el_RO                         = 'positive',
+        debug                         = True):
 
     m = DD.Three_QB_det_QEC(name)
     funcs.prepare(m)
@@ -149,20 +148,17 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['sweep_pts']           = error_probability_list
 
     ### RO params
-    m.params['electron_readout_orientation_00'] = el_RO_0
-    m.params['electron_readout_orientation_10'] = el_RO_0
-    m.params['electron_readout_orientation_01'] = el_RO_1
-    m.params['electron_readout_orientation_11'] = el_RO_1  
+    m.params['electron_readout_orientation'] = el_RO
     
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive_1',RO_C = 1, el_RO_0 = 'positive',el_RO_1 = 'negative')
-    # MBE(SAMPLE + 'negative_1',RO_C = 1, el_RO_0 = 'negative',el_RO_1 = 'positive')
+    MBE(SAMPLE + 'positive_1',RO_C = 1, el_RO = 'positive')
+    MBE(SAMPLE + 'negative_1',RO_C = 1, el_RO = 'negative')
 
-    # MBE(SAMPLE + 'positive_2',RO_C = 2, el_RO_0 = 'positive',el_RO_1 = 'negative')
-    # MBE(SAMPLE + 'negative_2',RO_C = 2, el_RO_0 = 'negative',el_RO_1 = 'positive')
+    # MBE(SAMPLE + 'positive_2',RO_C = 2, el_RO = 'positive')
+    # MBE(SAMPLE + 'negative_2',RO_C = 2, el_RO = 'negative')
 
-    # MBE(SAMPLE + 'positive_3',RO_C = 3, el_RO_0 = 'positive',el_RO_1 = 'negative')
-    # MBE(SAMPLE + 'negative_3',RO_C = 3, el_RO_0 = 'negative',el_RO_1 = 'positive')
+    # MBE(SAMPLE + 'positive_3',RO_C = 3, el_RO = 'positive')
+    # MBE(SAMPLE + 'negative_3',RO_C = 3, el_RO = 'negative')

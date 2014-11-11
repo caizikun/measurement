@@ -2175,7 +2175,8 @@ class MBI_C13(DynamicalDecoupling):
         RO_trigger_duration = 116e-6,
         el_RO_result         = '0',
         go_to_element       = 'next', event_jump_element = 'next',
-        readout_orientation = 'positive'):
+        readout_orientation = 'positive',
+        el_state_in     = 0):
 
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
@@ -2233,13 +2234,16 @@ class MBI_C13(DynamicalDecoupling):
                     RO_phase = self.params['C13_X_phase']
                 elif RO_basis_list[kk] == '-X':
                     RO_phase = self.params['C13_X_phase']+180
-                elif RO_basis_list[kk] == 'Y' or RO_basis_list[kk] == '-Z':
+                elif RO_basis_list[kk] == 'Y':
                     RO_phase = self.params['C13_Y_phase']
-                elif RO_basis_list[kk] == '-Y' or RO_basis_list[kk] == 'Z':
+                elif RO_basis_list[kk] == '-Y':
                     RO_phase = self.params['C13_Y_phase']+180
+                elif RO_basis_list[kk] == '-Z':
+                    RO_phase = np.mod(self.params['C13_Y_phase']+180*el_state_in,360)
+                elif RO_basis_list[kk] == 'Z':
+                    RO_phase = np.mod(self.params['C13_Y_phase']+180*(1-el_state_in),360)
                 else:
                     RO_phase = RO_basis_list[kk] 
-
 
                 carbon_RO_seq.append(
                         Gate(prefix + str(carbon_nr) + '_Ren_b_' + str(pt), 'Carbon_Gate',
@@ -2253,12 +2257,13 @@ class MBI_C13(DynamicalDecoupling):
         
         print Final_pi2_pulse_phase
        
-        if readout_orientation == 'positive':
+        if (readout_orientation == 'positive' and el_state_in == 0) or (readout_orientation == 'negative' and el_state_in == 1):
             carbon_RO_seq.append(
                     Gate(prefix+'_pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = Final_pi2_pulse_phase))
-        elif readout_orientation == 'negative':
+        
+        elif (readout_orientation == 'negative' and el_state_in == 0) or (readout_orientation == 'positive' and el_state_in == 1):
             carbon_RO_seq.append(
                     Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                     Gate_operation='pi2',
@@ -2462,46 +2467,62 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('E_Ramsey_withC13Init')
 
+
+
+        #Define the necessary pulses for the ramsey sequence
+
+        X = pulselib.MW_IQmod_pulse('Pi_2-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod',
+            frequency = self.params['fast_pi2_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            length = self.params['fast_pi2_duration'],
+            amplitude = self.params['fast_pi2_amp'])
+
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 20e-6,
+            amplitude = 2)
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+        T_us = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 1000e-9, amplitude = 0.)
+
+        
+        #this is used to read-out the electron upside-down.
+
+        if self.params['electron_readout_orientation']=='negative':
+            extra_phase=180
+        else:
+            extra_phase=0
+
         for pt in range(pts):
 
             #####################################################
             #####    Generating the sequence elements      ######
             #####################################################
             #Elements for the nitrogen and carbon initialisation
-
-            mbi=Gate('MBI_'+str(pt),'MBI')
-            mbi_seq=[mbi]
-
-            
-            #Carbon initialization
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     initialization_method = 'swap', pt =pt,
                     addressed_carbon= self.params['Addressed_Carbon'],
                     C_init_state = self.params['C13_init_state'],
-                    el_RO_result = str(self.params['C13_MBI_RO_state']),
-                    el_after_init = '0')
+                    el_RO_result = str(self.params['C13_MBI_RO_state']))
 
-            E_Ram_1 = Gate('C_Ram_1_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['pi2_phases1'][pt])
+            #This element is needed for hard coding the remaining part of the sequence into the AWG
+            #And for having the function combine_to_AWG_sequence work.
 
-            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                    wait_time = self.params['wait_times'][pt])
+            wait_gate = Gate('Wait_gate','passive_elt',
+                    wait_time = 5e-6)
 
-            E_Ram_2 = Gate('C_Ram_2_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['pi2_phases2'][pt])            
-
-            E_RO_Trigger = Gate('E_RO_Trigger_'+str(pt),'Trigger')
-
-            Ramsey_seq=[E_Ram_1,wait_gate,E_Ram_2,E_RO_Trigger]
-
+            C_evol_seq =[wait_gate]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
             gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
-            gate_seq.extend(Ramsey_seq)
+            gate_seq.extend(C_evol_seq)
             ############
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
@@ -2509,8 +2530,60 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
 
+            ############################################
+            #       Create the ramsey sequence         #
+            ############################################
+
+            elements=[]
+            e = element.Element('ElectronRamsey_pt-%d' % pt, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            e.append(pulse.cp(X, phase = 0.0))
+
+            if (self.params['wait_times'][pt]>1e-6):
+
+                elements.append(e)
+                seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+                e = element.Element('ElectronRamsey_wait_pt-%d' % pt, pulsar=qt.pulsar,
+                    global_time = True)
+
+                e.append(T_us)
+                N=int(self.params['wait_times'][pt]*1e6)
+                seq.append(name=e.name, wfname=e.name, trigger_wait=False,repetitions=N)
+
+                #I would think this pulse should be in the next element! - Machiel
+                e.append(pulse.cp(T,
+                    length = self.params['wait_times'][pt]-(N*1e-6)))
+                elements.append(e)
+                e = element.Element('ElectronRamsey_second_pi2_pt-%d' % pt, pulsar=qt.pulsar,
+                global_time = True)
+
+            else:
+                e.append(pulse.cp(T,
+                    length = self.params['wait_times'][pt]))
+
+            e.append(pulse.cp(X,
+                phase = self.params['pi2_phases2'][pt]+extra_phase))
+
+            e.append(T)
+            e.append(T)
+            e.append(T)
+            e.append(T)
+            e.append(adwin_sync)
+            elements.append(e)
+
+
+
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
+            
+            # combine carbon_init with ramsey sequence
+
+            for el in elements:
+                combined_list_of_elements.append(el)
+                combined_seq.append(name=el.name, wfname=el.name, trigger_wait=True)
 
         if upload:
             print ' uploading sequence'
@@ -3546,7 +3619,8 @@ class Three_QB_det_QEC(MBI_C13):
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
-                        readout_orientation = 'positive')
+                        readout_orientation = 'positive',
+                        el_state_in     = 0)
 
             Parity_seq_b1 = self.readout_carbon_sequence(
                         prefix              = 'Parity_B1_' ,
@@ -3555,7 +3629,8 @@ class Three_QB_det_QEC(MBI_C13):
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
-                        readout_orientation = 'negative')                                
+                        readout_orientation = 'positive',
+                        el_state_in     = 1)                                
 
             gate_seq0.extend(Parity_seq_b0)
             gate_seq1.extend(Parity_seq_b1)
@@ -3573,7 +3648,8 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_00'],
-                    readout_orientation = self.params['electron_readout_orientation_00'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in     = 0)
             
             gate_seq00.extend(carbon_tomo_seq00)
 
@@ -3585,7 +3661,8 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_01'],
-                    readout_orientation = self.params['electron_readout_orientation_01'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in     = 1)
             gate_seq01.extend(carbon_tomo_seq01)
 
             carbon_tomo_seq10 = self.readout_carbon_sequence(
@@ -3596,7 +3673,8 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_10'],
-                    readout_orientation = self.params['electron_readout_orientation_10'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in     = 0)
             gate_seq10.extend(carbon_tomo_seq10)
 
             carbon_tomo_seq11 = self.readout_carbon_sequence(
@@ -3607,7 +3685,9 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_11'],
-                    readout_orientation = self.params['electron_readout_orientation_11'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in     = 1)
+
             gate_seq11.extend(carbon_tomo_seq11)
 
             # Make jump statements for branching to two different ROs
