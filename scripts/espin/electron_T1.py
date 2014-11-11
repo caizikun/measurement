@@ -30,9 +30,9 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
 
     '''set experimental parameters'''
         #T1 experiment
-    m.params['T1_initial_state'] = 'ms=0' #currently 'ms=0' or 'ms=-1'
-    m.params['T1_readout_state'] = 'ms=0' #currently 'ms=0' or 'ms=-1'
-    m.params['wait_times'] =  np.linspace(0,1e3,6) #in us, values must be divisible by the repeat element
+    m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
+    m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
+    m.params['wait_times'] =  np.linspace(100,1.5e6,16) #in us, values must be divisible by the repeat element
     m.params['wait_time_repeat_element'] = 100      #in us, this element is repeated to create the wait times
     m.params['repetitions'] = 500
 
@@ -48,17 +48,17 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
 
     print 'initial_state: ' + m.params['T1_initial_state']
     print 'readout_state: ' + m.params['T1_readout_state']
-
+    print m.params['sweep_pts']
     '''generate sequence'''
     m.generate_sequence(upload=True)
-    #m.run()
-    #m.save('ms0')
-    #m.finish()
+    m.run()
+    m.save()
+    m.finish()
 
 if __name__ == '__main__':
     
 
-    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
-    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=0', T1_readout_state = 'ms=-1')
-    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')
-    T1(SAMPLE+'_'+'', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')
+    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
+    T1(SAMPLE+'_'+'init_0_RO_-1', T1_initial_state = 'ms=0', T1_readout_state = 'ms=-1')
+    T1(SAMPLE+'_'+'init_-1_RO_0', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')
+    T1(SAMPLE+'_'+'init_-1_RO_-1', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=-1')

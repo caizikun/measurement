@@ -426,8 +426,8 @@ class ElectronT1(PulsarMeasurement):
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_modulation_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi2_duration'],
-            amplitude = self.params['fast_pi2_amp'])
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'])
         # Wait-times
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)

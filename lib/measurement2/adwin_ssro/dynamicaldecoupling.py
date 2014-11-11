@@ -2329,7 +2329,7 @@ class MBI_C13(DynamicalDecoupling):
         go_to_element       = 'next', 
         event_jump_element = 'next',
         readout_orientation = 'positive',
-        phase_error         = 0):
+        phase_error         = [0,0,0]):
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
         '''
@@ -2406,13 +2406,13 @@ class MBI_C13(DynamicalDecoupling):
                
                 ### Determine the RO_phase
                 if RO_basis_list[kk] == 'X':
-                    RO_phase = self.params['C13_X_phase']+phase_error
+                    RO_phase = self.params['C13_X_phase']+phase_error[kk]
                 elif RO_basis_list[kk] == '-X':
-                    RO_phase = self.params['C13_X_phase']+180+phase_error
+                    RO_phase = self.params['C13_X_phase']+180+phase_error[kk]
                 elif RO_basis_list[kk] == 'Y' or RO_basis_list[kk] == '-Z':
-                    RO_phase = self.params['C13_Y_phase']+phase_error
+                    RO_phase = self.params['C13_Y_phase']+phase_error[kk]
                 elif RO_basis_list[kk] == '-Y' or RO_basis_list[kk] == 'Z':
-                    RO_phase = self.params['C13_Y_phase']+180+phase_error
+                    RO_phase = self.params['C13_Y_phase']+180+phase_error[kk]
                 else:
                     RO_phase = RO_basis_list[kk] 
                 
@@ -3442,7 +3442,7 @@ class Three_QB_det_QEC(MBI_C13):
                         go_to_element       = mbi, 
                         event_jump_element   = 'next',
                         readout_orientation = 'positive',
-                        phase_error         = self.params['phase_error'][pt])           
+                        phase_error         = self.params['phase_error_array'][pt])           
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
@@ -3555,13 +3555,17 @@ class Three_QB_det_QEC(MBI_C13):
             ### Generate the AWG_elements, including all the phase gates for all branches###
             ################################################################
 
-            gate_seq0[len(gate_seq)-1].el_state_before_gate =  '0' #Element -1, because MBI was added in generate AWG elements
-            
+            gate_seq0[len(gate_seq)-1].el_state_before_gate =  '0' #Element -1
+
+            gate_seq00[len(gate_seq)-1].el_state_before_gate =  '0' #Element -1
+            gate_seq01[len(gate_seq)-1].el_state_before_gate =  '0' #Element -1
             gate_seq00[len(gate_seq0)-1].el_state_before_gate = '0' #Element -1
             gate_seq01[len(gate_seq0)-1].el_state_before_gate = '1' #Element -1
             
-            gate_seq1[len(gate_seq)-1].el_state_before_gate =  '1' #Element -1, because MBI was added in generate AWG elements
-            
+            gate_seq1[len(gate_seq)-1].el_state_before_gate =  '1' #Element -1
+
+            gate_seq10[len(gate_seq)-1].el_state_before_gate =  '1' #Element -1
+            gate_seq11[len(gate_seq)-1].el_state_before_gate =  '1' #Element -1
             gate_seq10[len(gate_seq1)-1].el_state_before_gate = '0' #Element -1
             gate_seq11[len(gate_seq1)-1].el_state_before_gate = '1' #Element -1
 
@@ -3595,26 +3599,29 @@ class Three_QB_det_QEC(MBI_C13):
                     print '                        el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
                 elif debug:
                     print 'does not have attribute el_state_before_gate'
+
+
                 if  debug==True:
-                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
-                        print "                        [ None , None ]"
-                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
-                        print "                        [ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
-                        print "                        [ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "                        [ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
-
-
-                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
-                        print "                        [ None , None ]"
-                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
-                        print "                        [ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
-                        print "                        [ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "                        [ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
-
+                    phase_Q1 = g.C_phases_before_gate[self.params['carbon_list'][0]]
+                    if phase_Q1 != None:
+                        phase_Q1 = np.round(phase_Q1/np.pi*180,decimals = 1)
+                    phase_Q2 = g.C_phases_before_gate[self.params['carbon_list'][1]]
+                    if phase_Q2 != None:
+                        phase_Q2 = np.round(phase_Q2/np.pi*180,decimals = 1)
+                    phase_Q3 = g.C_phases_before_gate[self.params['carbon_list'][2]]
+                    if phase_Q3 != None:
+                        phase_Q3 = np.round(phase_Q3/np.pi*180,decimals = 1)                        
+                        print '                        '+ str(phase_Q1)+ '   '+ str(phase_Q2)+ '   ' +str(phase_Q3)
+                    phase_Q1 = g.C_phases_after_gate[self.params['carbon_list'][0]]
+                    if phase_Q1 != None:
+                        phase_Q1 = np.round(phase_Q1/np.pi*180,decimals = 1)
+                    phase_Q2 = g.C_phases_after_gate[self.params['carbon_list'][1]]
+                    if phase_Q2 != None:
+                        phase_Q2 = np.round(phase_Q2/np.pi*180,decimals = 1)
+                    phase_Q3 = g.C_phases_after_gate[self.params['carbon_list'][2]]
+                    if phase_Q3 != None:
+                        phase_Q3 = np.round(phase_Q3/np.pi*180,decimals = 1)                        
+                        print '                        '+ str(phase_Q1)+ '   '+ str(phase_Q2)+ '   ' +str(phase_Q3)
 
             #Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(merged_sequence, explicit=True)
