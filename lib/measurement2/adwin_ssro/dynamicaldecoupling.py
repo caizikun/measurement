@@ -2442,6 +2442,83 @@ class MBI_C13(DynamicalDecoupling):
 
         return carbon_RO_seq
 ### Single Carbon initialization classes ###
+class ElectronRamseyWithNuclearInit(MBI_C13):
+    '''
+    This class generates the AWG sequence for a electronic ramsey experiment with previous carbon initialisation.
+    1. Nitrogen MBI initialisation
+    2. Carbon initialisation into +Z or -Z
+    3. Pi/2 pulse on the electronic state
+    4. Darktime of some us
+    5. Pi/2 pulse on the electronic state and read-out
+    '''
+
+    mprefix='E_Ramsey_withC13Init'
+    adwin_process='MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts= self.params['pts']
+
+        #initialize empty list of elements and sequence.
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('E_Ramsey_withC13Init')
+
+        for pt in range(pts):
+
+            #####################################################
+            #####    Generating the sequence elements      ######
+            #####################################################
+            #Elements for the nitrogen and carbon initialisation
+
+            mbi=Gate('MBI_'+str(pt),'MBI')
+            mbi_seq=[mbi]
+
+            
+            #Carbon initialization
+
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = 'swap', pt =pt,
+                    addressed_carbon= self.params['Addressed_Carbon'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_RO_result = str(self.params['C13_MBI_RO_state']),
+                    el_after_init = '0')
+
+            E_Ram_1 = Gate('C_Ram_1_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['pi2_phases1'][pt])
+
+            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                    wait_time = self.params['wait_times'][pt])
+
+            E_Ram_2 = Gate('C_Ram_2_'+str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = self.params['pi2_phases2'][pt])            
+
+            E_RO_Trigger = Gate('E_RO_Trigger_'+str(pt),'Trigger')
+
+            Ramsey_seq=[E_Ram_1,wait_gate,E_Ram_2,E_RO_Trigger]
+
+
+            # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
+            gate_seq = []
+            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+            gate_seq.extend(Ramsey_seq)
+            ############
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 
 class NuclearRamseyWithInitialization_v2(MBI_C13):
     '''
