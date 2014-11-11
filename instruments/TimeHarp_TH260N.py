@@ -517,7 +517,7 @@ class TimeHarp_TH260N(Instrument): #1
     def get_TTTR_Data(self,count = TTREADMAX):
         data = numpy.array(numpy.zeros(TTREADMAX), dtype = numpy.uint32)
         length = c_int(0)
-        success = self._TH260.TH260_ReadFiFo(self.DevIdx,data.ctypes.data,count, byref(length))
+        success = self._TH260.TH260_ReadFiFo(self.DevIdx, data.ctypes.data, count, byref(length))
         if success < 0:
             logging.warning(__name__ + ' : error in TH_ReadFiFo')
             self.get_ErrorString(success)

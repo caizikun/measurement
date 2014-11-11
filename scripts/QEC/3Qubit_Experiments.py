@@ -1,5 +1,6 @@
 import numpy as np
 import qt 
+import msvcrt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -9,15 +10,15 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [1,5,2],               
+def MBE(name, carbon_list   = [2,1,5],               
         
-        carbon_init_list        = [2,5,1],
+        carbon_init_list        = [5,1,2],
         carbon_init_states      = 3*['up'], 
         carbon_init_methods     = 3*['swap'], 
         carbon_init_thresholds  = 3*[0],  
 
         number_of_MBE_steps = 1,
-        logic_state         = 'Z',
+        logic_state         = 'X',
         mbe_bases           = ['Y','Y','Y'],
         MBE_threshold       = 1,
 
@@ -100,9 +101,11 @@ if __name__ == '__main__':
     Tomo_bases2 = ([['I','I','X'],['X','X','I'],['I','X','X'],['X','I','X']])
 
 
-    Tomo_bases = ([ ['X','I','I'],['Y','I','I'],['Z','I','I'],
+    Tomo_bases = ([
+            ['X','I','I'],['Y','I','I'],['Z','I','I'],
             ['I','X','I'],['I','Y','I'],['I','Z','I'],
             ['I','I','X'],['I','I','Y'],['I','I','Z'],
+
             ['X','X','I'],['X','Y','I'],['X','Z','I'],
             ['Y','X','I'],['Y','Y','I'],['Y','Z','I'],
             ['Z','X','I'],['Z','Y','I'],['Z','Z','I'],
@@ -131,10 +134,39 @@ if __name__ == '__main__':
     Tomo_bases_X = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Z'], ['Y','Z','Y'], ['Z','Y','Y'], ['Z','Z','Z']])
     Tomo_bases_Y = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Y'], ['Y','Z','Z'], ['Z','Y','Z'], ['Z','Z','Y']])
 
-    # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases1)
-    # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases1)
+    # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases_X)
+    # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases_X)
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive',Tomo_bases = Tomo_bases_Z)
-    MBE(SAMPLE + 'negative', el_RO= 'negative',Tomo_bases = Tomo_bases_Z)
+    for k in range(2):
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
 
+        for state in ['Z','mZ','X','mX','Y','mY']:
+            logic_state = state
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            for k in range(len(Tomo_bases)/7):
+                tomo = Tomo_bases[0+k*7:9+k*7]#Tomo_bases[0+k*7:7+k*7]
+                
+                MBE(SAMPLE +'_state_'+logic_state+'positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
+                MBE(SAMPLE +'_state_'+logic_state+'negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
+
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(10)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+            
+            stools.turn_off_all_lt2_lasers()
+            GreenAOM.set_power(10e-6)
+            optimiz0r.optimize(dims=['x','y','z'])
 

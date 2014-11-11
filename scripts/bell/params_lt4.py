@@ -60,7 +60,7 @@ params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espi
 params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['MW_BellStateFactor'] = joint_params.joint_params['BellStateFactor']
+params_lt4['MW_BellStateOffset'] = -0.0239 #2014-11-
 params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
 params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
@@ -70,7 +70,7 @@ params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_Npi4_amp']
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration']
 
 params_lt4['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
-params_lt4['echo_offset'] = 0e-9 #50 ns
+params_lt4['echo_offset'] = -75e-9 #50 ns
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
@@ -87,8 +87,8 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.58 #2014-10-30
-
+params_lt4['aom_amplitude']             = 0.694 #2014-11-09  CAREFUL: Fit might give % of max
+# maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

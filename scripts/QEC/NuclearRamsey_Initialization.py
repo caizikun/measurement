@@ -19,7 +19,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearRamseyWithInitialization(name, 
-        carbon_nr           = 2,               
+        carbon_nr           = 5,               
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         debug               = False):
@@ -39,19 +39,19 @@ def NuclearRamseyWithInitialization(name,
     ####################################
     
         # 1A - Rotating frame with detuning
-    # detuning = 5e3
-    # m.params['add_wait_gate'] = True
-    # m.params['pts'] = 21
-    # m.params['free_evolution_time'] = 350e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
-    # # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
+    detuning = 2e3
+    m.params['add_wait_gate'] = True
+    m.params['pts'] = 21
+    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
+    # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
-    # m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
-    # m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
-    # m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
+    m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
+    m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
+    m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
 
-    # m.params['sweep_name'] = 'free_evolution_time'
-    # m.params['sweep_pts']  = m.params['free_evolution_time']
+    m.params['sweep_name'] = 'free_evolution_time'
+    m.params['sweep_pts']  = m.params['free_evolution_time']
         
         ### 1B - Lab frame
     # m.params['pts'] = 41
@@ -64,13 +64,13 @@ def NuclearRamseyWithInitialization(name,
     ############################################
     ### Option 2; Sweep RO phase at set time ###
     ############################################
-    m.params['pts'] = 21
-    m.params['add_wait_gate'] = False
-    m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
-    m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
+    # m.params['pts'] = 21
+    # m.params['add_wait_gate'] = False
+    # m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
+    # m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
 
-    m.params['sweep_name'] = 'phase'
-    m.params['sweep_pts']  = m.params['C_RO_phase']
+    # m.params['sweep_name'] = 'phase'
+    # m.params['sweep_pts']  = m.params['C_RO_phase']
 
     '''Derived and fixed parameters'''
 
