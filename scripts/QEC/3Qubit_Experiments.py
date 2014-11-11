@@ -137,7 +137,7 @@ if __name__ == '__main__':
     # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases_X)
     # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases_X)
 
-    for k in range(2):
+    for k in range(1):
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
-        for state in ['Z','mZ','X','mX','Y','mY']:
+        for state in ['Z']:#,'mZ','X','mX','Y','mY']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
