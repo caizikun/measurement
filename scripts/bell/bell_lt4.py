@@ -110,13 +110,6 @@ class Bell_lt4(bell.Bell):
     def print_measurement_progress(self):
         pass
 
-    #def reset_plu(self):
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=1)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-
     def finish(self):
         bell.Bell.finish(self)
         self.add_file(inspect.getsourcefile(bseq))
@@ -143,10 +136,12 @@ def bell_lt4(name,
     if not(sequence_only):
         if measure_lt3:
             m.lt3_helper.set_is_running(False)
+            qt.msleep(0.5)
             m.lt3_helper.set_measurement_name(name)
             m.lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt3.py')
             m.lt3_helper.execute_script()
         if measure_bs:
+            m.bs_helper.set_is_running(False)
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
@@ -173,12 +168,12 @@ def bell_lt4(name,
     m.save()
 
     if measure_lt3:
-         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.lt3_helper.set_is_running(False)
     if measure_bs:
-        m.params['bs_data_path'] = m.bs_helper.get_data_path()
-
-    m.lt3_helper.set_is_running(False)
-    m.bs_helper.set_is_running(False)
+        m.bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()  
+    
     m.finish()
 
 
