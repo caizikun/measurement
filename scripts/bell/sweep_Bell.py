@@ -89,6 +89,7 @@ def _setup_params(msmt, setup):
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             msmt.params[k] = params_lt4.params_lt4[k]
+        msmt.params['MW_BellStateOffset'] = 0.0
         bseq.pulse_defs_lt4(msmt)
     elif setup == 'lt3' :
         import params_lt3
@@ -96,6 +97,7 @@ def _setup_params(msmt, setup):
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             msmt.params[k] = params_lt3.params_lt3[k]
+        msmt.params['MW_BellStateOffset'] = 0.0
         bseq.pulse_defs_lt3(msmt)
     else:
         print 'Sweep_bell: invalid setup:', setup
@@ -137,7 +139,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=10
+    pts=11
     m.params['pts']=pts
     m.params['repetitions'] = 2000
 
@@ -159,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(.3,1.,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(.3,1,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -179,7 +181,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=21
+    pts=7
     m.params['pts']=pts
     m.params['repetitions'] = 10000
     

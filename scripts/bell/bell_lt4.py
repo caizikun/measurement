@@ -177,6 +177,8 @@ def bell_lt4(name,
     if measure_bs:
         m.params['bs_data_path'] = m.bs_helper.get_data_path()
 
+    m.lt3_helper.set_is_running(False)
+    m.bs_helper.set_is_running(False)
     m.finish()
 
 
@@ -271,8 +273,9 @@ if __name__ == '__main__':
     
 
     if not(jitterDetected):
+        qt.msleep(1)
         #TPQI('run_test')
-        full_bell('FirstEverLFBT_Run9')   
+        full_bell('lhfbt_day3_run14')   
         #SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')

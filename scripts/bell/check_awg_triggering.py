@@ -85,7 +85,7 @@ def check_triggering():
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         if (peaks_width)>.5:
-            ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with reset=True'
+            ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
             jitterDetected=True
         else:
             ret=ret+'\n'+'No Jitter detected'
@@ -117,7 +117,7 @@ def do_jitter_test(resetAWG=False):
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
         lt3_helper.execute_script()
         program_test_master(reset=resetAWG)
-        qt.msleep(0.2)      
+        qt.msleep(2.2)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'
