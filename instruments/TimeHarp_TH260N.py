@@ -521,7 +521,7 @@ class TimeHarp_TH260N(Instrument): #1
         if success < 0:
             logging.warning(__name__ + ' : error in TH_ReadFiFo')
             self.get_ErrorString(success)
-        return length.value, data
+        return length.value, data[:length.value] # used to be data AR2014-11-14
         
         
     def set_MarkerEdgesRising(self,me0,me1,me2,me3):

@@ -89,18 +89,17 @@ class E_primer(Instrument):
         self.set_is_running(True)
         
         E_prime_0 = self._get_eprime_func()+self.get_offset()
-        #print 'E_prime_0 :', E_prime_0
+        print 'E_prime_0 :', E_prime_0
         self._F_E_0 = self._get_E_func()
         self._F_Y_0 = self._get_Y_func()
         
         ms0_level=2 if self.get_E_y() else 3
         #print 'ms0_level :', ms0_level
         #print 'Ex : ', self._F_E_0
-        Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=0.11) #XXXX 0.01
-        #print Ey,Ex
+        Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=0.01) 
         self._strain_split_0 = Ex-Ey
         self._strain_splitting = Ex-Ey
-        print E_prime_0, self._F_E_0
+        print 'Values taken for calculation :', E_prime_0, self._F_E_0
         print 'strain splitting: {:.2f}, (Ex, Ey) = ({:.2f},{:.2f})'.format(self._strain_splitting, Ex, Ey)
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
             self._optimize)
