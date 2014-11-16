@@ -63,8 +63,8 @@ if __name__ == '__main__':
     only_fine = False
 
         ### for the first coarse step
-    init_range   = 12     #Common: 10 MHz
-    init_pts     = 121    #Common: 121
+    init_range   = 13     #Common: 10 MHz
+    init_pts     = 131    #Common: 121
     init_reps    = 500   #Common: 500
 
         ### for the remainder of the steps
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
     # do the fitting, returns in MHz, input in GHz
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
-            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+        qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
     # start to list all the measured values

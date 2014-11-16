@@ -25,7 +25,7 @@ def MBE(name, carbon_list   = [1,5],
 
         el_RO_0               = 'positive',
         el_RO_1               = 'negative',
-        debug                 = False):
+        debug                 = True):
 
     m = DD.Two_QB_Det_MBE(name)
     funcs.prepare(m)
@@ -70,13 +70,15 @@ def MBE(name, carbon_list   = [1,5],
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
-    m.params['Tomography Bases_1'] = ([
-            ['-X','X'],['-X','Y'],['-X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['-Z','X'],['-Z','Y'],['-Z','Z']])
+    m.params['Tomography Bases_1'] = ([['-X','X']])
+    # ([
+    #         ['-X','X'],['-X','Y'],['-X','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z'],
+    #         ['-Z','X'],['-Z','Y'],['-Z','Z']])
 
 
-    # m.params['Tomography Bases_0'] = ([
+    m.params['Tomography Bases_0'] = m.params['Tomography Bases_1'] 
+     # = ([
     #         ['X','I'],['Y','I'],['Z','I'],
     #         ['I','X'],['I','Y'],['I','Z']])
 

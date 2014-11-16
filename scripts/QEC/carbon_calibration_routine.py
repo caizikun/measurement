@@ -43,7 +43,7 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
-    m.params['free_evolution_time'] = 350e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
+    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
@@ -83,10 +83,10 @@ def NuclearRamseyWithInitialization_phase(name,
     m.params['C13_MBI_RO_state'] = el_state
     
     
-    m.params['pts'] = 21
+    m.params['pts'] = 24
     m.params['add_wait_gate'] = False
     m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
-    m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
+    m.params['C_RO_phase'] = np.linspace(-60, 400,m.params['pts'])    
 
     m.params['sweep_name'] = 'phase'
     m.params['sweep_pts']  = m.params['C_RO_phase']
@@ -151,19 +151,19 @@ qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C1
 qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 
 
-detuning = 0.5e3
+detuning = 0.44e3
 # measure
 NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C1', carbon_nr= 1, detuning = detuning, el_state = 1)
 # fit
 f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
-              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
               frequency = detuning, phase =0, 
               plot_fit = True, show_guess = False,fixed = [2,3,4],            
               return_freq = True,
               return_results = False,
               title = 'msm1_freq_C1')
 #update
-qt.exp_params['samples']['111_1_sil18']['C1_freq_1'] += f0 - detuning
+qt.exp_params['samples']['111_1_sil18']['C1_freq_1'] += -f0 + detuning
 print 'C1_freq_1'
 print qt.exp_params['samples']['111_1_sil18']['C1_freq_1']
 
@@ -180,14 +180,14 @@ if n == 1:
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C2', carbon_nr= 2, detuning = detuning, el_state = 1)
 	# fit
 	f0,uf0 = cr.Carbon_Ramsey(timestamp=None, 
-	              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+	              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
 	              frequency = detuning, phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,
 	              title = 'msm1_freq_C2')
 	#update
-	qt.exp_params['samples']['111_1_sil18']['C2_freq_1'] += f0 - detuning
+	qt.exp_params['samples']['111_1_sil18']['C2_freq_1'] += -f0 + detuning
 	print 'C2_freq_1'
 	print qt.exp_params['samples']['111_1_sil18']['C2_freq_1']
 	print '--------------------------------'
@@ -202,14 +202,14 @@ if n == 1:
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C5', carbon_nr= 5, detuning = detuning, el_state = 1)
 	# fit
 	f0,uf0 = cr.Carbon_Ramsey(timestamp=None, 
-	              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+	              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
 	              frequency = detuning, phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,
 	              title = 'msm1_freq_C5')
 	#update
-	qt.exp_params['samples']['111_1_sil18']['C5_freq_1'] += f0 - detuning
+	qt.exp_params['samples']['111_1_sil18']['C5_freq_1'] += -f0 + detuning
 	print 'C5_freq_1'
 	print qt.exp_params['samples']['111_1_sil18']['C5_freq_1']
 	print '--------------------------------'
@@ -240,9 +240,9 @@ if n == 1:
 	              return_results = False,
 	              title = 'msm0_freq')
 	#update
-	qt.exp_params['samples']['111_1_sil18']['C1_freq_0'] += f0 - detuning
-	qt.exp_params['samples']['111_1_sil18']['C2_freq_0'] += f0 - detuning
-	qt.exp_params['samples']['111_1_sil18']['C5_freq_0'] += f0 - detuning
+	qt.exp_params['samples']['111_1_sil18']['C1_freq_0'] += -f0 + detuning
+	qt.exp_params['samples']['111_1_sil18']['C2_freq_0'] += -f0 + detuning
+	qt.exp_params['samples']['111_1_sil18']['C5_freq_0'] += -f0 + detuning
 	print 'C_freq_0'
 	print qt.exp_params['samples']['111_1_sil18']['C1_freq_0']
 	print '--------------------------------'
@@ -466,7 +466,7 @@ if n == 1:
 	# fit
 	f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
 	              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
-	              frequency = 1/127., phase =0, 
+	              frequency = 1/90., phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,
@@ -480,7 +480,7 @@ if n == 1:
 #################################
 ###### Print final results ######
 #################################
-
+print 
 print 'Finished C13 calibration measurements'
 print 'Values found:'
 print
@@ -519,41 +519,41 @@ print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_lis
 ###### Save final results ######
 ################################
 
-qt.mstart()
+# qt.mstart()
 
-d = qt.Data(name=SAMPLE_CFG+'_carbon_calibration')
+# d = qt.Data(name=SAMPLE_CFG+'_carbon_calibration')
 
 
-d.add_coordinate('round')
-d.add_value('C1_freq_1')
-d.add_value('C2_freq_1')
-d.add_value('C5_freq_1')
-d.add_value('C_freq_0')
-d.add_value('C1_Ren_extra_phase_correction_list[1]')
-d.add_value('C2_Ren_extra_phase_correction_list[2]')
-d.add_value('C5_Ren_extra_phase_correction_list[5]')
-d.add_value('C2_Ren_extra_phase_correction_list[1]')
-d.add_value('C5_Ren_extra_phase_correction_list[1]')
-d.add_value('C1_Ren_extra_phase_correction_list[2]')
-d.add_value( 'C5_Ren_extra_phase_correction_list[2]')
-d.add_value( 'C1_Ren_extra_phase_correction_list[5]')
-d.add_value( 'C2_Ren_extra_phase_correction_list[5]')
+# d.add_coordinate('round')
+# d.add_value('C1_freq_1')
+# d.add_value('C2_freq_1')
+# d.add_value('C5_freq_1')
+# d.add_value('C_freq_0')
+# d.add_value('C1_Ren_extra_phase_correction_list[1]')
+# d.add_value('C2_Ren_extra_phase_correction_list[2]')
+# d.add_value('C5_Ren_extra_phase_correction_list[5]')
+# d.add_value('C2_Ren_extra_phase_correction_list[1]')
+# d.add_value('C5_Ren_extra_phase_correction_list[1]')
+# d.add_value('C1_Ren_extra_phase_correction_list[2]')
+# d.add_value( 'C5_Ren_extra_phase_correction_list[2]')
+# d.add_value( 'C1_Ren_extra_phase_correction_list[5]')
+# d.add_value( 'C2_Ren_extra_phase_correction_list[5]')
 
-d.add_data_point([0], [qt.exp_params['samples']['111_1_sil18']['C1_freq_1']],
- [qt.exp_params['samples']['111_1_sil18']['C2_freq_1']],
- [qt.exp_params['samples']['111_1_sil18']['C5_freq_1']],
- [qt.exp_params['samples']['111_1_sil18']['C1_freq_0']],
- [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]],
- [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2]],
- [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]],
- [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1]],
- [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]],
- [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2]],
-  [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2]],
-  [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]],
-  [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5]])
+# d.add_data_point([0], [qt.exp_params['samples']['111_1_sil18']['C1_freq_1']],
+#  [qt.exp_params['samples']['111_1_sil18']['C2_freq_1']],
+#  [qt.exp_params['samples']['111_1_sil18']['C5_freq_1']],
+#  [qt.exp_params['samples']['111_1_sil18']['C1_freq_0']],
+#  [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]],
+#  [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2]],
+#  [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]],
+#  [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1]],
+#  [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]],
+#  [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2]],
+#   [qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2]],
+#   [qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]],
+#   [qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5]])
 
-d.create_file()
-filename=d.get_filepath()[:-4]
-d.close_file()
-qt.mend()
+# d.create_file()
+# filename=d.get_filepath()[:-4]
+# d.close_file()
+# qt.mend()

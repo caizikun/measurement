@@ -172,23 +172,23 @@ cfg['samples']['111_1_sil18'] = {
     ###########################################
 
 'C1_freq'       :   450.153e3,   
-'C1_freq_0'     :   431.916e3, #2 Hz uncertainty   
-'C1_freq_1'     :   469.049e3,           
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-17.9] +[36.6]+[0]*2+[67.8]+ 4*[0]),
+'C1_freq_0'     :   431.948e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.009e3,           
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-15.0] +[34.6]+[0]*2+[60.5]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [34],
 
 'C5_freq'       :   419.594e3,   
-'C5_freq_0'     :   431.916e3,  
-'C5_freq_1'     :   408.275e3,           
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[86.0]+[103.8]+[0]*2+[22.5]+[0]*4), 
+'C5_freq_0'     :   431.948e3,  
+'C5_freq_1'     :   408.290e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[91.4]+[102.5]+[0]*2+[-10.8]+[0]*4), 
 'C5_Ren_tau'    :   [8.926e-6],
 'C5_Ren_N'      :   [38],
 
 'C2_freq'       :   422.415e3,   
-'C2_freq_0'     :   431.916e3,  
-'C2_freq_1'     :   413.290e3,           
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[44.5]+[32.5]+[0]*2+[71.8]+[0]*4), 
+'C2_freq_0'     :   431.948e3,  
+'C2_freq_1'     :   413.461e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[46.1]+[22.1]+[0]*2+[62.7]+[0]*4), 
 'C2_Ren_tau'    :   [10.058e-6],
 'C2_Ren_N'      :   [18]
 }
@@ -211,7 +211,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'Ex_CR_amplitude': 5e-9,   
 'Ex_RO_amplitude': 15e-9,   
 'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 100,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration'    : 450,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     #only for specific scripts
 'SP_duration_ms1': 500,     #only for specific scripts
 'SP_filter_duration' : 0 }
