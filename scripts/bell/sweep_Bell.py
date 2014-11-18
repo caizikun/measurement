@@ -141,7 +141,7 @@ def tail_sweep(name):
 
     pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 500
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
