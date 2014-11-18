@@ -141,7 +141,7 @@ def tail_sweep(name):
 
     pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 500
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -261,7 +261,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_pippin') 
+    tail_sweep('tail_lt4_hans') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')
