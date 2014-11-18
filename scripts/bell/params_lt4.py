@@ -70,7 +70,7 @@ params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_Npi4_amp']
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration']
 
 params_lt4['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
-params_lt4['echo_offset'] = -75e-9 #50 ns
+params_lt4['echo_offset'] = -100e-9 #50 ns
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
@@ -87,13 +87,13 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.50#2014-11-14  CAREFUL: Fit might give % of max
+params_lt4['aom_amplitude']             = 0.47#2014-11-17  CAREFUL: Fit might give % of max
 # maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 5e-9 # 2014-11-12
+params_lt4['AWG_RO_power']            = 10e-9 # 2014-11-17
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence

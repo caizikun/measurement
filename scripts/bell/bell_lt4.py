@@ -270,7 +270,7 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(1)
         #TPQI('run_test')
-        full_bell('lhfbt_day3_run14')   
+        full_bell('lhfbt_day5_run12')   
         #SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')
