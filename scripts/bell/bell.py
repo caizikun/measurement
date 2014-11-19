@@ -133,7 +133,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         _prev_hhchannel = np.empty((0,), dtype='u1')
         _prev_hhspecial = np.empty((0,), dtype='u1')
         _prev_sync_number = np.empty((0,), dtype='u4')
-        _prev_new_length = 0
+        prev_newlength = 0
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
@@ -150,7 +150,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     self._keystroke_check('abort')
                     if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
-                print 'current sync, dset length:', last_sync_number, current_dset_length
+                print 'current sync, entanglement_markers, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
 
                 _timer=time.time()
             _length = 0
@@ -188,7 +188,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if newlength > 0:
                     if new_entanglement_markers > 0:
                         self.entanglement_markers += new_entanglement_markers
-                        print 'SUCCESSFUL ENTANGLEMENT!!! Event No ' + entanglement_markers
+                        #print 'SUCCESSFUL ENTANGLEMENT!!! Event No {}'.format(self.entanglement_markers)
                         dset_hhtime.resize((current_dset_length+prev_newlength,))
                         dset_hhchannel.resize((current_dset_length+prev_newlength,))
                         dset_hhspecial.resize((current_dset_length+prev_newlength,))
