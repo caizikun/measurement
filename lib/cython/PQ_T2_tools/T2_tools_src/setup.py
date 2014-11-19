@@ -6,5 +6,5 @@ import numpy
 reload(numpy)
 
 setup(cmdclass = {'build_ext': build_ext.build_ext},
-        ext_modules = [Extension("T2_tools_bell_BS", ["T2_tools_bell_BS.pyx"])],
+        ext_modules = [Extension("T2_tools_bell_LTSetups", ["T2_tools_bell_LTSetups.pyx"])],
         include_dirs = [numpy.get_include()])
