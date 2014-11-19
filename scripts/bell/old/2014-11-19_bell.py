@@ -95,8 +95,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
         MIN_HIST_SYNC_BIN = np.uint64(self.params['MIN_HIST_SYNC_BIN'])
         MAX_HIST_SYNC_BIN = np.uint64(self.params['MAX_HIST_SYNC_BIN'])
-        
-        TH_RepetitiveReadouts = self.params['TH_RepetitiveReadouts']
+        if qt.current_setup in ('lt4', 'lt3'):
+            TH_RepetitiveReadouts = self.params['TH_RepetitiveReadouts']
+        else: 
+            TH_RepetitiveReadouts = 1
         TTTR_read_count = self.params['TTTR_read_count']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
@@ -118,8 +120,8 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
         self.hist = np.zeros((hist_length,2), dtype='u4')
+        self.marker_events = 0
         new_entanglement_markers = 0
-        self.entanglement_markers = 0
 
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
@@ -127,13 +129,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         _timer=time.time()
         ii=0
         k_error_message = 0
-
-        _prev_sync_time = np.empty((0,), dtype='u8')
-        _prev_hhtime = np.empty((0,), dtype='u8')
-        _prev_hhchannel = np.empty((0,), dtype='u1')
-        _prev_hhspecial = np.empty((0,), dtype='u1')
-        _prev_sync_number = np.empty((0,), dtype='u4')
-        _prev_new_length = 0
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
@@ -155,6 +150,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 _timer=time.time()
             _length = 0
             newlength = 0
+            entanglement_markers = 0
 
             #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count) # Old code before inserting the TH_RepetitiveReadouts
             _data = np.array([],dtype = 'uint32')
@@ -180,59 +176,38 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
-                hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                        newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
+                if qt.current_setup in ('lt4', 'lt3'):
+                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools_bell_LTSetups.Bell_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR)
+                else:       
+                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
+                        T2_tools_bell_BS.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                        MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR) 
+
+
                 if newlength > 0:
                     if new_entanglement_markers > 0:
-                        self.entanglement_markers += new_entanglement_markers
+                        entanglement_markers += new_entanglement_markers
                         print 'SUCCESSFUL ENTANGLEMENT!!! Event No ' + entanglement_markers
-                        dset_hhtime.resize((current_dset_length+prev_newlength,))
-                        dset_hhchannel.resize((current_dset_length+prev_newlength,))
-                        dset_hhspecial.resize((current_dset_length+prev_newlength,))
-                        dset_hhsynctime.resize((current_dset_length+prev_newlength,))
-                        dset_hhsyncnumber.resize((current_dset_length+prev_newlength,))
+                    dset_hhtime.resize((current_dset_length+newlength,))
+                    dset_hhchannel.resize((current_dset_length+newlength,))
+                    dset_hhspecial.resize((current_dset_length+newlength,))
+                    dset_hhsynctime.resize((current_dset_length+newlength,))
+                    dset_hhsyncnumber.resize((current_dset_length+newlength,))
 
-                        dset_hhtime[current_dset_length:] = _prev_hhtime
-                        dset_hhchannel[current_dset_length:] = _prev_hhchannel
-                        dset_hhspecial[current_dset_length:] = _prev_hhspecial
-                        dset_hhsynctime[current_dset_length:] = _prev_sync_time
-                        dset_hhsyncnumber[current_dset_length:] = _prev_sync_number
+                    dset_hhtime[current_dset_length:] = hhtime
+                    dset_hhchannel[current_dset_length:] = hhchannel
+                    dset_hhspecial[current_dset_length:] = hhspecial
+                    dset_hhsynctime[current_dset_length:] = sync_time
+                    dset_hhsyncnumber[current_dset_length:] = sync_number
 
-                        current_dset_length += prev_newlength
-
-                        dset_hhtime.resize((current_dset_length+newlength,))
-                        dset_hhchannel.resize((current_dset_length+newlength,))
-                        dset_hhspecial.resize((current_dset_length+newlength,))
-                        dset_hhsynctime.resize((current_dset_length+newlength,))
-                        dset_hhsyncnumber.resize((current_dset_length+newlength,))
-
-                        dset_hhtime[current_dset_length:] = hhtime
-                        dset_hhchannel[current_dset_length:] = hhchannel
-                        dset_hhspecial[current_dset_length:] = hhspecial
-                        dset_hhsynctime[current_dset_length:] = sync_time
-                        dset_hhsyncnumber[current_dset_length:] = sync_number
-
-                        current_dset_length += newlength
-                        self.h5data.flush()
-
-                        _prev_sync_time = np.empty((0,), dtype='u8')
-                        _prev_hhtime = np.empty((0,), dtype='u8')
-                        _prev_hhchannel = np.empty((0,), dtype='u1')
-                        _prev_hhspecial = np.empty((0,), dtype='u1')
-                        _prev_sync_number = np.empty((0,), dtype='u4')
-                        _prev_new_length = 0
-
-                    else:
-
-                        _prev_hhtime = hhtime
-                        _prev_hhchannel = hhchannel
-                        _prev_hhspecial = hhspecial
-                        _prev_sync_time = sync_time
-                        _prev_sync_number = sync_number
-                        _prev_new_length = newlength
+                    current_dset_length += newlength
+                    self.h5data.flush()
+                    self.marker_events += np.sum(hhspecial)
  
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
@@ -255,7 +230,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
         self.PQ_ins.StopMeas()
         
-        print 'PQ total datasets, events last dataset, last sync number, entanglement:', rawdata_idx, current_dset_length, last_sync_number, self.entanglement_markers
+        print 'PQ total datasets, events last dataset, last sync number, markers, entanglement:', rawdata_idx, current_dset_length, last_sync_number, self.marker_events, entanglement_markers
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
