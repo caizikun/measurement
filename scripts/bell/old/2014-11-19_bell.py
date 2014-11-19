@@ -1,52 +1,78 @@
 import qt
 import numpy as np
-execfile(qt.reload_current_setup)
+import time
+import logging
+import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
-import bell
-reload(bell)
+from measurement.lib.measurement2.adwin_ssro import pulsar_pq
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v2, T2_tools_bell_BS, T2_tools_bell_LTSetups
+reload(T2_tools_bell_BS)
+reload(T2_tools_v2)
+reload(T2_tools_bell_LTSetups)
 
+class Bell(pulsar_pq.PQPulsarMeasurement):
+    mprefix = 'Bell'
 
-bs_params = {}
-bs_params['MAX_DATA_LEN']        =   int(100e6)
-bs_params['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-bs_params['MIN_SYNC_BIN']        =   int(5e-6*1e12) #5 us 
-bs_params['MAX_SYNC_BIN']        =   int(15e-6*1e12) #15 us 
-bs_params['MIN_HIST_SYNC_BIN']   =   int(5438*1e3)
-bs_params['MAX_HIST_SYNC_BIN']   =   int(5560*1e3)
-bs_params['measurement_time']    =   24*60*60 #sec = 24H
-bs_params['measurement_abort_check_interval']    = 1 #sec
-bs_params['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
+    def __init__(self, name):
+        pulsar_pq.PQPulsarMeasurement.__init__(self, name)
+        self.joint_params = m2.MeasurementParameters('JointParameters')
+        self.params = m2.MeasurementParameters('LocalParameters')
+        self.params['pts']=1
+        self.params['repetitions']=1
 
-bs_params['pulse_start_bin'] = 1000
-bs_params['pulse_stop_bin']  = 3000
-bs_params['tail_start_bin']  = 4500
-bs_params['tail_stop_bin']   = 60000
+    def autoconfig(self, **kw):
 
-class Bell_BS(bell.Bell):
+        self.params['sequence_wait_time'] = self.joint_params['LDE_attempts_before_CR']*self.joint_params['LDE_element_length']*1e6\
+        +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_1st_revival']+ 20
+        print 'I am the sequence waiting time', self.params['sequence_wait_time']
+        pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
 
-    mprefix = 'Bell_BS'
+        # add values from AWG calibrations
+        self.params['SP_voltage_AWG'] = \
+                self.A_aom.power_to_voltage(
+                        self.params['AWG_SP_power'], controller='sec')
+        self.params['RO_voltage_AWG'] = \
+                self.AWG_RO_AOM.power_to_voltage(
+                        self.params['AWG_RO_power'], controller='sec')
+        self.params['yellow_voltage_AWG'] = \
+                self.yellow_aom.power_to_voltage(
+                        self.params['AWG_yellow_power'], controller='sec')
 
-    def autoconfig(self):
-        remote_params = self.remote_measurement_helper.get_measurement_params()
-        print remote_params
-        for k in remote_params:
-            self.params[k] = remote_params[k]
-        self.remote_measurement_helper.set_data_path(self.h5datapath)
-        
+        #print 'setting AWG SP voltage:', self.params['SP_voltage_AWG']
+        qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
+        if self.params['LDE_yellow_duration'] > 0.:
+            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
+        else:
+            print self.mprefix, self.name, ': Ignoring yellow'
 
-    def setup(self):
-        pq.PQMeasurement.setup(self)
-
-    def start_measurement_process(self):
-        self.remote_measurement_helper.set_is_running(True)
-
+    
     def print_measurement_progress(self):
-        pulse_cts= np.sum(self.hist[self.params['pulse_start_bin'] : self.params['pulse_stop_bin'] ,:])
-        tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
-        self.adwin_ins_lt4.Set_Par(51, int(tail_cts))
-        self.adwin_ins_lt4.Set_Par(52, int(pulse_cts))
-        self.adwin_ins_lt4.Set_Par(77, int(self.marker_events))
-        
+        reps_completed = self.adwin_var('completed_reps')    
+        print('completed %s readout repetitions' % reps_completed)
+
+    def setup(self, **kw):
+        pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)     
+
+    def save(self, name='ssro'):
+        reps = self.adwin_var('entanglement_events')
+        self.save_adwin_data(name,
+                [   ('CR_before', reps),
+                    ('CR_after', reps),
+                    ('SP_hist', self.params['SP_duration']),
+                    ('CR_hist', 200),
+                    ('RO_data', reps),
+                    ('statistics', 10),
+                    'entanglement_events',
+                    'completed_reps',
+                    'total_CR_counts'])
+    def finish(self):
+        h5_joint_params_group = self.h5basegroup.create_group('joint_params')
+        joint_params = self.joint_params.to_dict()
+        for k in joint_params:
+            h5_joint_params_group.attrs[k] = joint_params[k]
+        self.h5data.flush()
+        pulsar_pq.PQPulsarMeasurement.finish(self)
+
     def run(self, autoconfig=True, setup=True, debug=False):
         if debug:
             self.run_debug()
@@ -117,7 +143,7 @@ class Bell_BS(bell.Bell):
                     ii+=1
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
                     self._keystroke_check('abort')
-                    if ii>1 or self.keystroke('abort') in ['x']:
+                    if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
 
@@ -149,10 +175,17 @@ class Bell_BS(bell.Bell):
                     print 'Aborting the measurement: SyncLost flag is high.'
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
-    
-                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+
+                if qt.current_setup in ('lt4', 'lt3'):
+                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                        newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_bell_LTSetups.Bell_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                                T2_WRAPAROUND,T2_TIMEFACTOR)
+                else:       
+                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                         newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
-                        T2_tools_bell.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                        T2_tools_bell_BS.Bell_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
                         MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR) 
 
 
@@ -203,29 +236,3 @@ class Bell_BS(bell.Bell):
         except KeyError:
             pass # means it's already stopped
         self.stop_measurement_process()
-
-    def measurement_process_running(self):
-        return self.remote_measurement_helper.get_is_running()
-
-    def stop_measurement_process(self):
-        self.remote_measurement_helper.set_is_running(False)
-
-    def finish(self):
-        self.save_instrument_settings_file()
-        self.save_params()
-        pq.PQMeasurement.finish(self)
-
-Bell_BS.remote_measurement_helper = qt.instruments['remote_measurement_helper']
-Bell_BS.adwin_ins_lt4 = qt.instruments['physical_adwin_lt4']
-
-def remote_HH_measurement(name):
-    debug=False
-    m=Bell_BS(name+qt.instruments['remote_measurement_helper'].get_measurement_name())
-    for k in bs_params:
-        m.params[k] = bs_params[k]
-    m.run(debug=debug)
-    print ' This script was running Bell BS v2. '
-    m.finish()
-    
-if __name__ == '__main__':
-    remote_HH_measurement('')

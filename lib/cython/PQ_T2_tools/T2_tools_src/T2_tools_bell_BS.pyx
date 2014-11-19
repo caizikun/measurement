@@ -81,18 +81,16 @@ def Bell_live_filter(
                 last_sync_number += 1
                 continue
 
-            elif channel[k] == 4:  # This is an entanglement event     
+            elif channel[k] == 1:  # This is an entanglement event     
                 EntanglementMarkers += 1
-
-            # write all marker events to the output
-            _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync   
-            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
-            hhchannel[l] = channel[k]
-            hhspecial[l] = special[k]
-            sync_time[l] = _sync_time
-            sync_number[l] = last_sync_number
-            l += 1
-            continue
+                _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync   
+                hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+                hhchannel[l] = channel[k]
+                hhspecial[l] = special[k]
+                sync_time[l] = _sync_time
+                sync_number[l] = last_sync_number
+                l += 1
+                continue
 
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
 

@@ -70,15 +70,17 @@ def Bell_live_filter(
                 last_sync_number += 1
                 continue
 
-            else:  # This is a marker event
-                _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
-                hhtime[l] = (t_ofl + time[k]) / t2_time_factor
-                hhchannel[l] = channel[k]
-                hhspecial[l] = special[k]
-                sync_time[l] = _sync_time
-                sync_number[l] = last_sync_number
-                l += 1
-                continue
+            elif channel[k] == 4:  # This is an entanglement event     
+                EntanglementMarkers += 1
+                  # This is a marker event
+            _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync
+            hhtime[l] = (t_ofl + time[k]) / t2_time_factor
+            hhchannel[l] = channel[k]
+            hhspecial[l] = special[k]
+            sync_time[l] = _sync_time
+            sync_number[l] = last_sync_number
+            l += 1
+            continue
 
         _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync         
         if (_sync_time > min_sync_time and _sync_time < max_sync_time):  # write all photons in ROI
@@ -90,4 +92,4 @@ def Bell_live_filter(
             l += 1
             continue
 
-    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], sync_number[:l], l, t_ofl, t_lastsync, last_sync_number
+    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], sync_number[:l], l, t_ofl, t_lastsync, last_sync_number, EntanglementMarkers
