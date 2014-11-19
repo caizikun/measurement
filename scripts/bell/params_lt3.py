@@ -109,14 +109,16 @@ params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
 params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
 
-params_lt3['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
-params_lt3['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
-params_lt3['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
-params_lt3['MIN_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
-params_lt3['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
-params_lt3['TH_RepetitiveReadouts']    = joint_params.joint_params['TH_RepetitiveReadouts']
-params_lt3['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
+params_lt3['MAX_DATA_LEN'] 		=       joint_params.joint_params['MAX_DATA_LEN']
+params_lt3['BINSIZE'] 			=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+params_lt3['MIN_SYNC_BIN'] 		=       joint_params.joint_params['MIN_SYNC_BIN']
+params_lt3['MAX_SYNC_BIN']		=       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt3['MIN_HIST_SYNC_BIN'] =  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
+params_lt3['MAX_HIST_SYNC_BIN'] =  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
+params_lt3['TTTR_RepetitiveReadouts']= 	joint_params.joint_params['TTTR_RepetitiveReadouts']
+params_lt3['TTTR_read_count'] =    		joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
+params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_data']
+params_lt3['entanglement_marker_number'] = 4
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H

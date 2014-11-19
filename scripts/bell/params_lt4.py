@@ -115,15 +115,17 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 150e-9
 
-params_lt4['MAX_DATA_LEN'] =       joint_params.joint_params['MAX_DATA_LEN']
-params_lt4['BINSIZE'] =            joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt4['MIN_SYNC_BIN'] =       joint_params.joint_params['MIN_SYNC_BIN']
-params_lt4['MAX_SYNC_BIN'] =       joint_params.joint_params['MAX_SYNC_BIN']
-params_lt4['MIN_HIST_SYNC_BIN'] =  joint_params.joint_params['MIN_HIST_SYNC_BIN']
-params_lt4['MAX_HIST_SYNC_BIN'] =  joint_params.joint_params['MAX_HIST_SYNC_BIN']
-params_lt4['TH_RepetitiveReadouts']    = joint_params.joint_params['TH_RepetitiveReadouts']
-params_lt4['TTTR_read_count'] =    joint_params.joint_params['TTTR_read_count']
-params_lt4['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
+params_lt4['MAX_DATA_LEN'] 			=       joint_params.joint_params['MAX_DATA_LEN']
+params_lt4['BINSIZE'] 				=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+params_lt4['MIN_SYNC_BIN'] 			=       joint_params.joint_params['MIN_SYNC_BIN']
+params_lt4['MAX_SYNC_BIN'] 			=       joint_params.joint_params['MAX_SYNC_BIN']
+params_lt4['MIN_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
+params_lt4['MAX_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
+params_lt4['TTTR_RepetitiveReadouts']=	 	joint_params.joint_params['TTTR_RepetitiveReadouts']
+params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count']
+params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
+params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
+params_lt4['entanglement_marker_number'] = 4
 
 params_lt4['measurement_time'] =   60*60#sec = 60 mins
 

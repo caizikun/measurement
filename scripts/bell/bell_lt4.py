@@ -143,7 +143,7 @@ def bell_lt4(name,
         if measure_bs:
             m.bs_helper.set_is_running(False)
             qt.msleep(0.5)
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -165,7 +165,7 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=True, live_histogram=False)
     m.save()
 
     if measure_lt3:
