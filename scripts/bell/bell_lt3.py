@@ -167,7 +167,7 @@ def bell_lt3(name):
             break
         qt.msleep(1)
     if lt4_ready:
-        m.run(autoconfig=False, setup=False,debug=th_debug)    
+        m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=True, live_histogram=False)    
         m.save()
         m.finish()
 

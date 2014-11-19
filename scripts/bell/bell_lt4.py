@@ -142,7 +142,8 @@ def bell_lt4(name,
             m.lt3_helper.execute_script()
         if measure_bs:
             m.bs_helper.set_is_running(False)
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
+            qt.msleep(0.5)
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -164,7 +165,7 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=True, live_histogram=False)
     m.save()
 
     if measure_lt3:
@@ -270,8 +271,8 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(1)
         #TPQI('run_test')
-        full_bell('lhfbt_day6_run20')   
-        #SP_lt4('SPCORR_lt4')
+        #full_bell('test_run')#lhfbt_day6_run20')   
+        SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')
         pass
