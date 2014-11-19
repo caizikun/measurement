@@ -69,7 +69,7 @@ def remote_HH_measurement(name):
     m=Bell_BS(name+qt.instruments['remote_measurement_helper'].get_measurement_name())
     for k in bs_params:
         m.params[k] = bs_params[k]
-    m.run(debug=debug, live_filter_on_marker=False, live_histogram=True))
+    m.run(debug=debug, live_filter_on_marker=False, live_histogram=True)
     print ' This script was running Bell BS v2. '
     m.finish()
     

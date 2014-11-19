@@ -147,9 +147,9 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
                     self._keystroke_check('abort')
+                    ii+=1
                     if (_length == 0) or (self.keystroke('abort') in ['x']) or ii>wait_for_late_data: 
                         break 
-                    ii+=1
                 print 'current sync, entanglement_markers, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
 
                 _timer=time.time()
@@ -183,7 +183,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if live_histogram:
                     hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                             newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
-                            T2_tools_bell.Bell_live_filter_on_marker(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                            T2_tools_bell.Bell_live_histogram_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
                             MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
                 else:
                     hhtime, hhchannel, hhspecial, sync_time, sync_number, \
