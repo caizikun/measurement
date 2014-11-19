@@ -426,8 +426,8 @@ class ElectronT1(PulsarMeasurement):
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_modulation_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['Pi_pulse_duration'],
-            amplitude = self.params['Pi_pulse_amp'])
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'])
         # Wait-times
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
@@ -495,11 +495,7 @@ class ElectronT1(PulsarMeasurement):
 
          # upload the waveforms to the AWG
         if upload:
-            if upload=='old_method':
-                qt.pulsar.upload(*list_of_elements)
-                qt.pulsar.program_sequence(seq)
-            else:
-                qt.pulsar.program_awg(seq,*list_of_elements)
+            qt.pulsar.program_awg(seq,*list_of_elements)
 
 
 

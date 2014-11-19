@@ -47,9 +47,9 @@ if __name__ == '__main__':
     pts_coarse    = 81   
     reps_coarse   = 750 #750
 
-    range_fine  = 0.30
+    range_fine  = 0.60
     pts_fine    = 51   
-    reps_fine   = 1000#1000
+    reps_fine   = 2000#1000
 
     ###########
     ## start ##
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
     No_steps = True
     if No_steps == True: 
-        steps = [0] 
+        steps = [0] # !!!! if we use this to measure for a long time, do not forget to save data: remove if-loop!
     else: 
         if axis == 'Y_axis':
             steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]

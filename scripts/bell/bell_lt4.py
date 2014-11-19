@@ -8,6 +8,7 @@ import inspect
 import qt
 import time
 from measurement.scripts.bell import check_awg_triggering as JitterChecker
+reload(JitterChecker)
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
@@ -109,13 +110,6 @@ class Bell_lt4(bell.Bell):
     def print_measurement_progress(self):
         pass
 
-    #def reset_plu(self):
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=1)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-
     def finish(self):
         bell.Bell.finish(self)
         self.add_file(inspect.getsourcefile(bseq))
@@ -142,11 +136,14 @@ def bell_lt4(name,
     if not(sequence_only):
         if measure_lt3:
             m.lt3_helper.set_is_running(False)
+            qt.msleep(0.5)
             m.lt3_helper.set_measurement_name(name)
             m.lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt3.py')
             m.lt3_helper.execute_script()
         if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
+            m.bs_helper.set_is_running(False)
+            qt.msleep(0.5)
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -168,14 +165,16 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=True, live_histogram=False)
     m.save()
 
     if measure_lt3:
-         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.lt3_helper.set_is_running(False)
     if measure_bs:
-        m.params['bs_data_path'] = m.bs_helper.get_data_path()
-
+        m.bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()  
+    
     m.finish()
 
 
@@ -255,24 +254,25 @@ def SP_lt3(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
-    ResetPlu = True   
+    DoJitterCheck = True
+    ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
 
     if DoJitterCheck:
-        jitterDetected = JitterChecker.do_jitter_test(False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ jitterDetected
+        jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
+        print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
     else: 
         jitterDetected = False
         print 'I will skip the jitter test.'
     
 
     if not(jitterDetected):
+        qt.msleep(1)
         #TPQI('run_test')
-        #full_bell('Debug')   
-        SP_lt4('Debug')
+        #full_bell('test_run')#lhfbt_day6_run20')   
+        SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')
         pass

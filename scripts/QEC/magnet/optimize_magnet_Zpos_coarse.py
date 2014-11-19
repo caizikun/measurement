@@ -60,15 +60,22 @@ if __name__ == '__main__':
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
+    only_fine = False
+
         ### for the first coarse step
-    init_range   = 12     #Common: 10 MHz
-    init_pts     = 121    #Common: 121
+    init_range   = 13     #Common: 10 MHz
+    init_pts     = 131    #Common: 121
     init_reps    = 500   #Common: 500
 
         ### for the remainder of the steps
     repeat_range = 4.5
     repeat_pts   = 81
     repeat_reps  = 1000
+
+    if only_fine == True:
+        init_range   = repeat_range     #Common: 10 MHz
+        init_pts     = repeat_pts    #Common: 121
+        init_reps    = repeat_reps   #Common: 500
 
     ###########
     ## Start ##
@@ -84,7 +91,7 @@ if __name__ == '__main__':
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
     # do the fitting, returns in MHz, input in GHz
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
-            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+        qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
     # start to list all the measured values

@@ -19,14 +19,14 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0):
     if ms == 'msp':
         m.params['mw_frq'] = m.params['ms+1_cntr_frq']-43e6 #MW source frequency
         m.params['pulse_length'] = 2e-6
-        m.params['ssbmod_amplitude'] = 0.02
+        m.params['ssbmod_amplitude'] = 0.025
 
     elif ms == 'msm':
         #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms+1_cntr_frq'] - 43e6
         m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - 43e6
         
         m.params['pulse_length'] = 2e-6
-        m.params['ssbmod_amplitude'] = 0.01
+        m.params['ssbmod_amplitude'] = 0.010
 
         #m.params['SSRO_duration'] = 12   
         

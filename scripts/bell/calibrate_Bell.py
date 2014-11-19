@@ -88,7 +88,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 5
+    stage = 4.2
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     if   stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         print 'set msmt_params Hermite_Npi4_amp'
     elif stage == 4.1: #echo sweep tests DD
         sweep_Bell.echo_sweep(SAMPLE_CFG)
-        print 'set params_ltx echo_offset (should be 0 ns)'
+        print 'set params_ltx echo_offset'
     elif stage == 4.2: #rnd_echo_ro tests fast ssro, DD and RND generation
         sweep_Bell.rnd_echo_ro(SAMPLE_CFG)
         print 'check only, if bad, check Fast SSRO params, all MW, RND and RO delays'
