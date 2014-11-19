@@ -2481,22 +2481,26 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
 
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = 20e-6,
+            length = 10e-6,
             amplitude = 2)
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 200e-9, amplitude = 0.)
-        T_us = pulse.SquarePulse(channel='MW_Imod', name='delay',
-            length = 1000e-9, amplitude = 0.)
+
+        T_ramsey = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+        
 
         
         #this is used to read-out the electron upside-down.
 
         if self.params['electron_readout_orientation']=='negative':
-            extra_phase=180
-        else:
             extra_phase=0
+        else:
+            extra_phase=180
 
         for pt in range(pts):
+
+            
 
             #####################################################
             #####    Generating the sequence elements      ######
@@ -2514,15 +2518,20 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
             #This element is needed for hard coding the remaining part of the sequence into the AWG
             #And for having the function combine_to_AWG_sequence work.
 
-            wait_gate = Gate('Wait_gate','passive_elt',
+            wait_gate = Gate('Wait_gate_'+ str(pt),'passive_elt',
                     wait_time = 5e-6)
 
             C_evol_seq =[wait_gate]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
             gate_seq = []
-            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
-            gate_seq.extend(C_evol_seq)
+
+            if self.params['no_carbon_init']==True:
+                gate_seq.extend(mbi_seq)
+                gate_seq.extend(C_evol_seq)
+            else:
+                gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+                gate_seq.extend(C_evol_seq)                
             ############
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
@@ -2534,38 +2543,25 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
             #       Create the ramsey sequence         #
             ############################################
 
+            
+
             elements=[]
             e = element.Element('ElectronRamsey_pt-%d' % pt, pulsar=qt.pulsar,
                 global_time = True)
+
             e.append(T)
 
-            e.append(pulse.cp(X, phase = 0.0))
-
-            if (self.params['wait_times'][pt]>1e-6):
-
-                elements.append(e)
-                seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-
-                e = element.Element('ElectronRamsey_wait_pt-%d' % pt, pulsar=qt.pulsar,
-                    global_time = True)
-
-                e.append(T_us)
-                N=int(self.params['wait_times'][pt]*1e6)
-                seq.append(name=e.name, wfname=e.name, trigger_wait=False,repetitions=N)
-
-                #I would think this pulse should be in the next element! - Machiel
-                e.append(pulse.cp(T,
-                    length = self.params['wait_times'][pt]-(N*1e-6)))
-                elements.append(e)
-                e = element.Element('ElectronRamsey_second_pi2_pt-%d' % pt, pulsar=qt.pulsar,
-                global_time = True)
+            if self.params['wait_times'][pt]-self.params['fast_pi2_duration'] < 20e-9:
+                pass
 
             else:
-                e.append(pulse.cp(T,
-                    length = self.params['wait_times'][pt]))
+                e.append(pulse.cp(X, phase = 0.0))
 
-            e.append(pulse.cp(X,
-                phase = self.params['pi2_phases2'][pt]+extra_phase))
+                e.append(pulse.cp(T_ramsey,
+                        length = self.params['wait_times'][pt]-self.params['fast_pi2_duration']))
+
+                e.append(pulse.cp(X,
+                    phase = self.params['pi2_phases2'][pt]+extra_phase))
 
             e.append(T)
             e.append(T)
@@ -2583,7 +2579,7 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
 
             for el in elements:
                 combined_list_of_elements.append(el)
-                combined_seq.append(name=el.name, wfname=el.name, trigger_wait=True)
+                combined_seq.append(name=el.name, wfname=el.name, trigger_wait=False)
 
         if upload:
             print ' uploading sequence'
@@ -3428,7 +3424,7 @@ class Three_QB_QEC(MBI_C13):
     '''
     Sequence: |N-MBI| -|Cinit|^N-|MBE|^N-|Tomography|
     '''
-    mprefix = 'probabablistic_MBE_Tomography'
+    mprefix = 'Three_QB_QEC'
     adwin_process = 'MBI_multiple_C13'
 
     def generate_sequence(self, upload=True, debug=False):
@@ -3471,7 +3467,7 @@ class Three_QB_QEC(MBI_C13):
                         go_to_element       = mbi, 
                         event_jump_element   = 'next',
                         readout_orientation = 'positive',
-                        phase_error         = self.params['phase_error'][pt])
+                        phase_error         = self.params['phase_error_array'][pt])
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
@@ -3543,7 +3539,7 @@ class Three_QB_det_QEC(MBI_C13):
                                 --|Parity_b_1|
                                               --|Tomography11|
     '''
-    mprefix = 'Deterministic_MBE_Tomography'
+    mprefix = 'Three_QB_det_QEC'
     adwin_process = 'MBI_multiple_C13'
 
     def generate_sequence(self,upload=True,debug = False):

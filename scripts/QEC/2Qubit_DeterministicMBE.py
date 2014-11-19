@@ -65,26 +65,25 @@ def MBE(name, carbon_list   = [1,5],
             ['-Z','X'],['-Z','Y'],['-Z','Z']])
   
 
-    m.params['Tomography Bases_0'] = ([
-            ['X','X'],['X','Y'],['X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['Z','X'],['Z','Y'],['Z','Z']])
-
-    m.params['Tomography Bases_1'] = ([['-X','X']])
-    # ([
-    #         ['-X','X'],['-X','Y'],['-X','Z'],
+    # m.params['Tomography Bases_0'] = ([
+    #         ['X','X'],['X','Y'],['X','Z'],
     #         ['Y','X'],['Y','Y'],['Y','Z'],
-    #         ['-Z','X'],['-Z','Y'],['-Z','Z']])
+    #         ['Z','X'],['Z','Y'],['Z','Z']])
+
+    # m.params['Tomography Bases_1'] = ([['-X','X']])
+    # # ([
+    # #         ['-X','X'],['-X','Y'],['-X','Z'],
+    # #         ['Y','X'],['Y','Y'],['Y','Z'],
+    # #         ['-Z','X'],['-Z','Y'],['-Z','Z']])
 
 
-    m.params['Tomography Bases_0'] = m.params['Tomography Bases_1'] 
-     # = ([
-    #         ['X','I'],['Y','I'],['Z','I'],
-    #         ['I','X'],['I','Y'],['I','Z']])
+    m.params['Tomography Bases_0'] =([
+            ['X','I'],['Y','I'],['Z','I'],
+            ['I','X'],['I','Y'],['I','Z'],['Z','Z']])
 
-    # m.params['Tomography Bases_1'] = ([
-    #         ['-X','I'],['Y','I'],['-Z','I'],
-    #         ['I','X'],['I','Y'],['I','Z']])
+    m.params['Tomography Bases_1'] = ([
+            ['-X','I'],['Y','I'],['-Z','I'],
+            ['I','X'],['I','Y'],['I','Z'],['-Z','Z']])
 
    
     ####################

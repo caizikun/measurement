@@ -20,7 +20,9 @@ def electronramsey_WithNuclearInit(name,
     Addressed_Carbon=1,
     C_13_init_state='up',
     el_RO_result=0,
-    electron_RO='positive'):
+    electron_RO='positive',
+    no_carbon_init = False):
+
     m = DD.ElectronRamseyWithNuclearInit(name)
 
     funcs.prepare(m)
@@ -35,17 +37,17 @@ def electronramsey_WithNuclearInit(name,
     # m.params['wait_for_AWG_done']=1
     # m.params['sequence_wait_time']=1
 
-    pts = 3
+    pts = 16
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
 
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
 
-    m.params['wait_times'] = np.linspace(0,3000e-9,pts)
+    m.params['wait_times'] = np.linspace(0,6000e-9,pts)
 
     # MW pulses
-    m.params['detuning']  = 1.0e6
+    m.params['detuning']  = 0.5e6
 
     m.params['pi2_phases1'] = np.ones(pts) * 0
     m.params['pi2_phases2'] = np.ones(pts) * 360 * m.params['wait_times'] * m.params['detuning']
@@ -62,14 +64,27 @@ def electronramsey_WithNuclearInit(name,
     m.params['electron_readout_orientation'] = electron_RO
     m.params['C13_MBI_RO_state']             = el_RO_result
 
-    m.params['Nr_C13_init']                  = 1
-        ### MBE settings
+
+    m.params['no_carbon_init']=False # if True, this flag circumvents any carbon initialization. (does not work yet)
+
+    
+    #This part of the script does not yet work with the current adwin script. Causes adwin to crash....
+    # if no_carbon_init == True:
+    #     m.params['Nr_C13_init']                  = 0
+    #     m.params['C13_MBI_threshold_list']      = []
+    # else:
+    #     m.params['Nr_C13_init']                  = 1
+    #     m.params['C13_MBI_threshold_list']      = [0]
+
+
+    ### MBE settings
     m.params['Nr_MBE']              = 0
     m.params['Nr_parity_msmts']     = 0
 
     ##########
     # Overwrite certain params to test their influence on the sequence.
-    m.params['C13_MBI_threshold_list']      = [0]
+    m.params['Nr_C13_init']                  = 1
+    m.params['C13_MBI_threshold_list']      = [0]   
     m.params['C13_MBI_RO_duration']         = 100
     m.params['SP_duration_after_C13']       = 250
         
@@ -79,6 +94,6 @@ def electronramsey_WithNuclearInit(name,
 if __name__ == '__main__':
     electronramsey_WithNuclearInit(SAMPLE+'_',
     Addressed_Carbon=1,
-    C_13_init_state='up',
+    C_13_init_state='down',
     el_RO_result=0,
     electron_RO='positive')

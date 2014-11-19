@@ -55,7 +55,7 @@ def RO_spin_flip_calibration(name,MBI_RO_power = None, MBI_RO_duration =None):
 
 if __name__ == '__main__':
     
-    RO_spin_flip_calibration(SAMPLE_CFG, MBI_RO_power = 1e-9, MBI_RO_duration = 30)
+    RO_spin_flip_calibration(SAMPLE_CFG, MBI_RO_power = 1e-9, MBI_RO_duration = 50)
 
     # RO_powers = [1e-9,2e-9,5e-9]
     # RO_durations = [18,10,6]
