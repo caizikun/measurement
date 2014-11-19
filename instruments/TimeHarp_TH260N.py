@@ -213,7 +213,7 @@ class TimeHarp_TH260N(Instrument): #1
     def _load_dll(self): #3
 #        print __name__ +' : Loading THLib.dll'
         WINDIR=os.environ['WINDIR']
-        self._TH260 = windll.LoadLibrary(WINDIR+'\\system32\\'+DRIVER)
+        self._TH260 = windll.LoadLibrary(WINDIR+'\\SYSWOW64\\'+DRIVER)
         sleep(0.02)
 
     def _do_set_DeviceIndex(self,val):
