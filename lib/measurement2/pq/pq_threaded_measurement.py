@@ -14,8 +14,8 @@ import Queue
 import threading
 
 class PQMeasurement(m2.Measurement):
-    mprefix = 'PQMeasurement'
-    
+    mprefix = 'PQ_threaded_Measurement'
+
     def autoconfig(self):
         pass
 
@@ -209,7 +209,7 @@ def PQ_decode(data):
 
 
 class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
-    mprefix = 'PQMeasurementIntegrated'
+    mprefix = 'PQ_threaded_MeasurementIntegrated'
 
     def run(self, autoconfig=True, setup=True, debug=False):
 
