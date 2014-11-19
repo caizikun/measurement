@@ -186,7 +186,7 @@ def reset_plu():
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
         qt.msleep(0.1)
         qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
-        qt.msleep(0.3)
+        qt.msleep(1.0)
         qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
         print 'Plu reset complete'
     else:
