@@ -111,7 +111,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 11
+    pts = 7
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 5000
 
@@ -165,4 +165,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Sam_LT4')
+    fast_ssro_calibration('Pippin_LT3')
