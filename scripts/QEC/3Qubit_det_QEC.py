@@ -5,10 +5,38 @@ import qt
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
+import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+# import the msmt class
+from measurement.lib.measurement2.adwin_ssro import ssro
+
+
+def ssrocalibration(name,RO_power=None,SSRO_duration=None):
+    m = ssro.AdwinSSRO('SSROCalibration_'+name)
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    
+    if RO_power != None: 
+        m.params['Ex_RO_amplitude'] = RO_power
+    if SSRO_duration != None: 
+        m.params['SSRO_duration'] = SSRO_duration
+
+    # ms = 0 calibration
+    m.params['Ex_SP_amplitude'] = 0
+    m.run()
+    m.save('ms0')
+    
+    # ms = 1 calibration
+    m.params['SP_duration']     = 500
+    m.params['A_SP_amplitude']  = 0.
+    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
+    m.run()
+    m.save('ms1')
+
+    m.finish()
 def MBE(name, carbon_list   = [1,5,2],               
         
         carbon_init_list              = [2,5,1],
@@ -17,22 +45,32 @@ def MBE(name, carbon_list   = [1,5,2],
         carbon_init_thresholds        = 3*[0],  
 
         number_of_MBE_steps           = 1,
-        logic_state                   = 'Y',
+        logic_state                   = 'X',
         mbe_bases                     = ['Y','Y','Y'],
         MBE_threshold                 = 1,
         RO_C                          = 1,
 
         number_of_parity_msmnts       = 2,
-
+        error_on_qubit               = 'all',
         el_RO                         = 'positive',
-        debug                         = True):
+        debug                         = False,
+        error_sign                    = 1,
+        error_probability_list        = np.linspace(0,1,3),
+        do_correct                    = True):
 
     m = DD.Three_QB_det_QEC(name)
     funcs.prepare(m)
 
-    error_probability_list        = [0]#np.linspace(0,1,3)
-    phase_error                   = 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
-    Qe                            = [1,0,0]
+    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    if error_on_qubit ==1:
+        Qe                            = [1,0,0]
+    elif error_on_qubit ==2:
+        Qe                            = [0,1,0]
+    elif error_on_qubit ==3:
+        Qe                            = [0,0,1]
+    elif error_on_qubit =='all':
+        Qe                            = [1,1,1]
+
     m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
@@ -54,70 +92,18 @@ def MBE(name, carbon_list   = [1,5,2],
     ### RO bases (sweep parameter) ###
     ##################################
 
-    # if logic_state == 'X' or logic_state == 'mX':
-    m.params['Tomo_Bases_00'] = ['Z','Z','Z']
-    m.params['Tomo_Bases_01'] = ['Z','-Z','Z']
-    m.params['Tomo_Bases_10'] = ['Z','Z','-Z']
-    m.params['Tomo_Bases_11'] = ['Z','Z','Z']
-
-    # elif logic_state == 'Y' or logic_state == 'mY':
-    # if RO_C == 1:
-    #     m.params['Tomo_Bases_00'] = ['Y','Z','Z']
-    #     m.params['Tomo_Bases_01'] = ['Y','-Z','Z']
-    #     m.params['Tomo_Bases_10'] = ['Y','Z','-Z']
-    #     m.params['Tomo_Bases_11'] = ['-Y','Z','Z']
-    # if RO_C == 2:
-    #     m.params['Tomo_Bases_00'] = ['Z','Y','Z']
-    #     m.params['Tomo_Bases_01'] = ['Z','-Y','Z']
-    #     m.params['Tomo_Bases_10'] = ['Z','Y','-Z']
-    #     m.params['Tomo_Bases_11'] = ['Z','Y','Z']
-    # if RO_C == 3:
-    #     m.params['Tomo_Bases_00'] = ['Z','Z','Y']
-    #     m.params['Tomo_Bases_01'] = ['Z','-Z','Y']
-    #     m.params['Tomo_Bases_10'] = ['Z','Z','-Y']
-    #     m.params['Tomo_Bases_11'] = ['Z','Z','Y']
-
-    # elif logic_state == 'Z' or logic_state == 'mZ':
-    #     m.params['Tomo_Bases_00'] = ['X','I','I']
-    #     m.params['Tomo_Bases_01'] = ['X','I','I']
-    #     m.params['Tomo_Bases_10'] = ['-X','I','I']
-    #     m.params['Tomo_Bases_11'] = ['X','I','I']
-   
-    # if RO_C == 1:
-    #     m.params['Tomo_Bases_00'] = ['X','I','I']
-    #     m.params['Tomo_Bases_01'] = ['X','I','I']
-    #     m.params['Tomo_Bases_10'] = ['X','I','I']
-    #     m.params['Tomo_Bases_11'] = ['-X','I','I']
-
-    # elif RO_C == 2:
-    #     m.params['Tomo_Bases_00'] = ['I','X','I']
-    #     m.params['Tomo_Bases_01'] = ['I','-X','I']
-    #     m.params['Tomo_Bases_10'] = ['I','X','I']
-    #     m.params['Tomo_Bases_11'] = ['I','X','I']
-    # elif RO_C == 3:
-    #     m.params['Tomo_Bases_00'] = ['I','I','X']
-    #     m.params['Tomo_Bases_01'] = ['I','I','X']
-    #     m.params['Tomo_Bases_10'] = ['I','I','-X']
-    #     m.params['Tomo_Bases_11'] = ['I','I','X']
-    
-    # if RO_C == 1:
-    #     m.params['Tomo_Bases_00'] = ['X','X','I']
-    #     m.params['Tomo_Bases_01'] = ['X','X','I']
-    #     m.params['Tomo_Bases_10'] = ['X','X','I']
-    #     m.params['Tomo_Bases_11'] = ['X','X','I']
-    # elif RO_C == 2:
-    #     m.params['Tomo_Bases_00'] = ['X','I','X']
-    #     m.params['Tomo_Bases_01'] = ['X','I','X']
-    #     m.params['Tomo_Bases_10'] = ['X','I','X']
-    #     m.params['Tomo_Bases_11'] = ['X','I','X']
-    # elif RO_C == 3:
-    #     m.params['Tomo_Bases_00'] = ['I','X','X']
-    #     m.params['Tomo_Bases_01'] = ['I','X','X']
-    #     m.params['Tomo_Bases_10'] = ['I','X','X']
-    #     m.params['Tomo_Bases_11'] = ['I','X','X']
-
-
-    ####################
+    '''Select right tomography basis '''
+    if do_correct == True:
+        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+    # if do_correct == False:
+    #     m.params['Tomo_Bases_00'] =  TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list = logic_state+'_decoded')[RO_C-1]
+    #     m.params['Tomo_Bases_01'] = m.params['Tomo_Bases_00']#TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = 'parity')[RO_C-1]
+    #     m.params['Tomo_Bases_10'] = m.params['Tomo_Bases_00']#TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = 'parity')[RO_C-1]
+    #     m.params['Tomo_Bases_11'] =m.params['Tomo_Bases_00']
+    ###################
     ### MBE settings ###
     ####################
 
@@ -153,12 +139,57 @@ def MBE(name, carbon_list   = [1,5,2],
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
+    
+    error_list = {}
+    error_list['0'] = linspace(0,0.2,3)
+    error_list['1'] = linspace(0.3,0.5,3)
+    error_list['2'] = linspace(0.6,0.8,3)
+    error_list['3'] = linspace(0.9,1.,2)
+    
+    for state in ['mY','Y','Z','mZ','X','mX']:
+        logic_state = state
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+        for error_sign in [1,-1]:
+            logic_state = state
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            GreenAOM.set_power(10e-6)
+            ins_counters.set_is_running(0)  
+            optimiz0r.optimize(dims=['x','y','z'])
 
-    MBE(SAMPLE + 'positive_1',RO_C = 1, el_RO = 'positive')
-    MBE(SAMPLE + 'negative_1',RO_C = 1, el_RO = 'negative')
+            for RO in range(7):
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+                ssrocalibration(SAMPLE_CFG)
+                for k in range(4):
+                    e_list = error_list[str(k)].tolist()
+                    print '-----------------------------------'            
+                    print 'press q to stop measurement cleanly'
+                    print '-----------------------------------'
+                    qt.msleep(2)
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        break
+                    MBE(SAMPLE + 'positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
+                        logic_state = logic_state,el_RO = 'positive', 
+                        error_sign= error_sign, do_correct = True,
+                        error_on_qubit = 'all',
+                        error_probability_list= e_list)
 
-    # MBE(SAMPLE + 'positive_2',RO_C = 2, el_RO = 'positive')
-    # MBE(SAMPLE + 'negative_2',RO_C = 2, el_RO = 'negative')
-
-    # MBE(SAMPLE + 'positive_3',RO_C = 3, el_RO = 'positive')
-    # MBE(SAMPLE + 'negative_3',RO_C = 3, el_RO = 'negative')
+                    MBE(SAMPLE + 'negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
+                        logic_state = logic_state,el_RO = 'negative', 
+                        error_sign= error_sign, do_correct = True,
+                        error_on_qubit = 'all',
+                        error_probability_list= e_list)

@@ -23,16 +23,20 @@ def MBE(name, carbon_list   = [1,5,2],
 
         number_of_parity_msmnts = 0,
         parity_msmnts_threshold = 1, 
-
+        RO_C                    = 1,
         el_RO               = 'positive',
-        debug               = True,
+        debug               = False,
+        error_sign          = 1,
         Tomo_bases          = ['Z','-Y','Z']):
 
     m = DD.Three_QB_QEC(name)
     funcs.prepare(m)
 
-    error_probability_list  = np.linspace(0,1,6)
-    m.params['phase_error'] = 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    error_probability_list        = np.linspace(0,1,6)
+    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    Qe                            = [1,1,1]
+
+    m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -53,8 +57,13 @@ def MBE(name, carbon_list   = [1,5,2],
     ### RO bases (sweep parameter) ###
     ##################################
 
-    m.params['Tomography Bases'] = Tomo_bases 
-    
+
+    '''Select right tomography basis '''
+
+    m.params['Tomography Bases'] = TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list = logic_state+'_list')[RO_C-1]
+
+
+
     ####################
     ### MBE settings ###
     ####################
@@ -64,7 +73,7 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['MBE_threshold']       = MBE_threshold
     m.params['3qb_logical_state']   = logic_state
     ###################################
-    ### Parity measurement settings ###
+    ### Parity measurement settings ### 
     ###################################
 
     m.params['Nr_parity_msmts']     = number_of_parity_msmnts
@@ -84,7 +93,39 @@ def MBE(name, carbon_list   = [1,5,2],
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive')
-    # MBE(SAMPLE + 'negative', el_RO= 'negative')
+    for state in ['Z','mZ','X','mX','Y','mY']:
+        logic_state = state
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(2)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+        for error_sign in [1,-1]:
+            logic_state = state
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            GreenAOM.set_power(10e-6)
+            ins_counters.set_is_running(0)  
+            optimiz0r.optimize(dims=['x','y','z'])
+
+            for RO in range(7):
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+            MBE(SAMPLE + 'positive_RO'+str(RO)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
+                logic_state = logic_state,el_RO = 'positive', 
+                error_sign= error_sign)
+            
+            MBE(SAMPLE + 'negative_RO'+str(RO)+'_'+logic_state,RO_C = RO,
+                logic_state = logic_state,el_RO = 'negative', 
+                    error_sign= e_sign,)
 
 
