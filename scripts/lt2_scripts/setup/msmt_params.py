@@ -47,8 +47,8 @@ cfg['protocols']['AdwinSSRO']={
 'counter_channel'           :       1,
 'cycle_duration'            :       300,
 'green_off_amplitude'       :       0.0,
-'green_repump_amplitude'    :       200e-6,
-'green_repump_duration'     :       50, 
+'green_repump_amplitude'    :       20e-6,
+'green_repump_duration'     :       10, #50 
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
 'wait_after_RO_pulse_duration':     3,   
@@ -172,23 +172,23 @@ cfg['samples']['111_1_sil18'] = {
     ###########################################
 
 'C1_freq'       :   450.153e3,   
-'C1_freq_0'     :   431.948e3, #2 Hz uncertainty   
-'C1_freq_1'     :   469.009e3,           
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-15.0] +[34.6]+[0]*2+[60.5]+ 4*[0]),
+'C1_freq_0'     :   431.900e3, #2 Hz uncertainty   
+'C1_freq_1'     :   468.996e3,           
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-23.7] +[39.3]+[0]*2+[68.3]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [34],
 
 'C5_freq'       :   419.594e3,   
-'C5_freq_0'     :   431.948e3,  
-'C5_freq_1'     :   408.290e3,           
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[91.4]+[102.5]+[0]*2+[-10.8]+[0]*4), 
+'C5_freq_0'     :   431.900e3,  
+'C5_freq_1'     :   408.324e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[81.9]+[110.3]+[0]*2+[22.5]+[0]*4), 
 'C5_Ren_tau'    :   [8.926e-6],
 'C5_Ren_N'      :   [38],
 
 'C2_freq'       :   422.415e3,   
-'C2_freq_0'     :   431.948e3,  
-'C2_freq_1'     :   413.461e3,           
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[46.1]+[22.1]+[0]*2+[62.7]+[0]*4), 
+'C2_freq_0'     :   431.900e3,  
+'C2_freq_1'     :   413.490e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.7]+[40.5]+[0]*2+[70.2]+[0]*4), 
 'C2_Ren_tau'    :   [10.058e-6],
 'C2_Ren_N'      :   [18]
 }
@@ -199,19 +199,19 @@ cfg['samples']['111_1_sil18'] = {
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
-'SSRO_duration'     :  100,
-'SSRO_stop_after_first_photon' : 0,
+'SSRO_duration'     :  140,
+'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude' : 25e-9, 
 'A_RO_amplitude' : 0,
-'A_SP_amplitude' : 40e-9,
-'CR_duration'    : 50,
+'A_SP_amplitude' : 40e-9,#40e-9,
+'CR_duration'    : 80, # 50
 'CR_preselect'   : 1000,
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
-'Ex_CR_amplitude': 5e-9,   
-'Ex_RO_amplitude': 15e-9,   
+'Ex_CR_amplitude': 5e-9,   # 5e-9
+'Ex_RO_amplitude': 15e-9,#15e-9,   
 'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 450,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration'    : 250,     # 450 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     #only for specific scripts
 'SP_duration_ms1': 500,     #only for specific scripts
 'SP_filter_duration' : 0 }
@@ -247,12 +247,12 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 
 # #     ### Pi pulses, fast & hard 
 'fast_pi_duration'          :   64e-9,
-'fast_pi_amp'               :   0.805293,
+'fast_pi_amp'               :   0.810902,
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-'fast_pi2_amp'              :   0.80393,
+'fast_pi2_amp'              :   0.814796,
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -274,7 +274,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           1e-9,
-'MBI_duration'              :           60,
+'MBI_duration'              :           50,
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [100],
@@ -282,7 +282,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
-'max_MBI_attempts'          :           3,    # The maximum number of MBI attempts before going back to CR check
+'max_MBI_attempts'          :           1,    # The maximum number of MBI attempts before going back to CR check
 'MBI_threshold'             :           1,
 'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
@@ -299,7 +299,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 'C13_MBI_threshold_list':               [1],
 'C13_MBI_RO_duration':                  100,  
 'E_C13_MBI_RO_amplitude':               1e-9,
-'SP_duration_after_C13':                250, #250
+'SP_duration_after_C13':                100, #250
 'A_SP_amplitude_after_C13_MBI':         15e-9,
 'E_SP_amplitude_after_C13_MBI':         0e-9,
 'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
@@ -314,7 +314,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-parity msmnts
 'Parity_threshold':                     1,
-'Parity_RO_duration':                   100,
+'Parity_RO_duration':                   126,
 'E_Parity_RO_amplitude':                1e-9,
 
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
