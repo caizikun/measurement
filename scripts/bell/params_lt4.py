@@ -60,7 +60,7 @@ params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espi
 params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['MW_BellStateOffset'] = -0.0239 #2014-11-
+params_lt4['MW_BellStateOffset'] = 0 # 0.0239 #2014-11-
 params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
 params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
@@ -87,7 +87,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.615#2014-11-18  CAREFUL: Fit might give % of max
+params_lt4['aom_amplitude']             = 0.57#2014-11-18  CAREFUL: Fit might give % of max
 # maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
