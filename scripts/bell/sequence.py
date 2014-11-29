@@ -377,18 +377,27 @@ def _LDE_element(msmt, **kw):
 
     # 14 RND MW pulse
     if msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0 and msmt.joint_params['do_final_MW_rotation'] == 1:
-        e.add(msmt.MW_RND_I, 
-            start = msmt.params['MW_RND_wait'],
-            refpulse = 'RND', 
-            refpoint = 'end', 
-            refpoint_new = 'start',
-            name='MW_RND_0')
-        e.add(msmt.MW_RND_Q, 
-            start = msmt.params['MW_RND_wait'],
-            refpulse = 'RND', 
-            refpoint = 'end', 
-            refpoint_new = 'start',
-            name='MW_RND_1')
+        if msmt.joint_params['measure_xx_ent'] == False:
+            e.add(msmt.MW_RND_I, 
+                start = msmt.params['MW_RND_wait'],
+                refpulse = 'RND', 
+                refpoint = 'end', 
+                refpoint_new = 'start',
+                name='MW_RND_0')
+            e.add(msmt.MW_RND_Q, 
+                start = msmt.params['MW_RND_wait'],
+                refpulse = 'RND', 
+                refpoint = 'end', 
+                refpoint_new = 'start',
+                name='MW_RND_1')
+        else:
+            e.add(msmt.MW_pi2, 
+                start = msmt.params['MW_RND_wait'],
+                refpulse = 'RND', 
+                refpoint = 'end', 
+                refpoint_new = 'start',
+                name='MW_RND_0')
+
     #15 RO
     if msmt.joint_params['RO_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0:
         refpulse = 'MW_RND_0' if (msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_final_MW_rotation'] == 1) else 'RND'

@@ -84,14 +84,18 @@ def check_triggering():
     print ret
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
+        peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
+            jitterDetected=True
+        elif (peak_max<490.) or (peak_max>490.4):
+            ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:
             ret=ret+'\n'+'No Jitter detected'
         ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
     
-    ret=ret+'\npeak at {:.2f} ns'.format(np.argmax(hist)*pharp.get_Resolution()/1000.)
+    ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
 
 
     ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
@@ -126,7 +130,7 @@ def do_jitter_test(resetAWG=False):
         qt.instruments['AWG'].stop()
         output = lt3_helper.get_measurement_name()
         print output
-        if 'JITTERING' in output:
+        if 'JITTERING' in output or 'PEAK WRONG' in output:
             jitterDetected=True
         else: jitterDetected =False
     else:
