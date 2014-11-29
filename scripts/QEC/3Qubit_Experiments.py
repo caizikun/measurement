@@ -136,7 +136,7 @@ if __name__ == '__main__':
     
     # tomo =  TD.get_tomo_bases(nr_of_qubits = 3, RO_list = '000_state')
 
-    for k in range(1):
+    for kk in range(1):
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
-        for state in ['Z','mZ','X','mX','Y','mY']:
+        for state in ['Z']:#['Z','mZ','X','mX','Y','mY']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'

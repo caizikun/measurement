@@ -20,7 +20,7 @@ def run(name, mbi = True):
     #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 21
+    pts = 31
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
 

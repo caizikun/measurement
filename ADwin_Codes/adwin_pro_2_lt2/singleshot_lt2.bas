@@ -20,7 +20,6 @@
 ' mode  4:  optional: trigger for AWG sequence, or static wait time
 ' mode  5:  E pulse and photon counting for spin-readout with time dependence
 '           -> mode 1
-'
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
