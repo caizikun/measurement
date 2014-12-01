@@ -17,6 +17,7 @@ import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload
 import measurement.scripts.mbi.mbi_funcs as funcs
 n = 1
 
+''' NOTE: THE CALIBRATIONS FOR THE CROSSTALK PHASES DO NOT IMPORT THE NUMBER OF PULSES '''
 
 def NuclearRamseyWithInitialization_cal(name, 
         carbon_nr           = 5,               

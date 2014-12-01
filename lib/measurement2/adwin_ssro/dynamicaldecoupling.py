@@ -1161,6 +1161,75 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e.append(pulse.cp(X))
             e.append(T_after_p)
 
+        elif Gate_operation == 'no_pulse':
+            time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
+            time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
+
+            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi_duration'],
+                amplitude = 0)
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse+20e-6, amplitude = 0.)
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_after_pulse, amplitude = 0.)
+
+            e = element.Element('%s_Pi_pulse' %(prefix),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_before_p)
+            e.append(pulse.cp(X))
+            e.append(T_after_p)
+
+        elif Gate_operation == 'y':
+            time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
+            time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
+
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase = self.params['Y_phase'])
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse, amplitude = 0.)
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_after_pulse, amplitude = 0.)
+
+            e = element.Element('%s_Pi_2_pulse' %(prefix),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_before_p)
+            e.append(pulse.cp(X))
+            e.append(T_after_p)
+
+
+        elif Gate_operation == '-y':
+            time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
+            time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
+
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase = self.params['Y_phase']+180)
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_before_pulse, amplitude = 0.)
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = time_after_pulse, amplitude = 0.)
+
+            e = element.Element('%s_Pi_2_pulse' %(prefix),  pulsar=qt.pulsar,
+                    global_time = True)
+            e.append(T_before_p)
+            e.append(pulse.cp(X))
+            e.append(T_after_p)
+
         else:
             print 'this is not programmed yet '
             return
@@ -3599,7 +3668,8 @@ class Three_QB_det_QEC(MBI_C13):
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
-                        el_RO_result         = '0')
+                        el_RO_result         = '0',
+                        readout_orientation = self.params['Parity_a_RO_orientation'])
 
             gate_seq.extend(Parity_seq_a)
 
@@ -3615,7 +3685,7 @@ class Three_QB_det_QEC(MBI_C13):
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
-                        readout_orientation = 'positive',
+                        readout_orientation = self.params['Parity_b_RO_orientation'],
                         el_state_in     = 0)
 
             Parity_seq_b1 = self.readout_carbon_sequence(
@@ -3624,8 +3694,8 @@ class Three_QB_det_QEC(MBI_C13):
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
-                        el_RO_result         = '0',
-                        readout_orientation = 'positive',
+                        el_RO_result        = '0',
+                        readout_orientation = self.params['Parity_b_RO_orientation'],
                         el_state_in     = 1)                                
 
             gate_seq0.extend(Parity_seq_b0)

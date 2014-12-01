@@ -10,11 +10,11 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon            =   2,               
+def MBE(name, carbon            =   6,               
         
-        carbon_init_list        = [2],
+        carbon_init_list        = [6],
         carbon_init_states      = ['up'], 
-        carbon_init_methods     = ['swap'], 
+        carbon_init_methods     = ['MBI'], 
         carbon_init_thresholds  = [1],  
 
         el_RO               = 'positive',
