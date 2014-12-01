@@ -268,7 +268,7 @@ def SP_lt3(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
+    DoJitterCheck = True
     ResetPlu = True
         
     if ResetPlu:
@@ -285,9 +285,9 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(1)
         #TPQI('run_test')
-        #full_bell('lhfbt_day8_run33')   
+        full_bell('ZZ_RND_day2_run14')   
         #SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')
-        measureXX('EntanglementTest')
+        #measureXX('Entanglement_day3_run19')
         pass

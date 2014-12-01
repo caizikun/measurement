@@ -56,14 +56,14 @@ def pulse_defs_lt4(msmt):
                     amplitude = msmt.params['MW_RND_amp_I'],
                     length = msmt.params['MW_RND_duration_I'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
+                    pi2_pulse = False ) #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND-pulse-Q',
                     MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['MW_RND_amp_Q'],
                     length = msmt.params['MW_RND_duration_Q'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
+                    pi2_pulse = False ) #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
@@ -144,14 +144,14 @@ def pulse_defs_lt3(msmt):
                     amplitude = msmt.params['MW_RND_amp_I'],
                     length = msmt.params['MW_RND_duration_I'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
+                    pi2_pulse = False)  # XXXXXXXXX
     msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
                     MW_channel='MW_Qmod',
                     PM_channel='MW_pulsemod',
                     amplitude = msmt.params['MW_RND_amp_Q'],
                     length = msmt.params['MW_RND_duration_Q'],
                     PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                    pi2_pulse = True)
+                    pi2_pulse = False) # XXXXXXXXX
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',

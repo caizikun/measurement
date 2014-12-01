@@ -66,13 +66,14 @@ def check_triggering():
     pharp.set_CFDLevel0(50)
     pharp.set_CFDLevel1(50)
     qt.msleep(1)
-    pharp.StartMeas(int(3 * 1e3)) #10 second measurement
+    pharp.StartMeas(int(4 * 1e3)) #10 second measurement
     qt.msleep(0.1)
     print 'starting PicoHarp measurement'
     while pharp.get_MeasRunning():
         if(msvcrt.kbhit() and msvcrt.getch()=='q'):
             print 'q pressed, quitting current run'
             pharp.StopMeas()
+            break
     hist=pharp.get_Block()
     print 'PicoHarp measurement finished'
 
@@ -88,7 +89,7 @@ def check_triggering():
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
             jitterDetected=True
-        elif (peak_max<490.) or (peak_max>490.4):
+        elif (peak_max<489.) or (peak_max>489.5):
             ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:
@@ -121,7 +122,7 @@ def do_jitter_test(resetAWG=False):
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
         lt3_helper.execute_script()
         program_test_master(reset=resetAWG)
-        qt.msleep(2.2)      
+        qt.msleep(3.2)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'
