@@ -161,11 +161,11 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 0.642287,#2014-11-17 for pi/2 pulse of 90 ns
         'Hermite_Npi4_length': 45e-9,
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
-        'Square_pi_length' : 2000e-9, # calib. 2014-07-25
-      	'Square_pi_amp' : 0.065 , 
+        'Square_pi_length' : 50e-9,#2000e-9, # calib. 2014-07-25
+      	'Square_pi_amp' : 0.731, 
       	'IQ_Square_pi_amp' : 0.032 , # calib. for 2 us pi pulse, 2014-10-15 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
-    	'Square_pi2_amp'  : 0.45, # XXXXXXX not calibratedrepump
+    	'Square_pi2_amp'  : 0.684, # XXXXXXX not calibratedrepump
     	'IQ_Square_pi2_amp'  : 0.99, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,

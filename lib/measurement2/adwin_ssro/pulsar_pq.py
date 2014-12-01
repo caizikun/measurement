@@ -36,8 +36,8 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQ_threaded_Measurement):
         return self.adwin_process_running()
 
     def run(self, **kw):
-        pq.PQ_threaded_Measurement.run(self,**kw) # Not operational AR2014
-        #pq.PQMeasurement.run(self,**kw)
+        #pq.PQ_threaded_Measurement.run(self,**kw) # Not operational AR2014
+        pq.PQMeasurement.run(self,**kw)
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \

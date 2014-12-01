@@ -34,6 +34,9 @@ qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker',
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='adwin_success_trigger', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
     high=2.0, low=0, offset=0., delay=0e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker2', name='RND_halt', type='marker', 
@@ -65,9 +68,8 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].g
 #qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
 #qt.pulsar.set_channel_opt('AOM_Yellow','low', qt.instruments['YellowAOM'].get_sec_V_off())
 
-#PLU
-#qt.pulsar.define_channel(id='ch2_marker2', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0., delay=14e-9, active=True)
+
+
 
 ### TMP HH debug channel -- normally there's RF on this output.
 #qt.pulsar.define_channel(id='ch2', name='HH_test', type='analog', high=2.0,

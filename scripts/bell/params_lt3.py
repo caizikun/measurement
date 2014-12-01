@@ -31,7 +31,7 @@ params_lt3['repump_mod_control_dac']	=  qt.exp_params['protocols']['cr_mod']['re
 
 #bell adwin:
 params_lt3['AWG_done_DI_channel'] = 17
-params_lt3['AWG_success_DI_channel'] = 9
+params_lt3['AWG_success_DI_channel'] = 16
 params_lt3['SP_duration'] = 10
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['remote_CR_DO_channel'] = 12
@@ -56,15 +56,19 @@ params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
-params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
+params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
+params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
+params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
+#params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+#params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
+#params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+#params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt3['MW_BellStateOffset'] = 0.0206 #2014-11-09
-params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND_amp_Q']	   = 0#params_lt3['MW_pi_amp']# 0.487 
-params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi_duration'] #50e-9
+params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
+params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
 params_lt3['echo_offset'] = -100e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
