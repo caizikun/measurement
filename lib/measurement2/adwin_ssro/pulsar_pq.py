@@ -11,8 +11,9 @@ import qt
 from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools
+reload(pq)
 
-class PQPulsarMeasurement(PulsarMeasurement, pq.PQ_threaded_Measurement):
+class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
     mprefix = 'PQPulsarMeasurement'
     
     def __init__(self, name):

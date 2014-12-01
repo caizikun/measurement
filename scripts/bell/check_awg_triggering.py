@@ -66,13 +66,14 @@ def check_triggering():
     pharp.set_CFDLevel0(50)
     pharp.set_CFDLevel1(50)
     qt.msleep(1)
-    pharp.StartMeas(int(3 * 1e3)) #10 second measurement
+    pharp.StartMeas(int(4 * 1e3)) #10 second measurement
     qt.msleep(0.1)
     print 'starting PicoHarp measurement'
     while pharp.get_MeasRunning():
         if(msvcrt.kbhit() and msvcrt.getch()=='q'):
             print 'q pressed, quitting current run'
             pharp.StopMeas()
+            break
     hist=pharp.get_Block()
     print 'PicoHarp measurement finished'
 
@@ -84,14 +85,18 @@ def check_triggering():
     print ret
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
+        peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
+            jitterDetected=True
+        elif (peak_max<489.) or (peak_max>489.5):
+            ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:
             ret=ret+'\n'+'No Jitter detected'
         ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
     
-    ret=ret+'\npeak at {:.2f} ns'.format(np.argmax(hist)*pharp.get_Resolution()/1000.)
+    ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
 
 
     ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
@@ -117,7 +122,7 @@ def do_jitter_test(resetAWG=False):
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/check_awg_triggering.py')
         lt3_helper.execute_script()
         program_test_master(reset=resetAWG)
-        qt.msleep(2.2)      
+        qt.msleep(3.2)      
         while lt3_helper.get_is_running():
             if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 print 'measurement aborted'
@@ -126,7 +131,7 @@ def do_jitter_test(resetAWG=False):
         qt.instruments['AWG'].stop()
         output = lt3_helper.get_measurement_name()
         print output
-        if 'JITTERING' in output:
+        if 'JITTERING' in output or 'PEAK WRONG' in output:
             jitterDetected=True
         else: jitterDetected =False
     else:

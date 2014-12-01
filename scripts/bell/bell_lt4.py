@@ -165,7 +165,7 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=True, live_histogram=False)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'], live_histogram=False)
     m.save()
 
     if measure_lt3:
@@ -182,6 +182,20 @@ def bell_lt4(name,
 def full_bell(name):
     name='full_Bell'+name
     m = Bell_lt4(name) 
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def measureXX(name):
+    name='MeasXX_'+name
+    m = Bell_lt4(name)
+    m.joint_params['measure_xx_ent']=True
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -271,8 +285,9 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(1)
         #TPQI('run_test')
-        #full_bell('test_run')#lhfbt_day6_run20')   
-        SP_lt4('SPCORR_lt4')
+        full_bell('ZZ_RND_day2_run14')   
+        #SP_lt4('SPCORR_lt4')
         #pulse_overlap('FinalDelay')
         #SP_lt3('SPCORR_lt3')
+        #measureXX('Entanglement_day3_run19')
         pass
