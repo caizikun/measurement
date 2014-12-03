@@ -1654,8 +1654,8 @@ config['adwin_pro_processes'] = {
                 'file' : 'bell_lt3.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_done_DI_channel'         ,   8],
-                    ['AWG_success_DI_channel'         ,   8],
+                    ['AWG_done_DI_channel'         ,   17],
+                    ['AWG_success_DI_channel'         ,  17],
                     ['SP_duration'                 , 100],
                     ['wait_after_pulse_duration'   ,   1],
                     ['remote_CR_DO_channel'        ,  15],
@@ -1663,6 +1663,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 8],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

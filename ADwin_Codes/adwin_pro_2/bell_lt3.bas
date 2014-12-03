@@ -8,12 +8,13 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
 ' protocol:
-' mode  0: CR check
+' mode  0: dio out to 0
+' mode 1: CR check
 ' mode  2:  spin pumping with E or A pulse, photon counting for time dependence of SP
 ' mode  3:  optional: spin pumping with E or A pulse, photon counting for postselection on 0 counts
 '           counts > 0 -> mode 1
@@ -56,7 +57,7 @@ DIM PLU_succes_is_high, PLU_succes_was_high, DIO_register AS LONG
 DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM counts, old_counts AS LONG
 
-DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high  AS LONG
+DIM remote_CR_trigger_do_channel,AWG_done_di_channel,AWG_done_di_pattern, AWG_done_was_high,AWG_done_is_high,invalid_data_marker_do_channel  AS LONG
 DIM succes_event_counter, remote_CR_wait_timer AS LONG
 DIM CR_result,first_local AS LONG
 
@@ -72,6 +73,7 @@ INIT:
   wait_for_AWG_done             = DATA_20[7]
   sequence_wait_time            = DATA_20[8]
   wait_before_RO                = DATA_20[9]
+  invalid_data_marker_do_channel= DATA_20[10]
   
 
   E_SP_voltage                 = DATA_21[1]
@@ -119,6 +121,7 @@ INIT:
   Par_63 = 0                    ' Stop flag
   Par_73 = repetition_counter     ' SSRO repetitions
   par_77 = succes_event_counter 
+  PAR_78 = 0 'invalid data marker
   PAR_80=0                     
 
 EVENT:
@@ -130,8 +133,13 @@ EVENT:
     Par_61 = mode
     SELECTCASE mode
        
-      CASE 0 'CR check
+      CASE 0 
         P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 0) ' stop triggering remote adwin
+        P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 0) ' turn off invalid data marker
+        mode = 1
+        timer = -1
+        
+      CASE 1 'CR check
         CR_result = CR_check(first,succes_event_counter+1)
         IF ( CR_result > 0 ) THEN
           'IF (Par_63 > 0) THEN
@@ -174,6 +182,9 @@ EVENT:
       case 3  ' signal local CR+SP done to remote adwin
         
         P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 1)
+        IF (Par_78>0) THEN
+          P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 1)
+        ENDIF
         INC(repetition_counter)
         INC(PAR_73)
         mode = 4            

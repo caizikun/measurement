@@ -376,7 +376,7 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
 
     m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
@@ -691,7 +691,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 2.0 :
         rabi(SAMPLE+'_'+'rabi', IQmod=IQmod, Imod_channel = Imod_channel, 
-                pulse_type = 'Hermite', debug = debug)
+                pulse_type = 'Square', debug = debug)
 
     if stage == 2.5 :
         print "Starting a dark ESR spectrum" # Error in the se
@@ -724,7 +724,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.0, IQmod =False, Imod_channel=False, debug = False)
+    run_calibrations(2.5, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

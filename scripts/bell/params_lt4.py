@@ -57,17 +57,26 @@ params_lt4['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt4['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
-params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['MW_BellStateOffset'] = 0 # 0.0239 #2014-11-
-params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
-params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
-params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']
-params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration']
-params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_Npi4_amp']
-params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration']
+params_lt4['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
+params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
+params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
+params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
+params_lt4['MW_RND_amp_I']	   = params_lt4['MW_pi2_amp']#TODO Calibrate  -0.487 
+params_lt4['MW_RND_duration_I']= params_lt4['MW_pi2_duration'] #TODO Calibrate 50e-9
+params_lt4['MW_RND_amp_Q']	   = params_lt4['MW_pi2_amp']# 0.487 
+params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi2_duration'] #50e-9
+
+# params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+# params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
+# params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+# params_lt4['MW_BellStateOffset'] = -0.0239 #2014-11-
+# params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
+# params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
+# params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
+# params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']
+# params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration']
+# params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_Npi4_amp']
+# params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration']
 
 params_lt4['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 params_lt4['echo_offset'] = -100e-9 #50 ns
@@ -87,13 +96,13 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.57#2014-11-18  CAREFUL: Fit might give % of max
+params_lt4['aom_amplitude']             = 0.61 #0.57    2014-11-23  CAREFUL: Fit might give % of max
 # maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 3e-9 # 2014-11-18
+params_lt4['AWG_RO_power']            = 2.5e-9 # 2014-11-18
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
