@@ -310,7 +310,20 @@ EVENT:
         ENDIF
 
       CASE 4 'Spin pumpin A // go to start C13 init sequence
-        mode = 5
+        IF (Nr_C13_init=0) THEN 'If all carbon initialized
+          IF (Nr_MBE > 0) THEN
+            mode = 8 'to MBE
+          ELSE
+            IF (Nr_parity_msmts >0) THEN  'Editing
+              mode = 11 'to Parity msmt
+            ELSE
+              mode = 13 'to final RO
+            ENDIF
+          ENDIF
+        ELSE
+          mode = 5 ' to Carbon MBI
+        ENDIF  
+
 
       CASE 5 'Start C13 MBI seq and wait for trigger // go to C13 MBI readout OR SP-A
         IF (C13_MBI_threshold = 0) THEN
