@@ -59,10 +59,8 @@ def Bell_live_filter(
     and overflow information (absolute overflow time and time of the last sync).
     """
  
-    cdef cnp.uint64_t EntanglementMarkers =0
     cdef cnp.uint64_t k
     cdef cnp.uint64_t l = 0
-    cdef cnp.uint64_t Hist_SyncTimediff
     cdef cnp.uint64_t length = time.shape[0]
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] sync_time = np.empty((length,), dtype='u8')
     cdef cnp.ndarray[cnp.uint64_t, ndim=1, mode='c'] hhtime = np.empty((length,), dtype='u8')
@@ -81,10 +79,6 @@ def Bell_live_filter(
                 last_sync_number += 1
                 continue
 
-            elif channel[k] == 4:  # This is an entanglement event     
-                EntanglementMarkers += 1
-
-            # write all marker events to the output
             _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync   
             hhtime[l] = (t_ofl + time[k]) / t2_time_factor
             hhchannel[l] = channel[k]
@@ -109,4 +103,4 @@ def Bell_live_filter(
             l += 1
             continue
 
-    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number, EntanglementMarkers
+    return hhtime[:l], hhchannel[:l], hhspecial[:l], sync_time[:l], hist, sync_number[:l], l, t_ofl, t_lastsync, last_sync_number

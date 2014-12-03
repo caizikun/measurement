@@ -11,12 +11,12 @@ def turn_off_lasers(names):
     for l in names:
         qt.instruments[l].turn_off()
 
-def turn_off_all_lt4_lasers():
-    set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM']) ### XXX Still have to add yellow and pulse
-
 def turn_off_all_lasers():
-    turn_off_all_lt4_lasers()
+    #set_simple_counting(['adwin'])
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+
+def turn_off_all_lt4_lasers():
+    turn_off_all_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[adwin].set_simple_counting()
@@ -43,6 +43,7 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin')
     for n in awg_names:
+        init_AWG()
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
@@ -65,18 +66,14 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     qt.msleep(1)
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'GreenAOM'],
-    setpoints = [5e-9, 10e-9, 50e-9,50e-6]):
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM'],
+    setpoints = [5e-9, 10e-9, 50e-9,30e-9]):
     
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
         
-def disconnect_lt1_remote():
-    for i in qt.instruments.get_instrument_names():
-        if len(i) >= 4 and i[-4:] == '_lt1':
-            qt.instruments.remove(i)
 
 def apply_awg_voltage(awg, chan, voltage):
     """
@@ -116,14 +113,6 @@ def check_fast_path_power_lt4(ret=False, **kw):
     pwr = check_fast_path_power('powermeter', 'PMServo', ret=ret, **kw)
     if ret:
         return pwr
-
-def set_lt1_optimization_powers():
-    turn_off_all_lt1_lasers()
-    qt.instruments['YellowAOM_lt1'].set_power(50e-9)
-    qt.instruments['MatisseAOM_lt1'].set_power(5e-9)
-    qt.instruments['NewfocusAOM_lt1'].set_power(10e-9)
-
-
 
 def turn_on_lt4_pulse_path():
     #qt.instruments['PMServo'].move_in()
@@ -186,7 +175,7 @@ def reset_plu():
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
         qt.msleep(0.1)
         qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
-        qt.msleep(0.3)
+        qt.msleep(1.0)
         qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
         print 'Plu reset complete'
     else:
