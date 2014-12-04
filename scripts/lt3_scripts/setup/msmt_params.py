@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      45e-9,
+		'yellow_repump_amplitude':      40e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -125,7 +125,7 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 2e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 12e-9,
+		'A_SP_amplitude':				 14e-9,
 		'CR_duration' :				 	 50,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,

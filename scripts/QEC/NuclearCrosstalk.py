@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
+def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap'):
 
     m = DD.Crosstalk(name)
     funcs.prepare(m)
@@ -42,8 +42,6 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
     m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
-
-   
     m.params['Nr_C13_init']     = 1
     m.params['Nr_MBE']          = 0
     m.params['Nr_parity_msmts'] = 0 
@@ -53,8 +51,8 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
 if __name__ == '__main__':
       # Tomography 
     # Crosstalk(SAMPLE,RO_phase = 0, RO_Z = False)
-    Crosstalk(SAMPLE,RO_phase = 90, RO_Z = False)
-    # Crosstalk(SAMPLE,RO_phase = 0, RO_Z = True)
+    # Crosstalk(SAMPLE,RO_phase = 90, RO_Z = False)
+    Crosstalk(SAMPLE,RO_phase = 0, RO_Z = True)
 
 
 

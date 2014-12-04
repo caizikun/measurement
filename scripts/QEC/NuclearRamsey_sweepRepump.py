@@ -23,7 +23,8 @@ def NuclearRamseyWithInitialization(name,
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        C13_init_method       = 'swap'):
+        C13_init_method       = 'MBI',
+        C13_sp_duration       = 300):
 
     m = DD.NuclearRamseyWithInitialization_v2(name)
     funcs.prepare(m)
@@ -31,8 +32,8 @@ def NuclearRamseyWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 500
-    m.params['C13_MBI_RO_state'] = 0
+    m.params['reps_per_ROsequence'] = 2000
+    m.params['C13_MBI_RO_state'] = 1
 
     ### overwritten from msmnt params
            
@@ -54,11 +55,11 @@ def NuclearRamseyWithInitialization(name,
 
     # m.params['sweep_name'] = 'free_evolution_time'
     # m.params['sweep_pts']  = m.params['free_evolution_time']
-        
+    
         ### 1B - Lab frame
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
-    m.params['free_evolution_time'] = np.linspace(380e-6, 386e-6,m.params['pts'])
+    m.params['pts'] = 51
+    m.params['free_evolution_time'] = np.linspace(500e-6, 520e-6,m.params['pts'])
     m.params['C_RO_phase'] = m.params['pts']*['reset']
     # m.params['C_RO_phase'] = m.params['pts']*['X']        
 
@@ -88,9 +89,16 @@ def NuclearRamseyWithInitialization(name,
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
 
-  
+    m.params['SP_duration_after_C13']=C13_sp_duration 
+    m.params['C13_MBI_RO_duration']=100
+
+    if C13_sp_duration==0:
+        m.params['A_SP_amplitude_after_C13_MBI']=0
+
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+
+    for length in [0,2,5,7,10,20,30,40,50,150,200]:
+        NuclearRamseyWithInitialization(SAMPLE+'_SP_length_'+str(length),C13_sp_duration=length)
 

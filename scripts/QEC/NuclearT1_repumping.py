@@ -1,5 +1,7 @@
 """
-Script for carbonT1 msmnts
+Script for carbonT1 msmnts with repetitive repumping of the electronic spin.
+Norbert Kalb
+2014
 """
 import numpy as np
 import qt 
@@ -14,24 +16,24 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearT1(name,tau = None, 
+def NuclearT1_repumping(name,tau = None, 
                     carbon_state = 'up', 
                     electron_RO = 'positive', 
                     carbon = 1,
                     el_RO_result = 0,
                     el_after_init=0,
-                    pts=11,
+                    pts=2,
                     short_time=1.0e-3,
                     long_time=20.0e-3):
 
-    m = DD.NuclearT1(name)
+    m = DD.NuclearT1_repumping(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
-    m.params['pts'] = pts
+    m.params['pts'] = 2
 
     m.params['Addressed_Carbon']             = carbon
     m.params['C13_init_state']               = carbon_state
@@ -51,6 +53,13 @@ def NuclearT1(name,tau = None,
     m.params['Nr_parity_msmts']     = 0
 
 
+    ############################
+    #    repumping parameters  #
+    ############################
+
+    m.params['repetitive_SP_A_duration']=80 #in us
+    m.params['repump_repetitions']=[5,5]
+    m.params['repetitive_SP_A_power']=30e-9
     #############################
     #!NB: These should go into msmt params
     #############################
@@ -58,6 +67,7 @@ def NuclearT1(name,tau = None,
     ##########
     # Overwrite certain params to test their influence on the sequence.
     m.params['C13_MBI_threshold_list']      = [0]
+    m.params['C13_MBI_threshold']      = 0
     m.params['C13_MBI_RO_duration']         = 100
     m.params['SP_duration_after_C13']       = 250
         
@@ -69,7 +79,7 @@ if __name__ == '__main__':
 
     
     ## Carbon up and down
-    NuclearT1(SAMPLE + 'up_positive_C5_elState0',carbon_state = 'up', 
+    NuclearT1_repumping(SAMPLE + 'up_positive_C5_elState0',carbon_state = 'up', 
             electron_RO = 'positive', carbon = 5,
             el_RO_result = 0,
             el_after_init=0)

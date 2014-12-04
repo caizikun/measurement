@@ -19,18 +19,20 @@ class simple_optimizer(Instrument):
         self._get_value_f=get_value_f
         self._get_norm_f=get_norm_f
         
-        ins_pars  = {'max_control'      :   {'type':types.FloatType,'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'min_control'       :   {'type':types.FloatType,'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'scan_range'        :   {'type':types.FloatType,'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'control_step_size' :   {'type':types.FloatType,'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'min_value'         :   {'type':types.IntType, 'val':2,'flags':Instrument.FLAG_GETSET},
-                    'dwell_time'        :   {'type':types.FloatType,'val':0.1,'flags':Instrument.FLAG_GETSET}, #s
-                    'wait_time'         :   {'type':types.FloatType,'val':10,'flags':Instrument.FLAG_GETSET}, #s
-                    'order_index'       :   {'type':types.IntType,  'val':1,'flags':Instrument.FLAG_GETSET},
+        ins_pars  ={'max_control'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+                    'min_control'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+                    'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+                    'scan_max'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+                    'control_step_size' :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+                    'min_value'         :   {'type':types.IntType,    'val':2,'flags':Instrument.FLAG_GETSET},
+                    'dwell_time'        :   {'type':types.FloatType,  'val':0.1,'flags':Instrument.FLAG_GETSET}, #s
+                    'wait_time'         :   {'type':types.FloatType,  'val':10,'flags':Instrument.FLAG_GETSET}, #s
+                    'order_index'       :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},
                     'do_plot'           :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
-                    'plot_name'         :   {'type':types.StringType,'val':plot_name,'flags':Instrument.FLAG_GETSET},
-                    'variance'          :   {'type':types.FloatType,'val':0.,'flags':Instrument.FLAG_GETSET},
-                    'last_max'          :   {'type':types.FloatType,'val':0.,'flags':Instrument.FLAG_GETSET},
+                    'do_fit'            :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
+                    'plot_name'         :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
+                    'variance'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
+                    'last_max'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
                     }
         
         instrument_helper.create_get_set(self,ins_pars)
@@ -67,10 +69,10 @@ class simple_optimizer(Instrument):
     def scan(self):
           
         initial_setpoint = self._get_control_f()
-        scan_min = max(self._min_control,initial_setpoint - self._scan_range/2.)
-        scan_max = min(self._max_control,initial_setpoint + self._scan_range/2.)
+        scan_min = max(self._min_control,initial_setpoint + self._scan_min/2.)
+        scan_max = min(self._max_control,initial_setpoint + self._scan_max/2.)
         steps=int((scan_max - scan_min) / self._control_step_size)
-        print initial_setpoint,scan_min,scan_max, steps
+        print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
         udrange=np.append(np.linspace(initial_setpoint,scan_min,int(steps/2.)),
                 np.linspace(scan_min, scan_max, steps))
         udrange=np.append(udrange,np.linspace(scan_max,initial_setpoint,int(steps/2.)))
@@ -95,6 +97,8 @@ class simple_optimizer(Instrument):
     def optimize(self):
         value_before=self.get_value()
         x,y=self.scan()
+        success = False
+        #print 'x,y',x,y
         if len(y)>0:
             maxx=x[np.argmax(y)]
             variance=np.sum(np.abs(np.ediff1d(y)))
@@ -104,8 +108,14 @@ class simple_optimizer(Instrument):
             self.set_last_max(maxy)
             print 'before', value_before,'after:', maxy
             if maxy>value_before:
-                print self.get_name(),'setting new control (old,new,delta): {:.2f},{:.2f},{:.2f}'.format(self._get_control_f(),maxx,self._get_control_f()-maxx)
+                print self.get_name(),'setting new control (old,new,delta): {:.2f},{:.2f},{:.2f}'.format(self._get_control_f(),maxx,maxx-self._get_control_f())
                 self._set_control_f(maxx)
+                success = True
+            else:
+                print 'Initial value was better, keeping old control'
+        else:
+            print 'Scan failed: no valid data points (value > min_value) found'
+        return success 
             
     def get_value(self):
         v1,n1=self._get_value_f(),self._get_norm_f()
