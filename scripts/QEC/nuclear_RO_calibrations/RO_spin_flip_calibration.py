@@ -11,18 +11,18 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 reload(funcs)
 
 
-def RO_spin_flip_calibration(name,RO_power = None, SSRO_duration =None):
+def RO_spin_flip_calibration(name,MBI_RO_power = None, MBI_RO_duration =None):
     m = pulsar_mbi_espin.ElectronRabi(name)
     funcs.prepare(m)
 
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 4000
+    m.params['reps_per_ROsequence'] = 500
     
     #Spin pumping before Nitrogen MBI: Switch spin pumping towards ms=0
     m.params['Ex_SP_amplitude']             = 0
-    m.params['A_SP_amplitude_before_MBI']   = 15e-9 
-    m.params['SP_E_duration']               = 50
+    m.params['A_SP_amplitude_before_MBI']   = 40e-9 
+    m.params['SP_E_duration']               = 1000
 
     #No MBI MW pulse
     m.params['AWG_MBI_MW_pulse_amp'] = 0
@@ -31,10 +31,10 @@ def RO_spin_flip_calibration(name,RO_power = None, SSRO_duration =None):
     m.params['repump_after_MBI_A_amplitude'] = [0e-9]
     
     #First RO (dynamical stop)
-    if RO_power != None:
-        m.params['Ex_MBI_amplitude'] = RO_power
-    if SSRO_duration != None: 
-        m.params['MBI_duration'] = SSRO_duration
+    if MBI_RO_power != None:
+        m.params['Ex_MBI_amplitude'] = MBI_RO_power
+    if MBI_RO_duration != None: 
+        m.params['MBI_duration'] = MBI_RO_duration
     
     m.params['AWG_wait_for_adwin_MBI_duration'] = m.params['MBI_duration']*1e-6+15e-6#1.2*m.params['MBI_duration']*1e-6# Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
@@ -55,7 +55,7 @@ def RO_spin_flip_calibration(name,RO_power = None, SSRO_duration =None):
 
 if __name__ == '__main__':
     
-    RO_spin_flip_calibration(SAMPLE_CFG, RO_power = 0.3e-9, SSRO_duration = 10)
+    RO_spin_flip_calibration(SAMPLE_CFG, MBI_RO_power = 1e-9, MBI_RO_duration = 50)
 
     # RO_powers = [1e-9,2e-9,5e-9]
     # RO_durations = [18,10,6]

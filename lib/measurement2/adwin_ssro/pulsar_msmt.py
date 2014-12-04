@@ -426,8 +426,8 @@ class ElectronT1(PulsarMeasurement):
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_modulation_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['Pi_pulse_duration'],
-            amplitude = self.params['Pi_pulse_amp'])
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'])
         # Wait-times
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
@@ -495,11 +495,7 @@ class ElectronT1(PulsarMeasurement):
 
          # upload the waveforms to the AWG
         if upload:
-            if upload=='old_method':
-                qt.pulsar.upload(*list_of_elements)
-                qt.pulsar.program_sequence(seq)
-            else:
-                qt.pulsar.program_awg(seq,*list_of_elements)
+            qt.pulsar.program_awg(seq,*list_of_elements)
 
 
 
@@ -893,6 +889,32 @@ class Magnetometry(PulsarMeasurement):
         return n
 
 
+    def _MBI_element(self,name ='MBI_CNOT'):
+        # define the necessary pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+
+        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod',
+            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+            length = self.params['AWG_MBI_MW_pulse_duration'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \
+                + self.params['AWG_wait_for_adwin_MBI_duration']),
+            amplitude = 2)
+
+        # the actual element
+        mbi_element = element.Element(name, pulsar=qt.pulsar)
+        mbi_element.append(T)
+        mbi_element.append(X)
+        mbi_element.append(adwin_sync)
+
+        return mbi_element
+
 
 
 
@@ -949,7 +971,6 @@ class GeneralElectronRabi(PulsarMeasurement):
 
 
 
-#XXXXXXXXXXXXXXXXXXXXXXXXXXX check this class
 class GeneralDarkESR(PulsarMeasurement):
     '''
     This class is used to measure ESR in pulse mode.
@@ -1271,12 +1292,12 @@ class DD_GeneralSequence(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
-class GeneralPi4Calibration(PulsarMeasurement):
+class GeneralNPi4Calibration(PulsarMeasurement):
     """
-    Do a pi/2 pulse, compare to an element with a pi/4 + pi-pulse + pi/4 echo; sweep the pi4 amplitude.
+    Do a pi/2 pulse, compare to an element with a Npi/4 + pi-pulse + Npi/4 echo; sweep the Npi4 amplitude.
     generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
     """
-    mprefix = 'GeneralPi4Calibration_1'
+    mprefix = 'GeneralNPi4Calibration_1'
 
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
@@ -1297,19 +1318,19 @@ class GeneralPi4Calibration(PulsarMeasurement):
         sync_elt.append(adwin_sync)
 
         elements = []
-        seq = pulsar.Sequence('{} Pi4 Calibration 1'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('{} NPi4 Calibration 1'.format(self.params['pulse_type']))
 
         for i in range(self.params['pts_awg']):
-            e = element.Element('{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i), 
+            e = element.Element('{}-NPi4_Pi_NPi4-{}'.format(self.params['pulse_type'],i), 
                 pulsar = qt.pulsar,
                 global_time=True)
 
             e.append(T)
 
             last = e.add(pulse.cp(pulse_pi2,
-                        length= self.params['pulse_pi4_sweep_durations'][i],
-                        amplitude = self.params['pulse_pi4_sweep_amps'][i],
-                        phase = self.params['pulse_pi4_sweep_phases'][i]),
+                        length= self.params['pulse_Npi4_sweep_durations'][i],
+                        amplitude = self.params['pulse_Npi4_sweep_amps'][i],
+                        phase = self.params['pulse_Npi4_sweep_phases'][i]),
                     start = 200e-9,
                     name = 'pi2_1')
              
@@ -1323,17 +1344,17 @@ class GeneralPi4Calibration(PulsarMeasurement):
                 name = 'pi_{}'.format(j))
 
             e.add(pulse.cp(pulse_pi2,
-                    length= self.params['pulse_pi4_sweep_durations'][i],
-                    amplitude = self.params['pulse_pi4_sweep_amps'][i],
-                    phase = self.params['pulse_pi4_sweep_phases'][i]),
+                    length= self.params['pulse_Npi4_sweep_durations'][i],
+                    amplitude = self.params['pulse_Npi4_sweep_amps'][i],
+                    phase = self.params['pulse_Npi4_sweep_phases'][i]),
                 refpulse = last,
                 refpoint = 'center',
                 refpoint_new = 'start',#'start',
-                start = self.params['evolution_times'][i]+self.params['extra_wait_final_pi4'][i],
-                name = 'pi4_2')
+                start = self.params['evolution_times'][i]+self.params['extra_wait_final_Npi4'][i],
+                name = 'Npi4_2')
 
             elements.append(e)
-            seq.append(name='{}_Pi4_Pi_Pi4-{}'.format(self.params['pulse_type'],i),
+            seq.append(name='{}-NPi4_Pi_NPi4-{}'.format(self.params['pulse_type'],i),
                 wfname = e.name,
                 trigger_wait=True)
             seq.append(name='synca-{}'.format(i),
@@ -1396,7 +1417,7 @@ class GeneralPi4Calibration_2(PulsarMeasurement):
         seq = pulsar.Sequence('{} Pi4 Calibration_2'.format(self.params['pulse_type']))
 
         for i in range(self.params['pts_awg']):
-            e = element.Element('{}_Pi2_Pi-{}'.format(self.params['pulse_type'],i), 
+            e = element.Element('{}-Pi4_Pi-Pi4-{}'.format(self.params['pulse_type'],i), 
                 pulsar = qt.pulsar,
                 global_time=True)
 
@@ -1426,7 +1447,7 @@ class GeneralPi4Calibration_2(PulsarMeasurement):
                 name = 'pi4_2')
 
             elements.append(e)
-            seq.append(name='{}_Pi4_Pi_Pi4-{}'.format(self.params['pulse_type'],i),
+            seq.append(name='{}-Pi4_Pi-Pi4-{}'.format(self.params['pulse_type'],i),
                 wfname = e.name,
                 trigger_wait=True)
             seq.append(name='synca-{}'.format(i),

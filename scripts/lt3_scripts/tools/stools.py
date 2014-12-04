@@ -72,26 +72,13 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'],
-    setpoints = [50e-6, 5e-9, 10e-9, 50e-9]):
-    
-    turn_off_all_lt1_lasers()
-    for n,s in zip(names, setpoints):
-        check_power(n, s, 'adwin_lt1', 'powermeter_lt1', 'PMServo_lt1',False)
-    qt.instruments['PMServo_lt1'].move_out()
-
-def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
+def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
+    setpoints = [5e-9, 5e-9, 30e-9,50e-9]):
     
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
-        
-def disconnect_lt1_remote():
-    for i in qt.instruments.get_instrument_names():
-        if len(i) >= 4 and i[-4:] == '_lt1':
-            qt.instruments.remove(i)
 
 def apply_awg_voltage(awg, chan, voltage):
     """
@@ -208,3 +195,27 @@ def reset_plu():
     qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
     qt.msleep(0.1)
     qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+
+def calibrate_aom_frq_max(name='YellowAOM', pts=21):
+    adwin = qt.instruments['adwin']  
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(0.5) 
+    qt.instruments['powermeter'].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.instruments[name].turn_on()
+    qt.msleep(0.5)
+    cur_v=adwin.get_dac_voltage('yellow_aom_frq')
+    ps=[]
+    vs=[]
+    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+        vs.append(v)
+        adwin.set_dac_voltage(('yellow_aom_frq',v))
+        qt.msleep(0.1)
+        p=qt.instruments['powermeter'].get_power()
+        ps.append(p)
+        print 'V: {:.2f}, P: {:.3g}'.format(v,p)
+
+    max_v=vs[np.argmax(ps)]
+    print 'max power at V: {:.3f}, P: {:.2g}'.format(max_v,max(ps))
+    adwin.set_dac_voltage(('yellow_aom_frq',max_v))
+    qt.instruments[name].turn_off()
+    qt.instruments['PMServo'].move_out()

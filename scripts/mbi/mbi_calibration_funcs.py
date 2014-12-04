@@ -71,7 +71,7 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
     funcs.prepare(m)
 
     # measurement settings
-    pts = 21
+    pts = 15
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
@@ -104,7 +104,7 @@ def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = T
     funcs.prepare(m)
 
     # measurement settings
-    pts = 21
+    pts = 15
     m.params['reps_per_ROsequence'] = 1000
     m.params['pts'] = pts
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
@@ -197,6 +197,7 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    #cal_fast_pi(SAMPLE_CFG+'msm1',mult=8,min_pulse_amp =.7, max_pulse_amp =0.9, mbi = False)
-    cal_fast_pi2(SAMPLE_CFG, mult=10 , min_pulse_amp =0.65, max_pulse_amp =0.8, mbi = False)
+    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=3,min_pulse_amp =0.801227-0.04, max_pulse_amp =0.801227+0.04, mbi = True)
+    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.817271-0.04, max_pulse_amp =0.817271 +0.04, mbi = True)
+    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.818524 -0.05, max_pulse_amp =0.818524+0.05, mbi = True)
     # cal_pi2pi_pi(SAMPLE_CFG, 5)

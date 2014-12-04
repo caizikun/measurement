@@ -9,6 +9,7 @@ import qt
 import measurement.lib.measurement2.measurement as m2
 import time
 import logging
+from multiprocessing import Process, Queue
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 class PQMeasurement(m2.Measurement):
@@ -74,7 +75,9 @@ class PQMeasurement(m2.Measurement):
         t_ofl = 0
         t_lastsync = 0
         last_sync_number = 0
-        new_sync_number = 0
+        _length = 0
+        
+
 
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
@@ -94,15 +97,16 @@ class PQMeasurement(m2.Measurement):
         dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))
         dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
-            (0,), 'u4', maxshape=(None,))      
+            (0,), 'u4', maxshape=(None,))
+  
         current_dset_length = 0
 
         self.start_keystroke_monitor('abort',timer=False)
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
         _timer=time.time()
+        ii=0
 
-        #ll=np.zeros(T2_READMAX+1) #XXX
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
@@ -112,26 +116,37 @@ class PQMeasurement(m2.Measurement):
                         print 'aborted.'
                         self.stop_measurement_process()
                 else:
-                    #Check that all the measurement data has been transsfered from the PQ ins FIFO
-                    if new_sync_number == last_sync_number: 
+                   #Check that all the measurement data has been transsfered from the PQ ins FIFO
+                    ii+=1
+                    print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
+                    self._keystroke_check('abort')
+                    if _length == 0 or self.keystroke('abort') in ['x']: 
                         break 
                 print 'current sync, dset length:', last_sync_number, current_dset_length
             
                 _timer=time.time()
 
-            last_sync_number=new_sync_number
-
             _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+
+           
             #ll[_length]+=1 #XXX
             if _length > 0:
                 if _length == T2_READMAX:
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
 
+                if self.PQ_ins.get_Flag_FifoFull():
+                    print 'warning Fifo full'
+
+                if self.PQ_ins.get_Flag_Overflow():
+                    print 'warning Overflow'
+
                 _t, _c, _s = PQ_decode(_data[:_length])
 
+                
+
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                    newlength, t_ofl, t_lastsync, new_sync_number = \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
                                                 MIN_SYNC_BIN, MAX_SYNC_BIN,
                                                 T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
@@ -171,6 +186,7 @@ class PQMeasurement(m2.Measurement):
         self.PQ_ins.StopMeas()
         #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
         #self.h5data.flush()#XXX
+        
         print 'PQ total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
@@ -271,5 +287,3 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
         dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')
         dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1, compression='gzip')
         self.h5data.flush()
-
-

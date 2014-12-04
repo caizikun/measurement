@@ -14,13 +14,19 @@ class ElectronRabi(pulsar_msmt.MBI):
 
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-9, amplitude = 0)
+            length = 1000e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
             I_channel = 'MW_Imod',
             Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
+
+        # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
+        #     I_channel = 'MW_Imod',
+        #     Q_channel = 'MW_Qmod',
+        #     PM_channel = 'MW_pulsemod',
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
@@ -65,13 +71,13 @@ class ElectronRabi(pulsar_msmt.MBI):
 class ElectronRamsey(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRamsey'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug = False):
         # MBI element
         mbi_elt = self._MBI_element()
 
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
-            length = 100e-9, amplitude = 0)
+            length = 1000e-9, amplitude = 0)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
             I_channel = 'MW_Imod',
@@ -103,8 +109,8 @@ class ElectronRamsey(pulsar_msmt.MBI):
             e.append(
                 pulse.cp(X,
                     frequency = self.params['MW_pulse_mod_frqs'][i],
-                    amplitude = self.params['MW_pulse_amps'][i],
-                    length = self.params['MW_pulse_durations'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i],
+                    length = self.params['MW_pulse_2_durations'][i],
                     phase = self.params['MW_pulse_2_phases'][i]))
 
             e.append(adwin_sync)
@@ -121,8 +127,7 @@ class ElectronRamsey(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, *elts)
-        qt.pulsar.program_sequence(seq)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
 
 class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'
@@ -186,6 +191,4 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            #qt.pulsar.upload(mbi_elt, wait_elt, sync_elt, *pulse_elts)
             qt.pulsar.program_awg(seq, mbi_elt, wait_elt, sync_elt, *pulse_elts, debug=debug)
-        #qt.pulsar.program_sequence(seq)

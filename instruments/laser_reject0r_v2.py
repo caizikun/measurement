@@ -7,11 +7,12 @@ from analysis.lib.fitting import fit, common
 import instrument_helper
 from lib import config
 from measurement.lib.config import rotation_mounts as rotcfg
+reload(rotcfg)
 from scipy import optimize
 
 class laser_reject0r_v2(Instrument):  
 
-    def __init__(self, name, rotator, adwin, red_laser=None, rotation_config_name='waveplates_lt3',
+    def __init__(self, name, rotator, adwin, red_laser=None, rotation_config_name='',
                 waveplates=['zpl_half','zpl_quarter']):
         Instrument.__init__(self, name)
 
@@ -157,7 +158,7 @@ class laser_reject0r_v2(Instrument):
 
         return False
 
-    def optimize(self, waveplate, **kw):
+    def optimize(self, waveplate, counts_avg=1, **kw):
         """
         Make a detailed scan around the current position of the waveplate, fit the resulting counts vs deg with a parabola, and go to minimum value
         known - keywords : opt_range : optimisation range, defaults to self.opt_range
@@ -183,7 +184,12 @@ class laser_reject0r_v2(Instrument):
                 dx = X[i]-X[i-1]
                 self.move(waveplate, dx , **kw)
             qt.msleep(0.5)
-            y = self._measure_counts()
+            avg=0.
+            for j in range(counts_avg):
+                avg=avg+self._measure_counts()
+                qt.msleep(0.1)
+            avg=avg/counts_avg
+            y = avg
             
             Y[i]=y
             qtdata.add_data_point(x, y)
@@ -368,19 +374,48 @@ class laser_reject0r_v2(Instrument):
             if i<0:
                 break
 
-    def brent_optimize(waveplate,tolerance=100,max_cycles=10,counts_avg=10,**kw):
+    def brent_bound_optimize(self,waveplate,range_deg=10.,tolerance=0.1,max_cycles=10,counts_avg=10,**kw):
         self._x0=0
         def f(x):
-            self._x0=self._x0+x
+            if (msvcrt.kbhit() and msvcrt.getch() =='q'):
+                raise Exception('User abort')
+            avg = 0.
+            print x
             self.move(waveplate,x-self._x0, **kw)
+            self._x0=x
             for j in range(counts_avg):
                     avg=avg+self._measure_counts()
                     qt.msleep(0.1)
             avg=avg/counts_avg
+            print avg
             return avg
-        optimize.brent(f,tol=tolerance, maxiter=max_cycles)
+        try: 
+            optimize.fminbound(f,-range_deg/2.,range_deg/2.,xtol=tolerance, maxfun=max_cycles)
+        except:
+            print "error:", sys.exc_info()[0]
+
+    def nd_optimize(self,tolerance=0.1,max_cycles=10,counts_avg=10,**kw):
+        self._x0=np.zeros(len(self._waveplates))
+        def f(x):
+            if (msvcrt.kbhit() and msvcrt.getch() =='q'):
+                raise Exception('User abort')
+            avg = 0.
+            print x
+            for i,wp in enumerate(self._waveplates):
+                self.move(waveplate,x[i]-self._x0[i], **kw)
+            self._x0=x
+            for j in range(counts_avg):
+                    avg=avg+self._measure_counts()
+                    qt.msleep(0.1)
+            avg=avg/counts_avg
+            print avg
+            return avg
+        try: 
+            xg=np.zeros(len(self._waveplates))
+            optimize.fmin(f,xg,xtol=tolerance, maxfun=max_cycles)
+        except:
+            print "error:", sys.exc_info()[0]
 
     def reset_wp_channel(self):
         self._prev_wp_channel = 'none'
-
 

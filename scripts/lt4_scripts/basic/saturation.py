@@ -5,12 +5,12 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Hans_SIL8_LT4_PSB_MM_PQ_tau-spad_apd'
-steps=31
-max_power=210e-6       #[w]
-counter=1 #number of counter
-PQ_count= True    # counting with the HH, assumes apd on channel 0
-bg_x=-2        #delta x position of background [um]
+name = 'Hans_Sil1_SM_ZPL_BS'
+steps=21
+max_power=200e-6       #[w]
+counter=3 #number of counter
+PQ_count= False    # counting with the HH, assumes apd on channel 0
+bg_x=2        #delta x position of background [um]
 bg_y=-2          #delta y position of background [um]
 
 #instruments

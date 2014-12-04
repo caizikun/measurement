@@ -11,6 +11,7 @@ import qt
 from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools
+reload(pq)
 
 class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
     mprefix = 'PQPulsarMeasurement'
@@ -36,8 +37,8 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
         return self.adwin_process_running()
 
     def run(self, **kw):
+        #pq.PQ_threaded_Measurement.run(self,**kw) # Not operational AR2014
         pq.PQMeasurement.run(self,**kw)
-
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \

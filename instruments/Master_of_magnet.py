@@ -130,7 +130,6 @@ class Master_of_magnet(Instrument):
         '''
         axis_number = self.Axis_config[axis]
         freq = int(self.get_frequency(axis)[12:15])
-
         if steps == 'c':
             self._anc_ins.StepUp(axis_number, steps)
         elif steps == '-c':

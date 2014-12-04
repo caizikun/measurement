@@ -14,3 +14,13 @@
 #DEFINE DAC_MODULE 4  'Address of AOUT 8/16
 #DEFINE DAC_MODULE_2 5  'Address of AOUT 8/16
 
+SUB P2_DAC_2(dac_no, value)
+  IF (dac_no<9) THEN
+    P2_DAC(DAC_MODULE,dac_no, value)
+  ELSE
+    P2_DAC(DAC_MODULE_2,dac_no-8, value) 
+  ENDIF
+ENDSUB
+
+
+
