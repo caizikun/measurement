@@ -175,7 +175,9 @@ def bell_lt4(name,
         m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
     
+    print 'finishing'
     m.finish()
+    print 'finished'
 
 
 
@@ -195,10 +197,10 @@ def full_bell(name):
 def measureXX(name):
     name='MeasXX_'+name
     m = Bell_lt4(name)
-    m.joint_params['measure_xx_ent']=True
+    #make sure MWI and Q pulses are set correctly
     bell_lt4(name, 
              m,
-             th_debug      = False,
+             th_debug      = True,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -245,7 +247,7 @@ def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot t
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = False,
+             th_debug      = True,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -262,8 +264,7 @@ def SP_lt3(name):
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
-             measure_bs    = True
-            ,
+             measure_bs    = True,
              do_upload     = True,
              )
 
@@ -283,11 +284,11 @@ if __name__ == '__main__':
     
 
     if not(jitterDetected):
-        qt.msleep(1)
+        qt.msleep(0.5)
         #TPQI('run_test')
-        full_bell('ZZ_RND_day2_run14')   
+        #full_bell('ZZ_RND_day2_run14')   
         #SP_lt4('SPCORR_lt4')
-        #pulse_overlap('FinalDelay')
+        #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        #measureXX('Entanglement_day3_run19')
+        measureXX('Entanglement_XX_basic_day3_run17')
         pass

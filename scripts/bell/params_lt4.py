@@ -69,7 +69,6 @@ params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi2_duration'] #50e-9
 # params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 # params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 # params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-# params_lt4['MW_BellStateOffset'] = -0.0239 #2014-11-
 # params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 # params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
 # params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
@@ -77,6 +76,8 @@ params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi2_duration'] #50e-9
 # params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration']
 # params_lt4['MW_RND_amp_Q']	   = -params_lt4['MW_Npi4_amp']
 # params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration']
+
+params_lt4['MW_BellStateOffset'] = 0#-0.0239 #2014-11-
 
 params_lt4['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 params_lt4['echo_offset'] = -100e-9 #50 ns
@@ -115,7 +116,7 @@ params_lt4['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE'] = 1
 params_lt4['plu_during_LDE'] = 1
 params_lt4['opt_pulse_start'] = params_lt4['LDE_SP_duration'] +  500e-9 #DONT CHANGE THIS
-params_lt4['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+params_lt4['AWG_wait_for_lt3_start'] =  9347e-9+1e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9

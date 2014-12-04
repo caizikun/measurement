@@ -17,10 +17,10 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['SP_duration'] = 100
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000 if multiplicity == 1 else 10000
+    m.params['repetitions'] = 2000 if multiplicity == 1 else 10000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-0.1, 0.1, pts)  
+    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-0.1, 0.1, pts)   
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 

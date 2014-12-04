@@ -212,9 +212,9 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 20000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
@@ -292,8 +292,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    OptPulseSep_sweep('Pippin')
-    #tail_sweep('tail_lt3_Pippin') 
+    #OptPulseSep_sweep('Pippin')
+    tail_sweep('tail_lt4_Hans') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')

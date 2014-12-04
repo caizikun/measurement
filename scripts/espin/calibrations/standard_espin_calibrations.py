@@ -364,21 +364,25 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
     m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 1000
 
 
-    m.params['Ex_SP_amplitude']=0
+    m.params['Ex_SP_amplitude']=0e-9 
+    #m.params['A_SP_amplitude'] = 0.0
+    #m.params['SP_duration'] = 100
 
-   # if IQmod:
-    #    m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['MW_pulse_mod_frequency']
+    if IQmod:
+        m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['MW_pulse_mod_frequency']
+    else:
+        m.params['mw_frq'] = m.params['ms-1_cntr_frq']
 
 
 
 
     #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
+    m.params['pulse_sweep_durations'] =  np.linspace(0, 90, pts) * 1e-9
 
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
+    m.params['pulse_sweep_amps'] = np.ones(pts)*0.8
     #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
@@ -724,7 +728,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.5, IQmod =False, Imod_channel=False, debug = False)
+    run_calibrations(2.0, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR
