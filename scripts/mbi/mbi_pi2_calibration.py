@@ -6,7 +6,6 @@ execfile(qt.reload_current_setup)
 import mbi.mbi_funcs as funcs
 reload(funcs)
 
-
 SIL_NAME = 'nr1_sil18'
 
 def run(name, phase = 0, ):

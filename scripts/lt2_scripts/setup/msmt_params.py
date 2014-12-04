@@ -172,23 +172,23 @@ cfg['samples']['111_1_sil18'] = {
     ###########################################
 
 'C1_freq'       :   450.153e3,   
-'C1_freq_0'     :   431.902e3, #2 Hz uncertainty   
-'C1_freq_1'     :   468.999e3,           
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-21.06] + [40.26]+[0]*2+[64.27]+ 4*[0]),
+'C1_freq_0'     :   431.877e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.000e3,           
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-18.55] + [42.26]+[0]*2+[65.21]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [34],
 
 'C2_freq'       :   422.415e3,   
-'C2_freq_0'     :   431.902e3,  
-'C2_freq_1'     :   413.489e3,           
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[43.46]+[42.05]+[0]*2+[67.54]+[0]*4), 
+'C2_freq_0'     :   431.877e3,  
+'C2_freq_1'     :   413.508e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.68]+[57.45]+[0]*2+[67.33]+[0]*4), 
 'C2_Ren_tau'    :   [10.058e-6],
-'C2_Ren_N'      :   [18],
+'C2_Ren_N'      :   [20],
 
 'C5_freq'       :   419.594e3,   
-'C5_freq_0'     :   431.902e3,  
-'C5_freq_1'     :   408.309e3,           
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[84.5]+[112.04]+[0]*2+[12.23]+[0]*4), 
+'C5_freq_0'     :   431.877e3,  
+'C5_freq_1'     :   408.316e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[80.6]+[116.80]+[0]*2+[14.98]+[0]*4), 
 'C5_Ren_tau'    :   [8.926e-6],
 'C5_Ren_N'      :   [38],
 
@@ -218,7 +218,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'Ex_CR_amplitude': 5e-9,    # 5e-9
 'Ex_RO_amplitude': 15e-9,   #15e-9,   
 'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 100,     #400 THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration'    : 400,     #400 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     #only for specific scripts
 'SP_duration_ms1': 500,     #only for specific scripts
 'SP_filter_duration' : 0 }
@@ -233,7 +233,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
 
 
     ###########################
-    ### pulse parameters ###
+    ### pulse parameters    ###
     ###########################
 
 f_mod_0     = cfg['samples']['111_1_sil18']['mw_mod_freq']
@@ -304,7 +304,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-MBI  
 'C13_MBI_threshold_list':               [1],
-'C13_MBI_RO_duration':                  100,  
+'C13_MBI_RO_duration':                  30,  
 'E_C13_MBI_RO_amplitude':               1e-9,
 'SP_duration_after_C13':                300, #300 in case of swap init! 
 'A_SP_amplitude_after_C13_MBI':         15e-9,

@@ -10,12 +10,12 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon            =   6,               
+def MBE(name, carbon            =   1,               
         
-        carbon_init_list        = [6],
-        carbon_init_states      = ['up'], 
-        carbon_init_methods     = ['MBI'], 
-        carbon_init_thresholds  = [1],  
+        carbon_init_list        =   [1],
+        carbon_init_states      =   ['up'], 
+        carbon_init_methods     =   ['swap'], 
+        carbon_init_thresholds  =   [0],  
 
         el_RO               = 'positive',
         debug               = False):
@@ -27,7 +27,7 @@ def MBE(name, carbon            =   6,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -41,6 +41,7 @@ def MBE(name, carbon            =   6,
     ##################################
     ### RO bases (sweep parameter) ###
     ##################################
+
     m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
         
     ####################

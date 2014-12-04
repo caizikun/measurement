@@ -1,3 +1,6 @@
+''' Measurement set to calibrate the evolution frequencies for the different carbon spins 
+plus the phases they pick up during carbon gates'''
+
 import numpy as np
 import qt
 import msvcrt
@@ -17,7 +20,18 @@ import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload
 import measurement.scripts.mbi.mbi_funcs as funcs
 n = 1
 
-''' NOTE: THE CALIBRATIONS FOR THE CROSSTALK PHASES DO NOT IMPORT THE NUMBER OF PULSES '''
+''' NOTE: THE CALIBRATIONS FOR THE CROSSTALK PHASES DO NOT IMPORT THE NUMBER OF PULSES 
+	NOTE2: it would be nice to be able to set the Carbon spins we want to do this for'''
+
+####################################################
+###### Set which carbons and crosstalk or not ######
+####################################################
+
+Carbon_1 	= True
+Carbon_2 	= True
+Carbon_5 	= True
+do_f_msm1 	= False
+do_Crosstalk  	= False
 
 def NuclearRamseyWithInitialization_cal(name, 
         carbon_nr           = 5,               
@@ -154,7 +168,7 @@ qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after
 
 detuning = 0.44e3
 # measure
-if n == 1:
+if n == 1 and Carbon_1 and do_f_msm1:
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C1', carbon_nr= 1, detuning = detuning, el_state = 1)
 	# fit
 	f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
@@ -176,7 +190,7 @@ if n == 1:
 	if msvcrt.kbhit() and msvcrt.getch() == 'q':
 		n = 0
 	# 
-if n == 1:
+if n == 1 and Carbon_2 and do_f_msm1:
 
 	#measure
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C2', carbon_nr= 2, detuning = detuning, el_state = 1)
@@ -199,7 +213,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 	# 
-if n == 1:
+if n == 1 and Carbon_5 and do_f_msm1:
 	#measure
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C5', carbon_nr= 5, detuning = detuning, el_state = 1)
 	# fit
@@ -269,6 +283,7 @@ if n == 1:
 	qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2] = 0
 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5] = 0
 
+if n == 1 and Carbon_1:
 	# measure
 	NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C1', carbon_nr= 1)
 	# fit
@@ -290,7 +305,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:	
+if n == 1 and Carbon_2:	
 	#measure
 	NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C2', carbon_nr= 2)
 	# fit
@@ -312,7 +327,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:
+if n == 1 and Carbon_5:
 	#measure
 	NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C5', carbon_nr= 5)
 	# fit
@@ -347,7 +362,7 @@ if n == 1:
 	qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5] = 0
 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1] = 0
 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2] = 0
-if n == 1:
+if n == 1 and do_Crosstalk:
 	# measure
 	Crosstalk(SAMPLE+ '_gateC2_measC1', C_measured = 1, C_gate = 2, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 	# fit
@@ -369,7 +384,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:
+if n == 1 and do_Crosstalk:
 	#measure
 	Crosstalk(SAMPLE+ '_gateC5_measC1', C_measured = 1, C_gate = 5, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 		# fit
@@ -393,7 +408,7 @@ if n == 1:
 	    n = 0
 
 
-if n == 1:
+if n == 1 and do_Crosstalk:
 	#measure
 	Crosstalk(SAMPLE+ '_gateC1_measC2', C_measured = 2, C_gate = 1, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 	# fit
@@ -416,7 +431,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:
+if n == 1 and do_Crosstalk:
 	# measure
 	Crosstalk(SAMPLE+ '_gateC5_measC2', C_measured = 2, C_gate = 5, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 	# fit
@@ -439,7 +454,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:
+if n == 1 and do_Crosstalk:
 	#measure
 	Crosstalk(SAMPLE+ '_gateC1_measC5', C_measured = 5, C_gate = 1, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 	# fit
@@ -462,7 +477,7 @@ if n == 1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1:
+if n == 1 and do_Crosstalk:
 	#measure
 	Crosstalk(SAMPLE+ '_gateC2_measC5', C_measured = 5, C_gate = 2, RO_phase=90, RO_Z=False, C13_init_method = 'MBI')
 	# fit
@@ -486,35 +501,44 @@ print
 print 'Finished C13 calibration measurements'
 print 'Values found:'
 print
-print 'C1_freq_1'
-print qt.exp_params['samples']['111_1_sil18']['C1_freq_1']
-print 'C2_freq_1'
-print qt.exp_params['samples']['111_1_sil18']['C2_freq_1']
-print 'C5_freq_1'
-print qt.exp_params['samples']['111_1_sil18']['C5_freq_1']
+
+if Carbon_1 and do_f_msm1:
+	print 'C1_freq_1'
+	print qt.exp_params['samples']['111_1_sil18']['C1_freq_1']
+if Carbon_2 and do_f_msm1:
+	print 'C2_freq_1'
+	print qt.exp_params['samples']['111_1_sil18']['C2_freq_1']
+if Carbon_5 and do_f_msm1:
+	print 'C5_freq_1'
+	print qt.exp_params['samples']['111_1_sil18']['C5_freq_1']
+
 print
 print 'C_freq_0'
 print qt.exp_params['samples']['111_1_sil18']['C1_freq_0']
 print
-print 'C1_Ren_extra_phase_correction_list[1]'
-print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]
-print 'C2_Ren_extra_phase_correction_list[2]'
-print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2]
-print 'C5_Ren_extra_phase_correction_list[5]'
-print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]
+if Carbon_1:
+	print 'C1_Ren_extra_phase_correction_list[1]'
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]
+if Carbon_2:
+	print 'C2_Ren_extra_phase_correction_list[2]'
+	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2]
+if Carbon_5:
+	print 'C5_Ren_extra_phase_correction_list[5]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]
 print
-print 'C2_Ren_extra_phase_correction_list[1]'
-print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1]
-print 'C5_Ren_extra_phase_correction_list[1]'
-print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]
-print 'C1_Ren_extra_phase_correction_list[2]'
-print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2]
-print 'C5_Ren_extra_phase_correction_list[2]'
-print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2]
-print 'C1_Ren_extra_phase_correction_list[5]'
-print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]
-print 'C2_Ren_extra_phase_correction_list[5]'
-print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5]
+if do_Crosstalk:
+	print 'C2_Ren_extra_phase_correction_list[1]'
+	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1]
+	print 'C5_Ren_extra_phase_correction_list[1]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]
+	print 'C1_Ren_extra_phase_correction_list[2]'
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2]
+	print 'C5_Ren_extra_phase_correction_list[2]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2]
+	print 'C1_Ren_extra_phase_correction_list[5]'
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]
+	print 'C2_Ren_extra_phase_correction_list[5]'
+	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5]
 
 
 ################################
