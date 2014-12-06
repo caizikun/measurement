@@ -3,9 +3,9 @@ import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
 name='ESR_SIL18_LT2_LT'
-start_f = 3.67 #2.827 - 0.015 #   2.853 #2.85 #  #in GHz
-stop_f  = 3.72 #2.827 + 0.015 #   2.864 #2.905 #   #in GHz
-steps   = 121
+start_f = 1.746-20e-3 #2.827 - 0.015 #   2.853 #2.85 #  #in GHz
+stop_f  = 1.746+20e-3 #2.827 + 0.015 #   2.864 #2.905 #   #in GHz
+steps   = 61
 mw_power = -8. #in dBm (has been -3 for hans as well)
 green_power = 30e-6
 int_time = 50       #in ms

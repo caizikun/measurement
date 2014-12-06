@@ -102,7 +102,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
-'Ex_N_randomize_amplitude'              :    15e-9,
+'Ex_N_randomize_amplitude'              :    15e-9, #15e-9
 'A_N_randomize_amplitude'               :    15e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
@@ -172,23 +172,23 @@ cfg['samples']['111_1_sil18'] = {
     ###########################################
 
 'C1_freq'       :   450.153e3,   
-'C1_freq_0'     :   431.877e3, #2 Hz uncertainty   
-'C1_freq_1'     :   469.000e3,           
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-18.55] + [42.26]+[0]*2+[65.21]+ 4*[0]),
+'C1_freq_0'     :   431.930e3, #2 Hz uncertainty   
+'C1_freq_1'     :   468.984e3,           
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-21.41] + [42.26]+[0]*2+[63.88]+ 4*[0]),
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [34],
 
 'C2_freq'       :   422.415e3,   
-'C2_freq_0'     :   431.877e3,  
-'C2_freq_1'     :   413.508e3,           
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.68]+[57.45]+[0]*2+[67.33]+[0]*4), 
+'C2_freq_0'     :   431.877e3+174,  
+'C2_freq_1'     :   413.479e3,           
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.68]+[33.18]+[0]*2+[67.33]+[0]*4), 
 'C2_Ren_tau'    :   [10.058e-6],
 'C2_Ren_N'      :   [20],
 
 'C5_freq'       :   419.594e3,   
-'C5_freq_0'     :   431.877e3,  
-'C5_freq_1'     :   408.316e3,           
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[80.6]+[116.80]+[0]*2+[14.98]+[0]*4), 
+'C5_freq_0'     :   431.877e3+65,  
+'C5_freq_1'     :   408.298e3,           
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[87.08]+[116.80]+[0]*2+[2.21]+[0]*4), 
 'C5_Ren_tau'    :   [8.926e-6],
 'C5_Ren_N'      :   [38],
 
@@ -210,17 +210,17 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude' : 25e-9, 
 'A_RO_amplitude' : 0,
-'A_SP_amplitude' : 40e-9,# 40e-9,
-'CR_duration'    : 100,  # 50
+'A_SP_amplitude' : 30e-9,   # 40e-9,
+'CR_duration'    : 100,     # 50
 'CR_preselect'   : 1000,
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 5e-9,    # 5e-9
-'Ex_RO_amplitude': 15e-9,   #15e-9,   
-'Ex_SP_amplitude': 0e-9,    #THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 400,     #400 THT: Hardcoded in the ADWIN to be maximum 500 
-'SP_duration_ms0': 500,     #only for specific scripts
-'SP_duration_ms1': 500,     #only for specific scripts
+'Ex_RO_amplitude': 15e-9,   # 15e-9,   
+'Ex_SP_amplitude': 0e-9,    # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
+'SP_duration'    : 400,     # 400 THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration_ms0': 500,     # only for specific scripts
+'SP_duration_ms1': 500,     # only for specific scripts
 'SP_filter_duration' : 0 }
 
     ##################################
@@ -275,7 +275,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           18e-9,
+'Ex_SP_amplitude'           :           18e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
 'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
 
@@ -285,7 +285,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [100],
-'repump_after_MBI_A_amplitude':         [40e-9],
+'repump_after_MBI_A_amplitude':         [30e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters

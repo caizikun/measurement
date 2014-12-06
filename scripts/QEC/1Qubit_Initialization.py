@@ -10,9 +10,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon            =   1,               
+def MBE(name, carbon            =   5,               
         
-        carbon_init_list        =   [1],
+        carbon_init_list        =   [5],
         carbon_init_states      =   ['up'], 
         carbon_init_methods     =   ['swap'], 
         carbon_init_thresholds  =   [0],  
@@ -59,7 +59,6 @@ def MBE(name, carbon            =   1,
     m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = 1
     
-
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 
@@ -74,8 +73,13 @@ def MBE(name, carbon            =   1,
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive')
-    MBE(SAMPLE + 'negative', el_RO= 'negative')
+    # MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 1, carbon_init_list = [1])
+    # MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 1, carbon_init_list = [1])
 
+    # MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 2, carbon_init_list = [2])
+    # MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 2, carbon_init_list = [2])
+
+    MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 5, carbon_init_list = [5])
+    MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 5, carbon_init_list = [5])
 
 
