@@ -1,4 +1,4 @@
-if False:
+if True:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
     _getctrl_gate=  lambda: qt.instruments['adwin'].get_dac_voltage('gate')
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -8,7 +8,7 @@ if False:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
-if False:
+if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
@@ -18,7 +18,7 @@ if False:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')
 
-if False:
+if True:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     _getctrl_nf = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)

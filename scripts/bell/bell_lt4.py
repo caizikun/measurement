@@ -273,7 +273,7 @@ def lt4_only(name):
     bell_lt4(name, 
              m,
              th_debug      = True,
-             sequence_only = True,
+             sequence_only = False,
              mw            = True,
              measure_lt3   = False,
              measure_bs    = False,
@@ -281,7 +281,7 @@ def lt4_only(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
+    DoJitterCheck = True
     ResetPlu = True
         
     if ResetPlu:
@@ -298,10 +298,10 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        #full_bell('ZZ_RND_day2_run14')   
+        #full_bell('testing_overlap')   
         #SP_lt4('SPCORR_lt4')
-        lt4_only('test')
+        #lt4_only('test')
         #pulse_overlap('testing')
-        #SP_lt3('SPCORR_lt3')
-        #measureXX('Entanglement_XX_basic_day3_run26')
+        SP_lt3('SPCORR_lt3')
+        #measureXX('testin')
         pass

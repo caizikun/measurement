@@ -5,6 +5,7 @@ import plot as plt
 import types
 import os
 from lib import config
+from analysis.lib.fitting import fit, common
 import instrument_helper
 
 class simple_optimizer(Instrument):
@@ -101,12 +102,17 @@ class simple_optimizer(Instrument):
         #print 'x,y',x,y
         if len(y)>0:
             maxx=x[np.argmax(y)]
+            if self.get_do_fit():
+                fit_maxx=self._fit(x,y)
+                if fit_maxx != None:
+                    print 'fit succes'
+                    maxx = fit_maxx
             variance=np.sum(np.abs(np.ediff1d(y)))
             self.set_variance(variance)
             print 'variance: ', variance
             maxy=np.max(y)
             self.set_last_max(maxy)
-            print 'before', value_before,'after:', maxy
+            print 'Value at initial position: {:.1f}, maximum scanned value {:.1f} at control {:.2f} '.format(value_before,maxy, maxx)
             if maxy>value_before:
                 print self.get_name(),'setting new control (old,new,delta): {:.2f},{:.2f},{:.2f}'.format(self._get_control_f(),maxx,maxx-self._get_control_f())
                 self._set_control_f(maxx)
@@ -128,10 +134,10 @@ class simple_optimizer(Instrument):
 
     def _fit(self,X,Y):
         #fit_gauss(g_a, g_A, g_x0, g_sigma)
-        fitres = fit.fit1d(X, Y, common.fit_poly, 
-                [X[np.argmin(Y)], 1, 1], do_print = False, ret = True)
+        fitres = fit.fit1d(X, Y, common.fit_gauss, 
+                np.average(Y)*0.5,np.max(Y)-np.average(Y)*0.5,X[np.argmax(Y)], (X[-1]-X[0])/2., do_print = False, ret = True)
 
-        if type(fitres) != type(False):
+        if fitres['success'] != False:
             p1 = fitres['params_dict']
             fd = fitres['fitfunc'](X)
             p=plt.plot(name=self._plot_name)
@@ -139,4 +145,4 @@ class simple_optimizer(Instrument):
         else:
             print '\tCould not fit curve!'
             return None
-        return p1 
+        return p1['x0']

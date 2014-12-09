@@ -84,16 +84,16 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWGs # params taken from the previous LT1 params
-params_lt4['eom_pulse_amplitude']		= 1.9
+params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 70e-9
-params_lt4['eom_off_amplitude']         = -.25
+params_lt4['eom_off_amplitude']         = -.25 
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.61 #0.57    2014-11-23  CAREFUL: Fit might give % of max
+params_lt4['aom_amplitude']             = 0.405 #2014-11-23  CAREFUL: Fit might give % of max
 # maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
@@ -104,14 +104,14 @@ params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt4['MW_opt_puls1_separation'] = 200e-9 #distance between the end of the MW and the start of opt puls1
-params_lt4['MW_1_separation'] = joint_params.joint_params['opt_pulse_separation']
-params_lt4['MW_RND_wait'] = 160e-9 #wait start RND MW after end of RND halt pulse
-params_lt4['RND_duration'] = 250e-9
-params_lt4['RO_wait'] = 75e-9 #wait start RO after end of RND MW pulse
-params_lt4['sync_during_LDE'] = 1
-params_lt4['plu_during_LDE'] = 1
-params_lt4['opt_pulse_start'] = params_lt4['LDE_SP_duration'] +  500e-9 #DONT CHANGE THIS
+params_lt4['MW_opt_puls1_separation'] = 10e-9 #distance between the end of the MW and the start of opt puls1
+params_lt4['MW_1_separation'] 		  = joint_params.joint_params['opt_pulse_separation']
+params_lt4['MW_RND_wait'] 			  = 160e-9 #wait start RND MW after end of RND halt pulse
+params_lt4['RND_duration'] 			  = 250e-9
+params_lt4['RO_wait'] 				  = 75e-9 #wait start RO after end of RND MW pulse
+params_lt4['sync_during_LDE']   	  = 1
+params_lt4['plu_during_LDE']    	  = 1
+params_lt4['opt_pulse_start']   	  = params_lt4['LDE_SP_duration'] +  500e-9 #DONT CHANGE THIS
 params_lt4['AWG_wait_for_lt3_start'] =  9347e-9+1e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
