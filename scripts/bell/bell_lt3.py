@@ -138,7 +138,6 @@ def bell_lt3(name):
             th_debug = True
             mw=False
         elif 'full_Bell' in remote_name:
-            th_debug = False
             mw=True
         elif 'MeasXX_' in remote_name:
             th_debug = True 
