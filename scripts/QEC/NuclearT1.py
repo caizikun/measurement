@@ -53,7 +53,7 @@ def NuclearT1(name,tau = None, carbon_state = 'up',
     m.params['C13_MBI_threshold_list']       = [0]
         
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':
 
