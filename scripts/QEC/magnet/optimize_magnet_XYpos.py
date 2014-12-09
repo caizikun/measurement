@@ -36,20 +36,20 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'Y_axis'               # X usually moves 2x slower than Y (current settings)  
+    axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
     #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
     #no_of_steps      = 5               # with a total of no_of_steps measurment points.
     min_counts_before_optimize = 5e4    #optimize position if counts are below this
     mom.set_mode(axis, 'stp')     # turn on or off the stepper
-    laser_power = 10e-6
+    laser_power = 5e-6
 
     range_coarse  = 6.00
     pts_coarse    = 81   
     reps_coarse   = 750 #750
 
-    range_fine  = 0.30
+    range_fine  = 0.60
     pts_fine    = 51   
-    reps_fine   = 1000#1000
+    reps_fine   = 1000 #1000
 
     ###########
     ## start ##
@@ -60,13 +60,13 @@ if __name__ == '__main__':
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
     No_steps = True
     if No_steps == True: 
-        steps = [0] 
+        steps = [0] # !!!! if we use this to measure for a long time, do not forget to save data: remove if-loop!
     else: 
         if axis == 'Y_axis':
             steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
             magnet_step_size = 100         # the sample position is checked after each magnet_step_siz 
         elif axis == 'X_axis':
-            steps = [150, 150, 150] 
+            steps = [0, 150, 150] 
             magnet_step_size = 150         # the sample position is checked after each magnet_step_siz
 
 

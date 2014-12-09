@@ -22,6 +22,12 @@ class ElectronRabi(pulsar_msmt.MBI):
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
+        # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
+        #     I_channel = 'MW_Imod',
+        #     Q_channel = 'MW_Qmod',
+        #     PM_channel = 'MW_pulsemod',
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'] )
+
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
@@ -103,8 +109,8 @@ class ElectronRamsey(pulsar_msmt.MBI):
             e.append(
                 pulse.cp(X,
                     frequency = self.params['MW_pulse_mod_frqs'][i],
-                    amplitude = self.params['MW_pulse_amps'][i],
-                    length = self.params['MW_pulse_durations'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i],
+                    length = self.params['MW_pulse_2_durations'][i],
                     phase = self.params['MW_pulse_2_phases'][i]))
 
             e.append(adwin_sync)
@@ -185,6 +191,4 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            #qt.pulsar.upload(mbi_elt, wait_elt, sync_elt, *pulse_elts)
             qt.pulsar.program_awg(seq, mbi_elt, wait_elt, sync_elt, *pulse_elts, debug=debug)
-        #qt.pulsar.program_sequence(seq)

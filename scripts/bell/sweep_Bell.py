@@ -89,6 +89,7 @@ def _setup_params(msmt, setup):
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             msmt.params[k] = params_lt4.params_lt4[k]
+        msmt.params['MW_BellStateOffset'] = 0.0
         bseq.pulse_defs_lt4(msmt)
     elif setup == 'lt3' :
         import params_lt3
@@ -96,6 +97,7 @@ def _setup_params(msmt, setup):
         msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt3.params_lt3:
             msmt.params[k] = params_lt3.params_lt3[k]
+        msmt.params['MW_BellStateOffset'] = 0.0
         bseq.pulse_defs_lt3(msmt)
     else:
         print 'Sweep_bell: invalid setup:', setup
@@ -124,7 +126,7 @@ def tune(name):
     m.params['repetitions'] = 100000
 
     m.joint_params['RO_during_LDE']=0
-    m.joint_params['opt_pi_pulses'] = 15
+    m.joint_params['opt_pi_pulses'] = 10
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.params['MW_during_LDE'] = 0
 
@@ -137,9 +139,9 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=15
     m.params['pts']=pts
-    m.params['repetitions'] = 150000
+    m.params['repetitions'] = 500
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -159,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(.3,1.,pts)*max_power_aom #%power
+        aom_power_sweep=np.linspace(.001,0.95,pts)*max_power_aom #%power
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -173,17 +175,17 @@ def tail_sweep(name):
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-
-
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
+
 def echo_sweep(name):
+    print 'setting up the echo sweep'
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=21
+    pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 20000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
@@ -192,11 +194,11 @@ def echo_sweep(name):
     m.joint_params['LDE_attempts_before_CR'] = 1
     m.joint_params['opt_pi_pulses'] = 2
     m.params['aom_amplitude'] = 0. #0.88
-    m.joint_params['do_echo'] = 1
+    m.joint_params['do_echo'] = 0 #XXXXXXXXXXXXXX
     m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -220,7 +222,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 400
+    m.params['repetitions'] = 1500
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -243,7 +245,7 @@ def rnd_echo_ro(name):
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
     m.generate_sequence()
-    if upload_only:
+    if upload_only or True:
         return
     if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
@@ -261,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt4_Hans') 
+    #tail_sweep('tail_lt3_Pippin') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('Sammy_RND_check')
+    #rnd_echo_ro('test')

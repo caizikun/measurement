@@ -9,6 +9,7 @@ import qt
 import measurement.lib.measurement2.measurement as m2
 import time
 import logging
+from multiprocessing import Process, Queue
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 class PQMeasurement(m2.Measurement):
@@ -286,5 +287,3 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
         dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')
         dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1, compression='gzip')
         self.h5data.flush()
-
-

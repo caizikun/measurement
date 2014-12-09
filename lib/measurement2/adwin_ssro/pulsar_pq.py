@@ -1,18 +1,21 @@
 """
 Measurement class for measurements with Picoquant TTTR measurements as main loop, specifically, 
 to perform Pulsar sweep-type measurements.
+
 Bas Hensen 2014
 
 """
 import msvcrt
 import numpy as np
 import qt
-
 from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 import measurement.lib.measurement2.pq.pq_measurement as pq
+import measurement.lib.measurement2.pq.pq_threaded_measurement as pqthread
 from measurement.lib.cython.PQ_T2_tools import T2_tools
+reload(pq)
+reload(pqthread)
 
-class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
+class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement): # pqthread.PQ_threaded_Measurement):
     mprefix = 'PQPulsarMeasurement'
     
     def __init__(self, name):
@@ -25,6 +28,7 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
 
     def setup(self, **kw):
         PulsarMeasurement.setup(self,**kw)
+        #pqthread.PQ_threaded_Measurement.setup(self,**kw)
         pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
@@ -36,8 +40,8 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement):
         return self.adwin_process_running()
 
     def run(self, **kw):
+        #pqthread.PQ_threaded_Measurement.run(self,**kw) # Not operational AR2014
         pq.PQMeasurement.run(self,**kw)
-
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \

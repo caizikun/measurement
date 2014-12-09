@@ -49,7 +49,7 @@ class WS600_WaveMeter(Instrument): #1
         
         
         self._ref_freq = 470.400
-        self._last_valid = [self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq]
+        self._last_valid = [self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq, self._ref_freq]
         self.set_active_channel(1)
         self.get_integration_time()
         self.get_temperature()

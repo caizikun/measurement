@@ -14,15 +14,15 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
+def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap'):
 
     m = DD.Crosstalk(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
     
-    m.params['Carbon_A'] = 5    ### Carbon spin that the Ramsey is performed on
-    m.params['Carbon_B'] = 1    ### Carbon spin that the Rabi/Gate is performed on
+    m.params['Carbon_A'] = 1    ### Carbon spin that the Ramsey is performed on
+    m.params['Carbon_B'] = 5    ### Carbon spin that the Rabi/Gate is performed on
     
     m.params['reps_per_ROsequence'] = 500 
     m.params['C13_init_state']      = 'up' 
@@ -42,8 +42,6 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
     m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
-
-   
     m.params['Nr_C13_init']     = 1
     m.params['Nr_MBE']          = 0
     m.params['Nr_parity_msmts'] = 0 
@@ -53,8 +51,8 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'MBI'):
 if __name__ == '__main__':
       # Tomography 
     # Crosstalk(SAMPLE,RO_phase = 0, RO_Z = False)
-    Crosstalk(SAMPLE,RO_phase = 90, RO_Z = False)
-    # Crosstalk(SAMPLE,RO_phase = 0, RO_Z = True)
+    # Crosstalk(SAMPLE,RO_phase = 90, RO_Z = False)
+    Crosstalk(SAMPLE,RO_phase = 0, RO_Z = True)
 
 
 

@@ -111,7 +111,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
 
-    pts = 11
+    pts = 7
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 5000
 
@@ -122,7 +122,7 @@ def fast_ssro_calibration(name):
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*15e-6  # after, check with 5 us
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*5e-6  # after, check with 5 us
     m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6*2
 
     m.params['sweep_name'] = 'Readout power [nW]'
@@ -165,4 +165,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Pippin_SIL3_Pulse_AOM')
+    fast_ssro_calibration('Pippin_LT3')

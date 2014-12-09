@@ -847,7 +847,7 @@ config['adwin_lt2_processes'] = {
                     ['threshold_majority_vote'     ,   0],
                     ['reps_majority_vote'          ,   1],
                     ['do_MBI'                      ,   0],
-                    
+
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1154,27 +1154,28 @@ config['adwin_lt2_processes'] = {
                     ['max_MBI_attempts'            ,   1],  #10
                     ['nr_of_ROsequences'           ,   1],  #11
                     ['wait_after_RO_pulse_duration',   3],  #12
-                    ['N_randomize_duration'        ,  50],  #13 
+                    ['N_randomize_duration'        ,  50],  #13
 
                     ['Nr_C13_init'                 ,  2],   #14
                     ['Nr_MBE'                      ,  1],   #15
                     ['Nr_parity_msmts'             ,  0],   #16
-                      #Thresholds 
+                      #Thresholds
                     ['MBI_threshold'               ,  1],   #17
-                    # ['C13_MBI_threshold'           ,  0],   #18 
-                    ['MBE_threshold'               ,  1],   #19 
-                    ['Parity_threshold'            ,  1],   #20 
-                    # Durations 
-                    ['C13_MBI_RO_duration'         , 30],   #21 
+                    # ['C13_MBI_threshold'           ,  0],   #18
+                    ['MBE_threshold'               ,  1],   #19
+                    ['Parity_threshold'            ,  1],   #20
+                    # Durations
+                    ['C13_MBI_RO_duration'         , 30],   #21
                     ['SP_duration_after_C13'       , 25],   #22
 
                     ['MBE_RO_duration'             ,  10],  #23
                     ['SP_duration_after_MBE'       ,  25],  #24
 
-                    ['Parity_RO_duration'          ,  10],  #25
+                    ['Parity_RO_duration'          ,  100],  #25
                     ['C13_MBI_RO_state'              ,  0 ],  #26
 
-                    ],# TODO_MAR: add to msmt params and make usefull in Adwin 
+                    ],
+
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
                 'params_float' : [
@@ -1183,7 +1184,7 @@ config['adwin_lt2_processes'] = {
                     ['Ex_N_randomize_voltage'       , 0.0], #3
                     ['A_N_randomize_voltage'        , 0.0], #4
                     ['repump_N_randomize_voltage'   , 0.0], #5
-                    ['E_C13_MBI_RO_voltage'         , 0.0], #6  
+                    ['E_C13_MBI_RO_voltage'         , 0.0], #6
                     ['E_SP_voltage_after_C13_MBI'   , 0.0], #7
                     ['A_SP_voltage_after_C13_MBI'   , 0.0], #8
 
@@ -1192,9 +1193,9 @@ config['adwin_lt2_processes'] = {
                     ['E_SP_voltage_after_MBE'     , 0e-9], #11
 
                     ['E_Parity_RO_voltage'        , 1e-9], #12
-                    
 
-                    # TODO_MAR: Add voltages for MBE and Parity 
+
+                    # TODO_MAR: Add voltages for MBE and Parity
 
 
                     ],
@@ -1460,7 +1461,7 @@ config['adwin_pro_processes'] = {
                 'cr_mod_activate'           : 67,
                 'cur_pos_scan_dac'          : 64,#0 do deactivate
                 'cr_per_pos_step'           : 65,
-                'activate_position_scan'    : 59,   
+                'activate_position_scan'    : 59,
                 },
             'fpar' : {
                 'repump_mod_err' : 78,
@@ -1509,7 +1510,7 @@ config['adwin_pro_processes'] = {
                     'atto_positions' : 16,
                     'scan_array' : 17,
                     }
-                },        
+                },
         # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
         # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
         # Not sure if this function is then needed. - Machiel 30-12-'13'
@@ -1653,8 +1654,8 @@ config['adwin_pro_processes'] = {
                 'file' : 'bell_lt3.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_done_DI_channel'         ,   8],
-                    ['AWG_success_DI_channel'         ,   8],
+                    ['AWG_done_DI_channel'         ,   17],
+                    ['AWG_success_DI_channel'         ,  17],
                     ['SP_duration'                 , 100],
                     ['wait_after_pulse_duration'   ,   1],
                     ['remote_CR_DO_channel'        ,  15],
@@ -1662,6 +1663,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 8],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1801,3 +1803,98 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_mod': 10,
         'yellow_aom_frq':11,
         }
+
+
+config['adwin_rt1_dacs'] = {
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        }
+
+config['adwin_rt1_dios'] = {
+
+        }
+
+config['adwin_rt1_processes'] = {
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TB5',
+            },
+
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'rt1_linescan.TB2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
+                },
+            },
+
+        'counter' : {
+
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'rt1_simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'rt1_set_dac.TB3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'rt1_set_ttl_outputs.TB4',
+            'par' : {
+                'dio_no' : 61,
+                'dio_val' : 62,
+                },
+            },
+
+        'trigger_dio' : {
+            'index' : 4,
+            'file' : 'rt1_dio_trigger.tb4',
+            'par' : {
+                'dio_no' : 61,
+                'startval' : 62, # where to start - 0 or 1
+                'waittime' : 63, # length of the trigger pulse in units of 10 ns
+            },
+        },
+    }

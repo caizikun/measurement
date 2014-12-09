@@ -17,9 +17,7 @@ class multiple_optimizer(Instrument):
         
         self.add_function('start')        
         self.add_function('stop')
-        self.add_function('add_optimizer')
-        self.add_function('get_optimizers')
-        self.add_function('manual_optimize')
+        self.add_function('manual_check')
         
         self._optimizers=[]
         
@@ -29,29 +27,19 @@ class multiple_optimizer(Instrument):
         self._timer=-1
 
     #--------------get_set        
-    
-    def get_optimizers(self):
-        return self._optimizers
         
-    def add_optimizer(self,name,**kw):
-        ins_list=qt.instruments.get_instrument_names()
-        try: 
-            ins_list.index(name)
-        except ValueError:
-            qt.instruments.create(name,'simple_optimizer',**kw)
-        self._optimizers.append(name)
-
-    def remove_optimizer(self,name):
-        self._optimizers.remove(name)
-        
-    def _optimize(self,*arg):
-        pass #implement in child class
-        
-    def _check_treshold(self):
+    def _check(self):
+        if self._is_waiting:
+            return True
+        else:
+            self.check()
         pass
     
-    def manual_optimize(self,optimizer):
-        self._optimize(optimizer)
+    def manual_check(self):
+        return self._check()
+
+    def check(self):
+        pass
         
     def start(self):
         if self.get_is_running():
@@ -63,7 +51,7 @@ class multiple_optimizer(Instrument):
             self._stop_waiting()
         self.set_is_running(True)
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
-                self._check_treshold)
+                self._check)
         return True
                 
     def stop(self):
