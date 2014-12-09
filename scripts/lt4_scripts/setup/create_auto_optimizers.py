@@ -1,4 +1,4 @@
-if True:
+if False:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
     _getctrl_gate=  lambda: qt.instruments['adwin'].get_dac_voltage('gate')
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -27,3 +27,5 @@ if False:
             set_control_f=_setctrl_nf, get_control_f=_getctrl_nf, 
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
+if True:
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
