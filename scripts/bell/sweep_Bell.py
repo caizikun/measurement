@@ -245,7 +245,7 @@ def rnd_echo_ro(name):
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
     m.generate_sequence()
-    if upload_only or True:
+    if upload_only:
         return
     if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
@@ -263,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    #tail_sweep('tail_lt3_Pippin') 
+    tail_sweep('tail_lt3_Pippin') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    rnd_echo_ro('test')
+    #rnd_echo_ro('test')
