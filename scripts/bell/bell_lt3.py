@@ -125,7 +125,7 @@ def bell_lt3(name):
         if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
             m.joint_params['do_echo'] = 0
             m.joint_params['do_final_MW_rotation'] = 0
-            th_debug = False
+            th_debug = True
             mw=True
         elif 'TPQI' in remote_name:
             m.joint_params['RO_during_LDE']=0
@@ -141,9 +141,8 @@ def bell_lt3(name):
             th_debug = False
             mw=True
         elif 'MeasXX_' in remote_name:
-            th_debug = False
+            th_debug = True 
             mw=True
-            m.joint_params['measure_xx_ent']=True
         else:
             print 'using standard local settings'
             #raise Exception('Unknown remote measurement: '+ remote_name)

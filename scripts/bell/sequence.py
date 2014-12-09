@@ -308,7 +308,7 @@ def _lt3_entanglement_event_element(msmt):
     
     e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
 
-    e.append(pulse.cp(msmt.TIQ, length=30e-6))
+    e.append(pulse.cp(msmt.TIQ, length=1e-6))
     e.append(msmt.adwin_success_pulse)
     return e
 
@@ -316,7 +316,7 @@ def _lt4_entanglement_event_element(msmt):
     
     e= element.Element('Entanglement event element', pulsar=qt.pulsar)
 
-    e.append(pulse.cp(msmt.TIQ, length=30e-6))
+    e.append(pulse.cp(msmt.TIQ, length=1e-6))
     e.append(msmt.adwin_success_pulse)
     return e
 
