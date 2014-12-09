@@ -158,6 +158,9 @@ class pid_controller_v4(Instrument):
 
     ### public methods
     def start(self):
+        if self.get_is_running():
+            print self.get_name() + ': ALREADY RUNNING'
+            return False
         self.set_is_running(True)
 
         self._error = 0.

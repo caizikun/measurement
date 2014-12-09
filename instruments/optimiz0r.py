@@ -34,7 +34,7 @@ class optimiz0r(Instrument):
             for d in dims:
                 ret=ret and self.opt1d_ins.run(dimension=d, counter = cnt, 
                         pixel_time=int_time, **self.dimensions[d])
-                qt.msleep(1)
+                qt.msleep(0.5)
             if msvcrt.kbhit():
                 kb_char=msvcrt.getch()
                 if kb_char == "q" : break

@@ -110,10 +110,10 @@ class bell_optimizer(mo.multiple_optimizer):
         return True
 
     def optimize_nf(self):
-        self.e_primer_stop()
+        self.pid_e_primer_stop()
         qt.instruments['nf_optimizer'].optimize()
         qt.msleep(2.5)
-        self.e_primer_start()
+        self.pid_e_primer_start()
 
     def optimize_yellow(self):
         self.pidyellowfrq_stop()
