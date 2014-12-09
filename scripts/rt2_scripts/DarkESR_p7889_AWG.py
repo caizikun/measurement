@@ -25,9 +25,11 @@ m.params['pts']=8
 m.params['MW_pulse_length']=(2.)*1e-6
 m.params['ssbmod_detuning']=43e6
 m.params['MW_power']=20
-m.params['GreenAOM_pulse_length']=2.*1e-6
 m.params['Eval_ROI_start']=500
 m.params['Eval_ROI_end']=3500
+
+m.params['GreenAOM_pulse_length']=2.*1e-6
+m.params['GreenAOM_power']= 5e-6
 
 m.params['ssbmod_frq_start']=m.params['ssbmod_detuning']-m.params['range']/2
 m.params['ssbmod_frq_stop']=m.params['ssbmod_detuning']+m.params['range']/2

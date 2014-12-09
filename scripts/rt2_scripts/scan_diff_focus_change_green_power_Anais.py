@@ -34,5 +34,4 @@ for i in zoom:
       qt.msleep(0.1)
   j=j+1
   k=k+1
-  print 'scan ready2' 
-  print 'hell222'
+  print 'scan ready' 

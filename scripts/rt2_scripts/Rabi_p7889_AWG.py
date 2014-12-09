@@ -21,7 +21,9 @@ m.params['repetitions']=10000
 m.params['pts']=8
 
 m.params['MW_power']=20
+
 m.params['GreenAOM_pulse_length']=2.*1e-6
+m.params['GreenAOM_power']= 5e-6
 
 #parameters for postprocessing of the raw data
 m.params['Eval_ROI_start']=500
@@ -41,10 +43,9 @@ m.params['mw_frq']=2.86e9-m.params['ssbmod_frequency'] #insert config parameter 
 #measurement start
 m.autoconfig()
 m.generate_sequence()
-#m.measure()
-#m.save_2D_data()
-#m.finish()
+m.measure()
+m.save_2D_data()
+m.finish()
 
 
 print 'I still commented the turning on and off of the vector source. See the p7889_2D_measurement.py file. Norbert 23-09-2014'
-print 'Changing of the green AOM power with the AWG needs to be implemented as well. Norbert 24-09-2014'

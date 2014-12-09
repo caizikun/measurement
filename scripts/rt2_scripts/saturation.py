@@ -6,7 +6,7 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111No2_enlarged_SIL1_with_band_pass_SM_DM_path_opt'
+name = 'The111No2_enlarged_SIL2_DM_off'
 steps=31
 max_power=400e-6       #[w]
 counter=1    #number of counter

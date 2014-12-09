@@ -25,7 +25,6 @@ qt.pulsar = pulsar.Pulsar()
 #    low=-1.5, offset=0., delay=165e-9, active=True)
 
 # MW
-#nothing to see here yet
 
 qt.pulsar.define_channel(id='ch2_marker1', name='MW_pulsemod', type='marker', 
     high=1.0, low=0, offset=0., delay=(44+165-8)*1e-9, active=True)

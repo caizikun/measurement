@@ -11,7 +11,7 @@ counter=1
 def optimize_single_pin(pin_nr):
     #measurement parameters
     pin_nr=pin_nr
-    name = 'The111No2_enlarged_SIL5_sweep_single_pin_nr_'+str(pin_nr)
+    name = 'The111No2_enlarged_SIL2_sweep_single_pin_nr_'+str(pin_nr)
     steps=11
     cur_F=(okotech_dm.get_voltage(pin_nr)/2.)**2
     
