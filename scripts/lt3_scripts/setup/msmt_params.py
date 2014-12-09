@@ -108,7 +108,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.808954e9# +/-   0.000005           #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.808852e9# +/-   0.000005           #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -153,8 +153,6 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'MW_pi_amp': 0.86,
-    	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 210e-9, 
         'Hermite_pi_amp': 0.9163, #BELL # 2014-11-17 for pi pulse of 210 ns
         'Hermite_pi2_length': 90e-9,
@@ -163,10 +161,10 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
         'Square_pi_length' : 50e-9,#2000e-9, # calib. 2014-07-25
       	'Square_pi_amp' : 0.731, 
-      	'IQ_Square_pi_amp' : 0.032 , # calib. for 2 us pi pulse, 2014-10-15 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
     	'Square_pi2_amp'  : 0.684, # XXXXXXX not calibratedrepump
-    	'IQ_Square_pi2_amp'  : 0.99, # XXXXXXX not calibrated
+      	'IQ_Square_pi_amp' : 0.7531,#632 , # calib. for 2 us pi pulse, 2014-10-15 
+      	'IQ_Square_pi2_amp'  : 0.6967, # 
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }

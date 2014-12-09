@@ -177,36 +177,6 @@ def tail_sweep(name):
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
-def OptPulseSep_sweep(name):
-    print 'sweeping the pulse separation'
-    m=SweepBell('OptPulseSep_sweep_'+name)
-    _setup_params(m, setup = qt.current_setup)
-
-    pts=11
-    m.params['pts']=pts
-    m.params['repetitions'] = 500
-
-    m.joint_params['LDE_attempts_before_CR'] = 250
-    m.joint_params['opt_pi_pulses'] = 2
-    m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['RO_during_LDE'] = 0
-    m.params['MW_during_LDE'] = 0
-    m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 12e-6 # allows to sweep the optical pulses up to 3 us
-    m.joint_params['do_final_MW_rotation'] = 0
-    m.joint_params['wait_for_1st_revival'] = 0
-
-    m.params['MIN_SYNC_BIN'] =       0.
-    m.params['MAX_SYNC_BIN'] =       12000
-
-    print 'sweeping the pulse separation'
-        #msmt.joint_params['opt_pulse_separation']
-    m.params['general_sweep_name'] = 'opt_pulse_separation'
-    m.params['general_sweep_pts'] = np.linspace(100e-9, 300e-9,pts)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
     print 'setting up the echo sweep'
@@ -275,7 +245,7 @@ def rnd_echo_ro(name):
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
     m.generate_sequence()
-    if upload_only:
+    if upload_only or True:
         return
     if measure_bs:
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
@@ -293,8 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    #OptPulseSep_sweep('Pippin')
-    tail_sweep('tail_lt3_Pippin') 
+    #tail_sweep('tail_lt3_Pippin') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')

@@ -6,7 +6,7 @@ joint_params['RO_during_LDE'] = 0 #XXXXX
 joint_params['opt_pi_pulses'] = 2
 joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9 #DONT CHANGE THIS
-joint_params['opt_pulse_separation']    = 600e-9
+joint_params['opt_pulse_separation']    = 300e-9
 joint_params['TPQI_normalisation_measurement'] = False
 
 joint_params['RND_during_LDE'] = 0# XXXX1 
