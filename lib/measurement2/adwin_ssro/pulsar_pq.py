@@ -1,13 +1,13 @@
 """
 Measurement class for measurements with Picoquant TTTR measurements as main loop, specifically, 
 to perform Pulsar sweep-type measurements.
+
 Bas Hensen 2014
 
 """
 import msvcrt
 import numpy as np
 import qt
-
 from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import PulsarMeasurement
 import measurement.lib.measurement2.pq.pq_measurement as pq
 import measurement.lib.measurement2.pq.pq_threaded_measurement as pqthread
@@ -28,6 +28,7 @@ class PQPulsarMeasurement(PulsarMeasurement, pq.PQMeasurement): # pqthread.PQ_th
 
     def setup(self, **kw):
         PulsarMeasurement.setup(self,**kw)
+        #pqthread.PQ_threaded_Measurement.setup(self,**kw)
         pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):

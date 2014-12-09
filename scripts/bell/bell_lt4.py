@@ -290,5 +290,5 @@ if __name__ == '__main__':
         #SP_lt4('SPCORR_lt4')
         #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        measureXX('Entanglement_XX_basic_day3_run17')
+        measureXX('Entanglement_XX_basic_day3_run26')
         pass
