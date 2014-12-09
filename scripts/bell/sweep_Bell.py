@@ -266,4 +266,4 @@ if __name__ == '__main__':
     #tail_sweep('tail_lt3_Pippin') 
     #tune('tune_lt3_PippinSil3') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('test')
+    rnd_echo_ro('test')
