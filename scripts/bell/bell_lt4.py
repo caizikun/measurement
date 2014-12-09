@@ -268,8 +268,20 @@ def SP_lt3(name):
              do_upload     = True,
              )
 
+def lt4_only(name):
+    m = Bell_lt4(name)
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = True,
+             mw            = True,
+             measure_lt3   = False,
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
 if __name__ == '__main__':
-    DoJitterCheck = True
+    DoJitterCheck = False
     ResetPlu = True
         
     if ResetPlu:
@@ -288,7 +300,8 @@ if __name__ == '__main__':
         #TPQI('run_test')
         #full_bell('ZZ_RND_day2_run14')   
         #SP_lt4('SPCORR_lt4')
+        lt4_only('test')
         #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        measureXX('Entanglement_XX_basic_day3_run26')
+        #measureXX('Entanglement_XX_basic_day3_run26')
         pass

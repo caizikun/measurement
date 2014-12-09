@@ -125,3 +125,18 @@ class simple_optimizer(Instrument):
             return float((v2-v1))/(n2-n1)
         else:
             return 0.
+
+    def _fit(self,X,Y):
+        #fit_gauss(g_a, g_A, g_x0, g_sigma)
+        fitres = fit.fit1d(X, Y, common.fit_poly, 
+                [X[np.argmin(Y)], 1, 1], do_print = False, ret = True)
+
+        if type(fitres) != type(False):
+            p1 = fitres['params_dict']
+            fd = fitres['fitfunc'](X)
+            p=plt.plot(name=self._plot_name)
+            p.add(X, fd, '-b')   
+        else:
+            print '\tCould not fit curve!'
+            return None
+        return p1 

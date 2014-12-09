@@ -77,7 +77,6 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'send_AWG_start':                          1,
 	}
 
-
 ##########################################
 ### General settings for AdwinSSRO+MBI ###
 ##########################################
@@ -153,8 +152,6 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'MW_pi_amp': 0.86,
-    	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 220e-9, 
         'Hermite_pi_amp': 0.8668, #2014-12-01
         'Hermite_pi2_length': 100e-9,
