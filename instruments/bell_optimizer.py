@@ -74,10 +74,12 @@ class bell_optimizer(mo.multiple_optimizer):
             cr2 = qt.instruments['physical_adwin'].Get_Par(72)
 
             th = qt.instruments['physical_adwin'].Get_Par(75)
-            if st2-st1<self.get_min_starts() and cr2-cr1 > self.min_cr_checks() and th < 1000:
+            if st2-st1<self.get_min_starts() and cr2-cr1 > self.min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.min_cr_counts_gate() and th < 1000:
                 print 'JUMP DETECTED! {} starts per second'.format(st2-st1)
                 self._mode == 'jump_recover-0'
                 self._mode_rep = 0
+            else:
+                print 'number of starts ok'
         elif self._mode == 'jump_recover-0':
             print self._mode, self._mode_rep
             self._mode_rep += 1
