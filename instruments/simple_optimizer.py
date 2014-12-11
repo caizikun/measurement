@@ -4,6 +4,7 @@ from instrument import Instrument
 import plot as plt
 import types
 import os
+import msvcrt
 from lib import config
 from analysis.lib.fitting import fit, common
 import instrument_helper
@@ -25,7 +26,7 @@ class simple_optimizer(Instrument):
                     'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'scan_max'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_step_size' :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'min_value'         :   {'type':types.IntType,    'val':2,'flags':Instrument.FLAG_GETSET},
+                    'min_value'         :   {'type':types.FloatType,  'val':2.,'flags':Instrument.FLAG_GETSET},
                     'dwell_time'        :   {'type':types.FloatType,  'val':0.1,'flags':Instrument.FLAG_GETSET}, #s
                     'wait_time'         :   {'type':types.FloatType,  'val':10,'flags':Instrument.FLAG_GETSET}, #s
                     'order_index'       :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},
@@ -34,6 +35,7 @@ class simple_optimizer(Instrument):
                     'plot_name'         :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
                     'variance'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
                     'last_max'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
+                    'good_value'        :   {'type':types.FloatType,  'val':100,'flags':Instrument.FLAG_GETSET},
                     }
         
         instrument_helper.create_get_set(self,ins_pars)
@@ -80,11 +82,16 @@ class simple_optimizer(Instrument):
         values=np.zeros(len(udrange))
         true_udrange=np.zeros(len(udrange))
         for i,sp in enumerate(udrange):
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+                self._set_control_f(initial_setpoint)
+                break
             #print 'sp',sp
             self._set_control_f(sp)
             qt.msleep(self._dwell_time)
             true_udrange[i]=self._get_control_f()
             values[i]=self.get_value()
+            if values[i] > self.get_good_value():
+                break
             
         valid_i=np.where(values>self._min_value)
         

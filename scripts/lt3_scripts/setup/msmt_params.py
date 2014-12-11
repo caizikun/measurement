@@ -143,7 +143,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 15} #18
+	'SSRO_duration' : 19} #18
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
