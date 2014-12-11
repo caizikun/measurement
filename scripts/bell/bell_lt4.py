@@ -298,10 +298,10 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        #full_bell('testing_overlap')   
+        #full_bell('high_strain_short_pulsesep_day1_run2')   
         #SP_lt4('SPCORR_lt4')
         #lt4_only('test')
         #pulse_overlap('testing')
-        SP_lt3('SPCORR_lt3')
-        #measureXX('testin')
-        pass
+        #SP_lt3('SPCORR_lt3')
+        measureXX('high_strain_short_pulsesep_day2_run16')
+        passex
