@@ -1,15 +1,12 @@
 from ctypes import *
 import os
 from instrument import Instrument
-import pickle
 from time import sleep, time, strftime
 import types
 import logging
 import numpy
 import qt
-from qt import *
 from numpy import *
-from measurement.lib.cython.hh_optimize import hht4
 
 LIB_VERSION = "1.1"
 DRIVER = 'th260lib'
@@ -95,7 +92,6 @@ class TimeHarp_TH260N(Instrument): #1
         # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument TH260')
         Instrument.__init__(self, name, tags=['physical'])
-        self.adwin = qt.instruments['adwin']
 
         # Load dll and open connection
         self._load_dll()
