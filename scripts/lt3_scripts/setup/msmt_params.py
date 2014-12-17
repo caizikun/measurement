@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      45e-9,
+		'yellow_repump_amplitude':      40e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -108,7 +108,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.808954e9# +/-   0.000005           #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.808852e9# +/-   0.000005           #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -125,7 +125,7 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 2e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 12e-9,
+		'A_SP_amplitude':				 14e-9,
 		'CR_duration' :				 	 50,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
@@ -143,7 +143,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 15} #18
+	'SSRO_duration' : 19} #18
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -153,20 +153,18 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'MW_pi_amp': 0.86,
-    	'MW_pi_length': 65e-9,
     	'Hermite_pi_length': 210e-9, 
-        'Hermite_pi_amp': 0.9163, #BELL # 2014-11-17 for pi pulse of 210 ns
+        'Hermite_pi_amp': 0.8952, #BELL # 2014-12-09 for pi pulse of 210 ns
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.642287,#2014-11-17 for pi/2 pulse of 90 ns
+        'Hermite_pi2_amp': 0.628591,#2014-12-09 for pi/2 pulse of 90 ns
         'Hermite_Npi4_length': 45e-9,
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
         'Square_pi_length' : 50e-9,#2000e-9, # calib. 2014-07-25
       	'Square_pi_amp' : 0.731, 
-      	'IQ_Square_pi_amp' : 0.032 , # calib. for 2 us pi pulse, 2014-10-15 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
     	'Square_pi2_amp'  : 0.684, # XXXXXXX not calibratedrepump
-    	'IQ_Square_pi2_amp'  : 0.99, # XXXXXXX not calibrated
+      	'IQ_Square_pi_amp' : 0.7531,#632 , # calib. for 2 us pi pulse, 2014-10-15 
+      	'IQ_Square_pi2_amp'  : 0.6967, # 
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }
