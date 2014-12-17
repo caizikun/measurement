@@ -43,11 +43,11 @@ def Carbon_Ramsey(name,tau = None,N=None):
     print 'free evolution times: %s' %m.params['free_evolution_times']
     
     if N ==None: 
-        m.params['C_Ren_N'] = m.params['C6_Ren_N'][0]  
+        m.params['C_Ren_N'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'][0]  
     else:
         m.params['C_Ren_N'] = N
     if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C6_Ren_tau'][0]
+        m.params['C_Ren_tau'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'][0]
     else: 
         m.params['C_Ren_tau'] = tau 
 
