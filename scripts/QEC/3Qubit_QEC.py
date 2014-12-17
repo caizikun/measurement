@@ -164,7 +164,7 @@ if __name__ == '__main__':
     error_list['2'] = linspace(0.6,0.8,3)
     error_list['3'] = linspace(0.9,1.,2)
     
-    for state in ['mY','Y','Z','mZ','X','mX']:
+    for state in ['Y']:#['mY','Y','Z','mZ','X','mX']:
         logic_state = state
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -172,7 +172,7 @@ if __name__ == '__main__':
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-        for error_sign in [1,-1]:
+        for error_sign in [1]:#,-1]:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             ins_counters.set_is_running(0)  
             optimiz0r.optimize(dims=['x','y','z'])
 
-            for RO in range(7):
+            for RO in [4]:#range(7):
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
@@ -192,7 +192,7 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
                 ssrocalibration(SAMPLE_CFG)
-                for k in range(4):
+                for k in range(1):
                     e_list = error_list[str(k)].tolist()
                     print '-----------------------------------'            
                     print 'press q to stop measurement cleanly'

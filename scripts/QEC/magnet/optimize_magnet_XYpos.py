@@ -36,7 +36,7 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
 
-    axis = 'X_axis'               # X usually moves 2x slower than Y (current settings)  
+    axis = 'Y_axis'               # X usually moves 2x slower than Y (current settings)  
     #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
     #no_of_steps      = 5               # with a total of no_of_steps measurment points.
     min_counts_before_optimize = 5e4    #optimize position if counts are below this
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     pts_coarse    = 81   
     reps_coarse   = 750 #750
 
-    range_fine  = 0.60
+    range_fine  = 0.40
     pts_fine    = 51   
-    reps_fine   = 1000 #1000
+    reps_fine   = 1500 #1000
 
     ###########
     ## start ##
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
             magnet_step_size = 100         # the sample position is checked after each magnet_step_siz 
         elif axis == 'X_axis':
-            steps = [0, 150, 150] 
+            steps = [150, 150, 150] 
             magnet_step_size = 150         # the sample position is checked after each magnet_step_siz
 
 
@@ -132,9 +132,10 @@ if __name__ == '__main__':
             #ms=-1 fine
         
         DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9 - N_hyperfine)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_single()
-        f0m_temp = f0m_temp + N_hyperfine*1e-9
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+                pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
+        f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -150,9 +151,10 @@ if __name__ == '__main__':
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='left')
             #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9 + N_hyperfine)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_single()
-        f0p_temp = f0p_temp - N_hyperfine*1e-9
+                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
+                pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
+        f0p_temp = f0p_temp# - N_hyperfine*1e-9
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
         

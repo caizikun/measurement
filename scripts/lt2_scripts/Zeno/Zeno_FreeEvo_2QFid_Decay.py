@@ -68,9 +68,10 @@ def Zeno(name, carbon_list   = [1,5],
     ### Parity measurement settings ###
     ###################################
 
-    m.params['Nr_parity_msmts']     = number_of_parity_msmnts
+    m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = parity_msmnts_threshold
-    
+    m.params['Nr_Zeno_parity_msmts']     = number_of_parity_msmnts
+    m.params['repetitive_SP_A_power'] = 20e-9
 
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
@@ -122,6 +123,7 @@ if __name__ == '__main__':
                 el_RO= 'positive',
                 logic_state=logic_state,
                 Tomo_bases = RO_bases_dict[logic_state],
+                free_evolution_time=EvoTime,
                 debug=False)
 
 

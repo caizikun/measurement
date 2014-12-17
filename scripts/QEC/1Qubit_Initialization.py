@@ -10,9 +10,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon            =   5,               
+def MBE(name, carbon            =   1,               
         
-        carbon_init_list        =   [5],
+        carbon_init_list        =   [1],
         carbon_init_states      =   ['up'], 
         carbon_init_methods     =   ['swap'], 
         carbon_init_thresholds  =   [0],  
@@ -43,6 +43,8 @@ def MBE(name, carbon            =   5,
     ##################################
 
     m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
+    m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
+    # m.params['Tomography Bases'] = [['Z']]
         
     ####################
     ### MBE settings ###
@@ -72,6 +74,7 @@ def MBE(name, carbon            =   5,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
+
 
     # MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 1, carbon_init_list = [1])
     # MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 1, carbon_init_list = [1])

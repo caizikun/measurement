@@ -2307,10 +2307,11 @@ class MBI_C13(DynamicalDecoupling):
         carbon_list         = [1, 4],
         RO_basis_list       = ['X','X'],
         RO_trigger_duration = 116e-6,
-        el_RO_result         = '0',
+        el_RO_result        = '0',
         go_to_element       = 'next', event_jump_element = 'next',
         readout_orientation = 'positive',
-        el_state_in     = 0):
+        el_state_in         = 0,
+        Zeno_RO             = False):
 
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
@@ -2402,8 +2403,22 @@ class MBI_C13(DynamicalDecoupling):
                     Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                     Gate_operation='pi2',
                     phase = Final_pi2_pulse_phase_negative))    
+        
+        #if Zeno parity measurement then shoot a laser at the nv. don't bother the adwin with it.
+        if Zeno_RO:
+            Laser=Gate('C_rep_pump'+str(pt),'Trigger',
+                duration=RO_trigger_duration, 
+                )
+            Laser.channel='AOM_Newfocus'
+            Laser.elements_duration=RO_trigger_duration
 
-        carbon_RO_seq.append(
+            #for a correct phase calculation it might be useful to set the desired electron state:
+            #Laser.el_state_before_gate=0
+            #Laser.el_state_after_gate=0
+            carbon_RO_seq.append(Laser)
+
+        else:
+            carbon_RO_seq.append(
                 Gate(prefix+'_Trigger_'+str(pt),'Trigger',
                 wait_time = RO_trigger_duration,
                 go_to = go_to_element, event_jump = event_jump_element,
@@ -3154,6 +3169,7 @@ class Crosstalk(MBI_C13):
             C_Rabi_Ren = Gate('C_Rabi_Ren'+str(pt), 'Carbon_Gate',
                     Carbon_ind = self.params['Carbon_B'],
                     N = self.params['Rabi_N_Sweep'][pt],
+                    tau = self.params['Rabi_tau_Sweep'][pt],           
                     phase = self.params['C13_X_phase'])
 
             C_evol_seq =[C_Rabi_Ren]
@@ -3189,7 +3205,7 @@ class Crosstalk(MBI_C13):
 
 class Two_QB_Probabilistic_MBE_v3(MBI_C13):
     '''
-    Sequence: |N-MBI| -|Cinit|^N-|MBE|^N-|Tomography|
+    Sequence: |N-MBI| -|Cinit|^N2-|MBE|^N1-|Tomography|
     '''
     mprefix = 'probabablistic_MBE_Tomography'
     adwin_process = 'MBI_multiple_C13'
@@ -3938,6 +3954,9 @@ class Zeno_TwoQB(MBI_C13):
     def generate_sequence(self,upload=True,debug=False):
         pts = self.params['pts']
 
+        # set the output power of the repumping AOM to the desired 
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['repetitive_SP_A_power'],controller='sec'))
+
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Zeno_TwoQubit')
@@ -3980,17 +3999,56 @@ class Zeno_TwoQB(MBI_C13):
                 gate_seq.extend(probabilistic_MBE_seq)
 
             ### waiting time
-            if self.params['free_evolution_time']!=0:
-                if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
-                    print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
-                            %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
-                    qt.msleep(5)
-                        ### Add waiting time
-                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                             wait_time = self.params['free_evolution_time']-self.params['2C_RO_trigger_duration'])
-                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)   
+            if self.params['Nr_Zeno_parity_msmts']==0:
+                if self.params['free_evolution_time']!=0:
+                    if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                            ### Add waiting time
+                    wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time']-self.params['2C_RO_trigger_duration'])
+                    wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
 
+            ### interleave waiting time with parity measurements.
+            else:   
+                Parity_measurementA = self.readout_carbon_sequence(
+                        prefix              = 'Parity_A_' ,
+                        pt                  = pt,
+                        RO_trigger_duration = 20e-6,
+                        carbon_list         = self.params['Parity_a_carbon_list'],
+                        RO_basis_list       = self.params['Parity_a_RO_list'],
+                        el_RO_result        = '0',
+                        readout_orientation = self.params['Parity_a_RO_orientation'],
+                        Zeno_RO             = True)
+                Parity_measurementB = self.readout_carbon_sequence(
+                        prefix              = 'Parity_B_' ,
+                        pt                  = pt,
+                        RO_trigger_duration = 20e-6,
+                        carbon_list         = self.params['Parity_a_carbon_list'],
+                        RO_basis_list       = self.params['Parity_a_RO_list'],
+                        el_RO_result        = '0',
+                        readout_orientation = self.params['Parity_a_RO_orientation'],
+                        Zeno_RO             = True)
 
+                if self.params['free_evolution_time']!=0:
+                    if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                    #Add waiting time
+                    wait_gateA = Gate('Wait_gate_A'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time']/2.-self.params['2C_RO_trigger_duration'])
+
+                    #make the sequence symmetric around the parity measurements.
+                    wait_gateB = Gate('Wait_gate_B'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time']/2.-20.e-6)
+
+                    wait_seq = [wait_gateA]; gate_seq.extend(wait_seq); gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
+                    wait_seq = [wait_gateB]; gate_seq.extend(wait_seq)
+                #No waiting time, do the parity measurements directly.
+                else:
+                    gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
             ### Readout 
 
             carbon_tomo_seq = self.readout_carbon_sequence(
