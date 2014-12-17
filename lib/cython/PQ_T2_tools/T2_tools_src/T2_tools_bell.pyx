@@ -82,7 +82,7 @@ def Bell_live_histogram_filter(
                 last_sync_number += 1
                 continue
 
-            elif channel[k] == entanglement_marker:  # This is an entanglement event     
+            elif channel[k] & entanglement_marker:  # This is an entanglement event     
                 EntanglementMarkers += 1
 
             _sync_time = (t_ofl + time[k]) / t2_time_factor  - t_lastsync   
