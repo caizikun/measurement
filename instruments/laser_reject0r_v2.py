@@ -455,7 +455,7 @@ class laser_reject0r_v2(Instrument):
                         break
             if(fval>fcur): break
             fcur=fval
-            qt.msleep(0.1)
+            qt.msleep(0.05)
 
                     #print i
         if i>0: 
