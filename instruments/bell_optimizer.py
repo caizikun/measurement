@@ -19,6 +19,13 @@ class bell_optimizer(mo.multiple_optimizer):
                     'rejecter_step'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
                     }           
         instrument_helper.create_get_set(self,ins_pars)
+
+        self.add_parameter('sec_cal_a',
+                           type=types.FloatType,
+                           flags=Instrument.FLAG_GETSET,
+                           units='W',
+                           minval=0,maxval=1.0)
+        
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 

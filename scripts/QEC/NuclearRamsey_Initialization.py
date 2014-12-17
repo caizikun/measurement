@@ -19,11 +19,11 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearRamseyWithInitialization(name, 
-        carbon_nr             = 1,               
+        carbon_nr             = 5,               
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        C13_init_method       = 'swap'):
+        C13_init_method       = 'MBI'):
 
     m = DD.NuclearRamseyWithInitialization_v2(name)
     funcs.prepare(m)
@@ -56,25 +56,25 @@ def NuclearRamseyWithInitialization(name,
     # m.params['sweep_pts']  = m.params['free_evolution_time']
         
         ### 1B - Lab frame
-    m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
-    m.params['free_evolution_time'] = np.linspace(380e-6, 386e-6,m.params['pts'])
-    m.params['C_RO_phase'] = m.params['pts']*['reset']
-    # m.params['C_RO_phase'] = m.params['pts']*['X']        
+    # m.params['add_wait_gate'] = False
+    # m.params['pts'] = 1
+    # m.params['free_evolution_time'] = np.linspace(380e-6, 386e-6,m.params['pts'])
+    # m.params['C_RO_phase'] = m.params['pts']*['reset']
+    # # m.params['C_RO_phase'] = m.params['pts']*['X']        
 
-    m.params['sweep_name'] = 'free_evolution_time'
-    m.params['sweep_pts']  = m.params['free_evolution_time']
+    # m.params['sweep_name'] = 'free_evolution_time'
+    # m.params['sweep_pts']  = m.params['free_evolution_time']
     
     ############################################
     ### Option 2; Sweep RO phase at set time ###
     ############################################
-    # m.params['pts'] = 21
-    # m.params['add_wait_gate'] = False
-    # m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
-    # m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
+    m.params['pts'] = 21
+    m.params['add_wait_gate'] = True
+    m.params['free_evolution_time'] = np.ones(m.params['pts'] )*365e-6
+    m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
 
-    # m.params['sweep_name'] = 'phase'
-    # m.params['sweep_pts']  = m.params['C_RO_phase']
+    m.params['sweep_name'] = 'phase'
+    m.params['sweep_pts']  = m.params['C_RO_phase']
 
     '''Derived and fixed parameters'''
 
@@ -92,5 +92,5 @@ def NuclearRamseyWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+    NuclearRamseyWithInitialization(SAMPLE,debug=True,carbon_nr =1)
 

@@ -32,7 +32,7 @@ def NuclearRamseyWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 1500
     m.params['C13_MBI_RO_state'] = 1
 
     ### overwritten from msmnt params
@@ -58,8 +58,8 @@ def NuclearRamseyWithInitialization(name,
     
         ### 1B - Lab frame
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 51
-    m.params['free_evolution_time'] = np.linspace(500e-6, 520e-6,m.params['pts'])
+    m.params['pts'] = 37
+    m.params['free_evolution_time'] = np.linspace(510e-6, 528e-6,m.params['pts'])
     m.params['C_RO_phase'] = m.params['pts']*['reset']
     # m.params['C_RO_phase'] = m.params['pts']*['X']        
 
@@ -99,6 +99,6 @@ def NuclearRamseyWithInitialization(name,
 
 if __name__ == '__main__':
 
-    for length in [0,2,5,7,10,20,30,40,50,150,200]:
+    for length in [0,2,5,7,10,15,20,25,30,35,40,50,70,85,100,125,150]:
         NuclearRamseyWithInitialization(SAMPLE+'_SP_length_'+str(length),C13_sp_duration=length)
 
