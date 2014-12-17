@@ -47,6 +47,8 @@ class laser_reject0r_v2(Instrument):
                     }
         instrument_helper.create_get_set(self,ins_pars)
 
+        self._powell_direc=None
+
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
 
         if not os.path.exists(cfg_fn):
@@ -280,7 +282,7 @@ class laser_reject0r_v2(Instrument):
         dataplot.add(qtdata, 'b-', coorddim = 0, valdim = 2)
         return qtdata, dataplot
 
-    def jog_optimize(self, waveplate, directions=[1,-1], counts_avg=10, min_count_break=-1):
+    def jog_optimize(self, waveplate, directions=[1,-1], counts_avg=10, min_count_break=20):
         """
         For each given direction, scan the given waveplate at given speed
         until the counts start rising or a minimum number of counts (min_count_break) is reached
@@ -331,7 +333,7 @@ class laser_reject0r_v2(Instrument):
             if i>2: break
         self._rotator.set('jog%d'%wp_axis,0)
 
-    def step_optimize(self, waveplate, stepsize=0.1, directions=[1,-1],counts_avg=10,min_count_break=-1, **kw):
+    def step_optimize(self, waveplate, stepsize=1.0, directions=[1,-1],counts_avg=30,min_count_break=20, **kw):
         """
         For each given direction, step the given waveplate with given stepsize (deg)
         until the counts start rising, or a minimum number of counts (min_count_break) is reached
@@ -374,7 +376,7 @@ class laser_reject0r_v2(Instrument):
             if i<0:
                 break
 
-    def brent_bound_optimize(self,waveplate,range_deg=10.,tolerance=0.1,max_cycles=10,counts_avg=10,**kw):
+    def brent_bound_optimize(self,waveplate,max_range=10.,tolerance=0.5,max_cycles=20,counts_avg=30,**kw):
         self._x0=0
         def f(x):
             if (msvcrt.kbhit() and msvcrt.getch() =='q'):
@@ -390,11 +392,11 @@ class laser_reject0r_v2(Instrument):
             print avg
             return avg
         try: 
-            optimize.fminbound(f,-range_deg/2.,range_deg/2.,xtol=tolerance, maxfun=max_cycles)
+            optimize.fminbound(f,-max_range/2.,max_range/2.,xtol=tolerance, maxfun=max_cycles)
         except:
             print "error:", sys.exc_info()[0]
 
-    def nd_optimize(self,tolerance=0.1,max_cycles=10,counts_avg=10,**kw):
+    def nd_optimize(self,max_range=10.,stepsize=1.0,max_cycles=20,counts_avg=30,min_counts=20,method=0,**kw):
         self._x0=np.zeros(len(self._waveplates))
         def f(x):
             if (msvcrt.kbhit() and msvcrt.getch() =='q'):
@@ -402,7 +404,7 @@ class laser_reject0r_v2(Instrument):
             avg = 0.
             print x
             for i,wp in enumerate(self._waveplates):
-                self.move(waveplate,x[i]-self._x0[i], **kw)
+                self.move(wp,x[i]-self._x0[i], **kw)
             self._x0=x
             for j in range(counts_avg):
                     avg=avg+self._measure_counts()
@@ -410,12 +412,57 @@ class laser_reject0r_v2(Instrument):
             avg=avg/counts_avg
             print avg
             return avg
-        try: 
-            xg=np.zeros(len(self._waveplates))
-            optimize.fmin(f,xg,xtol=tolerance, maxfun=max_cycles)
-        except:
-            print "error:", sys.exc_info()[0]
+       # try: 
+        xg=np.zeros(len(self._waveplates))
+        bounds=[(-max_range/2.,max_range/2.) for i in range(len(self._waveplates))]
+        #optimize.fmin(f,xg,xtol=stepsize, maxfun=max_cycles)
+        if method == 0:
+            x_opt,f_opt,self._powell_direc,_tmp0,_tmp1,_tmp2 = optimize.fmin_powell(f, xg, xtol=stepsize, maxfun=max_cycles, direc=self._powell_direc)
+        elif method==1:
+            x_opt,f_opt,_tmp1 = optimize.fmin_tnc(f, xg, approx_grad=True, bounds=bounds, epsilon=stepsize, xtol=stepsize)
+        elif method==2:
+            x_opt, f_opt,self._powell_direc = self._nd_optimize_user(f, xg, stepsize=stepsize,max_range=max_range,min_val=min_counts)
+
+        print 'optimize result: ', x_opt, f_opt
+        #print 'current position: ', self._x0
+        #except:
+        #    print "error:", sys.exc_info()[0]
 
     def reset_wp_channel(self):
         self._prev_wp_channel = 'none'
+
+    def _nd_optimize_user(self,f,xg, stepsize=1.,max_range=10, min_val=20):
+        D= len(xg)
+        f0 = f(xg)
+        if f0 < min_val:
+            return xg, f0, np.zeros(D)
+        fcur = f0
+        X = xg
+        fgrad=np.zeros(D)
+        for d in range(D):
+            X=X+np.eye(D)[d]*stepsize*2.
+            fval = f(X)
+            fgrad[d] = (fcur-fval)
+            fcur=fval
+        fgrad_norm = fgrad / np.linalg.norm(fgrad)
+
+        for i in np.arange(np.floor(max_range/stepsize)):
+            X = X + fgrad_norm*stepsize
+            fval = f(X)
+            if (fval<min_val) or (fval > self.get_cnt_threshold())  or  (msvcrt.kbhit() and msvcrt.getch() =='q'):
+                        self._set_red_power(0)
+                        i=-1 #stop!
+                        break
+            if(fval>fcur): break
+            fcur=fval
+            qt.msleep(0.1)
+
+                    #print i
+        if i>0: 
+            X = X - fgrad_norm*stepsize
+            fval = f(X)
+
+        return X, fval, fgrad_norm
+
+
 

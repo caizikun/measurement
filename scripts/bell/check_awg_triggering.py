@@ -89,7 +89,7 @@ def check_triggering():
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
             jitterDetected=True
-        elif (peak_max<489.) or (peak_max>489.5):
+        elif (peak_max<489.8) or (peak_max>490.8):
             ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:

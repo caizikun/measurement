@@ -369,24 +369,18 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
     m.params['Ex_SP_amplitude']=0
 
-   # if IQmod:
-    #    m.params['mw_frq'] = m.params['ms-1_cntr_frq'] - m.params['MW_pulse_mod_frequency']
+    m.params['pulse_sweep_durations'] =  np.ones(pts)*2000e-9 #np.linspace(0, 10, pts) * 1e-6
+    #m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
 
-
-
-
-    #m.params['pulse_sweep_durations'] =  np.ones(pts)*50e-9 #np.linspace(0, 10, pts) * 1e-6
-    m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
-
-    m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
-    #m.params['pulse_sweep_amps'] = np.linspace(0.,0.9,pts)#0.55*np.ones(pts)
+    #m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
+    m.params['pulse_sweep_amps'] = np.linspace(0.,0.04,pts)#0.55*np.ones(pts)
 
     # for autoanalysis
-    m.params['sweep_name'] = 'Pulse durations (ns)'
-    #m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+    #m.params['sweep_name'] = 'Pulse durations (ns)'
+    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
 
-    #m.params['sweep_pts'] = m.params['pulse_sweep_amps']
-    m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
+    m.params['sweep_pts'] = m.params['pulse_sweep_amps']
+    #m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
     print m.params['sweep_pts']
 
     print Imod_channel
@@ -700,12 +694,12 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
     if stage == 3.0 :
         calibrate_pi_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel,
-                pulse_type = 'Hermite', 
+                pulse_type = 'Square', 
                 multiplicity = 1, debug=debug)
 
     if stage == 4.0:
         calibrate_pi2_pulse(SAMPLE_CFG, IQmod=IQmod,Imod_channel = Imod_channel,
-                pulse_type = 'Hermite', debug = debug)
+                pulse_type = 'Square', debug = debug)
   
     if stage == 4.5:
         calibrate_pi4_pulse(SAMPLE_CFG, IQmod = IQmod, Imod_channel = Imod_channel, 
@@ -724,7 +718,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(2.5, IQmod =False, Imod_channel=False, debug = False)
+    run_calibrations(4.0, IQmod =True, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR
