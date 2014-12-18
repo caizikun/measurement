@@ -48,7 +48,7 @@ class Bell_BS(bell.Bell):
         tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
         self.adwin_ins_lt4.Set_Par(51, int(tail_cts))
         self.adwin_ins_lt4.Set_Par(52, int(pulse_cts))
-        self.adwin_ins_lt4.Set_Par(77, int(self.entanglement_markers))
+        self.adwin_ins_lt4.Set_Par(78, int(self.entanglement_markers))
 
     def measurement_process_running(self):
         return self.remote_measurement_helper.get_is_running()

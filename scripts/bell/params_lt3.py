@@ -57,19 +57,22 @@ params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq'
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 
-params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
-params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
-params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
-params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
-#params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
-#params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
-#params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-#params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-params_lt3['MW_BellStateOffset'] = 0 # -0.0206 #2014-11-09
+params_lt3['square_MW_pulses']    = False
+#params_lt3['MW_pi_amp']	   	= qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
+#params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
+#params_lt3['MW_pi2_amp']	    = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
+#params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
+params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
+params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
+params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
+
 params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
 params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
+
+params_lt3['MW_BellStateOffset'] = 0 # -0.0206 #2014-11-09
 
 params_lt3['echo_offset'] = -100e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
@@ -79,16 +82,16 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
-params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014# 
+params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23
-params_lt3['eom_off_duration']           = 150e-9
+params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23 
+params_lt3['eom_off_duration']           = 70e-9 #XXXX
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.53 # 2014-11-23
+params_lt3['aom_amplitude']				 = 0.38 # 2014-12-09 XXX
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -98,14 +101,7 @@ params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['PLU_gate_duration']       = 200e-9#70e-9
-params_lt3['PLU_gate_3_duration']     = 40e-9
-params_lt3['PLU_1_delay']             = 1e-9
-params_lt3['PLU_2_delay']             = 1e-9
-params_lt3['PLU_3_delay']             = 50e-9
-params_lt3['PLU_4_delay']             = 150e-9
-
-params_lt3['MW_opt_puls1_separation'] = 200e-9 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
 params_lt3['RND_duration']	 	= 250e-9
@@ -113,6 +109,13 @@ params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
 params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+
+params_lt3['PLU_gate_duration']       = 200e-9#70e-9
+params_lt3['PLU_gate_3_duration']     = 40e-9
+params_lt3['PLU_1_delay']             = 1e-9
+params_lt3['PLU_2_delay']             = 1e-9
+params_lt3['PLU_3_delay']             = 50e-9
+params_lt3['PLU_4_delay']             = 150e-9
 
 params_lt3['MAX_DATA_LEN'] 		=       joint_params.joint_params['MAX_DATA_LEN']
 params_lt3['BINSIZE'] 			=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
