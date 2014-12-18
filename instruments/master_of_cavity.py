@@ -49,7 +49,7 @@ class JPE_pos_tracker ():
 		self.curr_x = None
 		self.curr_y = None
 		self.curr_z = None
-		self.tracker_file_name = 'D:/measuring/measurement/lib/config/jpe_tracker.cfg'
+		self.tracker_file_name = 'D:\measuring\measurement\scripts\cav1_scripts\jpe_tracker.cfg'
 		self.tracker_file = open (self.tracker_file_name, 'rb+')
 		if reinit_spindles:
 			self.reset_spindle_tracker()
@@ -66,7 +66,7 @@ class JPE_pos_tracker ():
 		except:
 			print 'Tracker file update failed!'
 
-	def tracker_file_readout(self, values):
+	def tracker_file_readout(self):
 		try:
 			self.tracker_file.seek(0,0)
 			self.z1 = int(self.tracker_file.readline())
@@ -150,7 +150,7 @@ class master_of_cavity(CyclopeanInstrument):
     	self.ch_z = 3
     	Instrument.__init__(self, name)
     	self._jpe_cadm = qt.instruments[jpe]
-    	self._jpe_tracker = JPE_pos_tracker()
+    	self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False) 
     	self.T = None
     	self._step_size = None
         #self.ins_counter = qt.instrument(counter)
@@ -241,3 +241,4 @@ class master_of_cavity(CyclopeanInstrument):
 
     def close(self):
     	self._jpe_tracker.close()
+
