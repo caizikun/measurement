@@ -3952,9 +3952,25 @@ class Zeno_TwoQB(MBI_C13):
     mprefix='Zeno_TwoQubit'
     adwin_process='MBI_multiple_C13'
 
+    ##### TODO: Add AOM control from the AWG for arbitrary AOM channels.
+    # def autoconfig(self):
+
+    #     dephasing_AOM_voltage=qt.instruments[self.params['dephasing_AOM']].power_to_voltage(self.params['laser_dephasing_amplitude'],controller='sec')
+    #     if dephasing_AOM_voltage > (qt.instruments[self.params['dephasing_AOM']]).get_sec_V_max():
+    #         print 'Suggested power level would exceed V_max of the AOM driver.'
+    #     else:
+    #         #not sure if the secondary channel of an AOM can be obtained in this way?
+    #         channelDict={'ch2m1': 'ch2_marker1'}
+    #         print 'AOM voltage', dephasing_AOM_voltage
+    #         self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
+    #         qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
+
+    #     MBI_C13.autoconfig()
+
     def generate_sequence(self,upload=True,debug=False):
         pts = self.params['pts']
 
+        self.configure_AOM
         # set the output power of the repumping AOM to the desired 
         qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['repetitive_SP_A_power'],controller='sec'))
 
@@ -3999,7 +4015,7 @@ class Zeno_TwoQB(MBI_C13):
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            ### waiting time
+            ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
                 if self.params['free_evolution_time']!=0:
                     if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
@@ -4070,7 +4086,7 @@ class Zeno_TwoQB(MBI_C13):
                     gate_seq.extend(Parity_measurementA)
                     wait_seq = [wait_gateB]
                     gate_seq.extend(wait_seq)
-                #No waiting time, do the parity measurements directly.
+                ### No waiting time, do the parity measurements directly.
                 else:
                     gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
             ### Readout 

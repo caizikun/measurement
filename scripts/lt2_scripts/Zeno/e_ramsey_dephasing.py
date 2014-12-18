@@ -9,9 +9,6 @@ execfile(qt.reload_current_setup)
 import mbi.mbi_funcs as funcs
 reload(funcs)
 
-###################################################################
-#TODO: check the implementation of a general AOM channel!!!!!!!!!##
-###################################################################
 
 SAMPLE = qt.cfgman['samples']['current']
 SAMPLE_CFG = qt.cfgman['protocols']['current']

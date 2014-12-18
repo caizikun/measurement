@@ -21,7 +21,7 @@ def Zeno(name, carbon_list   = [1,5],
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
 
-        number_of_parity_msmnts = 0,
+        number_of_zeno_msmnts = 0,
         parity_msmnts_threshold = 1, 
 
         free_evolution_time = 0e-6,
@@ -70,8 +70,8 @@ def Zeno(name, carbon_list   = [1,5],
 
     m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = parity_msmnts_threshold
-    m.params['Nr_Zeno_parity_msmts']     = number_of_parity_msmnts
-    m.params['repetitive_SP_A_power'] = 20e-9
+    m.params['Nr_Zeno_parity_msmts']     = Zeno_msmts
+    m.params['repetitive_SP_A_power'] = 30e-9
 
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
@@ -115,15 +115,27 @@ if __name__ == '__main__':
     'Z':[['I','X'],['X','I'],['X','X']]
     ,'mZ':[['I','X'],['X','I'],['X','X']]}
 
-    EvoTime_arr=np.linspace(0,20e-3,21)
+    EvoTime_arr=np.r_[0,linspace(3.5,30e-3,21)]
 
     for EvoTime in EvoTime_arr:
         for logic_state in logic_state_list:
-            Zeno(SAMPLE + 'positive'+'_logicState_'+logic_state+'_EvoTime_'+str(EvoTime), 
+            Zeno(SAMPLE + 'positive'+'_logicState_'+logic_state+'_0msmt_'+'_EvoTime_'+str(EvoTime), 
                 el_RO= 'positive',
                 logic_state=logic_state,
                 Tomo_bases = RO_bases_dict[logic_state],
                 free_evolution_time=EvoTime,
+                number_of_zeno_msmnts = 0,
                 debug=False)
 
 
+    EvoTime_arr=np.r_[0,linspace(3.5,30e-3,21)]
+
+    for EvoTime in EvoTime_arr:
+        for logic_state in logic_state_list:
+            Zeno(SAMPLE + 'positive'+'_logicState_'+logic_state+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
+                el_RO= 'positive',
+                logic_state=logic_state,
+                Tomo_bases = RO_bases_dict[logic_state],
+                free_evolution_time=EvoTime,
+                number_of_zeno_msmnts = 1,
+                debug=False)
