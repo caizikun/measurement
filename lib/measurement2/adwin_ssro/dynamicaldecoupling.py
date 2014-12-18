@@ -4014,26 +4014,40 @@ class Zeno_TwoQB(MBI_C13):
             ### interleave waiting time with parity measurements.
             else:   
                 Parity_measurementA = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_' ,
                         pt                  = pt,
                         RO_trigger_duration = 2e-6,
-                        carbon_list         = self.params['Parity_a_carbon_list'],
-                        RO_basis_list       = self.params['Parity_a_RO_list'],
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = ['X','X'],
                         el_RO_result        = '0',
-                        readout_orientation = self.params['Parity_a_RO_orientation'],
+                        readout_orientation = 'positive',
                         Zeno_RO             = True)
-                Parity_measurementB = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = 2e-6,
-                        carbon_list         = self.params['Parity_a_carbon_list'],
-                        RO_basis_list       = self.params['Parity_a_RO_list'],
-                        el_RO_result        = '0',
-                        readout_orientation = self.params['Parity_a_RO_orientation'],
-                        Zeno_RO             = True)
+                # Parity_measurementB = self.readout_carbon_sequence(
+                #         prefix              = 'Parity_B_' ,
+                #         pt                  = pt,
+                #         RO_trigger_duration = 2e-6,
+                #         carbon_list         = self.params['Parity_a_carbon_list'],
+                #         RO_basis_list       = self.params['Parity_a_RO_list'],
+                #         el_RO_result        = '0',
+                #         readout_orientation = self.params['Parity_a_RO_orientation'],
+                #         Zeno_RO             = True)
+
+                #Add an unconditional rotation after the parity measurment.
+                
+                UncondRenA=Gate(prefix + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['carbon_list'][0],
+                        phase = self.params['C13_X_phase'])
+
+                UncondRenB=Gate(prefix + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['carbon_list'][1],
+                        phase = self.params['C13_X_phase'])
+
+                #Append the two unconditional gates to the parity measurement sequence.
+                Parity_measurementA.append(UncondRenA)
+                Parity_measurementA.append(UncondRenB)
 
                 if self.params['free_evolution_time']!=0:
-                    #Coarsely calculate the length of the carbon gates. 
+                    #Coarsely calculate the length of the carbon gates/ parity measurements. 
                     t_C13_gate1=2*self.params['C'+str(self.params['Parity_a_carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['Parity_a_carbon_list'][0])+'_Ren_tau'][0])
                     t_C13_gate2=2*self.params['C'+str(self.params['Parity_a_carbon_list'][1])+'_Ren_N'][0]*(self.params['C'+str(self.params['Parity_a_carbon_list'][1])+'_Ren_tau'][0])
 
@@ -4051,8 +4065,11 @@ class Zeno_TwoQB(MBI_C13):
                     wait_gateB = Gate('Wait_gate_B'+str(pt),'passive_elt',
                                  wait_time = self.params['free_evolution_time']/2.-2.e-6-parity_duration/2.)
 
-                    wait_seq = [wait_gateA]; gate_seq.extend(wait_seq); gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
-                    wait_seq = [wait_gateB]; gate_seq.extend(wait_seq)
+                    wait_seq = [wait_gateA] 
+                    gate_seq.extend(wait_seq)
+                    gate_seq.extend(Parity_measurementA)
+                    wait_seq = [wait_gateB]
+                    gate_seq.extend(wait_seq)
                 #No waiting time, do the parity measurements directly.
                 else:
                     gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
