@@ -115,7 +115,20 @@ if __name__ == '__main__':
     'Z':[['I','X'],['X','I'],['X','X']]
     ,'mZ':[['I','X'],['X','I'],['X','X']]}
 
-    EvoTime_arr=np.r_[0,linspace(3.5,30e-3,21)]
+
+    EvoTime_arr=np.r_[0,np.linspace(3.5,25e-3,21)]
+
+    for EvoTime in EvoTime_arr:
+        for logic_state in logic_state_list:
+            Zeno(SAMPLE + 'positive'+'_logicState_'+logic_state+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
+                el_RO= 'positive',
+                logic_state=logic_state,
+                Tomo_bases = RO_bases_dict[logic_state],
+                free_evolution_time=EvoTime,
+                number_of_zeno_msmnts = 1,
+                debug=False)
+
+    EvoTime_arr=np.linspace(0,25e-3,21)]
 
     for EvoTime in EvoTime_arr:
         for logic_state in logic_state_list:
@@ -128,14 +141,4 @@ if __name__ == '__main__':
                 debug=False)
 
 
-    EvoTime_arr=np.r_[0,linspace(3.5,30e-3,21)]
 
-    for EvoTime in EvoTime_arr:
-        for logic_state in logic_state_list:
-            Zeno(SAMPLE + 'positive'+'_logicState_'+logic_state+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
-                el_RO= 'positive',
-                logic_state=logic_state,
-                Tomo_bases = RO_bases_dict[logic_state],
-                free_evolution_time=EvoTime,
-                number_of_zeno_msmnts = 1,
-                debug=False)
