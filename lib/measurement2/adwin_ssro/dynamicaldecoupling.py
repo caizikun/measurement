@@ -2411,6 +2411,7 @@ class MBI_C13(DynamicalDecoupling):
                 )
             Laser.channel='AOM_Newfocus'
             Laser.elements_duration=RO_trigger_duration
+            Laser.el_state_before_gate='0'
 
             #for a correct phase calculation it might be useful to set the desired electron state:
             #Laser.el_state_before_gate=0
@@ -3951,9 +3952,25 @@ class Zeno_TwoQB(MBI_C13):
     mprefix='Zeno_TwoQubit'
     adwin_process='MBI_multiple_C13'
 
+    ##### TODO: Add AOM control from the AWG for arbitrary AOM channels.
+    # def autoconfig(self):
+
+    #     dephasing_AOM_voltage=qt.instruments[self.params['dephasing_AOM']].power_to_voltage(self.params['laser_dephasing_amplitude'],controller='sec')
+    #     if dephasing_AOM_voltage > (qt.instruments[self.params['dephasing_AOM']]).get_sec_V_max():
+    #         print 'Suggested power level would exceed V_max of the AOM driver.'
+    #     else:
+    #         #not sure if the secondary channel of an AOM can be obtained in this way?
+    #         channelDict={'ch2m1': 'ch2_marker1'}
+    #         print 'AOM voltage', dephasing_AOM_voltage
+    #         self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
+    #         qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
+
+    #     MBI_C13.autoconfig()
+
     def generate_sequence(self,upload=True,debug=False):
         pts = self.params['pts']
 
+        self.configure_AOM
         # set the output power of the repumping AOM to the desired 
         qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['repetitive_SP_A_power'],controller='sec'))
 
@@ -3998,7 +4015,7 @@ class Zeno_TwoQB(MBI_C13):
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            ### waiting time
+            ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
                 if self.params['free_evolution_time']!=0:
                     if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
@@ -4013,40 +4030,63 @@ class Zeno_TwoQB(MBI_C13):
             ### interleave waiting time with parity measurements.
             else:   
                 Parity_measurementA = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_' ,
                         pt                  = pt,
-                        RO_trigger_duration = 20e-6,
-                        carbon_list         = self.params['Parity_a_carbon_list'],
-                        RO_basis_list       = self.params['Parity_a_RO_list'],
+                        RO_trigger_duration = 2e-6,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = ['X','X'],
                         el_RO_result        = '0',
-                        readout_orientation = self.params['Parity_a_RO_orientation'],
+                        readout_orientation = 'positive',
                         Zeno_RO             = True)
-                Parity_measurementB = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = 20e-6,
-                        carbon_list         = self.params['Parity_a_carbon_list'],
-                        RO_basis_list       = self.params['Parity_a_RO_list'],
-                        el_RO_result        = '0',
-                        readout_orientation = self.params['Parity_a_RO_orientation'],
-                        Zeno_RO             = True)
+                # Parity_measurementB = self.readout_carbon_sequence(
+                #         prefix              = 'Parity_B_' ,
+                #         pt                  = pt,
+                #         RO_trigger_duration = 2e-6,
+                #         carbon_list         = self.params['Parity_a_carbon_list'],
+                #         RO_basis_list       = self.params['Parity_a_RO_list'],
+                #         el_RO_result        = '0',
+                #         readout_orientation = self.params['Parity_a_RO_orientation'],
+                #         Zeno_RO             = True)
+
+                #Add an unconditional rotation after the parity measurment.
+                
+                UncondRenA=Gate(prefix + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['carbon_list'][0],
+                        phase = self.params['C13_X_phase'])
+
+                UncondRenB=Gate(prefix + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['carbon_list'][1],
+                        phase = self.params['C13_X_phase'])
+
+                #Append the two unconditional gates to the parity measurement sequence.
+                Parity_measurementA.append(UncondRenA)
+                Parity_measurementA.append(UncondRenB)
 
                 if self.params['free_evolution_time']!=0:
-                    if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
-                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                    #Coarsely calculate the length of the carbon gates/ parity measurements. 
+                    t_C13_gate1=2*self.params['C'+str(self.params['Parity_a_carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['Parity_a_carbon_list'][0])+'_Ren_tau'][0])
+                    t_C13_gate2=2*self.params['C'+str(self.params['Parity_a_carbon_list'][1])+'_Ren_N'][0]*(self.params['C'+str(self.params['Parity_a_carbon_list'][1])+'_Ren_tau'][0])
+
+                    parity_duration=2*t_C13_gate1*1e-6+2*t_C13_gate2*1e-6
+                    print 'Estimated length of the 4 Carbon gates in the parity measurements: ', parity_duration
+                    if self.params['free_evolution_time']< (parity_duration + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
                                 %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
                         qt.msleep(5)
                     #Add waiting time
                     wait_gateA = Gate('Wait_gate_A'+str(pt),'passive_elt',
-                                 wait_time = self.params['free_evolution_time']/2.-self.params['2C_RO_trigger_duration'])
+                                 wait_time = self.params['free_evolution_time']/2.-self.params['2C_RO_trigger_duration']-parity_duration/2.)
 
                     #make the sequence symmetric around the parity measurements.
                     wait_gateB = Gate('Wait_gate_B'+str(pt),'passive_elt',
-                                 wait_time = self.params['free_evolution_time']/2.-20.e-6)
+                                 wait_time = self.params['free_evolution_time']/2.-2.e-6-parity_duration/2.)
 
-                    wait_seq = [wait_gateA]; gate_seq.extend(wait_seq); gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
-                    wait_seq = [wait_gateB]; gate_seq.extend(wait_seq)
-                #No waiting time, do the parity measurements directly.
+                    wait_seq = [wait_gateA] 
+                    gate_seq.extend(wait_seq)
+                    gate_seq.extend(Parity_measurementA)
+                    wait_seq = [wait_gateB]
+                    gate_seq.extend(wait_seq)
+                ### No waiting time, do the parity measurements directly.
                 else:
                     gate_seq.extend(Parity_measurementA);gate_seq.extend(Parity_measurementB)
             ### Readout 

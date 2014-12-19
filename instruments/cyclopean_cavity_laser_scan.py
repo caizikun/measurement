@@ -69,6 +69,13 @@ class cyclopean_cavity_laser_scan(CyclopeanInstrument):
 
         self.add_function('save_scan_button')
 
+        ### public functions
+        self.add_function('run')
+
+        # set defaults
+
+
+
     def do_get_doubleSpinBox_start_F(self):
         return self._doubleSpinBox_start_F
 
