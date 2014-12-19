@@ -303,5 +303,4 @@ if __name__ == '__main__':
         #lt4_only('test')
         #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        measureXX('high_strain_short_pulsesep_day2_run16')
-        passex
+        measureXX('high_strain_short_pulsesep_day3_run10')
