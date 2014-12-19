@@ -15,13 +15,13 @@ def RO_spin_flip_calibration(name,MBI_RO_power = None, MBI_RO_duration =None):
     m = pulsar_mbi_espin.ElectronRabi(name)
     funcs.prepare(m)
 
-    pts = 21
+    pts = 11
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 2000
     
     #Spin pumping before Nitrogen MBI: Switch spin pumping towards ms=0
     m.params['Ex_SP_amplitude']             = 0
-    m.params['A_SP_amplitude_before_MBI']   = 40e-9 
+    m.params['A_SP_amplitude_before_MBI']   = 20e-9 
     m.params['SP_E_duration']               = 1000
 
     #No MBI MW pulse
@@ -55,7 +55,7 @@ def RO_spin_flip_calibration(name,MBI_RO_power = None, MBI_RO_duration =None):
 
 if __name__ == '__main__':
     
-    RO_spin_flip_calibration(SAMPLE_CFG, MBI_RO_power = 1e-9, MBI_RO_duration = 50)
+    RO_spin_flip_calibration(SAMPLE_CFG)
 
     # RO_powers = [1e-9,2e-9,5e-9]
     # RO_durations = [18,10,6]

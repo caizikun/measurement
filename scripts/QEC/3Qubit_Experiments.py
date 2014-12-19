@@ -10,9 +10,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [1,5,2],               
+def MBE(name, carbon_list   = [2,5,1],               
         
-        carbon_init_list        = [2,5,1],
+        carbon_init_list        = [1,5,2],
         carbon_init_states      = 3*['up'], 
         carbon_init_methods     = 3*['swap'], 
         carbon_init_thresholds  = 3*[0],  
@@ -36,7 +36,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -136,7 +136,9 @@ if __name__ == '__main__':
     
     # tomo =  TD.get_tomo_bases(nr_of_qubits = 3, RO_list = '000_state')
 
-    for kk in range(1):
+    Tomo_bases = Tomo_bases_single
+
+    for kk in range(4):
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
@@ -153,8 +155,8 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
             for k in range(len(Tomo_bases)/7):
-                tomo = Tomo_bases[0+k*7:7+k*7]#Tomo_bases[0+k*7:7+k*7]
-                
+                # tomo = Tomo_bases[0+k*7:7+k*7]#Tomo_bases[0+k*7:7+k*7]
+                tomo = Tomo_bases_2
                 MBE(SAMPLE +'_state_'+logic_state+'positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
                 MBE(SAMPLE +'_state_'+logic_state+'negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
 
@@ -166,6 +168,6 @@ if __name__ == '__main__':
                     break
             
             stools.turn_off_all_lt2_lasers()
-            GreenAOM.set_power(10e-6)
+            GreenAOM.set_power(5e-6)
             optimiz0r.optimize(dims=['x','y','z'])
 
