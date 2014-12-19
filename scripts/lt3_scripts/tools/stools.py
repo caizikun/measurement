@@ -219,3 +219,9 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin.set_dac_voltage(('yellow_aom_frq',max_v))
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
+
+def rf_switch_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('11111111')
+
+def rf_switch_non_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')

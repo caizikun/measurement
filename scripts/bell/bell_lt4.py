@@ -165,7 +165,7 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'], live_histogram=False)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'])
     m.save()
 
     if measure_lt3:
