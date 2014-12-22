@@ -5,6 +5,7 @@ import numpy as np
 import instrument_helper
 from lib import config
 import multiple_optimizer as mo
+reload(mo)
 import types
 
 class bell_optimizer(mo.multiple_optimizer):
@@ -20,21 +21,21 @@ class bell_optimizer(mo.multiple_optimizer):
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
-        self.add_parameter('sec_cal_a',
-                           type=types.FloatType,
-                           flags=Instrument.FLAG_GETSET,
-                           units='W',
-                           minval=0,maxval=1.0)
+        self._parlist = ins_pars.keys()
+
+        self.add_parameter('pidgate_running',
+                           type=types.BooleanType,
+                           flags=Instrument.FLAG_GETSET)
+        self.add_parameter('pid_e_primer_running',
+                           type=types.BooleanType,
+                           flags=Instrument.FLAG_GETSET)
+        self.add_parameter('pidyellowfrq_running',
+                           type=types.BooleanType,
+                           flags=Instrument.FLAG_GETSET)
         
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 
-        self.add_function('pid_e_primer_stop')
-        self.add_function('pid_e_primer_start')
-        self.add_function('pidgate_start')
-        self.add_function('pidgate_stop')
-        self.add_function('pidyellowfrq_start')
-        self.add_function('pidyellowfrq_stop')
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
         self.add_function('rejecter_quarter_plus')
@@ -60,11 +61,11 @@ class bell_optimizer(mo.multiple_optimizer):
         
     def load_cfg(self):
         params_from_cfg = self.ins_cfg.get_all()
-        for p in params_from_cfg:
+        for p in self._parlist:
                 self.set(p, value=self.ins_cfg.get(p))
 
     def save_cfg(self):
-        for param in self.get_parameter_names():
+        for param in self._parlist:
             value = self.get(param)
             self.ins_cfg[param] = value
             
@@ -83,7 +84,9 @@ class bell_optimizer(mo.multiple_optimizer):
             th = qt.instruments['physical_adwin'].Get_Par(75)
             if st2-st1<self.get_min_starts() and cr2-cr1 > self.min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.min_cr_counts_gate() and th < 1000:
                 print 'JUMP DETECTED! {} starts per second'.format(st2-st1)
-                self._mode == 'jump_recover-0'
+                print '-'*20
+                print '-'*20
+                #self._mode == 'jump_recover-0'
                 self._mode_rep = 0
             else:
                 print 'number of starts ok'
@@ -119,37 +122,49 @@ class bell_optimizer(mo.multiple_optimizer):
         return True
 
     def optimize_nf(self):
-        self.pid_e_primer_stop()
+        self.set_pid_e_primer_running(False)
         qt.instruments['nf_optimizer'].optimize()
         qt.msleep(2.5)
-        self.pid_e_primer_start()
+        self.set_pid_e_primer_running(True)
 
     def optimize_yellow(self):
-        self.pidyellowfrq_stop()
+        self.set_pidyellowfrq_running(False)
         qt.instruments['yellowfrq_optimizer'].optimize()
         qt.msleep(2.5)
-        self.pidyellowfrq_start()
+        self.set_pidyellowfrq_running(True)
 
     def optimize_gate(self):
-        self.pidgate_stop()
+        self.set_pidgate_running(False)
         qt.instruments['gate_optimizer'].optimize()
         qt.msleep(0.5)
-        self.pidgate_start()
+        self.set_pidgate_running(True)
 
-    def pid_e_primer_stop(self):
-        qt.instruments['e_primer'].stop()
-    def pid_e_primer_start(self):
-        qt.instruments['e_primer'].start()
+    def _do_get_pid_e_primer_running(self):
+        return qt.instruments['e_primer'].get_is_running()
 
-    def pidyellowfrq_stop(self):
-        qt.instruments['pidyellowfrq'].stop()
-    def pidyellowfrq_start(self):
-        qt.instruments['pidyellowfrq'].start()
+    def _do_set_pid_e_primer_running(self, val):
+        if val:
+            qt.instruments['e_primer'].start()
+        else:
+            qt.instruments['e_primer'].stop()
 
-    def pidgate_stop(self):
-        qt.instruments['pidgate'].stop()
-    def pidgate_start(self):
-        qt.instruments['pidgate'].start()
+    def _do_get_pidyellowfrq_running(self):
+        return qt.instruments['pidyellowfrq'].get_is_running()
+
+    def _do_set_pidyellowfrq_running(self, val):
+        if val:
+            qt.instruments['pidyellowfrq'].start()
+        else:
+            qt.instruments['pidyellowfrq'].stop()
+
+    def _do_get_pidgate_running(self):
+        return qt.instruments['pidgate'].get_is_running()
+
+    def _do_set_pidgate_running(self, val):
+        if val:
+            qt.instruments['pidgate'].start()
+        else:
+            qt.instruments['pidgate'].stop()
 
     def rejecter_half_plus(self):
         qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=True)

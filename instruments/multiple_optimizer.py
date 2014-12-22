@@ -36,7 +36,7 @@ class multiple_optimizer(Instrument):
         pass
     
     def manual_check(self):
-        return self._check()
+        return self.check()
 
     def check(self):
         pass
