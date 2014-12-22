@@ -46,6 +46,7 @@ class PQMeasurement(m2.Measurement):
         self.start_keystroke_monitor('abort',timer=False)
         self.start_measurement_process()
         _timer=time.time()
+        _timer0=time.time()
         while True:
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
@@ -58,6 +59,9 @@ class PQMeasurement(m2.Measurement):
                     
                 self.print_measurement_progress()
                 _timer=time.time()
+            if (time.time()-_timer0)>self.params['measurement_time']:
+                break
+
         self.stop_measurement_process()
 
     def run(self, autoconfig=True, setup=True, debug=False):

@@ -1609,7 +1609,7 @@ config['adwin_pro_processes'] = {
         'bell_lt4' : {
                 'index' : 9,
                 'file' : 'bell_lt4.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],

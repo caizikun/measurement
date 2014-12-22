@@ -118,7 +118,7 @@ def bell_lt3(name):
     
     m=Bell_lt3(name) 
 
-    th_debug=False
+    th_debug=True
     mw = False
     do_upload = True
     if remote_meas:
@@ -139,6 +139,7 @@ def bell_lt3(name):
             mw=False
         elif 'full_Bell' in remote_name:
             mw=True
+            th_debug=False
         elif 'MeasXX_' in remote_name:
             th_debug = True 
             mw=True
@@ -175,4 +176,6 @@ def bell_lt3(name):
 
 
 if __name__ == '__main__':
+    stools.rf_switch_non_local()
     bell_lt3('')
+    stools.rf_switch_local()

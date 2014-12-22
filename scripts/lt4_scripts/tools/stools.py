@@ -19,7 +19,7 @@ def turn_off_all_lt4_lasers():
     turn_off_all_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
@@ -49,7 +49,6 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
 
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()    
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
