@@ -1234,6 +1234,7 @@ config['adwin_lt3_dacs'] = {
         'gate' : 8,
         'gate_mod' : 9,
         'yellow_aom_frq':10,
+        'lock_aom':11,
         }
 
 config['adwin_lt3_dios'] = {
