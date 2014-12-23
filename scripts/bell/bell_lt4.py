@@ -10,7 +10,7 @@ import time
 from measurement.scripts.bell import check_awg_triggering as JitterChecker
 reload(JitterChecker)
 #reload all parameters and modules
-execfile(qt.reload_current_setup)
+#execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 from measurement.lib.config import moss as moscfg
 
@@ -303,4 +303,7 @@ if __name__ == '__main__':
         #lt4_only('test')
         #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        measureXX('high_strain_short_pulsesep_day3_run10')
+
+        #FIXED### Note that the Yellow PID does not work as the error signal is always positive. I was tuning Yellow by hand.
+        measureXX('lock_day3_run8')
+        #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...

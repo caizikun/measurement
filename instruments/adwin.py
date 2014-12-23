@@ -61,7 +61,6 @@ class adwin(Instrument):
 
         if kw.get('init', False):
             self.load_programs()
-            self.init_data() 
 
     ### config management
     def load_cfg(self, set_voltages=False):
