@@ -18,6 +18,9 @@ class bell_optimizer(mo.multiple_optimizer):
                     'min_yellow_counts'   :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     'min_cr_counts_opt_nf':   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     'rejecter_step'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
+                    'email_recipient'     :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
+                    'min_tail_counts'     :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'max_pulse_counts'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
@@ -40,9 +43,15 @@ class bell_optimizer(mo.multiple_optimizer):
         self.add_function('rejecter_half_min')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
+        self.add_function('optimize_rejecter')
+        self.add_function('check_rejection')
 
         self._mode = 'check_starts'
         self._mode_rep = 0
+
+        self._pulse_cts  = 0
+        self._tail_cts   = 0
+        self._seq_starts = 0
 
     # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
@@ -70,7 +79,25 @@ class bell_optimizer(mo.multiple_optimizer):
             self.ins_cfg[param] = value
             
 
-    #--------------get_set        
+    #--------------get_set   
+
+    def check_rejection(self):
+
+        tail_cts = qt.instruments['physical_adwin'].Get_Par(51)
+        pulse_cts = qt.instruments['physical_adwin'].Get_Par(52)
+        seq_starts=qt.instruments['physical_adwin'].Get_Par(73)
+
+        try:
+            tail = float(tail_cts-self._tail_cts)/(seq_starts-self._seq_starts)/125.*10000.
+            pulse = float(pulse_cts-self._pulse_cts)/(seq_starts-self._seq_starts)/125.*10000.
+            print 'pulse: {:.2f}, tail" {:.2f}'.format(pulse,tail)
+        except ZeroDivisionError:
+            print 'no sequence starts'
+
+        self._pulse_cts  = pulse_cts
+        self._tail_cts   = tail_cts
+        self._seq_starts = seq_starts
+        return tail, pulse
     
     def check(self):
         if self._mode == 'check_starts':
@@ -81,13 +108,31 @@ class bell_optimizer(mo.multiple_optimizer):
             st2=qt.instruments['physical_adwin'].Get_Par(73)
             cr2 = qt.instruments['physical_adwin'].Get_Par(72)
 
+            tail, pulse = self.check_rejection()
+            if tail != None and pulse!= None:
+                if tail < self.get_min_tail_counts() or pulse > self.get_max_pulse_counts():
+                    print 'Bad rejection detected'
+                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: bad rejection','Bad rejection detected: \n \
+                                                                                     tail {:.2f}, pulse {:.2f}.\n \
+                                                                                     CR counts LT4: {:.1f} \n \
+                                                                                     starts {:.1f} :  '.format(tail, pulse, qt.instruments['gate_optimizer'].get_value(), st2-st1))
+                    return False
+
             th = qt.instruments['physical_adwin'].Get_Par(75)
-            if st2-st1<self.get_min_starts() and cr2-cr1 > self.min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.min_cr_counts_gate() and th < 1000:
-                print 'JUMP DETECTED! {} starts per second'.format(st2-st1)
-                print '-'*20
-                print '-'*20
-                #self._mode == 'jump_recover-0'
-                self._mode_rep = 0
+            if st2-st1<self.get_min_starts():
+                if cr2-cr1 > self.get_min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.get_min_cr_counts_gate() and th < 1000:
+                    print 'JUMP DETECTED LT4! starts per second'
+                    print '-'*20
+                    print '-'*20
+                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: Jump LT4','Bad starts detected: \n \
+                                                                                     starts {:.1f}, CR checks LT4, CR counts LT4: {:.1f} --> LT4 jumped? Activate thyself.'.format(st2-st1,cr2-cr1,qt.instruments['gate_optimizer'].get_value()))
+                    #self._mode == 'jump_recover-0'
+                    self._mode_rep = 0
+                else:
+                    print 'JUMP DETECTED probably LT3'
+                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: Jump LT3','Bad starts detected: \n \
+                                                                                     starts {:.1f} --> LT3 jumped? Activate thyself.'.format(st2-st1))
+                return False
             else:
                 print 'number of starts ok'
         elif self._mode == 'jump_recover-0':
@@ -177,3 +222,6 @@ class bell_optimizer(mo.multiple_optimizer):
 
     def rejecter_quarter_min(self):
         qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
+
+    def optimize_rejecter(self):
+        qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)

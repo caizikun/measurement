@@ -305,5 +305,5 @@ if __name__ == '__main__':
         #SP_lt3('SPCORR_lt3')
 
         #FIXED### Note that the Yellow PID does not work as the error signal is always positive. I was tuning Yellow by hand.
-        measureXX('lock_day3_run8')
+        measureXX('lock_day4_run8')
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
