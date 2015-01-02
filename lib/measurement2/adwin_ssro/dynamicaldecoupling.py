@@ -3130,6 +3130,180 @@ class NuclearT1_repumping(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class NuclearHahnEchoWithInitialization(MBI_C13):
+    '''
+    Made by Michiel based on NuclearRamseyWithInitialization_v2
+    This class is to measure T2 using a Hahn Echo
+    1. Nitrogen MBI initialisation
+    2. Carbon initialisation into +X ('up' because of MBI init)
+    4. Wait time tau
+    5. Pi pulse on nuclear spin
+    6. Wait time tau
+    7. Pi/2 pulse on nuclear spin and read out in one function
+
+    Start time pi pulse = tau - 0.5*time pi gate
+
+    Sequence: |N-MBI| -|CinitA|-|Wait t|-|Carbon pi|-|Wait t|-|Tomography|
+    '''
+    mprefix = 'CarbonHahnInitialised' #Changed
+    adwin_process = 'MBI_multiple_C13'
+    echo_choice = 'TwoPiPulses' #Default echo choice
+
+    
+    ### overwrite elements generation #Michiel changed. This to enable also a pi gate in one gate
+    def generate_AWG_elements(self,Gate_sequence,pt = 1):
+
+        for g in Gate_sequence:
+            if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
+                #Changed part Michiel
+                if hasattr(g, 'operation'):
+                    self.get_gate_parameters(g, resonance = 1)
+                else:
+                    self.get_gate_paramaters(g)
+                #End changed part Michiel
+                self.generate_decoupling_sequence_elements(g)
+            elif g.Gate_type =='passive_elt':
+                self.generate_passive_wait_element(g)
+            elif g.Gate_type == 'MBI':
+                self.generate_MBI_elt(g)
+            elif g.Gate_type == 'Trigger':
+                self.generate_trigger_elt(g)
+            elif g.Gate_type == 'electron_repump':
+                self.generate_electron_repump_element(g)
+
+        Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
+        self.get_tau_cut_for_connecting_elts(Gate_sequence)
+        self.track_and_calc_phase(Gate_sequence)
+        for g in Gate_sequence:
+            if (g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate'):
+                self.determine_connection_element_parameters(g)
+                self.generate_connection_element(g)
+
+        return Gate_sequence
+
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization GOOD initializes in |+X>
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']))
+            gate_seq.extend(carbon_init_seq)
+
+
+            ### Pi-Gate option1: non detuned pi gate "in once" gate
+            if self.echo_choice = 'SinglePi':
+                C_Echo = Gate('C_echo'+str(pt), 'Carbon_Gate',
+                        Carbon_ind =self.params['carbon_nr'],
+                        phase = self.params(['C13_X_phase']))
+                C_Echo.operation='pi'
+                self.params['Carbon_pi_duration'] = 2 * C_Echo.N * C_Echo.tau
+
+            ### Pi-Gate option: two pi/2 gates, (or in fact two pi over detuned axis)
+            elif self.echo_choice = 'TwoPiPulses':  
+                C_Echo = Gate('C_echo'+str(pt), 'Carbon_Gate',
+                        Carbon_ind =self.params['carbon_nr'],
+                        phase = self.params(['C13_X_phase'])) #Wellicht reset?
+                # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+                self.params['Carbon_pi_duration'] = 4 * C_Echo.N * C_Echo.tau 
+                C_Echo_2 = Gate('C_echo'+str(pt), 'Carbon_Gate',
+                        Carbon_ind =self.params['carbon_nr'],
+                        phase = self.params(['C13_X_phase']))
+                self.params['Carbon_pi_duration'] += 4 * C_Echo_2.N * C_Echo_2.tau 
+                
+
+            ### First free evolution_time 
+                ### Check if free evolution time is larger than the RO time + 0.5* pi pulse duration  (it can't be shorter)
+            if self.params['add_wait_gate'] == True:
+                if['free_evolution_time'][pt]< (3e-6+self.params['Carbon_pi_duration']/2.):
+                    print ('Error: carbon evolution time (%s) is shorter than 0.5 times carbon Pi duration (%s)'
+                            %(self.params['free_evolution_time'][pt],self.params['Carbon_init_RO_wait']+self.params['Carbon_pi_duration']/2.))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            # Adding pi pulse to gate_seq
+            gate_seq.extend(C_Echo)
+            if self.echo_choice != 'SinglePi':
+                gate_seq.extend(C_Echo_2)
+
+
+            ### Second free evolution_time 
+                ### Check if free evolution time is larger than 0.5* pi pulse duration  (it can't be shorter)
+            if self.params['add_wait_gate'] == True:
+                if['free_evolution_time'][pt]< (3e-6+self.params['Carbon_pi_duration']/2.):
+                    print ('Error: carbon evolution time (%s) is shorter than 0.5 times Carbon Pi duration (%s)'
+                            %(self.params['free_evolution_time'][pt],self.params['Carbon_init_RO_wait']+self.params['Carbon_pi_duration']/2.))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)           
+            
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in 
+            
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else: 
+                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+                    
+                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+                    
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 class Crosstalk(MBI_C13):
     '''
     This class is used to emasure the evolution of CarbonA during gates on CarbonB
