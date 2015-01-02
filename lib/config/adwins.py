@@ -1234,6 +1234,7 @@ config['adwin_lt3_dacs'] = {
         'gate' : 8,
         'gate_mod' : 9,
         'yellow_aom_frq':10,
+        'lock_aom':11,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1609,7 +1610,7 @@ config['adwin_pro_processes'] = {
         'bell_lt4' : {
                 'index' : 9,
                 'file' : 'bell_lt4.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],

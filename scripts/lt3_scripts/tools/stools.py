@@ -18,7 +18,7 @@ def turn_off_all_lasers():
     turn_off_all_lt3_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
@@ -56,7 +56,7 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
 
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()    
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
@@ -219,3 +219,9 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin.set_dac_voltage(('yellow_aom_frq',max_v))
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
+
+def rf_switch_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('11111111')
+
+def rf_switch_non_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')

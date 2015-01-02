@@ -135,10 +135,12 @@ def do_jitter_test(resetAWG=False):
             jitterDetected=True
         else: jitterDetected =False
     else:
+        stools.rf_switch_non_local()
         print 'Starting Jitter Test LT3, reset= ' + str(resetAWG)
         program_test_slave(reset=resetAWG)
         jitterDetected = check_triggering()
         qt.instruments['AWG'].stop()
+        stools.rf_switch_local()
     return jitterDetected
 
 

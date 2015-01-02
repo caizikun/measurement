@@ -100,7 +100,10 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000,#1000,#1000, #s
 		'measurement_time':                         1200,#sec
-		'measurement_abort_check_interval':			1#sec
+		'measurement_abort_check_interval':			1,#sec
+		'MIN_HIST_SYNC_BIN':						0,
+		'MAX_HIST_SYNC_BIN':						10000,
+		'count_marker_channel':						1,
 		}
 
 
@@ -108,7 +111,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.808852e9# +/-   0.000005           #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.808902e9# +/-   0.000005           #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -154,9 +157,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 210e-9, 
-        'Hermite_pi_amp': 0.8952, #BELL # 2014-12-09 for pi pulse of 210 ns
+        'Hermite_pi_amp': 0.8838, #BELL # 2014-12-21 for pi pulse of 210 ns
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.628591,#2014-12-09 for pi/2 pulse of 90 ns
+        'Hermite_pi2_amp': 0.6206,#2014-12-21 for pi/2 pulse of 90 ns
         'Hermite_Npi4_length': 45e-9,
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
         'Square_pi_length' : 50e-9,#2000e-9, # calib. 2014-07-25
