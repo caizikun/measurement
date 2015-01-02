@@ -27,7 +27,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 2000 
+    m.params['reps_per_ROsequence'] = 1000 
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -76,13 +76,44 @@ def MBE(name, carbon            =   1,
 if __name__ == '__main__':
 
 
-    # MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 1, carbon_init_list = [1])
-    # MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 1, carbon_init_list = [1])
+    MBE(SAMPLE + 'positive_1_swap', el_RO= 'positive', carbon = 1, carbon_init_list = [1]
+                                        ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
-    # MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 2, carbon_init_list = [2])
-    # MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 2, carbon_init_list = [2])
+    MBE(SAMPLE + 'negative_1_swap', el_RO= 'negative', carbon = 1, carbon_init_list = [1]
+                                        ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive', carbon = 5, carbon_init_list = [5])
-    MBE(SAMPLE + 'negative', el_RO= 'negative', carbon = 5, carbon_init_list = [5])
+    # MBE(SAMPLE + 'positive_2_swap', el_RO= 'positive', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
+    # MBE(SAMPLE + 'negative_2_swap', el_RO= 'negative', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+
+    # MBE(SAMPLE + 'positive_5_swap', el_RO= 'positive', carbon = 5, carbon_init_list = [5]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+
+    # MBE(SAMPLE + 'negative_5_swap', el_RO= 'negative', carbon = 5, carbon_init_list = [5]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+
+
+
+
+    # MBE(SAMPLE + 'positive_1_MBI', el_RO= 'positive', carbon = 1, carbon_init_list = [1]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+    # MBE(SAMPLE + 'negative_1_MBI', el_RO= 'negative', carbon = 1, carbon_init_list = [1]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+
+    # MBE(SAMPLE + 'positive_2_MBI', el_RO= 'positive', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+    # MBE(SAMPLE + 'negative_2_MBI', el_RO= 'negative', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+
+    # MBE(SAMPLE + 'positive_5_MBI', el_RO= 'positive', carbon = 5, carbon_init_list = [5]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+    # MBE(SAMPLE + 'negative_5_MBI', el_RO= 'negative', carbon = 5, carbon_init_list = [5]
+    #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 

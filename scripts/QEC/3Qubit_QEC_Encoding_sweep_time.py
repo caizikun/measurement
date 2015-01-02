@@ -94,25 +94,18 @@ def MBE(name, carbon_list   = [1,5,2],
         debug               = False,
         error_sign          = 1,
         error_on_qubit      = 'all',
-        do_idle             = False,
-        error_probability_list        = np.linspace(0,1,3),
+        error_probability_list= np.linspace(0,1,3),
+        evolution_time_list   = linspace(0,10,11),
         Tomo_bases          = ['Z','-Y','Z']):
 
     m = DD.Three_QB_QEC(name)
     funcs.prepare(m)
 
-    if do_idle == False:
-        m.params['add_wait_gate'] = False
-    else:
-        m.params['add_wait_gate'] = True
 
-        m.params['free_evolution_time'] = ((2* m.params['C2_Ren_tau'][0]*m.params['C2_Ren_N'][0]
-                                +2* m.params['C1_Ren_tau'][0]*m.params['C1_Ren_N'][0])              # Parity A
-                                            +(2* m.params['C5_Ren_tau'][0]*m.params['C5_Ren_N'][0]
-                                +2* m.params['C1_Ren_tau'][0]*m.params['C1_Ren_N'][0])              # Parity B
-                                           +2*150e-6 )  *np.ones(len(error_probability_list))                                                                                                    # 2X RO trigger
+    m.params['add_wait_gate'] = True
+    m.params['free_evolution_time'] = evolution_time_list
 
-    phase_error                     = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    phase_error                       = np.zeros(len(evolution_time_list))
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:
@@ -122,14 +115,13 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-
     m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -169,9 +161,9 @@ def MBE(name, carbon_list   = [1,5,2],
     
 
     ### Derive other parameters
-    m.params['pts']                 = len(error_probability_list)
-    m.params['sweep_name']          = 'Error Probability' 
-    m.params['sweep_pts']           = error_probability_list
+    m.params['pts']                 = len(evolution_time_list)
+    m.params['sweep_name']          = 'Evolution time' 
+    m.params['sweep_pts']           = evolution_time_list
 
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
@@ -299,14 +291,10 @@ def QEC_test(name, carbon_list   = [1,5,2],
     
 if __name__ == '__main__':
 
-    cnt = 0
+    cnt = -10
 
-    error_list = {}
-    error_list['0'] = linspace(0,0.3,4)
-    error_list['1'] = linspace(0.4,0.7,4)
-    error_list['2'] = linspace(0.8,1,3)
 
-    for state in ['X','mX','Y','mY','Z','mZ']:
+    for state in ['Y','mY','Z','mZ','X','mX']:
         logic_state = state
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -316,14 +304,42 @@ if __name__ == '__main__':
             break
 
         if state == 'X' or state == 'mX':
-            RO_list = [6]
+            RO_list = [6,6,6]
         elif state == 'Y' or state == 'mY':
-            RO_list = [3,4,5,6] 
+            RO_list = [5,6,4]
         elif state == 'Z' or state == 'mZ': 
-            RO_list = [6,0,1,2]
+            RO_list = [0,1,2]
 
+        for ii,RO in enumerate(RO_list):
+            if ii == 0: # Carbon 1
+                evo_list = {}
+                extra_time =0
+                if state == 'Z' or state == 'mZ':
+                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
+                                +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'])
+                
+                evo_list_total = linspace(0+extra_time,15e-3+extra_time,11)
 
-        for RO in RO_list:
+            if ii == 1:# Carbon 5
+                evo_list = {}
+                extra_time =0
+                if state == 'Z' or state == 'mZ':
+                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
+                                +2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'])
+                
+                evo_list_total = linspace(0+extra_time,31e-3+extra_time,11)
+            if ii == 3:# Carbon 2
+                evo_list = {}
+                extra_time =0
+                if state == 'Z' or state == 'mZ':
+                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
+                                +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'])
+                
+                evo_list_total = linspace(0+extra_time,16e-3+extra_time,11)
+
+            evo_list['0'] = evo_list_total[0:4]
+            evo_list['1'] = evo_list_total[4:8]
+            evo_list['2'] = evo_list_total[8:11]
 
             GreenAOM.set_power(7e-6)
             ins_counters.set_is_running(0)  
@@ -404,30 +420,25 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
 
-                for error_sign in [1,-1]:
+           
+                logic_state = state
 
-                    logic_state = state
+                t_list = evo_list[str(k)]
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+                
+                MBE(SAMPLE + 'no_correct_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                    logic_state = logic_state,el_RO = 'positive', 
+                    error_on_qubit = 'all',
+                    evolution_time_list= t_list)
 
-                    e_list = error_list[str(k)]
-                    print '-----------------------------------'            
-                    print 'press q to stop measurement cleanly'
-                    print '-----------------------------------'
-                    qt.msleep(2)
-                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                        break
-                    
-                    MBE(SAMPLE + 'no_correct_idle_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                        logic_state = logic_state,el_RO = 'positive', 
-                        error_sign= error_sign, 
-                        error_on_qubit = 'all',
-                        do_idle = True,
-                        error_probability_list= e_list)
-
-                    MBE(SAMPLE + 'no_correct_idle_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                        logic_state = logic_state,el_RO = 'negative', 
-                        error_sign= error_sign, 
-                        error_on_qubit = 'all',
-                        do_idle = True,
-                        error_probability_list= e_list)
+                MBE(SAMPLE + 'no_correct_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                    logic_state = logic_state,el_RO = 'negative', 
+                    error_on_qubit = 'all',
+                    evolution_time_list= t_list)
 
 

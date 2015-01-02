@@ -75,7 +75,7 @@ def XY_initialization(name, carbon_list = [1],
     
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 2000 
+    m.params['reps_per_ROsequence'] = 1000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -125,71 +125,71 @@ if __name__ == '__main__':
     
     ''' for sweeping specific sets of params for each carbon'''
 
-    # # ######### CARBON 1 ###############
+    # ########## CARBON 1 ###############
 
-    # tau_list = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list']
-    # N_list   = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list']
-    # for ii in range(len(tau_list)):
+    tau_list = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list']
+    N_list   = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list']
+    for ii in range(len(tau_list)):
 
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(4)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-    #     GreenAOM.set_power(5e-6)
-    #     ins_counters.set_is_running(0)  
-    #     optimiz0r.optimize(dims=['x','y','z'])
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(4)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+        GreenAOM.set_power(7e-6)
+        ins_counters.set_is_running(0)  
+        optimiz0r.optimize(dims=['x','y','z'])
 
-    #     XY_initialization('Gate_calibration_Sil18_C1'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [1])
-    #     XY_initialization('Gate_calibration_Sil18_C1'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [1])
+        XY_initialization('Gate_calibration_Sil18_C1'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [1])
+        XY_initialization('Gate_calibration_Sil18_C1'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [1])
 
 
     # ######## CARBON 2 ###############
 
-    # tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list']
-    # N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list']
+    tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list']
+    N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list']
 
-    # for ii in range(len(tau_list)):
+    for ii in range(len(tau_list)):
 
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(4)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-    #     GreenAOM.set_power(5e-6)
-    #     ins_counters.set_is_running(0)  
-    #     optimiz0r.optimize(dims=['x','y','z'])
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(4)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+        GreenAOM.set_power(7e-6)
+        ins_counters.set_is_running(0)  
+        optimiz0r.optimize(dims=['x','y','z'])
 
-    #     XY_initialization('Gate_calibration_Sil18_C2'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [2])
-    #     XY_initialization('Gate_calibration_Sil18_C2'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [2])
+        XY_initialization('Gate_calibration_Sil18_C2'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [2])
+        XY_initialization('Gate_calibration_Sil18_C2'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [2])
 
-    ######## CARBON 5 ###############
+    # ######## CARBON 5 ###############
 
-    # tau_list = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list']
-    # N_list   = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list']
+    tau_list = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list']
+    N_list   = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list']
 
-    # for ii in range(len(tau_list)):
+    for ii in range(len(tau_list)):
 
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(4)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-    #     GreenAOM.set_power(5e-6)
-    #     ins_counters.set_is_running(0)  
-    #     optimiz0r.optimize(dims=['x','y','z'])
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(4)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
+        GreenAOM.set_power(7e-6)
+        ins_counters.set_is_running(0)  
+        optimiz0r.optimize(dims=['x','y','z'])
 
-    #     XY_initialization('Gate_calibration_Sil18_C5'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [5])
-    #     XY_initialization('Gate_calibration_Sil18_C5'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
-    #             el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [5])
+        XY_initialization('Gate_calibration_Sil18_C5'+ '_ii_'+ str(ii) +'_positive'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'positive', tau = tau_list[ii], N = N_list[ii],  carbon_list = [5])
+        XY_initialization('Gate_calibration_Sil18_C5'+ '_ii_'+ str(ii) +'_negative'+'_tau' + str(tau_list[ii]) + '_N' + str(N_list[ii]), 
+                el_RO= 'negative', tau = tau_list[ii], N = N_list[ii],  carbon_list = [5])
 
     '''
     ### Carbon1 ##
@@ -291,36 +291,36 @@ if __name__ == '__main__':
 
 
     
-    ### Carbon5 ##
-    Number_of_pulses_list = np.arange(32,53,2)
-    tau_list              = np.linspace(11.302e-6-14e-9, 11.302e-6+14e-9,15)
+    # ### Carbon5 ##
+    # Number_of_pulses_list = np.arange(32,53,2)
+    # tau_list              = np.linspace(11.302e-6-14e-9, 11.302e-6+14e-9,15)
 
-    for tau in tau_list:
-        print '-----------------------------------'            
-        print 'press q to stop measurement cleanly'
-        print '-----------------------------------'
-        qt.msleep(4)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            break
-        GreenAOM.set_power(5e-6)
-        ins_counters.set_is_running(0)  
-        optimiz0r.optimize(dims=['x','y','z'])
+    # for tau in tau_list:
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(4)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
+    #     GreenAOM.set_power(5e-6)
+    #     ins_counters.set_is_running(0)  
+    #     optimiz0r.optimize(dims=['x','y','z'])
 
-        ssrocalibration(SAMPLE_CFG)
+    #     ssrocalibration(SAMPLE_CFG)
 
-        for N in Number_of_pulses_list:
+    #     for N in Number_of_pulses_list:
             
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(4)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                break
+    #         print '-----------------------------------'            
+    #         print 'press q to stop measurement cleanly'
+    #         print '-----------------------------------'
+    #         qt.msleep(4)
+    #         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #             break
 
-            XY_initialization('Gate_calibration_Sil18_C5_tau' + str(tau) + '_N' + str(N) + 'positive', 
-                    el_RO= 'positive', tau = tau, N = N, carbon_list = [5])
-            XY_initialization('Gate_calibration_Sil18_C5_tau' + str(tau) + '_N' + str(N) + 'negative', 
-                    el_RO= 'negative', tau = tau, N = N,  carbon_list = [5])
+    #         XY_initialization('Gate_calibration_Sil18_C5_tau' + str(tau) + '_N' + str(N) + 'positive', 
+    #                 el_RO= 'positive', tau = tau, N = N, carbon_list = [5])
+    #         XY_initialization('Gate_calibration_Sil18_C5_tau' + str(tau) + '_N' + str(N) + 'negative', 
+    #                 el_RO= 'negative', tau = tau, N = N,  carbon_list = [5])
     
 
 
