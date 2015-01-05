@@ -23,8 +23,7 @@ def MBE(name, carbon_list   = [1,5],
         number_of_parity_msmnts = 1,
         parity_msmnts_threshold = 1, 
 
-        el_RO_0               = 'positive',
-        el_RO_1               = 'negative',
+        el_RO               = 'positive',
         debug                 = True):
 
     m = DD.Two_QB_Det_MBE(name)
@@ -109,8 +108,7 @@ def MBE(name, carbon_list   = [1,5],
     m.params['sweep_pts']           = []
     
     ### RO params
-    m.params['electron_readout_orientation_0'] = el_RO_0
-    m.params['electron_readout_orientation_1'] = el_RO_1
+    m.params['electron_readout_orientation'] = el_RO
 
     for BP in m.params['Tomography Bases_0']:
         m.params['sweep_pts'].append(BP[0]+BP[1])
@@ -122,8 +120,8 @@ def MBE(name, carbon_list   = [1,5],
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive', el_RO_0= 'positive',  el_RO_1= 'negative')
-    MBE(SAMPLE + 'negative', el_RO_0= 'negative',  el_RO_1= 'positive')
+    MBE(SAMPLE + 'positive', el_RO= 'positive')
+    MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 
 
