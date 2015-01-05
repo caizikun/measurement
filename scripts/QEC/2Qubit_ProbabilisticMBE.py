@@ -9,14 +9,15 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [1,5],               
         
-        carbon_init_list        = [5,1],
+def MBE(name, carbon_list   = [1,2],      
+
+        carbon_init_list        = [2,1],
         carbon_init_states      = 2*['up'], 
         carbon_init_methods     = 2*['swap'], 
         carbon_init_thresholds  = 2*[0],  
 
-        number_of_MBE_steps = 0,
+        number_of_MBE_steps = 1,
         mbe_bases           = ['X','X'],
         MBE_threshold       = 1,
 
@@ -33,7 +34,7 @@ def MBE(name, carbon_list   = [1,5],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -49,16 +50,16 @@ def MBE(name, carbon_list   = [1,5],
     ##################################
 
     # # m.params['Tomography Bases'] = 'full'
-    m.params['Tomography Bases'] = ([
-            ['X','I'],['Y','I'],['Z','I'],
-            ['I','X'],['I','Y'],['I','Z'],
-            ['X','X'],['X','Y'],['X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['Z','X'],['Z','Y'],['Z','Z']])
-
     # m.params['Tomography Bases'] = ([
     #         ['X','I'],['Y','I'],['Z','I'],
-    #         ['I','X'],['I','Y'],['I','Z']])
+    #         ['I','X'],['I','Y'],['I','Z'],
+    #         ['X','X'],['X','Y'],['X','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z'],
+    #         ['Z','X'],['Z','Y'],['Z','Z']])
+
+    m.params['Tomography Bases'] = ([
+            ['X','I'],['Y','I'],['Z','I'],
+            ['I','X'],['I','Y'],['I','Z']])
 
     # m.params['Tomography Bases'] = ([
     #         ['X','X'],['X','Y'],['X','Z'],
@@ -74,8 +75,7 @@ def MBE(name, carbon_list   = [1,5],
     #         ['I','I','X'],['I','I','Y'],['I','I','Z']])
 
 
-    if m.params['Tomography Bases'] == 'full':
-        m.params['Tomography Bases'] = m.get_tomography_bases(nr_of_carbons = len(m.params['carbon_list']))
+    # m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
         
     ####################
     ### MBE settings ###

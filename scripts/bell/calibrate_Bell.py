@@ -17,10 +17,10 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['SP_duration'] = 100
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-0.1, 0.1, pts)  
+    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-0.05, 0.05, pts)   
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 
@@ -88,7 +88,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 2
+    stage =4.1
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     if   stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'

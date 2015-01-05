@@ -168,6 +168,7 @@ class QuTau(Instrument):
         return self.err_dict[ans]
 
     def get_countrate():
+        #self.initialize
         return 0
 
     def switch_termination(self, on): #OK!

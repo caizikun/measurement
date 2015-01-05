@@ -62,7 +62,7 @@ def NuclearT1(name,tau = None,
     m.params['SP_duration_after_C13']       = 250
         
     # m.autoconfig() (autoconfig is firs line in funcs.finish )
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':
 

@@ -20,7 +20,7 @@ def run(name, mbi = True):
     #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 21
+    pts = 31
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
 
@@ -38,7 +38,7 @@ def run(name, mbi = True):
     if sweep_duration:        
     # MW pulses
         m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
-        m.params['MW_pulse_durations']  = np.linspace(0,200e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
+        m.params['MW_pulse_durations']  = np.linspace(0,400e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
         m.params['sweep_name'] = 'MW pulse duration (ns)'
         m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
         if mbi == False:

@@ -1234,6 +1234,7 @@ config['adwin_lt3_dacs'] = {
         'gate' : 8,
         'gate_mod' : 9,
         'yellow_aom_frq':10,
+        'lock_aom':11,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1609,7 +1610,7 @@ config['adwin_pro_processes'] = {
         'bell_lt4' : {
                 'index' : 9,
                 'file' : 'bell_lt4.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
                     ['AWG_done_DI_channel'         ,   8],
@@ -1654,8 +1655,8 @@ config['adwin_pro_processes'] = {
                 'file' : 'bell_lt3.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_done_DI_channel'         ,   8],
-                    ['AWG_success_DI_channel'         ,   8],
+                    ['AWG_done_DI_channel'         ,   17],
+                    ['AWG_success_DI_channel'         ,  17],
                     ['SP_duration'                 , 100],
                     ['wait_after_pulse_duration'   ,   1],
                     ['remote_CR_DO_channel'        ,  15],
@@ -1663,6 +1664,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 8],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1802,3 +1804,98 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_mod': 10,
         'yellow_aom_frq':11,
         }
+
+
+config['adwin_rt1_dacs'] = {
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        }
+
+config['adwin_rt1_dios'] = {
+
+        }
+
+config['adwin_rt1_processes'] = {
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TB5',
+            },
+
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'rt1_linescan.TB2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
+                },
+            },
+
+        'counter' : {
+
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'rt1_simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'rt1_set_dac.TB3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'rt1_set_ttl_outputs.TB4',
+            'par' : {
+                'dio_no' : 61,
+                'dio_val' : 62,
+                },
+            },
+
+        'trigger_dio' : {
+            'index' : 4,
+            'file' : 'rt1_dio_trigger.tb4',
+            'par' : {
+                'dio_no' : 61,
+                'startval' : 62, # where to start - 0 or 1
+                'waittime' : 63, # length of the trigger pulse in units of 10 ns
+            },
+        },
+    }

@@ -118,14 +118,14 @@ def bell_lt3(name):
     
     m=Bell_lt3(name) 
 
-    th_debug=False
+    th_debug=True
     mw = False
     do_upload = True
     if remote_meas:
         if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
             m.joint_params['do_echo'] = 0
             m.joint_params['do_final_MW_rotation'] = 0
-            th_debug = False
+            th_debug = True
             mw=True
         elif 'TPQI' in remote_name:
             m.joint_params['RO_during_LDE']=0
@@ -138,7 +138,10 @@ def bell_lt3(name):
             th_debug = True
             mw=False
         elif 'full_Bell' in remote_name:
-            th_debug = False
+            mw=True
+            th_debug=False
+        elif 'MeasXX_' in remote_name:
+            th_debug = True 
             mw=True
         else:
             print 'using standard local settings'
@@ -167,10 +170,12 @@ def bell_lt3(name):
             break
         qt.msleep(1)
     if lt4_ready:
-        m.run(autoconfig=False, setup=False,debug=th_debug)    
+        m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'])    
         m.save()
         m.finish()
 
 
 if __name__ == '__main__':
+    stools.rf_switch_non_local()
     bell_lt3('')
+    stools.rf_switch_local()

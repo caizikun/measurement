@@ -22,6 +22,12 @@ class ElectronRabi(pulsar_msmt.MBI):
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
+        # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
+        #     I_channel = 'MW_Imod',
+        #     Q_channel = 'MW_Qmod',
+        #     PM_channel = 'MW_pulsemod',
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'] )
+
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
@@ -103,8 +109,94 @@ class ElectronRamsey(pulsar_msmt.MBI):
             e.append(
                 pulse.cp(X,
                     frequency = self.params['MW_pulse_mod_frqs'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i],
+                    length = self.params['MW_pulse_2_durations'][i],
+                    phase = self.params['MW_pulse_2_phases'][i]))
+
+            e.append(adwin_sync)
+            elts.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('MBI Electron Rabi sequence')
+        for i,e in enumerate(elts):
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
+                jump_target = e.name)
+            seq.append(name = e.name, wfname = e.name,
+                trigger_wait = True)
+
+        # program AWG
+        if upload:
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+        
+
+class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
+    mprefix = 'PulsarMBIElectronRamsey_Dephasing'
+
+    def generate_sequence(self, upload=True, debug = False):
+
+
+        #configure the dephasing beam. power and AWG channel
+        
+        dephasing_AOM_voltage=qt.instruments[self.params['dephasing_AOM']].power_to_voltage(self.params['laser_dephasing_amplitude'],controller='sec')
+        if dephasing_AOM_voltage > (qt.instruments[self.params['dephasing_AOM']]).get_sec_V_max():
+            print 'Suggested power level would exceed V_max of the AOM driver.'
+        else:
+            #not sure if the secondary channel of an AOM can be obtained in this way?
+            channelDict={'ch2m1': 'ch2_marker1'}
+            print 'AOM voltage', dephasing_AOM_voltage
+            self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
+            qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
+
+
+        # MBI element
+        mbi_elt = self._MBI_element()
+
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 1000e-9, amplitude = 0)
+
+        Dephasing = pulse.SquarePulse(channel=self.params['Channel_alias'],
+            length = 1000e-9, amplitude = 1.)
+
+        X = pulselib.MW_IQmod_pulse('MW pulse',
+            I_channel = 'MW_Imod',
+            Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod',
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude = 2)
+
+        # electron manipulation elements
+        elts = []
+        for i in range(self.params['pts']):
+            e = element.Element('ERamsey_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(T)
+
+            e.append(
+                pulse.cp(X,
+                    frequency = self.params['MW_pulse_mod_frqs'][i],
                     amplitude = self.params['MW_pulse_amps'][i],
                     length = self.params['MW_pulse_durations'][i],
+                    phase = self.params['MW_pulse_1_phases'][i]))
+
+            e.append(
+                pulse.cp(T, length=100e-9))
+
+            e.append(
+                pulse.cp(Dephasing, length=self.params['MW_pulse_delays'][i]))
+
+            e.append(
+                pulse.cp(T, length=500e-9))
+
+            e.append(
+                pulse.cp(X,
+                    frequency = self.params['MW_pulse_mod_frqs'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i],
+                    length = self.params['MW_pulse_2_durations'][i],
                     phase = self.params['MW_pulse_2_phases'][i]))
 
             e.append(adwin_sync)
@@ -185,6 +277,4 @@ class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            #qt.pulsar.upload(mbi_elt, wait_elt, sync_elt, *pulse_elts)
             qt.pulsar.program_awg(seq, mbi_elt, wait_elt, sync_elt, *pulse_elts, debug=debug)
-        #qt.pulsar.program_sequence(seq)

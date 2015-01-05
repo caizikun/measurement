@@ -18,7 +18,7 @@ def turn_off_all_lasers():
     turn_off_all_lt3_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
@@ -56,7 +56,7 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
 
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()    
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
@@ -72,26 +72,13 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'],
-    setpoints = [50e-6, 5e-9, 10e-9, 50e-9]):
-    
-    turn_off_all_lt1_lasers()
-    for n,s in zip(names, setpoints):
-        check_power(n, s, 'adwin_lt1', 'powermeter_lt1', 'PMServo_lt1',False)
-    qt.instruments['PMServo_lt1'].move_out()
-
-def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 50e-6,50e-9]):
+def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
+    setpoints = [5e-9, 5e-9, 30e-9,40e-9]):
     
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
-        
-def disconnect_lt1_remote():
-    for i in qt.instruments.get_instrument_names():
-        if len(i) >= 4 and i[-4:] == '_lt1':
-            qt.instruments.remove(i)
 
 def apply_awg_voltage(awg, chan, voltage):
     """
@@ -232,3 +219,9 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin.set_dac_voltage(('yellow_aom_frq',max_v))
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
+
+def rf_switch_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('11111111')
+
+def rf_switch_non_local():
+    qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')

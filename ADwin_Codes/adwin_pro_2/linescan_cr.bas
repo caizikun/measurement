@@ -76,7 +76,7 @@ LOWINIT:
     scan_average = 2*ROUND((PAR_64+1)/2)-1 'number of avg should be uneven!
   ENDIF
   
-  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),1)
+  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),10)
     
   FOR i = 1 TO NoOfDACs
     DACVoltage = DATA_199[i]

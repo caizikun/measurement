@@ -60,11 +60,11 @@ if __name__ == '__main__':
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    only_fine = False
+    only_fine = True
 
         ### for the first coarse step
-    init_range   = 13     #Common: 10 MHz
-    init_pts     = 131    #Common: 121
+    init_range   = 8     #Common: 10 MHz
+    init_pts     = 121    #Common: 121
     init_reps    = 500   #Common: 500
 
         ### for the remainder of the steps
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         print 'press q to stop measurement loop'
         print '--------------------------------'
         qt.msleep(2)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or d_steps[iterations]==abs(1):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or abs(d_steps[iterations])==1:
             break
 
         qt.msleep(1)
@@ -160,6 +160,7 @@ if __name__ == '__main__':
         print '--------------------------------'
         print 'press q to stop measurement loop'
         print '--------------------------------'
+
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or d_steps[iterations]==abs(1):
             break
@@ -181,5 +182,4 @@ if __name__ == '__main__':
     d.close_file()
 
     print 'Z position coarse optimization finished, stepped the magnet '+ str(total_d_steps) + ' in '+str(iterations+1) +' iterations'
-
 

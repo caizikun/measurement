@@ -10,7 +10,7 @@ import time
 from measurement.scripts.bell import check_awg_triggering as JitterChecker
 reload(JitterChecker)
 #reload all parameters and modules
-execfile(qt.reload_current_setup)
+#execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 from measurement.lib.config import moss as moscfg
 
@@ -110,13 +110,6 @@ class Bell_lt4(bell.Bell):
     def print_measurement_progress(self):
         pass
 
-    #def reset_plu(self):
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=1)
-    #    qt.msleep(0.1)
-    #    self.adwin.start_set_dio(dio_no=2, dio_val=0)
-
     def finish(self):
         bell.Bell.finish(self)
         self.add_file(inspect.getsourcefile(bseq))
@@ -143,11 +136,14 @@ def bell_lt4(name,
     if not(sequence_only):
         if measure_lt3:
             m.lt3_helper.set_is_running(False)
+            qt.msleep(0.5)
             m.lt3_helper.set_measurement_name(name)
             m.lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/bell_lt3.py')
             m.lt3_helper.execute_script()
         if measure_bs:
-            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs_v2.py')
+            m.bs_helper.set_is_running(False)
+            qt.msleep(0.5)
+            m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
@@ -169,15 +165,19 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'])
     m.save()
 
     if measure_lt3:
-         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
+        m.lt3_helper.set_is_running(False)
     if measure_bs:
-        m.params['bs_data_path'] = m.bs_helper.get_data_path()
-
+        m.bs_helper.set_is_running(False)
+        m.params['bs_data_path'] = m.bs_helper.get_data_path()  
+    
+    print 'finishing'
     m.finish()
+    print 'finished'
 
 
 
@@ -187,6 +187,20 @@ def full_bell(name):
     bell_lt4(name, 
              m,
              th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def measureXX(name):
+    name='MeasXX_'+name
+    m = Bell_lt4(name)
+    #make sure MWI and Q pulses are set correctly
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -233,7 +247,7 @@ def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot t
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = False,
+             th_debug      = True,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -250,8 +264,19 @@ def SP_lt3(name):
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
-             measure_bs    = True
-            ,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def lt4_only(name):
+    m = Bell_lt4(name)
+    bell_lt4(name, 
+             m,
+             th_debug      = True,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = False,
+             measure_bs    = False,
              do_upload     = True,
              )
 
@@ -271,9 +296,14 @@ if __name__ == '__main__':
     
 
     if not(jitterDetected):
+        qt.msleep(0.5)
         #TPQI('run_test')
-        full_bell('FirstEverLFBT_Run9')   
+        #full_bell('high_strain_short_pulsesep_day1_run2')   
         #SP_lt4('SPCORR_lt4')
-        #pulse_overlap('FinalDelay')
+        #lt4_only('test')
+        #pulse_overlap('testing')
         #SP_lt3('SPCORR_lt3')
-        pass
+
+        #FIXED### Note that the Yellow PID does not work as the error signal is always positive. I was tuning Yellow by hand.
+        measureXX('lock_day4_run8')
+        #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...

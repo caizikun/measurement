@@ -77,7 +77,6 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'send_AWG_start':                          1,
 	}
 
-
 ##########################################
 ### General settings for AdwinSSRO+MBI ###
 ##########################################
@@ -108,7 +107,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.806441e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-09
+f_msm1_cntr =  2.806542e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-17 2.806445
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -125,13 +124,13 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':			 	 2e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 8e-9,#10e-9
+		'A_SP_amplitude':				 15e-9,#10e-9
 		'CR_duration' :				 	 50,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 3e-9,
+		'Ex_RO_amplitude':				 1e-9,
 		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
@@ -143,7 +142,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 25}
+	'SSRO_duration' : 15}
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -153,19 +152,17 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'MW_pi_amp': 0.86,
-    	'MW_pi_length': 65e-9,
-    	'Hermite_pi_length': 220e-9, 
-        'Hermite_pi_amp': 0.8120, #2014-11-09
+    	'Hermite_pi_length': 210e-9, 
+        'Hermite_pi_amp': 0.9058, #2014-12-21
         'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.635315, #2014-11-09
+        'Hermite_pi2_amp': 0.681376, #2014-12-21
         'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
-        'Hermite_Npi4_amp': 0.9055+0.0403, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-09 
-        'Square_pi_length' : 50e-9, # calib. 2014-07-25
-      	'Square_pi_amp' : 0.594 , # calib. for pi pulse of 50 ns 2014-07-25
+        'Hermite_Npi4_amp':    0.905 +0.04, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-17
+        'Square_pi_length' : 50e-9, # 2014-12-01
+      	'Square_pi_amp' : 0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
-    	'Square_pi2_amp'  : 0.579, # XXXXXXX not calibrated
+    	'Square_pi2_amp'  : 0.735,#0.71104, # XXXXXXX not calibrated
     	'IQ_Square_pi2_amp'  : 0.015, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,

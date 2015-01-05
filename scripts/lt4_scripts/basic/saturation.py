@@ -5,10 +5,10 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Hans_Sil1_SM_ZPL_BS'
-steps=31
-max_power=250e-6       #[w]
-counter=3 #number of counter
+name = 'Hans_Sil1_SM_ZPL_with_WP'
+steps=21
+max_power=210e-6       #[w]
+counter=2 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=2        #delta x position of background [um]
 bg_y=-2          #delta y position of background [um]

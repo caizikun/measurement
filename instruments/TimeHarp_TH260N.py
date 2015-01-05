@@ -1,15 +1,12 @@
 from ctypes import *
 import os
 from instrument import Instrument
-import pickle
 from time import sleep, time, strftime
 import types
 import logging
 import numpy
 import qt
-from qt import *
 from numpy import *
-from measurement.lib.cython.hh_optimize import hht4
 
 LIB_VERSION = "1.1"
 DRIVER = 'th260lib'
@@ -95,7 +92,6 @@ class TimeHarp_TH260N(Instrument): #1
         # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument TH260')
         Instrument.__init__(self, name, tags=['physical'])
-        self.adwin = qt.instruments['adwin']
 
         # Load dll and open connection
         self._load_dll()
@@ -213,7 +209,7 @@ class TimeHarp_TH260N(Instrument): #1
     def _load_dll(self): #3
 #        print __name__ +' : Loading THLib.dll'
         WINDIR=os.environ['WINDIR']
-        self._TH260 = windll.LoadLibrary(WINDIR+'\\system32\\'+DRIVER)
+        self._TH260 = windll.LoadLibrary(WINDIR+'\\SYSWOW64\\'+DRIVER)
         sleep(0.02)
 
     def _do_set_DeviceIndex(self,val):
@@ -521,7 +517,7 @@ class TimeHarp_TH260N(Instrument): #1
         if success < 0:
             logging.warning(__name__ + ' : error in TH_ReadFiFo')
             self.get_ErrorString(success)
-        return length.value, data
+        return length.value, data[:length.value] # used to be data AR2014-11-14
         
         
     def set_MarkerEdgesRising(self,me0,me1,me2,me3):
