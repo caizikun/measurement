@@ -24,7 +24,8 @@ def NuclearHahnWithInitialization(name,
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        C13_init_method       = 'swap'):
+        C13_init_method       = 'MBI', 
+        C13_MBI_RO_state       = 0):
 
     m = DD.NuclearHahnEchoWithInitialization(name)
     funcs.prepare(m)
@@ -32,38 +33,32 @@ def NuclearHahnWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 500
-    m.params['C13_MBI_RO_state'] = 1 #Initalize in ms_=-1 to decouple nuclear spins
-    m.params['C13_MBI_threshold_list'] = [0] #No photon should be detected as we resonate with other frequency
-    m.params['C13_MBI_RO_duration'] = 100 #Chaning readout laser duration to ensure m_s=-1 
+    m.params['reps_per_ROsequence']     = 500
+    m.params['C13_MBI_RO_state']        = C13_MBI_RO_state     # Initalize in ms_=-1 to decouple nuclear spins
+    m.params['C13_MBI_threshold_list']  = [1] 
+
+    if C13_MBI_RO_state == 1:
+        m.params['C13_MBI_RO_duration']     = 100   #Chaning readout laser duration to ensure m_s=-1 
+        m.params['SP_duration_after_C13']   = 20
+        m.params['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 
     ### overwritten from msmnt params
            
     ####################################
     ### Option 1; Sweep waiting time ###
     ####################################
-    
-        # 1A - Rotating frame with detuning
-    # detuning = 0.5e3
-    # m.params['add_wait_gate'] = True
-    # m.params['pts'] = 21
-    # m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
-    # # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
-    
-
-    # m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
-    # m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
-    # m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
-
-    # m.params['sweep_name'] = 'free_evolution_time'
-    # m.params['sweep_pts']  = m.params['free_evolution_time']
-        
-        ### 1B - Lab frame
+              
+    ### 1B - Lab frame
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
-    m.params['free_evolution_time'] = np.linspace(0,. 1.,m.params['pts'])
-    m.params['C_RO_phase'] = m.params['pts']*['reset'] #Reset?
-    # m.params['C_RO_phase'] = m.params['pts']*['X']        
+
+    if C13_MBI_RO_state == 0:
+        m.params['free_evolution_time'] = np.arange(2e-3, 60e-3, 4e-3)
+        m.params['pts'] = len(m.params['free_evolution_time'])
+    if C13_MBI_RO_state == 1:
+        m.params['free_evolution_time'] = np.arange(2e-3, 1, 60e-3)
+        m.params['pts'] = len(m.params['free_evolution_time'])
+    
+    m.params['C_RO_phase'] = m.params['pts']*['X']        
 
     m.params['sweep_name'] = 'free_evolution_time'
     m.params['sweep_pts']  = m.params['free_evolution_time']
@@ -95,5 +90,22 @@ def NuclearHahnWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C5_el0_positive', carbon_nr=5, el_RO= 'positive', C13_MBI_RO_state =0)
+    NuclearHahnWithInitialization(SAMPLE + '_C5_el0_negative', carbon_nr=5, el_RO= 'negative', C13_MBI_RO_state =0)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C5_el1_positive', carbon_nr=5, el_RO= 'positive', C13_MBI_RO_state =1)
+    NuclearHahnWithInitialization(SAMPLE + '_C5_el1_negative', carbon_nr=5, el_RO= 'negative', C13_MBI_RO_state =1)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C1_el0_positive', carbon_nr=1, el_RO= 'positive', C13_MBI_RO_state =0)
+    NuclearHahnWithInitialization(SAMPLE + '_C1_el0_negative', carbon_nr=1, el_RO= 'negative', C13_MBI_RO_state =0)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C1_el1_positive', carbon_nr=1, el_RO= 'positive', C13_MBI_RO_state =1)
+    NuclearHahnWithInitialization(SAMPLE + '_C1_el1_negative', carbon_nr=1, el_RO= 'negative', C13_MBI_RO_state =1)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C2_el0_positive', carbon_nr=2, el_RO= 'positive', C13_MBI_RO_state =0)
+    NuclearHahnWithInitialization(SAMPLE + '_C2_el0_negative', carbon_nr=2, el_RO= 'negative', C13_MBI_RO_state =0)
+
+    NuclearHahnWithInitialization(SAMPLE + '_C2_el1_positive', carbon_nr=2, el_RO= 'positive', C13_MBI_RO_state =1)
+    NuclearHahnWithInitialization(SAMPLE + '_C2_el1_negative', carbon_nr=2, el_RO= 'negative', C13_MBI_RO_state =1)
 

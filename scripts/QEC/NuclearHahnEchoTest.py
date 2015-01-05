@@ -68,5 +68,5 @@ def NuclearHahnWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE)
+    NuclearHahnWithInitialization(SAMPLE)
 

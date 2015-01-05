@@ -291,60 +291,20 @@ def QEC_test(name, carbon_list   = [1,5,2],
     
 if __name__ == '__main__':
 
-    cnt = -10
 
-
-    for state in ['Y','mY','Z','mZ','X','mX']:
-        logic_state = state
+    for i in range (1):
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
+        cnt = 0
 
-        if state == 'X' or state == 'mX':
-            RO_list = [6,6,6]
-        elif state == 'Y' or state == 'mY':
-            RO_list = [5,6,4]
-        elif state == 'Z' or state == 'mZ': 
-            RO_list = [0,1,2]
+        evo_list_total = linspace(0,23e-3,24)
 
-        for ii,RO in enumerate(RO_list):
-            if ii == 0: # Carbon 1
-                evo_list = {}
-                extra_time =0
-                if state == 'Z' or state == 'mZ':
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
-                                +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'])
-                
-                evo_list_total = linspace(0+extra_time,15e-3+extra_time,11)
-
-            if ii == 1:# Carbon 5
-                evo_list = {}
-                extra_time =0
-                if state == 'Z' or state == 'mZ':
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
-                                +2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'])
-                
-                evo_list_total = linspace(0+extra_time,31e-3+extra_time,11)
-            if ii == 3:# Carbon 2
-                evo_list = {}
-                extra_time =0
-                if state == 'Z' or state == 'mZ':
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
-                                +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'])
-                
-                evo_list_total = linspace(0+extra_time,16e-3+extra_time,11)
-
-            evo_list['0'] = evo_list_total[0:4]
-            evo_list['1'] = evo_list_total[4:8]
-            evo_list['2'] = evo_list_total[8:11]
-
-            GreenAOM.set_power(7e-6)
-            ins_counters.set_is_running(0)  
-            optimiz0r.optimize(dims=['x','y','z'])
-
+        for state in ['Z','mZ']:
+            logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
             print '-----------------------------------'
@@ -352,93 +312,121 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
 
-            ssrocalibration(SAMPLE_CFG)
-            
-            cnt += 1
-            if cnt == 3:
-                for test_state in ['X','Y','Z']:
-                        if test_state == 'X':
-                            test_RO_list = [6]
-                        elif test_state == 'Y':
-                            test_RO_list = [4,5] 
-                        elif test_state == 'Z': 
-                            test_RO_list = [0] 
+            if state == 'X' or state == 'mX':
+                RO_list = [6,6,6]
+            elif state == 'Y' or state == 'mY':
+                RO_list = [5,6,4]
+            elif state == 'Z' or state == 'mZ': 
+                RO_list = [6]
 
-                        
-                        print '-----------------------------------'            
-                        print 'press q to stop measurement cleanly'
-                        print '-----------------------------------'
-                        qt.msleep(2)
-                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                            break
+            for ii,RO in enumerate(RO_list):
 
-                        for test_RO in test_RO_list:#range(7):
+                evo_list['0'] = evo_list_total[0:4]
+                evo_list['1'] = evo_list_total[4:8]
+                evo_list['2'] = evo_list_total[8:12]
+                evo_list['3'] = evo_list_total[12:16]
+                evo_list['4'] = evo_list_total[16:20]
+                evo_list['5'] = evo_list_total[20:24]
+
+
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+                
+                GreenAOM.set_power(7e-6)
+                ins_counters.set_is_running(0)  
+                optimiz0r.optimize(dims=['x','y','z'])
+
+                ssrocalibration(SAMPLE_CFG)
+                
+                cnt += 1
+                if cnt == 3:
+                    for test_state in ['X','Y','Z']:
+                            if test_state == 'X':
+                                test_RO_list = [6]
+                            elif test_state == 'Y':
+                                test_RO_list = [4,5] 
+                            elif test_state == 'Z': 
+                                test_RO_list = [0] 
+
                             
-                            e_list = [0]
                             print '-----------------------------------'            
                             print 'press q to stop measurement cleanly'
                             print '-----------------------------------'
                             qt.msleep(2)
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                                 break
-                            QEC_test(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
-                                logic_state = test_state,el_RO = 'positive', 
-                                error_sign= 1, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','positive'])
 
-                            QEC_test(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
-                                logic_state = test_state,el_RO = 'negative', 
-                                error_sign= 1, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','positive'])                
+                            for test_RO in test_RO_list:#range(7):
+                                
+                                e_list = [0]
+                                print '-----------------------------------'            
+                                print 'press q to stop measurement cleanly'
+                                print '-----------------------------------'
+                                qt.msleep(2)
+                                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                                    break
+                                QEC_test(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                                    logic_state = test_state,el_RO = 'positive', 
+                                    error_sign= 1, 
+                                    error_on_qubit = 'all',
+                                    error_probability_list= e_list,
+                                    parity_orientations           = ['positive','positive'])
 
-                DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+                                QEC_test(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                                    logic_state = test_state,el_RO = 'negative', 
+                                    error_sign= 1, 
+                                    error_on_qubit = 'all',
+                                    error_probability_list= e_list,
+                                    parity_orientations           = ['positive','positive'])                
+
+                    DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
 
 
-                DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
-                pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+                    DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp', 
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+                    
+                    GreenAOM.set_power(7e-6)
+                    ins_counters.set_is_running(0)  
+                    optimiz0r.optimize(dims=['x','y','z'])
+                    
+                    ssrocalibration(SAMPLE_CFG)
+
+                    cnt = 0
                 
-                GreenAOM.set_power(7e-6)
-                ins_counters.set_is_running(0)  
-                optimiz0r.optimize(dims=['x','y','z'])
-                
-                ssrocalibration(SAMPLE_CFG)
+                for k in range(6):
+                    print '-----------------------------------'            
+                    print 'press q to stop measurement cleanly'
+                    print '-----------------------------------'
+                    qt.msleep(2)
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        break
 
-                cnt = 0
-            
-            for k in range(3):
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(2)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    break
+               
+                    logic_state = state
 
-           
-                logic_state = state
+                    t_list = evo_list[str(k)]
+                    print '-----------------------------------'            
+                    print 'press q to stop measurement cleanly'
+                    print '-----------------------------------'
+                    qt.msleep(2)
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        break
+                    
+                    MBE(SAMPLE + 'no_correct_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                        logic_state = logic_state,el_RO = 'positive', 
+                        error_on_qubit = 'all',
+                        evolution_time_list= t_list)
 
-                t_list = evo_list[str(k)]
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(2)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    break
-                
-                MBE(SAMPLE + 'no_correct_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
-                    logic_state = logic_state,el_RO = 'positive', 
-                    error_on_qubit = 'all',
-                    evolution_time_list= t_list)
-
-                MBE(SAMPLE + 'no_correct_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
-                    logic_state = logic_state,el_RO = 'negative', 
-                    error_on_qubit = 'all',
-                    evolution_time_list= t_list)
+                    MBE(SAMPLE + 'no_correct_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                        logic_state = logic_state,el_RO = 'negative', 
+                        error_on_qubit = 'all',
+                        evolution_time_list= t_list)
 
 

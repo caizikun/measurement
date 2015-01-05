@@ -44,10 +44,10 @@ Carbon_5to1_crosstalk	= False
 Carbon_5to2_crosstalk	= False
 
 Carbon_phase_cal_1to2	= True
-Carbon_phase_cal_1to5	= False
-Carbon_phase_cal_2to1	= False
-Carbon_phase_cal_2to5	= False
-Carbon_phase_cal_5to1	= False
+Carbon_phase_cal_1to5	= True
+Carbon_phase_cal_2to1	= True
+Carbon_phase_cal_2to5	= True
+Carbon_phase_cal_5to1	= True
 Carbon_phase_cal_5to2	= True
 
 debug 					= False
