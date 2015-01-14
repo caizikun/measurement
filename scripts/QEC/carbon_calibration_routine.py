@@ -32,9 +32,9 @@ Carbon_1_f_msm1  		= False
 Carbon_2_f_msm1  		= False
 Carbon_5_f_msm1  		= False
 
-Carbon_1_self_phase		= False
-Carbon_2_self_phase		= False
-Carbon_5_self_phase		= False
+Carbon_1_self_phase		= False 
+Carbon_2_self_phase		= False 
+Carbon_5_self_phase		= False 
 
 Carbon_1to2_crosstalk	= False
 Carbon_1to5_crosstalk	= False

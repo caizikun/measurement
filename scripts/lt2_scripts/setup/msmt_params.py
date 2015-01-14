@@ -176,8 +176,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C1_freq'       :   450.301e3,  
-'C1_freq_0'     :   431.977e3, #2 Hz uncertainty   
-'C1_freq_1'     :   469.017e3,           
+'C1_freq_0'     :   431.982e3, #2 Hz uncertainty   
+'C1_freq_1'     :   469.019e3,           
 'C1_gate_optimize_tau_list' : [4.994e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,4.998e-6],
 'C1_gate_optimize_N_list': [32,34,36,32,34,36,34,36,38],
@@ -191,17 +191,17 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau'    :   [4.996e-6],
-'C1_Ren_N'      :   [34],
-'C1_Ren_extra_phase_correction_list' :  np.array([0] + [19.9] + [100.7]+[0]*2+[28.1]+ 4*[0]),
+'C1_Ren_tau'    :   [4.998e-6],
+'C1_Ren_N'      :   [36],
+'C1_Ren_extra_phase_correction_list' :  np.array([0] + [50.3] + [109.3]+[0]*2+[27.7]+ 4*[0]),
     
     ################
     ### Carbon 2 ###
     ################
 
 'C2_freq'       :   421.814e3,  
-'C2_freq_0'     :   431.897e3,  
-'C2_freq_1'     :   413.441e3,
+'C2_freq_0'     :   431.899e3,  
+'C2_freq_1'     :   413.447e3,
 'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
@@ -215,8 +215,8 @@ cfg['samples']['111_1_sil18'] = {
 # 'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.68]+[-42.6+180]+[0]*2+[67.33]+[0]*4), 
 
 'C2_Ren_tau'    :   [13.616e-6],
-'C2_Ren_N'      :   [32],
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[62.7]+[-6.8+180]+[0]*2+[67.2]+[0]*4), 
+'C2_Ren_N'      :   [34],
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[68.0]+[7.2+180]+[0]*2+[68.2]+[0]*4), 
 
 
     ################
@@ -225,7 +225,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C5_freq'       :   419.894e3,
 'C5_freq_0'     :   431.922e3,  
-'C5_freq_1'     :   408.299e3,
+'C5_freq_1'     :   408.297e3,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -248,7 +248,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C5_Ren_tau'    :   [11.312e-6],
 'C5_Ren_N'      :   [48],
-'C5_Ren_extra_phase_correction_list' : np.array([0]+[83.5]+[-1.3]+[0]*2+[103.7]+[0]*4), 
+'C5_Ren_extra_phase_correction_list' : np.array([0]+[86.8]+[-2.4]+[0]*2+[105.6]+[0]*4), 
 
 
     ### Carbon 6
@@ -269,15 +269,15 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
 'SSRO_duration'     :  150,
 'SSRO_stop_after_first_photon' : 1,
-'A_CR_amplitude' : 25e-9, 
+'A_CR_amplitude' : 19e-9,   #25e-9
 'A_RO_amplitude' : 0,
-'A_SP_amplitude' : 30e-9,   # 40e-9,
+'A_SP_amplitude' : 17e-9,   #30e-9 # 40e-9,
 'CR_duration'    : 100,     # 50
 'CR_preselect'   : 1000,
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 5e-9,    # 5e-9
-'Ex_RO_amplitude': 3e-9,   # 15e-9,   
+'Ex_RO_amplitude': 3e-9,    # 15e-9,   
 'Ex_SP_amplitude': 0e-9,    # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
 'SP_duration'    : 400,     # 400 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     # only for specific scripts
@@ -317,14 +317,14 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 # 'fast_pi_duration'          :  64e-9, #140e-9,#      #250 MHz
 'fast_pi_duration'          :  116e-9, #140e-9,#      #250 MHz slow
 # 'fast_pi_amp'               :  0.794559, #250 MHz, slow
-'fast_pi_amp'               :  0.392860,#0.794559, #250 MHz, slow
+'fast_pi_amp'               :  0.393223,#0.392860,#0.794559, #250 MHz, slow
 'fast_pi_mod_frq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
 'fast_pi2_duration'         :   56e-9, #should be divisible by 4, slow
 # 'fast_pi2_amp'              :   0.395251, # 
-'fast_pi2_amp'              :   0.410445, # slow, only calibrated with 2 pulses
+'fast_pi2_amp'              :   0.410985,#0.410445, # slow, only calibrated with 2 pulses
 'fast_pi2_mod_frq'          :   f_mod_0,
 
     ### MBI pulses ###
@@ -351,7 +351,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Repump after succesfull MBI
 'repump_after_MBI_duration' :           [100],
-'repump_after_MBI_A_amplitude':         [30e-9],
+'repump_after_MBI_A_amplitude':         [18e-9],
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters

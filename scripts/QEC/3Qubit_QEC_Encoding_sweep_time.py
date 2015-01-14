@@ -86,6 +86,7 @@ def MBE(name, carbon_list   = [1,5,2],
         logic_state         = 'Y',
         mbe_bases           = ['Y','Y','Y'],
         MBE_threshold       = 1,
+        MBE_list            = [5,2,1],
 
         number_of_parity_msmnts = 0,
         parity_msmnts_threshold = 1, 
@@ -125,7 +126,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-
+    m.params['MBE_list']            = MBE_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -299,9 +300,9 @@ if __name__ == '__main__':
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-        cnt = 0
+        cnt = 2
 
-        evo_list_total = linspace(0,23e-3,24)
+        evo_list_total = linspace(0,30e-3,16)
 
         for state in ['Z','mZ']:
             logic_state = state
@@ -317,7 +318,7 @@ if __name__ == '__main__':
             elif state == 'Y' or state == 'mY':
                 RO_list = [5,6,4]
             elif state == 'Z' or state == 'mZ': 
-                RO_list = [6]
+                RO_list = [0,1,2,6]
 
             for ii,RO in enumerate(RO_list):
 
@@ -325,8 +326,6 @@ if __name__ == '__main__':
                 evo_list['1'] = evo_list_total[4:8]
                 evo_list['2'] = evo_list_total[8:12]
                 evo_list['3'] = evo_list_total[12:16]
-                evo_list['4'] = evo_list_total[16:20]
-                evo_list['5'] = evo_list_total[20:24]
 
 
                 print '-----------------------------------'            
@@ -400,7 +399,7 @@ if __name__ == '__main__':
 
                     cnt = 0
                 
-                for k in range(6):
+                for k in range(4):
                     print '-----------------------------------'            
                     print 'press q to stop measurement cleanly'
                     print '-----------------------------------'

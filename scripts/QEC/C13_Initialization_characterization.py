@@ -11,10 +11,8 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 reload(DD)
 
 
-
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
-
 
 def electronramsey_WithNuclearInit(name,
     Addressed_Carbon=1,
@@ -29,7 +27,7 @@ def electronramsey_WithNuclearInit(name,
 
     pts = 20
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 1500
 
     m.params['wait_times'] = np.linspace(2000e-9,8000e-9,pts)
 
@@ -189,58 +187,58 @@ def MBE(name, carbon            =   1,
 if __name__ == '__main__':
 
 
-    for ii in range(50):
+    # for ii in range(50):
 
-        print '-----------------------------------'            
-        print 'press q to stop measurement cleanly'
-        print '-----------------------------------'
-        qt.msleep(4)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            break
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(4)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
 
-        GreenAOM.set_power(5e-6)
-        ins_counters.set_is_running(0)  
-        optimiz0r.optimize(dims=['x','y','z'])
+    #     GreenAOM.set_power(5e-6)
+    #     ins_counters.set_is_running(0)  
+    #     optimiz0r.optimize(dims=['x','y','z'])
 
         
-        MBE(SAMPLE+'_init_up_C1_pos', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['up'],  el_RO = 'positive')
-        MBE(SAMPLE+'_init_up_C1_neg', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['up'],  el_RO = 'negative')
+    #     MBE(SAMPLE+'_init_up_C1_pos', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['up'],  el_RO = 'positive')
+    #     MBE(SAMPLE+'_init_up_C1_neg', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['up'],  el_RO = 'negative')
         
-        MBE(SAMPLE+'_init_down_C1_pos', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'positive')
-        MBE(SAMPLE+'_init_down_C1_neg', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'negative')
+    #     MBE(SAMPLE+'_init_down_C1_pos', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'positive')
+    #     MBE(SAMPLE+'_init_down_C1_neg', carbon = 1, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'negative')
 
-        MBE(SAMPLE+'_init_no_C1_pos', carbon = 1, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'positive')
-        MBE(SAMPLE+'_init_no_C1_neg', carbon = 1, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'negative')
+    #     MBE(SAMPLE+'_init_no_C1_pos', carbon = 1, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'positive')
+    #     MBE(SAMPLE+'_init_no_C1_neg', carbon = 1, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'negative')
 
 
-        print '-----------------------------------'            
-        print 'press q to stop measurement cleanly'
-        print '-----------------------------------'
-        qt.msleep(4)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            break
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(4)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
 
-        electronramsey_WithNuclearInit(SAMPLE+'_C1_up',
-        Addressed_Carbon=1,
-        C_13_init_state='up',
-        el_RO_result=0,
-        electron_RO='positive', no_carbon_init=False)
+    #     electronramsey_WithNuclearInit(SAMPLE+'_C1_up',
+    #     Addressed_Carbon=1,
+    #     C_13_init_state='up',
+    #     el_RO_result=0,
+    #     electron_RO='positive', no_carbon_init=False)
 
-        electronramsey_WithNuclearInit(SAMPLE+'_C1_down',
-        Addressed_Carbon=1,
-        C_13_init_state='down',
-        el_RO_result=0,
-        electron_RO='positive', no_carbon_init=False)
+    #     electronramsey_WithNuclearInit(SAMPLE+'_C1_down',
+    #     Addressed_Carbon=1,
+    #     C_13_init_state='down',
+    #     el_RO_result=0,
+    #     electron_RO='positive', no_carbon_init=False)
 
-        electronramsey_WithNuclearInit(SAMPLE+'_C1_noInit',
-        Addressed_Carbon=1,
-        C_13_init_state='up',
-        el_RO_result=0,
-        electron_RO='positive', no_carbon_init=True)
+    #     electronramsey_WithNuclearInit(SAMPLE+'_C1_noInit',
+    #     Addressed_Carbon=1,
+    #     C_13_init_state='up',
+    #     el_RO_result=0,
+    #     electron_RO='positive', no_carbon_init=True)
 
-        ssrocalibration(SAMPLE_CFG)    
+    #     ssrocalibration(SAMPLE_CFG)    
 
-    # for ii in range(10):
+    # for ii in range(50):
 
     #     print '-----------------------------------'            
     #     print 'press q to stop measurement cleanly'
@@ -258,6 +256,10 @@ if __name__ == '__main__':
         
     #     MBE(SAMPLE+'_init_down_C5_pos', carbon = 5, carbon_init_list =  [5], carbon_init_states = ['down'],  el_RO = 'positive')
     #     MBE(SAMPLE+'_init_down_C5_neg', carbon = 5, carbon_init_list =  [5], carbon_init_states = ['down'],  el_RO = 'negative')
+
+    #     MBE(SAMPLE+'_init_no_C5_pos', carbon = 5, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'positive')
+    #     MBE(SAMPLE+'_init_no_C5_neg', carbon = 5, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'negative')
+
 
     #     electronramsey_WithNuclearInit(SAMPLE+'_C5_up',
     #     Addressed_Carbon=5,
@@ -279,42 +281,46 @@ if __name__ == '__main__':
 
     #     ssrocalibration(SAMPLE_CFG) 
 
-    # for ii in range(10):
+    for ii in range(50):
 
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(4)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
+        print '-----------------------------------'            
+        print 'press q to stop measurement cleanly'
+        print '-----------------------------------'
+        qt.msleep(4)
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            break
 
-    #     GreenAOM.set_power(5e-6)
-    #     ins_counters.set_is_running(0)  
-    #     optimiz0r.optimize(dims=['x','y','z'])    
+        GreenAOM.set_power(5e-6)
+        ins_counters.set_is_running(0)  
+        optimiz0r.optimize(dims=['x','y','z'])    
 
-    #     MBE(SAMPLE+'_init_up_C2_pos', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['up'],  el_RO = 'positive')
-    #     MBE(SAMPLE+'_init_up_C2_neg', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['up'],  el_RO = 'negative')
+        MBE(SAMPLE+'_init_up_C2_pos', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['up'],  el_RO = 'positive')
+        MBE(SAMPLE+'_init_up_C2_neg', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['up'],  el_RO = 'negative')
         
-    #     MBE(SAMPLE+'_init_down_C2_pos', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'positive')
-    #     MBE(SAMPLE+'_init_down_C2_neg', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'negative')
+        MBE(SAMPLE+'_init_down_C2_pos', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'positive')
+        MBE(SAMPLE+'_init_down_C2_neg', carbon = 2, carbon_init_list =  [2], carbon_init_states = ['down'],  el_RO = 'negative')
 
-    #     electronramsey_WithNuclearInit(SAMPLE+'_C2_up',
-    #     Addressed_Carbon = 2,
-    #     C_13_init_state ='up',
-    #     el_RO_result = 0,
-    #     electron_RO='positive', no_carbon_init=False)
+        MBE(SAMPLE+'_init_no_C2_pos', carbon = 2, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'positive')
+        MBE(SAMPLE+'_init_no_C2_neg', carbon = 2, carbon_init_list =  [1], carbon_init_states = ['down'],  el_RO = 'negative')
 
-    #     electronramsey_WithNuclearInit(SAMPLE+'_C2_down',
-    #     Addressed_Carbon=2,
-    #     C_13_init_state='down',
-    #     el_RO_result=0,
-    #     electron_RO='positive', no_carbon_init=False)
 
-    #     electronramsey_WithNuclearInit(SAMPLE+'_C2_noInit',
-    #     Addressed_Carbon=2,
-    #     C_13_init_state='down',
-    #     el_RO_result=0,
-    #     electron_RO='positive', no_carbon_init=True)
+        electronramsey_WithNuclearInit(SAMPLE+'_C2_up',
+        Addressed_Carbon = 2,
+        C_13_init_state ='up',
+        el_RO_result = 0,
+        electron_RO='positive', no_carbon_init=False)
 
-    #     ssrocalibration(SAMPLE_CFG) 
+        electronramsey_WithNuclearInit(SAMPLE+'_C2_down',
+        Addressed_Carbon=2,
+        C_13_init_state='down',
+        el_RO_result=0,
+        electron_RO='positive', no_carbon_init=False)
+
+        electronramsey_WithNuclearInit(SAMPLE+'_C2_noInit',
+        Addressed_Carbon=2,
+        C_13_init_state='down',
+        el_RO_result=0,
+        electron_RO='positive', no_carbon_init=True)
+
+        ssrocalibration(SAMPLE_CFG) 
     

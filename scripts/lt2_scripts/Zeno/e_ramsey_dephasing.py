@@ -1,5 +1,5 @@
 """
-Performs a ramsey measurement where a laser beam is shined in during the wait time. 
+Performs a ramsey measurement where a laser beam (controlled by the AWG) is shined in during the wait time. 
 """
 import qt
 import numpy as np
@@ -22,7 +22,7 @@ def run(name):
     pts = 11
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
-    m.params['evolution_time']=400e-9
+    m.params['evolution_time']=1500e-9
     m.params['MW_pulse_delays'] = np.ones(pts)*m.params['evolution_time'] #during this time we shine in a laser
     m.params['detuning'] = 0e6 #artificial detuning
 
@@ -44,12 +44,12 @@ def run(name):
     m.params['sweep_pts'] = m.params['MW_pulse_2_phases'] /1e-9
 
     # laser beam
-    m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 0e-9 #in Watts
+    m.params['dephasing_AOM'] = 'MatisseAOM' 
+    m.params['laser_dephasing_amplitude']= 18e-9 #in Watts
     
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run(Name+'mbi_eramsey_dephasing')
+    run(Name+'mbi_eramsey_dephasing_18nW_1.5us')
 
 

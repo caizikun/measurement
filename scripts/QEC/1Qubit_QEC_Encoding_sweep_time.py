@@ -125,7 +125,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-
+    m.params['MBE_list'] = carbon_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -207,6 +207,7 @@ def QEC_test(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
+    
     m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
@@ -295,7 +296,7 @@ if __name__ == '__main__':
 
     cnt = 0
 
-    for ii in range(3):    
+    for ii in range(1):    
         for state in ['mZ','Z']:
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -311,22 +312,22 @@ if __name__ == '__main__':
 
                 if Qubit == 1: #Carbon 1
                     RO_list = [0]
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N'][0]
-                                    +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'][0])  
+                    extra_time = 0# (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N'][0]
+                                   # +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'][0])  
                     evo_list_total = linspace(0+extra_time,31e-3+extra_time,32)
                 elif Qubit == 2: #Carbon 5
                     RO_list = [1]
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N'][0]
-                                    +2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'][0])
+                    extra_time = 0# (2* qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C2_Ren_N'][0]
+                                   # +2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'][0])
                     evo_list_total = linspace(0+extra_time,31e-3+extra_time,32)
                 elif Qubit ==3:  # Carbon 2
                     RO_list = [2]
-                    extra_time = (2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'][0]
-                                    +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'][0])  
+                    extra_time = 0# (2* qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'][0]
+                                   # +2* qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau'][0]*qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'][0])  
                     evo_list_total = linspace(0+extra_time,31e-3+extra_time,32)
 
                 # RO_list = [0+(Qubit-1)*3,1+(Qubit-1)*3,2+(Qubit-1)*3]
-                evo_list['0'] = evo_list_total[0:8]
+                evo_list['0'] = evo_list_total[0:3]
                 evo_list['1'] = evo_list_total[8:16]
                 evo_list['2'] = evo_list_total[16:24]
                 evo_list['3'] = evo_list_total[24:32]
@@ -405,7 +406,7 @@ if __name__ == '__main__':
 
                         cnt = 0
                     
-                    for k in range(4):
+                    for k in range(1):
 
                   
                         print '-----------------------------------'            
