@@ -4051,7 +4051,7 @@ class Three_QB_det_QEC(MBI_C13):
                         go_to_element       = mbi,
                         event_jump_element   = 'next',
                         readout_orientation = 'positive',
-                        phase_error         = self.params['phase_error_array'][pt])
+                        phase_error         = self.params['phase_error_array_1'][pt])
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
@@ -4160,7 +4160,7 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_basis_list       = self.params['Tomo_Bases_00'],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in     = 0,
-                    phase_error = self.params['phase_error_array'][pt])
+                    phase_error = self.params['phase_error_array_2'][pt])
 
             gate_seq00.extend(carbon_tomo_seq00)
 
@@ -4174,7 +4174,7 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_basis_list       = self.params['Tomo_Bases_01'],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in     = 1,
-                    phase_error = self.params['phase_error_array'][pt])
+                    phase_error = self.params['phase_error_array_2'][pt])
             gate_seq01.extend(carbon_tomo_seq01)
 
             carbon_tomo_seq10 = self.readout_carbon_sequence(
@@ -4187,7 +4187,7 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_basis_list       = self.params['Tomo_Bases_10'],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in     = 0,
-                    phase_error = self.params['phase_error_array'][pt])
+                    phase_error = self.params['phase_error_array_2'][pt])
             gate_seq10.extend(carbon_tomo_seq10)
 
             carbon_tomo_seq11 = self.readout_carbon_sequence(
@@ -4200,7 +4200,7 @@ class Three_QB_det_QEC(MBI_C13):
                     RO_basis_list       = self.params['Tomo_Bases_11'],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in     = 1,
-                    phase_error = self.params['phase_error_array'][pt])
+                    phase_error = self.params['phase_error_array_2'][pt])
 
             gate_seq11.extend(carbon_tomo_seq11)
 

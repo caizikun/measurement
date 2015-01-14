@@ -95,7 +95,8 @@ def MBE(name, carbon_list   = [1,5,2],
         error_on_qubit                = 'all',
         el_RO                         = 'positive',
         debug                         = False,
-        error_sign                    = 1,
+        error_sign1                    = 1,
+        error_sign2                    = 1,
         error_probability_list        = np.linspace(0,1,3),
         parity_orientations           = ['positive','negative'],
         error_prob_magnitude          = '< 0.5'):
@@ -108,15 +109,14 @@ def MBE(name, carbon_list   = [1,5,2],
     ### for errors < 0.5
     if error_prob_magnitude == '< 0.5':
         error_probability_list_per_round = (1 - (1 - 2*error_probability_list)**0.5)/2.
-    
-
     ### for errors > 0.5
     elif error_prob_magnitude == '> 0.5':
         error_probability_list_per_round = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
         error_probability_list_per_round = error_probability_list_per_round[::-1]
 
 
-    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    phase_error_round1                   = error_sign1 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    phase_error_round2                   = error_sign2 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:
@@ -126,7 +126,8 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-    m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -324,7 +325,7 @@ if __name__ == '__main__':
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                         break
 
-                    for error_sign in [1,-1]:
+                    for error_sign in [[1,1],[1,-1],[-1,1],[-1,-1]]:
 
                         logic_state = state
 
@@ -338,64 +339,71 @@ if __name__ == '__main__':
 
                         if syn_round == 0:
 
-                            MBE(SAMPLE + '2Rounds_00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'positive',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','positive'])
 
-                            MBE(SAMPLE + '2Rounds_00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'negative',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','positive'])
 
                         elif syn_round == 1:
 
-                            MBE(SAMPLE + '2Rounds_11_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_11_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'positive',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['negative','negative'])
 
-                            MBE(SAMPLE + '2Rounds_11_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_11_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'negative',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['negative','negative'])
 
                         elif syn_round == 2:
 
-                            MBE(SAMPLE + '2Rounds_01_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_01_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'positive',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','negative'])
 
-                            MBE(SAMPLE + '2Rounds_01_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_01_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'negative',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','negative'])
 
                         elif syn_round == 3:
 
-                            MBE(SAMPLE + '2Rounds_10_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_10_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'positive',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['negative','positive'])
 
-                            MBE(SAMPLE + '2Rounds_10_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO,
+                            MBE(SAMPLE + '2Rounds_syn_10_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'negative',
-                                error_sign= error_sign,
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['negative','positive'])
