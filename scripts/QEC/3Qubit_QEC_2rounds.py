@@ -108,13 +108,15 @@ def MBE(name, carbon_list   = [1,5,2],
     ### for errors < 0.5
     if error_prob_magnitude == '< 0.5':
         error_probability_list_per_round = (1 - (1 - 2*error_probability_list)**0.5)/2.
+    
+
     ### for errors > 0.5
     elif error_prob_magnitude == '> 0.5':
         error_probability_list_per_round = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
         error_probability_list_per_round = error_probability_list_per_round[::-1]
 
 
-    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list_round1))*180./np.pi
+    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:

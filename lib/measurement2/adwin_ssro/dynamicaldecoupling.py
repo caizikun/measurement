@@ -2314,7 +2314,7 @@ class MBI_C13(DynamicalDecoupling):
         readout_orientation = 'positive',
         el_state_in         = 0,
         Zeno_RO             = False,
-        phase_error         = 0):
+        phase_error         = 10*[0]):
 
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
@@ -2369,13 +2369,13 @@ class MBI_C13(DynamicalDecoupling):
 
                 ### Set the RO_phase
                 if RO_basis_list[kk] == 'X':
-                    RO_phase = self.params['C13_X_phase'] - phase_error
+                    RO_phase = self.params['C13_X_phase'] - phase_error[kk]
                 elif RO_basis_list[kk] == '-X':
-                    RO_phase = self.params['C13_X_phase']+180 - phase_error
+                    RO_phase = self.params['C13_X_phase']+180 - phase_error[kk]
                 elif RO_basis_list[kk] == 'Y':
-                    RO_phase = self.params['C13_Y_phase'] - phase_error
+                    RO_phase = self.params['C13_Y_phase'] - phase_error[kk]
                 elif RO_basis_list[kk] == '-Y':
-                    RO_phase = self.params['C13_Y_phase']+180 - phase_error
+                    RO_phase = self.params['C13_Y_phase']+180 - phase_error[kk]
                 elif RO_basis_list[kk] == '-Z':
                     RO_phase = np.mod(self.params['C13_Y_phase']+180*el_state_in,360)
                 elif RO_basis_list[kk] == 'Z':
