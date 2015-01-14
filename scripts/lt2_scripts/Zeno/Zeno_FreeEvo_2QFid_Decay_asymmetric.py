@@ -124,7 +124,7 @@ if __name__ == '__main__':
     #                 el_RO= 'positive',
     #                 logic_state='Z',
     #                 Tomo_bases = RO_bases_dict['Z'],
-    #                 free_evolution_time=50e-3,
+    #                 free_evolution_time=5e-3,
     #                 number_of_zeno_msmnts = 1,
     #                 debug=False)
 
@@ -153,17 +153,10 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
 
-            Zeno(SAMPLE+'asymmetric_electronms-1_' +eRO+'_logicState_'+logic_state+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
+            Zeno(SAMPLE+'_noUnCondRot_' +eRO+'_logicState_'+'Z'+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
                 el_RO= eRO,
                 logic_state='Z',
                 Tomo_bases = RO_bases_dict['Z'],
                 free_evolution_time=EvoTime,
                 number_of_zeno_msmnts = 1,
                 debug=False)
-
-        GreenAOM.set_power(7e-6)
-        counters.set_is_running(1)  
-        optimiz0r.optimize(dims = ['x','y','z'])
-        stools.turn_off_all_lt2_lasers()
-
-        ssrocalibration(SAMPLE_CFG)

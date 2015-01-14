@@ -22,8 +22,8 @@ def run(name):
     pts = 11
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
-    m.params['evolution_time']=1500e-9
-    m.params['MW_pulse_delays'] = np.ones(pts)*m.params['evolution_time'] #during this time we shine in a laser
+    m.params['evolution_time']=300e-6
+    m.params['MW_pulse_delays'] = np.linspace(0.1e-6,10e-6,pts)#np.ones(pts)*m.params['evolution_time'] #during this time we shine in a laser
     m.params['detuning'] = 0e6 #artificial detuning
 
     # MW pulses
@@ -35,21 +35,22 @@ def run(name):
     m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
     
         ## Second pulse
-    m.params['MW_pulse_2_durations'] = m.params['MW_pulse_durations'] 
-    m.params['MW_pulse_2_amps']      = m.params['MW_pulse_amps']
-    m.params['MW_pulse_2_phases']    = np.linspace(0,360,pts)
+    m.params['MW_pulse_2_durations'] = np.linspace(0,0,pts) #m.params['MW_pulse_durations'] 
+    m.params['MW_pulse_2_amps']      = np.linspace(0,0,pts) #m.params['MW_pulse_amps']
+    m.params['MW_pulse_2_phases']    = np.linspace(0,0,pts) #np.linspace(0,360,pts)
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'evolution time (ns)'
-    m.params['sweep_pts'] = m.params['MW_pulse_2_phases'] /1e-9
+    m.params['sweep_name'] = 'AWG repump time (us)'
+    m.params['sweep_pts'] = m.params['MW_pulse_delays']/(1e-6)
 
     # laser beam
-    m.params['dephasing_AOM'] = 'MatisseAOM' 
+    m.params['dephasing_AOM'] = 'NewfocusAOM' 
     m.params['laser_dephasing_amplitude']= 18e-9 #in Watts
     
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run(Name+'mbi_eramsey_dephasing_18nW_1.5us')
+    run(Name+'spin_pumping_AWG')
+    #run(Name+'mbi_eramsey_dephasing_18nW_1.5us')
 
 

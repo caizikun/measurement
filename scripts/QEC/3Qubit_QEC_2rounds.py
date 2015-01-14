@@ -96,18 +96,21 @@ def MBE(name, carbon_list   = [1,5,2],
         debug                         = False,
         error_sign                    = 1,
         error_probability_list        = np.linspace(0,1,3),
-        parity_orientations           = ['positive','negative']):
+        parity_orientations           = ['positive','negative'],
+        error_prob_magnitude          = '< 0.5'):
 
     m = DD.Three_QB_det_QEC(name)
     funcs.prepare(m)
 
     ### Calculate the new error probability p_e' for splitting up the error in two rounds ###
 
-        ### for errors < 0.5 
-    error_probability_list_round1 = (1 - (1 - 2*error_probability_list)**0.5)/2.
-        ### for errors > 0.5
-    # error_probability_list_round1 = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
-    # error_probability_list_round1 = error_probability_list_round1[::-1]
+    ### for errors < 0.5 
+    if error_prob_magnitude == '< 0.5':
+        error_probability_list_round1 = (1 - (1 - 2*error_probability_list)**0.5)/2.
+    ### for errors > 0.5
+    elif error_prob_magnitude == '> 0.5':
+        error_probability_list_round1 = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
+        error_probability_list_round1 = error_probability_list_round1[::-1]
   
 
     phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list_round1))*180./np.pi

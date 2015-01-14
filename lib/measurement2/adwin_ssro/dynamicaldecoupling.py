@@ -2411,9 +2411,9 @@ class MBI_C13(DynamicalDecoupling):
             Laser=Gate('C_rep_pump'+str(pt),'Trigger',
                 duration=RO_trigger_duration, 
                 )
-            Laser.channel='AOM_Matisse'
+            Laser.channel='AOM_Newfocus'
             Laser.elements_duration=RO_trigger_duration
-            Laser.el_state_before_gate='1'
+            Laser.el_state_before_gate='0'
 
             carbon_RO_seq.append(Laser)
 
@@ -4835,7 +4835,7 @@ class Zeno_TwoQB(MBI_C13):
 
         #self.configure_AOM
         # set the output power of the repumping AOM to the desired 
-        qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
 
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
@@ -4906,35 +4906,33 @@ class Zeno_TwoQB(MBI_C13):
                 Parity_measurement = self.readout_carbon_sequence(
                         prefix              = 'Parity_' ,
                         pt                  = pt,
-                        RO_trigger_duration = 2e-6,
+                        RO_trigger_duration = 300e-6,
                         carbon_list         = self.params['carbon_list'],
                         RO_basis_list       = ['X','X'],
                         el_RO_result        = '0',
-                        readout_orientation = 'positive',
+                        readout_orientation = 'negative', #if correct parity --> electorn in ms=0
                         Zeno_RO             = True)
-                # Parity_measurementB = self.readout_carbon_sequence(
-                #         prefix              = 'Parity_B_' ,
-                #         pt                  = pt,
-                #         RO_trigger_duration = 2e-6,
-                #         carbon_list         = self.params['Parity_a_carbon_list'],
-                #         RO_basis_list       = self.params['Parity_a_RO_list'],
-                #         el_RO_result        = '0',
-                #         readout_orientation = self.params['Parity_a_RO_orientation'],
-                #         Zeno_RO             = True)
+
+                # Add an electorn pi pulse after repumping to ms=0
+                Parity_measurement.append(Gate('2C_parity_elec_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1'))
+
 
                 #Add an unconditional rotation after the parity measurment.
                 
-                UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = self.params['carbon_list'][0],
-                        phase = self.params['C13_X_phase'])
+                # UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                #         Carbon_ind = self.params['carbon_list'][0],
+                #         phase = self.params['C13_X_phase'])
 
-                UncondRenB=Gate('C' + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = self.params['carbon_list'][1],
-                        phase = self.params['C13_X_phase'])
+                # UncondRenB=Gate('C' + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                #         Carbon_ind = self.params['carbon_list'][1],
+                #         phase = self.params['C13_X_phase'])
 
                 #Append the two unconditional gates to the parity measurement sequence.
-                Parity_measurement.append(UncondRenA)
-                Parity_measurement.append(UncondRenB)
+                # Parity_measurement.append(UncondRenA)
+                # Parity_measurement.append(UncondRenB)
 
                 #Coarsely calculate the length of the carbon gates/ parity measurements. 
                 t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
@@ -4952,11 +4950,12 @@ class Zeno_TwoQB(MBI_C13):
                         qt.msleep(5)
                     #Add waiting time
                     wait_gateA = Gate('Wait_gate_A'+str(pt),'passive_elt',
-                                wait_time = self.params['free_evolution_time']/2.-self.params['2C_RO_trigger_duration']-parity_duration/2.)
+                                wait_time=50e-3-self.params['2C_RO_trigger_duration']-parity_duration/2.)
+                                #wait_time = self.params['free_evolution_time']/2.-self.params['2C_RO_trigger_duration']-parity_duration/2.)
 
                     #make the sequence symmetric around the parity measurements.
                     wait_gateB = Gate('Wait_gate_B'+str(pt),'passive_elt',
-                                 wait_time = self.params['free_evolution_time']/2.-2.e-6-parity_duration/2.)
+                                 wait_time = self.params['free_evolution_time']-2.e-6-parity_duration/2.)
 
                     wait_seq = [wait_gateA] 
                     gate_seq.extend(wait_seq)
@@ -4966,7 +4965,7 @@ class Zeno_TwoQB(MBI_C13):
                 ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse.
                 else:
                     gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
-                                     wait_time =10e-6)])
+                                     wait_time =50e-3)])
                     gate_seq.extend(Parity_measurement)
             ### Readout 
 

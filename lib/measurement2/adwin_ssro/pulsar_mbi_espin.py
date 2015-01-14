@@ -203,7 +203,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             elts.append(e)
 
         # sequence
-        seq = pulsar.Sequence('MBI Electron Rabi sequence')
+        seq = pulsar.Sequence('MBI Electron Ramsey sequence')
         for i,e in enumerate(elts):
             seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
                 trigger_wait = True, goto_target = 'MBI-%d' % i,
