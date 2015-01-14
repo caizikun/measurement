@@ -3654,7 +3654,8 @@ class Two_QB_Det_MBE(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases_0'][pt],
-                    readout_orientation = self.params['electron_readout_orientation_0'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in         = 0)
             gate_seq0.extend(carbon_tomo_seq0)
 
             carbon_tomo_seq1 = self.readout_carbon_sequence(
@@ -3665,7 +3666,8 @@ class Two_QB_Det_MBE(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases_1'][pt],
-                    readout_orientation = self.params['electron_readout_orientation_1'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in         = 1)
             gate_seq1.extend(carbon_tomo_seq1)
 
             # Make jump statements for branching to two different ROs
