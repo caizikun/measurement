@@ -4194,7 +4194,7 @@ class Three_QB_det_rep_QEC(MBI_C13):
                                                                        --|Tomography1111|
 
     '''
-    mprefix = 'Three_QB_det_QEC'
+    mprefix = 'Three_QB_det_rep_QEC'
     adwin_process = 'MBI_multiple_C13'
 
     def generate_sequence(self,upload=True,debug = False):
@@ -4211,7 +4211,7 @@ class Three_QB_det_rep_QEC(MBI_C13):
             gate_seq = []
 
             ### Nitrogen MBI
-            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi = Gate('N_MBI_pt'+str(pt),'MBI')
             mbi_seq = [mbi]
             gate_seq.extend(mbi_seq)
 
@@ -4227,15 +4227,14 @@ class Three_QB_det_rep_QEC(MBI_C13):
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
-
-            ### Create logical state
+            ### Encoding of logical state
 
             for kk in range(self.params['Nr_MBE']):
 
                 probabilistic_MBE_seq =     self.logic_init_seq(
                         prefix              = 'Encode_' ,
                         pt                  =  pt,
-                        carbon_list         = self.params['carbon_list'],
+                        carbon_list         = self.params['MBE_list'],
                         RO_basis_list       = self.params['MBE_bases'],
                         RO_trigger_duration = 90e-6,
                         el_RO_result        = '0',
@@ -4243,20 +4242,15 @@ class Three_QB_det_rep_QEC(MBI_C13):
                         go_to_element       = mbi,
                         event_jump_element   = 'next',
                         readout_orientation = 'positive',
-                        phase_error         = self.params['phase_error_array'][pt])
+                        phase_error         = self.params['phase_error_array_1'][pt])
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            ### add 1/3 of the wait time if we want to sweep time
-            if self.params['add_wait_gate'] == True:
-                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time'][pt]/3.)
-                wait_seq = [wait_gate];
-                if self.params['free_evolution_time'][pt] !=0:
-                    gate_seq.extend(wait_seq)
 
+            ### Parity measurements to detect error syndrome
 
-            ### Parity msmt 1 - first step deterministic
+            ### Parity msmt a
+
             Parity_seq_a = self.readout_carbon_sequence(
                         prefix              = 'Parity_A_' ,
                         pt                  = pt,
@@ -4264,7 +4258,8 @@ class Three_QB_det_rep_QEC(MBI_C13):
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
                         el_RO_result         = '0',
-                        readout_orientation = self.params['Parity_a_RO_orientation'])
+                        readout_orientation = self.params['Parity_a_RO_orientation'],
+                        el_state_in     = el_in_state)
 
             gate_seq.extend(Parity_seq_a)
 
@@ -4272,7 +4267,10 @@ class Three_QB_det_rep_QEC(MBI_C13):
             gate_seq0 = copy.deepcopy(gate_seq)
             gate_seq1 = copy.deepcopy(gate_seq)
 
-             ### Parity msmt 1
+            ### Parity msmt b
+            el_in_state_b0 = 0
+            el_in_state_b1 = 1
+
             Parity_seq_b0 = self.readout_carbon_sequence(
                         prefix              = 'Parity_B0_' ,
                         pt                  = pt,
@@ -4281,7 +4279,7 @@ class Three_QB_det_rep_QEC(MBI_C13):
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 0)
+                        el_state_in     = el_in_state_b0)
 
             Parity_seq_b1 = self.readout_carbon_sequence(
                         prefix              = 'Parity_B1_' ,
@@ -4291,64 +4289,65 @@ class Three_QB_det_rep_QEC(MBI_C13):
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result        = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 1)
+                        el_state_in     = el_in_state_b1)
 
             gate_seq0.extend(Parity_seq_b0)
             gate_seq1.extend(Parity_seq_b1)
-
-            ### add 1/3 of the wait time again if we want to sweep time
-            if self.params['add_wait_gate'] == True:
-                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time'][pt]/3.)
-                wait_seq = [wait_gate];
-                if self.params['free_evolution_time'][pt] !=0:
-                    gate_seq0.extend(wait_seq)
-                    gate_seq1.extend(wait_seq)
 
             gate_seq00 = copy.deepcopy(gate_seq0)
             gate_seq01 = copy.deepcopy(gate_seq0)
             gate_seq10 = copy.deepcopy(gate_seq1)
             gate_seq11 = copy.deepcopy(gate_seq1)
 
+            ### Parity msmt a2
+            el_in_state_a00 = 0
+            el_in_state_a01 = 1
+            el_in_state_a10 = 0
+            el_in_state_a11 = 1
+
             Parity_seq_a00 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_A00_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
-                        el_RO_result         = '0',
+                        el_RO_result        = '0',
                         readout_orientation = self.params['Parity_a_RO_orientation'],
-                        el_state_in         = 0)
+                        el_state_in         = el_in_state_a00,
+                        phase_error         = self.params['phase_error_list_A00'])    
 
             Parity_seq_a01 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_A01_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
-                        el_RO_result         = '0',
+                        el_RO_result        = '0',
                         readout_orientation = self.params['Parity_a_RO_orientation'],
-                        el_state_in         = 0)
+                        el_state_in         = el_in_state_a01,
+                        phase_error         = self.params['phase_error_list_A01'])                                    
 
             Parity_seq_a10 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_A10_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_a_RO_orientation'],
-                        el_state_in         = 1)
+                        el_state_in     = el_in_state_a10,
+                        phase_error         = self.params['phase_error_list_A10'])    
 
             Parity_seq_a11 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_A_' ,
+                        prefix              = 'Parity_A11_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_a_carbon_list'],
                         RO_basis_list       = self.params['Parity_a_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_a_RO_orientation'],
-                        el_state_in         = 1)
+                        el_state_in     = el_in_state_a11,
+                        phase_error         = self.params['phase_error_list_A11']) 
 
             gate_seq00.extend(Parity_seq_a00)
             gate_seq01.extend(Parity_seq_a01)
@@ -4356,139 +4355,141 @@ class Three_QB_det_rep_QEC(MBI_C13):
             gate_seq11.extend(Parity_seq_a11)
 
             gate_seq000 = copy.deepcopy(gate_seq00)
-            gate_seq010 = copy.deepcopy(gate_seq01)
-            gate_seq100 = copy.deepcopy(gate_seq10)
-            gate_seq110 = copy.deepcopy(gate_seq11)
+            gate_seq001 = copy.deepcopy(gate_seq01)
+            gate_seq010 = copy.deepcopy(gate_seq10)
+            gate_seq011 = copy.deepcopy(gate_seq11)
 
-            gate_seq001 = copy.deepcopy(gate_seq00)
-            gate_seq011 = copy.deepcopy(gate_seq01)
-            gate_seq101 = copy.deepcopy(gate_seq10)
+            gate_seq100 = copy.deepcopy(gate_seq00)
+            gate_seq101 = copy.deepcopy(gate_seq01)
+            gate_seq110 = copy.deepcopy(gate_seq10)
             gate_seq111 = copy.deepcopy(gate_seq11)
 
+            ### Parity msmt b2
+            el_in_state_b000 = 0
+            el_in_state_b001 = 1
+            el_in_state_b010 = 0
+            el_in_state_b011 = 1
+            el_in_state_b100 = 0
+            el_in_state_b101 = 1
+            el_in_state_b110 = 0
+            el_in_state_b111 = 1                                    
+
             Parity_seq_b000 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
+                        prefix              = 'Parity_B000_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 0)
+                        el_state_in     = el_in_state_b000,
+                        phase_error         = self.params['phase_error_list_B000'])
+
+            Parity_seq_b001 = self.readout_carbon_sequence(
+                        prefix              = 'Parity_B001_' ,
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_b_carbon_list'],
+                        RO_basis_list       = self.params['Parity_b_RO_list'],
+                        el_RO_result         = '0',
+                        readout_orientation = self.params['Parity_b_RO_orientation'],
+                        el_state_in     = el_in_state_b001,
+                        phase_error         = self.params['phase_error_list_B001'])
 
             Parity_seq_b010 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
+                        prefix              = 'Parity_B010_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 0)
-
-            Parity_seq_b100 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = 150e-6,
-                        carbon_list         = self.params['Parity_b_carbon_list'],
-                        RO_basis_list       = self.params['Parity_b_RO_list'],
-                        el_RO_result         = '0',
-                        readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 0)
-
-            Parity_seq_b110 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = 150e-6,
-                        carbon_list         = self.params['Parity_b_carbon_list'],
-                        RO_basis_list       = self.params['Parity_b_RO_list'],
-                        el_RO_result         = '0',
-                        readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 0)
-            Parity_seq_b001 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = 150e-6,
-                        carbon_list         = self.params['Parity_b_carbon_list'],
-                        RO_basis_list       = self.params['Parity_b_RO_list'],
-                        el_RO_result         = '0',
-                        readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 1)
+                        el_state_in     = el_in_state_b010,
+                        phase_error         = self.params['phase_error_list_B010'])
 
             Parity_seq_b011 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
+                        prefix              = 'Parity_B011_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 1)
+                        el_state_in     = el_in_state_b011,
+                        phase_error         = self.params['phase_error_list_B011'])                                    
+
+            Parity_seq_b100 = self.readout_carbon_sequence(
+                        prefix              = 'Parity_B100_' ,
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_b_carbon_list'],
+                        RO_basis_list       = self.params['Parity_b_RO_list'],
+                        el_RO_result         = '0',
+                        readout_orientation = self.params['Parity_b_RO_orientation'],
+                        el_state_in     = el_in_state_b100,
+                        phase_error         = self.params['phase_error_list_B100'])
 
             Parity_seq_b101 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
+                        prefix              = 'Parity_B101_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 1)
+                        el_state_in     = el_in_state_b101,
+                        phase_error         = self.params['phase_error_list_B101'])
+
+            Parity_seq_b110 = self.readout_carbon_sequence(
+                        prefix              = 'Parity_B110_' ,
+                        pt                  = pt,
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['Parity_b_carbon_list'],
+                        RO_basis_list       = self.params['Parity_b_RO_list'],
+                        el_RO_result         = '0',
+                        readout_orientation = self.params['Parity_b_RO_orientation'],
+                        el_state_in     = el_in_state_b110,
+                        phase_error         = self.params['phase_error_list_B110'])
 
             Parity_seq_b111 = self.readout_carbon_sequence(
-                        prefix              = 'Parity_B0_' ,
+                        prefix              = 'Parity_B111_' ,
                         pt                  = pt,
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['Parity_b_carbon_list'],
                         RO_basis_list       = self.params['Parity_b_RO_list'],
                         el_RO_result         = '0',
                         readout_orientation = self.params['Parity_b_RO_orientation'],
-                        el_state_in     = 1)
+                        el_state_in     = el_in_state_b111,
+                        phase_error         = self.params['phase_error_list_B111'])  
 
-            gate_seq000.extend(Parity_seq_b000)
-            gate_seq010.extend(Parity_seq_b010)
-            gate_seq100.extend(Parity_seq_b100)
-            gate_seq110.extend(Parity_seq_b110)
-
-            gate_seq001.extend(Parity_seq_b001)
-            gate_seq011.extend(Parity_seq_b011)
-            gate_seq101.extend(Parity_seq_b101)
-            gate_seq111.extend(Parity_seq_b111)
-
-            ### add 1/3 of the wait time again if we want to sweep time
-            if self.params['add_wait_gate'] == True:
-                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time'][pt]/3.)
-                wait_seq = [wait_gate];
-                if self.params['free_evolution_time'][pt] !=0:
-                    gate_seq000.extend(wait_seq)
-                    gate_seq010.extend(wait_seq)
-                    gate_seq100.extend(wait_seq)
-                    gate_seq110.extend(wait_seq)
-                    gate_seq001.extend(wait_seq)
-                    gate_seq011.extend(wait_seq)
-                    gate_seq101.extend(wait_seq)
-                    gate_seq111.extend(wait_seq)
+            gate_seq00.extend(Parity_seq_b000)
+            gate_seq01.extend(Parity_seq_b001)
+            gate_seq10.extend(Parity_seq_b010)
+            gate_seq11.extend(Parity_seq_b011)
+            gate_seq00.extend(Parity_seq_b100)
+            gate_seq01.extend(Parity_seq_b101)
+            gate_seq10.extend(Parity_seq_b110)
+            gate_seq11.extend(Parity_seq_b111)
 
             gate_seq0000 = copy.deepcopy(gate_seq000)
-            gate_seq0100 = copy.deepcopy(gate_seq010)
-            gate_seq1000 = copy.deepcopy(gate_seq100)
-            gate_seq1100 = copy.deepcopy(gate_seq110)
-
             gate_seq0010 = copy.deepcopy(gate_seq001)
+            gate_seq0100 = copy.deepcopy(gate_seq010)
             gate_seq0110 = copy.deepcopy(gate_seq011)
+
+            gate_seq1000 = copy.deepcopy(gate_seq100)
             gate_seq1010 = copy.deepcopy(gate_seq101)
+            gate_seq1100 = copy.deepcopy(gate_seq110)
             gate_seq1110 = copy.deepcopy(gate_seq111)
 
             gate_seq0001 = copy.deepcopy(gate_seq000)
-            gate_seq0101 = copy.deepcopy(gate_seq010)
-            gate_seq1001 = copy.deepcopy(gate_seq100)
-            gate_seq1101 = copy.deepcopy(gate_seq110)
-
             gate_seq0011 = copy.deepcopy(gate_seq001)
+            gate_seq0101 = copy.deepcopy(gate_seq010)
             gate_seq0111 = copy.deepcopy(gate_seq011)
-            gate_seq1011 = copy.deepcopy(gate_seq101)
-            gate_seq1111 = copy.deepcopy(gate_seq111)
 
+            gate_seq1001 = copy.deepcopy(gate_seq100)
+            gate_seq1011 = copy.deepcopy(gate_seq101)
+            gate_seq1101 = copy.deepcopy(gate_seq110)
+            gate_seq1111 = copy.deepcopy(gate_seq111)
 
 
             carbon_tomo_seq00 = self.readout_carbon_sequence(
@@ -4500,7 +4501,8 @@ class Three_QB_det_rep_QEC(MBI_C13):
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_00'],
                     readout_orientation = self.params['electron_readout_orientation'],
-                    el_state_in     = 0)
+                    el_state_in     = 0,
+                    phase_error = self.params['phase_error_array_2'][pt])
 
             gate_seq00.extend(carbon_tomo_seq00)
 
@@ -4513,7 +4515,8 @@ class Three_QB_det_rep_QEC(MBI_C13):
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_01'],
                     readout_orientation = self.params['electron_readout_orientation'],
-                    el_state_in     = 1)
+                    el_state_in     = 1,
+                    phase_error = self.params['phase_error_array_2'][pt])
             gate_seq01.extend(carbon_tomo_seq01)
 
             carbon_tomo_seq10 = self.readout_carbon_sequence(
@@ -4525,7 +4528,8 @@ class Three_QB_det_rep_QEC(MBI_C13):
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_10'],
                     readout_orientation = self.params['electron_readout_orientation'],
-                    el_state_in     = 0)
+                    el_state_in     = 0,
+                    phase_error = self.params['phase_error_array_2'][pt])
             gate_seq10.extend(carbon_tomo_seq10)
 
             carbon_tomo_seq11 = self.readout_carbon_sequence(
@@ -4537,7 +4541,8 @@ class Three_QB_det_rep_QEC(MBI_C13):
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomo_Bases_11'],
                     readout_orientation = self.params['electron_readout_orientation'],
-                    el_state_in     = 1)
+                    el_state_in     = 1,
+                    phase_error = self.params['phase_error_array_2'][pt])
 
             gate_seq11.extend(carbon_tomo_seq11)
 
@@ -4545,11 +4550,18 @@ class Three_QB_det_rep_QEC(MBI_C13):
             Parity_seq_a[-1].go_to       = Parity_seq_b0[0].name
             Parity_seq_a[-1].event_jump  = Parity_seq_b1[0].name
 
-            Parity_seq_b0[-1].go_to       = carbon_tomo_seq00[0].name
-            Parity_seq_b0[-1].event_jump  = carbon_tomo_seq01[0].name
+            if self.params['free_evolution_time_2'][pt] !=0 and self.params['add_wait_gate'] == True:
+                Parity_seq_b0[-1].go_to       = wait_seq2_00[0].name
+                Parity_seq_b0[-1].event_jump  = wait_seq2_01[0].name
 
-            Parity_seq_b1[-1].go_to       = carbon_tomo_seq10[0].name
-            Parity_seq_b1[-1].event_jump  = carbon_tomo_seq11[0].name
+                Parity_seq_b1[-1].go_to       = wait_seq2_10[0].name
+                Parity_seq_b1[-1].event_jump  = wait_seq2_11[0].name
+            else:
+                Parity_seq_b0[-1].go_to       = carbon_tomo_seq00[0].name
+                Parity_seq_b0[-1].event_jump  = carbon_tomo_seq01[0].name
+
+                Parity_seq_b1[-1].go_to       = carbon_tomo_seq10[0].name
+                Parity_seq_b1[-1].event_jump  = carbon_tomo_seq11[0].name
 
             # In the end all roads lead to Rome
             Rome = Gate('Rome_'+str(pt),'passive_elt',
@@ -4596,11 +4608,6 @@ class Three_QB_det_rep_QEC(MBI_C13):
             merged_sequence.extend(gate_seq01[len(gate_seq0):])
             merged_sequence.extend(gate_seq10[len(gate_seq1):])
             merged_sequence.extend(gate_seq11[len(gate_seq1):])
-
-            ### NOTE THIS SHOULD BE CHANGED BACK TO THE ABOVE!!!
-
-            # merged_sequence = []
-            # merged_sequence.extend(gate_seq10)
 
             print '*'*10
             print 'seq_merged'
