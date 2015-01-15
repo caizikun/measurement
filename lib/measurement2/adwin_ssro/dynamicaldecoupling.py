@@ -32,6 +32,8 @@ class Gate(object):
         # Information on what type of gate to implement
         self.Gate_type  = Gate_type
         self.phase      = kw.pop('phase',0)             ### Both for electron and Carbon gates
+        self.extra_phase_after_gate = kw.pop('extra_phase_after_gate', 0)
+
         self.Carbon_ind = kw.pop('Carbon_ind',0)        ### 0 is the electronic spin, the rest are carbon spins
 
         self.N          = kw.pop('N',None)
@@ -65,9 +67,10 @@ class Gate(object):
         self.el_state_after_gate    = kw.pop('el_state_after_gate',None)
         if self.Gate_type =='Carbon_Gate' and self.phase != None:   #THT: when is self.phase none? Isnt the default 0?
             if self.phase == 'reset':
-                self.C_phases_after_gate[self.Carbon_ind] =self.phase
+                self.C_phases_after_gate[self.Carbon_ind] = self.phase
             else :
-                self.C_phases_after_gate[self.Carbon_ind] = self.phase/180.*np.pi
+                self.C_phases_after_gate[self.Carbon_ind] = (self.phase + self.extra_phase_after_gate)/180.*np.pi
+
 
         ### In case a gate adds phases to other Carbon spins that cannot be corrected by the precession frq alone
         ### this parameter can add an extra phase correction to each Carbon spin, default is 0.
@@ -2130,178 +2133,7 @@ class MBI_C13(DynamicalDecoupling):
             carbon_RO_seq =[C_RO_y, C_RO_Ren_a, C_RO_x, C_RO_Trigger]
 
         return carbon_RO_seq
-
-
-
-    def readout_multiple_carbon_sequence(self,
-            prefix = 'C_pRO',
-            go_to_element ='next',event_jump_element = 'next',
-            RO_duration = 10e-6,
-            pt = 1,
-            addressed_carbon =[1,4],
-            RO_Z=[False,True],
-            RO_phase = [0,0],
-            el_RO_result = '0' ):
-            #electron_RO_phase = 'positive',
-
-        ''' Old, replaced by readout_carbon_sequence, remove and upgrade measurements that use this'''
-
-
-        '''
-        TODO_MAR: Finish readout multiple carbon sequence
-
-        Creates a single carbon readout gate sequence.
-        Does a readout an a single Carbon.
-
-        Base to readout can be specified by
-        RO_Z True or False
-        RO_phase  in degress
-
-        By setting RO_phase = None, for one of the two carbons to be None, that carbon will not be read out.
-        Instead the fucntion readout_single_carbon_sequence is called to read out the other carbon. This allows to perform ex the IX parity measurement.
-
-        In the case where this function is used to do conditional feed forward the following parameters have to be specified
-        RO_duration:  this is the lenght of the trigger and states how long the trigger waits for a 'click' from the adwin
-        go_to_element: determines where to go when no 'click' comes from the adwin.
-        event_jump_element: determines where to jump to when a 'click' comes from the adwin.
-
-        all elements for this sequence start with C_pRO_ as a prefix. where pRO stands for parity  Readout
-
-        NOTE: If used for branching, el_RO_result has to be manually overwritten when generating phase correction for different branches.
-        '''
-
-
-
-
-        if (type(go_to_element) != str) and (go_to_element != None):
-            go_to_element = go_to_element.name
-
-        if  RO_phase[0] == None and  RO_phase[1] == None:
-            print 'NO Carbon selected for readout, No sequence could be generated. in function: readout_multiple_carbon_sequence '
-
-        elif RO_phase[0] == None:
-            carbon_RO_seq = self.readout_single_carbon_sequence(prefix=prefix,
-            go_to_element =go_to_element,event_jump_element = event_jump_element,
-            RO_duration = RO_duration,
-            pt = pt, addressed_carbon =addressed_carbon[1],
-            RO_Z=RO_Z[1], RO_phase =RO_phase[1],
-            el_RO_result = el_RO_result )
-            return carbon_RO_seq
-
-        elif RO_phase[1] == None:
-            carbon_RO_seq = self.readout_single_carbon_sequence(prefix = prefix,
-            go_to_element =go_to_element,event_jump_element = event_jump_element,
-            RO_duration = RO_duration,
-            pt = pt, addressed_carbon =addressed_carbon[0],
-            RO_Z=RO_Z[0],RO_phase =RO_phase[0],
-            el_RO_result = el_RO_result )
-            return carbon_RO_seq
-
-
-        C_pRO_x_a = Gate(prefix+str(addressed_carbon[0])+'_x_'+str(pt), 'Carbon_Gate',
-            Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
-        C_pRO_x_b = Gate(prefix+str(addressed_carbon[1])+'_x_'+str(pt), 'Carbon_Gate',
-            Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
-
-        C_pRO_init_pi2 = Gate(prefix+'_pi2_a'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = self.params['X_phase'])
-
-        C_pRO_Ren_a = Gate(prefix+str(addressed_carbon[0])+'_Ren_'+str(pt), 'Carbon_Gate',
-            Carbon_ind = addressed_carbon[0], phase = RO_phase[0])
-        C_pRO_Ren_b = Gate(prefix+str(addressed_carbon[1])+'_Ren_'+str(pt), 'Carbon_Gate',
-            Carbon_ind = addressed_carbon[1], phase = RO_phase[1])
-
-        #if electron_RO_phase == 'positive':
-        final_el_phase = self.params['X_phase']
-        #elif electron_RO_phase == 'negative':
-        #    final_el_phase = -1*self.params['X_phase']
-
-        C_pRO_fin_pi2 = Gate(prefix+'_pi2_b'+str(pt),'electron_Gate',
-                Gate_operation='pi2',
-                phase = final_el_phase)
-
-        C_pRO_Trigger = Gate(prefix+'_Trigger_'+str(pt),'Trigger',
-                wait_time = RO_duration,
-                go_to = go_to_element, event_jump = event_jump_element,
-                el_state_before_gate = el_RO_result)
-
-        if RO_Z[0] == True and RO_Z[1] ==True:
-            C_pRO_Ren_a.phase = RO_phase[0]+90  #this is dangerous, because resetting the phase does not recalcuate phase_after_gate
-            C_pRO_Ren_b.phase = RO_phase[1]+90  #this is dangerous, because resetting the phase does not recalcuate phase_after_gate
-            carbon_pRO_seq = [C_pRO_x_a,C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
-        elif RO_Z[0] == True:
-            C_pRO_Ren_a.phase = RO_phase[0]+90
-            carbon_pRO_seq = [C_pRO_x_a,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
-        elif RO_Z[1] == True:
-            C_pRO_Ren_b.phase = RO_phase[1]+90
-            carbon_pRO_seq = [C_pRO_x_b,C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
-        elif RO_Z[0] == False and RO_Z[1] ==False:
-            carbon_pRO_seq = [C_pRO_init_pi2,C_pRO_Ren_a,C_pRO_Ren_b,C_pRO_fin_pi2,C_pRO_Trigger]
-        return carbon_pRO_seq
-
-    def multi_qubit_tomography(self,
-            prefix = 'Tomo',
-            go_to_element='next',
-            event_jump_element = 'next',
-            RO_duration=10e-6,
-            pt = 1,
-            addressed_carbon = [1,2],
-            RO_bases =['X','Y'],
-            electron_RO_phase = 'positive',
-            el_RO_result = '0'):
-
-        ''' Old, replaced by readout_carbon_sequence, remove and upgrade measurements that use this'''
-
-
-        '''
-        Uses the readout_multiple_carbon_sequence function to generate a multi qubit tomography sequence
-        NOTE: the multi_qubit_tomography function currently only supports 2 qubit tomography sequences
-        '''
-        RO_Z =[None] *len(addressed_carbon)
-        RO_phase = [None] *len(addressed_carbon)
-        len(addressed_carbon)
-
-        for i in range(len(addressed_carbon)):
-
-
-            if RO_bases[i] == 'I':
-                RO_Z[i] =False
-                RO_phase[i] = None
-
-            elif RO_bases[i] =='X':
-                RO_Z[i] = False
-                RO_phase[i] = self.params['C13_X_phase']
-
-            elif RO_bases[i] =='-X':
-                RO_Z[i] = False
-                RO_phase[i] = self.params['C13_X_phase'] + 180
-
-            elif RO_bases[i] == 'Y':
-                RO_Z[i] = False
-                RO_phase[i] = self.params['C13_Y_phase']
-
-            elif RO_bases[i] == '-Y':
-                RO_Z[i] = False
-                RO_phase[i] = self.params['C13_Y_phase'] + 180
-
-            elif RO_bases[i] == 'Z':
-                RO_Z[i] = True
-                RO_phase[i] = 0
-
-        carbon_tomo_seq=self.readout_multiple_carbon_sequence( prefix = prefix,
-            go_to_element =go_to_element,
-            event_jump_element =event_jump_element,
-            RO_duration =RO_duration,
-            pt = pt,
-            addressed_carbon =addressed_carbon,
-            RO_Z=RO_Z,
-            RO_phase = RO_phase,
-            el_RO_result = el_RO_result)
-            # electron_RO_phase = electron_RO_phase,
-        print 'Tomography function called on carbons %s to read out bases %s, using phase %s and Z-RO %s' %(addressed_carbon,RO_bases,RO_phase,RO_Z)
-
-        return carbon_tomo_seq
+   
 
     def readout_carbon_sequence(self,
         prefix              = 'C_RO',
@@ -2314,10 +2146,18 @@ class MBI_C13(DynamicalDecoupling):
         readout_orientation = 'positive',
         el_state_in         = 0,
         Zeno_RO             = False,
-        phase_error         = 10*[0]):
+        phase_error         = 10*[0]
+        ):
 
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
+        carbon_list             gives the order of the carbons that the measurement will be performed on
+        RO_basis_list           gives the basis in wich each Carbon spin will be measured
+        el_RO_result            the electron state for the final trigger element (i.e. the electron measurement outcome)
+        readout_orientation     sets the orientation of the electron readout (positive or negative)
+        el_state_in             the state of the electron before the measurement
+        Zeno_RO                 ??
+        phase_error             to apply an extra phase BEFORE this gate (can be used for phase errors and phase correction) 
         '''
 
         ##############################
@@ -2385,8 +2225,9 @@ class MBI_C13(DynamicalDecoupling):
 
                 carbon_RO_seq.append(
                         Gate(prefix + str(carbon_nr) + '_Ren_b_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr,
-                        phase = RO_phase))
+                        Carbon_ind      = carbon_nr,
+                        phase           = RO_phase, 
+                        extra_phase_after_gate = phase_error[kk]))
 
         ### Add final pi/2 and Trigger ###
             ### set the final electron pi2 pulse phase depending on the number of qubits RO (4 options)

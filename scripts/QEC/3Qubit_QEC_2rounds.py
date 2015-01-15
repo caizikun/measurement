@@ -110,13 +110,14 @@ def MBE(name, carbon_list   = [1,5,2],
     if error_prob_magnitude == '< 0.5':
         error_probability_list_per_round = (1 - (1 - 2*error_probability_list)**0.5)/2.
     ### for errors > 0.5
-    elif error_prob_magnitude == '> 0.5':
-        error_probability_list_per_round = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
-        error_probability_list_per_round = error_probability_list_per_round[::-1]
+    # elif error_prob_magnitude == '> 0.5':
+    #     error_probability_list_per_round = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
+    #     error_probability_list_per_round = error_probability_list_per_round[::-1]
 
 
     phase_error_round1                   = error_sign1 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
     phase_error_round2                   = error_sign2 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:
@@ -126,8 +127,8 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-    m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
-    m.params['phase_error_array_2'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -142,8 +143,8 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['add_wait_gate'] = False
     m.params['wait_in_msm1']  = False
 
-    m.params['free_evolution_time_1'] = np.ones(len(phase_error))*0
-    m.params['free_evolution_time_2'] = np.ones(len(phase_error))*0
+    m.params['free_evolution_time_1'] = np.ones(len(phase_error_round1))*0
+    m.params['free_evolution_time_2'] = np.ones(len(phase_error_round1))*0
 
     ### Carbons to be used
     m.params['MBE_list']      = carbon_list
@@ -218,7 +219,7 @@ def MBE(name, carbon_list   = [1,5,2],
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    cnt = -1000
+    cnt = 2
 
     error_list = {}
     error_list['0'] = np.linspace(0,0.2,3)
@@ -226,7 +227,7 @@ if __name__ == '__main__':
     error_list['2'] = np.linspace(0,0.2,3)
     error_list['3'] = np.linspace(0.3,0.5,3)
 
-    for syn_round in [0,1,2,3]:
+    for syn_round in [2,3]:
 
         for state in ['Z','mZ']:
             logic_state = state
@@ -269,7 +270,6 @@ if __name__ == '__main__':
                             elif test_state == 'Z':
                                 test_RO_list = [0]
 
-
                             print '-----------------------------------'
                             print 'press q to stop measurement cleanly'
                             print '-----------------------------------'
@@ -288,14 +288,12 @@ if __name__ == '__main__':
                                     break
                                 MBE(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
                                     logic_state = test_state,el_RO = 'positive',
-                                    error_sign= 1,
                                     error_on_qubit = 'all',
                                     error_probability_list= e_list,
                                     parity_orientations           = ['positive','positive'])
 
                                 MBE(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
                                     logic_state = test_state,el_RO = 'negative',
-                                    error_sign= 1,
                                     error_on_qubit = 'all',
                                     error_probability_list= e_list,
                                     parity_orientations           = ['positive','positive'])
