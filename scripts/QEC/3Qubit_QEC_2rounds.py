@@ -279,7 +279,7 @@ if __name__ == '__main__':
 
                             for test_RO in test_RO_list:#range(7):
 
-                                e_list = [0]
+                                e_list = np.array([0])
                                 print '-----------------------------------'
                                 print 'press q to stop measurement cleanly'
                                 print '-----------------------------------'
