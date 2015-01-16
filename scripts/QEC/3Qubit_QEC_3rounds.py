@@ -97,6 +97,7 @@ def MBE(name, carbon_list   = [1,5,2],
         debug                         = False,
         error_sign1                    = 1,
         error_sign2                    = 1,
+        error_sign3                    = 1,
         error_probability_list        = np.linspace(0,1,3),
         parity_orientations           = ['positive','negative'],
         error_prob_magnitude          = '< 0.5'):
@@ -117,7 +118,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     phase_error_round1                   = error_sign1 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
     phase_error_round2                   = error_sign2 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
-    phase_error_round3                   = error_sign2 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    phase_error_round3                   = error_sign3 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
     
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
@@ -130,7 +131,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
     m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
-    m.params['phase_error_array_2'] = np.transpose([phase_error_round3*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
+    m.params['phase_error_array_3'] = np.transpose([phase_error_round3*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -142,14 +143,11 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['reps_per_ROsequence'] = 750
 
 
-    m.params['add_wait_gate'] = False
-    m.params['wait_in_msm1']  = False
-
     m.params['free_evolution_time_1'] = np.ones(len(phase_error_round1))*0
     m.params['free_evolution_time_2'] = np.ones(len(phase_error_round1))*0
 
     ### Carbons to be used
-    m.params['MBE_list']      = carbon_list
+    m.params['MBE_list']            = carbon_list
     m.params['carbon_list']         = carbon_list
 
     ### Carbon Initialization settings
@@ -175,34 +173,156 @@ def MBE(name, carbon_list   = [1,5,2],
         m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         
-        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         
         m.params['Tomo_Bases_1100'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1101'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1110'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1111'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]                
+
+        # correction on C1 or C2 in second parity A msmt
+
+        m.params['phase_error_list_A00'] = [0]*10 # no error
+        m.params['phase_error_list_A01'] = [0]*10 # error on C5, fixed in parity msmt B
+        m.params['phase_error_list_A10'] = [0]*2+[180]+[0]*7 # error on C2
+        m.params['phase_error_list_A11'] = [0]+[180]+[0]*8 # error on C1
+
+        # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
+
+        m.params['phase_error_list_B000'] = [0]*10 # no error
+        m.params['phase_error_list_B010'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B100'] = [0]*10 # error on C2
+        m.params['phase_error_list_B110'] = [0]*10 # error on C1
+        
+        m.params['phase_error_list_B001'] = [0]*10 # no error
+        m.params['phase_error_list_B011'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B101'] = [0]*10 # error on C2
+        m.params['phase_error_list_B111'] = [0]*10 # error on C1        
+
+
     
     elif parity_orientations == ['negative','negative']:
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1111'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1110'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1101'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1100'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '2' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0000'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_0011'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0010'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0001'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0000'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]    
+
+        # correction on C1 or C2 in second parity A msmt
+
+        m.params['phase_error_list_A11'] = [0]*10 # no error
+        m.params['phase_error_list_A10'] = [0]*10 # error on C5, fixed in parity msmt B
+        m.params['phase_error_list_A01'] = [0]*2+[180]+[0]*7 # error on C2
+        m.params['phase_error_list_A00'] = [0]+[180]+[0]*8 # error on C1
+
+        # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
+
+        m.params['phase_error_list_B110'] = [0]*10 # no error
+        m.params['phase_error_list_B100'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B010'] = [0]*10 # error on C2
+        m.params['phase_error_list_B000'] = [0]*10 # error on C1
+        
+        m.params['phase_error_list_B111'] = [0]*10 # no error
+        m.params['phase_error_list_B101'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B011'] = [0]*10 # error on C2
+        m.params['phase_error_list_B001'] = [0]*10 # error on C1     
 
     elif parity_orientations == ['positive','negative']:
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0100'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_0001'] = TD.get_tomo_bases(Flip_qubit = '2' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0000'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0011'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0010'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_1101'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1100'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1111'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1110'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]    
+
+        # correction on C1 or C2 in second parity A msmt
+
+        m.params['phase_error_list_A01'] = [0]*10 # no error
+        m.params['phase_error_list_A00'] = [0]*10 # error on C5, fixed in parity msmt B
+        m.params['phase_error_list_A11'] = [0]*2+[180]+[0]*7 # error on C2
+        m.params['phase_error_list_A10'] = [0]+[180]+[0]*8 # error on C1
+
+        # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
+
+        m.params['phase_error_list_B010'] = [0]*10 # no error
+        m.params['phase_error_list_B000'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B110'] = [0]*10 # error on C2
+        m.params['phase_error_list_B100'] = [0]*10 # error on C1
+        
+        m.params['phase_error_list_B011'] = [0]*10 # no error
+        m.params['phase_error_list_B001'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B111'] = [0]*10 # error on C2
+        m.params['phase_error_list_B101'] = [0]*10 # error on C1     
 
     elif parity_orientations == ['negative','positive']:
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_1110'] = TD.get_tomo_bases(Flip_qubit = '2' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1111'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1100'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1101'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_0010'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0011'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0000'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0001'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        
+        m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0100'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]    
 
+        # correction on C1 or C2 in second parity A msmt
+
+        m.params['phase_error_list_A10'] = [0]*10 # no error
+        m.params['phase_error_list_A11'] = [0]*10 # error on C5, fixed in parity msmt B
+        m.params['phase_error_list_A00'] = [0]*2+[180]+[0]*7 # error on C2
+        m.params['phase_error_list_A01'] = [0]+[180]+[0]*8 # error on C1
+
+        # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
+
+        m.params['phase_error_list_B100'] = [0]*10 # no error
+        m.params['phase_error_list_B110'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B000'] = [0]*10 # error on C2
+        m.params['phase_error_list_B010'] = [0]*10 # error on C1
+        
+        m.params['phase_error_list_B101'] = [0]*10 # no error
+        m.params['phase_error_list_B111'] = [0]*4+[180]+[0]*5 # error on C5
+        m.params['phase_error_list_B001'] = [0]*10 # error on C2
+        m.params['phase_error_list_B011'] = [0]*10 # error on C1     
     ###################
     ### MBE settings ###
     ####################
