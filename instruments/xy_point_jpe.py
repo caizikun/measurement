@@ -62,18 +62,10 @@ class xy_point_jpe(CyclopeanInstrument):
 
         self._points = ()
 
-        self.set_xsteps(1)
-        self.set_ysteps(1)
-        self.set_xstart(0)
-        self.set_ystart(0)
-        self.set_xstop(0)
-        self.set_ystop(0)
-        self.set_z_pos_spin_box(0)
+        self.set_x(0)
+        self.set_y(0)
+        self.set_z(0)
         self.set_px_time(1)
-        #self.set_dimensions(())
-        #self.set_starts(())
-        #self.set_stops(())
-        #self.set_scan_value('counts')
 
         # other vars
         self._px_clock = 0
@@ -86,41 +78,9 @@ class xy_point_jpe(CyclopeanInstrument):
             'save': False,
             }
 
-    #def do_get_dimensions(self):
-    #    return self._dimensions
-
-    #def do_set_dimensions(self, val):
-    #    self._dimensions = val
-
-    #def do_get_starts(self):
-    #    return self._starts
-
-    #def do_set_starts(self, val):
-    #    self._starts = val
-
-    #def do_get_stops(self):
-    #    return self._stops
-
-    #def do_set_stops(self, val):
-    #    self._stops = val
-
-    #def do_get_steps(self):
-    #    return self._steps
-
-    #def do_set_steps(self, val):
-    #    self._steps = val
-
-    #def do_get_px_time(self):
-    #    return self._px_time
 
     def do_set_px_time(self, val):
         self._px_time = val
-
-    def do_get_scan_value(self):
-        return self._scan_value
-
-    def do_set_scan_value(self, val):
-        self._scan_value = val
 
     # public functions
     def get_points(self):
@@ -129,52 +89,20 @@ class xy_point_jpe(CyclopeanInstrument):
     # internal functions
     def _start_running(self):
         CyclopeanInstrument._start_running(self)
+        if not self._move_to_position_and_count()
+            self.set_is_running = False
 
-        # determine points of the line
-        #self._points = zeros((self_, self._steps)) #points for xy scan
+    def _move_to_position_and_count():
+        #moc.####MOVE####
+        #adwin.###COUNT####
+        print 'Moving to position!!'
+        return False
 
-        #for i,d in enumerate(['x', 'y']):
-    	#    self._points[i,:] = linspace(self._starts[i], self._stops[i],self._steps)
+    def set_coordinates(x,y,z):
 
-        if not self._manage_2D_scan():
-            self.set_is_running (False)
 
-        # start the linescan
-        #if not self._mos.linescan_start(self._dimensions, self._starts, 
-        #        self._stops, self._steps, self._px_time, 
-        #        value=self._scan_value):
-        #    self.set_is_running(False)
-   
-
-    def _manage_2D_scan(self):
-        #2D scan is performed following a meander to minimize 
-        self.y_vals = linspace (self._y_start, self._y_stop,self._y_steps)
-        self.curr_z = self._z_pos
-        stop_scan = False
-        i = -1
-        for y in self.vals:
-            i = i+1
-            self.curr_y = y
-            if mod(i,2)==0:
-                self.x_vals = linspace (self._x_start, self._x_stop, self._x_steps)
-            else:
-                self.x_vals = linspace (self._x_stop, self._x_start, self._x_steps)
-            linescan_vals = zeros(self._x_steps)
-            for ind, x in enumerate(self.x_vals):
-                self.curr_x = x
-                #self._moc.move_to_xyz (x=curr_x, y=curr_y, z=curr_z, verbose=False)
-                print "Moving to: ", self.curr_x, self.curr_y, self.curr_z
-                counts = 0#self._adwin.###GET_COUNTS??####
-                linescan_vals[ind] = counts
-
-                if not self._sampling_event():
-                    stop_scan = True
-
-                if stop_scan:
-                    break
-            if stop_scan:
-                break
-        return True
+    def _new_data(self):
+        pass
 
     def _sampling_event(self):
         if self.get_is_running():
@@ -182,14 +110,6 @@ class xy_point_jpe(CyclopeanInstrument):
         else:
             return False
     
-    def _mos_changed(self, unused, changes, *arg, **kw):
-        for c in changes:
-            if c == 'linescan_px_clock':
-                self._px_clock_set(changes[c])
-
-            if c == 'linescan_running':
-                self._linescan_running_changed(changes[c])
-
     def _px_clock_set(self, px_clock):
         if self._px_clock >= px_clock:
             return
@@ -215,50 +135,26 @@ class xy_point_jpe(CyclopeanInstrument):
     def start_scan(self):
         print 'Start scan!'
 
-    def set_xstart(self, val):
-        self._x_start = val
+    def set_x(self, val):
+        self._x = val
 
-    def set_xsteps(self, val):
-        self._x_steps = val 
+    def set_y(self, val):
+        self._y = val
 
-    def set_xstop(self, val):
-        self._x_stop = val
+    def set_z(self, val):
+        self._z = val
 
-    def set_ystart(self, val):
-        self._y_start = val
-
-    def set_ysteps(self, val):
-        self._y_steps = val
-
-    def set_ystop(self, val):
-        self._y_stop = val
-
-    def set_z_pos_spin_box(self, val):
-        self._z_pos = val
-
-    def set_px_time (self, val):
+    def set_pxtime (self, val):
         self._px_time = val
 
-    def get_xstart(self):
-        return self._x_start
+    def get_x(self):
+        return self._x 
 
-    def get_xsteps(self):
-        return self._x_steps
+    def get_y(self):
+        return self._y
 
-    def get_xstop(self):
-        return self._x_stop
-
-    def get_ystart(self):
-        return self._y_start
-
-    def get_ysteps(self):
-        return self._y_steps
-
-    def get_ystop(self):
-        return self._y_stop
-
-    def get_z_pos_spin_box(self):
-        return self._z_pos 
+    def get_z(self):
+        return self._z 
 
     def get_pxtime (self):
         return self._px_time

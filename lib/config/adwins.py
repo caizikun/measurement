@@ -1898,3 +1898,100 @@ config['adwin_rt1_processes'] = {
             },
         },
     }
+
+
+config['adwin_cav1_dacs'] = {
+        'jpe_fine_tuning_1': 1,
+        'jpe_fine_tuning_2': 2,
+        'jpe_fine_tuning_3': 3,
+        'green_aom' : 4,
+        'yellow_aom' : 5,
+        'matisse_aom' : 6,
+        'newfocus_aom': 7,
+        'laser_scan': 8,
+        }
+
+config['adwin_cav1_dios'] = {
+        }
+
+config['adwin_cav1_adcs'] = {
+        'photodiode': 1,
+        }
+
+config['adwin_cav1_processes'] = {
+
+        'counter' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'SetDac.TB3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'Set_TTL_Outputs.TB4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TB5',
+            },
+
+
+        'laserscan_photodiode' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 2,
+            'file' : 'voltagescan_photodiode.TB2',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['DAC_channel'                 ,   8],
+                    ['ADC_channel'                 ,   1],
+                    ['nr_steps'                    ,   1],
+                    ['wait_cycles'                 ,  50],
+                    ],
+                'params_long_index'  : 200,
+                'params_long_length' : 8,
+                'params_float' : [
+                    ['start_voltage'               , 0.0],
+                    ['voltage_step'               , 0.01],
+                    ],
+                'params_float_index'  : 199,
+                'params_float_length' : 8,
+                'par' : {
+                    },
+                'data_long' : {
+                    'photodiode_voltage' : 11,
+                    },
+            },
+
+
+        }
+

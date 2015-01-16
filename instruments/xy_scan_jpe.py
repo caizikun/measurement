@@ -11,7 +11,7 @@ import time
 from numpy import *
 
 class xy_scan_jpe(CyclopeanInstrument):
-    def __init__(self, name, adwin, moc, *arg, **kw):
+    def __init__(self, name, point_manager, *arg, **kw):
         """
         Parameters:
             adwin : string
@@ -21,9 +21,10 @@ class xy_scan_jpe(CyclopeanInstrument):
         """
         CyclopeanInstrument.__init__(self, name, tags=['measure'])
 
-        # related instruments
-        self._adwin = qt.instruments[adwin] #used only for counts
-        self._moc = qt.instruments[moc] #master_of_cavity, controls jpe motion (both actual jpe and jpe_tracker)
+        # related instruments: do I need to know about adwin and moc, here???
+        #self._adwin = qt.instruments[adwin] #used only for counts
+        #self._moc = qt.instruments[moc] #master_of_cavity, controls jpe motion (both actual jpe and jpe_tracker)
+        self._point_mngr = qt.instruments[point_manager]
         self._scan_value = 'counts'
 
         # connect the mos to monitor methods
@@ -70,10 +71,6 @@ class xy_scan_jpe(CyclopeanInstrument):
         self.set_ystop(0)
         self.set_z_pos_spin_box(0)
         self.set_px_time(1)
-        #self.set_dimensions(())
-        #self.set_starts(())
-        #self.set_stops(())
-        #self.set_scan_value('counts')
 
         # other vars
         self._px_clock = 0
@@ -85,33 +82,6 @@ class xy_scan_jpe(CyclopeanInstrument):
             'set_recording': False,
             'save': False,
             }
-
-    #def do_get_dimensions(self):
-    #    return self._dimensions
-
-    #def do_set_dimensions(self, val):
-    #    self._dimensions = val
-
-    #def do_get_starts(self):
-    #    return self._starts
-
-    #def do_set_starts(self, val):
-    #    self._starts = val
-
-    #def do_get_stops(self):
-    #    return self._stops
-
-    #def do_set_stops(self, val):
-    #    self._stops = val
-
-    #def do_get_steps(self):
-    #    return self._steps
-
-    #def do_set_steps(self, val):
-    #    self._steps = val
-
-    #def do_get_px_time(self):
-    #    return self._px_time
 
     def do_set_px_time(self, val):
         self._px_time = val
@@ -125,89 +95,6 @@ class xy_scan_jpe(CyclopeanInstrument):
     # public functions
     def get_points(self):
         return self._points
-
-    # internal functions
-    def _start_running(self):
-        CyclopeanInstrument._start_running(self)
-
-        # determine points of the line
-        #self._points = zeros((self_, self._steps)) #points for xy scan
-
-        #for i,d in enumerate(['x', 'y']):
-    	#    self._points[i,:] = linspace(self._starts[i], self._stops[i],self._steps)
-
-        if not self._manage_2D_scan():
-            self.set_is_running (False)
-
-        # start the linescan
-        #if not self._mos.linescan_start(self._dimensions, self._starts, 
-        #        self._stops, self._steps, self._px_time, 
-        #        value=self._scan_value):
-        #    self.set_is_running(False)
-   
-
-    def _manage_2D_scan(self):
-        #2D scan is performed following a meander to minimize 
-        self.y_vals = linspace (self._y_start, self._y_stop,self._y_steps)
-        self.curr_z = self._z_pos
-        stop_scan = False
-        i = -1
-        for y in self.vals:
-            i = i+1
-            self.curr_y = y
-            if mod(i,2)==0:
-                self.x_vals = linspace (self._x_start, self._x_stop, self._x_steps)
-            else:
-                self.x_vals = linspace (self._x_stop, self._x_start, self._x_steps)
-            linescan_vals = zeros(self._x_steps)
-            for ind, x in enumerate(self.x_vals):
-                self.curr_x = x
-                #self._moc.move_to_xyz (x=curr_x, y=curr_y, z=curr_z, verbose=False)
-                print "Moving to: ", self.curr_x, self.curr_y, self.curr_z
-                counts = 0#self._adwin.###GET_COUNTS??####
-                linescan_vals[ind] = counts
-
-                if not self._sampling_event():
-                    stop_scan = True
-
-                if stop_scan:
-                    break
-            if stop_scan:
-                break
-        return True
-
-    def _sampling_event(self):
-        if self.get_is_running():
-            return True
-        else:
-            return False
-    
-    def _mos_changed(self, unused, changes, *arg, **kw):
-        for c in changes:
-            if c == 'linescan_px_clock':
-                self._px_clock_set(changes[c])
-
-            if c == 'linescan_running':
-                self._linescan_running_changed(changes[c])
-
-    def _px_clock_set(self, px_clock):
-        if self._px_clock >= px_clock:
-            return
-        else:
-            self._px_clock = px_clock
-            self._px_clock_changed(px_clock)
-
-    def _linescan_running_changed(self, running):
-        if not running:
-            self._linescan_finished()
-            self.set_is_running(False)
-
-    # inherit in child classes for real functionality
-    def _px_clock_changed(self, px_clock):
-        pass
-
-    def _linescan_finished(self):
-        pass
 
     def stop_scan(self):
         print 'Stop scan!'
@@ -262,3 +149,110 @@ class xy_scan_jpe(CyclopeanInstrument):
 
     def get_pxtime (self):
         return self._px_time
+
+    # internal functions
+    def _start_running(self):
+
+        CyclopeanInstrument._start_running(self)
+
+        ## initalize data field and set current status (i.e, empty)
+        #pts = zeros((self._x_steps, self._y_steps))
+        self._max_points = self._x_steps*self._y_steps
+        self._current_point = 0 
+        self._curr_x_point = 0
+        self._curr_y_line = 0
+        #2D scan is performed along a meander path to minimize movement
+        self.y_vals = linspace (self._y_start, self._y_stop,self._y_steps)
+        self.curr_z = self._z_pos
+
+        # hook up linescanner changes
+        self._point_mngr.connect('changed', self._point_update)
+
+        # now start the actual scanning
+        self._next_point()   
+
+    def _sampling_event(self):
+        if not self._is_running:
+            return False
+        
+        if self._point_mngr.get_is_running():
+            return True
+        else:
+            # if point_mngr is not running move to next point or stop (if 2D scan is done)
+            #self._point_finished()
+            self._check_new_data()
+
+            if not self._point_mngr.get_is_running():
+                if (self._current_point < self._max_points):
+                    self._next_point()
+                else:
+                    return False
+            #    self.set_is_running = False
+        ## THIS GUY SHOULD MANAGE THE 2D SCAN!!!!!
+
+
+
+    def _check_new_data(self):
+        self._new_data = self._point_mnge._new_data()
+
+    '''
+    def _mos_changed(self, unused, changes, *arg, **kw):
+        for c in changes:
+            if c == 'linescan_px_clock':
+                self._px_clock_set(changes[c])
+
+            if c == 'linescan_running':
+                self._linescan_running_changed(changes[c])
+    '''
+
+    def _px_clock_set(self, px_clock):
+        if self._px_clock >= px_clock:
+            return
+        else:
+            self._px_clock = px_clock
+            self._px_clock_changed(px_clock)
+
+    def _point_running_changed(self, running):
+        if not running:
+            self._point_finished()
+            self.set_is_running(False)
+
+    # inherit in child classes for real functionality
+    def _px_clock_changed(self, px_clock):
+        pass
+
+    def _scan_finished(self):
+        pass
+
+    def _point_finished(self):
+        pass
+
+    def _point_update(self, unused, changes, *arg, **kw):
+        pass
+
+    def _next_point(self):
+
+        self._current_point += 1
+        self._curr_x_point += 1
+
+        if (self._curr_x_point > self._x_steps):
+            self._curr_x_point = 0
+        #for the first point of the line, check whether you want to scan forward or backward (meander path)
+        if (self._curr_x_point == 0):
+            self._curr_y_line += 1
+            if mod(self._curr_y_line,2)==0:
+                self.x_vals = linspace (self._x_start, self._x_stop, self._x_steps)
+            else:
+                self.x_vals = linspace (self._x_stop, self._x_start, self._x_steps)
+        if (self._curr_y_line < self._y_steps): ##IS THIS OK?
+            x = self.x_vals[self._curr_x_point]
+            y = self.y_vals[self._curr_y_line]
+            self._point_mngr.set_coordinates (x=x,y=y,z=self._z_pos)
+            self._point_mngr.set_px_time()
+            self._point_mngr.set_is_running(True)
+            return True
+        else:
+            self._point_mngr.set_is_running(False)
+            return False
+
+

@@ -20,6 +20,8 @@ class adwin(Instrument):
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
         self.dacs = kw.get('dacs', {})
+        self.adcs = kw.get('adcs', {})
+
         self.use_cfg = use_cfg
 
         self._dac_voltages = {}
@@ -27,7 +29,7 @@ class adwin(Instrument):
             self._dac_voltages[d] = 0.
        
         if kw.get('init', False):
-            self._load_programs()
+            self.load_programs()
 
         # the accessible functions
         # initialization
