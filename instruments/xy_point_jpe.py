@@ -65,7 +65,7 @@ class xy_point_jpe(CyclopeanInstrument):
         self.set_x(0)
         self.set_y(0)
         self.set_z(0)
-        self.set_px_time(1)
+        self.do_set_px_time(1)
 
         # other vars
         self._px_clock = 0
@@ -89,7 +89,7 @@ class xy_point_jpe(CyclopeanInstrument):
     # internal functions
     def _start_running(self):
         CyclopeanInstrument._start_running(self)
-        if not self._move_to_position_and_count()
+        if not self._move_to_position_and_count():
             self.set_is_running = False
 
     def _move_to_position_and_count():
@@ -99,6 +99,7 @@ class xy_point_jpe(CyclopeanInstrument):
         return False
 
     def set_coordinates(x,y,z):
+        pass
 
 
     def _new_data(self):
