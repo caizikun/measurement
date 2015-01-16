@@ -93,7 +93,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.45#2014-11-23  CAREFUL: Fit might give % of max
+params_lt4['aom_amplitude']             = 0.4#2014-12-21  CAREFUL: Fit might give % of max
 # maybe you have to use pulseAOM.power_to_voltage(FitPoint*PulseAOM.voltage_to_power(PulseAOM.get_V_max()))
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
@@ -133,5 +133,5 @@ params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['meas
 params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
 params_lt4['entanglement_marker_number'] = 4
 
-params_lt4['measurement_time'] =   60*60#sec = 60 mins
+params_lt4['measurement_time'] =   2*60*60#sec = 60 mins
 

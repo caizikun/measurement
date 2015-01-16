@@ -5,8 +5,8 @@ import logging
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
-from measurement.lib.cython.PQ_T2_tools import T2_tools_bell
-reload(T2_tools_bell)
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+reload(T2_tools_v3)
 
 class Bell(pulsar_pq.PQPulsarMeasurement):
     mprefix = 'Bell'
@@ -71,7 +71,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         self.h5data.flush()
         pulsar_pq.PQPulsarMeasurement.finish(self)
 
-    def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False, live_histogram=False):
+    def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False):
         if debug:
             self.run_debug()
             return
@@ -180,17 +180,12 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                     break
                 _t, _c, _s = pq.PQ_decode(_data[:_length])
 
-                if live_histogram:
-                    hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+
+                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                             newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
-                            T2_tools_bell.Bell_live_histogram_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                            T2_tools_v3.T2_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
                             MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
-                else:
-                    hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                        newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
-                        T2_tools_bell.Bell_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR, entanglement_marker_number)
+              
                 if newlength > 0:
 
                     if new_entanglement_markers == 0 and live_filter_on_marker:

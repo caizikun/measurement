@@ -8,7 +8,7 @@ import numpy as np
 import qt, time, logging, os
 import measurement.lib.measurement2.measurement as m2
 from multiprocessing import Process, Queue
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import hdf5_data as h5
 
 class PQMeasurement(m2.Measurement):
@@ -46,6 +46,7 @@ class PQMeasurement(m2.Measurement):
         self.start_keystroke_monitor('abort',timer=False)
         self.start_measurement_process()
         _timer=time.time()
+        _timer0=time.time()
         while True:
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
@@ -58,6 +59,9 @@ class PQMeasurement(m2.Measurement):
                     
                 self.print_measurement_progress()
                 _timer=time.time()
+            if (time.time()-_timer0)>self.params['measurement_time']:
+                break
+
         self.stop_measurement_process()
 
     def run(self, autoconfig=True, setup=True, debug=False):
@@ -79,6 +83,10 @@ class PQMeasurement(m2.Measurement):
         
         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
+        MIN_HIST_SYNC_BIN = np.uint64(self.params['MIN_HIST_SYNC_BIN'])
+        MAX_HIST_SYNC_BIN = np.uint64(self.params['MAX_HIST_SYNC_BIN'])
+        count_marker_channel = self.params['count_marker_channel']
+
         TTTR_read_count = self.params['TTTR_read_count']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
@@ -96,6 +104,9 @@ class PQMeasurement(m2.Measurement):
             (0,), 'u8', maxshape=(None,))
         dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
             (0,), 'u4', maxshape=(None,))
+
+        hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
+        self.hist = np.zeros((hist_length,2), dtype='u4')
   
         current_dset_length = 0
 
@@ -134,20 +145,24 @@ class PQMeasurement(m2.Measurement):
                             could indicate too low transfer rate resulting in buffer overflow.')
 
                 if self.PQ_ins.get_Flag_FifoFull():
-                    print 'warning Fifo full'
-
+                    print 'Aborting the measurement: Fifo full!'
+                    break
                 if self.PQ_ins.get_Flag_Overflow():
-                    print 'warning Overflow'
+                    print 'Aborting the measurement: OverflowFlag is high.'
+                    break 
+                if self.PQ_ins.get_Flag_SyncLost():
+                    print 'Aborting the measurement: SyncLost flag is high.'
+                    break
 
                 _t, _c, _s = PQ_decode(_data[:_length])
 
                 
 
-                hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                    newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_v2.LDE_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                T2_WRAPAROUND,T2_TIMEFACTOR) #T2_tools_v2 only
+                hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
+                            newlength, t_ofl, t_lastsync, last_sync_number, counted_markers = \
+                            T2_tools_v3.T2_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
+                            MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,count_marker_channel)
+                
                 if newlength > 0:
 
                     dset_hhtime.resize((current_dset_length+newlength,))
@@ -180,6 +195,9 @@ class PQMeasurement(m2.Measurement):
                     current_dset_length = 0
 
                     self.h5data.flush()
+
+        dset_hist = self.h5data.create_dataset('PQ_hist', data=self.hist, compression='gzip')
+        self.h5data.flush()
 
         self.PQ_ins.StopMeas()
         #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
@@ -262,11 +280,26 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
             _length, _data = self.PQ_ins.get_TTTR_Data()
                 
             if _length > 0:
-                _t, _c, _s = PQ_decode(_data[:_length])
+
+                if _length == T2_READMAX:
+                    logging.warning('TTTR record length is maximum length, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
+
+                if self.PQ_ins.get_Flag_FifoFull():
+                    print 'Aborting the measurement: Fifo full!'
+                    break
+                if self.PQ_ins.get_Flag_Overflow():
+                    print 'Aborting the measurement: OverflowFlag is high.'
+                    break 
+                if self.PQ_ins.get_Flag_SyncLost():
+                    print 'Aborting the measurement: SyncLost flag is high.'
+                    break
                 
+                _t, _c, _s = PQ_decode(_data[:_length])
+
                 hist0, hist1, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_v2.LDE_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
+                        T2_tools_v3.T2_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
                             t_lastsync, last_sync_number,
                             syncs_per_sweep, sweep_length, 
                             MIN_SYNC_BIN, MAX_SYNC_BIN,
