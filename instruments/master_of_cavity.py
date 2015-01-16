@@ -150,11 +150,13 @@ class master_of_cavity(CyclopeanInstrument):
     	self.ch_z = 3
     	Instrument.__init__(self, name)
     	self._jpe_cadm = qt.instruments[jpe]
-    	self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False) 
+    	self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
     	self.T = None
     	self._step_size = None
         #self.ins_counter = qt.instrument(counter)
-        #self.ins_adwin = qt.instrument(adwin)
+        self.ins_adwin = qt.instrument(adwin)
+        self._fine_piezo_V = None
+        self.set_fine_piezo_voltages (0,0,0)
 
         # remote access functions:
         #set parameters
@@ -238,6 +240,15 @@ class master_of_cavity(CyclopeanInstrument):
 	    			qt.msleep(1)
 	    			self._jpe_tracker.tracker_update(values=[s1,s2,s3])
 	    		self._jpe_tracker.set_as_origin() #why do we need this here????
+
+	def set_fine_piezo_voltages (self, v1,v2,v3):
+		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
+		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
+		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
+		self._fine_piezo_V = np.array([v1,v2,v3])
+
+	def get_fine_piezo_voltages(self):
+		return self._fine_piezo_V
 
     def close(self):
     	self._jpe_tracker.close()
