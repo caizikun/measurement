@@ -267,7 +267,7 @@ cfg['samples']['111_1_sil18'] = {
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'SSRO_repetitions'  : 5000,
-'SSRO_duration'     :  150,
+'SSRO_duration'     :  180,
 'SSRO_stop_after_first_photon' : 1,
 'A_CR_amplitude' : 19e-9,   #25e-9
 'A_RO_amplitude' : 0,
@@ -387,8 +387,8 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-parity msmnts
 'Parity_threshold':                     1,
-'Parity_RO_duration':                   114,
-'E_Parity_RO_amplitude':                0.35e-9,
+'Parity_RO_duration':                   108,
+'E_Parity_RO_amplitude':                0.3e-9,
 
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
 'min_dec_tau'         : 20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],

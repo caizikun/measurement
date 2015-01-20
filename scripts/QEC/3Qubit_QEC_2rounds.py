@@ -130,6 +130,8 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
     m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
 
+    
+
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     m.params['Parity_a_RO_orientation'] = parity_orientations[0]
@@ -279,7 +281,7 @@ if __name__ == '__main__':
 
                             for test_RO in test_RO_list:#range(7):
 
-                                e_list = [0]
+                                e_list = np.array([0])
                                 print '-----------------------------------'
                                 print 'press q to stop measurement cleanly'
                                 print '-----------------------------------'
