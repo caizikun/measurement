@@ -26,10 +26,6 @@ from lib import config
 
 #from measurement.lib.config import moss as moscfg
 
-# constants
-LINESCAN_CHECK_INTERVAL = 50 # [ms]
-
-
 class JPE_pos_tracker ():
 
 	def __init__(self, reinit_spindles=False):
@@ -252,4 +248,5 @@ class master_of_cavity(CyclopeanInstrument):
 
     def close(self):
     	self._jpe_tracker.close()
+
 
