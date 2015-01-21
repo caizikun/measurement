@@ -23,8 +23,8 @@ import types
 import gobject
 import numpy as np
 from lib import config
+from measurement.lib.config import moc_cfg as moc_cfg
 
-#from measurement.lib.config import moss as moscfg
 
 class JPE_pos_tracker ():
 
@@ -35,18 +35,19 @@ class JPE_pos_tracker ():
 		self.z3 = None
 
 		#design properties in mm (see JPE datasheet)
-		self.dz = 0.0 #fiber offset with respect to fiber interface
-		self.h = 33.85+self.dz
-		self.R = 14.5
+		self.cfg_pars = moc_cfg ['general_stage_dims']
+		self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
+		self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
+		self.R = self.cfg_pars['R_mm']#14.5
 
-		self.max_spindle_steps = 2000 ###STEFAN, check it!!!!!!
+		self.max_spindle_steps = self.cfg_pars['max_spindle_steps'] ###2000, STEFAN, check it!!!!!!
 		
 		#Cartesian coordinates in the lab-frame (mm)
 		self.curr_x = None
 		self.curr_y = None
 		self.curr_z = None
-		self.tracker_file_name = 'D:\measuring\measurement\scripts\cav1_scripts\jpe_tracker.cfg'
-		self.tracker_file = open (self.tracker_file_name, 'rb+')
+		self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.cfg'
+
 		if reinit_spindles:
 			self.reset_spindle_tracker()
 		else:
@@ -55,19 +56,24 @@ class JPE_pos_tracker ():
 
 	def tracker_file_update(self):
 		try:
+			self.tracker_file = open (self.tracker_file_name, 'rb+')
 			self.tracker_file.seek(0,0)		
 			self.tracker_file.write (str(self.z1)+'\n')
 			self.tracker_file.write (str(self.z2)+'\n')
 			self.tracker_file.write (str(self.z3)+'\n')
+			self.tracker_file.close()
+
 		except:
 			print 'Tracker file update failed!'
 
 	def tracker_file_readout(self):
 		try:
+			self.tracker_file = open (self.tracker_file_name, 'rb+')
 			self.tracker_file.seek(0,0)
 			self.z1 = int(self.tracker_file.readline())
 			self.z2 = int(self.tracker_file.readline())
 			self.z3 = int(self.tracker_file.readline())
+			self.tracker_file.close()
 		except:
 			print 'Tracker file import error!'
 
@@ -76,9 +82,6 @@ class JPE_pos_tracker ():
 		n2 = self.z2+move[1]
 		n3 = self.z3+move[2]
 		return ((n1<0)or(n2<0)or(n3<0)or(n1>self.max_spindle_steps)or(n2>self.max_spindle_steps)or(n3>self.max_spindle_steps))
-
-	def close(self):
-		self.tracker_file.close()
 
 	def set_as_origin (self):
 		self.curr_x = 0
@@ -149,7 +152,6 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
     	self.T = None
     	self._step_size = None
-        #self.ins_counter = qt.instrument(counter)
         self.ins_adwin = qt.instrument(adwin)
         self._fine_piezo_V = None
         self.set_fine_piezo_voltages (0,0,0)
@@ -239,8 +241,8 @@ class master_of_cavity(CyclopeanInstrument):
 
 	def set_fine_piezo_voltages (self, v1,v2,v3):
 		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
-		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
-		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
+		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v2))
+		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v3))
 		self._fine_piezo_V = np.array([v1,v2,v3])
 
 	def get_fine_piezo_voltages(self):
