@@ -91,7 +91,7 @@ def MBE(name, carbon_list   = [1,5,2],
         MBE_threshold                 = 1,
         RO_C                          = 1,
 
-        number_of_parity_msmnts       = 2,
+        number_of_parity_msmnts       = 4,
         error_on_qubit                = 'all',
         el_RO                         = 'positive',
         debug                         = False,
@@ -100,7 +100,8 @@ def MBE(name, carbon_list   = [1,5,2],
         error_sign3                    = 1,
         error_probability_list        = np.linspace(0,1,3),
         parity_orientations           = ['positive','negative'],
-        error_prob_magnitude          = '< 0.5'):
+        error_prob_magnitude          = '< 0.5',
+        no_reps                       = 500):
 
     m = DD.Three_QB_det_rep_QEC(name)
     funcs.prepare(m)
@@ -130,7 +131,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
     m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
-    m.params['phase_error_array_3'] = np.transpose([phase_error_round3*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
+    m.params['phase_error_array_3'] = np.transpose([phase_error_round3*Qe[0],phase_error_round3*Qe[1],phase_error_round3*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -139,7 +140,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = no_reps
 
 
     m.params['free_evolution_time_1'] = np.ones(len(phase_error_round1))*0
@@ -168,13 +169,11 @@ def MBE(name, carbon_list   = [1,5,2],
         m.params['Tomo_Bases_0011'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
  
         m.params['Tomo_Bases_0100'] = TD.get_tomo_bases(Flip_qubit = '2' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_0100'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '',  RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         
-        # m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_1000'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1001'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_1011'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
@@ -218,7 +217,7 @@ def MBE(name, carbon_list   = [1,5,2],
         m.params['Tomo_Bases_0111'] = TD.get_tomo_bases(Flip_qubit = '3' ,  Flip_axis = 'X', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0110'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_0000'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_0100'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
         
         m.params['Tomo_Bases_0011'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
         m.params['Tomo_Bases_0010'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
@@ -227,22 +226,22 @@ def MBE(name, carbon_list   = [1,5,2],
 
         # correction on C1 or C2 in second parity A msmt
 
-        m.params['phase_error_list_A11'] = [0  ,0  ]  # no error
-        m.params['phase_error_list_A10'] = [0  ,0  ]  # error on C5, fixed in parity msmt B
-        m.params['phase_error_list_A01'] = [180,0  ]  # error on C2
-        m.params['phase_error_list_A00'] = [0  ,180]  # error on C1
+        m.params['phase_correct_list_A11'] = [0  ,0  ]  # no error
+        m.params['phase_correct_list_A10'] = [0  ,0  ]  # error on C5, fixed in parity msmt B
+        m.params['phase_correct_list_A01'] = [180,0  ]  # error on C2
+        m.params['phase_correct_list_A00'] = [0  ,180]  # error on C1
 
         # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
 
-        m.params['phase_error_list_B110'] = [0,0]      # no error
-        m.params['phase_error_list_B100'] = [180,0]    # error on C5
-        m.params['phase_error_list_B010'] = [0,0]      # error on C2
-        m.params['phase_error_list_B000'] = [0,0]      # error on C1
+        m.params['phase_correct_list_B110'] = [0,0]      # no error
+        m.params['phase_correct_list_B100'] = [180,0]    # error on C5
+        m.params['phase_correct_list_B010'] = [0,0]      # error on C2
+        m.params['phase_correct_list_B000'] = [0,0]      # error on C1
         
-        m.params['phase_error_list_B111'] = [0,0]      # no error
-        m.params['phase_error_list_B101'] = [180,0]    # error on C5
-        m.params['phase_error_list_B011'] = [0,0]      # error on C2
-        m.params['phase_error_list_B001'] = [0,0]      # error on C1     
+        m.params['phase_correct_list_B111'] = [0,0]      # no error
+        m.params['phase_correct_list_B101'] = [180,0]    # error on C5
+        m.params['phase_correct_list_B011'] = [0,0]      # error on C2
+        m.params['phase_correct_list_B001'] = [0,0]      # error on C1     
 
     elif parity_orientations == ['positive','negative']:
         m.params['Tomo_Bases_0101'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
@@ -266,22 +265,22 @@ def MBE(name, carbon_list   = [1,5,2],
         m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]    
 
         # correction on C1 or C2 in second parity A msmt
-        m.params['phase_error_list_A01'] = [0  ,0  ] # no error
-        m.params['phase_error_list_A00'] = [0  ,0  ] # error on C5, fixed in parity msmt B
-        m.params['phase_error_list_A11'] = [180,0  ] # error on C2
-        m.params['phase_error_list_A10'] = [0  ,180] # error on C1
+        m.params['phase_correct_list_A01'] = [0  ,0  ] # no error
+        m.params['phase_correct_list_A00'] = [0  ,0  ] # error on C5, fixed in parity msmt B
+        m.params['phase_correct_list_A11'] = [180,0  ] # error on C2
+        m.params['phase_correct_list_A10'] = [0  ,180] # error on C1
 
         # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
 
-        m.params['phase_error_list_B010'] = [0,0]     # no error
-        m.params['phase_error_list_B000'] = [180,0]   # error on C5
-        m.params['phase_error_list_B110'] = [0,0]     # error on C2
-        m.params['phase_error_list_B100'] = [0,0]     # error on C1
+        m.params['phase_correct_list_B010'] = [0,0]     # no error
+        m.params['phase_correct_list_B000'] = [180,0]   # error on C5
+        m.params['phase_correct_list_B110'] = [0,0]     # error on C2
+        m.params['phase_correct_list_B100'] = [0,0]     # error on C1
         
-        m.params['phase_error_list_B011'] = [0,0]     # no error
-        m.params['phase_error_list_B001'] = [180,0]   # error on C5
-        m.params['phase_error_list_B111'] = [0,0]     # error on C2
-        m.params['phase_error_list_B101'] = [0,0]     # error on C1     
+        m.params['phase_correct_list_B011'] = [0,0]     # no error
+        m.params['phase_correct_list_B001'] = [180,0]   # error on C5
+        m.params['phase_correct_list_B111'] = [0,0]     # error on C2
+        m.params['phase_correct_list_B101'] = [0,0]     # error on C1     
 
     elif parity_orientations == ['negative','positive']:
         m.params['Tomo_Bases_1010'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
@@ -306,22 +305,22 @@ def MBE(name, carbon_list   = [1,5,2],
 
         # correction on C1 or C2 in second parity A msmt
 
-        m.params['phase_error_list_A10'] = [0  ,0  ] # no error
-        m.params['phase_error_list_A11'] = [0  ,0  ] # error on C5, fixed in parity msmt B
-        m.params['phase_error_list_A00'] = [180,0  ] # error on C2
-        m.params['phase_error_list_A01'] = [0  ,180] # error on C1
+        m.params['phase_correct_list_A10'] = [0  ,0  ] # no error
+        m.params['phase_correct_list_A11'] = [0  ,0  ] # error on C5, fixed in parity msmt B
+        m.params['phase_correct_list_A00'] = [180,0  ] # error on C2
+        m.params['phase_correct_list_A01'] = [0  ,180] # error on C1
 
         # correction on C5 in second parity B msmt, 2X implemented because independent of outcome of second parity A
 
-        m.params['phase_error_list_B100'] = [0,0]     # no error
-        m.params['phase_error_list_B110'] = [180,0]   # error on C5
-        m.params['phase_error_list_B000'] = [0,0]     # error on C2
-        m.params['phase_error_list_B010'] = [0,0]     # error on C1
+        m.params['phase_correct_list_B100'] = [0,0]     # no error
+        m.params['phase_correct_list_B110'] = [180,0]   # error on C5
+        m.params['phase_correct_list_B000'] = [0,0]     # error on C2
+        m.params['phase_correct_list_B010'] = [0,0]     # error on C1
         
-        m.params['phase_error_list_B101'] = [0,0]     # no error
-        m.params['phase_error_list_B111'] = [180,0]   # error on C5
-        m.params['phase_error_list_B001'] = [0,0]     # error on C2
-        m.params['phase_error_list_B011'] = [0,0]     # error on C1     
+        m.params['phase_correct_list_B101'] = [0,0]     # no error
+        m.params['phase_correct_list_B111'] = [180,0]   # error on C5
+        m.params['phase_correct_list_B001'] = [0,0]     # error on C2
+        m.params['phase_correct_list_B011'] = [0,0]     # error on C1     
     ###################
     ### MBE settings ###
     ####################
@@ -352,17 +351,283 @@ def MBE(name, carbon_list   = [1,5,2],
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
 
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
+
+def MBE_test_msmt(name, carbon_list   = [1,5,2],
+
+        carbon_init_list              = [2,5,1],
+        carbon_init_states            = 3*['up'],
+        carbon_init_methods           = 3*['swap'],
+        carbon_init_thresholds        = 3*[0],
+
+        number_of_MBE_steps           = 1,
+        logic_state                   = 'X',
+        mbe_bases                     = ['Y','Y','Y'],
+        MBE_threshold                 = 1,
+        RO_C                          = 1,
+
+        number_of_parity_msmnts       = 2,
+        error_on_qubit                = 'all',
+        el_RO                         = 'positive',
+        debug                         = False,
+        error_sign1                    = 1,
+        error_sign2                    = 1,
+        error_probability_list        = np.linspace(0,1,3),
+        parity_orientations           = ['positive','negative'],
+        error_prob_magnitude          = '< 0.5'):
+
+    m = DD.Three_QB_det_QEC(name)
+    funcs.prepare(m)
+
+    ### Calculate the new error probability p_e' for splitting up the error in two rounds ###
+
+    ### for errors < 0.5
+    if error_prob_magnitude == '< 0.5':
+        error_probability_list_per_round = [0]#(1 - (1 - 2*error_probability_list)**0.5)/2.
+    ### for errors > 0.5
+    # elif error_prob_magnitude == '> 0.5':
+    #     error_probability_list_per_round = 1 - (1 - (1 - 2*error_probability_list)**0.5)/2.
+    #     error_probability_list_per_round = error_probability_list_per_round[::-1]
+
+
+    phase_error_round1                   = error_sign1 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    phase_error_round2                   = error_sign2 * 2*np.arcsin(np.sqrt(error_probability_list_per_round))*180./np.pi
+    
+    if error_on_qubit ==1:
+        Qe                            = [1,0,0]
+    elif error_on_qubit ==2:
+        Qe                            = [0,1,0]
+    elif error_on_qubit ==3:
+        Qe                            = [0,0,1]
+    elif error_on_qubit =='all':
+        Qe                            = [1,1,1]
+
+    m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
+
+
+
+    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+
+    m.params['Parity_a_RO_orientation'] = parity_orientations[0]
+    m.params['Parity_b_RO_orientation'] = parity_orientations[1]
+
+    ''' set experimental parameters '''
+
+    m.params['reps_per_ROsequence'] = 500
+
+
+    m.params['add_wait_gate'] = False
+    m.params['wait_in_msm1']  = False
+
+    m.params['free_evolution_time_1'] = np.ones(len(phase_error_round1))*0
+    m.params['free_evolution_time_2'] = np.ones(len(phase_error_round1))*0
+
+    ### Carbons to be used
+    m.params['MBE_list']      = carbon_list
+    m.params['carbon_list']         = carbon_list
+
+    ### Carbon Initialization settings
+    m.params['carbon_init_list']    = carbon_init_list
+    m.params['init_method_list']    = carbon_init_methods
+    m.params['init_state_list']     = carbon_init_states
+    m.params['Nr_C13_init']         = len(carbon_init_list)
+
+    ##################################
+    ### RO bases (sweep parameter) ###
+    ##################################
+
+    '''Select right tomography basis '''
+
+    if parity_orientations == ['positive','positive']:
+        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+
+    elif parity_orientations == ['negative','negative']:
+        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+
+    elif parity_orientations == ['positive','negative']:
+        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+
+    elif parity_orientations == ['negative','positive']:
+        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
+        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
+
+    ###################
+    ### MBE settings ###
+    ####################
+
+    m.params['Nr_MBE']              = number_of_MBE_steps
+    m.params['MBE_bases']           = mbe_bases
+    m.params['MBE_threshold']       = MBE_threshold
+    m.params['3qb_logical_state']   = logic_state
+
+    ###################################
+    ### Parity measurement settings ###
+    ###################################
+
+    m.params['Nr_parity_msmts']     = number_of_parity_msmnts
+    m.params['Parity_threshold']    = 1
+
+    m.params['Parity_a_carbon_list'] = [2,1]
+    m.params['Parity_b_carbon_list'] = [5,1]
+
+    m.params['Parity_a_RO_list'] = ['X','X']
+    m.params['Parity_b_RO_list'] = ['X','X']
+
+    ### Derive other parameters
+    m.params['pts']                 = len(error_probability_list)
+    m.params['sweep_name']          = 'Error Probability'
+    m.params['sweep_pts']           = error_probability_list
+
+    ### RO params
+    m.params['electron_readout_orientation'] = el_RO
+
+    funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
 
-    RO = 6
-    k  = 0
-    error_sign = [1,1,1]
-    logic_state = 'Z'
-    e_list = np.array([0])
 
-    MBE(SAMPLE + '3Rounds_syn_00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+ str(error_sign[2])+'_'+logic_state,RO_C = RO,
+
+    cnt = 0
+
+    error_list = {}
+    error_list['0'] = np.array([0])
+    error_list['1'] = np.array([0.1])
+    error_list['2'] = np.array([0.2])
+    error_list['3'] = np.array([0.3])
+    error_list['4'] = np.array([0.4])
+    error_list['5'] = np.array([0.5])
+    error_list['6'] = np.array([0.45])
+    
+    for syn_round in [1]:
+        state_list = ['Z','mZ']
+
+        for state in state_list:
+            logic_state = state
+            print '-----------------------------------'
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+
+            if state == 'X' or state == 'mX':
+                RO_list = [6]
+            elif state == 'Y' or state == 'mY':
+                RO_list = [4,5,6]
+            elif state == 'mZ':
+                RO_list = [0,1,2,6]
+            elif state == 'Z':
+                RO_list = [0,1,2,6]
+
+            GreenAOM.set_power(7e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
+
+            for RO in RO_list:
+                print '-----------------------------------'
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+
+                ssrocalibration(SAMPLE_CFG)
+
+                cnt += 1
+                if cnt == 2:
+                    for test_state in ['X','Y','Z']:
+                            if test_state == 'X':
+                                test_RO_list = [6]
+                            elif test_state == 'Y':
+                                test_RO_list = [4,5]
+                            elif test_state == 'Z':
+                                test_RO_list = [0]
+
+
+                            print '-----------------------------------'
+                            print 'press q to stop measurement cleanly'
+                            print '-----------------------------------'
+                            qt.msleep(2)
+                            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                                break
+
+                            for test_RO in test_RO_list:#range(7):
+
+                                e_list = [0]
+                                print '-----------------------------------'
+                                print 'press q to stop measurement cleanly'
+                                print '-----------------------------------'
+                                qt.msleep(2)
+                                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                                    break
+                                MBE_test_msmt(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
+                                    logic_state = test_state,el_RO = 'positive',
+                                    error_on_qubit = 'all',
+                                    error_probability_list= e_list,
+                                    parity_orientations           = ['positive','positive'])
+
+                                MBE_test_msmt(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
+                                    logic_state = test_state,el_RO = 'negative',
+                                    error_on_qubit = 'all',
+                                    error_probability_list= e_list,
+                                    parity_orientations           = ['positive','positive'])
+
+                    DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+
+
+                    DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+
+                    GreenAOM.set_power(7e-6)
+                    ins_counters.set_is_running(0)
+                    optimiz0r.optimize(dims=['x','y','z'])
+
+                    ssrocalibration(SAMPLE_CFG)
+
+                    cnt = 0
+
+                for k in [2,3,4,6]:
+                    if k == 6:
+                        no_reps = 1000
+                    else:
+                        no_reps = 500
+                    print '-----------------------------------'
+                    print 'press q to stop measurement cleanly'
+                    print '-----------------------------------'
+                    qt.msleep(2)
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        break
+
+                    for error_sign in [[1,1,1],[1,-1,1],[-1,1,1],[-1,-1,1],[1,1,-1],[1,-1,-1],[-1,1,-1],[-1,-1,-1]]:
+
+                        logic_state = state
+
+                        e_list = error_list[str(k)]
+                        print '-----------------------------------'
+                        print 'press q to stop measurement cleanly'
+                        print '-----------------------------------'
+                        qt.msleep(2)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            break
+
+                        if syn_round == 0:
+
+                            MBE(SAMPLE + '3Rounds_syn_00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'positive',
                                 error_sign1= error_sign[0],
                                 error_sign2= error_sign[1],
@@ -371,202 +636,73 @@ if __name__ == '__main__':
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','positive'])
 
+                            MBE(SAMPLE + '3Rounds_syn_00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'negative',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['positive','positive'])
 
-    # actual experiments to run later
+                        elif syn_round == 1:
 
-    # cnt = -1000
+                            MBE(SAMPLE + '3Rounds_syn_11_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'positive',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                no_reps = no_reps,
+                                error_probability_list= e_list,
+                                parity_orientations           = ['negative','negative'])
 
-    # error_list = {}
-    # error_list['0'] = np.linspace(0,0.2,3)
-    # error_list['1'] = np.linspace(0.3,0.5,3)
-    # error_list['2'] = np.linspace(0,0.2,3)
-    # error_list['3'] = np.linspace(0.3,0.5,3)
+                            MBE(SAMPLE + '3Rounds_syn_11_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state, el_RO = 'negative',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                no_reps = no_reps,
+                                error_probability_list= e_list,
+                                parity_orientations           = ['negative','negative'])
 
-    # for syn_round in [0,1,2,3]:
+                        elif syn_round == 2:
 
-    #     for state in ['Z','mZ']:
-    #         logic_state = state
-    #         print '-----------------------------------'
-    #         print 'press q to stop measurement cleanly'
-    #         print '-----------------------------------'
-    #         qt.msleep(2)
-    #         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #             break
+                            MBE(SAMPLE + '3Rounds_syn_01_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'positive',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['positive','negative'])
 
-    #         if state == 'X' or state == 'mX':
-    #             RO_list = [6]
-    #         elif state == 'Y' or state == 'mY':
-    #             RO_list = [4,5,6]
-    #         elif state == 'Z' or state == 'mZ':
-    #             RO_list = [0,1,2,6]
+                            MBE(SAMPLE + '3Rounds_syn_01_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'negative',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['positive','negative'])
 
+                        elif syn_round == 3:
 
-    #         GreenAOM.set_power(7e-6)
-    #         ins_counters.set_is_running(0)
-    #         optimiz0r.optimize(dims=['x','y','z'])
+                            MBE(SAMPLE + '3Rounds_syn_10_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'positive',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['negative','positive'])
 
-    #         for RO in RO_list:
-    #             print '-----------------------------------'
-    #             print 'press q to stop measurement cleanly'
-    #             print '-----------------------------------'
-    #             qt.msleep(2)
-    #             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                 break
-
-    #             ssrocalibration(SAMPLE_CFG)
-
-    #             cnt += 1
-    #             if cnt == 3:
-    #                 for test_state in ['X','Y','Z']:
-    #                         if test_state == 'X':
-    #                             test_RO_list = [6]
-    #                         elif test_state == 'Y':
-    #                             test_RO_list = [4,5]
-    #                         elif test_state == 'Z':
-    #                             test_RO_list = [0]
-
-
-    #                         print '-----------------------------------'
-    #                         print 'press q to stop measurement cleanly'
-    #                         print '-----------------------------------'
-    #                         qt.msleep(2)
-    #                         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                             break
-
-    #                         for test_RO in test_RO_list:#range(7):
-
-    #                             e_list = [0]
-    #                             print '-----------------------------------'
-    #                             print 'press q to stop measurement cleanly'
-    #                             print '-----------------------------------'
-    #                             qt.msleep(2)
-    #                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                                 break
-    #                             MBE(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
-    #                                 logic_state = test_state,el_RO = 'positive',
-    #                                 error_sign= 1,
-    #                                 error_on_qubit = 'all',
-    #                                 error_probability_list= e_list,
-    #                                 parity_orientations           = ['positive','positive'])
-
-    #                             MBE(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO,
-    #                                 logic_state = test_state,el_RO = 'negative',
-    #                                 error_sign= 1,
-    #                                 error_on_qubit = 'all',
-    #                                 error_probability_list= e_list,
-    #                                 parity_orientations           = ['positive','positive'])
-
-    #                 DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
-    #                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-    #                 pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
-
-
-    #                 DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
-    #                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-    #                 pulse_length = 8e-6, ssbmod_amplitude = 0.006)
-
-    #                 GreenAOM.set_power(7e-6)
-    #                 ins_counters.set_is_running(0)
-    #                 optimiz0r.optimize(dims=['x','y','z'])
-
-    #                 ssrocalibration(SAMPLE_CFG)
-
-    #                 cnt = 0
-
-    #             for k in range(2):
-    #                 print '-----------------------------------'
-    #                 print 'press q to stop measurement cleanly'
-    #                 print '-----------------------------------'
-    #                 qt.msleep(2)
-    #                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                     break
-
-    #                 for error_sign in [[1,1,1],[1,-1,1],[-1,1,1],[-1,-1,1],[1,1,-1],[1,-1,-1],[-1,1,-1],[-1,-1,-1]]:
-
-    #                     logic_state = state
-
-    #                     e_list = error_list[str(k)]
-    #                     print '-----------------------------------'
-    #                     print 'press q to stop measurement cleanly'
-    #                     print '-----------------------------------'
-    #                     qt.msleep(2)
-    #                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                         break
-
-    #                     if syn_round == 0:
-
-    #                         MBE(SAMPLE + '2Rounds_syn_00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'positive',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['positive','positive'])
-
-    #                         MBE(SAMPLE + '2Rounds_syn_00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'negative',
-    #                             error_sign1= error_sign[0],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['positive','positive'])
-
-    #                     elif syn_round == 1:
-
-    #                         MBE(SAMPLE + '2Rounds_syn_11_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'positive',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['negative','negative'])
-
-    #                         MBE(SAMPLE + '2Rounds_syn_11_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'negative',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['negative','negative'])
-
-    #                     elif syn_round == 2:
-
-    #                         MBE(SAMPLE + '2Rounds_syn_01_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'positive',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['positive','negative'])
-
-    #                         MBE(SAMPLE + '2Rounds_syn_01_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'negative',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['positive','negative'])
-
-    #                     elif syn_round == 3:
-
-    #                         MBE(SAMPLE + '2Rounds_syn_10_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'positive',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['negative','positive'])
-
-    #                         MBE(SAMPLE + '2Rounds_syn_10_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
-    #                             logic_state = logic_state,el_RO = 'negative',
-    #                             error_sign1= error_sign[0],
-    #                             error_sign2= error_sign[1],
-    #                             error_sign3= error_sign[2],
-    #                             error_on_qubit = 'all',
-    #                             error_probability_list= e_list,
-    #                             parity_orientations           = ['negative','positive'])
+                            MBE(SAMPLE + '3Rounds_syn_10_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+str(error_sign[2])+'_'+logic_state,RO_C = RO,
+                                logic_state = logic_state,el_RO = 'negative',
+                                error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
+                                error_sign3= error_sign[2],
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['negative','positive'])

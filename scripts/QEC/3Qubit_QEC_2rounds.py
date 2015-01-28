@@ -96,6 +96,7 @@ def MBE(name, carbon_list   = [1,5,2],
         el_RO                         = 'positive',
         debug                         = False,
         error_sign1                    = 1,
+        no_reps                        = 750,
         error_sign2                    = 1,
         error_probability_list        = np.linspace(0,1,3),
         parity_orientations           = ['positive','negative'],
@@ -130,7 +131,7 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['phase_error_array_1'] = np.transpose([phase_error_round1*Qe[0],phase_error_round1*Qe[1],phase_error_round1*Qe[2]])
     m.params['phase_error_array_2'] = np.transpose([phase_error_round2*Qe[0],phase_error_round2*Qe[1],phase_error_round2*Qe[2]])
 
-    
+
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -139,7 +140,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 750
+    m.params['reps_per_ROsequence'] = no_reps
 
 
     m.params['add_wait_gate'] = False
@@ -221,7 +222,7 @@ def MBE(name, carbon_list   = [1,5,2],
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    cnt = 2
+    cnt = 0
 
     error_list = {}
     error_list['0'] = np.linspace(0,0.2,3)
@@ -229,7 +230,10 @@ if __name__ == '__main__':
     error_list['2'] = np.linspace(0,0.2,3)
     error_list['3'] = np.linspace(0.3,0.5,3)
 
-    for syn_round in [2,3]:
+    error_list['4'] = np.linspace(0.2,0.4,3)
+    error_list['5'] = np.linspace(0.45,0.45,1)
+
+    for syn_round in [1]:
 
         for state in ['Z','mZ']:
             logic_state = state
@@ -317,7 +321,11 @@ if __name__ == '__main__':
 
                     cnt = 0
 
-                for k in range(2):
+                for k in [4,5]:
+                    if k ==5:
+                        no_reps = 1500
+                    else:
+                        no_reps = 750
                     print '-----------------------------------'
                     print 'press q to stop measurement cleanly'
                     print '-----------------------------------'
@@ -350,6 +358,7 @@ if __name__ == '__main__':
                             MBE(SAMPLE + '2Rounds_syn_00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign[0])+str(error_sign[1])+'_'+logic_state,RO_C = RO,
                                 logic_state = logic_state,el_RO = 'negative',
                                 error_sign1= error_sign[0],
+                                error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','positive'])
@@ -369,6 +378,7 @@ if __name__ == '__main__':
                                 error_sign1= error_sign[0],
                                 error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
+                                no_reps = no_reps,
                                 error_probability_list= e_list,
                                 parity_orientations           = ['negative','negative'])
 
@@ -379,6 +389,7 @@ if __name__ == '__main__':
                                 error_sign1= error_sign[0],
                                 error_sign2= error_sign[1],
                                 error_on_qubit = 'all',
+                                no_reps = no_reps,
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','negative'])
 
