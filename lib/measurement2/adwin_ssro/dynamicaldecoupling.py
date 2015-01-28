@@ -259,7 +259,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt']
+        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse']
         gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling']
         #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
         #TODO_THT: What  does this mean??? Clearly it does not work...
@@ -602,7 +602,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Special elements
             #########
 
-            elif g.Gate_type =='passive_elt':
+            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
 
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
@@ -1335,6 +1335,31 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # - add this gate type in track_and_calc_phase such that the phase get's accurately detected.
         # - add calculation for the repump power and put it into the generation of the marker trigger.
 
+    def generate_RF_pulse_element(self,Gate):
+        '''
+        Written by MB. 
+        Generate RF pulse element, so a pulse that is directly created by the AWG.
+        Now phase not specified but can be specified
+        '''
+
+        length     = Gate.length
+        freq       = Gate.RFfreq
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+
+
+        X = pulselib.RF_erf_envelope(
+            channel = 'RF',
+            frequency = freq,
+            length = length,
+            amplitude = amplitude)
+
+        e = element.Element('%s_RF_pulse' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e.append(pulse.cp(X))
+        g.tau_cut = 1e-6
+
+
     ### function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):
         '''
@@ -1557,6 +1582,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_trigger_elt(g)
             elif g.Gate_type == 'electron_repump':
                 self.generate_electron_repump_element(g)
+            elif g.Gate_type == 'RF_pulse':
+                self.generate_RF_pulse_elt(g)
 
         Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
         self.get_tau_cut_for_connecting_elts(Gate_sequence)
@@ -2435,6 +2462,8 @@ class MBI_C13(DynamicalDecoupling):
                 el_state_before_gate = el_RO_result))
 
         return carbon_RO_seq
+
+
 ### Single Carbon initialization classes ###
 class ElectronRamseyWithNuclearInit(MBI_C13):
     '''
@@ -2973,12 +3002,10 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
     Made by Michiel based on NuclearRamseyWithInitialization_v2
     This class is to measure T2 using a Hahn Echo
     1. Nitrogen MBI initialisation
-    2. Carbon initialisation into +X ('up' because of MBI init)
+    2. Wait time tau
+    3. Pi pulse on nuclear spin
     4. Wait time tau
-    5. Pi pulse on nuclear spin
-    6. Wait time tau
-    7. Pi/2 pulse on nuclear spin and read out in one function
-
+    5. Pi/2 pulse on nuclear spin and read out in one function
     Start time pi pulse = tau - 0.5*time pi gate
 
     Sequence: |N-MBI| -|CinitA|-|Wait t|-|Carbon pi|-|Wait t|-|Tomography|
@@ -2986,40 +3013,6 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
     mprefix = 'CarbonHahnInitialised' #Changed
     adwin_process = 'MBI_multiple_C13'
     echo_choice = 'TwoPiPulses' #Default echo choice
-
-
-    # ### overwrite elements generation #Michiel changed. This to enable also a pi gate in one gate
-    # def generate_AWG_elements(self,Gate_sequence,pt = 1):
-
-    #     for g in Gate_sequence:
-    #         if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
-    #             #Changed part Michiel
-    #             # if hasattr(g, 'operation'):
-    #             #     self.get_gate_parameters(g, resonance = 1)
-    #             # else:
-    #             print g.name
-    #             self.get_gate_paramaters(g)
-    #             #End changed part Michiel
-    #             self.generate_decoupling_sequence_elements(g)
-    #         elif g.Gate_type =='passive_elt':
-    #             self.generate_passive_wait_element(g)
-    #         elif g.Gate_type == 'MBI':
-    #             self.generate_MBI_elt(g)
-    #         elif g.Gate_type == 'Trigger':
-    #             self.generate_trigger_elt(g)
-    #         elif g.Gate_type == 'electron_repump':
-    #             self.generate_electron_repump_element(g)
-
-    #     Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
-    #     self.get_tau_cut_for_connecting_elts(Gate_sequence)
-    #     self.track_and_calc_phase(Gate_sequence)
-    #     for g in Gate_sequence:
-    #         if (g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate'):
-    #             self.determine_connection_element_parameters(g)
-    #             self.generate_connection_element(g)
-
-    #     return Gate_sequence
-
 
     def generate_sequence(self, upload=True, debug=False):
         pts = self.params['pts']
@@ -3097,6 +3090,98 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
                 wait_gate_2 = Gate('Wait_gate2_'+str(pt),'passive_elt',
                          wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
                 wait_seq2 = [wait_gate_2]; gate_seq.extend(wait_seq2)
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+class NuclearRabiWithDirectRF(MBI_C13):
+    '''
+    Made by Michiel 
+    This class tests an RF pulse on a nuclear spin
+    1. Nitrogen MBI initialisation
+    2. Carbon init (MBI or SWAP)
+    3. Pulse on single nuclear spin using RF
+    4. Carbon Full Tomo
+
+    Sequence: |N-MBI| -|CinitA|-|RF-Pulse|-|Tomography|
+    '''
+    mprefix = 'NuclearRFRabi' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Carbon Rabi Direct RF')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization 
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state'])
+                el_after_init         = self.params['el_after_init'])
+            gate_seq.extend(carbon_init_seq)
+
+            ### Carbon RF pulse
+            rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                length      = self.params['RF_Rabi_pulse_durations'][pt],
+                RFfreq      = self.params['RF_Rabi_pulse_frqs'][pt],
+                amplitude   = m.params['RF_Rabi_pulse_amps'][pt])
+            gate_seq.extend(rabi_pulse)
 
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
