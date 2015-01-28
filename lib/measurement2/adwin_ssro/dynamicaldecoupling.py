@@ -1357,7 +1357,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         e = element.Element('%s_RF_pulse' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
         e.append(pulse.cp(X))
-        g.tau_cut = 1e-6
+        
+        Gate.tau_cut = 1e-6
+        Gate.elements=[e]
 
 
     ### function for making sequences out of elements
