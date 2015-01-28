@@ -48,7 +48,7 @@ def CarbonRabiWithDirectRF(name,
     m.params['C13_MBI_threshold_list']  = [1] 
 
     #!!!! STILL OLD
-    m.params['RF_pulse_durations'] = np.linspace(5e-6, 250e-6, 50)
+    m.params['RF_pulse_durations'] = np.linspace(10e-6, 250e-6, 25)
     m.params['pts'] = len(m.params['RF_pulse_durations'])
     m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 0.02
     m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * m.params['C' + str(carbon_nr) + '_freq_' + str(C13_MBI_RO_state)]
