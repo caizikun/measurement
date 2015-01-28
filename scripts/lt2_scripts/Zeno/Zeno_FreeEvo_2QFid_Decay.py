@@ -75,7 +75,7 @@ def Zeno(name, carbon_list   = [1,5],
     m.params['Nr_Zeno_parity_msmts']     = number_of_zeno_msmnts
     m.params['Zeno_SP_A_power'] = 18e-9
     m.params['Repump_duration']= 300e-6 #how long the 'Zeno' beam is shined in.
-
+    m.params['echo_like']=False
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 

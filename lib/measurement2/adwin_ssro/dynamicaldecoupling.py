@@ -46,9 +46,10 @@ class Gate(object):
         self.Gate_operation = kw.pop('Gate_operation',None) ### For electron gates,'pi2', 'pi', 'general'
         self.amplitude      = kw.pop('amplitude', 0)        ### For electron gates, sets amplitude in case of 'general'
         self.length         = kw.pop('length',0)            ### For electron gates, sets length in case of 'general'
+        self.RFfreq         = kw.pop('RFfreq',None)
 
-        #Scheme is used both for generating decoupling elements aaswell as the combine to sequence command
-        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi','electron_repump']:
+        #Scheme is used both for generating decoupling elements as well as the combine to sequence command
+        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','RF_pulse','mbi','electron_repump']:
             self.scheme = 'single_element'
         else:
             self.scheme = kw.pop('scheme','auto')
@@ -1359,6 +1360,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         e.append(pulse.cp(X))
         
         Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
         Gate.elements=[e]
 
 
@@ -1585,7 +1587,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif g.Gate_type == 'electron_repump':
                 self.generate_electron_repump_element(g)
             elif g.Gate_type == 'RF_pulse':
-                self.generate_RF_pulse_elt(g)
+                self.generate_RF_pulse_element(g)
 
         Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
         self.get_tau_cut_for_connecting_elts(Gate_sequence)
@@ -2047,6 +2049,7 @@ class MBI_C13(DynamicalDecoupling):
         return
 
     ### Sub sequence functions, TODO:THT delet all the superfluous functions
+
     def initialize_carbon_sequence(self,
             prefix                  = 'init_C',
             go_to_element           = 'MBI_1',
@@ -2057,7 +2060,6 @@ class MBI_C13(DynamicalDecoupling):
             C_init_state            = 'up',
             el_RO_result            = '0',
             el_after_init           = '0'):
-
         '''
         By THT
         Supports Swap or MBI initialization
@@ -3163,7 +3165,7 @@ class NuclearRabiWithDirectRF(MBI_C13):
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
-            ### Nitrogen MBI GOOD
+            ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
@@ -3174,16 +3176,17 @@ class NuclearRabiWithDirectRF(MBI_C13):
                 initialization_method = self.params['C13_init_method'],
                 C_init_state          = self.params['init_state'],
                 addressed_carbon      = self.params['carbon_nr'],
-                el_RO_result          = str(self.params['C13_MBI_RO_state'])
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
                 el_after_init         = self.params['el_after_init'])
             gate_seq.extend(carbon_init_seq)
 
             ### Carbon RF pulse
-            rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
-                length      = self.params['RF_Rabi_pulse_durations'][pt],
-                RFfreq      = self.params['RF_Rabi_pulse_frqs'][pt],
-                amplitude   = m.params['RF_Rabi_pulse_amps'][pt])
-            gate_seq.extend(rabi_pulse)
+            if self.params['RF_pulse_durations'][pt] > 3e-6:
+                rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                    length      = self.params['RF_pulse_durations'][pt],
+                    RFfreq      = self.params['RF_pulse_frqs'][pt],
+                    amplitude   = self.params['RF_pulse_amps'][pt])
+                gate_seq.extend([rabi_pulse])
 
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
@@ -3439,7 +3442,8 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
                     initialization_method = self.params['init_method_list'][kk],
                     C_init_state          = self.params['init_state_list'][kk],
-                    addressed_carbon      = self.params['carbon_init_list'][kk])
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init         = self.params['el_after_init'])
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
@@ -5292,10 +5296,13 @@ class Zeno_TwoQB(MBI_C13):
                         
                         Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
 
-                        ### Calculate the wait duration inbetween the parity measurements.
-                        waitduration=(self.params['free_evolution_time']-self.params['parity_duration'])/(2.*self.params['Nr_Zeno_parity_msmts'])
+                        if self.params['echo_like']:
+                            ### Calculate the wait duration inbetween the parity measurements.
+                            waitduration=(self.params['free_evolution_time']-self.params['parity_duration'])/(2.*self.params['Nr_Zeno_parity_msmts'])
+                        
+                        else:
+                            waitduration=(self.params['free_evolution_time']-self.params['parity_duration'])/(self.params['Nr_Zeno_parity_msmts'])
 
-                        #Add waiting time
                         if i==0:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
                                         wait_time = waitduration-self.params['2C_RO_trigger_duration']) #subtract the length of the RO-trigger for the first waiting time.
@@ -5313,35 +5320,68 @@ class Zeno_TwoQB(MBI_C13):
 
                         final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
                                      wait_time = waitduration)
-
-                        ### the case of only one measurement
-                        if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
-                            wait_seq = [wait_gateA]
-                            gate_seq.extend(wait_seq)
-                            gate_seq.extend(Parity_measurement)
-                            wait_seq = [final_wait]
-                            gate_seq.extend(wait_seq)
-
-                        ### the first element of a sequence with more than one measurement
-                        elif i==0:
-                            wait_seq = [wait_gateA]
-                            gate_seq.extend(wait_seq)
-                            gate_seq.extend(Parity_measurement)
-                            wait_seq = [wait_gateB]
-                            gate_seq.extend(wait_seq)
-
-                        ### not the first but also not the last element
-                        elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
-                            gate_seq.extend(Parity_measurement)
-                            wait_seq = [wait_gateB]
-                            gate_seq.extend(wait_seq)
-
-                        ### more than one measurement and the last element was reached.
-                        else:
-                            gate_seq.extend(Parity_measurement)
-                            wait_seq = [final_wait]
-                            gate_seq.extend(wait_seq)
                         
+
+
+                        if self.params['echo_like']: #this specifies the intertime delay of the Zeno measurements
+                        ###
+                        # echo like corresponds to the sequence: init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography
+                        ###
+                        #Add waiting time
+                            ### the case of only one measurement
+                            if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+
+                            ### the first element of a sequence with more than one measurement
+                            elif i==0:
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [wait_gateB]
+                                gate_seq.extend(wait_seq)
+
+                            ### not the first but also not the last element
+                            elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [wait_gateB]
+                                gate_seq.extend(wait_seq)
+
+                            ### more than one measurement and the last element was reached.
+                            else:
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+                        
+                        else:
+                            # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
+                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomogrpahy"""
+                            
+                            #Add waiting time
+                            ### the case of only one measurement
+                            if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+
+                            ### the first element of a sequence with more than one measurement
+                            elif i==0:
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+
+                            ### more than one measurement and the last element was reached.
+                            else:
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
                 ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse.
                 else:
                     gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
