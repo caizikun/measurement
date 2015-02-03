@@ -35,11 +35,9 @@ if __name__ == '__main__':
     maximum_magnet_step_size = 100
     opimization_target = 8     # target difference in kHz (or when 0 magnet steps are required)
 
-
-    ### for the remainder of the steps
     range_fine = 0.4
     pts_fine   = 51
-    reps_fine  = 1500
+    reps_fine  = 3000
 
     ###########
     ## Start ##

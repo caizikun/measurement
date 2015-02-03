@@ -62,7 +62,7 @@ def XY_initialization(name, carbon_list = [1],
     funcs.prepare(m)
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
-
+    m.params['el_after_init'] = '0'
 
     m.params['C1_Ren_tau']  = [tau]
     m.params['C1_Ren_N']    = [N]

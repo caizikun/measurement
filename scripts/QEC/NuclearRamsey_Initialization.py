@@ -31,7 +31,7 @@ def NuclearRamseyWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 300
     m.params['C13_MBI_RO_state'] = 0
 
     ### overwritten from msmnt params
@@ -68,9 +68,9 @@ def NuclearRamseyWithInitialization(name,
     ############################################
     ### Option 2; Sweep RO phase at set time ###
     ############################################
-    m.params['pts'] = 21
+    m.params['pts'] = 11
     m.params['add_wait_gate'] = True
-    m.params['free_evolution_time'] = np.ones(m.params['pts'] )*365e-6
+    m.params['free_evolution_time'] = np.ones(m.params['pts'] )*465e-6
     m.params['C_RO_phase'] = np.linspace(-20, 400,m.params['pts'])    
 
     m.params['sweep_name'] = 'phase'
@@ -92,5 +92,5 @@ def NuclearRamseyWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE,debug=True,carbon_nr =1)
+    NuclearRamseyWithInitialization(SAMPLE,debug=False,carbon_nr =1)
 

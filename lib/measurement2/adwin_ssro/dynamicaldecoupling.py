@@ -3165,6 +3165,10 @@ class NuclearRabiWithDirectRF(MBI_C13):
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
+
+
+
+
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
@@ -3199,6 +3203,19 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
                     readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
+
+            # #Add wait gate to test RF influence
+            # if self.params['add_wait_gate'] == True:
+            #     if self.params['free_evolution_time'][pt]< (3e-6):
+            #         print ('Error: carbon evolution time is too small')
+            #         qt.msleep(5)
+            #         ### Add waiting time
+            #     wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+            #              wait_time = self.params['free_evolution_time'][pt])
+            #     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+
+
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
 
@@ -5204,6 +5221,7 @@ class Zeno_TwoQB(MBI_C13):
     #     MBI_C13.autoconfig()
 
     def generate_sequence(self,upload=True,debug=False):
+
         pts = self.params['pts']
 
         #self.configure_AOM
@@ -5237,7 +5255,7 @@ class Zeno_TwoQB(MBI_C13):
             ### Initialize logical qubit via parity measurement.
 
             for kk in range(self.params['Nr_MBE']):
-                print '3C_init_'
+                
                 probabilistic_MBE_seq =     self.logic_init_seq(
                         prefix              = '2C_init_' + str(kk+1),
                         pt                  =  pt,
@@ -5259,14 +5277,14 @@ class Zeno_TwoQB(MBI_C13):
 
             ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
-                if self.params['free_evolution_time']!=0:
-                    if self.params['free_evolution_time']< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                if self.params['free_evolution_time'][pt]!=0:
+                    if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
                         print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
                                 %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
                         qt.msleep(5)
                             ### Add waiting time
                     wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                                 wait_time = self.params['free_evolution_time']-self.params['2C_RO_trigger_duration'])
+                                 wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
                     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
 
             ### You have to implement an additional waiting time after the e-pulse. Otherwise trouble with two consecutive MW pulses.
@@ -5284,24 +5302,27 @@ class Zeno_TwoQB(MBI_C13):
 
                 self.params['parity_duration']=(2*t_C13_gate1+2*t_C13_gate2+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts']
 
+                print 'estimated parity duration in seconds:', self.params['parity_duration']
 
-                if self.params['free_evolution_time']!=0:
+                if self.params['free_evolution_time'][pt]!=0:
 
                     for i in range(self.params['Nr_Zeno_parity_msmts']):
                         print 'Estimated length of the Carbon gates in the parity measurements: ', self.params['parity_duration']
-                        if self.params['free_evolution_time']< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
                             print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
                                     %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
                             qt.msleep(5)
                         
                         Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
+                        No_of_msmt=self.params['Nr_Zeno_parity_msmts']
 
                         if self.params['echo_like']:
                             ### Calculate the wait duration inbetween the parity measurements.
-                            waitduration=(self.params['free_evolution_time']-self.params['parity_duration'])/(2.*self.params['Nr_Zeno_parity_msmts'])
+                            waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(2.*No_of_msmt)
                         
                         else:
-                            waitduration=(self.params['free_evolution_time']-self.params['parity_duration'])/(self.params['Nr_Zeno_parity_msmts'])
+                            ### this 'lengthy' formula is used to equally space the repumping intervals in time.
+                            waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)+(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)
 
                         if i==0:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
@@ -5315,13 +5336,17 @@ class Zeno_TwoQB(MBI_C13):
                                         wait_time = waitduration)
 
                         #make the sequence symmetric around the parity measurements.
-                        wait_gateB = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                        Decoupling_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
                                      wait_time = 2*waitduration)
+
+                        #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
+                        equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1))
 
                         final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
                                      wait_time = waitduration)
                         
-
+                        t_C13_gate1+t_C13_gate2
 
                         if self.params['echo_like']: #this specifies the intertime delay of the Zeno measurements
                         ###
@@ -5341,13 +5366,13 @@ class Zeno_TwoQB(MBI_C13):
                                 wait_seq = [wait_gateA]
                                 gate_seq.extend(wait_seq)
                                 gate_seq.extend(Parity_measurement)
-                                wait_seq = [wait_gateB]
+                                wait_seq = [Decoupling_wait_gate]
                                 gate_seq.extend(wait_seq)
 
                             ### not the first but also not the last element
                             elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
                                 gate_seq.extend(Parity_measurement)
-                                wait_seq = [wait_gateB]
+                                wait_seq = [Decoupling_wait_gate]
                                 gate_seq.extend(wait_seq)
 
                             ### more than one measurement and the last element was reached.
@@ -5374,7 +5399,13 @@ class Zeno_TwoQB(MBI_C13):
                                 wait_seq = [wait_gateA]
                                 gate_seq.extend(wait_seq)
                                 gate_seq.extend(Parity_measurement)
-                                wait_seq = [final_wait]
+                                wait_seq = [equal_wait_gate]
+                                gate_seq.extend(wait_seq)
+
+                            ### not the first but also not the last element
+                            elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [equal_wait_gate]
                                 gate_seq.extend(wait_seq)
 
                             ### more than one measurement and the last element was reached.
@@ -5398,7 +5429,7 @@ class Zeno_TwoQB(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     el_state_in         = 1,
                     carbon_list         = self.params['carbon_list'],
-                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    RO_basis_list       = self.params['Tomography Bases'],
                     readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
 

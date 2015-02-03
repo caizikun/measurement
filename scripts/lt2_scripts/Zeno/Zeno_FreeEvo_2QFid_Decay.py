@@ -39,7 +39,7 @@ def Zeno(name, carbon_list   = [1,5],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 300
+    m.params['reps_per_ROsequence'] = 600
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -51,7 +51,7 @@ def Zeno(name, carbon_list   = [1,5],
     m.params['Nr_C13_init']         = len(carbon_init_list)
 
     ##################################
-    ### RO bases (sweep parameter) ###
+    ###         RO bases           ###
     ##################################
 
     m.params['Tomography Bases'] = Tomo_bases 
@@ -75,20 +75,19 @@ def Zeno(name, carbon_list   = [1,5],
     m.params['Nr_Zeno_parity_msmts']     = number_of_zeno_msmnts
     m.params['Zeno_SP_A_power'] = 18e-9
     m.params['Repump_duration']= 300e-6 #how long the 'Zeno' beam is shined in.
-    m.params['echo_like']=False
+
+    m.params['echo_like']=False # this is a bool to set the delay inbetween measurements.
+
     ### Derive other parameters
-    m.params['pts']                 = len(m.params['Tomography Bases'])
-    m.params['sweep_name']          = 'Tomography Bases' 
-    m.params['sweep_pts']           = []
+    m.params['free_evolution_time'] = free_evolution_time
+    m.params['pts']                 = len(m.params['free_evolution_time'])
+    m.params['sweep_name']          = 'free_evolution_time' 
+    m.params['sweep_pts']           = m.params['free_evolution_time']
     
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
-    for BP in m.params['Tomography Bases']:
-        if len(carbon_list) == 2:
-            m.params['sweep_pts'].append(BP[0]+BP[1])
-        elif len(carbon_list) == 3:
-            m.params['sweep_pts'].append(BP[0]+BP[1]+BP[2])
-    print m.params['sweep_pts']
+
+
 
     ####################################
     ### waiting time and measurement ###
@@ -98,189 +97,167 @@ def Zeno(name, carbon_list   = [1,5],
 
 
     funcs.finish(m, upload =True, debug=debug)
-    
-if __name__ == '__main__':
 
-    Tomo2=[]
-    RO_bases=['X','Y','Z']
-    for i,bas1 in enumerate(RO_bases):
-        for j, bas2 in enumerate(RO_bases):
-                Tomo2.append([bas1]+[bas2])
+def array_slicer(Evotime_slicer,evotime_arr):
+    """
+    this function is used to slice up the free evolution times into a list of lists
+    such that the sequence can be loaded into the AWG 
+    """
+
+    no_of_cycles=int(np.floor(len(evotime_arr)/Evotime_slicer))
+    returnEvos = []
+    for i in range(no_of_cycles):
+        returnEvos.append(evotime_arr[i*Evotime_slicer:(i+1)*Evotime_slicer])
+
+    (returnEvos.append(evotime_arr[no_of_cycles*Evotime_slicer:]))
+    return returnEvos
+
+def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dict,debug=False):
+
+    breakstatement=False
+
+    Evotime_slicer = evotime_slicer # the maximum acquisition length is given at the position of the respective measurements.
+
+    EvoTime_arr=array_slicer(Evotime_slicer,evotime_arr)
+
+    #eRO_list = ['positive','negative']
+    eRO_list = ['positive']
+
+    for logic_state in logic_state_list:
+
+        if breakstatement:
+            break
+
+        for EvoTime in EvoTime_arr:
+
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                breakstatement=True
+                break
+
+            for eRO in eRO_list:
+                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(msmts)+'msmt_'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1], 
+                    el_RO= eRO,
+                    logic_state=logic_state,
+                    Tomo_bases = RO_bases_dict[logic_state],
+                    free_evolution_time=EvoTime,
+                    number_of_zeno_msmnts = msmts,
+                    debug=debug)
+
+        if not debug and not breakstatement:
+            GreenAOM.set_power(7e-6)
+            counters.set_is_running(1)  
+            optimiz0r.optimize(dims = ['x','y','z'])
+            stools.turn_off_all_lt2_lasers()
+
+            ssrocalibration(SAMPLE_CFG)
+
+if __name__ == '__main__':
 
     logic_state_list=['X','mX','Y','mY','Z','mZ']
 
-    #gives the necessary RO basis for detemrining the 2Qubit fidelity.
+    #gives the necessary RO basis when decoding to carbon 5
 
-    RO_bases_dict={'X':[['Y','Y'],['Z','Z']],
-    'mX':[['Y','Y'],['Z','Z']],
-    'Y':[['Y','Z'],['Z','Y']],
-    'mY':[['Y','Z'],['Z','Y']],
-    'Z':[['I','X'],['X','I']],
-    'mZ':[['I','X'],['X','I']]}
+    RO_bases_dict={'X':['Z','Z'],
+    'mX':['Z','Z'],
+    'Y':['Y','Z'],
+    'mY':['Y','Z'],
+    'Z':['I','X'],
+    'mZ':['I','X']}
 
-    eRO_list = ['positive','negative']
-
-    #
-    #Measure a single point for a single state.
     
-    # Zeno(SAMPLE +'positive'+'_debug', 
+
+    #0 measurements --> 9 data points per run
+    #Measure a single point for a single state.
+
+    # Zeno(SAMPLE +'positive'+'_0msmts_debug_'+RO_bases_dict['X'][0]+RO_bases_dict['X'][1], 
     #                 el_RO= 'positive',
     #                 logic_state='X',
     #                 Tomo_bases = RO_bases_dict['X'],
-    #                 free_evolution_time=20e-3,
-    #                 number_of_zeno_msmnts = 1,
+    #                 free_evolution_time=EvoTime_arr,
+    #                 number_of_zeno_msmnts = 0,
     #                 debug=True)
 
 
-    # #########################
-    # # 1 measurement         #
-    # #########################
-    # breakstatement=False
-
-    # EvoTime_arr=np.r_[0,np.linspace(3.5e-3,50e-3,14)]
-
-    # for EvoTime in EvoTime_arr:
-
-    #     if breakstatement:
-    #         break
-
-    #     for logic_state in logic_state_list:
-
-    #         print '-----------------------------------'            
-    #         print 'press q to stop measurement cleanly'
-    #         print '-----------------------------------'
-    #         qt.msleep(2)
-    #         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #             breakstatement=True
-    #             break
-
-    #         for eRO in eRO_list:
-    #             Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_1msmt_'+'_EvoTime_'+str(EvoTime), 
-    #                 el_RO= eRO,
-    #                 logic_state=logic_state,
-    #                 Tomo_bases = RO_bases_dict[logic_state],
-    #                 free_evolution_time=EvoTime,
-    #                 number_of_zeno_msmnts = 1,
-    #                 debug=False)
-
-    #     GreenAOM.set_power(7e-6)
-    #     counters.set_is_running(1)  
-    #     optimiz0r.optimize(dims = ['x','y','z'])
-    #     stools.turn_off_all_lt2_lasers()
-
-    #     ssrocalibration(SAMPLE_CFG)
-
-    # # #########################
-    # # # 2 measurements        #
-    # # ######################### estimated duration parity duration: 6.3 ms 2015-01-27
-    EvoTime_arr=np.r_[0,np.linspace(7.5e-3,50e-3,14)]
-
-    breakstatement=False
-
-    for EvoTime in EvoTime_arr:
-
-        if breakstatement:
-            break
-
-        for logic_state in logic_state_list:
-
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(2)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                breakstatement=True
-                break
-
-            for eRO in eRO_list:
-                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_2msmt_'+'_EvoTime_'+str(EvoTime), 
-                    el_RO= eRO,
-                    logic_state=logic_state,
-                    Tomo_bases = RO_bases_dict[logic_state],
-                    free_evolution_time=EvoTime,
-                    number_of_zeno_msmnts = 2,
-                    debug=False)
-
-        GreenAOM.set_power(7e-6)
-        counters.set_is_running(1)  
-        optimiz0r.optimize(dims = ['x','y','z'])
-        stools.turn_off_all_lt2_lasers()
-
-        ssrocalibration(SAMPLE_CFG)
 
 
-    # # #########################
-    # # # 3 measurements        #
-    # # ######################### estimated duration parity duration: 9.4 ms 2015-01-27
-    EvoTime_arr=np.r_[0,np.linspace(10.5e-3,60e-3,14)]
+#     #########################
+#     # 1 measurement         #
+#     ######################### Minimum evo time 3.5 and 6 data points per run
 
-    breakstatement=False
+#     EvoTime_arr=np.r_[0,np.linspace(3.5e-3,6e0-3,14),80e-3,100e-3]
+#     takeZenocurve(6,EvoTime_arr,1,logic_state_list,RO_bases_dict,debug=False)
 
-    for EvoTime in EvoTime_arr:
+#     ########### Test measurements
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateZ', 
+#                     el_RO= 'positive',
+#                     logic_state='Z',
+#                     Tomo_bases = RO_bases_dict['Z'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateY', 
+#                     el_RO= 'positive',
+#                     logic_state='Y',
+#                     Tomo_bases = RO_bases_dict['Y'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
 
-        if breakstatement:
-            break
 
-        for logic_state in logic_state_list:
+#     ######################## 5 data points per run
+#     #   2 measurements     # min length 9.4
+#     ######################## estimated duration parity duration: 6.3 ms 2015-01-27
 
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(2)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                breakstatement=True
-                break
+#     EvoTime_arr=np.r_[0,np.linspace(9.4e-3,60e-3,14),80e-3,100e-3]
+#     takeZenocurve(5,EvoTime_arr,2,logic_state_list,RO_bases_dict,debug=False)
 
-            for eRO in eRO_list:
-                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_3msmt_'+'_EvoTime_'+str(EvoTime), 
-                    el_RO= eRO,
-                    logic_state=logic_state,
-                    Tomo_bases = RO_bases_dict[logic_state],
-                    free_evolution_time=EvoTime,
-                    number_of_zeno_msmnts = 3,
-                    debug=False)
+    
+# ############ Test measurements
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateZ', 
+#                     el_RO= 'positive',
+#                     logic_state='Z',
+#                     Tomo_bases = RO_bases_dict['Z'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateY', 
+#                     el_RO= 'positive',
+#                     logic_state='Y',
+#                     Tomo_bases = RO_bases_dict['Y'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
 
-        GreenAOM.set_power(7e-6)
-        counters.set_is_running(1)  
-        optimiz0r.optimize(dims = ['x','y','z'])
-        stools.turn_off_all_lt2_lasers()
+#      ######################### 4 data points per run
+#      # 3 measurements        # min length 12.5
+#      ######################### estimated duration parity duration: 9.4 ms 2015-01-27
 
-        ssrocalibration(SAMPLE_CFG)
+#     EvoTime_arr=np.r_[0,np.linspace(12.5e-3,60e-3,14),80e-3,100e-3]
+#     takeZenocurve(4,EvoTime_arr,3,logic_state_list,RO_bases_dict,debug=False)
 
-    # # #########################
-    # # # 4 measurements        #
-    # # ######################### estimated duration parity duration: 12.6 ms 2015-01-27
-    EvoTime_arr=np.r_[0,np.linspace(14e-3,60e-3,14)]
+# ############ Test measurements
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateZ', 
+#                     el_RO= 'positive',
+#                     logic_state='Z',
+#                     Tomo_bases = RO_bases_dict['Z'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
+#     Zeno(SAMPLE +'positive'+'_test_0msmts_stateY', 
+#                     el_RO= 'positive',
+#                     logic_state='Y',
+#                     Tomo_bases = RO_bases_dict['Y'],
+#                     free_evolution_time=0e-3,
+#                     number_of_zeno_msmnts = 0,
+#                     debug=False)
 
-    breakstatement=False
+#     ######################### 3 data points per run
+#     # 4 measurements        # min length 15.8
+#     ######################### estimated duration parity duration: 12.6 ms 2015-01-27
+#     EvoTime_arr=np.r_[0,np.linspace(15.8e-3,60e-3,14),80e-3,100e-3]
 
-    for EvoTime in EvoTime_arr:
-
-        if breakstatement:
-            break
-
-        for logic_state in logic_state_list:
-
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(2)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                breakstatement=True
-                break
-
-            for eRO in eRO_list:
-                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_4msmt_'+'_EvoTime_'+str(EvoTime), 
-                    el_RO= eRO,
-                    logic_state=logic_state,
-                    Tomo_bases = RO_bases_dict[logic_state],
-                    free_evolution_time=EvoTime,
-                    number_of_zeno_msmnts = 4,
-                    debug=False)
-
-        GreenAOM.set_power(7e-6)
-        counters.set_is_running(1)  
-        optimiz0r.optimize(dims = ['x','y','z'])
-        stools.turn_off_all_lt2_lasers()
-
-        ssrocalibration(SAMPLE_CFG)
+#     takeZenocurve(3,EvoTime_arr,4,logic_state_list,RO_bases_dict,debug=False)

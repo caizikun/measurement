@@ -129,7 +129,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 4000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -223,7 +223,7 @@ def QEC_test(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 3000 
+    m.params['reps_per_ROsequence'] = 4000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -308,6 +308,10 @@ if __name__ == '__main__':
     error_list['2'] = linspace(0.8,1,3)
 
     error_list['3'] = linspace(0.45,0.45,1)
+
+    error_list['4'] = np.array([0,0.1,0.2,0.3])
+    error_list['5'] = np.array([0.4,0.45,0.5,0.6])
+    error_list['6'] = np.array([0.7,0.8,0.9,1.])    
 
     for state in ['Z','mZ']:
         logic_state = state
@@ -401,7 +405,7 @@ if __name__ == '__main__':
 
                 cnt = 0
             
-            for k in [3]:#range(3):
+            for k in [4,5,6]:#range(3):
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'

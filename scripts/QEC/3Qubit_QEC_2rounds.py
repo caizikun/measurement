@@ -222,7 +222,7 @@ def MBE(name, carbon_list   = [1,5,2],
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    cnt = 0
+    cnt = 2
 
     error_list = {}
     error_list['0'] = np.linspace(0,0.2,3)
@@ -232,6 +232,10 @@ if __name__ == '__main__':
 
     error_list['4'] = np.linspace(0.2,0.4,3)
     error_list['5'] = np.linspace(0.45,0.45,1)
+
+    error_list['6'] = np.array([0,0.1,0.2])
+    error_list['7'] = np.array([0.3,0.35,0.4])
+    error_list['8'] = np.array([0.45,0.5])
 
     for syn_round in [1]:
 
@@ -321,11 +325,10 @@ if __name__ == '__main__':
 
                     cnt = 0
 
-                for k in [4,5]:
-                    if k ==5:
-                        no_reps = 1500
-                    else:
-                        no_reps = 750
+                for k in [6,7,8]:
+
+                    no_reps = 1000
+
                     print '-----------------------------------'
                     print 'press q to stop measurement cleanly'
                     print '-----------------------------------'
