@@ -33,7 +33,7 @@ Carbon_2_f_msm1  		= True
 Carbon_5_f_msm1  		= True
 
 Carbon_1_self_phase		= True 
-Carbon_2_self_phase		= True 
+Carbon_2_self_phase		= True
 Carbon_5_self_phase		= True 
 
 Carbon_1to2_crosstalk	= False
