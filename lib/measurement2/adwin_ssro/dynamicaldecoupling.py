@@ -5202,7 +5202,7 @@ class Zeno_TwoQB(MBI_C13):
     Sequence: Sequence: |N-MBI| -|Cinit|^2-|MBE|^N-(|Wait|-|Parity-measurement|-|Wait|)^M-|Tomography|
     '''
 
-    mprefix='Zeno_TwoQubit'
+    mprefix='Zeno_OneQubit'
     adwin_process='MBI_multiple_C13'
 
     ##### TODO: Add AOM control from the AWG for arbitrary AOM channels.
