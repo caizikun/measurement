@@ -4,6 +4,7 @@ File made by Adriaan Rol
 Edited by THT
 '''
 import numpy as np
+from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
@@ -40,7 +41,7 @@ class Gate(object):
         self.tau        = kw.pop('tau',None)
 
         self.wait_time  = kw.pop('wait_time',None)
-        self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements
+        self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements or RF elements
         self.dec_duration = kw.pop('dec_duration', None)  # can be specified if a custom dec duration is desired
 
         self.Gate_operation = kw.pop('Gate_operation',None) ### For electron gates,'pi2', 'pi', 'general'
@@ -49,7 +50,7 @@ class Gate(object):
         self.RFfreq         = kw.pop('RFfreq',None)
 
         #Scheme is used both for generating decoupling elements as well as the combine to sequence command
-        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','RF_pulse','mbi','electron_repump']:
+        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi','electron_repump']:
             self.scheme = 'single_element'
         else:
             self.scheme = kw.pop('scheme','auto')
@@ -1339,29 +1340,83 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_RF_pulse_element(self,Gate):
         '''
         Written by MB. 
-        Generate RF pulse element, so a pulse that is directly created by the AWG.
-        Now phase not specified but can be specified
+        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
+        Pulse is build up out of a starting element, a repeated middle element and an end
+        element to save the memory of the AWG.
         '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'RF_pulse'
 
         length     = Gate.length
         freq       = Gate.RFfreq
         amplitude  = Gate.amplitude
         prefix     = Gate.prefix
+        phase      = Gate.phase
 
 
-        X = pulselib.RF_erf_envelope(
-            channel = 'RF',
-            frequency = freq,
-            length = length,
-            amplitude = amplitude)
+        #Determine the number of periods that fit in one repeated middle element. 
+        periods_in_pulse = int(1e-6 * freq) + 1
 
-        e = element.Element('%s_RF_pulse' %(prefix),  pulsar=qt.pulsar,
-                global_time = True)
-        e.append(pulse.cp(X))
+        #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
+        MinErfAmp = 0.99 #99% of full amplitude when cutting off error function
+        rise_length = max(0.5 * 0.5e-6 * (2+ssp.erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
+
+
+        #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
+        if length <= periods_in_pulse/freq + 2e-6:
+            print 'RF pulse is too short'
+            break
+
+        #Determine number of repeated elements
+        Gate.reps, tau_remaind = divmod(length-2*rise_length,periods_in_pulse/freq)
         
+        list_of_elements = []
+
+        X = pulse.SinePulse(
+            channel = 'RF',
+            lenght = periods_in_pulse / freq,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase)
+        Env_start_p = pulselib.RF_erf_rise_element(
+            channel = 'RF',
+            length = rise_length + tau_remaind / 2,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase,
+            startorend = 'start')
+        Env_end_p = pulselib.RF_erf_rise_element(
+            channel = 'RF',
+            length = rise_length + tau_remaind / 2,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase,
+            startorend = 'end')
+
+        e_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_start.append(pulse.cp(Env_start_p))
+        list_of_elements.append(e_start)
+
+        e_single_period = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_single_period.append(pulse.cp(X))
+        list_of_elements.append(e_single_period)
+
+        e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_end.append(pulse.cp(Env_end_p))
+        list_of_elements.append(e_end)
+
         Gate.tau_cut = 1e-6
         Gate.wait_time = Gate.length + 2e-6
-        Gate.elements=[e]
+        Gate.elements= list_of_elements
+        
+        return Gate
 
 
     ### function for making sequences out of elements
@@ -1454,6 +1509,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             repetitions=gate.reps,
                             goto_target = gate.go_to,
                             jump_target= gate.event_jump )
+
+            ####################
+            ###  RF elements ###
+            ####################
+            elif gate.scheme == 'RF_pulse':
+                list_of_elements.extend(gate.elements)
+                # starting envelope element
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                    trigger_wait=False,repetitions = 1)
+                # repeating period element
+                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
+                    trigger_wait=False,repetitions = gate.reps)
+                 # ending envelope element
+                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                    trigger_wait=False,repetitions = 1)
             ######################
             ### XY4 elements
             ######################
@@ -5865,4 +5935,4 @@ class Zeno_TwoQB(MBI_C13):
         sequence.append(UncondRenA)
         sequence.append(UncondRenB)
 
-        return sequence
+        return sequence 
