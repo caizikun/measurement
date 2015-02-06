@@ -5214,7 +5214,11 @@ class Three_QB_det_QEC_ENC(MBI_C13):
             print
             print '-' *20
 
+            if pt%2 == 0:
+                extra_prefix = 'QEC'
 
+            elif pt%2 == 0:
+                extra_prefix = 'ENC'
 
             gate_seq = []
 
@@ -5227,7 +5231,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
             init_wait_for_trigger = True
             for kk in range(self.params['Nr_C13_init']):
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    prefix = 'C_MBI_step_' + str(kk+1) + '_C',
+                    prefix                = extra_prefix + 'C_MBI_step_' + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
                     initialization_method = self.params['init_method_list'][kk],
                     C_init_state          = self.params['init_state_list'][kk],
@@ -5240,7 +5244,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
             for kk in range(self.params['Nr_MBE']):
 
                 probabilistic_MBE_seq =     self.logic_init_seq(
-                        prefix              = 'Encode_' ,
+                        prefix              = extra_prefix+'Encode_' ,
                         pt                  =  pt,
                         carbon_list         = self.params['MBE_list'],
                         RO_basis_list       = self.params['MBE_bases'],
@@ -5254,9 +5258,9 @@ class Three_QB_det_QEC_ENC(MBI_C13):
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            if pt%2 == 1: # just RO, no encoding
+            if pt%2 == 1: # just RO, no QEC
                 carbon_tomo_seq = self.readout_carbon_sequence(
-                        prefix              = 'Tomo',
+                        prefix              = extra_prefix+'Tomo',
                         pt                  = pt,
                         go_to_element       = None,
                         event_jump_element  = None,
@@ -5272,7 +5276,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                 list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
                 combined_list_of_elements.extend(list_of_elements)
 
-                for seq_el in seq.elements:b 
+                for seq_el in seq.elements: 
                     combined_seq.append_element(seq_el)
                 
                 if not debug:
@@ -5314,7 +5318,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                     el_in_state = 0
 
                 Parity_seq_a = self.readout_carbon_sequence(
-                            prefix              = 'Parity_A_' ,
+                            prefix              = extra_prefix+'Parity_A_' ,
                             pt                  = pt,
                             RO_trigger_duration = 150e-6,
                             carbon_list         = self.params['Parity_a_carbon_list'],
@@ -5334,7 +5338,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                 el_in_state_b1 = 1
 
                 Parity_seq_b0 = self.readout_carbon_sequence(
-                            prefix              = 'Parity_B0_' ,
+                            prefix              = extra_prefix+'Parity_B0_' ,
                             pt                  = pt,
                             RO_trigger_duration = 150e-6,
                             carbon_list         = self.params['Parity_b_carbon_list'],
@@ -5344,7 +5348,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                             el_state_in     = el_in_state_b0)
 
                 Parity_seq_b1 = self.readout_carbon_sequence(
-                            prefix              = 'Parity_B1_' ,
+                            prefix              = extra_prefix+'Parity_B1_' ,
                             pt                  = pt,
                             RO_trigger_duration = 150e-6,
                             carbon_list         = self.params['Parity_b_carbon_list'],
@@ -5387,7 +5391,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
 
 
                 carbon_tomo_seq00 = self.readout_carbon_sequence(
-                        prefix              = 'Tomo00_',
+                        prefix              = extra_prefix+'Tomo00_',
                         pt                  = pt,
                         go_to_element       = None,
                         event_jump_element  = None,
@@ -5401,7 +5405,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                 gate_seq00.extend(carbon_tomo_seq00)
 
                 carbon_tomo_seq01 = self.readout_carbon_sequence(
-                        prefix              = 'Tomo01_',
+                        prefix              = extra_prefix+'Tomo01_',
                         pt                  = pt,
                         go_to_element       = None,
                         event_jump_element  = None,
@@ -5414,7 +5418,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                 gate_seq01.extend(carbon_tomo_seq01)
 
                 carbon_tomo_seq10 = self.readout_carbon_sequence(
-                        prefix              = 'Tomo10_',
+                        prefix              = extra_prefix+'Tomo10_',
                         pt                  = pt,
                         go_to_element       = None,
                         event_jump_element  = None,
@@ -5427,7 +5431,7 @@ class Three_QB_det_QEC_ENC(MBI_C13):
                 gate_seq10.extend(carbon_tomo_seq10)
 
                 carbon_tomo_seq11 = self.readout_carbon_sequence(
-                        prefix              = 'Tomo11_',
+                        prefix              = extra_prefix+'Tomo11_',
                         pt                  = pt,
                         go_to_element       = None,
                         event_jump_element  = None,
