@@ -328,7 +328,7 @@ class RF_erf_envelope(pulse.SinePulse):
 # Written by MAB as the AWG rise element of an RF pulse with error function element
 class RF_erf_rise_element(pulse.SinePulse):
     def __init__(self, *arg, **kw):
-        RF_erf_envelope.__init__(self, *arg, **kw)
+        pulse.SinePulse.__init__(self, *arg, **kw)
 
         self.envelope_risetime = kw.pop('envelope_risetime', 500e-9)
         self.startorend = kw.pop('startorend', None)
@@ -342,8 +342,7 @@ class RF_erf_rise_element(pulse.SinePulse):
         elif self.startorend == 'end':
             env = ssp.erf(-2./rt*(tvals-tvals[-1]+rt))/2. + 0.5
         else:
-            "RF pulse start or end incorrectly defined"
-            break
+            raise Exception('RF pulse start or end incorrectly defined')
         return wf * env
 
 

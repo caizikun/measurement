@@ -1357,28 +1357,46 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         prefix     = Gate.prefix
         phase      = Gate.phase
 
+        #We choose a max length for pulse block of
 
-        #Determine the number of periods that fit in one repeated middle element. 
+        Freq_Res = 5 #Needed freq res in Hz
+        multiplier = freq / Freq_Res
         periods_in_pulse = int(1e-6 * freq) + 1
 
+        while (periods_in_pulse / freq) % 1e-9 != 0:
+            periods_in_pulse += 1
+            if periods_in_pulse / freq > 1e-3:
+                print periods_in_pulse
+                raise Exception('Choose different freq')
+        print periods_in_pulse / freq
+        
+
+        #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
+        # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
+        # #     print periods_in_pulse * 1e9 / freq
+        # #     periods_in_pulse *= 2
+
+        print periods_in_pulse
         #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
-        MinErfAmp = 0.99 #99% of full amplitude when cutting off error function
-        rise_length = max(0.5 * 0.5e-6 * (2+ssp.erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
+        MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
+        rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
 
 
         #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
         if length <= periods_in_pulse/freq + 2e-6:
-            print 'RF pulse is too short'
-            break
+            raise Exception('RF pulse is too short')
 
+        print periods_in_pulse
         #Determine number of repeated elements
-        Gate.reps, tau_remaind = divmod(length-2*rise_length,periods_in_pulse/freq)
-        
+        Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
+        tau_remaind *= 1e-9 
         list_of_elements = []
 
         X = pulse.SinePulse(
             channel = 'RF',
-            lenght = periods_in_pulse / freq,
+            length = periods_in_pulse / freq,
             frequency = freq,
             amplitude = amplitude,
             phase = phase)
@@ -1402,10 +1420,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         e_start.append(pulse.cp(Env_start_p))
         list_of_elements.append(e_start)
 
-        e_single_period = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_single_period.append(pulse.cp(X))
-        list_of_elements.append(e_single_period)
+        e_middle.append(pulse.cp(X))
+        list_of_elements.append(e_middle)
 
         e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)

@@ -1,9 +1,5 @@
-
-
-
-
 """
-Written by MB
+Written by MAB
 Script for a single Nuclear Rabi
 Initialization:
 - Initializes in the nuclear |0> state using SWAP
@@ -32,11 +28,11 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def CarbonRabiWithDirectRF(name, freqs, 
+def CarbonRabiWithDirectRF(name, 
         carbon_nr             = 5,               
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
-        debug                 = False,
+        debug                 = True,
         C13_init_method       = 'swap', 
         el_after_init         = '1',
         DoRabi                = False):
@@ -71,7 +67,7 @@ def CarbonRabiWithDirectRF(name, freqs,
 
     print  m.params['RF_pulse_frqs'][0]
    
-    m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 0.04
+    m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 0.1#0.04
     m.params['C_RO_phase'] = m.params['pts']*['Z']        
 
 
@@ -92,6 +88,22 @@ def CarbonRabiWithDirectRF(name, freqs,
 
 if __name__ == '__main__':
     # CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C5_el0_positive', carbon_nr=5, el_RO= 'positive', el_after_init='0', DoRabi=True)
+    
+    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C5_el1_positive', carbon_nr=5, el_RO= 'positive', el_after_init='1', DoRabi=True)
+
+    print michiel
+
+    carbon_nr = 5
+    el_after_init = '1'
+    centerfreq = qt.exp_params['samples']['111_1_sil18']['C'+ str(carbon_nr) + '_freq_'+ el_after_init]
+    Freq = np.linspace(centerfreq-2.5e2,centerfreq+2.5e2,3)
+    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_1run', Freq, carbon_nr=carbon_nr, el_RO= 'positive', el_after_init=el_after_init, DoRabi=False)
+
+
+
+
+
+
 
 # # centerfreq = 400e3
 # # FWHM = 100
@@ -144,4 +156,4 @@ if __name__ == '__main__':
     CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_'+str(length)+'run', Freq[nr_pts-np.mod(nr_pts,nr_per_round):nr_pts], carbon_nr=carbon_nr, el_RO= 'positive', el_after_init=el_after_init, DoRabi=False)
 
 
-    print '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a', '\a'
+    print '\a', '\a', '\a', 
