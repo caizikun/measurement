@@ -22,6 +22,7 @@ res = dev.CIUsb_GetAvailableDevices(32)
 
 a= res[0]
 print [a[i] for i in range(31)]
+
 res = dev.CIUsb_SetControl(0,3)
 
 res = dev.CIUsb_SetControl(0,2)
