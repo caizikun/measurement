@@ -86,6 +86,7 @@ def MBE(name, carbon_list   = [1,5,2],
         mbe_bases                     = ['Y','Y','Y'],
         MBE_threshold                 = 1,
         RO_C                          = 1,  
+        MBE_list                      = [5,2,1],
 
         number_of_parity_msmnts       = 2,
         error_on_qubit                = 'all',
@@ -93,10 +94,17 @@ def MBE(name, carbon_list   = [1,5,2],
         debug                         = False,
         error_sign                    = 1,
         error_probability_list        = np.linspace(0,1,3),
+        evolution_time_list           = [0,0],
         parity_orientations           = ['positive','negative']):
 
     m = DD.Three_QB_det_QEC(name)
     funcs.prepare(m)
+    
+    m.params['add_wait_gate'] = True
+    m.params['wait_in_msm1']  = False
+    m.params['free_evolution_time_1'] = np.ones(len(error_probability_list))*20e-6 
+    m.params['free_evolution_time_2'] = np.ones(len(error_probability_list))*20e-6 
+
 
     phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
     if error_on_qubit ==1:
@@ -108,6 +116,8 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
+
+
     m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
@@ -117,11 +127,11 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 750 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-
+    m.params['MBE_list']            = MBE_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -134,30 +144,12 @@ def MBE(name, carbon_list   = [1,5,2],
 
     '''Select right tomography basis '''
 
-    if parity_orientations == ['positive','positive']:
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
-    
-    elif parity_orientations == ['negative','negative']:
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
-    
-    elif parity_orientations == ['positive','negative']:
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
 
-    elif parity_orientations == ['negative','positive']:
-        m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '2',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '3',  Flip_axis = 'Y', RO_list = logic_state+'_list')[RO_C]
-        m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '1',  Flip_axis = 'Z', RO_list = logic_state+'_list')[RO_C]
-
+    m.params['Tomo_Bases_00'] = TD.get_tomo_bases(Flip_qubit = '' ,  Flip_axis = '', RO_list ='full')[RO_C]
+    m.params['Tomo_Bases_01'] = TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list ='full')[RO_C]
+    m.params['Tomo_Bases_10'] = TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list ='full')[RO_C]
+    m.params['Tomo_Bases_11'] = TD.get_tomo_bases(Flip_qubit = '',  Flip_axis = '', RO_list ='full')[RO_C]
+    
     ###################
     ### MBE settings ###
     ####################
@@ -189,21 +181,21 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['electron_readout_orientation'] = el_RO
     
     funcs.finish(m, upload =True, debug=debug)
-    
+
 if __name__ == '__main__':
-    cnt = 1
+    cnt = -100
 
-    error_list = {}
-    error_list['0'] = linspace(0,0.1,2)
-    error_list['1'] = linspace(0.2,0.3,2)
-    error_list['2'] = linspace(0.4,0.5,2)
-    error_list['3'] = linspace(0.6,0.7,2)
-    error_list['4'] = linspace(0.8,0.9,2)
-    error_list['5'] = linspace(1.0,1.,1)
+    # error_list = {}
+    # error_list['0'] = linspace(0,0.1,2)
+    # error_list['1'] = linspace(0.2,0.3,2)
+    # error_list['2'] = linspace(0.4,0.5,2)
+    # error_list['3'] = linspace(0.6,0.7,2)
+    # error_list['4'] = linspace(0.8,0.9,2)
+    # error_list['5'] = linspace(1.0,1.,1)
     
-    for syn_round in [1,2,3]:
+    for syn_round in [1]:
 
-        for state in ['Y','mY','Z','mZ','X','mX']:
+        for state in ['Z']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -217,12 +209,14 @@ if __name__ == '__main__':
             elif state == 'Y' or state == 'mY':
                 RO_list = [4,5,6] 
             elif state == 'Z' or state == 'mZ': 
-                RO_list = [0,1,2]
+                RO_list = [0,1,3,4,6,7]
+                RO_list = [3,4,6,7]
 
 
-            GreenAOM.set_power(7e-6)
-            ins_counters.set_is_running(0)  
-            optimiz0r.optimize(dims=['x','y','z'])
+
+            # GreenAOM.set_power(7e-6)
+            # ins_counters.set_is_running(0)  
+            # optimiz0r.optimize(dims=['x','y','z'])
 
             for RO in RO_list:
                 print '-----------------------------------'            
@@ -232,7 +226,7 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
 
-                ssrocalibration(SAMPLE_CFG)
+                # ssrocalibration(SAMPLE_CFG)
                 
                 cnt += 1
                 if cnt == 2:
@@ -292,7 +286,7 @@ if __name__ == '__main__':
 
                     cnt = 0
                 
-                for k in range(6):
+                for k in [9]:#range(6):
                     print '-----------------------------------'            
                     print 'press q to stop measurement cleanly'
                     print '-----------------------------------'
@@ -300,11 +294,11 @@ if __name__ == '__main__':
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                         break
 
-                    for error_sign in [1,-1]:
+                    for error_sign in [1]:#[1,-1]:
 
                         logic_state = state
 
-                        e_list = error_list[str(k)]
+                        e_list = [0,0.25,0.5]#np.linspace(0,0.5,2)#error_list[str(k)]
                         print '-----------------------------------'            
                         print 'press q to stop measurement cleanly'
                         print '-----------------------------------'

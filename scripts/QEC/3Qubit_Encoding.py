@@ -2,15 +2,50 @@ import numpy as np
 import qt 
 import msvcrt
 
+
+
+
+
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
+
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
+
+
+# import the DESR measurement, DESR fit, magnet tools and master of magnet
+from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
+from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
+from measurement.lib.tools import magnet_tools as mt; reload(mt)
+mom = qt.instruments['master_of_magnet']; reload(mt)
+ins_adwin = qt.instruments['adwin']
+ins_counters = qt.instruments['counters']
+ins_aom = qt.instruments['GreenAOM']
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [2,5,1],               
+nm_per_step = qt.exp_params['magnet']['nm_per_step']
+f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
+f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
+N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
+ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
+
+# import the msmt class
+# from measurement.lib.measurement2.adwin_ssro import ssro
+
+
+range_fine  = 0.40
+pts_fine    = 51   
+reps_fine   = 1500 #1000
+
+execfile(qt.reload_current_setup)
+
+
+SAMPLE = qt.exp_params['samples']['current']
+SAMPLE_CFG = qt.exp_params['protocols']['current']
+
+def MBE(name, carbon_list   = [1,5,2],               
         
         carbon_init_list        = [2,5,1],
         carbon_init_states      = 3*['up'], 
@@ -146,7 +181,18 @@ if __name__ == '__main__':
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
-        for state in ['mY']:
+        for state in ['Z','mZ','X','mX','Y','mY']:
+            
+            # DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
+            #         range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+            #         pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+
+
+            # DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp', 
+            #         range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
+            #         pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+                    
+
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -154,11 +200,11 @@ if __name__ == '__main__':
             qt.msleep(2)
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
-            for k in np.linspace(15,20,6).astype(int):
+            for k in range(len(Tomo_bases)/3):
                 tomo = Tomo_bases[0+k*3:3+k*3]#Tomo_bases[0+k*7:7+k*7]
-                # tomo = Tomo_bases_2
-                MBE(SAMPLE +'_state_'+ logic_state +'_positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
-                MBE(SAMPLE +'_state_'+ logic_state +'_negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
+                # tomo = Tomo_bases_Y
+                MBE(SAMPLE +'_state_'+logic_state+'positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
+                MBE(SAMPLE +'_state_'+logic_state+'negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
 
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'

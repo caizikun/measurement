@@ -86,6 +86,7 @@ def MBE(name, carbon_list   = [1,5,2],
         mbe_bases                     = ['Y','Y','Y'],
         MBE_threshold                 = 1,
         RO_C                          = 1,  
+        MBE_list                      = [5,2,1],
 
         number_of_parity_msmnts       = 2,
         error_on_qubit                = 'all',
@@ -93,12 +94,19 @@ def MBE(name, carbon_list   = [1,5,2],
         debug                         = False,
         error_sign                    = 1,
         error_probability_list        = np.linspace(0,1,3),
+        evolution_time_list           = [0],
         parity_orientations           = ['positive','negative']):
 
     m = DD.Three_QB_det_QEC(name)
     funcs.prepare(m)
+    
+    m.params['add_wait_gate'] = True
+    m.params['wait_in_msm1']  = False
+    m.params['free_evolution_time_1'] = np.array(evolution_time_list)/2.
+    m.params['free_evolution_time_2'] = np.array(evolution_time_list)/2.
 
-    phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    phase_error                       = np.zeros(len(evolution_time_list))
+    # phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:
@@ -108,8 +116,10 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-    m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
 
+
+    m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     m.params['Parity_a_RO_orientation'] = parity_orientations[0]
@@ -117,11 +127,11 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 750 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-
+    m.params['MBE_list']            = MBE_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -181,9 +191,9 @@ def MBE(name, carbon_list   = [1,5,2],
     m.params['Parity_b_RO_list'] = ['X','X']
 
     ### Derive other parameters
-    m.params['pts']                 = len(error_probability_list)
-    m.params['sweep_name']          = 'Error Probability' 
-    m.params['sweep_pts']           = error_probability_list
+    m.params['pts']                 = len(evolution_time_list)
+    m.params['sweep_name']          = 'Evolution time' 
+    m.params['sweep_pts']           = evolution_time_list
 
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
@@ -191,19 +201,22 @@ def MBE(name, carbon_list   = [1,5,2],
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    cnt = 1
+    cnt = 0
 
-    error_list = {}
-    error_list['0'] = linspace(0,0.1,2)
-    error_list['1'] = linspace(0.2,0.3,2)
-    error_list['2'] = linspace(0.4,0.5,2)
-    error_list['3'] = linspace(0.6,0.7,2)
-    error_list['4'] = linspace(0.8,0.9,2)
-    error_list['5'] = linspace(1.0,1.,1)
-    
-    for syn_round in [1,2,3]:
+    evo_list_total = linspace(0,30e-3,16)
+    evo_list = {}
+    evo_list['0'] = evo_list_total[0:3]
+    evo_list['1'] = evo_list_total[3:6]
+    evo_list['2'] = evo_list_total[6:9]
+    evo_list['3'] = evo_list_total[9:12]
+    evo_list['4'] = evo_list_total[12:15]
+    evo_list['5'] = evo_list_total[15:16]
+    # evo_list['6'] = evo_list_total[12:14]
+    # evo_list['7'] = evo_list_total[14:16]
 
-        for state in ['Y','mY','Z','mZ','X','mX']:
+    for syn_round in [1]:
+
+        for state in ['mZ']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -217,7 +230,7 @@ if __name__ == '__main__':
             elif state == 'Y' or state == 'mY':
                 RO_list = [4,5,6] 
             elif state == 'Z' or state == 'mZ': 
-                RO_list = [0,1,2]
+                RO_list = [2]
 
 
             GreenAOM.set_power(7e-6)
@@ -266,6 +279,7 @@ if __name__ == '__main__':
                                     error_sign= 1, 
                                     error_on_qubit = 'all',
                                     error_probability_list= e_list,
+                                    evolution_time_list = [0],
                                     parity_orientations           = ['positive','positive'])
 
                                 MBE(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
@@ -273,6 +287,7 @@ if __name__ == '__main__':
                                     error_sign= 1, 
                                     error_on_qubit = 'all',
                                     error_probability_list= e_list,
+                                    evolution_time_list = [0],
                                     parity_orientations           = ['positive','positive'])                
 
                     DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
@@ -300,82 +315,73 @@ if __name__ == '__main__':
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                         break
 
-                    for error_sign in [1,-1]:
 
-                        logic_state = state
+                    logic_state = state
 
-                        e_list = error_list[str(k)]
-                        print '-----------------------------------'            
-                        print 'press q to stop measurement cleanly'
-                        print '-----------------------------------'
-                        qt.msleep(2)
-                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                            break
-                        
+                    t_list = evo_list[str(k)]
+                    print '-----------------------------------'            
+                    print 'press q to stop measurement cleanly'
+                    print '-----------------------------------'
+                    qt.msleep(2)
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        break
+                    
 
-                        if syn_round == 0:
+                    if syn_round == 0:
 
-                            MBE(SAMPLE + '00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'positive', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','positive'])
+                        MBE(SAMPLE + '00_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'positive', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['positive','positive'])
 
-                            MBE(SAMPLE + '00_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'negative', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','positive'])
+                        MBE(SAMPLE + '00_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'negative', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['positive','positive'])
 
-                        elif syn_round == 1:
+                    elif syn_round == 1:
 
-                            MBE(SAMPLE + '11_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'positive', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['negative','negative'])
+                        MBE(SAMPLE + '11_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'positive', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['negative','negative'])
 
-                            MBE(SAMPLE + '11_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'negative', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['negative','negative'])
-                        
-                        elif syn_round == 2:
+                        MBE(SAMPLE + '11_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'negative', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['negative','negative'])
+                    
+                    elif syn_round == 2:
 
-                            MBE(SAMPLE + '01_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'positive', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','negative'])
+                        MBE(SAMPLE + '01_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'positive', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['positive','negative'])
 
-                            MBE(SAMPLE + '01_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'negative', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['positive','negative'])
-                        
-                        elif syn_round == 3:
+                        MBE(SAMPLE + '01_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'negative', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['positive','negative'])
+                    
+                    elif syn_round == 3:
 
-                            MBE(SAMPLE + '10_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'positive', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['negative','positive'])
+                        MBE(SAMPLE + '10_sweep_time_positive_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'positive', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['negative','positive'])
 
-                            MBE(SAMPLE + '10_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
-                                logic_state = logic_state,el_RO = 'negative', 
-                                error_sign= error_sign, 
-                                error_on_qubit = 'all',
-                                error_probability_list= e_list,
-                                parity_orientations           = ['negative','positive'])
+                        MBE(SAMPLE + '10_sweep_time_negative_RO'+str(RO)+'_k'+str(k)+'_'+logic_state,RO_C = RO, 
+                            logic_state = logic_state,el_RO = 'negative', 
+                            error_on_qubit = 'all',
+                            evolution_time_list= t_list,
+                            parity_orientations           = ['negative','positive'])
 
 
 
