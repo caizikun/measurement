@@ -32,7 +32,7 @@ class multiple_optimizer(Instrument):
         if self._is_waiting:
             return True
         else:
-            self.check()
+            return self.check()
         pass
     
     def manual_check(self):

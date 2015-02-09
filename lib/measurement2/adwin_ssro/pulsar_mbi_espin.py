@@ -143,11 +143,11 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             print 'Suggested power level would exceed V_max of the AOM driver.'
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
-            channelDict={'ch2m1': 'ch2_marker1'}
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
             print 'AOM voltage', dephasing_AOM_voltage
             self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
             qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
-
+            print self.params['Channel_alias']
 
         # MBI element
         mbi_elt = self._MBI_element()
@@ -203,7 +203,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             elts.append(e)
 
         # sequence
-        seq = pulsar.Sequence('MBI Electron Rabi sequence')
+        seq = pulsar.Sequence('MBI Electron Ramsey sequence')
         for i,e in enumerate(elts):
             seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
                 trigger_wait = True, goto_target = 'MBI-%d' % i,
