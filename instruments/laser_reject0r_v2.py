@@ -34,6 +34,7 @@ class laser_reject0r_v2(Instrument):
         self.add_function('move')
         self.add_function('get_waveplates')
         self.add_function('reset_wp_channel')
+        self.add_function('nd_optimize')
 
 
         ins_pars  = {'opt_range'              : {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':4, 'units': 'deg'},
