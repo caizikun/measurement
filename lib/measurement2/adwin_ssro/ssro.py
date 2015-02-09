@@ -191,7 +191,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             
         if save_ins_settings:
             self.save_instrument_settings_file()
-        qt.instruments['counters'].set_is_running(True)
+
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
