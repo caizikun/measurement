@@ -131,7 +131,7 @@ def tune(name):
     m.params['MW_during_LDE'] = 0
 
     m.params['general_sweep_name'] = 'aom_amplitude' 
-    m.params['general_sweep_pts'] = [.5]
+    m.params['general_sweep_pts'] = [0.5]
 
     run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
@@ -139,7 +139,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=10
+    pts=11
     m.params['pts']=pts
     m.params['repetitions'] = 500 # XXXXXXXXXXXXXXXXXX
 
@@ -161,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.05,0.8,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        aom_power_sweep=np.linspace(0.1,0.8,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -170,8 +170,8 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        m.params['general_sweep_name'] = 'eom_off_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(-0.13,0.0,pts)
+        m.params['general_sweep_name'] = 'eom_pulse_amplitude'
+        m.params['general_sweep_pts'] = np.linspace(1.5,2.,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -263,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3') 
-    #tune('tune_lt3_PippinSil3') 
+    #tail_sweep('tail_lt3') 
+    tune('tune_lt3_The111no2_SIL5') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')

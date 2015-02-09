@@ -22,6 +22,10 @@ class remote_measurement_helper(Instrument):
         instrument_helper.create_get_set(self,ins_pars)
         
         self.add_function('execute_script')
+        self.add_function('get_measurement_params')
+        self.add_function('set_measurement_params')
+
+        self._measurement_params = {}
 
         # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
@@ -69,3 +73,12 @@ class remote_measurement_helper(Instrument):
         else:
             logging.warning(self.get_name() + ': Remote qtlab instance ' + self._exec_qtlab_name +' not found, client disconnected?')
         return True
+
+
+    def get_measurement_params(self):
+        return self._measurement_params       
+
+    def set_measurement_params(self,**kw):
+        self._measurement_params = {}
+        for k in kw:
+            self._measurement_params[k] = kw[k]
