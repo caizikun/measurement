@@ -99,7 +99,10 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000, #s
 		'measurement_time':                         1200,#sec
-		'measurement_abort_check_interval':			1#sec
+		'measurement_abort_check_interval':			1,#sec
+		'MIN_HIST_SYNC_BIN': 	  					1000,
+	    'MAX_HIST_SYNC_BIN': 					 	1000,
+	    'count_marker_channel':						16,
 		}
 
 
@@ -107,7 +110,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.806743e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-17 2.806445
+f_msm1_cntr =  2.807333e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-17 2.806445
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -152,10 +155,10 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 200e-9, #XX 
-        'Hermite_pi_amp': 0.9084, #2014-12-24
+    	'Hermite_pi_length': 220e-9, #XX 
+        'Hermite_pi_amp': 0.9284, #2014-12-24
         'Hermite_pi2_length': 100e-9, #XX
-        'Hermite_pi2_amp': 0.595769, #2014-12-21
+        'Hermite_pi2_amp': 0.65, #2014-12-21
         'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
         'Hermite_Npi4_amp':    0.905 +0.04, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-17
         'Square_pi_length' : 50e-9, # 2014-12-01
