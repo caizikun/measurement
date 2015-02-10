@@ -41,7 +41,7 @@ class LaserFrequencyScan:
     def finish_scan(self):
         pass
 
-    def scan_to_frequency(self, f, voltage_step_scan=0.05, dwell_time=0.01, tolerance=0.3, power = 0, **kw):
+    def scan_to_frequency(self, f, voltage_step_scan=0.03, dwell_time=0.1, tolerance=0.3, power = 0, **kw):
 
         set_voltage = kw.pop('set_voltage', self.set_red_laser_voltage)
         get_voltage = kw.pop('get_voltage', self.get_red_laser_voltage)
@@ -162,18 +162,18 @@ class LaserFrequencyScan:
 
 class Scan(LaserFrequencyScan):
 
-    def __init__(self, name='LT1', red_labjack_dac_nr=2, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
+    def __init__(self, name='LT3', red_labjack_dac_nr=0, yellow_labjack_dac_nr = 4, red_wm_channel = 4, yellow_wm_channel = 2):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
-        self.physical_adwin=qt.get_setup_instrument('physical_adwin_lt2')
+        self.physical_adwin=qt.get_setup_instrument('physical_adwin')
         self.mw = qt.get_setup_instrument('SMB100')
         self.labjack= qt.get_setup_instrument('labjack')
         self.wavemeter=qt.instruments['wavemeter']
 
         self.set_red_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(red_labjack_dac_nr)](x)
         self.get_red_laser_voltage = lambda : self.labjack.__dict__['get_bipolar_dac'+str(red_labjack_dac_nr)]()
-        self.set_red_power = qt.get_setup_instrument('NewfocusAOM').set_power
+        self.set_red_power = qt.get_setup_instrument('MatisseAOM').set_power
 
 
         self.set_yellow_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(yellow_labjack_dac_nr)](x)
@@ -182,11 +182,11 @@ class Scan(LaserFrequencyScan):
 
         self.set_repump_power = qt.get_setup_instrument('GreenAOM').set_power
 
-        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
+        self.get_frequency = lambda x : self.physical_adwin.Get_FPar(40+red_wm_channel)#lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         self.get_counts = self.adwin.measure_counts
         self.counter_channel = 0
         self.red_wm_channel = red_wm_channel
-        self.red_voltage_frequency_relation_sign = -1
+        self.red_voltage_frequency_relation_sign = 1
 
 
         self.yellow_voltage_frequency_relation_sign = 1
@@ -228,7 +228,7 @@ class Scan(LaserFrequencyScan):
             save = False)
 
     def red_scan(self, start_f, stop_f, power=0.5e-9, **kw):
-        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
+        #self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         voltage_step = kw.pop('voltage_step', 0.005)
         integration_time_ms = kw.pop('integration_time_ms', 50)
         
@@ -544,7 +544,7 @@ def fast_gate_scan(name):
 def single_scan(name):
     m = Scan()
     m.name=name
-    do_MW=True
+    do_MW=False
     if do_MW:
         m.mw.set_power(-7)
         m.mw.set_frequency(2.809e9)
@@ -552,10 +552,11 @@ def single_scan(name):
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(39, 70, voltage_step=0.02, integration_time_ms=20, power = 0.2e-9)  #0.6e-9
+    #m.scan_to_frequency(65)
+    m.red_scan(73, 85, voltage_step=0.001, integration_time_ms=20, power = 3e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
     #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
-    # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
+    #m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     if do_MW:
         m.mw.set_status('off')
@@ -568,9 +569,9 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(0.001e-6)
 
-    single_scan('Pippin_SIL3_MW')
+    single_scan('SAM_SIL5')
     #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)

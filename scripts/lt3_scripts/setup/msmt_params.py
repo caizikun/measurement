@@ -1,6 +1,6 @@
 cfg={}
-sample_name = 'Pippin'
-sil_name = 'SIL3'
+sample_name = 'The111n02'
+sil_name = 'SIL5'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -23,7 +23,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       50e-6,
+		'green_repump_amplitude':       45e-6, #XXXX 50e-6
 		'green_repump_duration':        10,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -129,7 +129,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 2e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 14e-9,
-		'CR_duration' :				 	 50,
+		'CR_duration' :				 	 100, #XXXXXX 50
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,

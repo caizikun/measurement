@@ -36,7 +36,6 @@ class laser_reject0r_v2(Instrument):
         self.add_function('reset_wp_channel')
         self.add_function('nd_optimize')
 
-
         ins_pars  = {'opt_range'              : {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':4, 'units': 'deg'},
                     'opt_noof_points'         : {'type':types.IntType,'flags':Instrument.FLAG_GETSET,   'val':11},
                     'opt_red_power'           : {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10e-9}, 

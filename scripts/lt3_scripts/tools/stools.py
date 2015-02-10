@@ -225,3 +225,56 @@ def rf_switch_local():
 
 def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
+
+def aom_listener():
+    import speech
+    def do_aom(phrase,listener):
+        if phrase == 'green':
+            aom = 'GreenAOM'
+        elif phrase == 'red':
+            aom = 'MatisseAOM'
+        elif phrase == 'pulse':
+            aom = 'PulseAOM'
+        elif phrase == 'yellow':
+            aom = 'YellowAOM'
+        elif phrase == 'stop':
+            print 'stop listening'
+            listener.stoplistening()
+            return
+        elif phrase == 'servo':
+            print 'PMservo flip'
+            ins = qt.instruments['PMServo']
+            if ins.get_position() == ins.get_in_position():
+                ins.move_out()
+            else:
+                ins.move_in()
+            return
+        elif phrase=='power':
+            power = '{:.0f} nano waat'.format(qt.instruments['powermeter'].get_power()*1e9)
+            print 'power: ', power
+            speech.say(power)
+            return
+        else:
+            print 'Not understood'
+
+        if qt.instruments[aom].get_power() == 0.:
+            print 'Turning on', aom
+            qt.instruments[aom].turn_on()
+        else:
+            print 'Turning off', aom
+            qt.instruments[aom].turn_off()
+
+    #How can i remove windows commands from pyspeech windows recognition? 
+    #For example if i wanted for my program to open up notepad i would say 
+    #"Open notepad", but then windows will also open up notepad for me too. 
+    #How can i disable this so that my program is the only one running commands? 
+
+    #in lib/site_packages/speech.py
+    #On line 66 change the code to:
+    #_recognizer = win32com.client.Dispatch("SAPI.SpInProcRecognizer")
+    #_recognizer.AudioInputStream = win32com.client.Dispatch("SAPI.SpMMAudioIn")
+    #And on line 112 change the code to:
+    #_ListenerBase = win32com.client.getevents("SAPI.SpInProcRecoContext") 
+    #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
+    
+    listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)
