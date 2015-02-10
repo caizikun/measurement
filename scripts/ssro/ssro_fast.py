@@ -165,4 +165,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Pippin_LT3')
+    fast_ssro_calibration(SAMPLE_CFG)

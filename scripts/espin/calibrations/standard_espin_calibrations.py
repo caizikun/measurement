@@ -366,22 +366,25 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
     pts = m.params['pts']
     m.params['repetitions'] = 2000
 
-    sweep_duration = True 
-
     m.params['Ex_SP_amplitude']=0
 
-    m.params['pulse_sweep_durations'] =  np.ones(pts)*4000e-9 #np.linspace(0, 10, pts) * 1e-6
-    #m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
+    sweep_duration = False 
+    if sweep_duration:
+        m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
+        m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
+        
+         # for autoanalysis
+        m.params['sweep_name'] = 'Pulse durations (ns)'
+        m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
+    else:
 
-    #m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
-    m.params['pulse_sweep_amps'] = np.linspace(0.,0.02,pts)#0.55*np.ones(pts)
+        m.params['pulse_sweep_durations'] =  np.ones(pts)*4000e-9 #np.linspace(0, 10, pts) * 1e-6
+        m.params['pulse_sweep_amps'] = np.linspace(0.,0.03,pts)#0.55*np.ones(pts)
 
-    # for autoanalysis
-    #m.params['sweep_name'] = 'Pulse durations (ns)'
-    m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
-
-    m.params['sweep_pts'] = m.params['pulse_sweep_amps']
-    #m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
+        # for autoanalysis
+        m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
+        m.params['sweep_pts'] = m.params['pulse_sweep_amps']
+   
     print m.params['sweep_pts']
 
     print Imod_channel
