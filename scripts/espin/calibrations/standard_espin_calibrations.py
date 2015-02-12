@@ -370,7 +370,7 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
     sweep_duration = False 
     if sweep_duration:
-        m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
+        m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
         m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
         
          # for autoanalysis
@@ -722,7 +722,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(6.0, IQmod =False, Imod_channel=False, debug = False)
+    run_calibrations(3.0, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

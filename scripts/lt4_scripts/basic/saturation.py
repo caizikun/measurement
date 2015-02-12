@@ -5,7 +5,7 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'SAM_Sil5_ZPL_EWI'
+name = 'SAM_Sil5_ZPL_EWI_opt_on_CR'
 steps=21
 max_power=210e-6       #[w]
 counter=3 #number of counter
