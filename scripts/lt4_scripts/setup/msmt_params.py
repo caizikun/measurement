@@ -125,15 +125,15 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 7e-9, 
+		'A_CR_amplitude':			 	 5e-9, 
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 10e-9,
+		'A_SP_amplitude':				 20e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9, 
-		'Ex_RO_amplitude':				 3e-9,
+		'Ex_CR_amplitude':				 1e-9, 
+		'Ex_RO_amplitude':				 1e-9,
 		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
@@ -156,7 +156,7 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 220e-9, #XX 
-        'Hermite_pi_amp': 0.9284, #2014-12-24
+        'Hermite_pi_amp': 0.936, #2015-02-11
         'Hermite_pi2_length': 100e-9, #XX
         'Hermite_pi2_amp': 0.65, #2014-12-21
         'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
