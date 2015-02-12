@@ -8,7 +8,7 @@ from scipy import optimize as opt_lib
 
 current_adwin = qt.instruments['adwin']
 counter=2
-int_time=200 # in ms
+int_time=400 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -164,7 +164,7 @@ def optimize_segments(name, imin,imax, jmin, jmax, **kw):
 
 def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     amplitude = 2. #V
-    steps = 13
+    steps = 16 #XXXXXXXXXXXX 13
     amps = np.linspace(-amplitude,amplitude, steps)
 
     Z_voltages = dm.voltages_from_matrix(Z_matrix)
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     green_power = 200e-6
     GreenAOM.set_power(green_power)
 
-    name = 'ThePippin_Sil1_no_pol'
+    name = 'ThePippin_Sil1_lt3_with_pol'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
@@ -217,10 +217,10 @@ if __name__ == '__main__':
 
     plt = qt.Plot2D(dat_tot, 'rO', name='DM_total_curve', coorddim=0, valdim=1, clear=True)
 
-    scan_mode = 'segment'
+    scan_mode = 'zernike'
 
     try:
-        for j in np.arange(3):
+        for j in np.arange(5):
             stop_scan=False
             print 'cur cycle = ' , j
             if scan_mode == 'segment':
@@ -267,7 +267,7 @@ if __name__ == '__main__':
             if stop_scan: break
             qt.msleep(2)
             optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
-            #stools.recalibrate_lt4_lasers(names=['GreenAOM'],awg_names=[])
+            #stools.recalibrate_lt3_lasers(names=['GreenAOM'],awg_names=[])
             GreenAOM.set_power(green_power)
     finally:
         dat_tot.close_file()
