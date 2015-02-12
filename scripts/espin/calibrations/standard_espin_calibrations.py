@@ -368,9 +368,9 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
 
     m.params['Ex_SP_amplitude']=0
 
-    sweep_duration = False 
+    sweep_duration = True 
     if sweep_duration:
-        m.params['pulse_sweep_durations'] =  np.linspace(0, 200, pts) * 1e-9
+        m.params['pulse_sweep_durations'] =  np.linspace(0, 100, pts) * 1e-9
         m.params['pulse_sweep_amps'] = np.ones(pts)*0.9
         
          # for autoanalysis
@@ -378,8 +378,8 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
         m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
     else:
 
-        m.params['pulse_sweep_durations'] =  np.ones(pts)*4000e-9 #np.linspace(0, 10, pts) * 1e-6
-        m.params['pulse_sweep_amps'] = np.linspace(0.,0.03,pts)#0.55*np.ones(pts)
+        m.params['pulse_sweep_durations'] =  np.ones(pts)*2000e-9 #np.linspace(0, 10, pts) * 1e-6
+        m.params['pulse_sweep_amps'] = np.linspace(0.,0.2,pts)#0.55*np.ones(pts)
 
         # for autoanalysis
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
@@ -722,7 +722,7 @@ def run_calibrations(stage, IQmod, Imod_channel, debug = False):
 
 
 if __name__ == '__main__':
-    run_calibrations(6.0, IQmod =False, Imod_channel=False, debug = False)
+    run_calibrations(2.0, IQmod =False, Imod_channel=False, debug = False)
 
     """
     stage 0 : continuous /ESR

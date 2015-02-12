@@ -55,9 +55,10 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
 
-def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
+def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     #qt.instruments[adwin].set_simple_counting()
-    qt.instruments[servo].move_in()    
+    if move_pm_servo:
+        qt.instruments[servo].move_in()    
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
@@ -68,13 +69,14 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
 
     qt.instruments[name].turn_off()
-    if move_out:
+    if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 30e-9,40e-9]):
-    
+    setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)

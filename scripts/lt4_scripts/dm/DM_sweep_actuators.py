@@ -5,14 +5,16 @@ from analysis.lib.fitting import fit, common
 import msvcrt
 import zernike
 from scipy import optimize as opt_lib
+import logging
+import time
 
 current_adwin = qt.instruments['adwin']
-counter=2
-int_time=400 # in ms XXXXXXXXXX200
+counter=3
+int_time= 1000 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
-        qt.msleep(int_time/1000.)
+        time.sleep(int_time/1000.)
         return current_adwin.get_countrates()[counter-1]
     else:
         return current_adwin.measure_counts(int_time)[counter-1]/(int_time*1e-3) 
@@ -129,7 +131,7 @@ def plot_scan(name,x,y, fit_func=None):
     if fit_func!=None:
         dat.add_value('Fit')
         fd = fit_func(x)
-
+   
     plt = qt.Plot2D(dat, 'rO', name='Optimization curve', coorddim=0, valdim=1, clear=True)
     plt.add_data(dat, coorddim=0, valdim=2)
 
@@ -154,33 +156,34 @@ def optimize_zernike_amplitude_brent(i):
 def optimize_zernike_amplitude(name, zernike_mode, **kw):
     name = name + '_zernike_' + str(zernike_mode)
     X,Y,Z_matrix = zernike.zernike_grid_i(zernike_mode, 12)
-    optimize_matrix_amplitude(name,Z_matrix,**kw)
+    return optimize_matrix_amplitude(name,Z_matrix,**kw)
 
 def optimize_segments(name, imin,imax, jmin, jmax, **kw):
     Z_matrix = np.zeros((12,12))
     Z_matrix[imin:imax+1, jmin:jmax+1] = 1.
-    optimize_matrix_amplitude(name,Z_matrix,**kw)
+    return optimize_matrix_amplitude(name,Z_matrix,**kw)
 
 
 def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
-    amplitude = 2. #V
-    steps = 16 #XXXXXXXXXXXX 13
+    amplitude = 2.0 #V
+    steps = 21 #XXXXXXXXXXXX 13
     amps = np.linspace(-amplitude,amplitude, steps)
 
     Z_voltages = dm.voltages_from_matrix(Z_matrix)
     cur_voltages = dm.get_cur_voltages()
     
-
+    logging.debug('DM: Starting optimisation scan')
     y_NV = np.zeros(steps)
     for i, amp in enumerate(amps):
         new_voltages = cur_voltages + amp*Z_voltages
         dm.set_cur_voltages(new_voltages)
         if i == 0:
-            qt.msleep(2.*int_time/1000.)
+            time.sleep(2.*int_time/1000.)
         y_NV[i] = measure_counts()
         #qt.msleep(0.2)
-       
+    logging.debug('DM: Starting fit')   
     opt_amp = None
+
     if do_fit:
         f = common.fit_gauss
         #a + A * exp(-(x-x0)**2/(2*sigma**2))
@@ -190,37 +193,47 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
                    do_print = False, ret = True)
         if fitres['success']:
             if fitres['params_dict']['A'] > 0.:
-                opt_amp = fitres['params_dict']['x0'] 
+                opt_amp = fitres['params_dict']['x0']
+                max_cnts =  fitres['params_dict']['A'] + fitres['params_dict']['a']
                 fp = plot_scan(name, amps, y_NV, fitres['fitfunc'])      
     if opt_amp == None:
         print 'fit failed, going to max point'
-        opt_amp=amps[np.argmax(y_NV)]  
+        opt_amp=amps[np.argmax(y_NV)]
+        max_cnts = np.max(y_NV)  
         fp = plot_scan(name, amps, y_NV)
+
+    logging.debug('DM: Fitting scan finished')   
     new_voltages = cur_voltages + opt_amp*Z_voltages
     dm.set_cur_voltages(new_voltages)
     
     dm.plot_mirror_surf(True, fp[:-3])
     dm.save_mirror_surf(fp[:-3]+'_msurf')
     
+    
     counters.set_is_running(True)
+    return max_cnts, opt_amp
 
 if __name__ == '__main__':
     green_power = 200e-6
     GreenAOM.set_power(green_power)
 
-    name = 'ThePippin_Sil1_lt3_with_pol'
+    name = 'ThePippin_Sil1_lt3_at_ewi'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
-    dat_tot.add_value('Counts [Hz]') 
+    dat_tot.add_value('Counts [Hz]')
+    #dat_tot.add_value('Optimum amp [Hz]') 
     dat_tot.add_coordinate('cycle_nr')
 
     plt = qt.Plot2D(dat_tot, 'rO', name='DM_total_curve', coorddim=0, valdim=1, clear=True)
+    #plt.add(dat_tot, 'bo', coorddim=0, valdim=2, right=True)
+    #plt.set_y2tics(True)
+    #plt.set_y2label('Optimum amplitude')
 
     scan_mode = 'zernike'
 
     try:
-        for j in np.arange(5):
+        for j in np.arange(2):
             stop_scan=False
             print 'cur cycle = ' , j
             if scan_mode == 'segment':
@@ -231,22 +244,24 @@ if __name__ == '__main__':
                             break
                         if msvcrt.getch() == 'q':
                             break
-                    optimize_segments(name, imin,imax,jmin,jmax)
-                    cnts=measure_counts()
+                    cnts,opt_amp = optimize_segments(name, imin,imax,jmin,jmax)
+                    #cnts=measure_counts()
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,75): #lets sweep 75 zernike modes!
+                for i in np.arange(2,50): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
                             break
                         if msvcrt.getch() == 'q':
                             break
-                    optimize_zernike_amplitude(name, i)
-                    cnts=measure_counts()
+                    cnts,opt_amp=optimize_zernike_amplitude(name, i)
+                    #cnts=measure_counts()
+
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
+
             elif scan_mode == 'zernike_brent':
                 for i in np.arange(2,75): #lets sweep 75 zernike modes!
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 

@@ -123,7 +123,7 @@ def fast_ssro_calibration(name):
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
     m.params['A_SP_durations_AWG']    =    np.ones(pts)*5e-6  # after, check with 5 us
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6*2
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*200*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
