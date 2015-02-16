@@ -23,7 +23,7 @@ import msvcrt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
-import measurement.scripts.mbi.mbi_funcs as funcs
+import measurement.scripts.mbi.mbifuncs as funcs
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']

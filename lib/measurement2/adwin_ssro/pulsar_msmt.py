@@ -417,7 +417,7 @@ class ElectronT1(PulsarMeasurement):
         #self.params['T1_initial_state'] = 'ms=0'
         #self.params['T1_readout_state'] = 'ms=0'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug = False):
 
         ### define basic pulses/times ###
         # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
@@ -495,7 +495,7 @@ class ElectronT1(PulsarMeasurement):
 
          # upload the waveforms to the AWG
         if upload:
-            qt.pulsar.program_awg(seq,*list_of_elements)
+            qt.pulsar.program_awg(seq,*list_of_elements, debug = debug)
 
 
 

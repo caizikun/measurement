@@ -25,16 +25,16 @@ n = 1
 #######################################################
 
 Carbon_1_f_ms0  		= True
-Carbon_2_f_ms0  		= True
+Carbon_2_f_ms0  		= False
 Carbon_5_f_ms0  		= True
 
 Carbon_1_f_msm1  		= True
-Carbon_2_f_msm1  		= True
+Carbon_2_f_msm1  		= False
 Carbon_5_f_msm1  		= True
 
 Carbon_1_self_phase		= True 
-Carbon_2_self_phase		= True
-Carbon_5_self_phase		= True 
+Carbon_2_self_phase		= False
+Carbon_5_self_phase		= True
 
 Carbon_1to2_crosstalk	= False
 Carbon_1to5_crosstalk	= False
@@ -43,12 +43,12 @@ Carbon_2to5_crosstalk	= False
 Carbon_5to1_crosstalk	= False
 Carbon_5to2_crosstalk	= False
 
-Carbon_phase_cal_1to2	= True
+Carbon_phase_cal_1to2	= False
 Carbon_phase_cal_1to5	= True
-Carbon_phase_cal_2to1	= True
-Carbon_phase_cal_2to5	= True
+Carbon_phase_cal_2to1	= False
+Carbon_phase_cal_2to5	= False
 Carbon_phase_cal_5to1	= True
-Carbon_phase_cal_5to2	= True
+Carbon_phase_cal_5to2	= False
 
 debug 					= False
 
