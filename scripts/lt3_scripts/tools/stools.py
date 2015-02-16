@@ -55,9 +55,10 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
 
-def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
+def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     #qt.instruments[adwin].set_simple_counting()
-    qt.instruments[servo].move_in()    
+    if move_pm_servo:
+        qt.instruments[servo].move_in()    
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
@@ -68,13 +69,14 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
 
     qt.instruments[name].turn_off()
-    if move_out:
+    if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 30e-9,40e-9]):
-    
+    setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
@@ -225,3 +227,56 @@ def rf_switch_local():
 
 def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
+
+def aom_listener():
+    import speech
+    def do_aom(phrase,listener):
+        if phrase == 'green':
+            aom = 'GreenAOM'
+        elif phrase == 'red':
+            aom = 'MatisseAOM'
+        elif phrase == 'pulse':
+            aom = 'PulseAOM'
+        elif phrase == 'yellow':
+            aom = 'YellowAOM'
+        elif phrase == 'stop':
+            print 'stop listening'
+            listener.stoplistening()
+            return
+        elif phrase == 'servo':
+            print 'PMservo flip'
+            ins = qt.instruments['PMServo']
+            if ins.get_position() == ins.get_in_position():
+                ins.move_out()
+            else:
+                ins.move_in()
+            return
+        elif phrase=='power':
+            power = '{:.0f} nano waat'.format(qt.instruments['powermeter'].get_power()*1e9)
+            print 'power: ', power
+            speech.say(power)
+            return
+        else:
+            print 'Not understood'
+
+        if qt.instruments[aom].get_power() == 0.:
+            print 'Turning on', aom
+            qt.instruments[aom].turn_on()
+        else:
+            print 'Turning off', aom
+            qt.instruments[aom].turn_off()
+
+    #How can i remove windows commands from pyspeech windows recognition? 
+    #For example if i wanted for my program to open up notepad i would say 
+    #"Open notepad", but then windows will also open up notepad for me too. 
+    #How can i disable this so that my program is the only one running commands? 
+
+    #in lib/site_packages/speech.py
+    #On line 66 change the code to:
+    #_recognizer = win32com.client.Dispatch("SAPI.SpInProcRecognizer")
+    #_recognizer.AudioInputStream = win32com.client.Dispatch("SAPI.SpMMAudioIn")
+    #And on line 112 change the code to:
+    #_ListenerBase = win32com.client.getevents("SAPI.SpInProcRecoContext") 
+    #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
+    
+    listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)

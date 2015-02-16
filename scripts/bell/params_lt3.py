@@ -74,7 +74,7 @@ params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
 params_lt3['MW_BellStateOffset'] = 0 # -0.0206 #2014-11-09
 
-params_lt3['echo_offset'] = -100e-9
+params_lt3['echo_offset'] = -70e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -90,8 +90,8 @@ params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 25e-9
-params_lt3['aom_amplitude']				 = 0.37 # 2014-12-09 XXX
+params_lt3['aom_risetime']				 = 15e-9
+params_lt3['aom_amplitude']				 = .61 # 2014-12-09 XXX
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

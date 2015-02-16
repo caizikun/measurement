@@ -16,7 +16,7 @@ mw_power    = -10       #in dBm
 green_power = 10e-6     #10e-6
 int_time    = 50        # in ms
 reps        = 10
-center_f    = 2.82 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
+center_f    = 2.81 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
 range_f  =  0.04 # in GHz
 
