@@ -1,4 +1,4 @@
-if True:
+if False:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -8,7 +8,7 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
-if True:
+if False:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
@@ -18,7 +18,7 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')
 
-if True:
+if False:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     _getctrl_nf = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -28,5 +28,6 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
 
-if True:
+if False:
     bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
+

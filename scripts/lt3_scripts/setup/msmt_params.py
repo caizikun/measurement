@@ -99,6 +99,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000,#1000,#1000, #s
+		'TTTR_RepetitiveReadouts':					10,
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1,#sec
 		'MIN_HIST_SYNC_BIN':						0,

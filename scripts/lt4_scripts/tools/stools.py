@@ -47,9 +47,9 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
-
-def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[servo].move_in()    
+def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
+    if move_pm_servo:
+        qt.instruments[servo].move_in()     
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
@@ -63,14 +63,15 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
 
     qt.instruments[name].turn_off()
-    if move_out:
+    if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
 
 def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM'],
     setpoints = [5e-9, 10e-9, 50e-9,30e-9]):
-    
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)

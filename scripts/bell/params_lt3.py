@@ -22,7 +22,7 @@ params_lt3['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_re
 
 params_lt3['cr_mod'] 				    =  True#qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
 params_lt3['cr_mod_control_dac']		=  qt.exp_params['protocols']['cr_mod']['cr_mod_control_dac']
-params_lt3['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] #XXX this should be true in case of cr mod!!
+params_lt3['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] 
 params_lt3['cr_mod_control_amp']        =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_amp'] 
 params_lt3['cr_mod_control_avg_pts']    =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_avg_pts'] 
 params_lt3['repump_mod_control_amp']    =  qt.exp_params['protocols']['cr_mod']['repump_mod_control_amp'] 
@@ -72,9 +72,9 @@ params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 5
 params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
-params_lt3['MW_BellStateOffset'] = 0 # -0.0206 #2014-11-09
+params_lt3['MW_BellStateOffset'] = 0 # Pippin should be rotated by 0.47pi  AR 2015-02-26
 
-params_lt3['echo_offset'] = -100e-9
+params_lt3['echo_offset'] = -50e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -84,19 +84,19 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 # LDE Sequence in the AWG
 params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.055 # calibration from 2014-07-23 
+params_lt3['eom_off_amplitude']          = -0.049 # calibration from 2015-02-12 
 params_lt3['eom_off_duration']           = 70e-9 #XXXX
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 25e-9
-params_lt3['aom_amplitude']				 = .61 # 2014-12-09 XXX
+params_lt3['aom_risetime']				 = 15e-9
+params_lt3['aom_amplitude']				 = .45 # 2015-02-19
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 9e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
+params_lt3['AWG_RO_power']            = 10e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
@@ -127,6 +127,8 @@ params_lt3['TTTR_RepetitiveReadouts']= 	joint_params.joint_params['TTTR_Repetiti
 params_lt3['TTTR_read_count'] =    		joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_data']
-params_lt3['entanglement_marker_number'] = 4
+params_lt3['entanglement_marker_number'] = 8
+params_lt3['tail_start_bin'] = 7480
+params_lt3['tail_stop_bin'] = 7480 + 200
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H
