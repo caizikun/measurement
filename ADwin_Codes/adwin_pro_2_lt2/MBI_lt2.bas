@@ -228,11 +228,7 @@ EVENT:
           CPU_SLEEP(9)                                  ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
        
-          ' make sure we don't accidentally think we're done before getting the trigger
-          'next_MBI_stop = -2
-          'AWG_is_done = 0
-          
-          
+         
         ELSE
           awg_in_was_hi = awg_in_is_hi
           awg_in_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)

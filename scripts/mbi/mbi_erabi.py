@@ -14,12 +14,13 @@ print SAMPLE
 def run(name, mbi = True):
     m = pulsar_mbi_espin.ElectronRabi(name)
     funcs.prepare(m)
+    #m.params.from_dict(qt.exp_params['protocols'][SAMPLE]['Magnetometry'])
     
     #print 'MBI threshold =' + str(m.params['MBI_threshold'])
     #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 16
+    pts = 31
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
 
@@ -28,15 +29,16 @@ def run(name, mbi = True):
     #Note: MBI init line is set in msmnt_params:AWG_MBI_MW_pulse_ssbmod_frq
     
     # driving line (a.k.a. RO line)
-    m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['MW_modulation_frequency']
+    m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['MW_modulation_frequency']#+m.params['N_HF_frq']
+
     #m.params['mw_frq'] = m.params['ms+1_cntr_frq']-m.params['MW_modulation_frequency']
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)#*5
     m.params['MW_pulse_delays'] = np.ones(pts) * 200e-9
     
     if sweep_duration:        
     # MW pulses
-        m.params['MW_pulse_amps']       = np.ones(pts) * 0.005
-        m.params['MW_pulse_durations']  = np.linspace(0,5e-6,pts) # 05-30-'14 Took away the +10 ns -Machiel
+        m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
+        m.params['MW_pulse_durations']  = np.linspace(0,400e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
         m.params['sweep_name'] = 'MW pulse duration (ns)'
         m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
         if mbi == False:
@@ -66,6 +68,6 @@ def run(name, mbi = True):
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run('Gretel_SIL10_MBI_rabi',mbi = True)
+    run('nr1_sil18_MBI_desr',mbi = True)
     #run('hans1_calib_MBI')
 

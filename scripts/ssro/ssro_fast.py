@@ -30,7 +30,7 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
         for i in range(self.params['pts']/2):
             
             self.params['E_SP_voltages_AWG'][i] = \
-                    self.E_aom.power_to_voltage(
+                    self.AWG_RO_AOM.power_to_voltage(
                             self.params['E_SP_amplitudes_AWG'][i], controller='sec')
 
             self.params['E_RO_voltages_AWG'][i] = \
@@ -43,12 +43,21 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
     def generate_sequence(self, upload=True):
 
-        SP_A_pulse         =         pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
-        SP_E_pulse        =       pulse.SquarePulse(channel = 'EOM_AOM_Matisse',  amplitude = 1.0)
-        RO_pulse         =         pulse.SquarePulse(channel = 'EOM_AOM_Matisse',  amplitude = 1.0)
-        T                 =        pulse.SquarePulse(channel = 'AOM_Newfocus', length = self.params['wait_length'], amplitude = 0)
-        adwin_trigger_pulse =     pulse.SquarePulse(channel = 'adwin_sync',   length = 5e-6,   amplitude = 2)
-        PQ_sync         =        pulse.SquarePulse(channel = 'sync', length = self.params['pq_sync_length'], amplitude = 1.0)
+        SP_A_pulse          =        pulse.SquarePulse(channel = 'AOM_Newfocus', amplitude = 1.0)
+        SP_E_pulse          =        pulse.SquarePulse(channel = 'EOM_AOM_Matisse',  amplitude = 1.0)
+        RO_pulse            =        pulse.SquarePulse(channel = 'EOM_AOM_Matisse',  amplitude = 1.0)
+        T                   =        pulse.SquarePulse(channel = 'AOM_Newfocus', length = self.params['wait_length'], amplitude = 0)
+        adwin_trigger_pulse =        pulse.SquarePulse(channel = 'adwin_sync',   length = 5e-6,   amplitude = 2)
+        PQ_sync             =        pulse.SquarePulse(channel = 'sync', length = self.params['pq_sync_length'], amplitude = 1.0)
+        MW_pi_pulse  =       pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+                                        MW_channel='MW_Imod',
+                                        PM_channel='MW_pulsemod',
+                                        second_MW_channel='MW_Qmod', 
+                                        amplitude = self.params['Hermite_pi_amp'],
+                                        length = self.params['Hermite_pi_length'],
+                                        PM_risetime = self.params['MW_pulse_mod_risetime'],
+                                        pi2_pulse = False)
+
 
         elements = [] 
 
@@ -74,11 +83,20 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
             seq.append(name='finished-ms0-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
 
             e1 =  element.Element('SSRO-ms1-{}'.format(i), pulsar = qt.pulsar)
-            e0.append(pulse.cp(T,length=3e-6))
+            e1.append(pulse.cp(T,length=3e-6))
             e1.append(PQ_sync)
-            e1.append(T)  
-            e1.append(pulse.cp(SP_E_pulse, length=self.params['E_SP_durations_AWG'][i], 
+            e1.append(T)
+
+            if self.params['init_with_MW'] : #SP on ms=0 transition, then apply a MW pi pulse to transfer population into ms=-1
+                e1.append(pulse.cp(SP_A_pulse, length=self.params['A_SP_durations_AWG'][i]))
+                e1.append(T)
+                e1.append(MW_pi_pulse)
+                self.params['E_SP_durations_AWG'][i] = self.params['A_SP_durations_AWG'][i] + self.params['wait_length'] + self.params['Hermite_pi_length']
+            else:
+                e1.append(pulse.cp(SP_E_pulse, length=self.params['E_SP_durations_AWG'][i], 
                     amplitude=self.params['E_SP_voltages_AWG'][i]))
+            
+
             e1.append(T)
             e1.append(pulse.cp(RO_pulse, length=self.params['E_RO_durations_AWG'][i],
                     amplitude=self.params['E_RO_voltages_AWG'][i]))
@@ -87,7 +105,9 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
             seq.append(name='SSRO-ms1-{}'.format(i), wfname=e1.name, trigger_wait=True)
             seq.append(name='finished-ms1-{}'.format(i), wfname=finished_element.name, trigger_wait=False)
-            
+        
+
+
         if upload:
             if upload=='old_method':
                 qt.pulsar.upload(*elements)
@@ -97,10 +117,12 @@ class FastSSRO(pulsar_pq.PQPulsarMeasurement):
 
 
 SAMPLE_CFG = qt.exp_params['protocols']['current']
+SAMPLE_NAME =  qt.exp_params['samples']['current']
+
 
 def fast_ssro_calibration(name):
 
-    m = FastSSRO('FastSSROCalibration_'+name)
+    m = FastSSRO('FastSSROCalib_'+name)
     m.AWG_RO_AOM = qt.instruments['PulseAOM']
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -108,20 +130,25 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+PQ'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE_NAME])
 
-    pts = 7
+    pts = 10
     m.params['pts'] = 2*pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 3000
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,4,pts)*m.params['Ex_RO_amplitude']
-    m.params['E_RO_durations_AWG']    =    np.ones(pts)*100e-6
+    m.params['init_with_MW']  = False
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,3,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_durations_AWG']    =    np.ones(pts)*10e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']
-    m.params['A_SP_durations_AWG']    =    np.ones(pts)*10*1e-6
-    m.params['E_SP_durations_AWG']    =    np.ones(pts)*150*1e-6
+    m.params['A_SP_durations_AWG']    =    np.ones(pts)*5e-6  # after, check with 5 us
+    m.params['E_SP_durations_AWG']    =    np.ones(pts)*100*1e-6
 
     m.params['sweep_name'] = 'Readout power [nW]'
     m.params['sweep_pts'] = m.params['E_RO_amplitudes_AWG']*1e9
@@ -133,14 +160,15 @@ def fast_ssro_calibration(name):
 
     debug=False
     measure_bs=False
-    upload=True
+    upload=True#'old_method'
+
+    #m.params['sequence_wait_time'] = max(m.params['E_RO_durations_AWG']*1e6) + max(m.params['E_SP_durations_AWG']*1e6) + 20
+    print 'sequence_wait_time', m.params['sequence_wait_time']
 
     m.autoconfig()
-
     m.generate_sequence(upload=upload)
-    
-
-    m.setup(mw=False, debug=debug)
+   
+    m.setup(mw=m.params['init_with_MW'], debug=debug)
     m.params['MAX_SYNC_BIN'] = (np.max(m.params['E_SP_durations_AWG']) + np.max(m.params['E_RO_durations_AWG']))/(2**m.params['BINSIZE']*m.PQ_ins.get_BaseResolutionPS()*1e-12)
     print m.params['MAX_SYNC_BIN']
 
@@ -161,4 +189,4 @@ def fast_ssro_calibration(name):
 
 
 if __name__ == '__main__':
-    fast_ssro_calibration('Samy_w_PulseAOM')
+    fast_ssro_calibration(SAMPLE_CFG)

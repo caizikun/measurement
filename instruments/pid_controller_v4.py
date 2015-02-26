@@ -65,7 +65,7 @@ class pid_controller_v4(Instrument):
                     'step_size'                 :   {'type':types.FloatType,  'val':0.01, 'flags':Instrument.FLAG_GETSET},
                     'floating_avg_pts'          :   {'type':types.IntType,    'val':1.,   'maxval':100,'minval':1, 'flags':Instrument.FLAG_GETSET},
                     'max_control_deviation'     :   {'type':types.FloatType,  'val':1.0,  'flags':Instrument.FLAG_GETSET},
-                    'min_value_deviation'       :   {'type':types.FloatType,  'val':0.001,'flags':Instrument.FLAG_GETSET},
+                    'min_value_deviation'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_coarse_step'       :   {'type':types.FloatType, 'val':0.05,'flags':Instrument.FLAG_GETSET},
                     'do_plot'                  :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     }
@@ -158,6 +158,9 @@ class pid_controller_v4(Instrument):
 
     ### public methods
     def start(self):
+        if self.get_is_running():
+            print self.get_name() + ': ALREADY RUNNING'
+            return False
         self.set_is_running(True)
 
         self._error = 0.

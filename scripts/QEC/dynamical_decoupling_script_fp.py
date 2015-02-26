@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x'):
+def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x', optimize = True):
 
     m = DD.SimpleDecoupling(name)
 
@@ -38,13 +38,15 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
         msmt_name = 'measurement' + str(kk)
         
             ### Optimize position
-        qt.msleep(2)
-        if mod(kk,2)==0:
-            AWG.clear_visa()
-            stools.turn_off_all_lt2_lasers()
-            qt.msleep(1)
-            GreenAOM.set_power(20e-6)
-            optimiz0r.optimize(dims=['x','y','z','x','y'])
+        
+        if optimize:
+            qt.msleep(2)
+            if mod(kk,2)==0:
+                AWG.clear_visa()
+                stools.turn_off_all_lt2_lasers()
+                qt.msleep(1)
+                GreenAOM.set_power(10e-6)
+                optimiz0r.optimize(dims=['x','y','z','x','y'])
 
             ### Define and print parameters
         funcs.prepare(m)
@@ -54,7 +56,6 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
         m.params['sweep_pts']        = tau_list*1e6
         m.params['sweep_name']       = 'tau (us)'
         
-
         if mbi == False:
             m.params['MBI_threshold'] = 0
             m.params['Ex_SP_amplitude'] = 0
@@ -86,11 +87,13 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
 if __name__ == '__main__':
     
 
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(16), N=16, step_size = 10e-9, start_point= 0, tot = 80, final_pulse = '-x', mbi = False)
-      
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 80, final_pulse = '-x', mbi = False)
+    #SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(8), N=8, step_size = 10e-9, start_point=0, tot = 40, final_pulse = '-x', mbi = True)
 
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + str(64), N=64, step_size = 4e-9, start_point= 0, tot = 100, final_pulse = '-x', mbi = False)
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(16), N=16, step_size = 10e-9, start_point=0, tot = 40, final_pulse = '-x', mbi = True)
+   
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(32), N=32, step_size = 10e-9, start_point= 0, tot = 40, final_pulse = '-x')
+
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(64), N=64, step_size = 4e-9, start_point= 0, tot = 50, final_pulse = '-x')
       
 
 

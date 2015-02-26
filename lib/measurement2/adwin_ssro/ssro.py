@@ -42,9 +42,9 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                 [self.repump_aom.get_pri_channel()]    
 
         if self.params['cr_mod']:
-            self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()['yellow_aom_frq']
-            self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage('yellow_aom_frq')
-            self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()['gate_mod']#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
+            self.params['repump_mod_DAC_channel'] = self.adwin.get_dac_channels()[self.params['repump_mod_control_dac']]
+            self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage(self.params['repump_mod_control_dac'])
+            self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()[self.params['cr_mod_control_dac']]#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
 
         self.params['Ex_CR_voltage'] = \
                 self.E_aom.power_to_voltage(
@@ -163,12 +163,12 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
-        
         self.stop_adwin_process()
+        # qt.msleep(1)
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['SSRO_repetitions']))
-        
+
     def save(self, name='ssro'):
         reps = self.adwin_var('completed_reps')
         self.save_adwin_data(name,
@@ -191,12 +191,11 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
            
         if save_ins_settings:
             self.save_instrument_settings_file()
-            
-        qt.instruments['counters'].set_is_running(True)
+
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
-            
+        
         m2.AdwinControlledMeasurement.finish(self)
 
 class AdwinSSROAlternCR(AdwinSSRO):   

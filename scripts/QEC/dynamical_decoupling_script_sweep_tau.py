@@ -42,7 +42,7 @@ if __name__ == '__main__':
     #SimpleDecoupling_swp_tau(SAMPLE, tau_min=6.522e-6-0.02e-6,tau_max=6.522e-6+0.02e-6,tau_step =1e-9, N =20)
     #SimpleDecoupling_swp_tau(SAMPLE, tau_min=18.55e-6-0.03e-6,tau_max=18.55e-6+0.03e-6,tau_step =2e-9, N =32)
     #SimpleDecoupling_swp_tau(SAMPLE, tau_min=15.200e-6,tau_max=15.400e-6,tau_step =4e-9, N =64)
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=18.50e-6-0.2e-6,tau_max=18.50e-6+0.2e-6,tau_step =10e-9, N =32)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=13.616e-6-0.1e-6,tau_max=13.616e-6+0.1e-6,tau_step =4e-9, N =32)
 
 
 

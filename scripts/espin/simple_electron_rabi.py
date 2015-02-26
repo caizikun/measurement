@@ -22,19 +22,18 @@ def erabi(name):
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
     
     m.params['pts'] = 21
     pts = m.params['pts']
     m.params['repetitions'] = 1500
     m.params['Ex_SP_amplitude']=0
 
-    sweep_param = 'length'
+    sweep_param = 'amplitude'
 
 
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
@@ -42,15 +41,15 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 10000, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.008
+        m.params['MW_pulse_durations'] =  np.linspace(0, 600, pts) * 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.8
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
 
     elif sweep_param == 'amplitude':    
-        m.params['MW_pulse_durations'] =  np.ones(pts)*98e-9#*5500e-9 
-        m.params['MW_pulse_amplitudes'] = np.linspace(0.1,0.9,pts) #0.02
+        m.params['MW_pulse_durations'] =  np.ones(pts)*3e-6 
+        m.params['MW_pulse_amplitudes'] = np.linspace(0,0.03,pts) #0.02
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
@@ -60,12 +59,7 @@ def erabi(name):
     #m.params['sweep_name'] = 'Pulse duration (ns)' #'Pulse amps (V)'
     #m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
 
-    
-
-    
-    #
     print m.params['sweep_pts']
-
 
     m.autoconfig() #Redundant because executed in m.run()? Tim
     m.generate_sequence(upload=True)
@@ -75,6 +69,5 @@ def erabi(name):
     qt.msleep(2)
     m.finish()
 
-
 if __name__ == '__main__':
-    erabi(SAMPLE+'_'+'SIL10_calibrate_slow_pi')
+    erabi(SAMPLE+'_'+'msm1')

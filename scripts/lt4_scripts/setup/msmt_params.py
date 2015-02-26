@@ -1,5 +1,5 @@
 cfg={}
-sample_name = 'Sam'
+sample_name = 'SAM'
 sil_name = 'SIL5'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
@@ -7,7 +7,7 @@ cfg['protocols'] = {'current':name}
 
 cfg['protocols'][name] = {}
 
-print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
+print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 
 ##############################################################################
 ##############################################################################
@@ -17,7 +17,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 
 ### General settings for AdwinSSRO
 cfg['protocols']['AdwinSSRO']={
-		'AWG_done_DI_channel':          17,
+		'AWG_done_DI_channel':          18,
 		'AWG_event_jump_DO_channel':    8,
 		'AWG_start_DO_channel':         9,
 		'counter_channel':              1,
@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      10e-9,
+		'yellow_repump_amplitude':      100e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -41,15 +41,18 @@ cfg['protocols']['AdwinSSRO']={
 		'SSRO_stop_after_first_photon':	0,
 		}
 
-cfg['protocols']['AdwinSSRO']['cr_mod'] = False
+cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
+	'cr_mod_control_dac'		:   'gate_mod',
 	'cr_mod_control_offset'     :   0.0,
-	'cr_mod_control_amp'        :   0.05, #V
-	'repump_mod_control_offset' :   5.4,
-	'repump_mod_control_amp'    :   .5, #V
+	'cr_mod_control_amp'        :   0.1, #V
+	'cr_mod_control_avg_pts'	:   200000.,
+	'repump_mod_control_offset' :   5.4, #note gets set automatically
+	'repump_mod_control_amp'    :   -.5, #V
+	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow=False
+yellow=True
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -74,7 +77,6 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'send_AWG_start':                          1,
 	}
 
-
 ##########################################
 ### General settings for AdwinSSRO+MBI ###
 ##########################################
@@ -97,7 +99,10 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000, #s
 		'measurement_time':                         1200,#sec
-		'measurement_abort_check_interval':			1#sec
+		'measurement_abort_check_interval':			1,#sec
+		'MIN_HIST_SYNC_BIN': 	  					1000,
+	    'MAX_HIST_SYNC_BIN': 					 	1000,
+	    'count_marker_channel':						16,
 		}
 
 
@@ -105,7 +110,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.80693e9# +/-   0.00001            #Electron spin ms=-1 frquency
+f_msm1_cntr =  2.807333e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-17 2.806445
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -120,16 +125,16 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 1.0e-9,
+		'A_CR_amplitude':			 	 5e-9, 
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 2e-9,
-		'CR_duration' :				 	 100,
+		'A_SP_amplitude':				 20e-9,
+		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 2e-9,
-		'Ex_SP_amplitude':				 2e-9,
+		'Ex_CR_amplitude':				 1e-9, 
+		'Ex_RO_amplitude':				 1e-9,
+		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
@@ -140,7 +145,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 25}
+	'SSRO_duration' : 20}
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -150,20 +155,27 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'MW_pi_amp': 0.86,
-    	'MW_pi_length': 65e-9,
-    	'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp': 0.901, #2014-07-24 
-        'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.536,#2014-07-24
-        'Hermite_pi4_length': 45e-9,
-        'Hermite_pi4_amp': 0.385, # 2014-07-24
-        'Square_pi_length' : 50e-9, # calib. 2014-07-25
-      	'Square_pi_amp' : 0.594 , # calib. for pi pulse of 50 ns 2014-07-25
+    	'Hermite_pi_length': 220e-9, #XX 
+        'Hermite_pi_amp': 0.936, #2015-02-11
+        'Hermite_pi2_length': 100e-9, #XX
+        'Hermite_pi2_amp': 0.65, #2014-12-21
+        'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
+        'Hermite_Npi4_amp':    0.905 +0.04, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-17
+        'Square_pi_length' : 50e-9, # 2014-12-01
+      	'Square_pi_amp' : 0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
-    	'Square_pi2_amp'  : 0.579, # XXXXXXX not calibrated
+    	'Square_pi2_amp'  : 0.735,#0.71104, # XXXXXXX not calibrated
     	'IQ_Square_pi2_amp'  : 0.015, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
 }
+
+cfg['protocols'][name]['cr_linescan'] = {
+		'A_CR_amplitude':				 2e-9,
+		'CR_duration' :				 	 100,
+		'CR_preselect':					 1000,
+		'CR_probe':						 1000,
+		'CR_repump':					 1000,
+		'Ex_CR_amplitude':				 1.5e-9,
+		}

@@ -15,7 +15,7 @@ execfile(os.path.join(qt.config['startdir'],"reload_all.py"))
 
 ####
 print 'reload all measurement parameters and calibrations...'
-from measurement.scripts.lt3_scripts.setup import msmt_params as mcfg
+from measurement.scripts.lt4_scripts.setup import msmt_params as mcfg
 reload(mcfg)
 qt.exp_params=mcfg.cfg
 

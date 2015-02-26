@@ -29,11 +29,13 @@ class counters_via_adwin(CyclopeanInstrument):
                 flags=Instrument.FLAG_GETSET,
                 units='ms',
                 minval=1,
-                maxval=1e6)
+                maxval=1e6,
+                type=types.IntType)
         self.add_parameter('avg_periods',
                 flags=Instrument.FLAG_GETSET,
                 minval=1,
-                maxval=1e6)
+                maxval=1e6,
+                type = types.IntType)
 
         # init parameters
         self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, }

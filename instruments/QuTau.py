@@ -9,7 +9,7 @@ class QuTau(Instrument):
         Instrument.__init__(self, name)
 
         #Load the DLL
-        dll_dp = r'C:\Program Files\N-Hands\Daisy@quTau\userlib\lib'
+        dll_dp = r'C:\Program Files (x86)\qutools\quTAU\userlib\lib'
         #dll_dp = r'C:\Program Files\qutools\quTAU\userlib\lib'
         dll_name = 'tdcbase.dll'
         dir_before = os.getcwd()
@@ -40,6 +40,7 @@ class QuTau(Instrument):
         self.add_function('freeze_buffers')
         self.add_function('start_write_timestamps')
         self.add_function('stop_write_timestamps')
+        self.add_function('get_countrate')
 
         self.add_function('close')
 
@@ -166,6 +167,9 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         return self.err_dict[ans]
 
+    def get_countrate():
+        #self.initialize
+        return 0
 
     def switch_termination(self, on): #OK!
         """

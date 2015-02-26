@@ -19,15 +19,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
         m.params['Ex_RO_amplitude'] = RO_power
     if SSRO_duration != None: 
         m.params['SSRO_duration'] = SSRO_duration
-    # m.params['counter_channel']=1
-    # print '###########################################'
-    # print '###########################################'
-    # print '###########################################'
-    # print 'Changed counter channel to 2 (Fiber APD)'
-    # print '###########################################'
-    # print '###########################################'
-    # print '###########################################'
-    # print '###########################################'
+
     # ms = 0 calibration
     m.params['Ex_SP_amplitude'] = 0
     m.run()
@@ -36,7 +28,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
     # ms = 1 calibration
     m.params['SP_duration']     = 500
     m.params['A_SP_amplitude']  = 0.
-    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
+    m.params['Ex_SP_amplitude'] = 15e-9 #20e-9 $$
     m.run()
     m.save('ms1')
 

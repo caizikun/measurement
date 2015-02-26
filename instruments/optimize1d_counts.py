@@ -177,7 +177,7 @@ class optimize1d_counts(CyclopeanInstrument):
             qt.msleep(0.1)
         
         self._linescan.set_is_running(True)
-        qt.msleep(0.1)
+        qt.msleep(0.5)
         
         while self._linescan.get_is_running():
             qt.msleep(0.1)
@@ -225,7 +225,7 @@ class optimize1d_counts(CyclopeanInstrument):
         self._opt_pos = getattr(self._mos, 'get_'+self._dimension)()
         self._opt_pos_prev = getattr(self._mos, 'get_'+self._dimension)()
         l = self._scan_length
-        self._x0, self._x1 = self._opt_pos - l/2, self._opt_pos + l/2
+        self._x0, self._x1 = self._opt_pos - l/2., self._opt_pos + l/2.
         self._linescan.set_dimensions([self._dimension])
         self._linescan.set_starts([self._x0])
         self._linescan.set_stops([self._x1])
@@ -298,7 +298,11 @@ class optimize1d_counts(CyclopeanInstrument):
                     self._fit_error = False
                     ret = False
                     print '(%s) optimize failed!' % self.get_name()
-                    self._opt_pos = p[cr.tolist().index(max(cr))]
+                    if array(cr).max() == 0.:
+                        print 'no counts in linescan'
+                        self._opt_pos = self._opt_pos_prev
+                    else:
+                        self._opt_pos = p[cr.tolist().index(max(cr))]
             
             self.get_fit_result()
 
