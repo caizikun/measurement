@@ -14,11 +14,11 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearT1(name,tau = None, 
+def NuclearT1(name,
                     carbon_state = 'up', 
                     electron_RO = 'positive', 
-                    carbon = 1,
-                    el_RO_result = 0,
+                    carbon = 1
+,                    el_RO_result = 0,
                     el_after_init=0,
                     pts=11,
                     short_time=1.0e-3,
@@ -44,7 +44,7 @@ def NuclearT1(name,tau = None,
     m.params['wait_times'] = np.linspace(short_time,long_time,m.params['pts']) #Note: wait time must be at least carbon init time +5us 
     m.params['sweep_pts']  = m.params['wait_times']
 
-    m.params['Nr_C13_init']         = 1
+    m.params['Nr_C13_init']         = len(carbon_list)
 
     ### MBE settings
     m.params['Nr_MBE']              = 0
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     
     ## Carbon up and down
-    NuclearT1(SAMPLE + 'up_positive_C5_elState0',carbon_state = 'up', 
+    NuclearT1(SAMPLE + 'up_positive_C5_elState0',carbon_state ='up', 
             electron_RO = 'positive', carbon = 5,
             el_RO_result = 0,
             el_after_init=0)
