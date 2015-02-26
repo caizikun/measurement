@@ -182,13 +182,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
 
     def finish(self, save_params=True, save_stack=True, 
             stack_depth=4, save_cfg=True, save_ins_settings=True):
-               
+                
         if save_params:
             self.save_params()
             
         if save_stack:
             self.save_stack(depth=stack_depth)
-            
+           
         if save_ins_settings:
             self.save_instrument_settings_file()
             
@@ -233,5 +233,5 @@ class IntegratedSSRO(AdwinSSRO):
                     'completed_reps',
                     'total_CR_counts'])
         
+
         
-   

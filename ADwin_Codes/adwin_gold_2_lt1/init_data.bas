@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 
 'Linescan:
@@ -37,8 +37,13 @@ DIM DATA_16[8] AS FLOAT AT EM_LOCAL 'modulation offsets during repump
 
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
+DIM DATA_27[1000000] AS LONG
 DIM DATA_30[100] AS LONG
 DIM DATA_31[100] AS FLOAT
+
+'Magnetometry
+DIM DATA_50[50000] AS FLOAT
+DIM DATA_51[50000] AS FLOAT
 'DIM DATA_22[20000] AS LONG AT EM_LOCAL  ' CR counts before sequence
 'DIM DATA_23[20000] AS LONG AT EM_LOCAL  ' CR counts after sequence
 'DIM DATA_24[500] AS LONG AT EM_LOCAL      ' SP counts

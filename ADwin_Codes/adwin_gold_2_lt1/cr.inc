@@ -11,7 +11,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_repetitions 1000000
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters

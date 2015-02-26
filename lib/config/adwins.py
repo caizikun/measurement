@@ -4,7 +4,7 @@ config['adwin_lt1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
         'yellow_aom_frq': 4,
-        'gate_mod' : 5, #not yet connected
+        'gate_mod' : 5, #not yet N
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
         'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
@@ -380,6 +380,310 @@ config['adwin_lt1_processes'] = {
                 },
 
 
+        'integrated_ssro_msp1' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_msp1_lt1.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'RO_msp1_data' : 27,
+                    },
+                },
+
+
+        'adaptive_magnetometry' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_lt1.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_phase_calibr'             ,   1],
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
+                    ['reps_majority_vote'          ,   1],
+                    ['AWG_event_jump_DO_channel'   ,   0],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 32,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    'phases':27,
+                    }
+                },
+
+
+        'adaptive_magnetometry_realtime' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_superoptimized_lt1.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['AWG_event_jump_DO_channel'   ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_ext_test'                 ,   1],
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
+                    ['reps_majority_vote'          ,   1],
+                    ['G'                           ,   0],
+                    ['F'                           ,   0],
+                    ['save_pk_n'                   ,   0],
+                    ['save_pk_m'                   ,   0],   
+                    ['do_add_phase'                ,   0],                 
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 32,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['fid0'                        ,   1],
+                    ['fid1'                        ,   1],
+                    ['T2'                          ,   1]
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    'phases':27,
+                    'ext_msmnt_results': 28,
+                    'timer': 29,
+                    },
+                'data_float' : {
+                    'theta' :33,
+                    #'real_p_k': 38,
+                    #'imag_p_k':39
+                    }
+                },
+
+
+        'adaptive_magnetometry_realtime_swarm' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_superoptimized_berry_lt1.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['AWG_event_jump_DO_channel'   ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_ext_test'                 ,   1],
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
+                    ['reps_majority_vote'          ,   1],
+                    ['G'                           ,   0],
+                    ['F'                           ,   0],
+                    ['save_pk_n'                   ,   0],
+                    ['save_pk_m'                   ,   0],   
+                    ['do_add_phase'                ,   0],                 
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 32,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['fid0'                        ,   1],
+                    ['fid1'                        ,   1],
+                    ['T2'                          ,   1]
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    'phases':27,
+                    'ext_msmnt_results': 28,
+                    'timer': 29,
+                    },
+                'data_float' : {
+                    'theta' :33,
+                    'swarm_u0': 50,
+                    'swarm_u1': 51,
+                    }
+                },
+
+
+
+        'adaptive_magnetometry_realtime_debug' : {
+                'index' : 9,
+                'file' : 'adaptive_magnetometry_realtime_variableM_DEBUG_lt1.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['AWG_event_jump_DO_channel'   ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300],
+                    ['sweep_length'                ,   1],
+                    ['do_adaptive'                 ,   0],
+                    ['adptv_steps'                 ,   5],
+                    ['ch1'                         ,   0],
+                    ['ch2'                         ,   0],
+                    ['ch3'                         ,   0],
+                    ['ch4'                         ,   0],
+                    ['ch5'                         ,   0],
+                    ['ch6'                         ,   0],
+                    ['ch7'                         ,   0],
+                    ['ch8'                         ,   0],
+                    ['do_ext_test'                 ,   1],
+                    ['M'                           ,   1], #number of measurements per adaptive step
+                    ['threshold_majority_vote'     ,   0],
+                    ['reps_majority_vote'          ,   1],
+                    ['G'                           ,   0],
+                    ['F'                           ,   0],
+                    ['save_pk_n'                   ,   0],
+                    ['save_pk_m'                   ,   0],                    
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 32,
+                'params_float' : [
+                    ['fid0'                        ,   1],
+                    ['fid1'                        ,   1],
+                    ['T2'                          ,   1]
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'set_phase' : 24,
+                    'RO_data' : 25,
+                    'phases':27,
+                    'ext_msmnt_results': 28,
+                    'timer': 29,
+                    'debug1':40,
+                    'debug2':41,
+                    'debug3':42,
+                    'debug4':43,
+                    },
+                'data_float' : {
+                    'theta' :33,
+                    'real_p_tn' :34,
+                    'real_p_2tn' :35,
+                    'imag_p_tn' :36,
+                    'imag_p_2tn' :37,
+                    'real_p_k' : 38,
+                    'imag_p_k' :39,
+                    }
+                },
+
+
+
+
+
+
         'bell' : {
                 'index' : 9,
                 'file' : 'bell_lt1.TB9',
@@ -470,6 +774,7 @@ config['adwin_lt1_processes'] = {
                     """,
                 'index' : 9,
                 'file' : 'MBI_lt1.TB9',
+                'include_cr_process' : 'cr_check_mod',
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,   0],
                     ['AWG_done_DI_channel'         ,   9],

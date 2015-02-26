@@ -22,11 +22,12 @@ def erabi(name):
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-    #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     
     m.params['pts'] = 21
     pts = m.params['pts']
@@ -41,8 +42,8 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 100, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.8
+        m.params['MW_pulse_durations'] =  np.linspace(0, 10000, pts) * 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.008
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
@@ -74,5 +75,6 @@ def erabi(name):
     qt.msleep(2)
     m.finish()
 
+
 if __name__ == '__main__':
-    erabi(SAMPLE+'_'+'msm1')
+    erabi(SAMPLE+'_'+'SIL10_calibrate_slow_pi')

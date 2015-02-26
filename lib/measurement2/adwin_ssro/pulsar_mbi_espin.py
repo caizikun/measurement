@@ -65,7 +65,7 @@ class ElectronRabi(pulsar_msmt.MBI):
 class ElectronRamsey(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRamsey'
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True, debug = False):
         # MBI element
         mbi_elt = self._MBI_element()
 
@@ -121,8 +121,9 @@ class ElectronRamsey(pulsar_msmt.MBI):
 
         # program AWG
         if upload:
-            qt.pulsar.upload(mbi_elt, *elts)
-        qt.pulsar.program_sequence(seq)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+            #qt.pulsar.upload(mbi_elt, *elts)
+        #qt.pulsar.program_sequence(seq)
 
 class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'

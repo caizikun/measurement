@@ -2,17 +2,30 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_SIL3_Pippin_LT1'
-start_f = 2.92#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.85#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
-steps   = 100
-mw_power = -7. #in dBm
-green_power = 20e-6
-int_time = 30       #in ms
+name='ESR_LT1_Gretel_SIL1_m30dBm_amp1perc'
+
+start_f = 2.833#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 2.843#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+steps=81
+f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
+zoom_around_three_lines = False
+
+mw_power = -30. #in dBm
+green_power = 25e-6
+int_time = 20       #in ms
 reps = 250
 
-#generate list of frequencies
-f_list = linspace(start_f*1e9, stop_f*1e9, steps)
+if zoom_around_three_lines:
+	#For unequally spaced array
+	Hf=2.19e-3 # in GHz
+	fcntr=2.83573 # in GHz
+	frange = 125e-6	# half of the freq range in GHz
+	steps   = 21	# steps per line
+	f_list_m1 = list(linspace((fcntr-Hf-frange)*1e9, (fcntr-Hf+frange)*1e9, steps))
+	f_list_0 = list(linspace((fcntr-frange)*1e9, (fcntr+frange)*1e9, steps))
+	f_list_p1 = list(linspace((fcntr+Hf-frange)*1e9, (fcntr+Hf+frange)*1e9, steps))
+
+	f_list=np.array([(fcntr-Hf-frange-frange)*1e9]+f_list_m1+[(fcntr-Hf)*1e9/2.]+f_list_0+[(fcntr+Hf)*1e9/2.]+f_list_p1+[(fcntr+Hf+frange+frange)*1e9])
 
 ins_smb = qt.instruments['SMB100']
 ins_adwin = qt.instruments['adwin']
