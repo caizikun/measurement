@@ -116,7 +116,7 @@ def pulse_defs_lt4(msmt):
                     aom_amplitude           = msmt.params['aom_amplitude'])
 
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
+    msmt.RND_sample_hold_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -239,7 +239,7 @@ def pulse_defs_lt3(msmt):
                     aom_risetime            = msmt.params['aom_risetime'],
                     aom_amplitude           = msmt.params['aom_amplitude'])
 
-    msmt.RND_halt_off_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
+    msmt.RND_sample_hold_pulse = pulse.SquarePulse(channel = 'RND_halt', amplitude = 2.0, 
                                     length = msmt.params['RND_duration'])
 
     ### synchronizing, etc
@@ -442,7 +442,7 @@ def _LDE_element(msmt, **kw):
 
     # 14 RND generator HOLD OFF
     if  msmt.joint_params['RND_during_LDE'] ==1  or ( msmt.joint_params['do_final_MW_rotation'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0 ):
-        e.add(pulse.cp(msmt.RND_halt_off_pulse,
+        e.add(pulse.cp(msmt.RND_sample_hold_pulse,
                        amplitude = msmt.joint_params['RND_during_LDE']),
                 start = msmt.joint_params['RND_start'],
                 refpulse = 'initial_delay',
@@ -454,13 +454,13 @@ def _LDE_element(msmt, **kw):
             e.add(msmt.MW_RND_I, 
                 start = msmt.params['MW_RND_wait'],
                 refpulse = 'RND', 
-                refpoint = 'end', 
+                refpoint = 'start', 
                 refpoint_new = 'start',
                 name='MW_RND_0')
             e.add(msmt.MW_RND_Q, 
                 start = msmt.params['MW_RND_wait'],
                 refpulse = 'RND', 
-                refpoint = 'end', 
+                refpoint = 'start', 
                 refpoint_new = 'start',
                 name='MW_RND_1')
         else:
@@ -554,7 +554,7 @@ def _1st_revival_RO(msmt, LDE_echo_point, **kw):
     # 14 RND generator HOLD OFF
     if msmt.joint_params['RND_during_LDE'] == 1:
         #print 'RND_start', msmt.joint_params['RND_start']
-        e.add(msmt.RND_halt_off_pulse,
+        e.add(msmt.RND_sample_hold_pulse,
                 start = -msmt.params['MW_RND_wait'],
                 refpulse = 'MW_RND_0', 
                 refpoint = 'start', 

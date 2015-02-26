@@ -91,19 +91,19 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = .61 # 2014-12-09 XXX
+params_lt3['aom_amplitude']				 = .53 # 2014-12-09 XXX
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 9e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
+params_lt3['AWG_RO_power']            = 7.5e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
-params_lt3['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
+params_lt3['MW_RND_wait'] 		= 460e-9 #wait start RND MW after end of RND halt pulse#XXXXXX was 160
 params_lt3['RND_duration']	 	= 250e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4

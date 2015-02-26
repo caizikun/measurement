@@ -134,7 +134,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     m.params.from_dict(qt.exp_params['samples'][SAMPLE_NAME])
 
-    pts = 10
+    pts = 5
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 3000
 
@@ -143,7 +143,7 @@ def fast_ssro_calibration(name):
     m.params['init_with_MW']  = False
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']
     m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,3,pts)*m.params['Ex_RO_amplitude']
-    m.params['E_RO_durations_AWG']    =    np.ones(pts)*10e-6
+    m.params['E_RO_durations_AWG']    =    np.ones(pts)*50e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']
     m.params['A_SP_amplitude_AWG']    =    m.params['A_SP_amplitude']

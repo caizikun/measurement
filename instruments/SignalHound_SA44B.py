@@ -200,7 +200,7 @@ class SignalHound_SA44B(Instrument):
         Otherwise data points are spaced 400 KHz / FFT Size.
         RBW is based on FFT size only, as decimation is equal to 1.
         """
-        self.Configure(decimation=1, IF_path=0, ADC_clock=0)
+        #self.Configure(decimation=1, IF_path=0, ADC_clock=0)
         fft_size = 2**self.get_fft_size_fast_scan()
 
         retcount = self._dll.SHAPI_GetFastSweepCount(ct.c_double(start_freq),
@@ -241,6 +241,7 @@ class SignalHound_SA44B(Instrument):
         plt.add_data(dat, coorddim=0, valdim=2)
         dat.add_data_point(x,y)
         dat.close_file()
+        plt.update()
         plt.save_png(dat.get_filepath()+'png')
 
     #TODO 2 RBW methods below do not conform to the API description!

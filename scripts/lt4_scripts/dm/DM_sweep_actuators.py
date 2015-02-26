@@ -9,8 +9,8 @@ import logging
 import time
 
 current_adwin = qt.instruments['adwin']
-counter=3
-int_time= 1000 # in ms XXXXXXXXXX200
+counter=1
+int_time= 200 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     scan_mode = 'zernike'
 
     try:
-        for j in np.arange(2):
+        for j in np.arange(1):
             stop_scan=False
             print 'cur cycle = ' , j
             if scan_mode == 'segment':
@@ -249,7 +249,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,50): #lets sweep 75 zernike modes!
+                for i in np.arange(2,75): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
@@ -281,7 +281,7 @@ if __name__ == '__main__':
             dat_tot.new_block() 
             if stop_scan: break
             qt.msleep(2)
-            optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
+            #optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
             #stools.recalibrate_lt3_lasers(names=['GreenAOM'],awg_names=[])
             GreenAOM.set_power(green_power)
     finally:
