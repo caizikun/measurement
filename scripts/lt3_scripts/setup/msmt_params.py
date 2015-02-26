@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      23e-9, #XXXX 40e-9
+		'yellow_repump_amplitude':      70e-9,
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -112,7 +112,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.808902e9# +/-   0.000005           #Electron spin ms=-1 frquency
+f_msm1_cntr = 2.807152e9# +/-   0.000005           #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -127,16 +127,16 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 2e-9,
+		'A_CR_amplitude':				 8e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 14e-9,    
+		'A_SP_amplitude':				 20e-9,    
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1e-9,
-		'Ex_RO_amplitude':				 1e-9, 
-		'Ex_SP_amplitude':				 2e-9,
+		'Ex_CR_amplitude':				 3e-9,
+		'Ex_RO_amplitude':				 5e-9, 
+		'Ex_SP_amplitude':				 3e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 400,
@@ -147,7 +147,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 cfg['protocols'][name]['AdwinSSRO+MBI']={}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 19} #18
+	'SSRO_duration' : 10} #18
 
 CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
@@ -157,17 +157,17 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 210e-9, 
-        'Hermite_pi_amp': 0.8838, #BELL # 2014-12-21 for pi pulse of 210 ns
-        'Hermite_pi2_length': 90e-9,
-        'Hermite_pi2_amp': 0.6206,#2014-12-21 for pi/2 pulse of 90 ns
+    	'Hermite_pi_length': 180e-9, 
+        'Hermite_pi_amp': 0.9288 , #BELL # 2015-11-02 for pi pulse of 180 ns
+        'Hermite_pi2_length': 50e-9,
+        'Hermite_pi2_amp': 0.827348,#2014-12-21 for pi/2 pulse of 90 ns
         'Hermite_Npi4_length': 45e-9,
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
-        'Square_pi_length' : 50e-9,#2000e-9, # calib. 2014-07-25
+        'Square_pi_length' : 1000e-9,#2000e-9, # calib. 2014-07-25
       	'Square_pi_amp' : 0.731, 
       	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
     	'Square_pi2_amp'  : 0.684, # XXXXXXX not calibratedrepump
-      	'IQ_Square_pi_amp' : 0.7531,#632 , # calib. for 2 us pi pulse, 2014-10-15 
+      	'IQ_Square_pi_amp' : 0.03,#632 , # calib. for 2 us pi pulse, 2015-02-11 
       	'IQ_Square_pi2_amp'  : 0.6967, # 
     	'extra_wait_final_pi2' : -30e-9,
     	'MW_pulse_mod_frequency' : 43e6,
@@ -175,10 +175,10 @@ cfg['protocols'][name]['pulses'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 4e-9,
+		'A_CR_amplitude':				 8e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 3.0e-9,
 		}

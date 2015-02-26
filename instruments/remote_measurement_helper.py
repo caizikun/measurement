@@ -13,8 +13,7 @@ class remote_measurement_helper(Instrument):
     def __init__(self, name, exec_qtlab_name, **kw):
         Instrument.__init__(self, name)
         self._exec_qtlab_name = exec_qtlab_name
-        ins_pars  = {'measurement_params'    :   {'type':types.DictType,'val':{},'flags':Instrument.FLAG_GETSET},
-                    'measurement_name'    :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
+        ins_pars  = {'measurement_name'    :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'is_running'       :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
                     'data_path'         :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'script_path'       :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
@@ -78,7 +77,10 @@ class remote_measurement_helper(Instrument):
     def get_measurement_params(self):
         return self._measurement_params       
 
-    def set_measurement_params(self,**kw):
-        self._measurement_params = {}
-        for k in kw:
-            self._measurement_params[k] = kw[k]
+    #def set_measurement_params(self,**kw):
+    #    self._measurement_params = {}
+    #    for k in kw:
+    #        self._measurement_params[k] = kw[k]
+
+    def set_measurement_params(self,params):
+        self._measurement_params = params

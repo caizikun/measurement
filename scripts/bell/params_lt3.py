@@ -74,7 +74,7 @@ params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
 params_lt3['MW_BellStateOffset'] = 0 # Pippin should be rotated by 0.47pi  AR 2015-02-26
 
-params_lt3['echo_offset'] = -50e-9
+params_lt3['echo_offset'] = -70e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -96,14 +96,14 @@ params_lt3['aom_amplitude']				 = .45 # 2015-02-19
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 10e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
+params_lt3['AWG_RO_power']            = 7.5e-9 #params_lt3['Ex_RO_amplitude'] 7nW calibrated on 2014-11-24
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
-params_lt3['MW_RND_wait'] 		= 160e-9 #wait start RND MW after end of RND halt pulse
+params_lt3['MW_RND_wait'] 		= 460e-9 #wait start RND MW after end of RND halt pulse#XXXXXX was 160
 params_lt3['RND_duration']	 	= 250e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4

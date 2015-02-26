@@ -170,8 +170,8 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        m.params['general_sweep_name'] = 'eom_pulse_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(1.5,2.,pts)
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -183,7 +183,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=10
+    pts=5
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
@@ -196,9 +196,9 @@ def echo_sweep(name):
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1 #XXXXXXXXXXXXXX
     m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -263,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt4_SAM_sil5') 
-    #tune('tune_lt3_PippinSil3') 
+    tail_sweep('tail_lt3_ThePippin_Sil1_Ex_+10deg') 
+    #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')

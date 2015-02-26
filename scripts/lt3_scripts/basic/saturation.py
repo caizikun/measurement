@@ -5,11 +5,11 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL1_ZPL_DM_opt'
+name = 'Pippin_SIL1_ZPL_SM_DM_flat_no_pol'
 steps=21
 max_power=250e-6       #[w]
-counter=2 #number of counter
-PQ_count= False    # counting with the HH, assumes apd on channel 0
+counter=1 #number of counter
+PQ_count= True    # counting with the HH, assumes apd on channel 0
 bg_x=-3.0          #delta x position of background [um]
 bg_y=3.0           #delta y position of background [um]
 

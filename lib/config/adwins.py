@@ -1307,6 +1307,15 @@ config['adwin_pro_processes'] = {
                 },
             },
 
+        'get_dio' :  {
+            'index' : 4,
+            'file' : 'Get_TTL_states.TB4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
         'init_data' :  {
             'index' : 5,
             'file' : 'init_data.TB5',
