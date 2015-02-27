@@ -136,7 +136,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 3e-9,
 		'Ex_RO_amplitude':				 5e-9, 
-		'Ex_SP_amplitude':				 3e-9,
+		'Ex_SP_amplitude':				 5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 400,
