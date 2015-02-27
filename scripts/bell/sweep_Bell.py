@@ -196,9 +196,9 @@ def echo_sweep(name):
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1 #XXXXXXXXXXXXXX
     m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
