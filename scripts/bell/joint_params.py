@@ -15,7 +15,7 @@ joint_params['do_final_MW_rotation'] = 1
 joint_params['wait_for_1st_revival'] = 0
 joint_params['DD_number_pi_pulses'] = 2 # the maximum number of pi pulses is 3 !!!
 
-joint_params['LDE_element_length']     = 18.5e-6  #XXX 15.e-6 # 9e-6 for TPQI with 5 pulses
+joint_params['LDE_element_length']     = 15e-6  #XXX 18.5e-6  for adwin readout and jump# 9e-6 for TPQI with 5 pulses
 joint_params['LDE_RO_duration'] = 4e-6
 
 joint_params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
