@@ -88,7 +88,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage =2
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     if   stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     elif stage == 5: #rnd_echo_ro tests fast ssro, DD and RND generation
         print 'First optimize on ZPL, and do rejection!'
         sweep_Bell.tail_sweep(SAMPLE_CFG)
-        print 'set params_lt3/3 aom_amplitude'
+        print 'set params_lt3/4 aom_amplitude'
     elif stage == 6: 
         print 'Spin-Photon correlations (if necc.)'
         print 'in bell_lt4 script!'

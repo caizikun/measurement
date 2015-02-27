@@ -98,11 +98,12 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000, #s
+		'TTTR_RepetitiveReadouts':					10,
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1,#sec
-		'MIN_HIST_SYNC_BIN': 	  					1000,
+		'MIN_HIST_SYNC_BIN': 	  					0,
 	    'MAX_HIST_SYNC_BIN': 					 	1000,
-	    'count_marker_channel':						16,
+	    'count_marker_channel':						1,
 		}
 
 
@@ -156,11 +157,11 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 220e-9, #XX 
-        'Hermite_pi_amp': 0.936, #2015-02-11
+        'Hermite_pi_amp': 0.9295, #2015-02-21
         'Hermite_pi2_length': 100e-9, #XX
-        'Hermite_pi2_amp': 0.65, #2014-12-21
+        'Hermite_pi2_amp': 0.6731, #2015-02-21
         'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
-        'Hermite_Npi4_amp':    0.905 +0.04, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-17
+        'Hermite_Npi4_amp':    0.905 +0.04, # Use 0.787 pi on Sam   AR 2015-02-26
         'Square_pi_length' : 50e-9, # 2014-12-01
       	'Square_pi_amp' : 0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 

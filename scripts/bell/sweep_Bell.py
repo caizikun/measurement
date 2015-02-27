@@ -139,9 +139,9 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=10
+    pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 500# XXXXXXXXXXXXXXXXXX
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -161,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.4,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        aom_power_sweep=np.linspace(0.3,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -208,7 +208,7 @@ def echo_sweep(name):
     m.params['free_precession_offset'] = 0e-9
     m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-80e-9, -30e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-100e-9, -50e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
