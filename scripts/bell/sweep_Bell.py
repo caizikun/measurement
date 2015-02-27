@@ -196,9 +196,9 @@ def echo_sweep(name):
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1 #XXXXXXXXXXXXXX
     m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -222,13 +222,13 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 25000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
     m.params['MW_during_LDE'] = 1 
     m.joint_params['do_final_MW_rotation'] = 1
-    m.joint_params['LDE_attempts_before_CR'] = 50
+    m.joint_params['LDE_attempts_before_CR'] = 10
     m.joint_params['opt_pi_pulses'] = 2
     m.params['aom_amplitude'] = 0. #0.88
     m.joint_params['do_echo'] = 1

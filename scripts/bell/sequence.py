@@ -454,13 +454,13 @@ def _LDE_element(msmt, **kw):
             e.add(msmt.MW_RND_I, 
                 start = msmt.params['MW_RND_wait'],
                 refpulse = 'RND', 
-                refpoint = 'start', 
+                refpoint = 'end', 
                 refpoint_new = 'start',
                 name='MW_RND_0')
             e.add(msmt.MW_RND_Q, 
                 start = msmt.params['MW_RND_wait'],
                 refpulse = 'RND', 
-                refpoint = 'start', 
+                refpoint = 'end', 
                 refpoint_new = 'start',
                 name='MW_RND_1')
         else:

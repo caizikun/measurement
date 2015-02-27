@@ -422,7 +422,7 @@ class ElectronT1Switch(PulsarMeasurement):
         # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
         X = pulselib.MW_IQmod_Switch_pulse('Pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            Sw_channel='MW_switch', Sw_Inv_channel='MW_invswitch'
+            Sw_channel='MW_switch', Sw_Inv_channel='MW_invswitch',
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_modulation_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
