@@ -96,7 +96,7 @@ params_lt3['aom_amplitude']				 = .45 # 2015-02-19
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 12e-9 #params_lt3['Ex_RO_amplitude'] 12nW calibrated on 2015-02-27
+params_lt3['AWG_RO_power']            = 8e-9 #params_lt3['Ex_RO_amplitude'] 8nW calibrated on 2015-03-03
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence

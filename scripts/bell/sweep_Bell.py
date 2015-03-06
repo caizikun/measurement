@@ -222,7 +222,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 25000
+    m.params['repetitions'] = 10000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -263,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_ThePippin_Sil1_Ex_+10deg') 
+    tail_sweep('tail_lt3_Pippin_CR_threashold_29_33')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
     #rnd_echo_ro('test')
