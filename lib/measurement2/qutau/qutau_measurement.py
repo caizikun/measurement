@@ -16,7 +16,7 @@ import measurement.lib.measurement2.measurement as m2
 import time
 import logging
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
-
+import hdf5_data as h5
 
 #Creating a qutau instance in 80_create_instruments: qutau = qt.instruments.create('QuTau', 'QuTau')
 
@@ -24,7 +24,8 @@ from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 qutau=qt.instruments['QuTau']
 
 
-class qutau_measurement(m2.Measurement):
+class QuTauMeasurement(m2.Measurement):
+    # NOTE: Untested!!
     mprefix = 'QuTauMeasurement'
 
     def setup(self, do_calibrate = True, debug = False, **kw):
@@ -48,7 +49,9 @@ class qutau_measurement(m2.Measurement):
         pass
 
     def autoconfig(self):
-        qutau.initialize()
+
+        print 'Not initializing QuTau'
+        #qutau.initialize()
         qt.msleep(.5)
         #empty the buffer of the TDC by setting a buffer size in the device.
         qutau.set_buffer_size(1e6)#self.params['QuTau_buffer_size'])
@@ -126,17 +129,18 @@ class qutau_measurement(m2.Measurement):
             (0,), 'u4', maxshape=(None,))
   
         current_dset_length = 0
-
+        
         self.start_keystroke_monitor('abort',timer=False)
-
+        self.start_measurement_process()
         _timer=time.time()
         ii=0
+        
+        while(self.measurement_process_running()): #previously self.PQ_ins.get_MeasRunning
 
-        while(self.measurement_process_running): #previously self.PQ_ins.get_MeasRunning
-
-
+            #print 'timers', time.time()-_timer
             if (time.time()-_timer)>1:#self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
+                    
                     self.print_measurement_progress()
                     self._keystroke_check('abort')
                     if self.keystroke('abort') in ['q','Q']:
@@ -144,6 +148,7 @@ class qutau_measurement(m2.Measurement):
                         break
                         self.stop_measurement_process()
                 else:
+                    
                    #Check that all the measurement data has been transsfered from the PQ ins FIFO
                     ii+=1
                     print 'Retreiving late data from QuTau, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
@@ -156,9 +161,10 @@ class qutau_measurement(m2.Measurement):
 
 
 
-            #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-            _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
-
+                      
+            # FOR RT Extrating data uncomment
+            #_timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
+            #print _length
             
 
 
@@ -169,7 +175,8 @@ class qutau_measurement(m2.Measurement):
                             could indicate too low transfer rate resulting in buffer overflow.')
 
                 #convert ctype arrays to numpy arrays for further data processing
-                _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
+                # FOR RT Extrating data uncomment
+                #_nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
 
                 #####################################################################################
                 ##Secondary, and maybe faster, conversion function:                                ##
@@ -181,16 +188,19 @@ class qutau_measurement(m2.Measurement):
                 #for further information see:
                 #http://stackoverflow.com/questions/4964101/pep-3118-warning-when-using-ctypes-array-as-numpy-array
 
-                _c, _s = QuTau_decode(channels=_channels[:_length])
+                # FOR RT Extrating data uncomment
+                #_c, _s = QuTau_decode(channels=_channels[:_length])
 
                 #in order to make this live filter work: compile the cython file for uint64 as timestmap input.
-                hhtime, hhchannel, hhspecial, sync_time, sync_number, \
-                    newlength, t_ofl, t_lastsync, last_sync_number = \
-                        T2_tools_v2.LDE_live_filter(_nptimestamps[:_length], _c, _s, t_ofl, t_lastsync, last_sync_number,
-                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
-                                                T2_WRAPAROUND, QuTau_timefactor) #T2_tools_v2 only
+                
+                # FOR RT Extrating data uncomment
+                #hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                #    newlength, t_ofl, t_lastsync, last_sync_number = \
+                #        T2_tools_v2.LDE_live_filter(_nptimestamps[:_length], _c, _s, t_ofl, t_lastsync, last_sync_number,
+                #                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                #                                T2_WRAPAROUND, QuTau_timefactor) #T2_tools_v2 only
 
-    
+                #print _nptimestamps
                 if newlength > 0:
 
                     dset_hhtime.resize((current_dset_length+newlength,))
@@ -231,17 +241,61 @@ class qutau_measurement(m2.Measurement):
                     print qutau.get_data_lost()
                     print 'measurement aborted'
                     self.stop_measurement_process()
-
+        
         #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
         #self.h5data.flush()#XXX
-        
+        qt.msleep(1)
+        for i in np.arange(5):
+            _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size)
+            _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32)
+            _c, _s = QuTau_decode(channels=_channels[:_length])
+            hhtime, hhchannel, hhspecial, sync_time, sync_number, \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v2.LDE_live_filter(_nptimestamps[:_length], _c, _s, t_ofl, t_lastsync, last_sync_number,
+                                                MIN_SYNC_BIN, MAX_SYNC_BIN,
+                                                T2_WRAPAROUND, QuTau_timefactor) #T2_tools_v2 only
+            current_dset_length+=_length
+            print 'Length of final dataset', _length
         print 'QuTau total datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number
+        newlength=0
+        dset_hhtime.resize((current_dset_length+newlength,))
+        dset_hhchannel.resize((current_dset_length+newlength,))
+        dset_hhspecial.resize((current_dset_length+newlength,))
+        dset_hhsynctime.resize((current_dset_length+newlength,))
+        dset_hhsyncnumber.resize((current_dset_length+newlength,))
+
+        dset_hhtime[current_dset_length:] = hhtime
+        dset_hhchannel[current_dset_length:] = hhchannel
+        dset_hhspecial[current_dset_length:] = hhspecial
+        dset_hhsynctime[current_dset_length:] = sync_time
+        dset_hhsyncnumber[current_dset_length:] = sync_number
+
+        current_dset_length += newlength
+        self.h5data.flush()
+
+
+        rawdata_idx = 1
+        dset_hhtime = self.h5data.create_dataset('QuTau_time-{}'.format(rawdata_idx), 
+                    (0,), 'u8', maxshape=(None,))
+        dset_hhchannel = self.h5data.create_dataset('QuTau_channel-{}'.format(rawdata_idx), 
+            (0,), 'u1', maxshape=(None,))
+        dset_hhspecial = self.h5data.create_dataset('QuTau_special-{}'.format(rawdata_idx), 
+            (0,), 'u1', maxshape=(None,))
+        dset_hhsynctime = self.h5data.create_dataset('QuTau_sync_time-{}'.format(rawdata_idx), 
+            (0,), 'u8', maxshape=(None,))
+        dset_hhsyncnumber = self.h5data.create_dataset('QuTau_sync_number-{}'.format(rawdata_idx), 
+            (0,), 'u4', maxshape=(None,))         
+        current_dset_length = 0
+
+        self.h5data.flush()
+
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
+        print 'stopping msmnts process'
         self.stop_measurement_process()
-
+        print 'stopped msmnts process'
 
 
 
@@ -283,85 +337,156 @@ def QuTau_decode(channels):
 #     return event_time, channel, special
 
 
-# class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
-#     mprefix = 'PQMeasurementIntegrated'
+class QuTauMeasurementIntegrated(QuTauMeasurement):#T2_tools_v2 only!
+    # NOTE: Untested!!
+    mprefix = 'QuTauMeasurementIntegrated'
 
-#     def run(self, autoconfig=True, setup=True, debug=False):
+    def run(self, autoconfig=True, setup=True, debug=False):
 
-#         if debug:
-#             self.run_debug()
-#             return
+        if debug:
+            self.run_debug()
+            return
 
-#         if autoconfig:
-#             self.autoconfig()
+        if autoconfig:
+            self.autoconfig()
             
-#         if setup:
-#             self.setup()
+        if setup:
+            self.setup()
+
+        rawdata_idx = 1
+        t_ofl = 0
+        t_lastsync = 0
+        last_sync_number = 0
+        ### _length!?    
+
+        MIN_SYNC_BIN = np.uint64(0)     #np.uint64(self.params['MIN_SYNC_BIN'])# no longer needed as the data is in absolute time
+        MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN']-1)  #np.uint64(self.params['MAX_SYNC_BIN'])#
+
+        #if you don't want to change the msmt_params.py file then overwrite QuTau_buffer_size' with TTTR_read_count
+        #TTTR_read_count = self.params['TTTR_read_count']
+        buffer_size=1e6#self.params['QuTau_buffer_size']
+
+        QuTau_timefactor=1  #is this the relative fraction of device-dependent timeresolutions? E.g.: PQ Timeharp vs. qutau??
 
 
-#         rawdata_idx = 1
-#         t_ofl = 0
-#         t_lastsync = 0
-#         last_sync_number = 0
-    
+        T2_WRAPAROUND = np.uint64(2**16)
+        #the above number was hardcoded in the driver of the TimeHarp TH260P. Should not matter for the current evalutation
+        #but the LDE_live_filter needs this.
 
-#         MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])
-#         MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])
-#         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
-#         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
+        hist_length = np.uint64(self.params['MAX_SYNC_BIN'] - self.params['MIN_SYNC_BIN'])
+        sweep_length = np.uint64(self.params['pts'])
+        syncs_per_sweep = np.uint64(self.params['syncs_per_sweep'])
 
-#         hist_length = np.uint64(self.params['MAX_SYNC_BIN'] - self.params['MIN_SYNC_BIN'])
-#         sweep_length = np.uint64(self.params['pts'])
-#         syncs_per_sweep = np.uint64(self.params['syncs_per_sweep'])
+        hist0 = np.zeros((hist_length,sweep_length), dtype='u1')
+        hist1 = np.zeros((hist_length,sweep_length), dtype='u1')
 
-#         hist0 = np.zeros((hist_length,sweep_length), dtype='u1')
-#         hist1 = np.zeros((hist_length,sweep_length), dtype='u1')
 
-#         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
-#         self.start_measurement_process()
-#         self.start_keystroke_monitor('abort',timer=False)
-#         _timer=time.time() 
-#         ll=0
-#         while(self.PQ_ins.get_MeasRunning()):
 
-#             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
-#                 if not self.measurement_process_running():
-#                     break
-#                 self._keystroke_check('abort')
-#                 if self.keystroke('abort') in ['q','Q']:
-#                     print 'aborted.'
-#                     self.stop_keystroke_monitor('abort')
-#                     break
+        self.start_keystroke_monitor('abort',timer=False)
+        self.start_measurement_process()
+        _timer=time.time() 
+        current_dset_length=0
+        last_sync_number = 0
+        #while(last_sync_number<self.params['pts']*self.params['repetitions']): #previously self.PQ_ins.get_MeasRunning
+        
+        while(self.measurement_process_running()):
+            if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+                if not self.measurement_process_running():
+                    break
+                self._keystroke_check('abort')
+                if self.keystroke('abort') in ['q','Q']:
+                    print 'aborted.'
+                    self.stop_keystroke_monitor('abort')
+                    break
                     
-#                 self.print_measurement_progress()
+                self.print_measurement_progress()
+                # print i
+            
+            
+            _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
+ 
+            
+            #print '_length = ', _length    
+            #_npcounts=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
+            #print ' # clicks on channels (1,3) = ', list(_npcounts).count(1),list(_npcounts).count(3)
+            if _length > 0:
+                if _length == buffer_size: #was previously T2_READMAX;
+                    logging.warning('extracted data length equal to the buffer_size, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
 
-#                 _timer=time.time()
+                #convert ctype arrays to numpy arrays for further data processing
+                _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
 
-#             _length, _data = self.PQ_ins.get_TTTR_Data()
+                _c, _s = QuTau_decode(channels=_channels[:_length])
                 
-#             if _length > 0:
-#                 _t, _c, _s = PQ_decode(_data[:_length])
+                hist0, hist1, \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v2.LDE_live_filter_integrated(_nptimestamps[:_length], _c, _s, hist0, hist1, t_ofl, 
+                            t_lastsync, last_sync_number,
+                            syncs_per_sweep, sweep_length, 
+                            MIN_SYNC_BIN, MAX_SYNC_BIN,
+                            T2_WRAPAROUND,QuTau_timefactor)
+                current_dset_length+=newlength
+                #print 'new length = ', newlength
+
+                _timer=time.time()
+            
+            #qt.msleep(1)
+            
+            #print 'Current sync number: ' ,last_sync_number,'/',    self.params['pts']*self.params['repetitions']
+            #qt.msleep(1)
+        qt.msleep(1)
+        #total_syncs=0    
+        print 'length = ', _length
+        for i in np.arange(2):
+            
+            _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
+            #print '_length = ', _length
+            
+            qt.msleep(4)    
+            
+            _npchannels=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
+            print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
+            #_npcounts=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
+            #print ' # clicks on channels (1,3) = ', list(_npcounts).count(1),list(_npcounts).count(3)
+            if _length > 0:
+                if _length == buffer_size: #was previously T2_READMAX;
+                    logging.warning('extracted data length equal to the buffer_size, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
+
+                #convert ctype arrays to numpy arrays for further data processing
+                _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
+
+                _c, _s = QuTau_decode(channels=_channels[:_length])
+                #total_syncs+=sum(_s)
+                #print 'Sum _c',sum(_c)
+                #print '_c[0:10]', _c[0:10]
+                hist0, hist1, \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v2.LDE_live_filter_integrated(_nptimestamps[:_length], _c, _s, hist0, hist1, t_ofl, 
+                            t_lastsync, last_sync_number,
+                            syncs_per_sweep, sweep_length, 
+                            MIN_SYNC_BIN, MAX_SYNC_BIN,
+                            T2_WRAPAROUND,QuTau_timefactor)
+                current_dset_length+=newlength
                 
-#                 hist0, hist1, \
-#                     newlength, t_ofl, t_lastsync, last_sync_number = \
-#                         T2_tools_v2.LDE_live_filter_integrated(_t, _c, _s, hist0, hist1, t_ofl, 
-#                             t_lastsync, last_sync_number,
-#                             syncs_per_sweep, sweep_length, 
-#                             MIN_SYNC_BIN, MAX_SYNC_BIN,
-#                             T2_WRAPAROUND,T2_TIMEFACTOR)
-#                 ll+=newlength
-#         self.PQ_ins.StopMeas()
+            qt.msleep(1)
+        #_npchannels=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
+        #print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
+        #_nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
 
+        print 'QuTau total datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number
+        #print 'Total Syncs', total_syncs
+        try:
+            self.stop_keystroke_monitor('abort')
+        except KeyError:
+            pass # means it's already stopped
+        self.stop_measurement_process()
 
-#         try:
-#             self.stop_keystroke_monitor('abort')
-#         except KeyError:
-#             pass # means it's already stopped
-#         print 'PQ total events: last sync number',  ll, last_sync_number
-#         self.stop_measurement_process()
-
-#         dset_hist0 = self.h5data.create_dataset('PQ_hist0', data=hist0, compression='gzip')
-#         dset_hist1 = self.h5data.create_dataset('PQ_hist1', data=hist1, compression='gzip')
-#         self.h5data.flush()
+        dset_hist0 = self.h5data.create_dataset('QuTau_hist0', data=hist0, compression='gzip')
+        dset_hist1 = self.h5data.create_dataset('QuTau_hist1', data=hist1, compression='gzip')
+        dset_channels = self.h5data.create_dataset('QuTau_channels', data=_npchannels, compression='gzip')
+        dset_timestamps = self.h5data.create_dataset('QuTau_timestamps', data=_nptimestamps, compression='gzip')
+        self.h5data.flush()
 
 

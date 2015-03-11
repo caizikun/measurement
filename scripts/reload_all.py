@@ -33,3 +33,5 @@ reload(pulsar_mbi_espin)
 
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 reload(pulsar_pq)
+from measurement.lib.measurement2.adwin_ssro import pulsar_qutau
+reload(pulsar_qutau)

@@ -2,7 +2,7 @@
 cfg={}
 
 sample_name = 'Gretel'
-sil_name = 'sil10'
+sil_name = 'sil1'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -55,11 +55,15 @@ cfg['protocols']['AdwinSSRO']={
     'CR_probe_max_time'         :       1000000,
     'SSRO_stop_after_first_photon': 0,}
 
-cfg['protocols']['AdwinSSRO']['cr_mod'] = True
+cfg['protocols']['AdwinSSRO']['cr_mod'] = False
 cfg['protocols']['cr_mod']={
     'cr_mod_control_offset'     :   0.0,
     'cr_mod_control_amp'        :   0.05, #V
     'repump_mod_control_amp'    :   .5, #V
+    'repump_mod_DAC_channel'    :0,
+    'cr_mod_DAC_channel'    :0,
+    'repump_mod_control_offset'    :0,
+
     }
 
 
@@ -159,22 +163,22 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     'A_CR_amplitude': 5e-9,#3nW
     'A_RO_amplitude': 0,
     'A_SP_amplitude': 20e-9,
-    'CR_duration' :  100,
+    'CR_duration' :  1,
     'CR_preselect':  1000,
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  3e-9,#5nW
     'Ex_RO_amplitude':  2e-9, #15e-9,
     'Ex_SP_amplitude':  5e-9,
-    'SP_duration'        : 100,
-    'SP_duration_ms0' : 100,
-    'SP_duration_ms1' : 100,
+    'SP_duration'        : 1,
+    'SP_duration_ms0' : 1,
+    'SP_duration_ms1' : 1,
     'SP_filter_duration' : 0 
     }
     
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-    'SSRO_duration' : 20}
+    'SSRO_duration' : 1}
 
 
 CORPSE_frq = 9e6
@@ -199,15 +203,34 @@ cfg['protocols'][name]['pulses'] = {
         'extra_wait_final_pi2' : -30e-9
         }
 
-CORPSE_frq=  6.8e6
-MW_mod_magnetometry=31.234e6
-f_msm1_cntr = 0.292e6+2.845e9         #Electron spin ms=-1 frquency
-f_msp1_cntr = 2.900e9        #NOT CALIBRATED
 
+
+
+
+
+
+######################
+#### SIL 1 ##########
+######################
+
+MW_mod_magnetometry=31.234e6
+f_msm1_cntr = 2.83796e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil1']['pulses'] ={
+'MW_modulation_frequency'   :   MW_mod_magnetometry,
+'mw_frq'        :      f_msm1_cntr - MW_mod_magnetometry,#-N_HF_frq,
+
+}
+
+
+
+######################
+#### SIL 10 ##########
+######################
+'''
 MBI_duration = 70
 
 cfg['protocols']['Gretel_sil10']['AdwinSSRO+MBI'] ={
-
     #Spin pump before MBI
 'Ex_SP_amplitude'           :           6.5e-9,
 'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet
@@ -229,10 +252,14 @@ cfg['protocols']['Gretel_sil10']['AdwinSSRO+MBI'] ={
 'AWG_wait_for_adwin_MBI_duration':      10e-6+MBI_duration*1e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
-'repump_after_E_RO_amplitude':          4e-9
+'repump_after_E_RO_amplitude':          4e-9,
 
 }
 
+CORPSE_frq=  6.8e6
+MW_mod_magnetometry=31.234e6
+f_msm1_cntr = 0.292e6+2.845e9         #Electron spin ms=-1 frquency
+f_msp1_cntr = 2.900e9        #NOT CALIBRATED
 cfg['protocols']['Gretel_sil10']['Magnetometry'] ={
 'MW_modulation_frequency'   :   MW_mod_magnetometry,
 'mw_frq'        :      f_msm1_cntr - MW_mod_magnetometry,#-N_HF_frq,
@@ -299,3 +326,4 @@ cfg['protocols']['Gretel_sil10']['Magnetometry'] ={
 'fpga_pi2_duration': 1812e-9,
 'fpga_phase_offset': 90-15,
 }
+'''

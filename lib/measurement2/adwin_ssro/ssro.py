@@ -182,7 +182,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
 
     def finish(self, save_params=True, save_stack=True, 
             stack_depth=4, save_cfg=True, save_ins_settings=True):
-                
+      
         if save_params:
             self.save_params()
             
@@ -195,7 +195,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
-        
+
         m2.AdwinControlledMeasurement.finish(self)
 
 class AdwinSSROAlternCR(AdwinSSRO):   

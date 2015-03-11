@@ -42,8 +42,8 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
 
 # light
-#qt.pulsar.define_channel(id='ch3_marker1', name='AOM_Green', type='marker', 
-#    high=1.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch3_marker1', name='AOM_Green', type='marker', 
+    high=0.4, low=0, offset=0., delay=0., active=True)
 
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 
     high=0.4, low=0, offset=0., delay=700e-9, active=True)
@@ -54,7 +54,9 @@ qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker',
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',#ch4_marker1
     high=0.4, low=0, offset=0., delay=525e-9, active=True)
 
-
+#QuTau sync
+qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker', 
+    high=2.5, low=0, offset=0., delay=0., active=True)
 
 
 ## EOM - short pulse
