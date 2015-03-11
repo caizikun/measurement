@@ -20,9 +20,9 @@ params_lt4['CR_preselect'] 		= qt.exp_params['protocols'][name]['AdwinSSRO']['CR
 params_lt4['CR_probe'] 			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_probe']
 params_lt4['CR_repump']			= qt.exp_params['protocols'][name]['AdwinSSRO']['CR_repump'] # 1 for yellow, 1000 for green
 
-params_lt4['cr_mod'] 				    =  True# qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
+params_lt4['cr_mod'] 				    =  True # qt.exp_params['protocols']['AdwinSSRO']['cr_mod']
 params_lt4['cr_mod_control_dac']		=  qt.exp_params['protocols']['cr_mod']['cr_mod_control_dac']
-params_lt4['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset'] #XXX this should be true in case of cr mod!!
+params_lt4['cr_mod_control_offset']     =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_offset']
 params_lt4['cr_mod_control_amp']        =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_amp'] 
 params_lt4['cr_mod_control_avg_pts']    =  qt.exp_params['protocols']['cr_mod']['cr_mod_control_avg_pts']
 params_lt4['repump_mod_control_amp']    =  qt.exp_params['protocols']['cr_mod']['repump_mod_control_amp'] 
@@ -74,9 +74,9 @@ params_lt4['MW_RND_duration_I']= params_lt4['MW_pi2_duration'] #TODO Calibrate 5
 params_lt4['MW_RND_amp_Q']	   = params_lt4['MW_pi2_amp']# 0.487 
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi2_duration'] #50e-9
 
-params_lt4['MW_BellStateOffset'] = 0#-0.0239 #2014-11-
+params_lt4['MW_BellStateOffset'] = 0 # Sam should be rotated by 0.53 pi  AR 2015-02-26
 
-params_lt4['echo_offset'] = -100e-9 #50 ns
+params_lt4['echo_offset'] = -85e-9 #50 ns
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
@@ -93,20 +93,20 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.64
+params_lt4['aom_amplitude']             = 0.47   #2015-02-22
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 2.5e-9 # 2014-11-18
+params_lt4['AWG_RO_power']            = 4e-9 # 2014-11-18
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
 params_lt4['MW_opt_puls1_separation'] = 10e-9 #distance between the end of the MW and the start of opt puls1
 params_lt4['MW_1_separation'] 		  = joint_params.joint_params['opt_pulse_separation']
-params_lt4['MW_RND_wait'] 			  = 160e-9 #wait start RND MW after end of RND halt pulse
-params_lt4['RND_duration'] 			  = 250e-9
+params_lt4['MW_RND_wait'] 			  = -50e-9#160e-9 #wait start RND MW after end of RND halt pulse
+params_lt4['RND_duration'] 			  = 200e-9
 params_lt4['RO_wait'] 				  = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE']   	  = 1
 params_lt4['plu_during_LDE']    	  = 1
@@ -131,6 +131,8 @@ params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count
 params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
 params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
 params_lt4['entanglement_marker_number'] = 4
+params_lt4['tail_start_bin'] = 5350
+params_lt4['tail_stop_bin'] = 5350 + 200
 
 params_lt4['measurement_time'] =   2*60*60#sec = 60 mins
 

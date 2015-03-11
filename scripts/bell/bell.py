@@ -45,6 +45,9 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
     
     def print_measurement_progress(self):
+        tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
+        self.physical_adwin.Set_Par(50, int(tail_cts))
+        
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s readout repetitions' % reps_completed)
 

@@ -5,10 +5,10 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'SAM_Sil5_ZPL_EWI_opt_on_CR'
+name = 'SAM_ZPL_local_LC_green_opt_no_pol_doublet'
 steps=21
 max_power=210e-6       #[w]
-counter=3 #number of counter
+counter=2 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=2        #delta x position of background [um]
 bg_y=-2          #delta y position of background [um]

@@ -107,9 +107,6 @@ class Bell_lt4(bell.Bell):
         if self.lt3_helper != None:    
             self.lt3_helper.set_is_running(False)
 
-    def print_measurement_progress(self):
-        pass
-
     def finish(self):
         bell.Bell.finish(self)
         self.add_file(inspect.getsourcefile(bseq))
@@ -200,7 +197,7 @@ def measureXX(name):
     #make sure MWI and Q pulses are set correctly
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -240,24 +237,27 @@ def TPQI(name):
              do_upload     = True,
              )
 
-def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
     name='SPCORR_'+name
     m = Bell_lt4(name)
     m.joint_params['do_echo'] = 0
     m.joint_params['do_final_MW_rotation'] = 0
+    m.joint_params['use_live_marker_filter']=False
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
-             measure_bs    = True,
+             measure_bs    = False,
              do_upload     = True,
              )
 
-def SP_lt3(name):
+def SP_ZPL(name):
     name='SPCORR_'+name
     m = Bell_lt4(name)
+    m.joint_params['do_echo'] = 0
+    m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -299,9 +299,9 @@ if __name__ == '__main__':
         qt.msleep(0.5)
         #TPQI('run_test')
         #full_bell('high_strain_short_pulsesep_day1_run2')   
-        SP_lt4('SPCORR_lt4')
+        #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
         #pulse_overlap('testing')
-        #SP_lt3('SPCORR_lt3')
-        #measureXX('lock_day5_run8')
+        #SP_PSB('SPCORR_PSB')
+        measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
