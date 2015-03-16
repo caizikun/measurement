@@ -5,7 +5,7 @@ import numpy as np
 def measure_and_broadcast_countrates(): #TODO clean up print and debug statements
 
 	meas_time = 10000 * 1e3 #s
-	approx_int_time  = 0.1#s
+	approx_int_time  = .1#s #change this for DM optimize
 	PQ_ins = qt.instruments['HH_400']
 
 	adwin_ins_lt4 = qt.instruments['physical_adwin_lt4']
