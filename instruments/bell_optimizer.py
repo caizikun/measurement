@@ -12,15 +12,18 @@ class bell_optimizer(mo.multiple_optimizer):
     def __init__(self, name):
         mo.multiple_optimizer.__init__(self, name)
        
-        ins_pars  = {'min_starts'         :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'min_cr_checks'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'min_cr_counts_gate'  :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'rejecter_step'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
-                    'email_recipient'     :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
-                    'min_tail_counts'     :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
-                    'max_pulse_counts'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
-                    'max_SP_pulse_lt3'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':8},
-                    'max_SP_pulse_lt4'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':30},
+        ins_pars  = {'min_starts'                :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'min_cr_checks'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'min_repump_counts'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'nb_seconds_to_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':1},
+                    'rejecter_step'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
+                    'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
+                    'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
+                    'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
+                    'max_SP_pulse_lt3'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
+                    'max_SP_pulse_lt4'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
+                    'max_laser_reject_cycles'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
@@ -84,6 +87,8 @@ class bell_optimizer(mo.multiple_optimizer):
 
     #--------------get_set   
 
+    #XXXXX disable the functions associated with laser_rejection on LT3
+
     def check_rejection(self):
 
         tail_cts = qt.instruments['physical_adwin'].Get_Par(51)
@@ -127,17 +132,77 @@ class bell_optimizer(mo.multiple_optimizer):
                     return False
 
         if pulse_lt4 > self.get_max_SP_pulse_lt4():
+            qt.instruments['physical_adwin'].Set_Par(53,1)
+            print '\n Bad laser rejection detected on LT4. Starting the optimizing...'
             self.optimize_half()
             self.optimize_quarter()
+            for i in range(self.get_max_laser_reject_cycles):
+                if pulse_lt4 < self.get_max_SP_pulse_lt4():
+                    qt.instruments['physical_adwin'].Set_Par(53,0)
+                    pass
+                else :
+                    self.optimize_half()
+                    self.optimize_quarter()
+            if pulse_lt4 > self.get_max_SP_pulse_lt4():
+                print 'CAUTION : Even after {} optimization cycles, the laser rejection is still bad on LT4.'.format(self.get_max_laser_reject_cycles)
+                #XXXXX add send_email
+
 
         if pulse_lt3 > self.get_max_SP_pulse_lt3():
-            pass
-            #qt.instruments['lt3_half_optimize'].optimize()
-            #qt.instruments['lt3_quarter_optimize'].optimize()
+            qt.instruments['physical_adwin'].Set_Par(53,1)
+            print '\n Bad laser rejection detected on LT3. Starting the optimizing...'
+            qt.instruments['lt3_half_optimize'].optimize()
+            qt.instruments['lt3_quarter_optimize'].optimize()
+            for i in range(self.get_max_laser_reject_cycles):
+                if pulse_lt3 < self.get_max_SP_pulse_lt3():
+                    qt.instruments['physical_adwin'].Set_Par(53,0)
+                    pass
+                else :
+                    qt.instruments['lt3_half_optimize'].optimize()
+                    qt.instruments['lt3_quarter_optimize'].optimize()
+            if pulse_lt3 > self.get_max_SP_pulse_lt3():
+                print 'CAUTION : Even after {} optimization cycles, the laser rejection is still bad on LT3.'.format(self.get_max_laser_reject_cycles)
+
+        # take point every 200 ms to average the cr counts and the repump counts
+        cr_counts_avg = 0
+        repump_counts_avg = 0
+        for i in range(self.get_nf_seconds_to_avg*5) :
+            cr_counts_avg = cr_counts_avg +  qt.instruments['gate_optimizer'].get_value()
+            repump_counts_avg = repump_counts_avg + qt.instruments['yellowfrq_optimizer'].get_value()
+            qt.msleep(0.2)
+        cr_counts_avg = cr_counts_avg/np.float(self.get_nf_seconds_to_avg*5)
+        repump_counts_avg = repump_counts_avg/np.float(self.get_nf_seconds_to_avg*5)
+        print 'cr counts ', cr_counts_avg
+        print 'repump counts ', repump_counts_avg
+
+        if cr_counts_avg < self.get_min_cr_counts():
+            qt.instruments['physical_adwin'].Set_Par(53,1)
+            self.optimize_gate()
+            self.optimize_yellow()
+            self.optimize_nf()
+            if qt.instruments['gate_optimizer'].get_value() > self.get_min_cr_counts_gate():
+                qt.instruments['physical_adwin'].Set_Par(53,0)
+                print 'CAUTION : Even after gate optimization, the CR counts are still too low.'
+                #XXXX add email
+                return False
+
+
+
+        if repump_counts_avg < self.get_min_repump_counts():
+            qt.instruments['physical_adwin'].Set_Par(53,1)
+            self.optimize_yellow()
+            self.optimize_nf()
+            if qt.instruments['gate_optimizer'].get_value() > self.get_min_cr_counts_gate():
+                qt.instruments['physical_adwin'].Set_Par(53,0)
+                print 'CAUTION : Even after optimization, the yellow laser is still not on resonance.'
+                #XXXX add email
+                return False
+
+
 
         th = qt.instruments['physical_adwin'].Get_Par(75)
         if st2-st1<self.get_min_starts():
-            if cr2-cr1 > self.get_min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.get_min_cr_counts_gate() and th < 200:
+            if cr2-cr1 > self.get_min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.get_min_cr_counts() and th < 200:
                 print 'JUMP DETECTED LT4! starts per second'
                 print '-'*20
                 print '-'*20

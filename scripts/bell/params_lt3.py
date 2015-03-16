@@ -69,10 +69,10 @@ params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Her
 
 params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487 
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt3['MW_RND_amp_Q']	   = params_lt3['MW_pi2_amp']# 0.487 
+params_lt3['MW_RND_amp_Q']	   = 0# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
 
-params_lt3['MW_BellStateOffset'] = 0 # Pippin should be rotated by 0.47pi  AR 2015-02-26
+params_lt3['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
 params_lt3['echo_offset'] = -70e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
@@ -91,12 +91,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = .45 # 2015-02-19
+params_lt3['aom_amplitude']				 = .46 # 2015-03-12 with 29 CR
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 12e-9 #params_lt3['Ex_RO_amplitude'] 12nW calibrated on 2015-02-27
+params_lt3['AWG_RO_power']            = 8e-9 #params_lt3['Ex_RO_amplitude'] 12nW calibrated on 2015-02-27
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
@@ -127,7 +127,7 @@ params_lt3['TTTR_RepetitiveReadouts']= 	joint_params.joint_params['TTTR_Repetiti
 params_lt3['TTTR_read_count'] =    		joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_data']
-params_lt3['entanglement_marker_number'] = 8
+params_lt3['entanglement_marker_number'] = 4
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
 

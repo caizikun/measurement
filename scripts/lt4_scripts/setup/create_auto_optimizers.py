@@ -1,4 +1,4 @@
-if True:
+if False:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
     _getctrl_gate=  lambda: qt.instruments['adwin'].get_dac_voltage('gate')
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -31,7 +31,7 @@ if True:
     bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
 
 
-if False:
+if True:
     qt.instruments['rejecter']._ctrl_half_x0 = 0.
     def _setctrl_half(x):
         #print qt.instruments['rejecter']._ctrl_half_x0, x

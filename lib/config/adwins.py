@@ -1673,7 +1673,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
-                    ['invalid_data_marker_do_channel', 8],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

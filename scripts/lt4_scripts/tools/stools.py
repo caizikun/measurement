@@ -140,6 +140,17 @@ def generate_quantum_random_number():
     qt.msleep(0.1)
     qt.instruments['AWG'].set_ch3_marker2_low(0.)
 
+def quantum_random_number_reset():
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
+
+def quantum_random_number_status():
+    qt.instruments['adwin'].start_get_dio(dio_no=17)
+    return qt.instruments['adwin'].get_get_dio_var('dio_val') > 0
+
 def reset_plu():
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
         qt.msleep(0.1)
@@ -161,7 +172,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     cur_v=adwin.get_dac_voltage('yellow_aom_frq')
     ps=[]
     vs=[]
-    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+    for v in np.linspace(cur_v-0.25, cur_v+0.25, pts):
         vs.append(v)
         adwin.set_dac_voltage(('yellow_aom_frq',v))
         qt.msleep(0.1)
