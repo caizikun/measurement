@@ -73,7 +73,7 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
     # measurement settings
     pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
     m.params['MW_pulse_delays'] = np.ones(pts) * 15e-6
 
@@ -87,6 +87,8 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
     m.params['sweep_name'] = 'MW pulse amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amps']
 
+    print m.params['fast_pi_duration']
+    
     if mbi == False:
         m.params['MBI_threshold'] = 0
         m.params['Ex_SP_amplitude'] = 0
@@ -105,7 +107,7 @@ def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = T
 
     # measurement settings
     pts = 15
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
     m.params['pts'] = pts
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
     m.params['MW_pulse_delays'] = np.ones(pts) * 30e-9
@@ -114,6 +116,7 @@ def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = T
     m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
     print     m.params['MW_pulse_durations'] 
     m.params['MW_pulse_amps'] = np.linspace(min_pulse_amp,max_pulse_amp,pts)
+    print m.params['MW_pulse_amps']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -197,6 +200,6 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
 
-    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp =0.801227-0.04, max_pulse_amp =0.801227+0.04, mbi = True)
-    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.8034-0.04, max_pulse_amp =0.8034+0.04, mbi = True)
-    # cal_pi2pi_pi(SAMPLE_CFG, 5)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp =  0.4 -0.015, max_pulse_amp = 0.4+0.015, mbi = True)
+    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.415990  -0.015, max_pulse_amp =0.415990 +0.015, mbi = True)
+

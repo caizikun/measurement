@@ -20,26 +20,20 @@ from measurement.lib.cython.PQ_T2_tools import T2_tools_v2
 
 #Creating a qutau instance in 80_create_instruments: qutau = qt.instruments.create('QuTau', 'QuTau')
 
+
 qutau=qt.instruments['QuTau']
 
 
-class QuTauMeasurement(m2.Measurement):
+class qutau_measurement(m2.Measurement):
     mprefix = 'QuTauMeasurement'
 
-    
-    #not necessary for the qutau???
+    def setup(self, do_calibrate = True, debug = False, **kw):
+        if debug:
+            return
 
-    # def setup(self, do_calibrate = True, debug = False, **kw):
-    #     if debug:
-    #         return
-    #     if self.PQ_ins.OpenDevice():
-    #         self.PQ_ins.start_T2_mode()
-    #         if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
-    #             self.PQ_ins.calibrate()
-    #         self.PQ_ins.set_Binning(self.params['BINSIZE'])
-    #         print self.PQ_ins.get_ResolutionPS()
-    #     else:
-    #         raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
+        
+        print qutau.get_timebase()
+
 
     def measurement_process_running(self):
         return True
@@ -54,7 +48,12 @@ class QuTauMeasurement(m2.Measurement):
         pass
 
     def autoconfig(self):
-        qutau.set_buffer_size(self.params['QuTau_buffer_size'])
+        qutau.initialize()
+        qt.msleep(.5)
+        #empty the buffer of the TDC by setting a buffer size in the device.
+        qutau.set_buffer_size(1e6)#self.params['QuTau_buffer_size'])
+
+        print 'qutau data-loss status before start:', qutau.get_data_lost()
 
 
     def run_debug(self):
@@ -63,7 +62,7 @@ class QuTauMeasurement(m2.Measurement):
         _timer=time.time()
         while True:
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
-                if not self.measurement.process_running():
+                if not self.measurement_process_running():
                     break
                 self._keystroke_check('abort')
                 if self.keystroke('abort') in ['q','Q']:
@@ -75,13 +74,16 @@ class QuTauMeasurement(m2.Measurement):
                 _timer=time.time()
         self.stop_measurement_process()
 
-    def run(self, autoconfig=True, debug=False):
+    def run(self, autoconfig=True, debug=False, setup=True):
         if debug:
             self.run_debug()
             return
 
         if autoconfig:
             self.autoconfig()
+
+        if setup:
+            self.setup()
 
         rawdata_idx = 1
         t_ofl = 0
@@ -91,21 +93,24 @@ class QuTauMeasurement(m2.Measurement):
         
 
 
-        MIN_SYNC_BIN = np.uint64(self.params['MIN_SYNC_BIN'])# no longer needed as the data is in absolute time
-        MAX_SYNC_BIN = np.uint64(self.params['MAX_SYNC_BIN'])#
+        MIN_SYNC_BIN = np.uint64(0)     #np.uint64(self.params['MIN_SYNC_BIN'])# no longer needed as the data is in absolute time
+        MAX_SYNC_BIN = np.uint64(1000)  #np.uint64(self.params['MAX_SYNC_BIN'])#
 
         #if you don't want to change the msmt_params.py file then overwrite QuTau_buffer_size' with TTTR_read_count
         #TTTR_read_count = self.params['TTTR_read_count']
-        buffer_size=self.params['QuTau_buffer_size']
+        buffer_size=1e6#self.params['QuTau_buffer_size']
 
-        QuTau_timefactor=qutau.get_timebase()
+        QuTau_timefactor=1  #is this the relative fraction of device-dependent timeresolutions? E.g.: PQ Timeharp vs. qutau??
 
 
-        T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())# needs to be implemented for QuTau
-        T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())# needs to be implemented for QuTau
-        #T2_READMAX = self.PQ_ins.get_T2_READMAX() # == buffer_size
+        T2_WRAPAROUND = np.uint64(2**16)
+        #the above number was hardcoded in the driver of the TimeHarp TH260P. Should not matter for the current evalutation
+        #but the LDE_live_filter needs this.
 
-        print 'run QuTau measurement, buffer_size ', buffer_size 
+        #T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
+        #T2_READMAX = self.PQ_ins.get_T2_READMAX() # in this implementation this is equal to == buffer_size
+
+        print 'run QuTau measurement, extract data with an array length of ', buffer_size 
 
 
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
@@ -124,35 +129,28 @@ class QuTauMeasurement(m2.Measurement):
 
         self.start_keystroke_monitor('abort',timer=False)
 
-
-        ################
-        #question do we need a start/stop measurement function for the QuTau box??
-        ###############
-        #self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms 
-        ###########################
-
-
         _timer=time.time()
         ii=0
 
         while(self.measurement_process_running): #previously self.PQ_ins.get_MeasRunning
 
 
-            if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+            if (time.time()-_timer)>1:#self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
                     self.print_measurement_progress()
                     self._keystroke_check('abort')
                     if self.keystroke('abort') in ['q','Q']:
                         print 'aborted.'
+                        break
                         self.stop_measurement_process()
-                # else:
-                #    #Check that all the measurement data has been transsfered from the PQ ins FIFO
-                #     ii+=1
-                #     print 'Retreiving late data from QuTau, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
-                #     self._keystroke_check('abort')
-                #     if _length == 0 or self.keystroke('abort') in ['x']: 
-                #         break 
-                # print 'current sync, dset length:', last_sync_number, current_dset_length
+                else:
+                   #Check that all the measurement data has been transsfered from the PQ ins FIFO
+                    ii+=1
+                    print 'Retreiving late data from QuTau, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
+                    self._keystroke_check('abort')
+                    if _length == 0 or self.keystroke('abort') in ['x']: 
+                        break 
+                print 'current sync, dset length:', last_sync_number, current_dset_length
             
                 _timer=time.time()
 
@@ -161,34 +159,31 @@ class QuTauMeasurement(m2.Measurement):
             #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
             _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
 
-            #convert ctype arrays to numpy arrays for further data processing
-            _nptimestamps=np.frombuffer(buffer(_timestamps))
-            _npchannels=np.frombuffer(buffer(_channels))
-
-            #####################################################################################
-            ##Secondary, and maybe faster, conversion function:                                ##
-            ##_nptimestamps=np.ctypesli.as_array(_timestamps)                                  ##
-            ## for the conversion from ctype to numpy arrays                                   ##
-            ##problem: python spits out a warning/ is bugged for this operation  `             ##
-            ##the additional warning might cause significant delays when called to often..     ##
-            #####################################################################################
-            #for further information see:
-            #http://stackoverflow.com/questions/4964101/pep-3118-warning-when-using-ctypes-array-as-numpy-array
+            
 
 
-           
             #ll[_length]+=1 #XXX
             if _length > 0:
                 if _length == buffer_size: #was previously T2_READMAX;
                     logging.warning('extracted data length equal to the buffer_size, \
                             could indicate too low transfer rate resulting in buffer overflow.')
 
+                #convert ctype arrays to numpy arrays for further data processing
+                _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
 
+                #####################################################################################
+                ##Secondary, and maybe faster, conversion function:                                ##
+                ##_nptimestamps=np.ctypeslib.as_array(_timestamps)                                 ##
+                ## for the conversion from ctype to numpy arrays                                   ##
+                ##problem: python spits out a warning/ is bugged for this operation  `             ##
+                ##the additional warning might cause significant delays                            ##
+                #####################################################################################
+                #for further information see:
+                #http://stackoverflow.com/questions/4964101/pep-3118-warning-when-using-ctypes-array-as-numpy-array
 
-                _c, _s = QuTau_decode(_channels[:_length])
+                _c, _s = QuTau_decode(channels=_channels[:_length])
 
-                
-                #pq_measurement.py conversion strategy.
+                #in order to make this live filter work: compile the cython file for uint64 as timestmap input.
                 hhtime, hhchannel, hhspecial, sync_time, sync_number, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
                         T2_tools_v2.LDE_live_filter(_nptimestamps[:_length], _c, _s, t_ofl, t_lastsync, last_sync_number,
@@ -213,7 +208,7 @@ class QuTauMeasurement(m2.Measurement):
                     current_dset_length += newlength
                     self.h5data.flush()
 
-                if current_dset_length > self.params['MAX_DATA_LEN']:
+                if current_dset_length > 1e6:#self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
                     dset_hhtime = self.h5data.create_dataset('QuTau_time-{}'.format(rawdata_idx), 
                         (0,), 'u8', maxshape=(None,))
@@ -231,21 +226,25 @@ class QuTauMeasurement(m2.Measurement):
 
 
                 #if an overflow of the current buffer is detected --> abort measurement, your data is crap anyways.
-                if qutau_ins.get_data_lost()!=0
+                if qutau.get_data_lost()!=0:
                     print 'warning Overflow'
+                    print qutau.get_data_lost()
                     print 'measurement aborted'
-                    break
+                    self.stop_measurement_process()
 
-        #self.PQ_ins.StopMeas()
         #self.h5data.create_dataset('PQ_hist_lengths', data=ll, compression='gzip')#XXX
         #self.h5data.flush()#XXX
         
-        print 'QuTau total datasets, events last datase, last sync number:', rawdata_idx, current_dset_length, last_sync_number
+        print 'QuTau total datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number
         try:
             self.stop_keystroke_monitor('abort')
         except KeyError:
             pass # means it's already stopped
         self.stop_measurement_process()
+
+
+
+
         
 
 
@@ -254,17 +253,21 @@ def QuTau_decode(channels):
     Decode binary data from QuTau into event time.
     Convert the acquired signal-channels into channel and special bit (conform with pq_measurement.py).
     """
+    ch=np.zeros(len(channels),dtype=np.uint32)
 
-    special=np.zeros(len(channels),dtype=int)
+    special=np.zeros(len(channels),dtype=np.uint32)
+
     for i,c in  enumerate(channels):
         if c>2: #no photon detected
             special[i]= 1
             if c>3:
-                channels[i]= 2**(c-4)
+                ch[i]= 2**(c-4)
             else:
-                channels[i] = 0
+                ch[i] = 0
+        else:
+            ch[i] = c
 
-    return channels, special
+    return ch.astype(np.uint32), special.astype(np.uint32)
 
 
 

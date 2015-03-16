@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -20,7 +20,6 @@
 ' mode  4:  optional: trigger for AWG sequence, or static wait time
 ' mode  5:  E pulse and photon counting for spin-readout with time dependence
 '           -> mode 1
-'
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc

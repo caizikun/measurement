@@ -20,19 +20,19 @@ class adwin(Instrument):
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
         self.dacs = kw.get('dacs', {})
+        self.adcs = kw.get('adcs', {})
+
         self.use_cfg = use_cfg
 
         self._dac_voltages = {}
         for d in self.dacs:
             self._dac_voltages[d] = 0.
        
-        if kw.get('init', False):
-            self._load_programs()
-
         # the accessible functions
         # initialization
         self.add_function('boot')
         self.add_function('load_programs')
+        self.add_function('init_data')
 
         # tools
         self.add_function('get_process_status')
@@ -61,6 +61,9 @@ class adwin(Instrument):
             self.load_cfg()
             self.save_cfg()
 
+        if kw.get('init', False):
+            self.load_programs()
+
     ### config management
     def load_cfg(self, set_voltages=False):
         if self.use_cfg:
@@ -79,8 +82,11 @@ class adwin(Instrument):
     ### end config management
     def boot(self):
         self.physical_adwin.Boot()
-        self.load_programs()  
+        self.load_programs()
+        self.init_data()  
         
+    
+    def init_data(self):
         if 'init_data' in self.processes:
             self.start_init_data(load=True)
     

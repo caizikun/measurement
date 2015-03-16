@@ -24,7 +24,7 @@ DIM DATA_26[max_stat] AS LONG         ' statistics
 DIM cr_mode, cr_timer, cr_i AS LONG
 DIM cr_counts AS LONG
 DIM CR_probe, CR_preselect, CR_repump, current_CR_threshold AS LONG
-DIM repumps, CR_failed, total_repump_counts AS LONG
+DIM repumps, CR_failed, total_repump_counts, Green_applied AS LONG
 DIM repump_duration, CR_duration AS LONG
 DIM cr_wait_after_pulse, cr_wait_after_pulse_duration AS LONG
 DIM counter_channel, counter_pattern AS LONG
@@ -67,6 +67,8 @@ SUB init_CR()
   cr_mode = 0
   cr_timer = 0
   cr_counts = 0 
+  
+  Green_applied = 0               ' Tracks if Green was applied, in which case there is a waiting time after passing the Cr check
   
   PAR_70 = 0                      ' cumulative counts from probe intervals
   PAR_71 = 0                      ' number of repumps
@@ -120,6 +122,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             cr_mode = 1
             cr_timer = -1
             cr_wait_after_pulse = cr_wait_after_pulse_duration
+            Green_applied = 1
             current_cr_threshold = CR_preselect
           ENDIF
         ENDIF
@@ -154,17 +157,30 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               cr_mode = 0
               inc(CR_failed)
               inc(PAR_79)
+              cr_wait_after_pulse = cr_wait_after_pulse_duration
             ELSE
-              cr_mode = 1
-              CR_check = 1
+              cr_mode = 2
               DATA_22[repetition_index+1] = cr_counts  ' CR before nEt SSRO sequence
               current_cr_threshold = CR_probe
+              IF (Green_applied = 1) THEN
+                cr_wait_after_pulse = cr_wait_after_pulse_duration' 3000
+                Green_applied = 0
+              ELSE
+                cr_wait_after_pulse = cr_wait_after_pulse_duration
+              ENDIF
+              
             ENDIF
             
             cr_timer = -1
-            cr_wait_after_pulse = cr_wait_after_pulse_duration
+            
           ENDIF
         ENDIF
+        
+      CASE 2
+        CR_check = 1
+        cr_mode = 1
+        cr_timer = -1
+        
     ENDSELECT
     inc(cr_timer)
   ENDIF

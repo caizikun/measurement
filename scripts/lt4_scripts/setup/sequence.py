@@ -34,6 +34,9 @@ qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker',
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='adwin_success_trigger', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
     high=2.0, low=0, offset=0., delay=0e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker2', name='RND_halt', type='marker', 
@@ -48,10 +51,10 @@ qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker',
 #    low=0., offset=0., delay=335e-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
-    low=-2.0, offset=0., delay=200e-9, active=True) #measured delay on apd's (tail) 2014-10-13: 40 ns
+    low=-2.0, offset=0., delay=(194e-9 + 5e-6), active=True) #measured delay on apd's (tail) 2014-10-13: 40 ns
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=458e-9, active=True) #617 ns for normal pulses
+    high=1.0, low=-1.0, offset=0.0, delay=(510e-9+ 5e-6), active=True) #617 ns for normal pulses 458e-9
 #qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
@@ -65,9 +68,8 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].g
 #qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
 #qt.pulsar.set_channel_opt('AOM_Yellow','low', qt.instruments['YellowAOM'].get_sec_V_off())
 
-#PLU
-#qt.pulsar.define_channel(id='ch2_marker2', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0., delay=14e-9, active=True)
+
+
 
 ### TMP HH debug channel -- normally there's RF on this output.
 #qt.pulsar.define_channel(id='ch2', name='HH_test', type='analog', high=2.0,
@@ -82,7 +84,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_THRESHOLD'   :   1.0,  # V
         'EVENT_INPUT_IMPEDANCE'     :   1,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
-        'EVENT_INPUT_THRESHOLD'     :   1.0,  #V
+        'EVENT_INPUT_THRESHOLD'     :   0.8,  #V
         'JUMP_TIMING'               :   1,    # Sync | Async
         'RUN_MODE'                  :   4,    # Continuous | Triggered | Gated | Sequence
         'RUN_STATE'                 :   0,    # On | Off

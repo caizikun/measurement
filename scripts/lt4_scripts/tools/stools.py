@@ -11,15 +11,15 @@ def turn_off_lasers(names):
     for l in names:
         qt.instruments[l].turn_off()
 
-def turn_off_all_lt4_lasers():
-    set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM']) ### XXX Still have to add yellow and pulse
-
 def turn_off_all_lasers():
-    turn_off_all_lt4_lasers()
+    #set_simple_counting(['adwin'])
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+
+def turn_off_all_lt4_lasers():
+    turn_off_all_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
-    qt.instruments[adwin].set_simple_counting()
+    #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
@@ -43,87 +43,45 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin')
     for n in awg_names:
+        init_AWG()
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
-
-def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[adwin].set_simple_counting()
-    qt.instruments[servo].move_in()    
+def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
+    if move_pm_servo:
+        qt.instruments[servo].move_in()     
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
         print 'Background:', bg
-    qt.instruments[name].set_power(setpoint)
+    if setpoint == 'max':
+        qt.instruments[name].turn_on()
+    else:
+        qt.instruments[name].set_power(setpoint)
     qt.msleep(2)
 
     print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
 
     qt.instruments[name].turn_off()
-    if move_out:
+    if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'GreenAOM'],
-    setpoints = [5e-9, 10e-9, 50e-9,50e-6]):
-    
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM'],
+    setpoints = [5e-9, 10e-9, 50e-9,30e-9]):
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
-        
-def disconnect_lt1_remote():
-    for i in qt.instruments.get_instrument_names():
-        if len(i) >= 4 and i[-4:] == '_lt1':
-            qt.instruments.remove(i)
 
-def apply_awg_voltage(awg, chan, voltage):
-    """
-    applies a voltage on an awg channel;
-    if its a marker, by setting its LO-value to the given voltage.
-    if an analog channel, by setting the offset.
-    """
-    if 'marker' in chan:
-        return getattr(qt.instruments[awg], 'set_{}_low'.format(chan))(voltage)
-    else:
-        return getattr(qt.instruments[awg], 'set_{}_offset'.format(chan))(voltage)
-
-
-def check_fast_path_power(powermeter, servo, awg='AWG', chan='ch4_marker1',
-    voltage=1.0, off_voltage=0.02, ret=False):
-
-    qt.instruments[powermeter].set_wavelength(637e-9)
-    qt.instruments[servo].move_in()
-    qt.msleep(1)
-    apply_awg_voltage(awg, chan, voltage)
-    qt.msleep(8)
-
-    pwr = qt.instruments[powermeter].get_power()
-    print 'Fast path power; {}: {:.3f} uW'.format(powermeter, pwr * 1e6)
-
-    apply_awg_voltage(awg, chan, off_voltage)
-    qt.msleep(0.1)
-    qt.instruments[servo].move_out()
-    qt.msleep(1)
-
-    if ret:
-        return pwr
-
-
-def check_fast_path_power_lt4(ret=False, **kw):
+def max_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM']):
     turn_off_all_lt4_lasers()
-    pwr = check_fast_path_power('powermeter', 'PMServo', ret=ret, **kw)
-    if ret:
-        return pwr
-
-def set_lt1_optimization_powers():
-    turn_off_all_lt1_lasers()
-    qt.instruments['YellowAOM_lt1'].set_power(50e-9)
-    qt.instruments['MatisseAOM_lt1'].set_power(5e-9)
-    qt.instruments['NewfocusAOM_lt1'].set_power(10e-9)
-
-
+    for n in names:
+        check_power(n, 'max', 'adwin', 'powermeter', 'PMServo', False)
+    qt.instruments['PMServo'].move_out()
 
 def turn_on_lt4_pulse_path():
     #qt.instruments['PMServo'].move_in()
@@ -216,3 +174,56 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin.set_dac_voltage(('yellow_aom_frq',max_v))
     qt.instruments[name].turn_off()
     qt.instruments['PMServo'].move_out()
+
+def aom_listener():
+    import speech
+    def do_aom(phrase,listener):
+        if phrase == 'green':
+            aom = 'GreenAOM'
+        elif phrase == 'red':
+            aom = 'MatisseAOM'
+        elif phrase == 'pulse':
+            aom = 'PulseAOM'
+        elif phrase == 'yellow':
+            aom = 'YellowAOM'
+        elif phrase == 'stop':
+            print 'stop listening'
+            listener.stoplistening()
+            return
+        elif phrase == 'servo':
+            print 'PMservo flip'
+            ins = qt.instruments['PMServo']
+            if ins.get_position() == ins.get_in_position():
+                ins.move_out()
+            else:
+                ins.move_in()
+            return
+        elif phrase=='power':
+            power = '{:.0f} nano waat'.format(qt.instruments['powermeter'].get_power()*1e9)
+            print 'power: ', power
+            speech.say(power)
+            return
+        else:
+            print 'Not understood'
+
+        if qt.instruments[aom].get_power() == 0.:
+            print 'Turning on', aom
+            qt.instruments[aom].turn_on()
+        else:
+            print 'Turning off', aom
+            qt.instruments[aom].turn_off()
+
+    #How can i remove windows commands from pyspeech windows recognition? 
+    #For example if i wanted for my program to open up notepad i would say 
+    #"Open notepad", but then windows will also open up notepad for me too. 
+    #How can i disable this so that my program is the only one running commands? 
+
+    #in lib/site_packages/speech.py
+    #On line 66 change the code to:
+    #_recognizer = win32com.client.Dispatch("SAPI.SpInProcRecognizer")
+    #_recognizer.AudioInputStream = win32com.client.Dispatch("SAPI.SpMMAudioIn")
+    #And on line 112 change the code to:
+    #_ListenerBase = win32com.client.getevents("SAPI.SpInProcRecoContext") 
+    #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
+    
+    listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)

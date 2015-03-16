@@ -9,7 +9,7 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [1,5],               
+def MBE(name, carbon_list   = [5,1],               
         
         carbon_init_list        = [5,1],
         carbon_init_states      = 2*['up'], 
@@ -25,7 +25,7 @@ def MBE(name, carbon_list   = [1,5],
 
         el_RO_0               = 'positive',
         el_RO_1               = 'negative',
-        debug                 = True):
+        debug                 = False):
 
     m = DD.Two_QB_Det_MBE(name)
     funcs.prepare(m)
@@ -34,7 +34,7 @@ def MBE(name, carbon_list   = [1,5],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -65,26 +65,28 @@ def MBE(name, carbon_list   = [1,5],
             ['-Z','X'],['-Z','Y'],['-Z','Z']])
   
 
-    m.params['Tomography Bases_0'] = ([
-            ['X','X'],['X','Y'],['X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['Z','X'],['Z','Y'],['Z','Z']])
+    # m.params['Tomography Bases_0'] = ([
+    #         ['X','X'],['X','Y'],['X','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z']])
 
-    m.params['Tomography Bases_1'] = ([['-X','X']])
-    # ([
+    # m.params['Tomography Bases_1'] = ([
     #         ['-X','X'],['-X','Y'],['-X','Z'],
-    #         ['Y','X'],['Y','Y'],['Y','Z'],
+    #         ['Y','X'],['Y','Y'],['Y','Z']])
+
+    # m.params['Tomography Bases_0'] = ([
+    #         ['Z','X'],['Z','Y'],['Z','Z']])
+
+    # m.params['Tomography Bases_1'] = ([
     #         ['-Z','X'],['-Z','Y'],['-Z','Z']])
 
 
-    m.params['Tomography Bases_0'] = m.params['Tomography Bases_1'] 
-     # = ([
-    #         ['X','I'],['Y','I'],['Z','I'],
-    #         ['I','X'],['I','Y'],['I','Z']])
+    m.params['Tomography Bases_0'] =([
+            ['X','I'],['Y','I'],['Z','I'],
+            ['I','X'],['I','Y'],['I','Z']])
 
-    # m.params['Tomography Bases_1'] = ([
-    #         ['-X','I'],['Y','I'],['-Z','I'],
-    #         ['I','X'],['I','Y'],['I','Z']])
+    m.params['Tomography Bases_1'] = ([
+            ['-X','I'],['Y','I'],['-Z','I'],
+            ['I','X'],['I','Y'],['I','Z']])
 
    
     ####################

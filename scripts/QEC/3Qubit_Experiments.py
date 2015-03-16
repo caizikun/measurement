@@ -10,9 +10,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [2,1,5],               
+def MBE(name, carbon_list   = [2,5,1],               
         
-        carbon_init_list        = [5,1,2],
+        carbon_init_list        = [2,5,1],
         carbon_init_states      = 3*['up'], 
         carbon_init_methods     = 3*['swap'], 
         carbon_init_thresholds  = 3*[0],  
@@ -36,7 +36,7 @@ def MBE(name, carbon_list   = [2,1,5],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -133,19 +133,20 @@ if __name__ == '__main__':
     Tomo_bases_Z = ([['I','I','X'],['I','X','I'],['X','I','I'], ['I','X','X'], ['X','I','X'], ['X','X','I'], ['X','X','X']])
     Tomo_bases_X = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Z'], ['Y','Z','Y'], ['Z','Y','Y'], ['Z','Z','Z']])
     Tomo_bases_Y = ([['I','X','X'],['X','I','X'],['X','X','I'], ['Y','Y','Y'], ['Y','Z','Z'], ['Z','Y','Z'], ['Z','Z','Y']])
+    
+    # tomo =  TD.get_tomo_bases(nr_of_qubits = 3, RO_list = '000_state')
 
-    # MBE(SAMPLE + 'positive', el_RO= 'positive', Tomo_bases = Tomo_bases_X)
-    # MBE(SAMPLE + 'negative', el_RO= 'negative', Tomo_bases = Tomo_bases_X)
+    Tomo_bases = Tomo_bases
 
-    for k in range(1):
+    for kk in range(1):
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
         print '-----------------------------------'
-        qt.msleep(2)
+        qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
 
-        for state in ['Z']:#,'mZ','X','mX','Y','mY']:
+        for state in ['mY']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -153,20 +154,20 @@ if __name__ == '__main__':
             qt.msleep(2)
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
-            for k in range(len(Tomo_bases)/7):
-                tomo = Tomo_bases[0+k*7:9+k*7]#Tomo_bases[0+k*7:7+k*7]
-                
-                MBE(SAMPLE +'_state_'+logic_state+'positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
-                MBE(SAMPLE +'_state_'+logic_state+'negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
+            for k in np.linspace(15,20,6).astype(int):
+                tomo = Tomo_bases[0+k*3:3+k*3]#Tomo_bases[0+k*7:7+k*7]
+                # tomo = Tomo_bases_2
+                MBE(SAMPLE +'_state_'+ logic_state +'_positive_'+str(k), el_RO= 'positive',Tomo_bases = tomo, logic_state = logic_state)
+                MBE(SAMPLE +'_state_'+ logic_state +'_negative_'+str(k), el_RO= 'negative',Tomo_bases = tomo, logic_state = logic_state)
 
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
-                qt.msleep(10)
+                qt.msleep(3)
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
             
             stools.turn_off_all_lt2_lasers()
-            GreenAOM.set_power(10e-6)
+            GreenAOM.set_power(7e-6)
             optimiz0r.optimize(dims=['x','y','z'])
 
