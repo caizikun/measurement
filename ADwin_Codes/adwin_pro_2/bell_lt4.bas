@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\tud277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -60,7 +60,7 @@ DIM counts, old_counts AS LONG
 DIM remote_mode, check_remote, do_sequences, remote_CR_wait_timer AS LONG
 DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
-DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
+DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register, invalid_data_marker_do_channel AS LONG
 DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM succes_event_counter AS LONG
 DIM CR_result,first_local AS LONG
@@ -80,6 +80,7 @@ LOWINIT:
   do_sequences                 = DATA_20[10]
   wait_for_remote_CR           = DATA_20[11]
   wait_before_RO               = DATA_20[12]
+  invalid_data_marker_do_channel= DATA_20[13]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -156,6 +157,7 @@ EVENT:
           remote_mode = 2
         ENDIF
         check_remote = 0
+        P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 0) ' turn off invalid data marker
                                               
       case 1 'remote CR check running
       
@@ -250,6 +252,9 @@ EVENT:
           
           INC(repetition_counter)
           INC(par_73)
+          IF (Par_55>0) THEN
+            P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 1)
+          ENDIF
           
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel, 1) ' trigger the AWG to start LDE
           CPU_SLEEP(9)
