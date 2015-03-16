@@ -1633,6 +1633,7 @@ config['adwin_pro_processes'] = {
                     ['do_sequences'                ,   1],
                     ['wait_for_remote_CR'          ,   1],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

@@ -134,7 +134,7 @@ def fast_ssro_calibration(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     m.params.from_dict(qt.exp_params['samples'][SAMPLE_NAME])
 
-    pts = 5
+    pts = 10
     m.params['pts'] = 2*pts
     m.params['repetitions'] = 2000
 

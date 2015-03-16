@@ -130,7 +130,7 @@ if __name__ == '__main__':
     elif stage == 4.2: #rnd_echo_ro tests fast ssro, DD and RND generation
         sweep_Bell.rnd_echo_ro(SAMPLE_CFG)
         print 'check only, if bad, check Fast SSRO params, all MW, RND and RO delays'
-    elif stage == 5: 
+    elif stage == 5: # sweep tail
         print 'First optimize on ZPL, and do rejection!'
         sweep_Bell.tail_sweep(SAMPLE_CFG)
         print 'set params_lt3/4 aom_amplitude'

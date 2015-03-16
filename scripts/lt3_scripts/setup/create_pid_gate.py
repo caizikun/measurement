@@ -1,7 +1,7 @@
 
 #Stabilize the gate using information from the gate modulation:
 # tuning D1 with the signal of the D1 gate
-if False:
+if True:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
     _getval_gate = lambda: qt.instruments['physical_adwin'].Get_FPar(79)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
