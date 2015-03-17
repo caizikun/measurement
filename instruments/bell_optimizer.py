@@ -114,7 +114,10 @@ class bell_optimizer(mo.multiple_optimizer):
 
     def update_values(self) :
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
-        par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
+        if 'lt4' in self.setup_name:
+            par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
+        else:
+            par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
 
         par_counts = par_counts_new- self.par_counts_old
         par_laser = par_laser_new- self.par_laser_old
@@ -125,9 +128,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
     
     def check(self):
-        print 'starting Bell optimizer checks'
-
-        script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
+        print 'starting Bell optimizer checks' 
 
         par_counts, par_laser = self.update_values()
         self.cr_checks = par_counts[2]
@@ -146,8 +147,10 @@ class bell_optimizer(mo.multiple_optimizer):
             self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
         if 'lt4' in self.setup_name:
             self.SP_ref = self.SP_ref_LT4
+            script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
         else:
             self.SP_ref = self.SP_ref_LT3
+            script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
 
         self.strain = qt.instruments['e_primer'].get_strain_splitting()
 

@@ -147,7 +147,7 @@ class waveplate_optimizer(Instrument):
         if up_fit_x0!= None and down_fit_x0 != None:
             print 'Both fits succeeded!'
             steps_to_go = int(np.round(down_fit_x0 / np.sqrt(up_fit_A/down_fit_A)))
-            print 'moving ', (-self.steps_down+steps_to_go)*self._control_step_size, 'degrees from initial value'
+            print 'moving ', (-self.stepsdown+steps_to_go)*self._control_step_size, 'degrees from initial value'
             for stepscount in range( 0,steps_to_go): # go back up initial number of steps
                 #print 'going one step up'
                 self._set_control_f( self.get_control_step_size() )     
@@ -155,7 +155,7 @@ class waveplate_optimizer(Instrument):
         else:
             print 'Fits failed... I go to the minimum and hope for the best.'
             steps_to_go = int(np.round(x[np.argmin(y_down)])) 
-            print 'moving ', (-self.steps_down+steps_to_go)*self._control_step_size, 'degrees from initial value'
+            print 'moving ', (-self.stepsdown+steps_to_go)*self._control_step_size, 'degrees from initial value'
             for stepscount in range( 0, ): # go back up initial number of steps
                 #print 'going one step up'
                 self._set_control_f( self.get_control_step_size() ) 
