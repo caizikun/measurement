@@ -91,7 +91,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
    
     def set_invalid_data_marker(self, value):
-        qt.instruments['physical_adwin'].Set_Par(53,value)
+        qt.instruments['physical_adwin'].Set_Par(55,value)
 
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
@@ -128,7 +128,6 @@ class bell_optimizer(mo.multiple_optimizer):
 
     
     def check(self):
-        print 'starting Bell optimizer checks' 
 
         par_counts, par_laser = self.update_values()
         self.cr_checks = par_counts[2]
@@ -154,7 +153,6 @@ class bell_optimizer(mo.multiple_optimizer):
 
         self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
-        self.send_error_email()
         max_counter_for_waiting_time = np.floor(1*60/self.get_read_interval())
         max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
 
@@ -176,7 +174,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
         elif self.cr_counts < self.get_min_cr_counts() :
             print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
-            self.set_invalid_data_marker(True)
+            self.set_invalid_data_marker(1)
             self.gate_optimize_counter +=1
             if self.gate_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_gate()
@@ -191,35 +189,35 @@ class bell_optimizer(mo.multiple_optimizer):
 
         elif self.repump_counts < self.get_min_repump_counts():
             print '\nThe yellow laser is not in resonance.\n'
-            self.set_invalid_data_marker(True)
+            self.set_invalid_data_marker(1)
             self.yellow_optimize_counter +=1
             if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_yellow()
                 self.need_to_optimize_nf = True
             else :
-                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_count,
+                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_count(),
                          self.get_max_counter_optimize())
-                subject = 'ERROR : Yelloser not in resonance on {} setup'.format(self.setup_name)
+                subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
                 self.send_error_email(subject = subject, text = text)
                 self.stop()
                 return False
 
-        elif (self.need_to_optimize_nf | (self.nf_optimize_counter > max_counter_for_nf_optimize)):
+        elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
             print '\nThe NewFocus needs to be optimized.\n'
-            self.set_invalid_data_marker(True)
+            self.set_invalid_data_marker(1)
             self.optimize_nf()
             self.need_to_optimize_nf = False
             self.nf_optimize_counter = 0
 
         elif self.strain > self.get_max_strain_splitting():
             print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
-            self.set_invalid_data_marker(True)
+            self.set_invalid_data_marker(1)
             text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
             subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             
         elif self.SP_ref > self.get_max_SP_ref() :
-            self.set_invalid_data_marker(True)
+            self.set_invalid_data_marker(1)
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
             if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
@@ -238,7 +236,9 @@ class bell_optimizer(mo.multiple_optimizer):
             self.gate_optimize_counter = 0 
             self.yellow_optimize_counter = 0
             self.laser_rejection_counter = 0
-            self.set_invalid_data_marker(False)
+            self.nf_optimize_counter += 1
+            self.set_invalid_data_marker(0)
+            print 'Everything is fine.'
 
         return True
 
