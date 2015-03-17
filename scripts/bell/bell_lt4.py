@@ -260,7 +260,7 @@ def SP_ZPL(name):
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
@@ -298,10 +298,10 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        #full_bell('high_strain_short_pulsesep_day1_run2')   
+        full_bell('test')#'the_first_ever_day13_run4')# last run:('high_strain_short_pulsesep_day1_run2')   
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
-        #pulse_overlap('testing')
-        #SP_PSB('SPCORR_PSB')
-        measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
+        #pulse_overlap('laser_pulse_shape')
+        #SP_ZPL('SPCORR_ZPL')
+        #measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...

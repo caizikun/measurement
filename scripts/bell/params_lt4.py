@@ -66,15 +66,15 @@ params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Herm
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
-#params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
-#params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
+params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
+params_lt4['MW_Npi4_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
 
-params_lt4['MW_RND_amp_I']	   = params_lt4['MW_pi2_amp']#TODO Calibrate  -0.487 
-params_lt4['MW_RND_duration_I']= params_lt4['MW_pi2_duration'] #TODO Calibrate 50e-9
-params_lt4['MW_RND_amp_Q']	   = params_lt4['MW_pi2_amp']# 0.487 
-params_lt4['MW_RND_duration_Q']= params_lt4['MW_pi2_duration'] #50e-9
+params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']#TODO Calibrate  and add offset
+params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration'] #TODO Calibrate 50e-9
+params_lt4['MW_RND_amp_Q']	   = - params_lt4['MW_Npi4_amp']# 
+params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration'] #50e-9
 
-params_lt4['MW_BellStateOffset'] = 0 # Sam should be rotated by 0.53 pi  AR 2015-02-26
+params_lt4['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
 params_lt4['echo_offset'] = -85e-9 #50 ns
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
@@ -93,12 +93,12 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.47   #2015-02-22
+params_lt4['aom_amplitude']             = 0.52 #0.67  #2015-03-12
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 4e-9 # 2014-11-18
+params_lt4['AWG_RO_power']            = 5e-9 # 2014-11-18
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
