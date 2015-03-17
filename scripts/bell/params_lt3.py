@@ -38,7 +38,7 @@ params_lt3['remote_CR_DO_channel'] = 12
 params_lt3['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
 params_lt3['wait_for_AWG_done'] = 1
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
-params_lt3['invalid_data_marker_do_channel']=8
+params_lt3['invalid_data_marker_do_channel']=5
 
 #adwin powers
 params_lt3['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] 
@@ -130,5 +130,6 @@ params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_da
 params_lt3['entanglement_marker_number'] = 4
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
+params_lt3['live_filter_queue_length'] = 20
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H

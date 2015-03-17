@@ -40,6 +40,7 @@ params_lt4['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integr
 params_lt4['wait_for_AWG_done'] = 0
 params_lt4['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt4['wait_for_remote_CR'] = 1  #NOTE gets set in bell script
+params_lt4['invalid_data_marker_do_channel']=5
 
 #adwin powers
 params_lt4['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] #1e-9#0.5e-9#10e-9#6e-9             
@@ -133,6 +134,7 @@ params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_d
 params_lt4['entanglement_marker_number'] = 4
 params_lt4['tail_start_bin'] = 5350
 params_lt4['tail_stop_bin'] = 5350 + 200
+params_lt4['live_filter_queue_length'] = 20
 
 params_lt4['measurement_time'] =   2*60*60#sec = 60 mins
 
