@@ -29,10 +29,10 @@ if True:
             plot_name='nf_plot')
 
 if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer', setup_name = 'lt3')
 
 if True:
-    _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(53) * 100 # *100: have a nice axis on the plot
+    _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(53)
     _getnorm_rej = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(73)
     _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)   
     half_optimizer = qt.instruments.create('half_optimizer', 'waveplate_optimizer', 
