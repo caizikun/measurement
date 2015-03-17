@@ -11,7 +11,7 @@ import instrument_helper
 
 class waveplate_optimizer(Instrument):
 
-    def __init__(self, name, set_control_f=None, get_value_f=None, get_norm_f=None, plot_name=''):
+    def __init__(self, name, set_control_f=None, get_value_f=None, get_norm_f=None,msmt_helper = 'lt3_measurement_helper' , plot_name=''):
         Instrument.__init__(self, name)        
         if plot_name=='': 
             self._plot_name='optimizer_'+name            
@@ -20,6 +20,7 @@ class waveplate_optimizer(Instrument):
         self._set_control_f=set_control_f
         self._get_value_f=get_value_f
         self._get_norm_f=get_norm_f
+        self._msmt_helper = msmt_helper
         
         ins_pars  ={'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'scan_max'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
@@ -50,7 +51,7 @@ class waveplate_optimizer(Instrument):
         print 'creating waveplate optimizer'
 
     def get_value(self):
-        if qt.instruments['lt3_measurement_helper'].get_is_running():
+        if qt.instruments[self._msmt_helper].get_is_running():
             v1,n1=self._get_value_f(),self._get_norm_f()
             qt.msleep(self._dwell_time)
             v2,n2=self._get_value_f(),self._get_norm_f()
@@ -89,7 +90,7 @@ class waveplate_optimizer(Instrument):
             self.stepsdown = 0
             self.stepsup = 0
             self.totalsteps = 0
-        print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, self.totalsteps )
+        #print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, self.totalsteps )
 
         values_up = np.zeros( self.totalsteps )
         values_down = np.zeros( self.totalsteps )
@@ -139,24 +140,25 @@ class waveplate_optimizer(Instrument):
         #value_before = self.get_value()
         x, y_up, y_down = self.scan()
         success = False
-        print 'x, y_up, y_down ',x,y_up,y_down
+        #print 'x, y_up, y_down ',x,y_up,y_down
             
         up_fit_A, up_fit_x0 = self._fit(x,y_up)
         down_fit_A, down_fit_x0 = self._fit(x,y_down)
         if up_fit_x0!= None and down_fit_x0 != None:
             print 'Both fits succeeded!'
-
-            steps_to_go = down_fit_x0 / np.sqrt(up_fit_A/down_fit_A)
-            print 'going ', steps_to_go, 'steps to be at the minimum'
-            for stepscount in range( 0, int(np.round(steps_to_go)) ): # go back up initial number of steps
+            steps_to_go = int(np.round(down_fit_x0 / np.sqrt(up_fit_A/down_fit_A)))
+            print 'moving ', (-self.steps_down+steps_to_go)*self._control_step_size, 'degrees from initial value'
+            for stepscount in range( 0,steps_to_go): # go back up initial number of steps
                 #print 'going one step up'
-                self._set_control_f( self._control_step_size )     
+                self._set_control_f( self.get_control_step_size() )     
 
         else:
             print 'Fits failed... I go to the minimum and hope for the best.'
-            for stepscount in range( 0, int(np.round(x[np.argmin[y_down]])) ): # go back up initial number of steps
+            steps_to_go = int(np.round(x[np.argmin(y_down)])) 
+            print 'moving ', (-self.steps_down+steps_to_go)*self._control_step_size, 'degrees from initial value'
+            for stepscount in range( 0, ): # go back up initial number of steps
                 #print 'going one step up'
-                self._set_control_f( self._control_step_size ) 
+                self._set_control_f( self.get_control_step_size() ) 
 
 
         return success 

@@ -388,7 +388,7 @@ class NewportAgilisUC(Instrument):
         """
         Scans a axis at maximum step speed, by an approxiamete number of steps. 
         """
-        print 'Moving quick axis', axis,'with', steps, 'steps'   
+        #print 'Moving quick axis', axis,'with', steps, 'steps'   
         self.set('jog%d'%axis,np.sign(steps)*3)
         qt.msleep(abs(steps)/float(1700))
         self.set('jog%d'%axis,0)
@@ -398,7 +398,7 @@ class NewportAgilisUC(Instrument):
         Moves by a number of steps relative to the current position. 
 
         """
-        print 'Moving precize axis', axis,'with', steps, 'steps'         
+        #print 'Moving precize axis', axis,'with', steps, 'steps'         
         self.set('relative_position%d'%axis,steps)
         qt.msleep(abs(steps)/float(700))
         return True
