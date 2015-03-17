@@ -2,6 +2,7 @@ import qt
 import os
 from instrument import Instrument
 import numpy as np
+import gobject
 import instrument_helper
 from lib import config
 import multiple_optimizer as mo
@@ -9,25 +10,26 @@ reload(mo)
 import types
 
 class bell_optimizer(mo.multiple_optimizer):
-    def __init__(self, name):
+    def __init__(self, name, setup_name='lt4'):
         mo.multiple_optimizer.__init__(self, name)
        
         ins_pars  = {'min_starts'                :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'min_cr_checks'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
+                    'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10},
                     'min_repump_counts'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'nb_seconds_to_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':1},
+                    'max_counter_optimize'       :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'rejecter_step'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
                     'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
                     'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
-                    'max_SP_pulse_lt3'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
-                    'max_SP_pulse_lt4'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
-                    'max_laser_reject_cycles'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
+                    'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
+                    'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
+                    'nb_min_between_nf_optim'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
+                    'max_strain_splitting'      :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
         self._parlist = ins_pars.keys()
+        self._parlist.append('read_interval')
 
         self.add_parameter('pidgate_running',
                            type=types.BooleanType,
@@ -48,16 +50,16 @@ class bell_optimizer(mo.multiple_optimizer):
         self.add_function('rejecter_quarter_min')
         self.add_function('optimize_half')
         self.add_function('optimize_quarter')
-        self.add_function('check_rejection')
 
         #self._mode = 'check_starts'
         #self._mode_rep = 0
 
-        self._pulse_cts  = 0
-        self._pulse_cts_lt3  = 0
-        self._pulse_cts_lt4  = 0
-        self._tail_cts   = 0
-        self._seq_starts = 0
+        self.setup_name = setup_name
+        self.par_counts_old          = np.zeros(10,dtype= np.int32)
+        self.par_laser_old           = np.zeros(5,dtype= np.int32)
+        
+        self.init_counters()  
+
 
     # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
@@ -87,147 +89,156 @@ class bell_optimizer(mo.multiple_optimizer):
 
     #--------------get_set   
 
-    #XXXXX disable the functions associated with laser_rejection on LT3
+   
+    def set_invalid_data_marker(self, value):
+        qt.instruments['physical_adwin'].Set_Par(53,value)
 
-    def check_rejection(self):
 
-        tail_cts = qt.instruments['physical_adwin'].Get_Par(51)
-        pulse_cts = qt.instruments['physical_adwin'].Get_Par(52)
-        pulse_cts_lt4 = qt.instruments['physical_adwin'].Get_Par(53)
-        pulse_cts_lt3 = qt.instruments['physical_adwin'].Get_Par(54)
-        seq_starts=qt.instruments['physical_adwin'].Get_Par(73)
+    def send_error_email(self, subject = 'error with Bell optimizer', text =''):
 
-        try:
-            tail = float(tail_cts-self._tail_cts)/(seq_starts-self._seq_starts)/125.*10000.
-            pulse = float(pulse_cts-self._pulse_cts)/(seq_starts-self._seq_starts)/125.*10000.
-            pulse_lt4 = float(pulse_cts_lt4-self._pulse_cts_lt4)/(seq_starts-self._seq_starts)/125.*10000.
-            pulse_lt3 = float(pulse_cts_lt3-self._pulse_cts_lt3)/(seq_starts-self._seq_starts)/125.*10000.
-            print 'pulse: {:.2f}, tail" {:.2f}, SP pulse lt4 {:.2f}, SP pulse lt3 {:.2f}'.format(pulse,tail, pulse_lt4, pulse_lt3)
-        except ZeroDivisionError:
-            print 'no sequence starts'
+        text= text +'\n Current status of {} setup \n \
+            tail {:.2f}, PSB tail {:.0f} \n \
+            pulse {:.2f}.\n \
+            SP ref LT3 {:.1f} & LT4 {:.1f} \n\
+            CR counts LT4: {:.1f} \n \
+            repump counts LT4: {:.1f} \n \
+            strain splitting : {:.2f} \n\
+            starts {:.1f} :  '.format(self.setup_name, 
+                                 self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
+                                 self.SP_ref_LT4,self.cr_counts, self.repump_counts, self.strain, self.start_seq)
+        print 'sending email:', subject, text
+        if self.get_email_recipient() != '':
+            qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
 
-        self._pulse_cts  = pulse_cts
-        self._tail_cts   = tail_cts
-        self._seq_starts = seq_starts
-        self._pulse_cts_lt3 = pulse_cts_lt3
-        self._pulse_cts_lt4 = pulse_cts_lt4
-        return tail, pulse, pulse_lt4, pulse_lt3
+
+
+    def update_values(self) :
+        par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
+        par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
+
+        par_counts = par_counts_new- self.par_counts_old
+        par_laser = par_laser_new- self.par_laser_old
+
+        self.par_counts_old = par_counts_new
+        self.par_laser_old = par_laser_new
+        return par_counts, par_laser
+
     
     def check(self):
-        st1=qt.instruments['physical_adwin'].Get_Par(73)
-        cr1= qt.instruments['physical_adwin'].Get_Par(72)
-        qt.msleep(1)
-        st2=qt.instruments['physical_adwin'].Get_Par(73)
-        cr2 = qt.instruments['physical_adwin'].Get_Par(72)
+        print 'starting Bell optimizer checks'
 
-        tail, pulse,pulse_lt4,pulse_lt3 = self.check_rejection()
-        if tail != None and pulse!= None:
-            if tail < self.get_min_tail_counts() or pulse > self.get_max_pulse_counts():
-                print 'Bad rejection detected'
-                if self.get_email_recipient()!='':
-                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: bad rejection','Bad rejection detected: \n \
-                                                                                     tail {:.2f}, pulse {:.2f}.\n \
-                                                                                     CR counts LT4: {:.1f} \n \
-                                                                                     starts {:.1f} :  '.format(tail, pulse, qt.instruments['gate_optimizer'].get_value(), st2-st1))
-                    return False
+        script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
 
-        if pulse_lt4 > self.get_max_SP_pulse_lt4():
-            qt.instruments['physical_adwin'].Set_Par(53,1)
-            print '\n Bad laser rejection detected on LT4. Starting the optimizing...'
-            self.optimize_half()
-            self.optimize_quarter()
-            for i in range(self.get_max_laser_reject_cycles):
-                if pulse_lt4 < self.get_max_SP_pulse_lt4():
-                    qt.instruments['physical_adwin'].Set_Par(53,0)
-                    pass
-                else :
-                    self.optimize_half()
-                    self.optimize_quarter()
-            if pulse_lt4 > self.get_max_SP_pulse_lt4():
-                print 'CAUTION : Even after {} optimization cycles, the laser rejection is still bad on LT4.'.format(self.get_max_laser_reject_cycles)
-                #XXXXX add send_email
-
-
-        if pulse_lt3 > self.get_max_SP_pulse_lt3():
-            qt.instruments['physical_adwin'].Set_Par(53,1)
-            print '\n Bad laser rejection detected on LT3. Starting the optimizing...'
-            qt.instruments['lt3_half_optimize'].optimize()
-            qt.instruments['lt3_quarter_optimize'].optimize()
-            for i in range(self.get_max_laser_reject_cycles):
-                if pulse_lt3 < self.get_max_SP_pulse_lt3():
-                    qt.instruments['physical_adwin'].Set_Par(53,0)
-                    pass
-                else :
-                    qt.instruments['lt3_half_optimize'].optimize()
-                    qt.instruments['lt3_quarter_optimize'].optimize()
-            if pulse_lt3 > self.get_max_SP_pulse_lt3():
-                print 'CAUTION : Even after {} optimization cycles, the laser rejection is still bad on LT3.'.format(self.get_max_laser_reject_cycles)
-
-        # take point every 200 ms to average the cr counts and the repump counts
-        cr_counts_avg = 0
-        repump_counts_avg = 0
-        for i in range(self.get_nf_seconds_to_avg*5) :
-            cr_counts_avg = cr_counts_avg +  qt.instruments['gate_optimizer'].get_value()
-            repump_counts_avg = repump_counts_avg + qt.instruments['yellowfrq_optimizer'].get_value()
-            qt.msleep(0.2)
-        cr_counts_avg = cr_counts_avg/np.float(self.get_nf_seconds_to_avg*5)
-        repump_counts_avg = repump_counts_avg/np.float(self.get_nf_seconds_to_avg*5)
-        print 'cr counts ', cr_counts_avg
-        print 'repump counts ', repump_counts_avg
-
-        if cr_counts_avg < self.get_min_cr_counts():
-            qt.instruments['physical_adwin'].Set_Par(53,1)
-            self.optimize_gate()
-            self.optimize_yellow()
-            self.optimize_nf()
-            if qt.instruments['gate_optimizer'].get_value() > self.get_min_cr_counts_gate():
-                qt.instruments['physical_adwin'].Set_Par(53,0)
-                print 'CAUTION : Even after gate optimization, the CR counts are still too low.'
-                #XXXX add email
-                return False
-
-
-
-        if repump_counts_avg < self.get_min_repump_counts():
-            qt.instruments['physical_adwin'].Set_Par(53,1)
-            self.optimize_yellow()
-            self.optimize_nf()
-            if qt.instruments['gate_optimizer'].get_value() > self.get_min_cr_counts_gate():
-                qt.instruments['physical_adwin'].Set_Par(53,0)
-                print 'CAUTION : Even after optimization, the yellow laser is still not on resonance.'
-                #XXXX add email
-                return False
-
-
-
-        th = qt.instruments['physical_adwin'].Get_Par(75)
-        if st2-st1<self.get_min_starts():
-            if cr2-cr1 > self.get_min_cr_checks() and qt.instruments['gate_optimizer'].get_value() < self.get_min_cr_counts() and th < 200:
-                print 'JUMP DETECTED LT4! starts per second'
-                print '-'*20
-                print '-'*20
-                if self.get_email_recipient()!='':
-                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: Jump LT4','Bad starts detected: \n \
-                                                                                 starts {:.1f}, CR checks LT4, CR counts LT4: {:.1f} --> LT4 jumped? Activate thyself.'.format(st2-st1,cr2-cr1,qt.instruments['gate_optimizer'].get_value()))
-                #self._mode == 'jump_recover-0'
-                self.optimize_gate()
-                self.optimize_yellow()
-                self.optimize_nf()
-                self._mode_rep = 0
-            else:
-                print 'JUMP DETECTED probably LT3'
-                if self.get_email_recipient()!='':
-                    qt.instruments['gmailer'].send_email(self.get_email_recipient(),'bell_optimizer: Jump LT3','Bad starts detected: \n \
-                                                                                 starts {:.1f} --> LT3 jumped? Activate thyself.'.format(st2-st1))
-                #qt.instruments['lt3_gate_optimizer'].optimize()
-                #qt.instruments['lt3_yelloq_optimizer'].optimize()
-                #qt.instruments['lt3_nf_optimizer'].optimize()
-                #
-                    return False
+        par_counts, par_laser = self.update_values()
+        self.cr_checks = par_counts[2]
+        self.cr_counts = 0 if self.cr_checks ==0 else par_counts[0]/self.cr_checks
+        self.repumps = par_counts[1]
+        self.repump_counts = 0 if self.repumps == 0 else par_counts[6]/self.repumps
+        
+        self.start_seq = par_counts[3]
+        if self.start_seq > 0:
+            self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
+            self.tail_counts = np.float(par_laser[1])/self.start_seq/125.*10000.
+            self.pulse_counts =  np.float(par_laser[2])/self.start_seq/125.*10000.
+            self.SP_ref_LT3 = np.float(par_laser[4])/self.start_seq/125.*10000.
+            self.SP_ref_LT4 = np.float(par_laser[3])/self.start_seq/125.*10000.
         else:
-            print 'number of starts ok'
+            self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
+        if 'lt4' in self.setup_name:
+            self.SP_ref = self.SP_ref_LT4
+        else:
+            self.SP_ref = self.SP_ref_LT3
+
+        self.strain = qt.instruments['e_primer'].get_strain_splitting()
+
+        self.send_error_email()
+        max_counter_for_waiting_time = np.floor(1*60/self.get_read_interval())
+        max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
+
+        #print 'script not running counter : ', self.script_not_running_counter
+
+
+        if not script_running :
+            self.script_not_running_counter += 1
+                        
+            if self.script_not_running_counter > max_counter_for_waiting_time :
+                self.send_error_email(subject = 'ERROR : Bell sequence not running')
+                self.stop()
+                return False
+            else :
+                print 'Bell script not running'
+            
+        elif self.cr_checks <= 0 :
+            print 'Waiting for the other setup to come back'
+
+        elif self.cr_counts < self.get_min_cr_counts() :
+            print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
+            self.set_invalid_data_marker(True)
+            self.gate_optimize_counter +=1
+            if self.gate_optimize_counter <= self.get_max_counter_optimize() :
+                self.optimize_gate()
+                self.need_to_optimize_nf = True
+            else:
+                text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles'.format(self.get_min_cr_counts(),
+                     self.get_max_counter_optimize())
+                subject = 'ERROR : CR counts too low on {} setup'.format(self.setup_name)
+                self.send_error_email(subject =  subject, text = text)
+                self.stop()
+                return False
+
+        elif self.repump_counts < self.get_min_repump_counts():
+            print '\nThe yellow laser is not in resonance.\n'
+            self.set_invalid_data_marker(True)
+            self.yellow_optimize_counter +=1
+            if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
+                self.optimize_yellow()
+                self.need_to_optimize_nf = True
+            else :
+                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_count,
+                         self.get_max_counter_optimize())
+                subject = 'ERROR : Yelloser not in resonance on {} setup'.format(self.setup_name)
+                self.send_error_email(subject = subject, text = text)
+                self.stop()
+                return False
+
+        elif (self.need_to_optimize_nf | (self.nf_optimize_counter > max_counter_for_nf_optimize)):
+            print '\nThe NewFocus needs to be optimized.\n'
+            self.set_invalid_data_marker(True)
+            self.optimize_nf()
+            self.need_to_optimize_nf = False
+            self.nf_optimize_counter = 0
+
+        elif self.strain > self.get_max_strain_splitting():
+            print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
+            self.set_invalid_data_marker(True)
+            text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
+            subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
+            self.send_error_email(subject = subject, text = text)
+            
+        elif self.SP_ref > self.get_max_SP_ref() :
+            self.set_invalid_data_marker(True)
+            print '\n Bad laser rejection detected. Starting the optimizing...'
+            self.laser_rejection_counter +=1
+            if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
+                self.optimize_half()
+                self.optimize_quarter()
+            else : 
+                text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
+                subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
+                self.send_error_email(subject = subject, text = text)
+                self.stop()
+                return False
+
+
+        else :
+            self.script_not_running_counter = 0 
+            self.gate_optimize_counter = 0 
+            self.yellow_optimize_counter = 0
+            self.laser_rejection_counter = 0
+            self.set_invalid_data_marker(False)
 
         return True
+
 
     def optimize_nf(self):
         self.set_pid_e_primer_running(False)
@@ -292,3 +303,29 @@ class bell_optimizer(mo.multiple_optimizer):
         qt.instruments['half_optimizer'].optimize()
     def optimize_quarter(self):
         qt.instruments['quarter_optimizer'].optimize()
+
+
+    def start(self):
+        if self.get_is_running():
+            print 'ALREADY RUNNING'
+            return False
+        if self._is_waiting:
+            print 'still waiting from previous run, will wait 20 sec extra.'
+            qt.msleep(20)
+            self._stop_waiting()
+        self.set_is_running(True)
+        self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
+                self._check)
+        self.init_counters()
+        return True
+
+    def init_counters(self):
+        self.update_values()
+        self.script_not_running_counter = 0
+        self.gate_optimize_counter      = 0
+        self.yellow_optimize_counter    = 0
+        self.laser_rejection_counter    = 0
+        self.need_to_optimize_nf     = False
+        self.nf_optimize_counter     = 0
+
+        

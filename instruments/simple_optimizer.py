@@ -75,11 +75,11 @@ class simple_optimizer(Instrument):
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.
         steps=int((scan_max - scan_min) / self._control_step_size)
-        print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
+        #print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
         udrange=np.append(np.linspace(initial_setpoint,scan_min+self._control_step_size,int(steps/2.)),
                 np.linspace(scan_min, scan_max, steps))
         udrange=np.append(udrange,np.linspace(scan_max-self._control_step_size,initial_setpoint,int(steps/2.)))
-        print udrange #XXXXXX
+        #print udrange #XXXXXX
         values=np.zeros(len(udrange))
         true_udrange=np.zeros(len(udrange))
         for i,sp in enumerate(udrange):

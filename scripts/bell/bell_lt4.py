@@ -115,6 +115,7 @@ Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
 Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
+Bell_lt4.lt4_helper = qt.instruments['lt4_helper']
 
 def bell_lt4(name, 
              m,
@@ -144,7 +145,8 @@ def bell_lt4(name,
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
-    
+        m.lt4_helper.set_is_running(True)
+
     m.autoconfig()
     if do_upload:
         m.generate_sequence()
@@ -172,6 +174,7 @@ def bell_lt4(name,
         m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
     
+    m.lt4_helper.set_is_running(False)
     print 'finishing'
     m.finish()
     print 'finished'

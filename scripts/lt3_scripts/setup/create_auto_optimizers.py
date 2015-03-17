@@ -38,10 +38,10 @@ if True:
     half_optimizer = qt.instruments.create('half_optimizer', 'waveplate_optimizer', 
             set_control_f=_setctrl_half,
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
-            plot_name='half_plot')
+            msmt_helper = 'lt3_measurement_helper',plot_name='half_plot')
 
     _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x)
     quarter_optimizer = qt.instruments.create('quarter_optimizer', 'waveplate_optimizer', 
             set_control_f=_setctrl_quarter,
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
-            plot_name='quarter_plot')
+            msmt_helper = 'lt3_measurement_helper',plot_name='quarter_plot')
