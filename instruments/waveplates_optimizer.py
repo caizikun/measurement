@@ -9,16 +9,19 @@ from lib import config
 from analysis.lib.fitting import fit, common
 import instrument_helper
 
-class waveplate_optimizer(Instrument):
+class waveplates_optimizer(Instrument):
 
-    def __init__(self, name, set_control_f=None, get_value_f=None, get_norm_f=None,msmt_helper = 'lt3_measurement_helper' , plot_name=''):
+    def __init__(self, name, set_half_control_f=None, set_quarter_control_f=None, get_value_f=None, get_norm_f=None,msmt_helper = 'lt3_measurement_helper' , plot_name=''):
         Instrument.__init__(self, name)        
         if plot_name=='': 
             self._plot_name='optimizer_'+name            
         else:
             self._plot_name =  plot_name
-        self._set_control_f=set_control_f
-        self._get_value_f=get_value_f
+
+        self._set_half_control_f = set_half_control_f
+        self._set_quarter_control_f = set_quarter_control_f
+        self._set_control_f = set_quarter_control_f 
+        self._get_value_f = get_value_f
         self._get_norm_f=get_norm_f
         self._msmt_helper = msmt_helper
         self._current_direction = 1
@@ -38,7 +41,8 @@ class waveplate_optimizer(Instrument):
         self.add_function('optimize')
         self.add_function('get_value')
         self.add_function('go_one_step')
-        
+        self.add_function('optimize_rejection')
+
     # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
         if not os.path.exists(cfg_fn):
@@ -78,8 +82,12 @@ class waveplate_optimizer(Instrument):
             value = self.get(param)
             self.ins_cfg[param] = value
             
-    def scan(self):
-          
+    def scan(self, waveplate='Quarter'):
+        if waveplate=='Quarter':
+            self._set_control_f = self._set_quarter_control_f
+        else:
+            self._set_control_f = self._set_half_control_f
+
         initial_setpoint = 0
         scan_min = self._scan_min
         scan_max = self._scan_max
@@ -91,14 +99,12 @@ class waveplate_optimizer(Instrument):
             self.stepsdown = 0
             self.stepsup = 0
             self.totalsteps = 0
-        #print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, self.totalsteps )
 
         values_up = np.zeros( self.totalsteps )
         values_down = np.zeros( self.totalsteps )
         current_position = 0
 
         for stepscount in range( 0, self.stepsdown ): # first, go to the scan min
-            #print 'going one step down'
             self._set_control_f( - self._control_step_size ) 
 
         for i in range( 0, self.totalsteps ): # then go to the max
@@ -106,11 +112,9 @@ class waveplate_optimizer(Instrument):
                 self._set_control_f(initial_setpoint)
                 print 'Aborting scan!'
                 break
-            #print 'going one step up'
             self._set_control_f( self._control_step_size )
             if self.get_dwell_after_set():
                 qt.msleep(self._dwell_time)
-            #values_up[i]= 4*(i-5)**2 +156
             values_up[i]=self.get_value()
 
         for i in range( 0, self.totalsteps ): # then go back to the min
@@ -118,12 +122,10 @@ class waveplate_optimizer(Instrument):
                 self._set_control_f(initial_setpoint)
                 print 'Aborting scan!'
                 break
-            #print 'going one step down'
             self._set_control_f( - self._control_step_size )
 
             if self.get_dwell_after_set():
                 qt.msleep(self._dwell_time)
-            #values_down[self.totalsteps-i-1]= (self.totalsteps-i-1-3)**2 +32
             values_down[self.totalsteps-i-1]=self.get_value()
         
         valid_i_down = np.where(values_down>self._min_value)
@@ -136,15 +138,18 @@ class waveplate_optimizer(Instrument):
             p_up = plt.plot( xaxis[valid_i_up], values_up[valid_i_up] ,'O', name=self._plot_name, clear=True)
             plt.plot( xaxis[valid_i_down], values_down[valid_i_down],'O', name=self._plot_name)
             p_up.update()
-            #print values_up
-            #print values_down
-            #print xaxis
         
         return (xaxis, values_up[xaxis], values_down[xaxis])
     
-    def optimize(self):
-        #value_before = self.get_value()
-        x, y_up, y_down = self.scan()
+    def optimize(self, waveplate='Quarter'):
+        if waveplate=='Quarter':
+            print 'Quarter'
+            self._set_control_f = self._set_quarter_control_f
+        else:
+            print 'Half'
+            self._set_control_f = self._set_half_control_f
+        
+        x, y_up, y_down = self.scan(waveplate)
         success = False
         #print 'x, y_up, y_down ',x,y_up,y_down
             
@@ -180,38 +185,60 @@ class waveplate_optimizer(Instrument):
             qt.msleep(self._dwell_time)
 
 
-    def go_to_min(self):
-        
+    def go_to_min(self, waveplate='Quarter'):
+        if waveplate=='Quarter':
+            print 'Im trying to go to the minimum of the Quarter waveplate... '
+            self._set_control_f = self._set_quarter_control_f
+        else:
+            print 'Im trying to go to the minimum of the Half waveplate... '
+            self._set_control_f = self._set_half_control_f
+
         previous_value = self.get_value()
         first_run = True
         success = False
-        print 'previous value is:', previous_value
 
         while True:
-            print 'current direction is: ', self._current_direction 
+            #print 'current direction is: ', self._current_direction 
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                     print 'You pressed the emergency button. I stop here.'
+                    success=True
                     break
             self.go_one_step( self._current_direction  * self._control_step_size)
             new_value = self.get_value()
-            print 'new value is: ', new_value
-            improvement = (new_value - previous_value) / float(previous_value)
+            improvement = (previous_value - new_value) / float(previous_value)
+            print 'previous value was:', previous_value, ', new value is: ', new_value, ',   improvement is ', improvement
+
             previous_value = new_value
-            if np.abs(improvement) < 0.01:
-                print 'Did not improve a lot, I decide to stop. Improvement was: ', improvement
+            if np.abs(improvement) < 0.1:
+                print 'Did not improve a lot, I decide to stop.'
                 success = True
                 break
-            elif improvement < 0:
-                print 'Im on the right track. I go on. Improvement was: ', improvement
+            elif improvement > 0:
+                print 'Im on the right track. I go on.'
             elif first_run:
                 first_run = False
                 self._current_direction  = - self._current_direction  
-                print 'Wrong direction. Improvement was: ', improvement
+                print 'Getting worse - I switch direction.'
             else:
-                print 'Thats it. I hope it is good now. ', improvement
+                print 'Getting worse again. I go one step back and hope that I found the minimum.'
+                self.go_one_step( - self._current_direction  * self._control_step_size)
+                success = True
                 break
         return success 
 
+    def optimize_rejection(self):
+        while True:
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+                self._set_control_f(initial_setpoint)
+                print 'Aborting the rejection optimization!'
+                break
+            quarter_success = self.go_to_min('Quarter')
+            half_success = self.go_to_min('Half')
+            if qt.instruments[self._msmt_helper].get_is_running():
+                #During Bell, the Bell optimizor will decide what to do.
+                break 
+            elif self.get_value() < 100: #Otherwise, we continue until we reach dark count level or the user aborts the operation.
+                break
 
     def _fit(self,X,Y):
         #Fit parabole: o + A * (x-c)**2  ['g_o', 'g_A', 'g_c']
@@ -219,8 +246,7 @@ class waveplate_optimizer(Instrument):
         guess_A = ( (np.max(Y) - np.min(Y)) / (X[np.argmax(Y)]-X[np.argmin(Y)])**2)
         guess_c = X[np.argmin(Y)]
         print 'fit guess ', guess_A, guess_c, guess_o
-        fitres = fit.fit1d(X, Y, common.fit_parabole, 
-               guess_o, guess_A, guess_c, len(X), do_print = False, ret = True)
+        fitres = fit.fit1d(X, Y, common.fit_parabole, guess_o, guess_A, guess_c, len(X), do_print = False, ret = True)
 
         if fitres['success'] != False:
             p1 = fitres['params_dict']

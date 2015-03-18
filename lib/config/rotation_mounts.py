@@ -9,13 +9,13 @@ config['waveplates_lt3'] = {
 		'pos_calib_quick' : 752,#steps/degree
 		'pos_calib_precise': 992 ,
 		'neg_calib_quick' : 430 ,#steps/degree
-		'neg_calib_precise': 1527,
+		'neg_calib_precise': 1000,#1527,
 	},
 	'zpl_quarter': {
 		'channel' : 1,
 		'axis'	  : 2,
 		'pos_calib_quick' :701,#steps/degree
-		'pos_calib_precise': 826,
+		'pos_calib_precise': 1000,#826,
 		'neg_calib_quick' : 991,#steps/degree
 		'neg_calib_precise': 1158,
 	},
