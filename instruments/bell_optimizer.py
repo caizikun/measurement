@@ -226,7 +226,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.strain_email_counter +=1
             
         elif self.SP_ref > self.get_max_SP_ref() :
-            if self.setup_name and self.pulse_counts > self.get_max_pulse_counts():
+            if self.pulse_counts > self.get_max_pulse_counts():
                 self.set_invalid_data_marker(1)
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
