@@ -65,6 +65,7 @@ class waveplates_optimizer(Instrument):
             else:
                 return 0.
         else:
+            qt.msleep(1)
             counts=0
             averages = 10
             for i in range(0, averages):

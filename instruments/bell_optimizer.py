@@ -132,9 +132,9 @@ class bell_optimizer(mo.multiple_optimizer):
 
         par_counts, par_laser = self.update_values()
         self.cr_checks = par_counts[2]
-        self.cr_counts = 0 if self.cr_checks ==0 else par_counts[0]/self.cr_checks
+        self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
         self.repumps = par_counts[1]
-        self.repump_counts = 0 if self.repumps == 0 else par_counts[6]/self.repumps
+        self.repump_counts = 0 if self.repumps == 0 else np.float(par_counts[6])/self.repumps
         
         self.start_seq = par_counts[3]
         if self.start_seq > 0:
@@ -226,7 +226,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.strain_email_counter +=1
             
         elif self.SP_ref > self.get_max_SP_ref() :
-            if self.setup_name and self.pulse_counts > self.get_max_pulse_counts():
+            if self.pulse_counts > self.get_max_pulse_counts():
                 self.set_invalid_data_marker(1)
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
