@@ -56,7 +56,7 @@ class waveplate_optimizer(Instrument):
             qt.msleep(self._dwell_time)
             v2,n2=self._get_value_f(),self._get_norm_f()
             if (n2-n1)!=0:
-                return float((v2-v1))/(n2-n1)
+                return float((v2-v1))/(n2-n1)/125.*10000
             else:
                 return 0.
         else:

@@ -23,7 +23,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
                     'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
-                    'nb_min_between_nf_optim'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
+                    'nb_min_between_nf_optim'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'max_strain_splitting'      :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
@@ -188,14 +188,15 @@ class bell_optimizer(mo.multiple_optimizer):
                 return False
 
         elif self.repump_counts < self.get_min_repump_counts():
-            print '\nThe yellow laser is not in resonance.\n'
+            print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
+                        self.get_min_repump_counts())
             self.set_invalid_data_marker(1)
             self.yellow_optimize_counter +=1
             if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_yellow()
                 self.need_to_optimize_nf = True
             else :
-                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_count(),
+                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
                          self.get_max_counter_optimize())
                 subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
                 self.send_error_email(subject = subject, text = text)
@@ -208,13 +209,16 @@ class bell_optimizer(mo.multiple_optimizer):
             self.optimize_nf()
             self.need_to_optimize_nf = False
             self.nf_optimize_counter = 0
+            self.update_values()
 
         elif self.strain > self.get_max_strain_splitting():
             print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
             self.set_invalid_data_marker(1)
             text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
             subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-            self.send_error_email(subject = subject, text = text)
+            if  self.strain_email_counter == 0 :
+                self.send_error_email(subject = subject, text = text)
+            self.strain_email_counter +=1
             
         elif self.SP_ref > self.get_max_SP_ref() :
             self.set_invalid_data_marker(1)
@@ -330,5 +334,6 @@ class bell_optimizer(mo.multiple_optimizer):
         self.laser_rejection_counter    = 0
         self.need_to_optimize_nf     = False
         self.nf_optimize_counter     = 0
+        self.strain_email_counter           = 0
 
         
