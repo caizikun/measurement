@@ -68,13 +68,14 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     else:
         qt.instruments[name].set_power(setpoint)
     qt.msleep(2)
-
-    print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
+    value = qt.instruments[powermeter].get_power()-bg
+    print name, 'setpoint:', setpoint, 'value:', value
 
     qt.instruments[name].turn_off()
     if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
+    return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
     setpoints = [5e-9, 5e-9, 25e-9,40e-9]):

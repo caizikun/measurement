@@ -154,7 +154,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
         self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
-        max_counter_for_waiting_time = np.floor(1*60/self.get_read_interval())
+        max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())
         max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
 
         #print 'script not running counter : ', self.script_not_running_counter
@@ -183,6 +183,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.gate_optimize_counter +=1
             if self.gate_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_gate()
+                self.wait_counter = 1
                 self.need_to_optimize_nf = True
             else:
                 text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles'.format(self.get_min_cr_counts(),
@@ -199,6 +200,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.yellow_optimize_counter +=1
             if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_yellow()
+                self.wait_counter = 1
                 self.need_to_optimize_nf = True
             else :
                 text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
@@ -228,6 +230,7 @@ class bell_optimizer(mo.multiple_optimizer):
         elif self.SP_ref > self.get_max_SP_ref() :
             if self.pulse_counts > self.get_max_pulse_counts():
                 self.set_invalid_data_marker(1)
+                print 'Bad rejection is causing invalid data.'
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
             if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
@@ -250,7 +253,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.laser_rejection_counter = 0
             self.nf_optimize_counter += 1
             self.set_invalid_data_marker(0)
-            print 'Relax, Im doing my job.'
+            print 'Relax, I\'m doing my job.'
 
         return True
 
