@@ -1,6 +1,4 @@
-
-
-if True:
+if False:
     _getval_rej  = lambda: qt.instruments['physical_adwin'].Get_Par(53) # *100: have a nice axis on the plot
     _getnorm_rej = lambda: qt.instruments['physical_adwin'].Get_Par(73)
     _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)   
@@ -15,6 +13,17 @@ if True:
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
             msmt_helper = 'lt4_measurement_helper',plot_name='quarter_plot')
 
+
+if True:
+    _getval_rej  = lambda: qt.instruments['physical_adwin'].Get_Par(53)
+    _getnorm_rej = lambda: qt.instruments['physical_adwin'].Get_Par(73)
+    _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)
+    _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x) 
+    
+    waveplates_optimizer = qt.instruments.create('waveplates_optimizer', 'waveplates_optimizer', 
+            set_half_control_f=_setctrl_half, set_quarter_control_f=_setctrl_quarter,
+            get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
+            msmt_helper = 'lt4_measurement_helper',plot_name='waveplates_plot')
 
 
 if True:

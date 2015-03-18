@@ -46,10 +46,11 @@ class bell_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_yellow') 
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
+        self.add_function('optimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
-        self.add_function('optimize_half')
-        self.add_function('optimize_quarter')
+        #self.add_function('optimize_half')
+        #self.add_function('optimize_quarter')
 
         #self._mode = 'check_starts'
         #self._mode_rep = 0
@@ -221,12 +222,14 @@ class bell_optimizer(mo.multiple_optimizer):
             self.strain_email_counter +=1
             
         elif self.SP_ref > self.get_max_SP_ref() :
-            self.set_invalid_data_marker(1)
+            if self.setup_name and self.pulse_counts > self.get_max_pulse_counts():
+                self.set_invalid_data_marker(1)
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
             if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
-                self.optimize_half()
-                self.optimize_quarter()
+                self.optimize_rejection()
+                #self.optimize_half()
+                #self.optimize_quarter()
             else : 
                 text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
                 subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
@@ -242,7 +245,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.laser_rejection_counter = 0
             self.nf_optimize_counter += 1
             self.set_invalid_data_marker(0)
-            print 'Everything is fine.'
+            print 'Relax, Im doing my job.'
 
         return True
 
@@ -307,9 +310,12 @@ class bell_optimizer(mo.multiple_optimizer):
     #def optimize_rejecter(self):
     #    qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)
     def optimize_half(self):
-        qt.instruments['half_optimizer'].optimize()
+        qt.instruments['waveplates_optimizer'].optimize('Half')
     def optimize_quarter(self):
-        qt.instruments['quarter_optimizer'].optimize()
+        qt.instruments['waveplates_optimizer'].optimize('Quarter')
+
+    def optimize_rejection(self):
+        qt.instruments['waveplates_optimizer'].optimize_rejection()
 
 
     def start(self):
