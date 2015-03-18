@@ -136,5 +136,5 @@ params_lt4['tail_start_bin'] = 5350
 params_lt4['tail_stop_bin'] = 5350 + 200
 params_lt4['live_filter_queue_length'] = 20
 
-params_lt4['measurement_time'] =   2*60*60#sec = 60 mins
+params_lt4['measurement_time'] =   60*60#sec = 60 mins
 

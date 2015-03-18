@@ -130,129 +130,138 @@ class bell_optimizer(mo.multiple_optimizer):
     
     def check(self):
 
-        par_counts, par_laser = self.update_values()
-        self.cr_checks = par_counts[2]
-        self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
-        self.repumps = par_counts[1]
-        self.repump_counts = 0 if self.repumps == 0 else np.float(par_counts[6])/self.repumps
-        
-        self.start_seq = par_counts[3]
-        if self.start_seq > 0:
-            self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
-            self.tail_counts = np.float(par_laser[1])/self.start_seq/125.*10000.
-            self.pulse_counts =  np.float(par_laser[2])/self.start_seq/125.*10000.
-            self.SP_ref_LT3 = np.float(par_laser[4])/self.start_seq/125.*10000.
-            self.SP_ref_LT4 = np.float(par_laser[3])/self.start_seq/125.*10000.
-        else:
-            self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
-        if 'lt4' in self.setup_name:
-            self.SP_ref = self.SP_ref_LT4
-            script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
-        else:
-            self.SP_ref = self.SP_ref_LT3
-            script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
+        try:
 
-        self.strain = qt.instruments['e_primer'].get_strain_splitting()
-
-        max_counter_for_waiting_time = np.floor(1*60/self.get_read_interval())
-        max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
-
-        #print 'script not running counter : ', self.script_not_running_counter
-
-
-        if not script_running :
-            self.script_not_running_counter += 1
-                        
-            if self.script_not_running_counter > max_counter_for_waiting_time :
-                self.send_error_email(subject = 'ERROR : Bell sequence not running')
-                self.stop()
-                return False
-            else :
-                print 'Bell script not running'
+            par_counts, par_laser = self.update_values()
+            self.cr_checks = par_counts[2]
+            self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
+            self.repumps = par_counts[1]
+            self.repump_counts = 0 if self.repumps == 0 else np.float(par_counts[6])/self.repumps
             
-        elif self.cr_checks <= 0 :
-            print 'Waiting for the other setup to come back'
-
-        elif self.wait_counter > 0:
-            self.wait_counter -=1
-            print 'Waiting for another {:d} rounds'.format(int(self.wait_counter))
-
-        elif self.cr_counts < self.get_min_cr_counts() :
-            print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
-            self.set_invalid_data_marker(1)
-            self.gate_optimize_counter +=1
-            if self.gate_optimize_counter <= self.get_max_counter_optimize() :
-                self.optimize_gate()
-                self.need_to_optimize_nf = True
+            self.start_seq = par_counts[3]
+            if self.start_seq > 0:
+                self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
+                self.tail_counts = np.float(par_laser[1])/self.start_seq/125.*10000.
+                self.pulse_counts =  np.float(par_laser[2])/self.start_seq/125.*10000.
+                self.SP_ref_LT3 = np.float(par_laser[4])/self.start_seq/125.*10000.
+                self.SP_ref_LT4 = np.float(par_laser[3])/self.start_seq/125.*10000.
             else:
-                text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles'.format(self.get_min_cr_counts(),
-                     self.get_max_counter_optimize())
-                subject = 'ERROR : CR counts too low on {} setup'.format(self.setup_name)
-                self.send_error_email(subject =  subject, text = text)
-                self.stop()
-                return False
+                self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
+            if 'lt4' in self.setup_name:
+                self.SP_ref = self.SP_ref_LT4
+                script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
+            else:
+                self.SP_ref = self.SP_ref_LT3
+                script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
 
-        elif self.repump_counts < self.get_min_repump_counts():
-            print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
-                        self.get_min_repump_counts())
-            self.set_invalid_data_marker(1)
-            self.yellow_optimize_counter +=1
-            if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
-                self.optimize_yellow()
-                self.need_to_optimize_nf = True
-            else :
-                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
-                         self.get_max_counter_optimize())
-                subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
-                self.send_error_email(subject = subject, text = text)
-                self.stop()
-                return False
+            self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
-        elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
-            print '\nThe NewFocus needs to be optimized.\n'
-            self.set_invalid_data_marker(1)
-            self.optimize_nf()
-            self.need_to_optimize_nf = False
-            self.nf_optimize_counter = 0
-            self.wait_counter = 1
+            max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())
+            max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
 
-        elif self.strain > self.get_max_strain_splitting():
-            print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
-            self.set_invalid_data_marker(1)
-            text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
-            subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-            if  self.strain_email_counter == 0 :
-                self.send_error_email(subject = subject, text = text)
-            self.strain_email_counter +=1
-            
-        elif self.SP_ref > self.get_max_SP_ref() :
-            if self.pulse_counts > self.get_max_pulse_counts():
+            #print 'script not running counter : ', self.script_not_running_counter
+
+
+            if not script_running :
+                self.script_not_running_counter += 1
+                            
+                if self.script_not_running_counter > max_counter_for_waiting_time :
+                    self.send_error_email(subject = 'ERROR : Bell sequence not running')
+                    self.stop()
+                    return False
+                else :
+                    print 'Bell script not running'
+                
+            elif self.cr_checks <= 0 :
+                print 'Waiting for the other setup to come back'
+
+            elif self.wait_counter > 0:
+                self.wait_counter -=1
+                print 'Waiting for another {:d} rounds'.format(int(self.wait_counter))
+
+            elif self.cr_counts < self.get_min_cr_counts() :
+                print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
                 self.set_invalid_data_marker(1)
-            print '\n Bad laser rejection detected. Starting the optimizing...'
-            self.laser_rejection_counter +=1
-            if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
-                self.optimize_rejection()
-                #self.optimize_half()
-                #self.optimize_quarter()
+                self.gate_optimize_counter +=1
+                if self.gate_optimize_counter <= self.get_max_counter_optimize() :
+                    self.optimize_gate()
+                    self.wait_counter = 1
+                    self.need_to_optimize_nf = True
+                else:
+                    text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles'.format(self.get_min_cr_counts(),
+                         self.get_max_counter_optimize())
+                    subject = 'ERROR : CR counts too low on {} setup'.format(self.setup_name)
+                    self.send_error_email(subject =  subject, text = text)
+                    self.stop()
+                    return False
+
+            elif self.repump_counts < self.get_min_repump_counts():
+                print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
+                            self.get_min_repump_counts())
+                self.set_invalid_data_marker(1)
+                self.yellow_optimize_counter +=1
+                if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
+                    self.optimize_yellow()
+                    self.wait_counter = 1
+                    self.need_to_optimize_nf = True
+                else :
+                    text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
+                             self.get_max_counter_optimize())
+                    subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
+                    self.send_error_email(subject = subject, text = text)
+                    self.stop()
+                    return False
+
+            elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
+                print '\nThe NewFocus needs to be optimized.\n'
+                self.set_invalid_data_marker(1)
+                self.optimize_nf()
+                self.need_to_optimize_nf = False
+                self.nf_optimize_counter = 0
                 self.wait_counter = 1
-            else : 
-                text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
-                subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
-                self.send_error_email(subject = subject, text = text)
-                self.stop()
-                return False
+
+            elif self.strain > self.get_max_strain_splitting():
+                print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
+                self.set_invalid_data_marker(1)
+                text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
+                subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
+                if  self.strain_email_counter == 0 :
+                    self.send_error_email(subject = subject, text = text)
+                self.strain_email_counter +=1
+                
+            elif self.SP_ref > self.get_max_SP_ref() :
+                if self.pulse_counts > self.get_max_pulse_counts():
+                    self.set_invalid_data_marker(1)
+                print '\n Bad laser rejection detected. Starting the optimizing...'
+                self.laser_rejection_counter +=1
+                if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
+                    self.optimize_rejection()
+                    #self.optimize_half()
+                    #self.optimize_quarter()
+                    self.wait_counter = 1
+                else : 
+                    text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
+                    subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
+                    self.send_error_email(subject = subject, text = text)
+                    self.stop()
+                    return False
 
 
-        else :
-            self.script_not_running_counter = 0 
-            self.gate_optimize_counter = 0 
-            self.yellow_optimize_counter = 0
-            self.laser_rejection_counter = 0
-            self.nf_optimize_counter += 1
-            self.set_invalid_data_marker(0)
-            print 'Relax, Im doing my job.'
+            else :
+                self.script_not_running_counter = 0 
+                self.gate_optimize_counter = 0 
+                self.yellow_optimize_counter = 0
+                self.laser_rejection_counter = 0
+                self.nf_optimize_counter += 1
+                self.set_invalid_data_marker(0)
+                print 'Relax, Im doing my job.'
 
-        return True
+            return True
+        except Exception as e:
+            text = 'Errror in bell optimizer: ' + str(e)
+                    subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
+            self.send_error_email(subject = subject, text = text)
+            return False
 
 
     def optimize_nf(self):
