@@ -172,6 +172,10 @@ class bell_optimizer(mo.multiple_optimizer):
         elif self.cr_checks <= 0 :
             print 'Waiting for the other setup to come back'
 
+        elif self.wait_counter > 0:
+            self.wait_counter -=1
+            print 'Waiting for another {:d} rounds'.format(int(self.wait_counter))
+
         elif self.cr_counts < self.get_min_cr_counts() :
             print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
             self.set_invalid_data_marker(1)
@@ -208,6 +212,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.optimize_nf()
             self.need_to_optimize_nf = False
             self.nf_optimize_counter = 0
+            self.wait_counter = 1
 
         elif self.strain > self.get_max_strain_splitting():
             print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
@@ -223,6 +228,7 @@ class bell_optimizer(mo.multiple_optimizer):
             if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
                 self.optimize_half()
                 self.optimize_quarter()
+                self.wait_counter = 1
             else : 
                 text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
                 subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
@@ -323,6 +329,7 @@ class bell_optimizer(mo.multiple_optimizer):
         return True
 
     def init_counters(self):
+        self.set_invalid_data_marker(0)
         self.update_values()
         self.script_not_running_counter = 0
         self.gate_optimize_counter      = 0
@@ -330,5 +337,6 @@ class bell_optimizer(mo.multiple_optimizer):
         self.laser_rejection_counter    = 0
         self.need_to_optimize_nf     = False
         self.nf_optimize_counter     = 0
+        self.wait_counter = 0
 
         
