@@ -23,7 +23,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
                     'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
-                    'nb_min_between_nf_optim'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
+                    'nb_min_between_nf_optim'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'max_strain_splitting'      :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
@@ -46,10 +46,11 @@ class bell_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_yellow') 
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
+        self.add_function('optimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
-        self.add_function('optimize_half')
-        self.add_function('optimize_quarter')
+        #self.add_function('optimize_half')
+        #self.add_function('optimize_quarter')
 
         #self._mode = 'check_starts'
         #self._mode_rep = 0
@@ -192,14 +193,15 @@ class bell_optimizer(mo.multiple_optimizer):
                 return False
 
         elif self.repump_counts < self.get_min_repump_counts():
-            print '\nThe yellow laser is not in resonance.\n'
+            print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
+                        self.get_min_repump_counts())
             self.set_invalid_data_marker(1)
             self.yellow_optimize_counter +=1
             if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
                 self.optimize_yellow()
                 self.need_to_optimize_nf = True
             else :
-                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_count(),
+                text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
                          self.get_max_counter_optimize())
                 subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
                 self.send_error_email(subject = subject, text = text)
@@ -219,15 +221,19 @@ class bell_optimizer(mo.multiple_optimizer):
             self.set_invalid_data_marker(1)
             text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
             subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-            self.send_error_email(subject = subject, text = text)
+            if  self.strain_email_counter == 0 :
+                self.send_error_email(subject = subject, text = text)
+            self.strain_email_counter +=1
             
         elif self.SP_ref > self.get_max_SP_ref() :
-            self.set_invalid_data_marker(1)
+            if self.setup_name and self.pulse_counts > self.get_max_pulse_counts():
+                self.set_invalid_data_marker(1)
             print '\n Bad laser rejection detected. Starting the optimizing...'
             self.laser_rejection_counter +=1
             if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
-                self.optimize_half()
-                self.optimize_quarter()
+                self.optimize_rejection()
+                #self.optimize_half()
+                #self.optimize_quarter()
                 self.wait_counter = 1
             else : 
                 text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
@@ -244,7 +250,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.laser_rejection_counter = 0
             self.nf_optimize_counter += 1
             self.set_invalid_data_marker(0)
-            print 'Everything is fine.'
+            print 'Relax, Im doing my job.'
 
         return True
 
@@ -309,9 +315,12 @@ class bell_optimizer(mo.multiple_optimizer):
     #def optimize_rejecter(self):
     #    qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)
     def optimize_half(self):
-        qt.instruments['half_optimizer'].optimize()
+        qt.instruments['waveplates_optimizer'].optimize('Half')
     def optimize_quarter(self):
-        qt.instruments['quarter_optimizer'].optimize()
+        qt.instruments['waveplates_optimizer'].optimize('Quarter')
+
+    def optimize_rejection(self):
+        qt.instruments['waveplates_optimizer'].optimize_rejection()
 
 
     def start(self):
@@ -338,5 +347,6 @@ class bell_optimizer(mo.multiple_optimizer):
         self.need_to_optimize_nf     = False
         self.nf_optimize_counter     = 0
         self.wait_counter = 0
+        self.strain_email_counter           = 0
 
         

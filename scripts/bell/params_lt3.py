@@ -91,7 +91,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = .46 # 2015-03-12 with 29 CR
+params_lt3['aom_amplitude']				 = .44 # 2015-03-18 with 29 CR
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

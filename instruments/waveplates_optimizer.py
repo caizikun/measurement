@@ -65,8 +65,13 @@ class waveplates_optimizer(Instrument):
             else:
                 return 0.
         else:
-            return qt.instruments['physical_adwin'].Get_Par(43)
-
+            counts=0
+            averages = 10
+            for i in range(0, averages):
+                counts = counts + qt.instruments['physical_adwin'].Get_Par(43)/float(averages)
+                print 'integrating counts'
+                qt.msleep(0.1)
+            return counts
 
     def get_all_cfg(self):
         for n in self._parlist:
@@ -209,7 +214,7 @@ class waveplates_optimizer(Instrument):
             print 'previous value was:', previous_value, ', new value is: ', new_value, ',   improvement is ', improvement
 
             previous_value = new_value
-            if np.abs(improvement) < 0.1:
+            if np.abs(improvement) < 0.03:
                 print 'Did not improve a lot, I decide to stop.'
                 success = True
                 break
@@ -229,7 +234,6 @@ class waveplates_optimizer(Instrument):
     def optimize_rejection(self):
         while True:
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
-                self._set_control_f(initial_setpoint)
                 print 'Aborting the rejection optimization!'
                 break
             quarter_success = self.go_to_min('Quarter')
