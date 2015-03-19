@@ -91,12 +91,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = .44 # 2015-03-18 with 29 CR
+params_lt3['aom_amplitude']				 = .45 # 2015-03-18 with 29 CR
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 8e-9 #params_lt3['Ex_RO_amplitude'] 8nW calibrated on 2015-03-03
+params_lt3['AWG_RO_power']            = 15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence

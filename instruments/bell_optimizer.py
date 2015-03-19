@@ -136,7 +136,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.cr_checks = par_counts[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
             self.repumps = par_counts[1]
-            self.repump_counts = 0 if self.repumps == 0 else np.float(par_counts[6])/self.repumps
+            self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
             
             self.start_seq = par_counts[3]
             if self.start_seq > 0:
@@ -172,7 +172,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 else :
                     print 'Bell script not running'
                 
-            elif self.cr_checks <= 0 :
+            elif self.cr_checks <= 50:
                 print 'Waiting for the other setup to come back'
 
             elif self.wait_counter > 0:
@@ -257,9 +257,10 @@ class bell_optimizer(mo.multiple_optimizer):
                 print 'Relax, Im doing my job.'
 
             return True
+
         except Exception as e:
             text = 'Errror in bell optimizer: ' + str(e)
-                    subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
+            subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             return False
 

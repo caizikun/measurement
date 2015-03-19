@@ -40,5 +40,5 @@ def unload_cr_linescan():
 if __name__ == '__main__':
     stools.turn_off_all_lasers()
     qt.instruments['counters'].set_is_running(False)
-    load_cr_linsescan_now(SAMPLE_CFG)
+    load_cr_linsescan_now('CR_optimize')
     #unload_cr_linescan()

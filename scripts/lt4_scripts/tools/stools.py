@@ -51,6 +51,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     if move_pm_servo:
         qt.instruments[servo].move_in()     
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.msleep(0.5)
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
         print 'Background:', bg
@@ -69,8 +70,8 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     return setpoint, value
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM'],
-    setpoints = [5e-9, 10e-9, 50e-9,30e-9]):
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','PulseAOM', 'YellowAOM' ],
+    setpoints = [5e-9, 10e-9, 30e-9,50e-9]):
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt4_lasers()

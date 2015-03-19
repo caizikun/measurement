@@ -94,7 +94,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.57 #0.67  #2015-03-18
+params_lt4['aom_amplitude']             = 0.55 #0.67  #2015-03-18
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
