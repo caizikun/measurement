@@ -99,6 +99,10 @@ class NewportAgilisUC(Instrument):
                 type=types.IntType,
                 minval=1,maxval=4)
 
+        self.add_parameter('verbose',
+                flags=Instrument.FLAG_GETSET,
+                type=types.BooleanType)
+
       
         #add functions to the QT instrument
         self.add_function('local')
@@ -111,7 +115,7 @@ class NewportAgilisUC(Instrument):
         self.add_function('quick_scan')
         self.add_function('precise_scan')
 
-              
+        self._verbose=False
         #last things
         self.remote()
         #set speeds to max
@@ -379,6 +383,11 @@ class NewportAgilisUC(Instrument):
         ans = self._visa.ask('VE')
         return ans
 
+    def do_set_verbose(self,val):
+        self._verbose=val
+    def do_get_verbose(self):
+        return self._verbose
+
 
     def get_visa(self):
         return self._visa
@@ -388,7 +397,8 @@ class NewportAgilisUC(Instrument):
         """
         Scans a axis at maximum step speed, by an approxiamete number of steps. 
         """
-        #print 'Moving quick axis', axis,'with', steps, 'steps'   
+        if self._verbose:
+            print 'Moving quick axis', axis,'with', steps, 'steps'   
         self.set('jog%d'%axis,np.sign(steps)*3)
         qt.msleep(abs(steps)/float(1700))
         self.set('jog%d'%axis,0)
@@ -398,7 +408,8 @@ class NewportAgilisUC(Instrument):
         Moves by a number of steps relative to the current position. 
 
         """
-        #print 'Moving precize axis', axis,'with', steps, 'steps'         
+        if self._verbose:
+            print 'Moving precize axis', axis,'with', steps, 'steps'         
         self.set('relative_position%d'%axis,steps)
         qt.msleep(abs(steps)/float(700))
         return True

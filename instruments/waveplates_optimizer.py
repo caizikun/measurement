@@ -214,7 +214,7 @@ class waveplates_optimizer(Instrument):
             if new_value <= 0:
                 print 'no valid SP count value. I quit.'
                 break
-            improvement = (previous_value - new_value) / float(previous_value)
+            improvement = (previous_value - new_value) / float(new_value)
             print 'previous value was:', previous_value, ', new value is: ', new_value, ',   improvement is ', improvement
 
             previous_value = new_value
