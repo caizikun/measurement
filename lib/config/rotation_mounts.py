@@ -7,7 +7,7 @@ config['waveplates_lt3'] = {
 		'channel' : 1,
 		'axis'	  : 1,
 		'pos_calib_quick' : 752,#steps/degree
-		'pos_calib_precise': 992 ,
+		'pos_calib_precise': 1000,#992 ,
 		'neg_calib_quick' : 430 ,#steps/degree
 		'neg_calib_precise': 1000,#1527,
 	},
@@ -17,7 +17,7 @@ config['waveplates_lt3'] = {
 		'pos_calib_quick' :701,#steps/degree
 		'pos_calib_precise': 1000,#826,
 		'neg_calib_quick' : 991,#steps/degree
-		'neg_calib_precise': 1158,
+		'neg_calib_precise': 1000,#1158,
 	},
 	'cryo_half': {
 		'channel' : 2,

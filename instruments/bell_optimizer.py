@@ -349,16 +349,16 @@ class bell_optimizer(mo.multiple_optimizer):
             qt.instruments['pidgate'].stop()
 
     def rejecter_half_plus(self):
-        qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=True)
+        qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=False)
 
     def rejecter_half_min(self):
-        qt.instruments['rejecter'].move('zpl_half',-self.get_rejecter_step(),quick_scan=True)
+        qt.instruments['rejecter'].move('zpl_half',-self.get_rejecter_step(),quick_scan=False)
 
     def rejecter_quarter_plus(self):
-        qt.instruments['rejecter'].move('zpl_quarter',self.get_rejecter_step(),quick_scan=True)
+        qt.instruments['rejecter'].move('zpl_quarter',self.get_rejecter_step(),quick_scan=False)
 
     def rejecter_quarter_min(self):
-        qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
+        qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=False)
 
     #def optimize_rejecter(self):
     #    qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)
