@@ -59,8 +59,9 @@ def bell_check_powers():
 
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
+    	stools.start_bs_counter()
         start_index=1
-        cycles=5
+        cycles=10
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break
@@ -78,9 +79,10 @@ if __name__ == '__main__':
             lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/loopholefree_interactionfree_bell.py')
             lt3_helper.execute_script()
             print 'Loading CR linescan'
-            execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')#change name!
+            execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
             lt4_succes = optimize()
-            #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
+            qt.msleep(5)
+            execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
             qt.msleep(5)
             while lt3_helper.get_is_running():
                 if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
@@ -88,17 +90,19 @@ if __name__ == '__main__':
                     lt3_succes= False
                     break
             qt.msleep(5)
-            output = lt3_helper.get_measurement_name()
+            output = lt3_helper.get_measurement_name()         
             lt3_success = (output == 'True')
             print 'Was lt3 successfully optimized? ', lt3_success
-            
+               
             if not(lt4_succes) or not(lt3_success):
-                break#cycle is ~1 Hour
+                break  #cycle is ~1 Hour
         stools.stop_bs_counter()
+
     else:
+    	qt.instruments['remote_measurement_helper'].set_is_running(True)
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
         lt3_succes = optimize()
-        #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
+        execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
         qt.msleep(5) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
         qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))

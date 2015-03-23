@@ -8,11 +8,12 @@ from lib import config
 import multiple_optimizer as mo
 reload(mo)
 import types
+#import dweepy
 
 class bell_optimizer(mo.multiple_optimizer):
     def __init__(self, name, setup_name='lt4'):
         mo.multiple_optimizer.__init__(self, name)
-       
+        
         ins_pars  = {'min_starts'                :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10},
                     'min_repump_counts'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
@@ -95,6 +96,21 @@ class bell_optimizer(mo.multiple_optimizer):
         qt.instruments['physical_adwin'].Set_Par(55,value)
 
 
+    def publish_values(self):
+        pass
+        #dweepy.dweet_for('bell_board-lt4',
+        #    {'tail'             : self.tail_counts,
+        #     'pulse'            : self.pulse_counts,
+        #     'PSB_tail'         : self.PSB_tail_counts,
+        #     'SP_ref'           : self.SP_ref_LT4,
+        #     'repump_counts'    : self.repump_counts,
+        #     'strain'           : self.strain,
+        #     'cr_counts'        : self.cr_counts
+        #     'starts'           : self.starts,
+        #     'cr_failed'        : self.failed_cr_fraction,
+        #     'script_running'   : self.script_running
+        #     })
+
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
 
         text= text +'\n Current status of {} setup \n \
@@ -133,10 +149,13 @@ class bell_optimizer(mo.multiple_optimizer):
         try:
 
             par_counts, par_laser = self.update_values()
+            
             self.cr_checks = par_counts[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
             self.repumps = par_counts[1]
             self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
+
+            self.failed_cr_fraction = 0  if self.cr_checks == 0 else np.float(par_counts[9]) / self.cr_checks
             
             self.start_seq = par_counts[3]
             if self.start_seq > 0:
@@ -160,7 +179,7 @@ class bell_optimizer(mo.multiple_optimizer):
             max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
 
             #print 'script not running counter : ', self.script_not_running_counter
-
+            self.publish_values()
 
             if not script_running :
                 self.script_not_running_counter += 1
@@ -225,9 +244,9 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.set_invalid_data_marker(1)
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
                 subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-                if  self.strain_email_counter == 0 :
+                if  self.flood_email_counter == 0 :
                     self.send_error_email(subject = subject, text = text)
-                self.strain_email_counter +=1
+                self.flood_email_counter +=1
                 
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
@@ -246,6 +265,24 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.stop()
                     return False
 
+            elif self.failed_cr_fraction < 0.65:
+                subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
+                text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
+                print text
+                self.set_invalid_data_marker(1)
+                #qt.instruments['rejecter'].move('cryo_half', -0.5)
+                if  self.flood_email_counter == 0 :
+                    self.send_error_email(subject = subject, text = text)
+                self.flood_email_counter +=1
+
+            elif self.failed_cr_fraction > 0.99:
+                subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
+                text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
+                print text
+                #qt.instruments['rejecter'].move('cryo_half', 0.5)
+                if  self.flood_email_counter == 0 and False:
+                    self.send_error_email(subject = subject, text = text)
+                self.flood_email_counter +=1
 
             else :
                 self.script_not_running_counter = 0 
@@ -254,6 +291,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.laser_rejection_counter = 0
                 self.nf_optimize_counter += 1
                 self.set_invalid_data_marker(0)
+                #self.flood_email_counter       = 0
                 print 'Relax, Im doing my job.'
 
             return True
@@ -354,9 +392,9 @@ class bell_optimizer(mo.multiple_optimizer):
         self.gate_optimize_counter      = 0
         self.yellow_optimize_counter    = 0
         self.laser_rejection_counter    = 0
-        self.need_to_optimize_nf     = False
-        self.nf_optimize_counter     = 0
-        self.wait_counter = 0
-        self.strain_email_counter           = 0
+        self.need_to_optimize_nf        = False
+        self.nf_optimize_counter        = 0
+        self.wait_counter               = 0
+        self.flood_email_counter       = 0
 
         

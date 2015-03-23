@@ -291,8 +291,11 @@ if __name__ == '__main__':
         stools.reset_plu()
 
     if DoJitterCheck:
-        jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
+        for i in range(5):
+            jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
+            print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
+            if not jitterDetected:
+                break
     else: 
         jitterDetected = False
         print 'I will skip the jitter test.'
@@ -305,7 +308,7 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        full_bell('the_second_ever_day2_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        full_bell('the_second_ever_day5_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
         qt.bell_succes=True   
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')

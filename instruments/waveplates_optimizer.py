@@ -206,33 +206,29 @@ class waveplates_optimizer(Instrument):
         while True:
             #print 'current direction is: ', self._current_direction 
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
-                    print 'You pressed the emergency button. I stop here.'
-                    success=True
-                    break
+                print 'You pressed the emergency button. I stop here.'
+                success=True
+                break
             self.go_one_step( self._current_direction  * self._control_step_size)
             new_value = self.get_value()
             if new_value <= 0:
                 print 'no valid SP count value. I quit.'
                 break
-            improvement = (previous_value - new_value) / float(previous_value)
+            improvement = (previous_value - new_value) / float(new_value)
             print 'previous value was:', previous_value, ', new value is: ', new_value, ',   improvement is ', improvement
-
-            previous_value = new_value
-            if np.abs(improvement) < 0.03:
-                print 'Did not improve a lot, I decide to stop.'
-                success = True
-                break
-            elif improvement > 0:
+           
+            if improvement > 0:
                 print 'Im on the right track. I go on.'
             elif first_run:
-                first_run = False
                 self._current_direction  = - self._current_direction  
-                print 'Getting worse - I switch direction.'
+                print 'Wrong direction.'
             else:
-                print 'Getting worse again. I go one step back and hope that I found the minimum.'
+                print 'Getting worse. I go one step back and hope that I found the minimum.'
                 self.go_one_step( - self._current_direction  * self._control_step_size)
                 success = True
                 break
+            previous_value = new_value
+            first_run = False
         return success 
 
     def optimize_rejection(self):
@@ -245,7 +241,8 @@ class waveplates_optimizer(Instrument):
             if qt.instruments[self._msmt_helper].get_is_running():
                 #During Bell, the Bell optimizor will decide what to do.
                 break 
-            elif self.get_value() < 100: #Otherwise, we continue until we reach dark count level or the user aborts the operation.
+            elif self.get_value() < 100: 
+                #Otherwise, we continue until we reach dark count level or the user aborts the operation.
                 break
 
     def _fit(self,X,Y):

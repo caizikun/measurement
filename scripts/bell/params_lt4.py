@@ -94,7 +94,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.55 #0.67  #2015-03-18
+params_lt4['aom_amplitude']             = 0.57 #0.67  #2015-03-18
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -134,7 +134,7 @@ params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_d
 params_lt4['entanglement_marker_number'] = 4
 params_lt4['tail_start_bin'] = 5350
 params_lt4['tail_stop_bin'] = 5350 + 200
-params_lt4['live_filter_queue_length'] = 20
+params_lt4['live_filter_queue_length'] = 10
 
 params_lt4['measurement_time'] =   60*60#sec = 60 mins
 
