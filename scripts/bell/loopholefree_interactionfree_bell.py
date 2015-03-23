@@ -36,9 +36,10 @@ def optimize():
 def bell_check_powers():
     names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM']
     setpoints = [5e-9, 10e-9, 30e-9,50e-9]
-    relative_thresholds = [0.1,0.1,0.3,0.1]
+    relative_thresholds = [0.1,0.1,0.3,0.2]
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
+    qt.stools.init_AWG()
     qt.stools.turn_off_all_lasers()
 
     all_fine=True
@@ -60,7 +61,7 @@ def bell_check_powers():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	stools.start_bs_counter()
-        start_index=1
+        start_index=5
         cycles=10
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 

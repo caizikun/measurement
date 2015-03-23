@@ -73,7 +73,7 @@ config['waveplates_lt4'] = {
 		'pos_calib_quick' : 672,#steps/degree
 		'pos_calib_precise':826,
 		'neg_calib_quick' : 401,#steps/degree
-		'neg_calib_precise':1068,
+		'neg_calib_precise':800,#1068,
 	},
 		'cryo_half': {
 		'channel' : 2,
