@@ -24,7 +24,9 @@ class waveplates_optimizer(Instrument):
         self._get_value_f = get_value_f
         self._get_norm_f=get_norm_f
         self._msmt_helper = msmt_helper
-        self._current_direction = 1
+        self._half_direction = 1
+        self._quarter_direction = 1
+        self._quarter_first = True
         ins_pars  ={'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'scan_max'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_step_size' :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
@@ -191,7 +193,7 @@ class waveplates_optimizer(Instrument):
             qt.msleep(self._dwell_time)
 
 
-    def go_to_min(self, waveplate='Quarter'):
+    def go_to_min(self, waveplate='Quarter', initial_direction = -1):
         if waveplate=='Quarter':
             print 'Im trying to go to the minimum of the Quarter waveplate... '
             self._set_control_f = self._set_quarter_control_f
@@ -202,42 +204,72 @@ class waveplates_optimizer(Instrument):
         previous_value = self.get_value()
         first_run = True
         success = False
+        directions = np.array([1,1,-1])
+        direction_steps_taken= np.zeros(3)
+        current_direction  = initial_direction
 
         while True:
-            #print 'current direction is: ', self._current_direction 
+            #print 'current direction is: ', current_direction 
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 print 'You pressed the emergency button. I stop here.'
                 success=True
                 break
-            self.go_one_step( self._current_direction  * self._control_step_size)
+            self.go_one_step( current_direction  * self._control_step_size)
+            direction_steps_taken[current_direction]+=1
             new_value = self.get_value()
             if new_value <= 0:
                 print 'no valid SP count value. I quit.'
                 break
             improvement = (previous_value - new_value) / float(new_value)
             print 'previous value was:', previous_value, ', new value is: ', new_value, ',   improvement is ', improvement
-           
-            if improvement > 0:
-                print 'Im on the right track. I go on.'
+            if new_value < self.get_min_value():
+                print 'Value good enough'
+                success = True
+                break
+            elif improvement > 0:
+                print 'Im on the right track:',current_direction, '. I go on.'
             elif first_run:
-                self._current_direction  = - self._current_direction  
+                current_direction  = - current_direction  
                 print 'Wrong direction.'
             else:
                 print 'Getting worse. I go one step back and hope that I found the minimum.'
-                self.go_one_step( - self._current_direction  * self._control_step_size)
+                self.go_one_step( - current_direction  * self._control_step_size)
                 success = True
                 break
             previous_value = new_value
             first_run = False
-        return success 
+        return success , directions,  direction_steps_taken, new_value
 
     def optimize_rejection(self):
         while True:
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 print 'Aborting the rejection optimization!'
                 break
-            quarter_success = self.go_to_min('Quarter')
-            half_success = self.go_to_min('Half')
+            if self._quarter_first:
+                quarter_success, directions, quarter_steps, quarter_value = self.go_to_min('Quarter',self._quarter_direction)
+                if quarter_value > self.get_min_value():
+                    half_success, directions, half_steps, half_value  = self.go_to_min('Half', self._half_direction)
+                else:
+                    print 'Quarter optimisation did the job'
+                    self._quarter_first = True
+                    self._quarter_direction = directions[np.argmax(quarter_steps)]
+                    half_success = False
+            else:
+                half_success, directions, half_steps, half_value   = self.go_to_min('Half', self._half_direction)
+                if half_value > self.get_min_value():
+                    quarter_success, directions, quarter_steps, quarter_value = self.go_to_min('Quarter',self._quarter_direction)
+                else:
+                    print 'Half optimisation did the job'
+                    self._quarter_first = False
+                    self._half_direction = directions[np.argmax(half_steps)]
+                    quarter_success = False
+
+            if quarter_success and half_success:
+                self._quarter_direction = directions[np.argmax(quarter_steps)]
+                self._half_direction = directions[np.argmax(half_steps)]
+                self._quarter_first = (np.max(quarter_steps) > np.max(half_steps))
+                print 'next optimisation settings: quarter first: ', self._quarter_first,'quarter direction: ', self._quarter_direction, 'half direction: ', self._half_direction
+
             if qt.instruments[self._msmt_helper].get_is_running():
                 #During Bell, the Bell optimizor will decide what to do.
                 break 
