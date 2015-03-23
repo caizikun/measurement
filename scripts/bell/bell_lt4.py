@@ -291,7 +291,7 @@ if __name__ == '__main__':
         stools.reset_plu()
 
     if DoJitterCheck:
-        for i in range(5):
+        for i in range(1):
             jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
             print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
             if not jitterDetected:
