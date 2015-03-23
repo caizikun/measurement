@@ -273,7 +273,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.stop()
                     return False
 
-            elif self.failed_cr_fraction < 0.65:
+            elif self.failed_cr_fraction < 0.5:
                 subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
                 text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
                 print text
@@ -281,7 +281,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 #qt.instruments['rejecter'].move('cryo_half', -0.5)
                 if  self.flood_email_counter == 0 :
                     self.send_error_email(subject = subject, text = text)
-                self.flood_email_counter +=1
+                    self.flood_email_counter +=1
 
             elif self.failed_cr_fraction > 0.99:
                 subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
@@ -290,7 +290,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
                 if  self.flood_email_counter == 0 and False:
                     self.send_error_email(subject = subject, text = text)
-                self.flood_email_counter +=1
+                    self.flood_email_counter +=1
 
             else :
                 self.script_not_running_counter = 0 
