@@ -217,7 +217,7 @@ class waveplates_optimizer(Instrument):
             self.go_one_step( current_direction  * self._control_step_size)
             direction_steps_taken[current_direction]+=1
             new_value = self.get_value()
-            if new_value <= 0:
+            if new_value <= 0 or new_value == previous_value:
                 print 'no valid SP count value. I quit.'
                 break
             improvement = (previous_value - new_value) / float(new_value)
