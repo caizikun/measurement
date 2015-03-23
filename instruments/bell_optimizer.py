@@ -8,7 +8,8 @@ from lib import config
 import multiple_optimizer as mo
 reload(mo)
 import types
-#import dweepy
+import dweepy
+import requests.packages.urllib3
 
 class bell_optimizer(mo.multiple_optimizer):
     def __init__(self, name, setup_name='lt4'):
@@ -57,6 +58,8 @@ class bell_optimizer(mo.multiple_optimizer):
         #self._mode_rep = 0
 
         self.setup_name = setup_name
+        if 'lt3' in setup_name:
+            requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager!
         self.par_counts_old          = np.zeros(10,dtype= np.int32)
         self.par_laser_old           = np.zeros(5,dtype= np.int32)
         
@@ -97,19 +100,19 @@ class bell_optimizer(mo.multiple_optimizer):
 
 
     def publish_values(self):
-        pass
-        #dweepy.dweet_for('bell_board-lt4',
-        #    {'tail'             : self.tail_counts,
-        #     'pulse'            : self.pulse_counts,
-        #     'PSB_tail'         : self.PSB_tail_counts,
-        #     'SP_ref'           : self.SP_ref_LT4,
-        #     'repump_counts'    : self.repump_counts,
-        #     'strain'           : self.strain,
-        #     'cr_counts'        : self.cr_counts
-        #     'starts'           : self.starts,
-        #     'cr_failed'        : self.failed_cr_fraction,
-        #     'script_running'   : self.script_running
-        #     })
+        dweet_name = 'bell_board-lt4' if 'lt4' in self.setup_name else 'bell_board-lt3'
+        dweepy.dweet_for(dweet_name,
+            {'tail'             : self.tail_counts,
+             'pulse'            : self.pulse_counts,
+             'PSB_tail'         : self.PSB_tail_counts,
+             'SP_ref'           : self.SP_ref_LT4,
+             'repump_counts'    : self.repump_counts,
+             'strain'           : self.strain,
+             'cr_counts'        : self.cr_counts,
+             'starts'           : self.start_seq,
+             'cr_failed'        : self.failed_cr_fraction,
+             'script_running'   : self.script_running,
+             })
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
 
@@ -168,10 +171,10 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
             if 'lt4' in self.setup_name:
                 self.SP_ref = self.SP_ref_LT4
-                script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
+                self.script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
             else:
                 self.SP_ref = self.SP_ref_LT3
-                script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
+                self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
 
             self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
@@ -181,7 +184,7 @@ class bell_optimizer(mo.multiple_optimizer):
             #print 'script not running counter : ', self.script_not_running_counter
             self.publish_values()
 
-            if not script_running :
+            if not self.script_running :
                 self.script_not_running_counter += 1
                             
                 if self.script_not_running_counter > max_counter_for_waiting_time :
