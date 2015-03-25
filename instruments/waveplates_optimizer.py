@@ -217,7 +217,7 @@ class waveplates_optimizer(Instrument):
             self.go_one_step( current_direction  * self._control_step_size)
             direction_steps_taken[current_direction]+=1
             new_value = self.get_value()
-            if new_value <= 0:
+            if new_value <= 0 or new_value == previous_value:
                 print 'no valid SP count value. I quit.'
                 break
             improvement = (previous_value - new_value) / float(new_value)
@@ -267,7 +267,7 @@ class waveplates_optimizer(Instrument):
             if quarter_success and half_success:
                 self._quarter_direction = directions[np.argmax(quarter_steps)]
                 self._half_direction = directions[np.argmax(half_steps)]
-                self._quarter_first = not(self._quarter_first) or (np.max(quarter_steps) > np.max(half_steps)) #next time let's do the other waveplate first.
+                #self._quarter_first = not(self._quarter_first) or (np.max(quarter_steps) > np.max(half_steps)) #next time let's do the other waveplate first.
                 print 'next optimisation settings: quarter first: ', self._quarter_first,'quarter direction: ', self._quarter_direction, 'half direction: ', self._half_direction
 
             if qt.instruments[self._msmt_helper].get_is_running():
