@@ -98,6 +98,9 @@ class Bell_lt4(bell.Bell):
         qt.pulsar.upload(*elements) 
         qt.pulsar.program_sequence(seq)
 
+    #def measurement_process_running(self):
+    #    return self.lt4_helper.get_is_running() and bell.Bell.measurement_process_running(self)
+
     def stop_measurement_process(self):
         bell.Bell.stop_measurement_process(self)
 
@@ -106,6 +109,8 @@ class Bell_lt4(bell.Bell):
             self.bs_helper.set_is_running(False)
         if self.lt3_helper != None:    
             self.lt3_helper.set_is_running(False)
+        if self.lt4_helper != None:
+            self.lt4_helper.set_is_running(False)
 
     def finish(self):
         bell.Bell.finish(self)
@@ -169,12 +174,9 @@ def bell_lt4(name,
 
     if measure_lt3:
         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
-        m.lt3_helper.set_is_running(False)
     if measure_bs:
-        m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
     
-    m.lt4_helper.set_is_running(False)
     print 'finishing'
     m.finish()
     print 'finished'
@@ -308,8 +310,11 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
+        qt.instruments['lt4_helper'].set_measurement_name(name_index)
         full_bell('the_second_ever_day7_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
-        qt.bell_succes=True   
+        output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+        output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
+        qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
         #pulse_overlap('laser_pulse_shape')

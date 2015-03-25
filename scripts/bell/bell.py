@@ -132,12 +132,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         k_error_message = 0
 
         if live_filter_on_marker:
-            #_prev_hhtime = np.empty((0,), dtype='u8')
-            #_prev_sync_time = np.empty((0,), dtype='u8')
-            #_prev_hhchannel = np.empty((0,), dtype='u1')
-            #_prev_hhspecial = np.empty((0,), dtype='u1')
-            #_prev_sync_number = np.empty((0,), dtype='u4')
-            #prev_newlength = 0
             _queue_hhtime      = deque([],self.params['live_filter_queue_length'])
             _queue_sync_time   = deque([],self.params['live_filter_queue_length'])
             _queue_hhchannel   = deque([],self.params['live_filter_queue_length'])
@@ -199,12 +193,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if newlength > 0:
 
                     if new_entanglement_markers == 0 and live_filter_on_marker:
-                        #_prev_hhtime = hhtime
-                        #_prev_hhchannel = hhchannel
-                        #_prev_hhspecial = hhspecial
-                        #_prev_sync_time = sync_time
-                        #_prev_sync_number = sync_number
-                        #_prev_new_length = newlength
                         _queue_hhtime.append(hhtime)
                         _queue_sync_time.append(sync_time)    
                         _queue_hhchannel.append(hhchannel)  
@@ -244,14 +232,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
                         current_dset_length += newlength
                         self.h5data.flush()
-
-                        #if live_filter_on_marker:
-                        #    _prev_sync_time = np.empty((0,), dtype='u8')
-                        #    _prev_hhtime = np.empty((0,), dtype='u8')
-                        #    _prev_hhchannel = np.empty((0,), dtype='u1')
-                        #    _prev_hhspecial = np.empty((0,), dtype='u1')
-                        #    _prev_sync_number = np.empty((0,), dtype='u4')
-                        #    prev_newlength = 0
  
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1

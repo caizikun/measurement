@@ -43,6 +43,9 @@ class bell_optimizer(mo.multiple_optimizer):
         self.add_parameter('pidyellowfrq_running',
                            type=types.BooleanType,
                            flags=Instrument.FLAG_GETSET)
+        self.add_parameter('invalid_data_marker',
+                          type=types.IntType,
+                          flags=Instrument.FLAG_GETSET)
         
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
@@ -96,8 +99,11 @@ class bell_optimizer(mo.multiple_optimizer):
     #--------------get_set   
 
    
-    def set_invalid_data_marker(self, value):
+    def _do_set_invalid_data_marker(self, value):
         qt.instruments['physical_adwin'].Set_Par(55,value)
+
+    def _do_get_invalid_data_marker(self):
+        return qt.instruments['physical_adwin'].Get_Par(55)
 
 
     def publish_values(self):
@@ -131,7 +137,8 @@ class bell_optimizer(mo.multiple_optimizer):
         print time.strftime('%H%M')
         print '-'*10
         print 'sending email:', subject, text
-        if self.get_email_recipient() != '':
+        self.flood_email_counter +=1
+        if self.get_email_recipient() != '' and self.flood_email_counter < 5 :
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
 
 
@@ -154,7 +161,13 @@ class bell_optimizer(mo.multiple_optimizer):
         self._t0 = t1
         return par_counts, par_laser, dt
 
-    
+    def set_failed(self):
+        if 'lt4' in self.setup_name:
+            qt.instruments['lt4_measurement_helper'].set_measurement_name('bell_optimizer_failed')    
+        else:
+            qt.instruments['lt3_measurement_helper'].set_measurement_name('bell_optimizer_failed')
+
+
     def check(self):
 
         try:
@@ -222,8 +235,8 @@ class bell_optimizer(mo.multiple_optimizer):
                          self.get_max_counter_optimize())
                     subject = 'ERROR : CR counts too low on {} setup'.format(self.setup_name)
                     self.send_error_email(subject =  subject, text = text)
-                    self.stop()
-                    return False
+                    self.set_pidgate_running(False)
+                    self.set_failed()
 
             elif self.repump_counts < self.get_min_repump_counts():
                 print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
@@ -239,8 +252,7 @@ class bell_optimizer(mo.multiple_optimizer):
                              self.get_max_counter_optimize())
                     subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    self.stop()
-                    return False
+                    self.set_failed()
 
             elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
                 print '\nThe NewFocus needs to be optimized.\n'
@@ -255,9 +267,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.set_invalid_data_marker(1)
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
                 subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-                if  self.flood_email_counter <= 0 :
-                    self.send_error_email(subject = subject, text = text)
-                    self.flood_email_counter +=4
+                self.send_error_email(subject = subject, text = text)
                 
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
@@ -266,15 +276,13 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.laser_rejection_counter +=1
                 if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
                     self.optimize_rejection()
-                    #self.optimize_half()
-                    #self.optimize_quarter()
                     self.wait_counter = 1
                 else : 
                     text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
                     subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    #self.stop()
-                    return False
+                    self.set_invalid_data_marker(1)
+                    self.set_failed()
 
             elif self.failed_cr_fraction < 0.5:
                 subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
@@ -282,18 +290,14 @@ class bell_optimizer(mo.multiple_optimizer):
                 print text
                 self.set_invalid_data_marker(1)
                 #qt.instruments['rejecter'].move('cryo_half', -0.5)
-                if  self.flood_email_counter <= 0 :
-                    self.send_error_email(subject = subject, text = text)
-                    self.flood_email_counter +=5
+                self.send_error_email(subject = subject, text = text)
 
             elif self.failed_cr_fraction > 0.99:
                 subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
-                if  self.flood_email_counter <= 0:
-                    self.send_error_email(subject = subject, text = text)
-                    self.flood_email_counter +=10
+                self.send_error_email(subject = subject, text = text)
 
             else :
                 self.script_not_running_counter = 0 
@@ -302,7 +306,6 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.laser_rejection_counter = 0
                 self.nf_optimize_counter += 1
                 self.set_invalid_data_marker(0)
-                self.flood_email_counter       -= 1
                 print 'Relax, Im doing my job.'
 
             return True
