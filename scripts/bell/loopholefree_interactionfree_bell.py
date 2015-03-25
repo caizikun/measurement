@@ -61,7 +61,7 @@ def bell_check_powers():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	stools.start_bs_counter()
-        start_index=5
+        start_index=3
         cycles=10
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             qt.msleep(5)
             while lt3_helper.get_is_running():
                 if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
-                    print 'Measurement aborted'
+                    print 'Measurement aborted while waiting for lt3'
                     lt3_succes= False
                     break
             qt.msleep(5)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
                
             if not(lt4_succes) or not(lt3_success):
                 break  #cycle is ~1 Hour
-        stools.stop_bs_counter()
+        #stools.stop_bs_counter()
 
     else:
     	qt.instruments['remote_measurement_helper'].set_is_running(True)

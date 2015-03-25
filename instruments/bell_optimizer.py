@@ -127,6 +127,9 @@ class bell_optimizer(mo.multiple_optimizer):
             starts {:.1f} :  '.format(self.setup_name, 
                                  self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
                                  self.SP_ref_LT4,self.cr_counts, self.repump_counts, self.strain, self.start_seq)
+        print '-'*10
+        print time.strftime('%H%M')
+        print '-'*10
         print 'sending email:', subject, text
         if self.get_email_recipient() != '':
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
@@ -270,7 +273,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
                     subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    self.stop()
+                    #self.stop()
                     return False
 
             elif self.failed_cr_fraction < 0.5:
@@ -305,6 +308,7 @@ class bell_optimizer(mo.multiple_optimizer):
             return True
 
         except Exception as e:
+            self.set_invalid_data_marker(1)
             text = 'Errror in bell optimizer: ' + str(e)
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
@@ -357,16 +361,16 @@ class bell_optimizer(mo.multiple_optimizer):
             qt.instruments['pidgate'].stop()
 
     def rejecter_half_plus(self):
-        qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=False)
+        qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=True)
 
     def rejecter_half_min(self):
-        qt.instruments['rejecter'].move('zpl_half',-self.get_rejecter_step(),quick_scan=False)
+        qt.instruments['rejecter'].move('zpl_half',-self.get_rejecter_step(),quick_scan=True)
 
     def rejecter_quarter_plus(self):
-        qt.instruments['rejecter'].move('zpl_quarter',self.get_rejecter_step(),quick_scan=False)
+        qt.instruments['rejecter'].move('zpl_quarter',self.get_rejecter_step(),quick_scan=True)
 
     def rejecter_quarter_min(self):
-        qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=False)
+        qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
 
     #def optimize_rejecter(self):
     #    qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)

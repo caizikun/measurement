@@ -308,7 +308,7 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        full_bell('the_second_ever_day5_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        full_bell('the_second_ever_day7_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
         qt.bell_succes=True   
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
