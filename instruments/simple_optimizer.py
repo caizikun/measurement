@@ -111,7 +111,7 @@ class simple_optimizer(Instrument):
         #print 'x,y',x,y
         if len(y)>0:
             maxx=x[np.argmax(y)]
-            if self.get_do_fit():
+            if self.get_do_fit() and len(x)>5:
                 fit_maxx=self._fit(x,y)
                 if fit_maxx != None:
                     print 'fit succes'
