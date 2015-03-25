@@ -136,7 +136,7 @@ class bell_optimizer(mo.multiple_optimizer):
                                  self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
                                  self.SP_ref_LT4,self.cr_counts, self.repump_counts, self.strain, self.start_seq)
         print '-'*10
-        print time.strftime('%H%M')
+        print time.strftime('%H:%M')
         print '-'*10
         print 'sending email:', subject, text
 
@@ -220,14 +220,16 @@ class bell_optimizer(mo.multiple_optimizer):
                     print 'Bell script not running'
                 
             elif self.cr_checks <= 50:
-                print 'Waiting for the other setup to come back'
+                self.status_message = 'Waiting for the other setup to come back'
+                print self.status_message
 
             elif self.wait_counter > 0:
                 self.wait_counter -=1
                 print 'Waiting for another {:d} rounds'.format(int(self.wait_counter))
 
             elif self.cr_counts < self.get_min_cr_counts() :
-                print '\nThe CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
+                self.status_message = 'The CR counts are too low : {:.1f} instead of {:.1f}.'.format(self.cr_counts,self.get_min_cr_counts())
+                print self.status_message
                 self.set_invalid_data_marker(1)
                 self.gate_optimize_counter +=1
                 if self.gate_optimize_counter <= self.get_max_counter_optimize() :
@@ -243,8 +245,9 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_failed()
 
             elif self.repump_counts < self.get_min_repump_counts():
-                print '\nThe yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
+                self.status_message = 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.'.format(self.repump_counts, 
                             self.get_min_repump_counts())
+                print self.status_message
                 self.set_invalid_data_marker(1)
                 self.yellow_optimize_counter +=1
                 if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
@@ -259,7 +262,8 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_failed()
 
             elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
-                print '\nThe NewFocus needs to be optimized.\n'
+                self.status_message = 'The NewFocus needs to be optimized.'
+                print self.status_message
                 self.set_invalid_data_marker(1)
                 self.optimize_nf()
                 self.need_to_optimize_nf = False
@@ -278,7 +282,8 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_invalid_data_marker(1)
                 else:
                     self.set_invalid_data_marker(0)
-                print '\n Bad laser rejection detected. Starting the optimizing...'
+                self.status_message ='Bad laser rejection detected. Starting the optimizing...'
+                print self.status_message
                 self.laser_rejection_counter +=1
                 if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
                     self.optimize_rejection()
