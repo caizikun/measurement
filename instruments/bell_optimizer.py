@@ -319,6 +319,7 @@ class bell_optimizer(mo.multiple_optimizer):
         except Exception as e:
             self.set_invalid_data_marker(1)
             text = 'Errror in bell optimizer: ' + str(e)
+            print text
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             return False
@@ -418,6 +419,7 @@ class bell_optimizer(mo.multiple_optimizer):
         self.need_to_optimize_nf        = False
         self.nf_optimize_counter        = 0
         self.wait_counter               = 0
-        self.flood_email_counter        = 0        
+        self.flood_email_counter        = 0  
+        self.repump_counts              = 0      
 
         
