@@ -252,9 +252,9 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.set_invalid_data_marker(1)
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
                 subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-                if  self.flood_email_counter == 0 :
+                if  self.flood_email_counter <= 0 :
                     self.send_error_email(subject = subject, text = text)
-                self.flood_email_counter +=1
+                    self.flood_email_counter +=4
                 
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
@@ -279,18 +279,18 @@ class bell_optimizer(mo.multiple_optimizer):
                 print text
                 self.set_invalid_data_marker(1)
                 #qt.instruments['rejecter'].move('cryo_half', -0.5)
-                if  self.flood_email_counter == 0 :
+                if  self.flood_email_counter <= 0 :
                     self.send_error_email(subject = subject, text = text)
-                    self.flood_email_counter +=1
+                    self.flood_email_counter +=5
 
             elif self.failed_cr_fraction > 0.99:
                 subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
-                if  self.flood_email_counter == 0 and False:
+                if  self.flood_email_counter <= 0:
                     self.send_error_email(subject = subject, text = text)
-                    self.flood_email_counter +=1
+                    self.flood_email_counter +=10
 
             else :
                 self.script_not_running_counter = 0 
@@ -299,7 +299,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.laser_rejection_counter = 0
                 self.nf_optimize_counter += 1
                 self.set_invalid_data_marker(0)
-                #self.flood_email_counter       = 0
+                self.flood_email_counter       -= 1
                 print 'Relax, Im doing my job.'
 
             return True
