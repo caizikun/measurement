@@ -259,6 +259,8 @@ class bell_optimizer(mo.multiple_optimizer):
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
                     self.set_invalid_data_marker(1)
+                else:
+                    self.set_invalid_data_marker(0)
                 print '\n Bad laser rejection detected. Starting the optimizing...'
                 self.laser_rejection_counter +=1
                 if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
