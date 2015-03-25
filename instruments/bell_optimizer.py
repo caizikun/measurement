@@ -139,10 +139,11 @@ class bell_optimizer(mo.multiple_optimizer):
         print time.strftime('%H%M')
         print '-'*10
         print 'sending email:', subject, text
-        self.status_message = subject
+
         self.flood_email_counter +=1
-        if self.get_email_recipient() != '' and self.flood_email_counter < 5 :
+        if self.get_email_recipient() != '' and self.flood_email_counter < 10 and  self.status_message != subject:
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
+        self.status_message = subject
 
 
 
@@ -270,9 +271,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.set_invalid_data_marker(1)
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
                 subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
-                if not self.strain_mail_sent:
-                    self.send_error_email(subject = subject, text = text)
-                    self.strain_mail_sent = True
+                self.send_error_email(subject = subject, text = text)
                 
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
@@ -312,7 +311,6 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.yellow_optimize_counter = 0
                 self.laser_rejection_counter = 0
                 self.nf_optimize_counter += 1
-                self.strain_mail_sent = False
                 self.set_invalid_data_marker(0)
                 print 'Relax, Im doing my job.'
 
@@ -420,8 +418,6 @@ class bell_optimizer(mo.multiple_optimizer):
         self.need_to_optimize_nf        = False
         self.nf_optimize_counter        = 0
         self.wait_counter               = 0
-        self.flood_email_counter        = 0
-        self.strain_mail_sent           = False
-        
+        self.flood_email_counter        = 0        
 
         
