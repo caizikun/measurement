@@ -82,10 +82,14 @@ class LabJack_U3(Instrument):
             _f.write('')
             _f.close()
         
+
         self._parlist = ['bipolar_dac0','bipolar_dac1','bipolar_dac2','bipolar_dac3','bipolar_dac4','bipolar_dac5']
         self.ins_cfg = config.Config(cfg_fn)
+        self._loaded_cfg=False
         self.load_cfg()
+        self._loaded_cfg=True
         self.save_cfg()
+
 
     def get_all(self):
         for n in self._parlist:
@@ -157,7 +161,8 @@ class LabJack_U3(Instrument):
             
         except:
             print "I2C Error! Something went wrong when setting the LJTickDAC. Is the device detached?"
-        self.save_cfg()
+        if self._loaded_cfg:
+            self.save_cfg()
 
     def do_get_bipolar_dac(self, channel):
             return self.bipolar_dac_values[channel]
