@@ -120,7 +120,7 @@ class bell_optimizer(mo.multiple_optimizer):
              'cr_failed'        : self.failed_cr_fraction,
              'script_running'   : self.script_running,
              'invalid_marker'   : self.get_invalid_data_marker(),
-             'status_message'   : self.status_message,
+             'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
              })
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
@@ -141,7 +141,7 @@ class bell_optimizer(mo.multiple_optimizer):
         print 'sending email:', subject, text
 
         self.flood_email_counter +=1
-        if self.get_email_recipient() != '' and self.flood_email_counter < 10 and  self.status_message != subject:
+        if self.get_email_recipient() != '' and self.flood_email_counter < 10 and self.status_message != subject:
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
         self.status_message = subject
 
@@ -296,7 +296,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_failed()
 
             elif self.failed_cr_fraction < 0.5:
-                subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : low CR check passing {} setup'.format(self.setup_name)
                 text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
                 print text
                 self.set_invalid_data_marker(1)
@@ -304,7 +304,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.send_error_email(subject = subject, text = text)
 
             elif self.failed_cr_fraction > 0.99:
-                subject = 'ERROR : CR check passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : high CR passing {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
