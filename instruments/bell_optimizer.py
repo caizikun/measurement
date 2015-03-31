@@ -163,7 +163,10 @@ class bell_optimizer(mo.multiple_optimizer):
         t1=time.time()
         dt = t1-self._t0
         self._t0 = t1
-        return par_counts, par_laser, dt
+
+        qrng_voltage = qt.instruments['labjack'].get_analog_in1()
+
+        return par_counts, par_laser, dt, qrng_voltage
 
     def set_failed(self):
         if 'lt4' in self.setup_name:
@@ -172,11 +175,17 @@ class bell_optimizer(mo.multiple_optimizer):
             qt.instruments['lt3_measurement_helper'].set_measurement_name('bell_optimizer_failed')
 
 
+    def stop_measurement(self):
+        if 'lt4' in self.setup_name:
+            qt.instruments['lt4_measurement_helper'].set_is_running(False)
+        else:
+            qt.instruments['lt3_measurement_helper'].set_is_running(False)
+
     def check(self):
 
         try:
             
-            par_counts, par_laser, dt = self.update_values()
+            par_counts, par_laser, dt, qrng_voltage = self.update_values()
             self.dt = dt
             self.cr_checks = par_counts[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
@@ -186,6 +195,9 @@ class bell_optimizer(mo.multiple_optimizer):
             self.failed_cr_fraction = 0  if self.cr_checks == 0 else np.float(par_counts[9]) / self.cr_checks
             
             self.start_seq = par_counts[3]
+
+            self.qrng_voltage = qrng_voltage
+
             if self.start_seq > 0:
                 self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
                 self.tail_counts = np.float(par_laser[1])/self.start_seq/125.*10000.
@@ -218,6 +230,16 @@ class bell_optimizer(mo.multiple_optimizer):
                     return False
                 else :
                     print 'Bell script not running'
+
+
+            if self.qrng_voltage < 0.05 :
+                self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
+                print self.status_message
+                self.set_invalid_data_marker(1)
+                text = 'Check the QRNG, something is wrong with the theshold voltage !!!'
+                subject = 'ERROR : QRNG threshold voltage too low {} setup'.format(self.setup_name)
+                self.send_error_email(subject = subject, text = text)
+
                 
             elif self.cr_checks <= 50:
                 self.status_message = 'Waiting for the other setup to come back'
@@ -237,12 +259,13 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.wait_counter = 1
                     self.need_to_optimize_nf = True
                 else:
-                    text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles'.format(self.get_min_cr_counts(),
+                    text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
                          self.get_max_counter_optimize())
-                    subject = 'ERROR : CR counts too low on {} setup'.format(self.setup_name)
+                    subject = 'ERROR : CR counts failure on {} setup'.format(self.setup_name)
                     self.send_error_email(subject =  subject, text = text)
                     self.set_pidgate_running(False)
                     self.set_failed()
+                    self.stop_measurement()
 
             elif self.repump_counts < self.get_min_repump_counts():
                 self.status_message = 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.'.format(self.repump_counts, 
@@ -255,7 +278,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.wait_counter = 1
                     self.need_to_optimize_nf = True
                 else :
-                    text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles'.format(self.get_min_repump_counts(),
+                    text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_min_repump_counts(),
                              self.get_max_counter_optimize())
                     subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
@@ -269,6 +292,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.need_to_optimize_nf = False
                 self.nf_optimize_counter = 0
                 self.wait_counter = 1
+                self.set_invalid_data_marker(0)
 
             elif self.strain > self.get_max_strain_splitting():
                 print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
@@ -289,14 +313,14 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.optimize_rejection()
                     self.wait_counter = 1
                 else : 
-                    text = 'Can\'t get a good laser rejection even after {} optimization cycles'.format(self.get_max_laser_reject_cycles())
+                    text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_max_laser_reject_cycles())
                     subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
                     self.set_invalid_data_marker(1)
                     self.set_failed()
 
             elif self.failed_cr_fraction < 0.5:
-                subject = 'WARNING : low CR check passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : high CR success {} setup'.format(self.setup_name)
                 text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
                 print text
                 self.set_invalid_data_marker(1)
@@ -304,7 +328,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.send_error_email(subject = subject, text = text)
 
             elif self.failed_cr_fraction > 0.99:
-                subject = 'WARNING : high CR passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
