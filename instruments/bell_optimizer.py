@@ -296,7 +296,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_failed()
 
             elif self.failed_cr_fraction < 0.5:
-                subject = 'WARNING : low CR check passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : high CR check passing {} setup'.format(self.setup_name)
                 text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
                 print text
                 self.set_invalid_data_marker(1)
@@ -304,7 +304,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.send_error_email(subject = subject, text = text)
 
             elif self.failed_cr_fraction > 0.99:
-                subject = 'WARNING : high CR passing {} setup'.format(self.setup_name)
+                subject = 'WARNING : low CR passing {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
