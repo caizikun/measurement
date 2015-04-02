@@ -1307,6 +1307,15 @@ config['adwin_pro_processes'] = {
                 },
             },
 
+        'get_dio' :  {
+            'index' : 4,
+            'file' : 'Get_TTL_states.TB4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
         'init_data' :  {
             'index' : 5,
             'file' : 'init_data.TB5',
@@ -1624,6 +1633,7 @@ config['adwin_pro_processes'] = {
                     ['do_sequences'                ,   1],
                     ['wait_for_remote_CR'          ,   1],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1664,7 +1674,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
-                    ['invalid_data_marker_do_channel', 8],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

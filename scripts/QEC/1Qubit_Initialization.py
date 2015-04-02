@@ -23,11 +23,15 @@ def MBE(name, carbon            =   1,
     m = DD.Two_QB_Probabilistic_MBE_v3(name)
     funcs.prepare(m)
 
+
+    m.params['el_after_init']                = '1'
+
+
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 2000 
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -43,8 +47,8 @@ def MBE(name, carbon            =   1,
     ##################################
 
     m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
-    m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
-    # m.params['Tomography Bases'] = [['Z']]
+    # m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
+    m.params['Tomography Bases'] = [['Z']]
         
     ####################
     ### MBE settings ###
@@ -82,19 +86,17 @@ if __name__ == '__main__':
     MBE(SAMPLE + 'negative_1_swap', el_RO= 'negative', carbon = 1, carbon_init_list = [1]
                                         ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
-    MBE(SAMPLE + 'positive_2_swap', el_RO= 'positive', carbon = 2, carbon_init_list = [2]
-                                        ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+    # MBE(SAMPLE + 'positive_2_swap', el_RO= 'positive', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
-    MBE(SAMPLE + 'negative_2_swap', el_RO= 'negative', carbon = 2, carbon_init_list = [2]
-                                        ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+    # MBE(SAMPLE + 'negative_2_swap', el_RO= 'negative', carbon = 2, carbon_init_list = [2]
+    #                                     ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
     MBE(SAMPLE + 'positive_5_swap', el_RO= 'positive', carbon = 5, carbon_init_list = [5]
                                         ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
     MBE(SAMPLE + 'negative_5_swap', el_RO= 'negative', carbon = 5, carbon_init_list = [5]
                                         ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
-
-
 
 
     # MBE(SAMPLE + 'positive_1_MBI', el_RO= 'positive', carbon = 1, carbon_init_list = [1]

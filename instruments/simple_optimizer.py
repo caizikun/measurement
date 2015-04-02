@@ -21,17 +21,17 @@ class simple_optimizer(Instrument):
         self._get_value_f=get_value_f
         self._get_norm_f=get_norm_f
         
-        ins_pars  ={'max_control'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'min_control'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
-                    'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
+        ins_pars  ={'scan_min'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'scan_max'          :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_step_size' :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'min_value'         :   {'type':types.FloatType,  'val':2.,'flags':Instrument.FLAG_GETSET},
+                    'min_norm'          :   {'type':types.FloatType,  'val':200.,'flags':Instrument.FLAG_GETSET},
                     'dwell_time'        :   {'type':types.FloatType,  'val':0.1,'flags':Instrument.FLAG_GETSET}, #s
                     'wait_time'         :   {'type':types.FloatType,  'val':10,'flags':Instrument.FLAG_GETSET}, #s
                     'order_index'       :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},
                     'do_plot'           :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'do_fit'            :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
+                    'dwell_after_set'   :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'plot_name'         :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
                     'variance'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
                     'last_max'          :   {'type':types.FloatType,  'val':0.,'flags':Instrument.FLAG_GETSET},
@@ -72,13 +72,14 @@ class simple_optimizer(Instrument):
     def scan(self):
           
         initial_setpoint = self._get_control_f()
-        scan_min = max(self._min_control,initial_setpoint + self._scan_min/2.)
-        scan_max = min(self._max_control,initial_setpoint + self._scan_max/2.)
+        scan_min = initial_setpoint + self._scan_min/2.
+        scan_max = initial_setpoint + self._scan_max/2.
         steps=int((scan_max - scan_min) / self._control_step_size)
-        print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
-        udrange=np.append(np.linspace(initial_setpoint,scan_min,int(steps/2.)),
+        #print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
+        udrange=np.append(np.linspace(initial_setpoint,scan_min+self._control_step_size,int(steps/2.)),
                 np.linspace(scan_min, scan_max, steps))
-        udrange=np.append(udrange,np.linspace(scan_max,initial_setpoint,int(steps/2.)))
+        udrange=np.append(udrange,np.linspace(scan_max-self._control_step_size,initial_setpoint,int(steps/2.)))
+        #print udrange #XXXXXX
         values=np.zeros(len(udrange))
         true_udrange=np.zeros(len(udrange))
         for i,sp in enumerate(udrange):
@@ -87,7 +88,8 @@ class simple_optimizer(Instrument):
                 break
             #print 'sp',sp
             self._set_control_f(sp)
-            qt.msleep(self._dwell_time)
+            if self.get_dwell_after_set():
+                qt.msleep(self._dwell_time)
             true_udrange[i]=self._get_control_f()
             values[i]=self.get_value()
             if values[i] > self.get_good_value():
@@ -109,7 +111,7 @@ class simple_optimizer(Instrument):
         #print 'x,y',x,y
         if len(y)>0:
             maxx=x[np.argmax(y)]
-            if self.get_do_fit():
+            if self.get_do_fit() and len(x)>5:
                 fit_maxx=self._fit(x,y)
                 if fit_maxx != None:
                     print 'fit succes'

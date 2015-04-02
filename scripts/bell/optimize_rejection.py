@@ -4,11 +4,11 @@ def do_optimize_rejection():
     if qt.current_setup=='lt4':
         print 'Starting  Optimize rejection LT4'
         stools.start_bs_counter()
-		PulseAOM.turn_on()
-		qt.msleep(0.5)
-		qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=1.,method=2,quick_scan=False)
-		qt.msleep(0.5)
-		PulseAOM.turn_off()
+        PulseAOM.turn_on()
+        qt.msleep(0.5)
+        qt.instruments['laser_rejecter'].nd_optimize(max_range=10.,stepsize=1.0,max_cycles=20,counts_avg=10,min_counts=300,method=2,quick_scan=False)
+        qt.msleep(0.5)
+        PulseAOM.turn_off()
         lt3_helper = qt.instruments['lt3_helper']
         lt3_helper.set_is_running(False)
         lt3_helper.set_script_path(r'Y:/measurement/scripts/bell/optimize_rejection.py')
@@ -23,8 +23,8 @@ def do_optimize_rejection():
     else:
         print 'Starting Optmize rejection LT3'
         PulseAOM.turn_on()
-		qt.msleep(0.5)
-        qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=2.,method=2,quick_scan=True)
+        qt.msleep(0.5)
+        qt.instruments['laser_rejecter'].nd_optimize(max_range=15.,stepsize=2.0,max_cycles=20,counts_avg=30,min_counts=30,method=2,quick_scan=True)
         qt.msleep(0.5)
         PulseAOM.turn_off()
 

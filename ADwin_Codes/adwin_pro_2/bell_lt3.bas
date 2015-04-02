@@ -182,7 +182,7 @@ EVENT:
       case 3  ' signal local CR+SP done to remote adwin
         
         P2_DIGOUT(DIO_MODULE,remote_CR_trigger_do_channel, 1)
-        IF (Par_78>0) THEN
+        IF (Par_55>0) THEN
           P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 1)
         ENDIF
         INC(repetition_counter)

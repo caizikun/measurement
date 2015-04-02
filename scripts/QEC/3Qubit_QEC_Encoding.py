@@ -129,10 +129,11 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 4000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
+    m.params['MBE_list']         = carbon_list
 
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
@@ -222,7 +223,7 @@ def QEC_test(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 4000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -299,14 +300,20 @@ def QEC_test(name, carbon_list   = [1,5,2],
     
 if __name__ == '__main__':
 
-    cnt = 0
+    cnt = -1000
 
     error_list = {}
     error_list['0'] = linspace(0,0.3,4)
     error_list['1'] = linspace(0.4,0.7,4)
     error_list['2'] = linspace(0.8,1,3)
 
-    for state in ['X','mX','Y','mY','Z','mZ']:
+    error_list['3'] = linspace(0.45,0.45,1)
+
+    error_list['4'] = np.array([0,0.1,0.2,0.3])
+    error_list['5'] = np.array([0.4,0.45,0.5,0.6])
+    error_list['6'] = np.array([0.7,0.8,0.9,1.])    
+
+    for state in ['Z','mZ']:
         logic_state = state
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -319,7 +326,9 @@ if __name__ == '__main__':
             RO_list = [6]
         elif state == 'Y' or state == 'mY':
             RO_list = [3,4,5,6] 
-        elif state == 'Z' or state == 'mZ': 
+        elif state == 'Z':
+            RO_list = [6,0,1,2] 
+        elif state == 'mZ': 
             RO_list = [6,0,1,2]
 
 
@@ -396,7 +405,7 @@ if __name__ == '__main__':
 
                 cnt = 0
             
-            for k in range(3):
+            for k in [4,5,6]:#range(3):
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
@@ -416,18 +425,18 @@ if __name__ == '__main__':
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                         break
                     
-                    MBE(SAMPLE + 'no_correct_idle_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
+                    MBE(SAMPLE + 'no_correct_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
                         logic_state = logic_state,el_RO = 'positive', 
                         error_sign= error_sign, 
                         error_on_qubit = 'all',
-                        do_idle = True,
+                        do_idle = False,
                         error_probability_list= e_list)
 
-                    MBE(SAMPLE + 'no_correct_idle_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
+                    MBE(SAMPLE + 'no_correct_negative_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
                         logic_state = logic_state,el_RO = 'negative', 
                         error_sign= error_sign, 
                         error_on_qubit = 'all',
-                        do_idle = True,
+                        do_idle = False,
                         error_probability_list= e_list)
 
 

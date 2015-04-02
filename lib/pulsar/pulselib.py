@@ -40,7 +40,68 @@ class MW_pulse(pulse.Pulse):
             wf[idx0:idx1] += self.amplitude
             return wf
 
+class MW_IQmod_Switch_pulse(pulse.Pulse):
+    # 16-2-15 Made by MAB to test MW Switch
+    def __init__(self, name, I_channel, Q_channel, PM_channel, Sw_channel, Sw_Inv_channel, **kw):
+        pulse.Pulse.__init__(self, name)
 
+        self.I_channel = I_channel
+        self.Q_channel = Q_channel
+        self.PM_channel = PM_channel
+        self.Sw_channel = Sw_channel
+        self.Sw_Inv_channel = Sw_Inv_channel
+  
+        self.channels = [I_channel, Q_channel, PM_channel, Sw_channel, Sw_Inv_channel]
+
+        self.frequency = kw.pop('frequency', 1e6)
+        self.amplitude = kw.pop('amplitude', 0.1)
+        self.length = kw.pop('length', 1e-6)
+        self.phase = kw.pop('phase', 0.)
+        self.PM_risetime = kw.pop('PM_risetime', 0)
+        self.Sw_risetime = kw.pop('Sw_risetime', 100e-9)
+        self.phaselock = kw.pop('phaselock', True)
+
+        self.length += 2*self.Sw_risetime
+        self.start_offset = self.Sw_risetime
+        self.stop_offset = self.Sw_risetime
+
+
+    def __call__(self, **kw):
+        self.frequency = kw.pop('frequency', self.frequency)
+        self.amplitude = kw.pop('amplitude', self.amplitude)
+        self.length = kw.pop('length', self.length-2*self.Sw_risetime) + \
+            2*self.Sw_risetime
+        self.phase = kw.pop('phase', self.phase)
+        self.phaselock = kw.pop('phaselock', self.phaselock)
+
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel or chan == self.Sw_channel or chan == self.Sw_Inv_channel:
+            return np.ones(len(tvals))
+
+        else:  
+            idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
+            idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1]
+
+            wf = np.zeros(len(tvals))
+            
+            # in this case we start the wave with zero phase at the effective start time
+            # (up to the specified phase)
+            if not self.phaselock:
+                tvals = tvals.copy() - tvals[idx0]
+
+                print self.name, tvals[0]
+
+            if chan == self.I_channel:
+                wf[idx0:idx1] += self.amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[idx0:idx1] + self.phase/360.))
+
+            if chan == self.Q_channel:
+                wf[idx0:idx1] += self.amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[idx0:idx1] + self.phase/360.))
+
+            return wf
 
 class MW_IQmod_pulse(pulse.Pulse):
     def __init__(self, name, I_channel, Q_channel, PM_channel, **kw):
@@ -324,6 +385,27 @@ class RF_erf_envelope(pulse.SinePulse):
                 (ssp.erf(-2./rt*(tvals-tvals[-1]+rt))/2. + 0.5)
 
         return wf * env
+
+# Written by MAB as the AWG rise element of an RF pulse with error function element
+class RF_erf_rise_element(pulse.SinePulse):
+    def __init__(self, *arg, **kw):
+        pulse.SinePulse.__init__(self, *arg, **kw)
+
+        self.envelope_risetime = kw.pop('envelope_risetime', 500e-9)
+        self.startorend = kw.pop('startorend', None)
+
+    def chan_wf(self, chan, tvals):
+        wf = pulse.SinePulse.chan_wf(self, chan, tvals)
+        
+        rt = self.envelope_risetime
+        if self.startorend == 'start':
+            env = ssp.erf(2./rt*(tvals-tvals[0]-rt))/2.+0.5
+        elif self.startorend == 'end':
+            env = ssp.erf(-2./rt*(tvals-tvals[-1]+rt))/2. + 0.5
+        else:
+            raise Exception('RF pulse start or end incorrectly defined')
+        return wf * env
+
 
 class GaussianPulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):

@@ -24,17 +24,17 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-Carbon_1_f_ms0  		= False
+Carbon_1_f_ms0  		= True
 Carbon_2_f_ms0  		= False
-Carbon_5_f_ms0  		= False
+Carbon_5_f_ms0  		= True
 
-Carbon_1_f_msm1  		= False
+Carbon_1_f_msm1  		= True
 Carbon_2_f_msm1  		= False
-Carbon_5_f_msm1  		= False
+Carbon_5_f_msm1  		= True
 
-Carbon_1_self_phase		= False 
-Carbon_2_self_phase		= False 
-Carbon_5_self_phase		= False 
+Carbon_1_self_phase		= True 
+Carbon_2_self_phase		= False
+Carbon_5_self_phase		= True
 
 Carbon_1to2_crosstalk	= False
 Carbon_1to5_crosstalk	= False
@@ -43,12 +43,12 @@ Carbon_2to5_crosstalk	= False
 Carbon_5to1_crosstalk	= False
 Carbon_5to2_crosstalk	= False
 
-Carbon_phase_cal_1to2	= True
+Carbon_phase_cal_1to2	= False
 Carbon_phase_cal_1to5	= True
-Carbon_phase_cal_2to1	= True
-Carbon_phase_cal_2to5	= True
+Carbon_phase_cal_2to1	= False
+Carbon_phase_cal_2to5	= False
 Carbon_phase_cal_5to1	= True
-Carbon_phase_cal_5to2	= True
+Carbon_phase_cal_5to2	= False
 
 debug 					= False
 
@@ -422,7 +422,7 @@ if n == 1 and Carbon_2_self_phase:
 						title = 'phase_C2')
 	#update
 	# if A > 0:
-	qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2] = phi0
+	qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2] = phi0 + 180.
 	# elif A < 0:
 	# 	qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2] = phi0+180
 	print 'C2_Ren_extra_phase_correction_list[2]'

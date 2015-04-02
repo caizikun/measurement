@@ -98,6 +98,9 @@ class Bell_lt4(bell.Bell):
         qt.pulsar.upload(*elements) 
         qt.pulsar.program_sequence(seq)
 
+    def measurement_process_running(self):
+        return self.lt4_helper.get_is_running() and bell.Bell.measurement_process_running(self)
+
     def stop_measurement_process(self):
         bell.Bell.stop_measurement_process(self)
 
@@ -106,9 +109,8 @@ class Bell_lt4(bell.Bell):
             self.bs_helper.set_is_running(False)
         if self.lt3_helper != None:    
             self.lt3_helper.set_is_running(False)
-
-    def print_measurement_progress(self):
-        pass
+        if self.lt4_helper != None:
+            self.lt4_helper.set_is_running(False)
 
     def finish(self):
         bell.Bell.finish(self)
@@ -118,6 +120,7 @@ Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
 Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
+Bell_lt4.lt4_helper = qt.instruments['lt4_helper']
 
 def bell_lt4(name, 
              m,
@@ -147,7 +150,8 @@ def bell_lt4(name,
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
-    
+        m.lt4_helper.set_is_running(True)
+
     m.autoconfig()
     if do_upload:
         m.generate_sequence()
@@ -170,9 +174,7 @@ def bell_lt4(name,
 
     if measure_lt3:
         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
-        m.lt3_helper.set_is_running(False)
     if measure_bs:
-        m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
     
     print 'finishing'
@@ -200,7 +202,7 @@ def measureXX(name):
     #make sure MWI and Q pulses are set correctly
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -240,27 +242,30 @@ def TPQI(name):
              do_upload     = True,
              )
 
-def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+    name='SPCORR_'+name
+    m = Bell_lt4(name)
+    m.joint_params['do_echo'] = 0
+    m.joint_params['do_final_MW_rotation'] = 0
+    m.joint_params['use_live_marker_filter']=False
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
+def SP_ZPL(name):
     name='SPCORR_'+name
     m = Bell_lt4(name)
     m.joint_params['do_echo'] = 0
     m.joint_params['do_final_MW_rotation'] = 0
     bell_lt4(name, 
              m,
-             th_debug      = True,
-             sequence_only = False,
-             mw            = True,
-             measure_lt3   = True,
-             measure_bs    = True,
-             do_upload     = True,
-             )
-
-def SP_lt3(name):
-    name='SPCORR_'+name
-    m = Bell_lt4(name)
-    bell_lt4(name, 
-             m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = False,
              measure_lt3   = True,
@@ -288,22 +293,31 @@ if __name__ == '__main__':
         stools.reset_plu()
 
     if DoJitterCheck:
-        jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
+        for i in range(1):
+            jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
+            print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
+            if not jitterDetected:
+                break
     else: 
         jitterDetected = False
         print 'I will skip the jitter test.'
     
+    try:
+        name_index=str(qt.bell_name_index)
+    except AttributeError:
+        name_index = ''
 
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
-        #full_bell('high_strain_short_pulsesep_day1_run2')   
-        #SP_lt4('SPCORR_lt4')
+        qt.instruments['lt4_helper'].set_measurement_name(name_index)
+        full_bell('the_second_ever_day12_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+        output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
+        qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
+        #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
-        #pulse_overlap('testing')
-        #SP_lt3('SPCORR_lt3')
-
-        #FIXED### Note that the Yellow PID does not work as the error signal is always positive. I was tuning Yellow by hand.
-        measureXX('lock_day4_run8')
+        #pulse_overlap('laser_pulse_shape')
+        #SP_ZPL('SPCORR_ZPL')
+        #measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...

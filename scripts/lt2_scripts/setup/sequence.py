@@ -29,8 +29,8 @@ qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 #RF
-#qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
-#    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 # sync ADwin
 qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
