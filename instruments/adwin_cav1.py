@@ -39,7 +39,7 @@ class adwin_cav1(adwin):
         data_idx = self.processes['laserscan_photodiode']['data_float']['photodiode_voltage']
         return self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
 
-    def fine_piezo_jpe_scan(self, ADC_channel=1, nr_steps = 100, wait_cycles = 50, 
+    def fine_piezo_jpe_scan(self, nr_steps = 100, wait_cycles = 50, 
             start_voltages = [0,0,0], voltage_step=0.01):
 
         DAC_ch_1 = self.dacs['jpe_fine_tuning_1']
@@ -63,11 +63,13 @@ class adwin_cav1(adwin):
                 while (self.is_fine_piezo_jpe_scan_running()):
                     qt.msleep (0.1)
                 #qt.msleep (nr_steps*wait_cycles*1e-5) #TO BE IMPROVED!!!!!
-                print 'Data is stored in array: ', data_idx
-                print self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
+                #print 'Data is stored in array: ', data_idx
+                #print self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
                 return self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
             else:
                 print 'Voltage > 10V!!'
+                print 'V = ', end1, end2, end3
+                print 'values:', start_voltages, voltage_step, nr_steps
         else:
             print 'Voltage <-2!!'
 
