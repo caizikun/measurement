@@ -36,7 +36,7 @@ class MsgBox(QtGui.QWidget):
 
 class MyCanvas(FigureCanvas):
 
-    def __init__(self,  scan_manager, parent=None, width=5, height=4, dpi=100):
+    def __init__(self,  scan_manager, status_label, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
 
@@ -50,15 +50,17 @@ class MyCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
         self._scan_manager = scan_manager
+        self._status_label = status_label
         self.refresh_time = 100
         self.name = self._scan_manager.name
+        self._task = None
 
     def save(self):
         if self.name:
             name = '_'+self.name
         else:
             name = ''
-        fName = time.strftime ('%Y%m%d_%H%M%S')+ '_laserscan_PD'+name
+        fName = time.strftime ('%Y%m%d_%H%M%S')+ '_scan_'+self._task
         f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
         directory = os.path.join(f0, fName)
 
@@ -67,7 +69,7 @@ class MyCanvas(FigureCanvas):
 
         f = plt.figure()
         ax = f.add_subplot(1,1,1)
-        ax.plot (self._laserscan.v_vals, self._laserscan.PD_signal, '.b', linewidth = 2)
+        ax.plot (self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth = 2)
         ax.set_xlabel ('voltage [V]')
         ax.set_ylabel ('photodiode signal [a.u.]')
         f.savefig(os.path.join(directory, fName+'.png'))
@@ -76,8 +78,9 @@ class MyCanvas(FigureCanvas):
         #f.attrs ['laser_power'] = self._laserscan.laser_power
         #f.attrs ['laser_wavelength'] = self._laserscan.laser_wavelength
         scan_grp = f.create_group('laserscan')
-        scan_grp.create_dataset('V', data = self._laserscan.v_vals)
-        scan_grp.create_dataset('PD_signal', data = self._laserscan.PD_signal)
+        scan_grp.create_dataset('V', data = self._scan_manager.v_vals)
+        scan_grp.create_dataset('PD_signal', data = self._scan_manager.PD_signal)
+        scan_grp.create_dataset('wm_frequency', data = self._scan_manager.frequencies)
         f.close()
 
 
@@ -92,6 +95,8 @@ class ScanCanvas(MyCanvas):
 
     def update_laserscan(self):
         # Build a list of 4 random integers between 0 and 10 (both inclusive)
+        self._status_label.setText("<font style='color: red;'>SCANNING LASER</font>")
+        self._task = 'laser'
         self._scan_manager.laser_scan(use_wavemeter = self.use_wm)
         #self.random_noise = 0*0.1*np.random.rand(len(self._laserscan.v_vals))
         if self.use_wm:
@@ -107,16 +112,43 @@ class ScanCanvas(MyCanvas):
 
     def calibrate_laser_frequency(self):
         # Build a list of 4 random integers between 0 and 10 (both inclusive)
-        mb = QtGui.QMessageBox()
-        mb.setText('Calibration in progress... please wait!')
-        mb.exec_()
+        self._status_label.setText("<font style='color: red;'>CALIBRATION... please wait!</font>")
         self._scan_manager.laser_scan(use_wavemeter = True)
-        mb.close()
-        plt.plot(self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth =2)
+        self.calibrate = False
+        self._status_label.setText("<font style='color: red;'>IDLE</font>")
+
+        if self.name:
+            name = '_'+self.name
+        else:
+            name = ''
+        fName = time.strftime ('%Y%m%d_%H%M%S')+ '_laser_calib'+name
+        f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
+        directory = os.path.join(f0, fName)
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        f = plt.figure()
+        ax = f.add_subplot(1,1,1)
+        ax.plot (self._scan_manager.v_vals, self._scan_manager.frequencies, '.b', linewidth =2)
+        ax.set_xlabel ('voltage [V]')
+        ax.set_ylabel ('laser frequency [GHz]')
+        f.savefig(os.path.join(directory, fName+'.png'))
+        
+        f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
+        #f.attrs ['laser_power'] = self._laserscan.laser_power
+        #f.attrs ['laser_wavelength'] = self._laserscan.laser_wavelength
+        scan_grp = f5.create_group('calibration')
+        scan_grp.create_dataset('V', data = self._scan_manager.v_vals)
+        scan_grp.create_dataset('freq_GHz', data = self._scan_manager.frequencies)
+        f5.close()
         plt.show()
+
 
     def update_piezoscan(self):
         # Build a list of 4 random integers between 0 and 10 (both inclusive)
+        self._task = 'piezos'
+        self._status_label.setText("<font style='color: red;'>SCANNING PIEZOs</font>")
         self._scan_manager.piezo_scan()
         self.axes.plot(self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth =2)
         self.axes.set_xlabel ('piezo voltage')
@@ -125,13 +157,15 @@ class ScanCanvas(MyCanvas):
         self.draw()
 
     def update_plot(self):
-
         if self.scan_piezo_running:
             self.update_piezoscan()
         elif self.scan_laser_running:
             self.update_laserscan()
         elif self.calibrate:
             self.calibrate_laser_frequency()
+        else:
+            self._status_label.setText("<font style='color: red;'>IDLE</font>")
+
 
 
 class ScanGUI(QtGui.QMainWindow):
@@ -149,8 +183,16 @@ class ScanGUI(QtGui.QMainWindow):
         self.main_widget = QtGui.QWidget(self)
 
         l = QtGui.QGridLayout(self.main_widget)
+
+        self.status_label = QtGui.QLabel ('IDLE')
+        font = QtGui.QFont()
+        font.setBold(True)
+        #font.setHeight(105)
+        self.status_label.setFont(font)
+        self.status_label.setText("<font style='color: red;'>IDLE</font>")
+        l.addWidget (self.status_label, 10, 2)
         #self.setLayout (l)
-        self.dc = ScanCanvas(parent=self.main_widget, width=5, height=4, dpi=100, scan_manager = scan_manager)
+        self.dc = ScanCanvas(parent=self.main_widget, width=5, height=4, dpi=100, scan_manager = scan_manager, status_label = self.status_label)
         l.addWidget(self.dc, 0, 0, 4, 4)
         self.btn_scan_laser = QtGui.QPushButton('Scan laser', self)
         self.btn_scan_laser.clicked.connect(self.scan_laser)
@@ -197,12 +239,17 @@ class ScanGUI(QtGui.QMainWindow):
         self.nr_steps_box.valueChanged.connect(self.set_nr_steps)
         l.addWidget (self.nr_steps_box, 8, 3)
 
-        qlb1 = QtGui.QLabel ('min voltage')
-        l.addWidget (qlb1, 9, 0)
-        qlb1 = QtGui.QLabel ('max voltage')
-        l.addWidget (qlb1, 9, 1)
-        qlb1 = QtGui.QLabel ('nr steps')
-        l.addWidget (qlb1, 9, 3)
+        self.qlb1 = QtGui.QLabel ('min voltage')
+        l.addWidget (self.qlb1, 9, 0)
+        self.qlb2 = QtGui.QLabel ('max voltage')
+        l.addWidget (self.qlb2, 9, 1)
+        self.qlb3 = QtGui.QLabel ('nr steps')
+        l.addWidget (self.qlb3, 9, 3)
+
+        self.qlb4 = QtGui.QLabel ('status:')
+        self.qlb4.setAlignment(QtCore.Qt.AlignRight)
+        l.addWidget (self.qlb4, 10, 1)
+
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
