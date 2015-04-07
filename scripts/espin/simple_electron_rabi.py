@@ -28,12 +28,12 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
     
-    m.params['pts'] = 21
+    m.params['pts'] = 2
     pts = m.params['pts']
-    m.params['repetitions'] = 1500
+    m.params['repetitions'] = 15000
     m.params['Ex_SP_amplitude']=0
 
-    sweep_param = 'amplitude'
+    sweep_param = 'length'
 
 
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
@@ -41,15 +41,15 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 600, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.8
+        m.params['MW_pulse_durations'] =  np.linspace(1e6, 1.5e6, pts) * 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts)*0.3
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
 
     elif sweep_param == 'amplitude':    
         m.params['MW_pulse_durations'] =  np.ones(pts)*3e-6 
-        m.params['MW_pulse_amplitudes'] = np.linspace(0,0.03,pts) #0.02
+        m.params['MW_pulse_amplitudes'] = np.linspace(0,0.03,pts) #0.03
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 

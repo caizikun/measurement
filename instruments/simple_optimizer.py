@@ -74,6 +74,7 @@ class simple_optimizer(Instrument):
         initial_setpoint = self._get_control_f()
         scan_min = max(self._min_control,initial_setpoint + self._scan_min/2.)
         scan_max = min(self._max_control,initial_setpoint + self._scan_max/2.)
+     
         steps=int((scan_max - scan_min) / self._control_step_size)
         print 'initial_setpoint {:.2f},scan_min {:.2f},scan_max {:.2f}, steps {}'.format(initial_setpoint,scan_min,scan_max, steps)
         udrange=np.append(np.linspace(initial_setpoint,scan_min,int(steps/2.)),

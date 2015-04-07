@@ -7,10 +7,12 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 
 def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0, 
-        pulse_length = 2e-6, ssbmod_amplitude = None):
+        pulse_length = 2e-6, ssbmod_amplitude = None, mw_switch=False):
+    if mw_switch:
+        m = pulsar_msmt.DarkESR_Switch(name)
+    else:
+        m = pulsar_msmt.DarkESR(name)
 
-    
-    m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])

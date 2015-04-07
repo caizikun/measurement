@@ -71,16 +71,15 @@ def Zeno(name, carbon_list   = [1,5],
 
     m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = parity_msmnts_threshold
-    m.params['Zeno_SP_A_power'] = 18e-9
-    m.params['Repump_duration']= np.linspace(0e-6,0.7e-6,7) #how long the repumper beam is shined in.
+    m.params['Zeno_SP_A_power'] = 50e-9
+    m.params['Repump_duration']= np.linspace(0.0,6e-6,6) #how long the repumper beam is shined in.
 
-    m.params['echo_like']=False # this is a bool to set the delay inbetween measurements.
 
     ### Derive other parameters
     m.params['free_evolution_time'] = free_evolution_time
     m.params['pts']                 = len(m.params['Repump_duration'])
     m.params['sweep_name']          = 'Repump_duration'
-    m.params['sweep_pts']           = m.params['Repump_duration']
+    m.params['sweep_pts']           = [round(x*1e6,3) for x in m.params['Repump_duration']]
     
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
@@ -104,8 +103,8 @@ if __name__ == '__main__':
 
     #gives the necessary RO basis when decoding to carbon 5
 
-    RO_bases_dict={'X':['Y','Y'],
-    'mX':['Y','Y'],
+    RO_bases_dict={'X':['X','X'],
+    'mX':['X','X'],
     'Y':['Z','Y'],
     'mY':['Z','Y'],
     'Z':['I','X'],
@@ -133,8 +132,17 @@ if __name__ == '__main__':
     #                     free_evolution_time=EvoTime,
     #                     debug=False)
     EvoTime=1e-3
+    teststate='X'
+    for RO in ['positive']:#,'negative']:
+        Zeno(SAMPLE +RO+'state_'+teststate+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
+                        el_RO= RO,
+                        logic_state=teststate,
+                        Tomo_bases = RO_bases_dict[teststate],
+                        free_evolution_time=EvoTime,
+                        debug=False)
+    EvoTime=1e-3
     teststate='mX'
-    for RO in ['positive','negative']:
+    for RO in ['positive']:#,'negative']:
         Zeno(SAMPLE +RO+'state_'+teststate+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
                         el_RO= RO,
                         logic_state=teststate,

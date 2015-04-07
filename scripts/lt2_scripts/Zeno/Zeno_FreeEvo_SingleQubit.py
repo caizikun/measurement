@@ -1,3 +1,8 @@
+### This script measures the bloch vector length of a single qubit.
+### takes the measurement with the regular bases first and runs then a measurement for the orthogonal ones.
+### NK 2015
+
+
 import numpy as np
 import qt 
 
@@ -138,34 +143,70 @@ if __name__ == '__main__':
 
     ############################ 9 data points per run
     #                         ## 
-    # ob tain single qubit proc#
+    # obtain single qubit proc #
     #                         ##
     ############################ estimated duration parity duration: 12.6 ms 2015-01-27
 
-    EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3]
-    EvoTime_arr=array_slicer(9,EvoTime_arr)
-    for logic_state in logic_state_list:
-        for evotime in EvoTime_arr:
-            for eRO in ['positive','negative']:
-                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
-                        carbon_list   = [1,5],               
+    # EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3]
+    # EvoTime_arr=array_slicer(9,EvoTime_arr)
+    # for logic_state in logic_state_list:
+    #     for evotime in EvoTime_arr:
+    #         for eRO in ['positive','negative']:
+    #             Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+    #                     carbon_list   = [1,5],               
                         
-                        carbon_init_list        = [5,1],
-                        carbon_init_states      = 2*['up'], 
-                        carbon_init_methods     = 2*['swap'], 
-                        carbon_init_thresholds  = 2*[0],  
+    #                     carbon_init_list        = [5,1],
+    #                     carbon_init_states      = 2*['up'], 
+    #                     carbon_init_methods     = 2*['swap'], 
+    #                     carbon_init_thresholds  = 2*[0],  
 
-                        number_of_MBE_steps = 1,
-                        logic_state         =logic_state,
-                        mbe_bases           = ['I','Y'],
-                        MBE_threshold       = 1,
+    #                     number_of_MBE_steps = 1,
+    #                     logic_state         =logic_state,
+    #                     mbe_bases           = ['I','Y'],
+    #                     MBE_threshold       = 1,
 
-                        number_of_zeno_msmnts = 0,
-                        parity_msmnts_threshold = 1, 
+    #                     number_of_zeno_msmnts = 0,
+    #                     parity_msmnts_threshold = 1, 
 
-                        free_evolution_time = evotime,
+    #                     free_evolution_time = evotime,
 
-                        el_RO               = eRO,
-                        debug               = False,
-                        Tomo_bases          = RO_bases_dict[logic_state],
-                        Repetitions         = 1000)
+    #                     el_RO               = eRO,
+    #                     debug               = False,
+    #                     Tomo_bases          = RO_bases_dict[logic_state],
+    #                     Repetitions         = 500)
+
+
+    
+    # logic_state_list=['Y','mY','Z','mZ']
+    # RO_bases_dict={'X':['I','Z'],
+    # 'mX':['I','Z'],
+    # 'Y':['I','X'],
+    # 'mY':['I','X'],
+    # 'Z':['I','Y'],
+    # 'mZ':['I','Y']}
+
+    # for logic_state in logic_state_list:
+    #     for evotime in EvoTime_arr:
+    #         for eRO in ['positive','negative']:
+    #             Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+    #                     carbon_list   = [1,5],               
+                        
+    #                     carbon_init_list        = [5,1],
+    #                     carbon_init_states      = 2*['up'], 
+    #                     carbon_init_methods     = 2*['swap'], 
+    #                     carbon_init_thresholds  = 2*[0],  
+
+    #                     number_of_MBE_steps = 1,
+    #                     logic_state         =logic_state,
+    #                     mbe_bases           = ['I','Y'],
+    #                     MBE_threshold       = 1,
+
+    #                     number_of_zeno_msmnts = 0,
+    #                     parity_msmnts_threshold = 1, 
+
+    #                     free_evolution_time = evotime,
+
+    #                     el_RO               = eRO,
+    #                     debug               = False,
+    #                     Tomo_bases          = RO_bases_dict[logic_state],
+    #                     Repetitions         = 500)

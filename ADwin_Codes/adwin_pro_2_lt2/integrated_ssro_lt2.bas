@@ -36,8 +36,8 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts ' not used anymore? Machiel 23-12-'13
 DIM DATA_25[max_repetitions] AS LONG  ' SSRO counts spin readout
 
-DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel AS LONG
-DIM send_AWG_start, wait_for_AWG_done AS LONG
+DIM AWG_start_DO_channel, AWG_done_DI_channel, APD_gate_DO_channel, Shutter_channel AS LONG
+DIM send_AWG_start, wait_for_AWG_done, use_shutter AS LONG
 DIM sequence_wait_time AS LONG
 
 DIM SP_duration, SP_filter_duration AS LONG
@@ -71,11 +71,17 @@ INIT:
   cycle_duration               = DATA_20[12] '(in processor clock cycles, 3.333ns)
   sweep_length                 = DATA_20[13]
   wait_after_RO_pulse_duration = DATA_20[14]
+  use_shutter                  = DATA_20[15]
+  Shutter_channel              = DATA_20[16]
   
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
   E_RO_voltage                 = DATA_21[3]
   A_RO_voltage                 = DATA_21[4]
+  
+  '  Shutter_channel = 4
+  '  use_shutter = 1
+  
   par_80 = SSRO_stop_after_first_photon
   
   FOR i = 1 TO max_SP_bins
@@ -101,6 +107,7 @@ INIT:
 
   P2_Digprog(DIO_MODULE,11)
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+  P2_DIGOUT(DIO_Module,Shutter_channel, 0)
 
   sweep_index = 1
   mode = 0
@@ -144,13 +151,19 @@ EVENT:
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser                
           
+          IF (use_shutter > 0) THEN
+            P2_DIGOUT(DIO_Module,Shutter_channel, 1)
+            wait_after_pulse = 3000
+          ELSE
+            wait_after_pulse = wait_after_pulse_duration
+          ENDIF
+        
           IF ((send_AWG_start > 0) or (sequence_wait_time > 0)) THEN
             mode = 3
           ELSE
             mode = 4
           ENDIF
           
-          wait_after_pulse = wait_after_pulse_duration
           timer = -1
         ENDIF
       
@@ -195,7 +208,17 @@ EVENT:
           ENDIF
         ENDIF
      
-      CASE 4    ' spin readout
+      CASE 4 ' Opening shutter
+        IF (use_shutter > 0) THEN
+          P2_DIGOUT(DIO_Module,Shutter_channel, 0)
+          wait_after_pulse = 3500
+        ENDIF
+        mode = 5
+        timer = -1
+        
+        
+      CASE 5    ' spin readout
+
         IF (timer = 0) THEN
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
@@ -220,7 +243,12 @@ EVENT:
           
           mode = 0
           timer = -1
-          wait_after_pulse = wait_after_RO_pulse_duration
+          IF (use_shutter > 0) THEN 'WARNING: Current shutter has 20Hz max freq.
+            wait_after_pulse = 50000
+          ELSE
+            wait_after_pulse = wait_after_RO_pulse_duration
+          ENDIF
+          
           inc(repetition_counter)
           Par_73 = repetition_counter
           IF (repetition_counter = SSRO_repetitions) THEN

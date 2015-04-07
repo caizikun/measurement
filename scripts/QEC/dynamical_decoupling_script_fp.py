@@ -45,7 +45,7 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
                 AWG.clear_visa()
                 stools.turn_off_all_lt2_lasers()
                 qt.msleep(1)
-                GreenAOM.set_power(10e-6)
+                GreenAOM.set_power(20e-6)
                 optimiz0r.optimize(dims=['x','y','z','x','y'])
 
             ### Define and print parameters
