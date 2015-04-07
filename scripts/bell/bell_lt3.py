@@ -48,12 +48,6 @@ class Bell_lt3(bell.Bell):
         else:
             return self.adwin_process_running()
 
-    def print_measurement_progress(self):
-        if self.params['remote_measurement']:
-            pass
-        else:
-            bell.Bell.print_measurement_progress(self)
-
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt3')
 
@@ -125,7 +119,8 @@ def bell_lt3(name):
         if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
             m.joint_params['do_echo'] = 0
             m.joint_params['do_final_MW_rotation'] = 0
-            th_debug = True
+            m.joint_params['use_live_marker_filter']=False
+            th_debug = False
             mw=True
         elif 'TPQI' in remote_name:
             m.joint_params['RO_during_LDE']=0
@@ -141,7 +136,7 @@ def bell_lt3(name):
             mw=True
             th_debug=False
         elif 'MeasXX_' in remote_name:
-            th_debug = True 
+            th_debug = False 
             mw=True
         else:
             print 'using standard local settings'
@@ -179,3 +174,4 @@ if __name__ == '__main__':
     stools.rf_switch_non_local()
     bell_lt3('')
     stools.rf_switch_local()
+    os.chdir('D:')

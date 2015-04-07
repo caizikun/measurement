@@ -5,9 +5,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL1_PSB'
+name = 'Pippin_SIL1_PSB_PQ01023273'
 steps=21
-max_power=250e-6       #[w]
+max_power=200e-6       #[w]
 counter=1 #number of counter
 PQ_count= True    # counting with the HH, assumes apd on channel 0
 bg_x=-3.0          #delta x position of background [um]

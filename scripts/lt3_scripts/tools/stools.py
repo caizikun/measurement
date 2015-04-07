@@ -63,15 +63,19 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
         print 'Background:', bg
-    qt.instruments[name].set_power(setpoint)
+    if setpoint == 'max':
+        qt.instruments[name].turn_on()
+    else:
+        qt.instruments[name].set_power(setpoint)
     qt.msleep(2)
-
-    print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
+    value = qt.instruments[powermeter].get_power()-bg
+    print name, 'setpoint:', setpoint, 'value:', value
 
     qt.instruments[name].turn_off()
     if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
+    return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
     setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
@@ -80,6 +84,14 @@ def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM']
     turn_off_all_lt3_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
+    qt.instruments['PMServo'].move_out()
+
+def max_lt3_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM']):
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
+    turn_off_all_lt3_lasers()
+    for n in names:
+        check_power(n, 'max', 'adwin', 'powermeter', 'PMServo', False)
     qt.instruments['PMServo'].move_out()
 
 def apply_awg_voltage(awg, chan, voltage):
@@ -191,12 +203,16 @@ def generate_quantum_random_number():
     qt.msleep(0.1)
     qt.instruments['AWG'].set_ch1_marker2_low(0.)
 
-def reset_plu():
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+def quantum_random_number_status():
+    qt.instruments['adwin'].start_get_dio(dio_no=20)
+    return qt.instruments['adwin'].get_get_dio_var('dio_val') > 0
+
+def quantum_random_number_reset():
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
     qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=1)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=1)
     qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=2, dio_val=0)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
 
 def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     adwin = qt.instruments['adwin']  

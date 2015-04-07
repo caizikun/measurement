@@ -1315,6 +1315,15 @@ config['adwin_pro_processes'] = {
                 },
             },
 
+        'get_dio' :  {
+            'index' : 4,
+            'file' : 'Get_TTL_states.TB4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
         'init_data' :  {
             'index' : 5,
             'file' : 'init_data.TB5',
@@ -1632,6 +1641,7 @@ config['adwin_pro_processes'] = {
                     ['do_sequences'                ,   1],
                     ['wait_for_remote_CR'          ,   1],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1672,7 +1682,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
-                    ['invalid_data_marker_do_channel', 8],
+                    ['invalid_data_marker_do_channel', 5],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1918,13 +1928,15 @@ config['adwin_cav1_dacs'] = {
         'matisse_aom' : 6,
         'newfocus_aom': 7,
         'laser_scan': 8,
+        'newfocus_freqmod': 9
         }
 
 config['adwin_cav1_dios'] = {
         }
 
 config['adwin_cav1_adcs'] = {
-        'photodiode': 1,
+        'photodiode': 16,
+        'photodiode_ref': 32,
         }
 
 config['adwin_cav1_processes'] = {
@@ -1955,6 +1967,17 @@ config['adwin_cav1_processes'] = {
                 },
             'fpar' : {
                 'dac_voltage' : 20,
+                },
+            },
+
+        'read_adc' :  {
+            'index' : 1,
+            'file' : 'readADC.TB1',
+            'par' : {
+                'adc_no' : 21,
+                },
+            'fpar' : {
+                'adc_voltage' : 21,
                 },
             },
 
@@ -2013,6 +2036,7 @@ config['adwin_cav1_processes'] = {
                     ['DAC_ch_fpz2'                 ,   0],
                     ['DAC_ch_fpz3'                 ,   0],
                     ['ADC_channel'                 ,   1],
+                    ['ADC_ref_channel'             ,   2],
                     ['nr_steps'                    ,   1],
                     ['wait_cycles'                 ,  50],
                     ['use_counter'                 ,   0],
@@ -2031,6 +2055,7 @@ config['adwin_cav1_processes'] = {
                     },
                 'data_float' : {
                     'photodiode_voltage' : 11,
+                    'photodiode_reference' : 12,
                     },
             },
 

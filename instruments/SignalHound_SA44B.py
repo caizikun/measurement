@@ -241,6 +241,7 @@ class SignalHound_SA44B(Instrument):
         plt.add_data(dat, coorddim=0, valdim=2)
         dat.add_data_point(x,y)
         dat.close_file()
+        plt.update()
         plt.save_png(dat.get_filepath()+'png')
 
     #TODO 2 RBW methods below do not conform to the API description!

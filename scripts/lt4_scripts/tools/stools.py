@@ -47,10 +47,11 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
 
-
-def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
-    qt.instruments[servo].move_in()    
+def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
+    if move_pm_servo:
+        qt.instruments[servo].move_in()     
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
+    qt.msleep(0.5)
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
         print 'Background:', bg
@@ -59,18 +60,20 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     else:
         qt.instruments[name].set_power(setpoint)
     qt.msleep(2)
-
-    print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
+    value = qt.instruments[powermeter].get_power()-bg
+    print name, 'setpoint:', setpoint, 'value:', value
 
     qt.instruments[name].turn_off()
-    if move_out:
+    if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
+    return setpoint, value
 
 
-def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','YellowAOM', 'PulseAOM'],
-    setpoints = [5e-9, 10e-9, 50e-9,30e-9]):
-    
+def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','PulseAOM', 'YellowAOM' ],
+    setpoints = [5e-9, 10e-9, 30e-9,50e-9]):
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
     turn_off_all_lt4_lasers()
     for n,s in zip(names, setpoints):
         check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
@@ -139,6 +142,17 @@ def generate_quantum_random_number():
     qt.msleep(0.1)
     qt.instruments['AWG'].set_ch3_marker2_low(0.)
 
+def quantum_random_number_reset():
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
+
+def quantum_random_number_status():
+    qt.instruments['adwin'].start_get_dio(dio_no=17)
+    return qt.instruments['adwin'].get_get_dio_var('dio_val') > 0
+
 def reset_plu():
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
         qt.msleep(0.1)
@@ -160,7 +174,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     cur_v=adwin.get_dac_voltage('yellow_aom_frq')
     ps=[]
     vs=[]
-    for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
+    for v in np.linspace(cur_v-0.25, cur_v+0.25, pts):
         vs.append(v)
         adwin.set_dac_voltage(('yellow_aom_frq',v))
         qt.msleep(0.1)

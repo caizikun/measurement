@@ -10,7 +10,7 @@ import time
 
 current_adwin = qt.instruments['adwin']
 counter=3
-int_time= 1000 # in ms XXXXXXXXXX200
+int_time= 100 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -20,9 +20,10 @@ def measure_counts(): #fro remote opt.
         return current_adwin.measure_counts(int_time)[counter-1]/(int_time*1e-3) 
 
 #big_segs=dm.get_bigger_segments()
-big_segs=[[0]]*140
-for i in np.arange(140):
-    big_segs[i]=[i+1]
+big_segs=[]
+for i in [0,2,4,6,8,10]:
+    for j  in [0,2,4,6,8,10]:
+        big_segs.append([i,i+1,j,j+1])
 
 def optimize_single_segment(name, seg_nr):
     #measurement parameters
@@ -217,7 +218,7 @@ if __name__ == '__main__':
     green_power = 200e-6
     GreenAOM.set_power(green_power)
 
-    name = 'ThePippin_Sil1_lt3_at_ewi'
+    name = 'PippinSil1_lt3_local_no_pol'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
@@ -233,23 +234,24 @@ if __name__ == '__main__':
     scan_mode = 'zernike'
 
     try:
-        for j in np.arange(2):
+        for j in np.arange(1):
             stop_scan=False
             print 'cur cycle = ' , j
             if scan_mode == 'segment':
-                for i,(imin,imax,jmin,jmax) in enumerate([(5,5,5,5),(6,6,6,6),(5,5,6,6),(6,6,5,5), (0,1,0,1), (10,11,10,11), (0,1,10,11),(10,11,0,1)]): #lets sweep 75 zernike modes!
+                for i,(imin,imax,jmin,jmax) in enumerate(big_segs):
+                #[(5,5,5,5),(6,6,6,6),(5,5,6,6),(6,6,5,5), (0,1,0,1), (10,11,10,11), (0,1,10,11),(10,11,0,1)]): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
                             break
                         if msvcrt.getch() == 'q':
                             break
-                    cnts,opt_amp = optimize_segments(name, imin,imax,jmin,jmax)
+                    cnts,opt_amp = optimize_segments(name, imin,imax,jmin,jmax,do_fit=False)
                     #cnts=measure_counts()
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,50): #lets sweep 75 zernike modes!
+                for i in np.arange(2,30): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
@@ -261,9 +263,10 @@ if __name__ == '__main__':
 
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
+                    print 'finished zernike' , i
 
             elif scan_mode == 'zernike_brent':
-                for i in np.arange(2,75): #lets sweep 75 zernike modes!
+                for i in np.arange(2,25): #lets sweep 75 zernike modes!
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                         stop_scan=True
                         break
@@ -278,11 +281,17 @@ if __name__ == '__main__':
             elif scan_mode == 'newton':
                 result = newton_zernike()
 
+            print 'before new block'
             dat_tot.new_block() 
+            print 'after new block'
             if stop_scan: break
             qt.msleep(2)
-            optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
+            #optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
             #stools.recalibrate_lt3_lasers(names=['GreenAOM'],awg_names=[])
             GreenAOM.set_power(green_power)
     finally:
+        print 'before close file'
         dat_tot.close_file()
+        print 'after close file'
+
+        

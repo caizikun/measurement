@@ -98,11 +98,12 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MIN_SYNC_BIN':                             0,
 		'MAX_SYNC_BIN':                             1000,
 		'TTTR_read_count':							1000, #s
+		'TTTR_RepetitiveReadouts':					10,
 		'measurement_time':                         1200,#sec
 		'measurement_abort_check_interval':			1,#sec
-		'MIN_HIST_SYNC_BIN': 	  					1000,
+		'MIN_HIST_SYNC_BIN': 	  					0,
 	    'MAX_HIST_SYNC_BIN': 					 	1000,
-	    'count_marker_channel':						16,
+	    'count_marker_channel':						1,
 		}
 
 
@@ -110,7 +111,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.807333e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2014-11-17 2.806445
+f_msm1_cntr =  2.807248e9#  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-03-02
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -125,7 +126,7 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 5e-9, 
+		'A_CR_amplitude':			 	 1e-9, 
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 20e-9,
 		'CR_duration' :				 	 50, 
@@ -156,11 +157,11 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 220e-9, #XX 
-        'Hermite_pi_amp': 0.936, #2015-02-11
-        'Hermite_pi2_length': 100e-9, #XX
-        'Hermite_pi2_amp': 0.65, #2014-12-21
-        'Hermite_Npi4_length': 100e-9, #pi/4 45e-9,
-        'Hermite_Npi4_amp':    0.905 +0.04, #pi/4 0.4629, Bell Offset is +0.0403 # 2014-11-17
+        'Hermite_pi_amp': 0.938, #2015-03-18
+        'Hermite_pi2_length': 100e-9, #120e-9, #XX
+        'Hermite_pi2_amp': 0.685, #0.594, #2015-03-18
+        'Hermite_Npi4_length': 120e-9, #pi/4 45e-9
+        'Hermite_Npi4_amp':    0.918 + 0.036, # Use 0.787 pi on Sam   2015-03-18
         'Square_pi_length' : 50e-9, # 2014-12-01
       	'Square_pi_amp' : 0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 
