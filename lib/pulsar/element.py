@@ -97,7 +97,7 @@ class Element:
         else:
             while(samples % self.granularity > 0):
                 samples += 1
-                
+        #print samples    
         return samples
 
     def real_time(self, t, channel):

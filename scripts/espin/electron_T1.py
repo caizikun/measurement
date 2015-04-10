@@ -3,6 +3,7 @@ Script for e-spin T1 using the pulsar sequencer.
 """
 import numpy as np
 import qt
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -13,14 +14,15 @@ import measurement.lib.measurement2.measurement as m2
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from analysis.lib.m2.ssro import ssro as ssroanal
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = False):
-
+def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = False, wait_times = np.r_[1e5,1e6,3e6,10e6]):
+    print 'Hello1'
     m = pulsar_msmt.ElectronT1(name)
-
+    print 'Hello2'
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -28,14 +30,17 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
-    '''set experimental parameters'''
+    '''set experimental paramqeters'''
         #T1 experiment
     m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
     m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
-    m.params['wait_times'] =  np.linspace(100,1.5e3,16) #in us, values must be divisible by the repeat element
-    m.params['wait_times'] =  np.linspace(0,5e6,6)+100 #in us, values must be divisible by the repeat element
-    m.params['wait_time_repeat_element'] = 100      #in us, this element is repeated to create the wait times max of 6 seconds
-    m.params['repetitions'] = 1000
+    # m.params['wait_times'] =  np.linspace(1e3,1.5e3,16) #in us, values must be divisible by the repeat element
+    # m.params['wait_times'] =  np.r_[1000,np.linspace(1e6,5.0e6,5),10e6,15e6,30e6,60e6] #in us, values must be divisible by the repeat element
+    # m.params['wait_times'] =  np.r_[1000,np.linspace(1e6,5.0e6,5),60e6] 
+    m.params['wait_times'] =  wait_times #,2.5e6] 
+    m.params['wait_time_repeat_element'] = 1e3      #in us, this element is repeated to create the wait times max of 6 seconds
+    m.params['repetitions'] = 250
+    m.params['use_shutter'] = 1
 
         #Plot parameters
     m.params['sweep_name'] = 'Times (Us)'
@@ -57,16 +62,133 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     print m.params['sweep_pts']
     '''generate sequence'''
     m.generate_sequence(upload=True, debug=True)
+    print 'Hello3'
     m.run()
     m.save()
     m.finish()
+    print 'Hello4'
 
-if __name__ == '__main__':
     
 
-    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
-    T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
+def ssrocalibration(name,RO_power=None,SSRO_duration=None):
+    m = ssro.AdwinSSRO('SSROCalibration_'+name)
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    
+    if RO_power != None: 
+        m.params['Ex_RO_amplitude'] = RO_power
+    if SSRO_duration != None: 
+        m.params['SSRO_duration'] = SSRO_duration
 
-    # T1(SAMPLE+'_'+'init_0_RO_-1', T1_initial_state = 'ms=0', T1_readout_state = 'ms=-1')
-    # T1(SAMPLE+'_'+'init_-1_RO_0', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')
-    # T1(SAMPLE+'_'+'init_-1_RO_-1', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=-1')
+    # ms = 0 calibration
+    m.params['Ex_SP_amplitude'] = 0
+    m.run()
+    m.save('ms0')
+    
+    # ms = 1 calibration
+    m.params['SP_duration']     = 500
+    m.params['A_SP_amplitude']  = 0.
+    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
+    m.run()
+    m.save('ms1')
+
+    m.finish()
+
+if __name__ == '__main__':
+
+    # times = np.r_[1e5,1e6]
+    # ii = 999
+    # T1(SAMPLE+'_'+'init_0_RO_0_Ord_0_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.roll(times,ii))
+    
+    # times = np.r_[1e5,1e6,3e6,10e6,30e6, 60e6]
+    
+
+
+    T1(SAMPLE+'_'+'init_0_RO_0_SWITCH', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.r_[1e5,3e5, 1e6])
+
+    # T1(SAMPLE+'_'+'TEST_DONT_USE', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = [1e6])
+    # GreenAOM.set_power(20e-6)
+    # optimiz0r.optimize(dims = ['x','y','z'])
+    # stools.turn_off_all_lt2_lasers()
+    # ssrocalibration(SAMPLE_CFG)
+
+
+    # times = np.r_[1e5,1e6,10e6,30e6,60e6]
+    # for ii in range(200):
+    #     qt.msleep(2)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
+    #     T1(SAMPLE+'_'+'init_0_RO_0_rep_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = times)
+    #     if (ii+1) % 40 == 0:
+    #         ssrocalibration(SAMPLE_CFG)
+    #         GreenAOM.set_power(20e-6)
+    #         optimiz0r.optimize(dims = ['x','y','z'])
+    #         stools.turn_off_all_lt2_lasers()
+    #         ssrocalibration(SAMPLE_CFG)
+
+
+
+
+
+
+
+
+
+
+    # times = np.r_[300e6]
+    # for ii in range(7):
+
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(2)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
+
+    #     T1(SAMPLE+'_'+'init_0_RO_0_tau_5min_+'+str(ii)+'+_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = times)
+
+    #     ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+    #     GreenAOM.set_power(20e-6)
+    #     optimiz0r.optimize(dims = ['x','y','z'])
+    #     stools.turn_off_all_lt2_lasers()
+    #     ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(2)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
+
+    #     T1(SAMPLE+'_'+'init_1_RO_0_tau_5min_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True, wait_times = times)
+    #     ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+    #     GreenAOM.set_power(20e-6)
+    #     optimiz0r.optimize(dims = ['x','y','z'])
+    #     stools.turn_off_all_lt2_lasers()
+    #     ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+
+    #     # print '-----------------------------------'            
+    #     # print 'press q to stop measurement cleanly'
+    #     # print '-----------------------------------'
+    #     # qt.msleep(2)
+    #     # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #     #     break
+
+
+    #     # T1(SAMPLE+'_'+'init_1_RO_0_Ord_1_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True, wait_times = np.roll(times,ii))  
+    #     # T1(SAMPLE+'_'+'init_0_RO_0_Ord_1_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.roll(times,ii))
+    #     # ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+    #     # GreenAOM.set_power(20e-6)
+    #     # # counters.set_is_running(1)
+    #     # optimiz0r.optimize(dims = ['x','y','z'])
+    #     # stools.turn_off_all_lt2_lasers()
+    #     # ssrocalibration(SAMPLE_CFG)
+    #     # ssroanal.ssrocalib()
+
+
+

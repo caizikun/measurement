@@ -23,10 +23,15 @@ spin_of = -104e-9-27e-9
 # MW
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker',
     high=2.0, low=0, offset=0., delay=spin_of+260e-9, active=True)
-qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
-qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='MW_switch', type='marker',
+    high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
+# qt.pulsar.define_channel(id='ch4_marker2', name='MW_invswitch', type='marker',
+#     high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
+qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.55, #MAB: was 0.9, lowered to protect MW switch
+    low=-0.55, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.55,
+    low=-0.55, offset=0., delay=spin_of+240e-9, active=True)
+
 
 #RF
 qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,

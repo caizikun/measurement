@@ -53,7 +53,7 @@ class MyCanvas(FigureCanvas):
 
         f = plt.figure()
         ax = f.add_subplot(1,1,1)
-        ax.plot (self._laserscan.v_vals, self._laserscan.PD_signal+self.random_noise, 'b', linewidth = 2)
+        ax.plot (self._laserscan.v_vals, self._laserscan.PD_signal, '.b', linewidth = 2)
         ax.set_xlabel ('voltage [V]')
         ax.set_ylabel ('photodiode signal [a.u.]')
         f.savefig(os.path.join(directory, fName+'.png'))
@@ -78,11 +78,12 @@ class LaserScanCanvas(MyCanvas):
 
     def update_laserscan(self):
         # Build a list of 4 random integers between 0 and 10 (both inclusive)
-        self._laserscan.scan()
-        self.random_noise = 0.1*np.random.rand(len(self._laserscan.v_vals))
-        self.axes.plot(self._laserscan.v_vals, self._laserscan.PD_signal+self.random_noise, 'b', linewidth =2)
-        self.axes.set_xlabel ('voltage [V]')
+        self._laserscan.coarse_scan()
+        #self.random_noise = 0*0.1*np.random.rand(len(self._laserscan.v_vals))
+        self.axes.plot(self._laserscan.v_vals, self._laserscan.PD_signal, '.b', linewidth =2)
+        self.axes.set_xlabel ('frequency [GHz]')
         self.axes.set_ylabel('photodiode signal [a.u.]')
+        self.axes.set_ylim ([0, 3])
         self.draw()
 
 class LaserScanGUI(QtGui.QMainWindow):
@@ -119,7 +120,7 @@ class LaserScanGUI(QtGui.QMainWindow):
 qApp = QtGui.QApplication(sys.argv)
 lc = LaserScan (name='test')
 lc.set_laser_params (wavelength = 637.1, power = 5)
-lc.set_scan_params (v_min=0., v_max=5., nr_points=50)
+lc.set_scan_params (v_min=0., v_max=4., nr_points=100)
 
 aw = LaserScanGUI(laserscan = lc)
 aw.setWindowTitle("%s" % progname)

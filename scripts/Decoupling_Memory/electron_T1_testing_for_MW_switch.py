@@ -1,5 +1,6 @@
 """
-Script for e-spin T1 using the pulsar sequencer.
+MAB 16-2-14
+Script for e-spin T1 using the pulsar sequencer. This script is to test implementation of a MW switch
 """
 import numpy as np
 import qt
@@ -19,7 +20,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
 
-    m = pulsar_msmt.ElectronT1Switch(name)
+    m = pulsar_msmt.ElectronT1(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -32,9 +33,9 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
         #T1 experiment
     m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
     m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
-    m.params['wait_times'] =  np.linspace(0,1e3,3) #in us, values must be divisible by the repeat element
+    m.params['wait_times'] =  np.linspace(0,0.5e6,6) #in us, values must be divisible by the repeat element
     m.params['wait_time_repeat_element'] = 100      #in us, this element is repeated to create the wait times
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 100
 
         #Plot parameters
     m.params['sweep_name'] = 'Times (Us)'
@@ -50,7 +51,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'):
     print 'readout_state: ' + m.params['T1_readout_state']
     print m.params['sweep_pts']
     '''generate sequence'''
-    m.generate_sequence(upload=True)
+    m.generate_sequence(upload=True, debug=True)
     m.run()
     m.save()
     m.finish()
