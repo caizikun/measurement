@@ -141,6 +141,46 @@ class DarkESR(PulsarMeasurement):
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
+     # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+class DarkESR_Switch(DarkESR):
+  
+    def generate_sequence(self, upload=True):
+
+        # define the necessary pulses
+        X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            amplitude = self.params['ssbmod_amplitude'],
+            length = self.params['pulse_length'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'])
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay')
+        T.amplitude = 0.
+        T.length = 2e-6
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i, f in enumerate(np.linspace(self.params['ssbmod_frq_start'],
+            self.params['ssbmod_frq_stop'], self.params['pts'])):
+
+            e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
+            e.add(T, name='wait')
+            e.add(X(frequency=f), refpulse='wait')
+            elements.append(e)
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('DarkESR sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
          # upload the waveforms to the AWG
         if upload:
             if upload=='old_method':
@@ -404,100 +444,100 @@ class ElectronRamsey(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
-#class ElectronT1Switch(PulsarMeasurement):
-#
-#    mprefix = 'ElectronT1Switch'
-#
-#    def autoconfig(self):
-#        self.params['wait_for_AWG_done'] = 1
-#        PulsarMeasurement.autoconfig(self)
-#
-#        #Add initial and readout state options (ms=1, ms=0, ms=-1)
-#        #self.params['T1_initial_state'] = 'ms=0'
-#        #self.params['T1_readout_state'] = 'ms=0'
-#
-#    def generate_sequence(self, upload=True, debug = False):
-#
-#        ### define basic pulses/times ###
-#        # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
-#        X = pulselib.MW_IQmod_Switch_pulse('Pi-pulse',
-#            I_channel='MW_Imod', Q_channel='MW_Qmod',
-#            Sw_channel='MW_switch', Sw_Inv_channel='MW_invswitch'
-#            PM_channel='MW_pulsemod',
-#            frequency = self.params['MW_modulation_frequency'],
-#            PM_risetime = self.params['MW_pulse_mod_risetime'],
-#            length = self.params['fast_pi_duration'],
-#            amplitude = self.params['fast_pi_amp'])
-#        # Wait-times
-#        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
-#            length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
-#        T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
-#            length = 100e-9, amplitude = 0.) #the unit waittime is 10e-6 s
-#        T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
-#            length = 850e-9, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
-#        # Trigger pulse
-#        Trig = pulse.SquarePulse(channel = 'adwin_sync',
-#        length = 5e-6, amplitude = 2)
-#
-#        ### create the elements/waveforms from the basic pulses ###
-#        list_of_elements = []
-#
-#        #Pi-pulse element/waveform
-#        e = element.Element('Pi_pulse',  pulsar=qt.pulsar,
-#                global_time = True)
-#        e.append(T_before_p)
-#        e.append(pulse.cp(X))
-#        e.append(T_after_p)
-#        list_of_elements.append(e)
-#
-#        #Wait time element/waveform
-#        e = element.Element('T1_wait_time',  pulsar=qt.pulsar,
-#                global_time = True)
-#        e.append(T)
-#        list_of_elements.append(e)
-#
-#        #Trigger element/waveform
-#        e = element.Element('ADwin_trigger',  pulsar=qt.pulsar,
-#                global_time = True)
-#        e.append(Trig)
-#        list_of_elements.append(e)
-#
-#        ### create sequences from the elements/waveforms ###
-#        seq = pulsar.Sequence('ElectronT1_sequence')
-#
-#        for i in range(len(self.params['wait_times'])):
-#
-#            if self.params['wait_times'][i]/self.params['wait_time_repeat_element'] !=0:
-#                if self.params['T1_initial_state'] == 'ms=-1':
-#                    seq.append(name='Init_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
-#                    seq.append(name='ElectronT1_wait_time_%d'%i, wfname='T1_wait_time', trigger_wait=False,repetitions=self.params['wait_times'][i]/self.params['wait_time_repeat_element'])
-#                    if self.params['T1_readout_state'] == 'ms=-1':
-#                        seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=False)
-#                    seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
-#                #elif self.params['T1_initial_state'] == 'ms=+1':
-#
-#                else:
-#                    seq.append(name='ElectronT1_wait_time_%d'%i, wfname='T1_wait_time', trigger_wait=True,repetitions=self.params['wait_times'][i]/self.params['wait_time_repeat_element'])
-#                    if self.params['T1_readout_state'] == 'ms=-1':
-#                        seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=False)
-#                    seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
-#            else:
-#                if self.params['T1_initial_state'] == 'ms=-1' and self.params['T1_readout_state'] == 'ms=0':
-#                    seq.append(name='Init_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
-#                    seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
-#                elif self.params['T1_readout_state'] == 'ms=-1' and self.params['T1_initial_state'] == 'ms=0':
-#                    seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
-#                    seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
-#                #elif self.params['T1_initial_state'] == 'ms=+1' and self.params['T1_readout_state'] == 'ms=0':
-#                #elif self.params['T1_readout_state'] == 'ms=+1' and self.params['T1_initial_state'] == 'ms=0':
-#                else:
-#                    seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=True)
-#
-#         # upload the waveforms to the AWG
-#        if upload:
-#            qt.pulsar.program_awg(seq,*list_of_elements, debug = debug)
-#
-#
+# class ElectronT1Switch(PulsarMeasurement):
+
+#     mprefix = 'ElectronT1Switch'
+
+#     def autoconfig(self):
+#         self.params['wait_for_AWG_done'] = 1
+#         PulsarMeasurement.autoconfig(self)
+
+#         #Add initial and readout state options (ms=1, ms=0, ms=-1)
+#         #self.params['T1_initial_state'] = 'ms=0'
+#         #self.params['T1_readout_state'] = 'ms=0'
+
+#     def generate_sequence(self, upload=True, debug = False):
+
+#         ### define basic pulses/times ###
+#         # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
+#         X = pulselib.MW_IQmod_Switch_pulse('Pi-pulse',
+#             I_channel='MW_Imod', Q_channel='MW_Qmod',
+#             Sw_channel='MW_switch', Sw_Inv_channel='MW_invswitch',
+#             PM_channel='MW_pulsemod',
+#             frequency = self.params['MW_modulation_frequency'],
+#             PM_risetime = self.params['MW_pulse_mod_risetime'],
+#             length = self.params['fast_pi_duration'],
+#             amplitude = self.params['fast_pi_amp'])
+#         # Wait-times
+#         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+#             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
+#         T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+#             length = 100e-9, amplitude = 0.) #the unit waittime is 10e-6 s
+#         T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+#             length = 850e-9, amplitude = 0.) #the length of this time should depends on the pi-pulse \length/.
+#         # Trigger pulse
+#         Trig = pulse.SquarePulse(channel = 'adwin_sync',
+#         length = 5e-6, amplitude = 2)
+
+#         ### create the elements/waveforms from the basic pulses ###
+#         list_of_elements = []
+
+#         #Pi-pulse element/waveform
+#         e = element.Element('Pi_pulse',  pulsar=qt.pulsar,
+#                 global_time = True)
+#         e.append(T_before_p)
+#         e.append(pulse.cp(X))
+#         e.append(T_after_p)
+#         list_of_elements.append(e)
+
+#         #Wait time element/waveform
+#         e = element.Element('T1_wait_time',  pulsar=qt.pulsar,
+#                 global_time = True)
+#         e.append(T)
+#         list_of_elements.append(e)
+
+#         #Trigger element/waveform
+#         e = element.Element('ADwin_trigger',  pulsar=qt.pulsar,
+#                 global_time = True)
+#         e.append(Trig)
+#         list_of_elements.append(e)
+
+#         ### create sequences from the elements/waveforms ###
+#         seq = pulsar.Sequence('ElectronT1_sequence')
+
+#         for i in range(len(self.params['wait_times'])):
+
+#             if self.params['wait_times'][i]/self.params['wait_time_repeat_element'] !=0:
+#                 if self.params['T1_initial_state'] == 'ms=-1':
+#                     seq.append(name='Init_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
+#                     seq.append(name='ElectronT1_wait_time_%d'%i, wfname='T1_wait_time', trigger_wait=False,repetitions=self.params['wait_times'][i]/self.params['wait_time_repeat_element'])
+#                     if self.params['T1_readout_state'] == 'ms=-1':
+#                         seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=False)
+#                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
+#                 #elif self.params['T1_initial_state'] == 'ms=+1':
+
+#                 else:
+#                     seq.append(name='ElectronT1_wait_time_%d'%i, wfname='T1_wait_time', trigger_wait=True,repetitions=self.params['wait_times'][i]/self.params['wait_time_repeat_element'])
+#                     if self.params['T1_readout_state'] == 'ms=-1':
+#                         seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=False)
+#                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
+#             else:
+#                 if self.params['T1_initial_state'] == 'ms=-1' and self.params['T1_readout_state'] == 'ms=0':
+#                     seq.append(name='Init_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
+#                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
+#                 elif self.params['T1_readout_state'] == 'ms=-1' and self.params['T1_initial_state'] == 'ms=0':
+#                     seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
+#                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
+#                 #elif self.params['T1_initial_state'] == 'ms=+1' and self.params['T1_readout_state'] == 'ms=0':
+#                 #elif self.params['T1_readout_state'] == 'ms=+1' and self.params['T1_initial_state'] == 'ms=0':
+#                 else:
+#                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=True)
+
+#          # upload the waveforms to the AWG
+#         if upload:
+#             qt.pulsar.program_awg(seq,*list_of_elements, debug = debug)
+
+
 class ElectronT1(PulsarMeasurement):
 
     mprefix = 'ElectronT1'

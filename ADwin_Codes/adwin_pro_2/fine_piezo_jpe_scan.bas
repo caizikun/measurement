@@ -20,15 +20,17 @@
 
 ' scan settings
 DIM fpz1_DAC_ch, fpz2_DAC_ch, fpz3_DAC_ch as long
-DIM pd_ADC_ch, nr_steps, use_counter AS long
+DIM pd_ADC_ch, pd_ref_ADC_ch, nr_steps, use_counter AS long
 DIM start_voltage_1, start_voltage_2, start_voltage_3 as float
 DIM step_size, curr_volt_1, curr_volt_2, curr_volt_3 AS FLOAT
-DIM DAC_binary_voltage, ADC_binary_voltage as integer
+DIM DAC_binary_voltage, ADC_binary_voltage, ADC_binary_voltage_ref as integer
 'settings values passed from python:
 DIM DATA_200[8] as long
 DIM DATA_199[8] as float 'voltages: start, stop, stepsize
-'ourput data:
-DIM DATA_11[100000] AS FLOAT
+'output data:
+DIM DATA_11[100000] AS FLOAT 'photodiode voltage (signal)
+DIM DATA_12[100000] AS FLOAT 'photodiode voltage (reference)
+
 
 dim timer, mode, curr_step, i, wait_cycles as integer
 
@@ -42,20 +44,30 @@ INIT:
   fpz1_DAC_ch     = DATA_200[1] 'fine-tuning piezo jpe channel
   fpz2_DAC_ch     = DATA_200[2]
   fpz3_DAC_ch     = DATA_200[3]
-  pd_ADC_ch       = DATA_200[4] 'photodiode ADC channel
-  nr_steps        = DATA_200[5]
-  wait_cycles     = DATA_200[6]
-  use_counter     = DATA_200[7] '0 = photodiode, >0 = APD counter
+  pd_ADC_ch       = DATA_200[4] 'photodiode ADC channel (signal)
+  pd_ref_ADC_ch   = DATA_200[5] 'photodiode ADC channel (ref)
+  nr_steps        = DATA_200[6]
+  wait_cycles     = DATA_200[7]
+  use_counter     = DATA_200[8] '0 = photodiode, >0 = APD counter
      
   'Set initial DAC voltages
   P2_DAC(DAC_Module, fpz1_DAC_ch, start_voltage_1 * 3276.8 + 32768)
   P2_DAC(DAC_Module, fpz2_DAC_ch, start_voltage_2 * 3276.8 + 32768)
   P2_DAC(DAC_Module, fpz3_DAC_ch, start_voltage_3 * 3276.8 + 32768)
-   
+  
+  curr_volt_1 = start_voltage_1
+  curr_volt_2 = start_voltage_2
+  curr_volt_3 = start_voltage_3
+     
   'init data array
   FOR i = 1 TO nr_steps
     DATA_11[i] = 0
   NEXT i
+  FOR i = 1 TO nr_steps
+    DATA_12[i] = 0
+  NEXT i
+  
+  P2_SE_Diff(ADC_module,0) 'sets ADCs to be used as single-ended (default is differential)
   
   timer = -1
   mode = 0
@@ -70,9 +82,12 @@ EVENT:
     CASE 0 'read-out photodiode voltage
       if (timer>=0) then
         adc_binary_voltage = P2_ADC (ADC_module, pd_ADC_ch)
+        adc_binary_voltage_ref = P2_ADC (ADC_module, pd_ref_ADC_ch)
         DATA_11[curr_step] = (adc_binary_voltage-32768)/3276.8
+        DATA_12[curr_step] = (adc_binary_voltage_ref-32768)/3276.8
         FPar_5 = DATA_11[curr_step]
         Par_5 = curr_step
+        Par_6 = pd_ADC_ch
         timer = -wait_cycles
         mode = 1
       endif

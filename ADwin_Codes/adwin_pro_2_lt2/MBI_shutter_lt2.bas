@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -151,7 +151,7 @@ INIT:
 
   P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-  P2_DIGOUT (DIO_MOSULE, shutter_channel, 0)  'open shutter (check if 0 is correct)
+  P2_DIGOUT (DIO_MODULE, shutter_channel, 0)  'open shutter (check if 0 is correct)
   
   tmp = P2_Digin_Edge(DIO_MODULE,0)
   mode = 0

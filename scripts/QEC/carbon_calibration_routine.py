@@ -32,7 +32,7 @@ Carbon_1_f_msm1  		= True
 Carbon_2_f_msm1  		= False
 Carbon_5_f_msm1  		= True
 
-Carbon_1_self_phase		= True 
+Carbon_1_self_phase		= True
 Carbon_2_self_phase		= False
 Carbon_5_self_phase		= True
 
@@ -44,10 +44,10 @@ Carbon_5to1_crosstalk	= False
 Carbon_5to2_crosstalk	= False
 
 Carbon_phase_cal_1to2	= False
-Carbon_phase_cal_1to5	= True
+Carbon_phase_cal_1to5	= False
 Carbon_phase_cal_2to1	= False
 Carbon_phase_cal_2to5	= False
-Carbon_phase_cal_5to1	= True
+Carbon_phase_cal_5to1	= False
 Carbon_phase_cal_5to2	= False
 
 debug 					= False
@@ -91,11 +91,11 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['sweep_pts']  = m.params['free_evolution_time']
 
     '''Derived and fixed parameters'''
-
+	# 
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = carbon_init_state  
-
+    # m.params['electron_after_init'] = str(el_state)
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
@@ -115,7 +115,7 @@ def NuclearRamseyWithInitialization_phase(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 200
     m.params['C13_MBI_RO_state'] = el_state
     
     
@@ -132,6 +132,7 @@ def NuclearRamseyWithInitialization_phase(name,
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = carbon_init_state  
+    # m.params['electron_after_init'] = str(el_state)
 
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0

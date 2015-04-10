@@ -22,7 +22,11 @@ def optimize():
     for i in range(3):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
-        optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
+        if qt.current_setup=='lt4':
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=150, cycles =1)
+        else:
+            qt.instruments['optimiz0r'].optimize(dims=['z'],cnt=1, int_time=150, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=150, cycles =1)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
@@ -55,13 +59,14 @@ def bell_check_powers():
             qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
             if n == 'NewfocusAOM':
                 qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+            break
     qt.instruments['PMServo'].move_out()
     return all_fine
 
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 6
+        start_index = 7
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 

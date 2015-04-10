@@ -1,6 +1,6 @@
 pidtaper.save_cfg()
 pidtaper.stop()
-taper_local=True
+taper_local=False
 if taper_local:
     _getval_ta = lambda: ((wavemeter.Get_Frequency(wm_channel_ta)-470.40)*1e3) 
 else:

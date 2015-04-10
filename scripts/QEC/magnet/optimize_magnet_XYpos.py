@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     range_fine  = 0.40
     pts_fine    = 51   
-    reps_fine   = 1500 #1000
+    reps_fine   = 1500 # 3000 #1000
 
     ###########
     ## start ##
@@ -130,14 +130,14 @@ if __name__ == '__main__':
             #ms=-1 coarse
         if fine_only == False:
             DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', 
-                    range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9)
+                    range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9, mw_switch = True)
             f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='right')
             #ms=-1 fine
         
         DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+                pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    
@@ -151,13 +151,13 @@ if __name__ == '__main__':
             #ms=+1 coarse
         if fine_only == False:
             DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
-                    range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9)
+                    range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
             f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
                     qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='left')
                 #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
-                pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+                pulse_length = 8e-6, ssbmod_amplitude = 0.006, mw_switch = True)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
         f0p_temp = f0p_temp# - N_hyperfine*1e-9
 

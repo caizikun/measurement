@@ -293,7 +293,7 @@ if __name__ == '__main__':
         stools.reset_plu()
 
     if DoJitterCheck:
-        for i in range(1):
+        for i in range(2):
             jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
             print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
             if not jitterDetected:
@@ -310,11 +310,13 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
+        
         qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        full_bell('the_second_ever_day12_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        full_bell('the_third_ever_day3_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
         output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
         output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
         qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
+        
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
         #pulse_overlap('laser_pulse_shape')

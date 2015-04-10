@@ -187,7 +187,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                 pulse.cp(T, length=100e-9))
 
             e.append(
-                pulse.cp(Dephasing, length=self.params['MW_pulse_delays'][i]))
+                pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
 
             e.append(
                 pulse.cp(T, length=500e-9))
