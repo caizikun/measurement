@@ -63,7 +63,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
         self.setup_name = setup_name
         if 'lt3' in setup_name:
-            requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager!
+            requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
         self.par_counts_old          = np.zeros(10,dtype= np.int32)
         self.par_laser_old           = np.zeros(5,dtype= np.int32)
         
@@ -232,7 +232,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     print 'Bell script not running'
 
 
-            if self.qrng_voltage < 0.05 :
+            elif self.qrng_voltage < 0.05 :
                 self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
                 print self.status_message
                 self.set_invalid_data_marker(1)
@@ -292,7 +292,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.need_to_optimize_nf = False
                 self.nf_optimize_counter = 0
                 self.wait_counter = 1
-                self.set_invalid_data_marker(0)
+                #self.set_invalid_data_marker(0)
 
             elif self.strain > self.get_max_strain_splitting():
                 print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
