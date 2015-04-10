@@ -216,7 +216,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
             max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())
-            max_counter_for_nf_optimize = np.floor(np.float(self.get_nb_min_between_nf_optim()*60/self.get_read_interval()))
+
 
             #print 'script not running counter : ', self.script_not_running_counter
             self.publish_values()
@@ -232,7 +232,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     print 'Bell script not running'
 
 
-            if self.qrng_voltage < 0.05 :
+            elif self.qrng_voltage < 0.05 :
                 self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
                 print self.status_message
                 self.set_invalid_data_marker(1)
@@ -274,6 +274,9 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.set_invalid_data_marker(1)
                 self.yellow_optimize_counter +=1
                 if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
+                    if self.yellow_optimize_counter > self.get_max_counter_optimize()-2:
+                        self.optimize_nf()
+                        qt.msleep(3)
                     self.optimize_yellow()
                     self.wait_counter = 1
                     self.need_to_optimize_nf = True
@@ -284,22 +287,24 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.send_error_email(subject = subject, text = text)
                     self.set_failed()
 
-            elif (self.need_to_optimize_nf or (self.nf_optimize_counter > max_counter_for_nf_optimize)):
+            elif (self.need_to_optimize_nf or ((time.time()-self.nf_optimize_timer) > (self.get_nb_min_between_nf_optim()*60)) ):
                 self.status_message = 'The NewFocus needs to be optimized.'
                 print self.status_message
                 self.set_invalid_data_marker(1)
                 self.optimize_nf()
                 self.need_to_optimize_nf = False
-                self.nf_optimize_counter = 0
+                self.nf_optimize_timer = time.time()
                 self.wait_counter = 1
-                self.set_invalid_data_marker(0)
+                #self.set_invalid_data_marker(0)
 
             elif self.strain > self.get_max_strain_splitting():
-                print '\n The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
-                self.set_invalid_data_marker(1)
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
                 subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
                 self.send_error_email(subject = subject, text = text)
+                print text
+                self.set_invalid_data_marker(1)
+                self.wait_counter = 2
+                self.need_to_optimize_nf = True
                 
             elif self.SP_ref > self.get_max_SP_ref() :
                 if self.pulse_counts > self.get_max_pulse_counts():
@@ -339,7 +344,6 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.gate_optimize_counter = 0 
                 self.yellow_optimize_counter = 0
                 self.laser_rejection_counter = 0
-                self.nf_optimize_counter += 1
                 self.set_invalid_data_marker(0)
                 self.status_message = 'Relax, Im doing my job.'
                 print self.status_message 
@@ -447,7 +451,7 @@ class bell_optimizer(mo.multiple_optimizer):
         self.yellow_optimize_counter    = 0
         self.laser_rejection_counter    = 0
         self.need_to_optimize_nf        = False
-        self.nf_optimize_counter        = 0
+        self.nf_optimize_timer          = self._t0
         self.wait_counter               = 0
         self.flood_email_counter        = 0  
         self.repump_counts              = 0      
