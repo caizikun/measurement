@@ -19,9 +19,9 @@ import measurement.scripts.QEC.carbon_calibration_routine as CCR
 
 if __name__ == '__main__':
 	CCR.NuclearRamseyWithInitialization_cal(name, 
-	        carbon_nr           = 3,               
+	        carbon_nr           = 5,               
 	        carbon_init_state   = 'up', 
 	        el_RO               = 'positive',
-	        detuning            = 0.0e3,
+	        detuning            = 0.1e3,
 	        el_state            = 1,
 	        debug               = False)

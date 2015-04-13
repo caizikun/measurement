@@ -2620,7 +2620,7 @@ class MBI_C13(DynamicalDecoupling):
         Zeno_RO             = False,
         phase_error         = 10*[0]
         ):
-
+        print readout_orientation
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
         carbon_list             gives the order of the carbons that the measurement will be performed on
@@ -3712,19 +3712,19 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-class NuclearXY4(MBI_C13):
+class NuclearDD(MBI_C13):
     '''
     Made by Michiel based on NuclearHahnEchoWithInitialization
     This class is to measure Tcoh using XY4
     1. Nitrogen MBI initialisation
     2. MBI initialization nuclear spin
-    3. XY4^N
+    3. DD on carbons
     5. Pi/2 pulse on nuclear spin and read out in one function
     Start time pi pulse = tau - 0.5*time pi gate
 
-    Sequence: |N-MBI| -|CinitA|-|Wait t|-|Carbon pi|-|Wait t|-|Tomography|
+    Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
     '''
-    mprefix = 'NuclearXY4' #Changed
+    mprefix = 'NuclearDD' #Changed
     adwin_process = 'MBI_multiple_C13'
 
     def generate_sequence(self, upload=True, debug=False):
@@ -3753,39 +3753,111 @@ class NuclearXY4(MBI_C13):
             gate_seq.extend(carbon_init_seq)
 
             # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+            
             self.params['Carbon_pi_duration'] = 4 * self.params['C'+str(self.params['carbon_nr'])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_nr'])+'_Ren_tau'][0]
-            if self.params['Decoupling_pulses'] % 4 != 0:
-                raise Exception('Number of pulses must be dividable by 4')
-            else:
-                decoupling_repetitions = self.params['Decoupling_pulses'] / 2
-
-            if self.params['free_evolution_time'][pt] < self.params['Carbon_pi_duration']/2:
+            if self.params['C13_DD_Scheme'] != 'No_DD' and self.params['free_evolution_time'][pt] < self.params['Carbon_pi_duration']/2:
                 raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
                             % (2*self.params['free_evolution_time'][pt],self.params['Carbon_pi_duration']/2))
-            
-            # XY4^(N/4
-            for n in np.arange(1,decoupling_repetitions+1):
-                wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
-                C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-                        Carbon_ind =self.params['carbon_nr'],
-                        phase = self.params['C13_X_phase'])
-                C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-                        Carbon_ind =self.params['carbon_nr'],
-                        phase = self.params['C13_X_phase'])
-                wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
-                         wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
-                C_Echo_Y1 = Gate('C_echoY1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-                        Carbon_ind =self.params['carbon_nr'],
-                        phase = self.params['C13_X_phase'])
-                C_Echo_Y2 = Gate('C_echoY2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-                        Carbon_ind =self.params['carbon_nr'],
-                        phase = self.params['C13_X_phase'])
-                wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
-                XY2seq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
-                gate_seq.extend(XY2seq)
+
+            # #Make carbon pulses
+            # def C13_pi_phase(rep,pt,phase):
+            #     C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase'])
+            #     C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase'])
+            #     return [C_Echo_X1,C_Echo_X2]
+
+            # def C13_pi_mX(rep,pt):
+            #     C_Echo_mX1 = Gate('C_echomX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase']+180)
+            #     C_Echo_mX2 = Gate('C_echomX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase']+180)
+            #     return [C_Echo_X1,C_Echo_X2]
+
+            if self.params['C13_DD_Scheme'] == 'No_DD':
+                pass
+
+            elif self.params['C13_DD_Scheme'] == 'X':
+                decoupling_repetitions = self.params['Decoupling_pulses']
+
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate3]
+                    gate_seq.extend(DDseq)
+
+            elif self.params['C13_DD_Scheme'] == 'XY4':
+                if self.params['Decoupling_pulses'] % 4 != 0:
+                    raise Exception('Number of pulses must be dividable by 4')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                # XY4^(N/4
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_Y1 = Gate('C_echoY1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_Y2 = Gate('C_echoY2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
+                    gate_seq.extend(DDseq)
                
+            elif self.params['C13_DD_Scheme'] == 'XmX':
+                if self.params['Decoupling_pulses'] % 2 != 0:
+                    raise Exception('Number of pulses must be dividable by 2')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_mX1 = Gate('C_echomX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase']+180)
+                    C_Echo_mX2 = Gate('C_echomX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase']+180)
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_mX1,C_Echo_mX2,wait_gate3]
+                    gate_seq.extend(DDseq)     
+
+            else:
+                raise Exception('Choose a different C13 DD scheme')
+
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
@@ -4601,6 +4673,11 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
             ### Carbon initialization
             init_wait_for_trigger = True
             for kk in range(self.params['Nr_C13_init']):
+                print self.params['init_method_list'][kk]
+                print self.params['init_state_list'][kk]
+                print self.params['carbon_init_list'][kk]
+                print 
+
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
@@ -4622,11 +4699,10 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
                         RO_trigger_duration = 150e-6,
                         carbon_list         = self.params['carbon_list'],
                         RO_basis_list       = self.params['MBE_bases'],
-                        el_RO_result         = '0')
+                        nuel_RO_result         = '0')
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            ### Readout
 
             carbon_tomo_seq = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
@@ -4636,6 +4712,7 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases'][pt],
+                    el_state_in         = int(self.params['el_after_init']),
                     readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
 
