@@ -308,8 +308,8 @@ class AOM(Instrument):
 
     def calibrate(self, steps): # calibration values in uW
         rng = np.arange(0,steps)
-        x = np.zeros(steps,dtype = float)
-        y = np.zeros(steps,dtype = float)
+        x = np.zeros(steps, dtype = np.float64)
+        y = np.zeros(steps, dtype = np.float64)
         
         self.set_power(0)
         self._ins_pm.set_wavelength(self._wavelength)
@@ -334,33 +334,34 @@ class AOM(Instrument):
             print 'measured power at %.2f V: %.4f uW' % \
                     (x[a], y[a]*1e6)
         
-        #x= x*(V_max-V_min)/float(steps-1)+V_min 
-        a, xc, k = np.copysign(np.max(y), V_max + V_min), np.copysign(.1, V_max + V_min), np.copysign(5., V_max + V_min)
-        fitres = fit.fit1d(x,y, common.fit_AOM_powerdependence, 
+        yf=y*1e6
+        a, xc, k = (np.max(yf), np.copysign(.8, V_max + V_min), (V_max + V_min)/3.)
+        fitres = fit.fit1d(x,yf, common.fit_AOM_powerdependence, 
                 a, xc, k, do_print=True, ret=True)
 
         
         fd = np.zeros(len(x))
        
-        if fitres['success']==True:    
+        if fitres['success']:    
             p1 = fitres['params_dict']       
-            self.set_cal_a(p1['a'])
+            self.set_cal_a(p1['a']*1e-6)
             self.set_cal_xc(p1['xc'])
             self.set_cal_k(p1['k'])
             fd = fitres['fitfunc'](x)
         else:
+            print fitres['success']
             print 'could not fit calibration curve!'
         
         dat = qt.Data(name= 'aom_calibration_'+self._name+'_'+\
                 self._cur_controller)
         dat.add_coordinate('Voltage [V]')
-        dat.add_value('Power [W]')
+        dat.add_value('Power [uW]')
         dat.add_value('fit')
         dat.create_file()
         plt = qt.Plot2D(dat, 'rO', name='aom calibration', coorddim=0, valdim=1, 
                 clear=True)
         plt.add_data(dat, coorddim=0, valdim=2)
-        dat.add_data_point(x,y,fd)
+        dat.add_data_point(x,yf,fd)
         dat.close_file()
         plt.save_png(dat.get_filepath()+'png')
 
