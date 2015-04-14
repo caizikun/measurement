@@ -25,17 +25,17 @@ n = 1
 #######################################################
 
 Carbon_1_f_ms0  		= True
-Carbon_2_f_ms0  		= False
+Carbon_2_f_ms0  		= True
 Carbon_3_f_ms0  		= False
 Carbon_5_f_ms0  		= True
 
 Carbon_1_f_msm1  		= True
-Carbon_2_f_msm1  		= False
+Carbon_2_f_msm1  		= True
 Carbon_3_f_msm1  		= False
 Carbon_5_f_msm1  		= True
 
 Carbon_1_self_phase		= True
-Carbon_2_self_phase		= False
+Carbon_2_self_phase		= True
 Carbon_3_self_phase		= False
 Carbon_5_self_phase		= True
 

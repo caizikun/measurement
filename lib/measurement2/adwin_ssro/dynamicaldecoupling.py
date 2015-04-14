@@ -7765,7 +7765,7 @@ class Zeno_OneQB(MBI_C13):
             ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
 
-                self.params['parity_duration']=0 ### this parameter is later used for data analysis.
+                self.params['parity_duration'] = 0 ### this parameter is later used for data analysis.
 
                 if self.params['free_evolution_time'][pt]!=0:
                     if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6

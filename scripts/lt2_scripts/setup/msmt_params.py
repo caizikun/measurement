@@ -180,8 +180,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C1_freq'       :   450.301e3,
-'C1_freq_0' : 431945.0,
-'C1_freq_1' : 469003.2,
+'C1_freq_0' : 431945.1,
+'C1_freq_1' : 469005.7,
 'C1_gate_optimize_tau_list' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
 'C1_gate_optimize_N_list': [40,34,36,32,34,36,34,36,42],
@@ -197,7 +197,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C1_Ren_tau'    :   [4.996e-6],
 'C1_Ren_N'      :   [34],
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [10.9] + [79.1] + [0.0] + [0.0] + [29.3] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [16.7] + [79.1] + [0.0] + [0.0] + [22.7] + [0.0] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
@@ -205,7 +205,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C2_freq'       :   421.814e3,  
 'C2_freq_0'     :   431.945e3,  
-'C2_freq_1'     :   413.452e3,
+'C2_freq_1'     :   413.455e3,
 'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
@@ -218,9 +218,9 @@ cfg['samples']['111_1_sil18'] = {
 # 'C2_Ren_N'      :   [28],
 # 'C2_Ren_extra_phase_correction_list' : np.array([0]+[42.68]+[-42.6+180]+[0]*2+[67.33]+[0]*4), 
 
-'C2_Ren_tau'    :   [13.616e-6],
+'C2_Ren_tau'    :   [13.614e-6],
 'C2_Ren_N'      :   [34],
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[-0.1]+[15.6+180.]+[0]*2+[3.7]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[-0.1]+[177.9]+[0]*2+[3.7]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
 
 
     ################
@@ -254,8 +254,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C5_freq'       :   419.894e3,
-'C5_freq_0' : 431920.4,
-'C5_freq_1' : 408296.7,
+'C5_freq_0' : 431925.4,
+'C5_freq_1' : 408299.3,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -280,8 +280,8 @@ cfg['samples']['111_1_sil18'] = {
 'C5_uncond_tau' :   [(9.52)*1e-6],
 'C5_uncond_pi_N':   [94],
 'C5_Ren_tau'    :   [11.31e-6],
-'C5_Ren_N'      :   [48],
-'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [74.4] + [-81.3] + [0.0] + [0.0] + [69.1] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_N'      :   [50],
+'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [74.3] + [-81.3] + [0.0] + [0.0] + [75.8] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
     ### Carbon 6
@@ -310,7 +310,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 5e-9,    # 5e-9
-'Ex_RO_amplitude': 3e-9,    # 15e-9,   
+'Ex_RO_amplitude': 3e-9,#3e-9,    # 15e-9,   
 'Ex_SP_amplitude': 0e-9,    # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
 'SP_duration'    : 150,     # 400 THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 500,     # only for specific scripts
@@ -380,13 +380,13 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 # Pulses short with switch 
 # #     ### Pi pulses, fast & hard 
 'fast_pi_duration'          :  116e-9,    #250 MHz slow
-'fast_pi_amp'               : 0.458870 ,  #250 MHz, slow
+'fast_pi_amp'               : 0.455237 ,  #250 MHz, slow
 'fast_pi_mod_frpq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
 'fast_pi2_duration'         :   56e-9,#56e-9, #should be divisible by 4, slow
-'fast_pi2_amp'              :   0.487477 , # slow, only calibrated with 2 pulses
+'fast_pi2_amp'              :   0.477536 , # slow, only calibrated with 2 pulses
 'fast_pi2_mod_frq'          :   f_mod_0,
 
 # # Pulses calibrated short without switch
@@ -462,7 +462,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 #C13-MBI  
 'C13_MBI_threshold_list':               [1],
 'C13_MBI_RO_duration':                  60,  
-'E_C13_MBI_RO_amplitude':               0.75e-9, #this was 0.3e-9 NK 20150316
+'E_C13_MBI_RO_amplitude':               0.5e-9, #this was 0.3e-9 NK 20150316
 'SP_duration_after_C13':                300, #300 in case of swap init! 
 'A_SP_amplitude_after_C13_MBI':         30e-9, # was 15e-9
 'E_SP_amplitude_after_C13_MBI':         0e-9,
@@ -471,7 +471,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 #C13-MBE  
 'MBE_threshold':                        1,
 'MBE_RO_duration':                      40, # was 40 20150329
-'E_MBE_RO_amplitude':                   0.55e-9, #this was 0.35e-9 NK 20150316
+'E_MBE_RO_amplitude':                   0.5e-9, #this was 0.35e-9 NK 20150316
 'SP_duration_after_MBE':                30,
 'A_SP_amplitude_after_MBE':             15e-9,
 'E_SP_amplitude_after_MBE':             0e-9 ,
