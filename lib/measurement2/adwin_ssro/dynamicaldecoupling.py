@@ -3712,6 +3712,287 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class NuclearDD_NEW(MBI_C13):
+    '''
+    Made by Michiel based on NuclearHahnEchoWithInitialization
+    This class is to measure Tcoh using XY4
+    1. Nitrogen MBI initialisation
+    2. MBI initialization nuclear spin
+    3. DD on carbons
+    5. Pi/2 pulse on nuclear spin and read out in one function
+    Start time pi pulse = tau - 0.5*time pi gate
+
+    Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
+
+    Pulse sequences
+    X (x)^n
+    XmX (x mx)^n
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
+
+    '''
+    mprefix = 'NuclearDD' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+    # def C_pi(nr, rep, pt, phase, carbon_nr = self.params['carbon_nr']):
+    #     if phase == 'X':
+    #         C_phase = self.params['C13_X_phase']
+    #     elif phase == 'mX':
+    #         C_phase = self.params['C13_X_phase']+180
+    #     elif phase == 'Y':
+    #         C_phase = self.params['C13_Y_phase']
+    #     elif phase == 'mY':
+    #         C_phase = self.params['C13_Y_phase']+180
+    #     else:
+    #         raise Exception('Carbon Gate phase not recognized')
+
+    #     Pi_part_1 = Gate('C' + str(carbon_nr) + '_pi' + phase + '1_' + str(nr) + '_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind = carbon_nr,
+    #             phase = C_phase)
+    #     Pi_part_2 = Gate('C' + str(carbon_nr) + '_pi' + phase +  '2_' + str(nr) + '_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind = carbon_nr,
+    #             phase = C_phase)
+    #     return [Pi_part_1, Pi_part_2]
+    
+
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+        self.params['Carbon_pi_duration'] = 4 * self.params['C'+str(self.params['carbon_nr'])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_nr'])+'_Ren_tau'][0]
+            if self.params['C13_DD_Scheme'] != 'No_DD' and min(self.params['free_evolution_time']) < self.params['Carbon_pi_duration']/2:
+                raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
+                            % (2*min(self.params['free_evolution_time']),self.params['Carbon_pi_duration']/2))
+
+
+        # if self.params['C13_DD_Scheme'] == 'XYauto':
+        #     if self.params['Decoupling_pulses'] % 16 != 0:
+        #         self.params['C13_DD_Scheme'] == 'XY16'
+        #     elif self.params['Decoupling_pulses'] % 8 != 0:
+        #         self.params['C13_DD_Scheme'] == 'XY8'
+        #     elif self.params['Decoupling_pulses'] % 4 != 0:
+        #         self.params['C13_DD_Scheme'] == 'XY4'
+        #     elif self.params['Decoupling_pulses'] % 2 != 0:
+        #         self.params['C13_DD_Scheme'] == 'XmX'
+        #     elif self.params['Decoupling_pulses'] % 1 != 0:
+        #         self.params['C13_DD_Scheme'] == 'X'
+        #     elif self.params['Decoupling_pulses'] % 0 != 0:
+        #         self.params['C13_DD_Scheme'] == 'No_DD'
+
+        DDseq = []
+
+        if self.params['C13_DD_Scheme'] == 'auto':
+            reps, pulses_remaining = divmod(self.params['Decoupling_pulses'],16)
+            DDseq.extend(reps*['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+            if pulses_remaining >= 8:
+                pulses_remaining -= 8
+                DDseq.extend(['X', 'Y', 'X', 'Y', 'Y', 'X', 'Y', 'X'])
+            if pulses_remaining >= 4:
+                pulses_remaining -= 4
+                DDseq.extend(['X','Y','X','Y'])
+            if pulses_remaining >= 2:
+                pulses_remaining -= 2
+                DDseq.extend(['X','mX'])
+            if pulses_remaining >= 1:
+                pulses_remaining -= 1
+                DDseq.extend(['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'No_DD':
+            pass
+
+        elif self.params['C13_DD_Scheme'] == 'X':
+            DDseq.extend(self.params['Decoupling_pulses']*['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY4':
+            if self.params['Decoupling_pulses'] % 4 != 0:
+                raise Exception('Number of pulses must be dividable by 4')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','Y'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY8':
+            if self.params['Decoupling_pulses'] % 8 != 0:
+                raise Exception('Number of pulses must be dividable by 8')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 8) * ['X','Y','X','Y','Y','X','Y','X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY16':
+            if self.params['Decoupling_pulses'] % 16 != 0:
+                raise Exception('Number of pulses must be dividable by 16')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 16) * ['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+        
+        elif self.params['C13_DD_Scheme'] == 'XmX':
+            if self.params['Decoupling_pulses'] % 2 != 0:
+                raise Exception('Number of pulses must be dividable by 2')
+            else:
+                decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+            for n in np.arange(1,decoupling_repetitions+1):
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','mX'])
+
+        else:
+            raise Exception('Choose a different C13 DD scheme')
+
+     
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization GOOD initializes in |+X>
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init         = str(self.params['el_after_init']))
+            gate_seq.extend(carbon_init_seq)
+
+
+
+            # if self.params['C13_DD_Scheme'] == 'No_DD':
+            #     pass
+
+            # elif self.params['C13_DD_Scheme'] == 'X':
+            #     decoupling_repetitions = self.params['Decoupling_pulses']
+
+            #     for n in np.arange(1,decoupling_repetitions+1):
+            #         DDseq.extend(C_pi(1, n, pt, 'X'))
+
+            # elif self.params['C13_DD_Scheme'] == 'XY4':
+            #     if self.params['Decoupling_pulses'] % 4 != 0:
+            #         raise Exception('Number of pulses must be dividable by 4')
+            #     else:
+            #         decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+            #     for n in np.arange(1,decoupling_repetitions+1):
+            #         DDseq.extend(C_pi(1, n, pt, 'X'), C_pi(1, n, pt, 'Y'))
+
+            # elif self.params['C13_DD_Scheme'] == 'XY8':
+            #     if self.params['Decoupling_pulses'] % 8 != 0:
+            #         raise Exception('Number of pulses must be dividable by 8')
+            #     else:
+            #         decoupling_repetitions = self.params['Decoupling_pulses'] / 8
+
+            #     for n in np.arange(1,decoupling_repetitions+1):
+            #         DDseq.extend(C_pi(1, n, pt, 'X'), C_pi(1, n, pt, 'Y'), C_pi(2, n, pt, 'X'), C_pi(2, n, pt, 'Y'), \
+            #             C_pi(3, n, pt, 'Y'), C_pi(3, n, pt, 'X'), C_pi(4, n, pt, 'Y'), C_pi(4, n, pt, 'X'))
+
+            # elif self.params['C13_DD_Scheme'] == 'XY16':
+            #     if self.params['Decoupling_pulses'] % 16 != 0:
+            #         raise Exception('Number of pulses must be dividable by 16')
+            #     else:
+            #         decoupling_repetitions = self.params['Decoupling_pulses'] / 16
+
+            #     for n in np.arange(1,decoupling_repetitions+1):
+            #         DDseq.extend(C_pi(1, n, pt, 'X'), C_pi(1, n, pt, 'Y'), C_pi(2, n, pt, 'X'), C_pi(2, n, pt, 'Y'), \
+            #             C_pi(3, n, pt, 'Y'), C_pi(3, n, pt, 'X'), C_pi(4, n, pt, 'Y'), C_pi(4, n, pt, 'X'), \
+            #             C_pi(1, n, pt, 'mX'), C_pi(1, n, pt, 'mY'), C_pi(2, n, pt, 'mX'), C_pi(2, n, pt, 'mY'), \
+            #             C_pi(3, n, pt, 'mY'), C_pi(3, n, pt, 'mX'), C_pi(4, n, pt, 'mY'), C_pi(4, n, pt, 'mX'))
+       
+            # elif self.params['C13_DD_Scheme'] == 'XmX':
+            #     if self.params['Decoupling_pulses'] % 2 != 0:
+            #         raise Exception('Number of pulses must be dividable by 2')
+            #     else:
+            #         decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+            #     for n in np.arange(1,decoupling_repetitions+1):
+            #         DDseq.extend(C_pi(1, n, pt, 'X'), C_pi(1, n, pt, '-X'))
+
+            # else:
+            #     raise Exception('Choose a different C13 DD scheme')
+
+            
+            wait_gate = (Gate('Wait_gate_start_pt'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.))
+            gate_seq.extend([wait_gate])
+
+            if len(DDseq) > 0:
+                for gate_nr, gate in enumerate(DDseq, start=1):
+                    if gate_nr > 1:
+                        wait_gate = Gate('Wait_gate' + str(gate_nr) + '_pt'+str(pt),'passive_elt',
+                                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                        gate_seq.extend([wait_gate])
+
+                    if gate == 'X':
+                        C_phase = self.params['C13_X_phase']
+                    elif gate == 'mX':
+                        C_phase = self.params['C13_X_phase']+180
+                    elif gate == 'Y':
+                        C_phase = self.params['C13_Y_phase']
+                    elif gate == 'mY':
+                        C_phase = self.params['C13_Y_phase']+180
+                    else:
+                        raise Exception('Carbon Gate '+ Gate +' not recognized')
+
+                    Pi_part_1 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate + '1_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind = self.params['carbon_nr'],
+                            phase = C_phase)
+                    Pi_part_2 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate +  '2_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind = self.params['carbon_nr'],
+                            phase = C_phase)
+                    gate_seq.extend([Pi_part_1, Pi_part_2])
+                wait_gate = Gate('Wait_gate_end_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                gate_seq.extend([wait_gate])
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    el_state_in         = self.params['el_after_init'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 class NuclearDD(MBI_C13):
     '''
     Made by Michiel based on NuclearHahnEchoWithInitialization
@@ -3723,9 +4004,29 @@ class NuclearDD(MBI_C13):
     Start time pi pulse = tau - 0.5*time pi gate
 
     Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
+
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
     '''
     mprefix = 'NuclearDD' #Changed
     adwin_process = 'MBI_multiple_C13'
+
+
+    def C13_pi(rep,pt,phase,nr=1):
+        if phase = 
+        C_Echo_1 = Gate('C_echoX'+ str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+                Carbon_ind =self.params['carbon_nr'],
+                phase = self.params['C13_X_phase'])
+        C_Echo_2 = Gate('C_echoX' + str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+                Carbon_ind =self.params['carbon_nr'],
+                phase = self.params['C13_X_phase'])
+        return [C_Echo_X1,C_Echo_X2]
+
+    def free_evolution(rep,pt,nr=1,tau=1):
+        wait_gate = Gate('Wait_gate' + str(nr) '_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+        return wait_gate
 
     def generate_sequence(self, upload=True, debug=False):
         pts = self.params['pts']
@@ -3759,15 +4060,8 @@ class NuclearDD(MBI_C13):
                 raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
                             % (2*self.params['free_evolution_time'][pt],self.params['Carbon_pi_duration']/2))
 
-            # #Make carbon pulses
-            # def C13_pi_phase(rep,pt,phase):
-            #     C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-            #             Carbon_ind =self.params['carbon_nr'],
-            #             phase = self.params['C13_X_phase'])
-            #     C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
-            #             Carbon_ind =self.params['carbon_nr'],
-            #             phase = self.params['C13_X_phase'])
-            #     return [C_Echo_X1,C_Echo_X2]
+            #Make carbon pulses
+            
 
             # def C13_pi_mX(rep,pt):
             #     C_Echo_mX1 = Gate('C_echomX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
@@ -3826,6 +4120,36 @@ class NuclearDD(MBI_C13):
                              wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
                     DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
                     gate_seq.extend(DDseq)
+
+
+            elif self.params['C13_DD_Scheme'] == 'XY8':
+                if self.params['Decoupling_pulses'] % 8 != 0:
+                    raise Exception('Number of pulses must be dividable by 8')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                # XY4^(N/4
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_Y1 = Gate('C_echoY1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_Y2 = Gate('C_echoY2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
+                    gate_seq.extend(DDseq)
                
             elif self.params['C13_DD_Scheme'] == 'XmX':
                 if self.params['Decoupling_pulses'] % 2 != 0:
@@ -3857,6 +4181,8 @@ class NuclearDD(MBI_C13):
 
             else:
                 raise Exception('Choose a different C13 DD scheme')
+        
+
 
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
