@@ -139,111 +139,134 @@ def qstop():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
 
-def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['positive'],optimize=True, ssrocalib=True):
+def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['positive'],optimize=True, ssrocalib=True, 
+    Max_FET_Dict = {'1': 1.3,'4': 2.25,'8': 3.0,'16': 5.,'32': 7.}, timepart_Dict ={'1': 1,'4': 2,'8': 4,'16': 8,'32': 8},
+    debug=False, datapoints = 8, time_min= 20e-3):
+    counter = 0
     for carbon in carbons:
         if qstop():
             break
         for pulses in pulses_list:
             if qstop():
                 break
+            FET = np.linspace(max(time_min/(2*pulses),1.5e-3),Max_FET_Dict[str(pulses)]/(2*pulses),datapoints)
+            print FET
+            indexer = datapoints/timepart_Dict[str(pulses)]
             for el_RO in el_ROs:
                 if qstop():
                     break
-                if ssrocalib:
+                for timepart in range(timepart_Dict[str(pulses)]):
+                    if qstop():
+                        break
+                    if ssrocalib and not debug:
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        ssrocalibration(SAMPLE)
+                    if optimize and not debug:
+                        GreenAOM.set_power(20e-6)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+                    if ssrocalib and not debug:
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        ssrocalibration(SAMPLE)
+                    counter +=1    
                     adwin.start_set_dio(dio_no=4,dio_val=0)
-                    ssrocalibration(SAMPLE)
-                if optimize:
-                    GreenAOM.set_power(20e-6)
-                    adwin.start_set_dio(dio_no=4,dio_val=0)
-                    optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-                if ssrocalib:
-                    adwin.start_set_dio(dio_no=4,dio_val=0)
-                    ssrocalibration(SAMPLE)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                msmtstr = SAMPLE+'_'+ DD_scheme +'_C'+str(carbon) +'_RO' + el_RO + '_N' + str(pulses)
-                Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, C13_DD_scheme=DD_scheme)
-
+                    msmtstr = SAMPLE+'_'+ DD_scheme +'_C'+str(carbon) +'_RO' + el_RO + '_N' + str(pulses).zfill(2) + '_part' + str(timepart+1)
+                    # Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET[timepart*indexer:(timepart+1)*indexer])
+                    print "Counter", counter
         
 
 if __name__ == '__main__':
     carbon = 2
 
-    Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[carbon],pulses_list=[1,4],el_ROs=['positive','negative'],optimize=True)
+    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[carbon],pulses_list=[1,4,8,16,32],el_ROs=['positive','negative'],debug=False)
+
+    aasadad
+    # Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[carbon],pulses_list=[1,4],el_ROs=['positive','negative'],optimize=True)
     
     el_ROs=['positive','negative']
 
-    FET = np.linspace(1.5e-3,200e-3,8)
-    for el_RO in el_ROs:
-        if qstop():
-            break 
-        for timepart in range(2):
-            if qstop():
-                break     
-            msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N8' + '_part' + str(timepart+1) 
-            GreenAOM.set_power(25e-6)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 8, C13_DD_scheme='XY4', free_evolution_time= FET[timepart*4:timepart*4+4])
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
+    # Max_FET_Dict = {'1': 1.3,'4': 2.25,'8': 3.0,'16': 5.,'32': 7.}
+    # timepart_Dict ={'1': 1,'4': 2,'8': 4,'16': 8,'32': 8}
 
-    FET = np.linspace(1.5e-3,5.0/(2.*16),8)
-    for el_RO in el_ROs:
-        if qstop():
-            break 
-        for timepart in range(4):
-            if qstop():
-                break     
-            msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N16' + '_part' + str(timepart+1) 
-            GreenAOM.set_power(25e-6)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 16, C13_DD_scheme='XY4', free_evolution_time= FET[timepart*2:timepart*2+2])
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
+    # for pulses in [1,4,8,16,32]
+    #     linsp = np.linspace(max(10e-3/(2*pulses),1.5e-3),Max_FET_Dict[str(pulses)],8)
+    #     len(linsp)*
+    
+    # time_min = 20e-3
 
-    FET = np.linspace(1.5e-3,6.5/(2.*32),8)
-    for el_RO in el_ROs:
-        if qstop():
-            break 
-        for timepart in range(8):
-            if qstop():
-                break     
-            msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N32' + '_part' + str(timepart+1) 
-            GreenAOM.set_power(25e-6)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 32, C13_DD_scheme='XY4', free_evolution_time= np.ones((1))*FET[timepart])
-            adwin.start_set_dio(dio_no=4,dio_val=0)
-            ssrocalibration(SAMPLE)
 
-    if carbon == 3:
-        FET = np.linspace(1.5e-3,8.5/(2.*64),8)
-        for el_RO in el_ROs:
-            if qstop():
-                break 
-            for timepart in range(8):
-                if qstop():
-                    break     
-                msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N64' + '_part' + str(timepart+1) 
-                GreenAOM.set_power(25e-6)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                ssrocalibration(SAMPLE)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 64, C13_DD_scheme='XY4', free_evolution_time= np.ones((1))*FET[timepart])
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                ssrocalibration(SAMPLE)
+    # FET = np.linspace(1.5e-3,200e-3,8)
+    # for el_RO in el_ROs:
+    #     if qstop():
+    #         break 
+    #     for timepart in range(2):
+    #         if qstop():
+    #             break     
+    #         msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N8' + '_part' + str(timepart+1) 
+    #         GreenAOM.set_power(25e-6)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 8, C13_DD_scheme='XY4', free_evolution_time= FET[timepart*4:timepart*4+4])
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+
+    # FET = np.linspace(1.5e-3,5.0/(2.*16),8)
+    # for el_RO in el_ROs:
+    #     if qstop():
+    #         break 
+    #     for timepart in range(4):
+    #         if qstop():
+    #             break     
+    #         msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N16' + '_part' + str(timepart+1) 
+    #         GreenAOM.set_power(25e-6)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 16, C13_DD_scheme='XY4', free_evolution_time= FET[timepart*2:timepart*2+2])
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+
+    # FET = np.linspace(1.5e-3,6.5/(2.*32),8)
+    # for el_RO in el_ROs:
+    #     if qstop():
+    #         break 
+    #     for timepart in range(8):
+    #         if qstop():
+    #             break     
+    #         msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N32' + '_part' + str(timepart+1) 
+    #         GreenAOM.set_power(25e-6)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 32, C13_DD_scheme='XY4', free_evolution_time= np.ones((1))*FET[timepart])
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         ssrocalibration(SAMPLE)
+
+    # if carbon == 3:
+    #     FET = np.linspace(1.5e-3,8.5/(2.*64),8)
+    #     for el_RO in el_ROs:
+    #         if qstop():
+    #             break 
+    #         for timepart in range(8):
+    #             if qstop():
+    #                 break     
+    #             msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N64' + '_part' + str(timepart+1) 
+    #             GreenAOM.set_power(25e-6)
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             ssrocalibration(SAMPLE)
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = 64, C13_DD_scheme='XY4', free_evolution_time= np.ones((1))*FET[timepart])
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             ssrocalibration(SAMPLE)
 
     execfile(r'D:\measuring\measurement\scripts\QEC\NuclearT1_2.py')
 

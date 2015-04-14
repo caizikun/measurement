@@ -2620,7 +2620,7 @@ class MBI_C13(DynamicalDecoupling):
         Zeno_RO             = False,
         phase_error         = 10*[0]
         ):
-        print readout_orientation
+        
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
         carbon_list             gives the order of the carbons that the measurement will be performed on
@@ -3712,7 +3712,7 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-class NuclearDD_NEW(MBI_C13):
+class NuclearDD(MBI_C13):
     '''
     Made by Michiel based on NuclearHahnEchoWithInitialization
     This class is to measure Tcoh using XY4
@@ -3766,24 +3766,9 @@ class NuclearDD_NEW(MBI_C13):
 
         # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
         self.params['Carbon_pi_duration'] = 4 * self.params['C'+str(self.params['carbon_nr'])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_nr'])+'_Ren_tau'][0]
-            if self.params['C13_DD_Scheme'] != 'No_DD' and min(self.params['free_evolution_time']) < self.params['Carbon_pi_duration']/2:
-                raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
-                            % (2*min(self.params['free_evolution_time']),self.params['Carbon_pi_duration']/2))
-
-
-        # if self.params['C13_DD_Scheme'] == 'XYauto':
-        #     if self.params['Decoupling_pulses'] % 16 != 0:
-        #         self.params['C13_DD_Scheme'] == 'XY16'
-        #     elif self.params['Decoupling_pulses'] % 8 != 0:
-        #         self.params['C13_DD_Scheme'] == 'XY8'
-        #     elif self.params['Decoupling_pulses'] % 4 != 0:
-        #         self.params['C13_DD_Scheme'] == 'XY4'
-        #     elif self.params['Decoupling_pulses'] % 2 != 0:
-        #         self.params['C13_DD_Scheme'] == 'XmX'
-        #     elif self.params['Decoupling_pulses'] % 1 != 0:
-        #         self.params['C13_DD_Scheme'] == 'X'
-        #     elif self.params['Decoupling_pulses'] % 0 != 0:
-        #         self.params['C13_DD_Scheme'] == 'No_DD'
+        if self.params['C13_DD_Scheme'] != 'No_DD' and min(self.params['free_evolution_time']) < self.params['Carbon_pi_duration']/2:
+            raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
+                        % (2*min(self.params['free_evolution_time']),self.params['Carbon_pi_duration']/2))
 
         DDseq = []
 
@@ -3839,7 +3824,9 @@ class NuclearDD_NEW(MBI_C13):
         else:
             raise Exception('Choose a different C13 DD scheme')
 
-     
+        print DDseq
+        print self.params['free_evolution_time']
+
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
@@ -3938,7 +3925,7 @@ class NuclearDD_NEW(MBI_C13):
                     Pi_part_1 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate + '1_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
                             Carbon_ind = self.params['carbon_nr'],
                             phase = C_phase)
-                    Pi_part_2 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate +  '2_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                    Pi_part_2 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate + '2_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
                             Carbon_ind = self.params['carbon_nr'],
                             phase = C_phase)
                     gate_seq.extend([Pi_part_1, Pi_part_2])
@@ -3973,18 +3960,18 @@ class NuclearDD_NEW(MBI_C13):
                 for g in gate_seq:
                     print g.name
 
-            if debug:
-                for g in gate_seq:
-                    print g.name
-                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
+            #         if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+            #             print "[ None]"
+            #         else:
+            #             print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
 
-                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+            #         if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+            #             print "[ None]"
+            #         else:
+            #             print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
 
         if upload:
             print ' uploading sequence'
@@ -3993,7 +3980,7 @@ class NuclearDD_NEW(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-class NuclearDD(MBI_C13):
+class NuclearDD_OLD(MBI_C13):
     '''
     Made by Michiel based on NuclearHahnEchoWithInitialization
     This class is to measure Tcoh using XY4
@@ -4013,20 +4000,20 @@ class NuclearDD(MBI_C13):
     adwin_process = 'MBI_multiple_C13'
 
 
-    def C13_pi(rep,pt,phase,nr=1):
-        if phase = 
-        C_Echo_1 = Gate('C_echoX'+ str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
-                Carbon_ind =self.params['carbon_nr'],
-                phase = self.params['C13_X_phase'])
-        C_Echo_2 = Gate('C_echoX' + str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
-                Carbon_ind =self.params['carbon_nr'],
-                phase = self.params['C13_X_phase'])
-        return [C_Echo_X1,C_Echo_X2]
+    # def C13_pi(rep,pt,phase,nr=1):
+    #     if phase = 
+    #     C_Echo_1 = Gate('C_echoX'+ str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind =self.params['carbon_nr'],
+    #             phase = self.params['C13_X_phase'])
+    #     C_Echo_2 = Gate('C_echoX' + str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind =self.params['carbon_nr'],
+    #             phase = self.params['C13_X_phase'])
+    #     return [C_Echo_X1,C_Echo_X2]
 
-    def free_evolution(rep,pt,nr=1,tau=1):
-        wait_gate = Gate('Wait_gate' + str(nr) '_rep'+str(n)+'_pt'+str(pt),'passive_elt',
-                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
-        return wait_gate
+    # def free_evolution(rep,pt,nr=1,tau=1):
+    #     wait_gate = Gate('Wait_gate' + str(nr) '_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+    #                          wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+    #     return wait_gate
 
     def generate_sequence(self, upload=True, debug=False):
         pts = self.params['pts']

@@ -33,7 +33,7 @@ def NuclearT1_2(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 200
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
