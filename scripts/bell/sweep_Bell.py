@@ -263,7 +263,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail') 
+    SAMPLE_CFG = qt.exp_params['protocols']['current']
+    #tail_sweep('tail') 
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('test')
+    rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))

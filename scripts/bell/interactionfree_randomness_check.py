@@ -1,8 +1,6 @@
 import msvcrt
 import qt
 import numpy as np
-import sweep_Bell
-reload(sweep_Bell)
 
 def optimize():
     print 'Starting to optimize.'
@@ -67,21 +65,29 @@ def bell_check_powers():
 
 if __name__ == '__main__':
 	#stools.start_bs_counter()
-    SAMPLE_CFG = qt.exp_params['protocols']['current']
     start_index = 1
-    cycles=24
+    cycles=100
     for i in range(start_index,start_index+cycles):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
-        qt.instruments['lt4_helper'].set_is_running(True)
-        sweep_Bell.rnd_echo_ro(SAMPLE_CFG+'_'+str(i))
-        qt.instruments['lt4_helper'].set_is_running(False)
+        if qt.current_setup=='lt4':
+            qt.instruments['lt4_helper'].set_is_running(True)
+        else:
+            qt.instruments['remote_measurement_helper'].set_script_path('bell_lt3.py')
+            qt.instruments['remote_measurement_helper'].set_is_running(True)
+        qt.bell_name_index = i
+        execfile(r'sweep_Bell.py')
+        if qt.current_setup=='lt4':
+            qt.instruments['lt4_helper'].set_is_running(False)
+        else:
+            qt.instruments['remote_measurement_helper'].set_is_running(False)
 
         qt.msleep(10)
-        execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
-        lt4_succes = optimize()
-        qt.msleep(5)
+        if i%10 ==0:
+            execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
+            lt4_succes = optimize()
+            qt.msleep(5)
                   
-        if not(lt4_succes):
-            break  #cycle is ~1 Hour
+            if not(lt4_succes):
+                break  #cycle is ~1 Hour
     #stools.stop_bs_counter()
