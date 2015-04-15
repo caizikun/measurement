@@ -16,13 +16,11 @@ class bell_optimizer(mo.multiple_optimizer):
     def __init__(self, name, setup_name='lt4'):
         mo.multiple_optimizer.__init__(self, name)
         
-        ins_pars  = {'min_starts'                :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
-                    'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10},
+        ins_pars  ={'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10},
                     'min_repump_counts'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     'max_counter_optimize'       :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'rejecter_step'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
                     'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
-                    'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
                     'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
@@ -121,6 +119,7 @@ class bell_optimizer(mo.multiple_optimizer):
              'script_running'   : self.script_running,
              'invalid_marker'   : self.get_invalid_data_marker(),
              'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
+             'ent_events'       : self.entanglement_events,
              })
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
@@ -191,6 +190,7 @@ class bell_optimizer(mo.multiple_optimizer):
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
             self.repumps = par_counts[1]
             self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
+            self.entanglement_events = self.par_counts_old[8]
 
             self.failed_cr_fraction = 0  if self.cr_checks == 0 else np.float(par_counts[9]) / self.cr_checks
             
@@ -219,7 +219,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
 
             #print 'script not running counter : ', self.script_not_running_counter
-            self.publish_values()
+            #self.publish_values()
 
             if not self.script_running :
                 self.script_not_running_counter += 1
@@ -232,7 +232,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     print 'Bell script not running'
 
 
-            elif self.qrng_voltage < 0.05 :
+            elif self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
                 self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
                 print self.status_message
                 self.set_invalid_data_marker(1)
@@ -306,7 +306,7 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.wait_counter = 2
                 self.need_to_optimize_nf = True
                 
-            elif self.SP_ref > self.get_max_SP_ref() :
+            elif self.SP_ref > self.get_max_SP_ref() and not np.isnan(self.SP_ref):
                 if self.pulse_counts > self.get_max_pulse_counts():
                     self.set_invalid_data_marker(1)
                 else:
