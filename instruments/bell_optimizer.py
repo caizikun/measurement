@@ -211,7 +211,8 @@ class bell_optimizer(mo.multiple_optimizer):
                 self.script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
             else:
                 self.SP_ref = self.SP_ref_LT3
-                self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running()
+                self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running() and \
+                        'bell_lt3.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
 
             self.strain = qt.instruments['e_primer'].get_strain_splitting()
 
@@ -232,7 +233,7 @@ class bell_optimizer(mo.multiple_optimizer):
                     print 'Bell script not running'
 
 
-            elif self.qrng_voltage < 0.05 :
+            elif self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2:
                 self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
                 print self.status_message
                 self.set_invalid_data_marker(1)
