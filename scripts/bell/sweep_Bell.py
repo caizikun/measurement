@@ -222,7 +222,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 400000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
