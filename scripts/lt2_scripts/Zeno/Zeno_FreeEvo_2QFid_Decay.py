@@ -265,29 +265,63 @@ if __name__ == '__main__':
 
 
     # Measure a single point for a single state.
-    # teststate='mX'
-    # EvoTime_arr=[20e-3,29e-3,35e-3]
-    # msmts=5
-    # for RO in ['negative']:
+    # teststate='X'
+
+    # EvoTime_arr=[0e-3]
+    # msmts=6
+    # for RO in ['positive','negative']:
     #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
     #                     el_RO= RO,
     #                     logic_state=teststate,
     #                     Tomo_bases = RO_bases_dict[teststate],
     #                     free_evolution_time=EvoTime_arr,
     #                     number_of_zeno_msmnts =msmts,
-    #                     debug=True,Repetitions=1000)
+    #                     debug=False,Repetitions=800)
+
+    # msmts=5
+    # for RO in ['positive','negative']:
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
+    #                     el_RO= RO,
+    #                     logic_state=teststate,
+    #                     Tomo_bases = RO_bases_dict[teststate],
+    #                     free_evolution_time=EvoTime_arr,
+    #                     number_of_zeno_msmnts =msmts,
+    #                     debug=False,Repetitions=800)
+
+
+    # msmts=4
+    # for RO in ['positive','negative']:
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
+    #                     el_RO= RO,
+    #                     logic_state=teststate,
+    #                     Tomo_bases = RO_bases_dict[teststate],
+    #                     free_evolution_time=EvoTime_arr,
+    #                     number_of_zeno_msmnts =msmts,
+    #                     debug=False,Repetitions=800)
+
+    # msmts=0
+    # for RO in ['positive','negative']:
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
+    #                     el_RO= RO,
+    #                     logic_state=teststate,
+    #                     Tomo_bases = RO_bases_dict[teststate],
+    #                     free_evolution_time=EvoTime_arr,
+    #                     number_of_zeno_msmnts =msmts,
+    #                     debug=False,Repetitions=800)
 
     # #########################
     # # 6 measurements        #
     # ######################### Minimum evo time 25 ms and 2 data points per run (logical X)
 
-    # EvoTime_arr=np.r_[0,np.linspace(25e-3,70e-3,6),80e-3,100e-3,110e-3]
-    # breakst, last_check=takeZenocurve(2,EvoTime_arr,6,
-    #                                         logic_state_list,
-    #                                         RO_bases_dict,
-    #                                         debug=False,
-    #                                         breakstatement=breakst,
-    #                                         last_check=last_check)
+    check_magneticField(breakstatement=breakst)
+
+    EvoTime_arr=np.r_[0,np.linspace(25e-3,70e-3,6),80e-3,100e-3,110e-3]
+    breakst, last_check=takeZenocurve(2,EvoTime_arr,6,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check)
 
 
 
@@ -295,15 +329,42 @@ if __name__ == '__main__':
     # # 5 measurements        #
     # ######################### Minimum evo time 20 ms and 3 data points per run (logical X)
 
-    # EvoTime_arr=np.r_[0,np.linspace(20e-3,70e-3,6),80e-3,100e-3,110e-3]
-    # breakst, last_check=takeZenocurve(3,EvoTime_arr,5,
-    #                                         logic_state_list,
-    #                                         RO_bases_dict,
-    #                                         debug=False,
-    #                                         breakstatement=breakst,
-    #                                         last_check=last_check)
+    EvoTime_arr=np.r_[0,np.linspace(20e-3,70e-3,6),80e-3,100e-3,110e-3]
+    breakst, last_check=takeZenocurve(3,EvoTime_arr,5,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check)
+
+    check_magneticField(breakstatement=breakst)
 
 
+    # #########################
+    # # 6 measurements        #
+    # ######################### Minimum evo time 25 ms and 2 data points per run (logical X)
+
+    EvoTime_arr=np.r_[0,np.linspace(25e-3,70e-3,6),80e-3,100e-3,110e-3]
+    breakst, last_check=takeZenocurve(2,EvoTime_arr,6,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check)
+
+
+
+    # #########################
+    # # 5 measurements        #
+    # ######################### Minimum evo time 20 ms and 3 data points per run (logical X)
+
+    EvoTime_arr=np.r_[0,np.linspace(20e-3,70e-3,6),80e-3,100e-3,110e-3]
+    breakst, last_check=takeZenocurve(3,EvoTime_arr,5,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check)
     # # #########################
     # # # 0 measurements        #
     # # ######################### Minimum evo time 0 ms and 9 data points per run (logical X)
@@ -350,17 +411,17 @@ if __name__ == '__main__':
     # #  # 3 measurements        # min length 12.5
     # #  ######################### estimated duration parity duration: 9.4 ms 2015-01-27
     
-    EvoTime_arr=np.r_[0,np.linspace(12.5e-3,60e-3,14),80e-3,100e-3]
-    breakst,last_check=takeZenocurve(4,EvoTime_arr,3,
-                                            logic_state_list,
-                                            RO_bases_dict,
-                                            debug=False,
-                                            breakstatement=breakst,
-                                            last_check=last_check)
+    # EvoTime_arr=np.r_[0,np.linspace(12.5e-3,60e-3,14),80e-3,100e-3]
+    # breakst,last_check=takeZenocurve(4,EvoTime_arr,3,
+    #                                         logic_state_list,
+    #                                         RO_bases_dict,
+    #                                         debug=False,
+    #                                         breakstatement=breakst,
+    #                                         last_check=last_check)
 
 
 
-    check_magneticField(breakstatement=breakst)
+    # check_magneticField(breakstatement=breakst)
 
 
 

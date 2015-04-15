@@ -762,10 +762,11 @@ EVENT:
       CASE 13 'Closing Shutter
         IF (use_shutter > 0) THEN
           P2_DIGOUT(DIO_Module,Shutter_channel, 1)
-          wait_time = Shutter_closing_time
+          'wait_time = Shutter_closing_time
         ELSE
-          wait_time = 0
+          'wait_time = 0
         ENDIF
+        wait_time = 0
         run_case_selector = 1
         
       CASE 14 'Opening shutter and get Trigger for RO

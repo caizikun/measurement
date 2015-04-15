@@ -101,19 +101,9 @@ class Bell_lt4(bell.Bell):
     def measurement_process_running(self):
         return self.lt4_helper.get_is_running() and bell.Bell.measurement_process_running(self)
 
-    def stop_measurement_process(self):
-        bell.Bell.stop_measurement_process(self)
-
-        # signal BS and lt3 to stop as well
-        if self.bs_helper != None:
-            self.bs_helper.set_is_running(False)
-        if self.lt3_helper != None:    
-            self.lt3_helper.set_is_running(False)
-        if self.lt4_helper != None:
-            self.lt4_helper.set_is_running(False)
-
     def finish(self):
         bell.Bell.finish(self)
+                # signal BS and lt3 to stop as well
         self.add_file(inspect.getsourcefile(bseq))
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
@@ -172,9 +162,15 @@ def bell_lt4(name,
     m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'])
     m.save()
 
+
+
+    m.lt4_helper.set_is_running(False)
+
     if measure_lt3:
+        m.lt3_helper.set_is_running(False)
         m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
     if measure_bs:
+        m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
     
     print 'finishing'
@@ -263,11 +259,12 @@ def SP_ZPL(name):
     m = Bell_lt4(name)
     m.joint_params['do_echo'] = 0
     m.joint_params['do_final_MW_rotation'] = 0
+    m.joint_params['use_live_marker_filter']=True
     bell_lt4(name, 
              m,
              th_debug      = False,
              sequence_only = False,
-             mw            = False,
+             mw            = True, #False,
              measure_lt3   = True,
              measure_bs    = True,
              do_upload     = True,
@@ -312,7 +309,7 @@ if __name__ == '__main__':
         #TPQI('run_test')
         
         qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        full_bell('the_third_ever_day3_run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        full_bell('TheFourth_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
         output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
         output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
         qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
@@ -320,6 +317,6 @@ if __name__ == '__main__':
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
         #pulse_overlap('laser_pulse_shape')
-        #SP_ZPL('SPCORR_ZPL')
+        #SP_ZPL('SPCORR_ZPL_lt3_Run18')
         #measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...

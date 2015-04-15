@@ -19,7 +19,7 @@ def optimize():
     
     qt.msleep(3)
     optimize_ok = False
-    for i in range(3):
+    for i in range(2):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
         if qt.current_setup=='lt4':
@@ -66,7 +66,7 @@ def bell_check_powers():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 7
+        start_index = 3
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 

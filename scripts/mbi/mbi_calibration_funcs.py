@@ -1,3 +1,4 @@
+
 """
 Script for mbi calibrations
 """
@@ -64,9 +65,13 @@ def cal_fast_rabi(name):
     funcs.finish(m)
 
 # Calibration stage 3
-def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True):
-    m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
-        'cal_fast_pi_'+name+'_M=%d' % mult)
+def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True, mw_switch = False):
+    if mw_switch:
+        m = pulsar_mbi_espin.ElectronRabiSplitMultElements_Switch(
+            'cal_fast_pi_'+name+'_M=%d' % mult)
+    else:
+        m = pulsar_mbi_espin.ElectronRabiSplitMultElements(
+            'cal_fast_pi_'+name+'_M=%d' % mult)
     #funcs.prepare(m, SIL_NAME)
     funcs.prepare(m)
 
@@ -102,9 +107,14 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
 
     funcs.finish(m)
 
-def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True):
-    m = pulsar_mbi_espin.ElectronRabi(
-        'cal_fast_pi_over_2_'+name+'_M=%d' % mult)
+def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True, mw_switch = False):
+    if mw_switch:
+        m = pulsar_mbi_espin.ElectronRabi_Switch(
+            'cal_fast_pi_over_2_'+name+'_M=%d' % mult)
+    else:
+        m = pulsar_mbi_espin.ElectronRabi(
+            'cal_fast_pi_over_2_'+name+'_M=%d' % mult)
+    
     #funcs.prepare(m, SIL_NAME)
     funcs.prepare(m)
 
@@ -302,11 +312,11 @@ if __name__ == '__main__':
     # cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.400695-0.015, max_pulse_amp =0.400695+0.015, mbi = True)
 
 
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.454231-0.015, max_pulse_amp = 0.454231+0.015, mbi = True)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.458870 -0.015, max_pulse_amp = 0.458870 +0.015, mbi = True, mw_switch = True)
     # # stools.turn_off_all_lt2_lasers()
     # # GreenAOM.set_power(20e-6)
     # # optimiz0r.optimize(dims=['x','y','z'])
     # # stools.turn_off_all_lt2_lasers()
-    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.478976  -0.015, max_pulse_amp =0.478976   +0.015 , mbi = True)
+    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.487477   -0.015, max_pulse_amp =0.487477  +0.015 , mbi = True, mw_switch = True)
 
     print '\a\a\a'
