@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
         # ######## CARBON 2 ###############
 
-    if False:
+    if True:
         tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list']
         N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list']
 
