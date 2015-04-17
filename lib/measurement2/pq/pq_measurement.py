@@ -26,7 +26,6 @@ class PQMeasurement(m2.Measurement):
             if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
                 self.PQ_ins.calibrate()
             self.PQ_ins.set_Binning(self.params['BINSIZE'])
-            print self.PQ_ins.get_ResolutionPS()
         else:
             raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
 
