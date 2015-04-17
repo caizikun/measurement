@@ -39,6 +39,7 @@ params_lt3['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integr
 params_lt3['wait_for_AWG_done'] = 1
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 params_lt3['invalid_data_marker_do_channel']=5
+params_lt3['rnd_output_di_channel'] = 19
 
 #adwin powers
 params_lt3['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] 

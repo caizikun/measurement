@@ -1243,6 +1243,7 @@ config['adwin_lt3_dacs'] = {
         'gate_mod' : 9,
         'yellow_aom_frq':10,
         'lock_aom':11,
+        'pulse_aom_frq':12,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1642,6 +1643,7 @@ config['adwin_pro_processes'] = {
                     ['wait_for_remote_CR'          ,   1],
                     ['wait_before_RO'              ,  10],
                     ['invalid_data_marker_do_channel', 5],
+                    ['rnd_output_di_channel'       ,  19],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1683,6 +1685,7 @@ config['adwin_pro_processes'] = {
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
                     ['invalid_data_marker_do_channel', 5],
+                    ['rnd_output_di_channel'       ,  19],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
