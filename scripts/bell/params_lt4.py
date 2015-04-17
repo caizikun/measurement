@@ -41,6 +41,7 @@ params_lt4['wait_for_AWG_done'] = 0
 params_lt4['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt4['wait_for_remote_CR'] = 1  #NOTE gets set in bell script
 params_lt4['invalid_data_marker_do_channel']=5
+#params_lt4['rnd_output_di_channel'] = #XXX
 
 #adwin powers
 params_lt4['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] #1e-9#0.5e-9#10e-9#6e-9             
