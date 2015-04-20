@@ -92,7 +92,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.454 # CR30 2015-04-14
+params_lt3['aom_amplitude']				 = 0.55 # CR30 2015-04-17
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -109,7 +109,7 @@ params_lt3['RND_duration']	 	= 200e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 1e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
