@@ -14,7 +14,7 @@ sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
 X = pulse.SquarePulse(channel='EOM_AOM_Matisse',
             amplitude=0.5,
-            length = 32e-9)
+            length = 150e-9)
 
 
 

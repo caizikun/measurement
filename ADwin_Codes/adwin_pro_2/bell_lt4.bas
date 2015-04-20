@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277513  DASTUD\tud277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -283,7 +283,6 @@ EVENT:
             first = 1
             first_local = 1
             local_wait_time = wait_before_RO
-            DATA_25[succes_event_counter] = counts 
             rnd_output = (DIO_register AND rnd_output_di_pattern)
             DATA_25[succes_event_counter] = rnd_output             
           ELSE  
