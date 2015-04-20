@@ -37,10 +37,11 @@ params_lt4['remote_CR_DI_channel'] = 19
 params_lt4['PLU_DI_channel'] = 21
 params_lt4['do_sequences'] = 1
 params_lt4['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
-params_lt4['wait_for_AWG_done'] = 0
+params_lt4['wait_for_AWG_done'] = 1
 params_lt4['sequence_wait_time'] = 10 #NOTE gets set in autoconfig
 params_lt4['wait_for_remote_CR'] = 1  #NOTE gets set in bell script
 params_lt4['invalid_data_marker_do_channel']=5
+params_lt4['rnd_output_di_channel'] = 20
 
 #adwin powers
 params_lt4['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] #1e-9#0.5e-9#10e-9#6e-9             
@@ -94,7 +95,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.49 #CR 31  #2015-04-07
+params_lt4['aom_amplitude']             = 0.52 #CR 34  #2015-04-14
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -112,7 +113,7 @@ params_lt4['RO_wait'] 				  = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE']   	  = 1
 params_lt4['plu_during_LDE']    	  = 1
 params_lt4['opt_pulse_start']   	  = params_lt4['LDE_SP_duration'] +  500e-9 #DONT CHANGE THIS
-params_lt4['AWG_wait_for_lt3_start'] =  9347e-9+1e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+params_lt4['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9

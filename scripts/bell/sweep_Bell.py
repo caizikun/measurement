@@ -183,7 +183,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=5
+    pts=7
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
@@ -222,7 +222,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 40000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -263,7 +263,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
+    SAMPLE_CFG = qt.exp_params['protocols']['current']
     tail_sweep('tail') 
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('test')
+    #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))

@@ -20,7 +20,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
 
     # sweep params
-    rng = 0.15 if multiplicity == 1 else 0.05
+    rng = 0.15 if multiplicity == 1 else 0.1
     m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_5_rep', multiplicity=5)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2')
