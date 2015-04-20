@@ -1459,8 +1459,106 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # - figure out what DELAY actually does when configuring the sequence for the AWG!!
         # - add this gate type in track_and_calc_phase such that the phase get's accurately detected.
         # - add calculation for the repump power and put it into the generation of the marker trigger.
-
     def generate_RF_pulse_element(self,Gate):
+        '''
+        Written by MB. 
+        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
+        Pulse is build up out of a starting element, a repeated middle element and an end
+        element to save the memory of the AWG.
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'RF_pulse'
+
+        length     = Gate.length
+        freq       = Gate.RFfreq
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+        phase      = Gate.phase
+
+        #We choose a max length for pulse block of
+
+        # Freq_Res = 5 #Needed freq res in Hz
+        # multiplier = freq / Freq_Res
+        # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # while (periods_in_pulse / freq) % 1e-9 != 0:
+        #     periods_in_pulse += 1
+        #     if periods_in_pulse / freq > 1e-3:
+        #         print periods_in_pulse
+        #         raise Exception('Choose different freq')
+        # print periods_in_pulse / freq
+        
+
+        #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
+        # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
+        # #     print periods_in_pulse * 1e9 / freq
+        # #     periods_in_pulse *= 2
+
+        # print periods_in_pulse
+        # #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
+        # MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
+        # rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
+
+
+        # #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
+        # if length <= periods_in_pulse/freq + 2e-6:
+        #     raise Exception('RF pulse is too short')
+
+        # print periods_in_pulse
+        #Determine number of repeated elements
+        # Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
+        # tau_remaind *= 1e-9 
+        list_of_elements = []
+
+        X = pulselib.RF_erf_envelope(
+            channel = 'RF',
+            length = length,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase)
+        # Env_start_p = pulselib.RF_erf_rise_element(
+        #     channel = 'RF',
+        #     length = rise_length + tau_remaind / 2,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase,
+        #     startorend = 'start')
+        # Env_end_p = pulselib.RF_erf_rise_element(
+        #     channel = 'RF',
+        #     length = rise_length + tau_remaind / 2,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase,
+        #     startorend = 'end')
+
+        # e_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+        #         global_time = True)
+        # e_start.append(pulse.cp(Env_start_p))
+        # list_of_elements.append(e_start)
+
+        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_middle.append(pulse.cp(X))
+        list_of_elements.append(e_middle)
+
+        # e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+        #         global_time = True)
+        # e_end.append(pulse.cp(Env_end_p))
+        # list_of_elements.append(e_end)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
+        Gate.elements= list_of_elements
+        
+        return Gate
+
+    def generate_RF_pulse_element_repeated_middle(self,Gate):
         '''
         Written by MB. 
         Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
@@ -1657,14 +1755,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif gate.scheme == 'RF_pulse':
                 list_of_elements.extend(gate.elements)
                 # starting envelope element
-                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
-                    trigger_wait=False,repetitions = 1)
+                # seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                #     trigger_wait=False,repetitions = 1)
                 # repeating period element
-                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
+                gate.reps = 1
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
                     trigger_wait=False,repetitions = gate.reps)
                  # ending envelope element
-                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
-                    trigger_wait=False,repetitions = 1)
+                # seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                #     trigger_wait=False,repetitions = 1)
             ######################
             ### XY4 elements
             ######################
@@ -7987,8 +8086,8 @@ class Zeno_ErrDetection(MBI_C13):
                                 carbon_list         = self.params['carbon_list'],
                                 RO_basis_list       = ['X','X'],
                                 el_RO_result        = '0',
-                                go_to_element       = mbi,
-                                event_jump_element  = 'next', # only continue if the correct parity is detected. I.e. ms = 0
+                                go_to_element       = 'next',
+                                event_jump_element  = 'next', 
                                 readout_orientation = 'negative', #if correct parity --> electr0n in ms=0
                                 Zeno_RO             = False))
 
@@ -8049,6 +8148,8 @@ class Zeno_OneQB(MBI_C13):
             ### Carbon initialization
             init_wait_for_trigger = True
             for kk in range(self.params['Nr_C13_init']):
+                if self.params['logical_state']=='mZ':
+                    self.params['init_state_list'][kk]='down'
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
@@ -8060,19 +8161,28 @@ class Zeno_OneQB(MBI_C13):
                 init_wait_for_trigger = False
 
             ### Initialize single qubit by doing a pi/2 rotation.
-            
+            phase=0
+            init = self.params['logical_state']
+            if 'X' in init:
+                phase = self.params['C13_Y_phase']
+            if 'Y' in init:
+                phase = self.params['C13_X_phase']
+            if 'm' in init:
+                phase = phase +180
             UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
                 Carbon_ind = self.params['carbon_list'][0],
-                phase = self.params['C13_Y_phase'])
+                phase = phase)
+            if not 'Z' in init:
+                gate_seq.append(UncondRenA)
 
-            gate_seq.append(UncondRenA)
+            
 
             ### add pi pulse after final init.
-
-            gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
-                                    Gate_operation='pi',
-                                    phase = self.params['X_phase'],
-                                    el_state_after_gate = '1')])
+            if self.params['do_pi']:
+                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1')])
 
 
             ### waiting time without Zeno msmmts.
@@ -8231,17 +8341,29 @@ class Zeno_OneQB(MBI_C13):
                     gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
                                      wait_time =10e-6)])
 
+            if self.params['do_pi']:          
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 1,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['Tomography Bases'],
+                        readout_orientation = self.params['electron_readout_orientation'])
+            else:
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 0,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['Tomography Bases'],
+                        readout_orientation = self.params['electron_readout_orientation'])
 
-            carbon_tomo_seq = self.readout_carbon_sequence(
-                    prefix              = 'Tomo',
-                    pt                  = pt,
-                    go_to_element       = None,
-                    event_jump_element  = None,
-                    RO_trigger_duration = 10e-6,
-                    el_state_in         = 1,
-                    carbon_list         = self.params['carbon_list'],
-                    RO_basis_list       = self.params['Tomography Bases'],
-                    readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)

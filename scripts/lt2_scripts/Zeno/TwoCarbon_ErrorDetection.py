@@ -282,7 +282,7 @@ if __name__ == '__main__':
                         Tomo_bases = RO_bases_dict[teststate],
                         free_evolution_time=EvoTime_arr,
                         number_of_zeno_msmnts =msmts,
-                        debug=False,Repetitions=1000)
+                        debug=False,Repetitions=300)
 
 
 

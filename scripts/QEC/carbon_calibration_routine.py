@@ -24,20 +24,20 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-Carbon_1_f_ms0  		= True
+Carbon_1_f_ms0  		= False
 Carbon_2_f_ms0  		= True
 Carbon_3_f_ms0  		= False
-Carbon_5_f_ms0  		= True
+Carbon_5_f_ms0  		= False
 
-Carbon_1_f_msm1  		= True
+Carbon_1_f_msm1  		= False
 Carbon_2_f_msm1  		= True
 Carbon_3_f_msm1  		= False
-Carbon_5_f_msm1  		= True
+Carbon_5_f_msm1  		= False
 
-Carbon_1_self_phase		= True
+Carbon_1_self_phase		= False
 Carbon_2_self_phase		= True
 Carbon_3_self_phase		= False
-Carbon_5_self_phase		= True
+Carbon_5_self_phase		= False
 
 Carbon_1to2_crosstalk	= False
 Carbon_1to5_crosstalk	= False
@@ -46,11 +46,11 @@ Carbon_2to5_crosstalk	= False
 Carbon_5to1_crosstalk	= False
 Carbon_5to2_crosstalk	= False
 
-Carbon_phase_cal_1to2	= False
-Carbon_phase_cal_1to5	= True
-Carbon_phase_cal_2to1	= False
+Carbon_phase_cal_1to2	= True
+Carbon_phase_cal_1to5	= False
+Carbon_phase_cal_2to1	= True
 Carbon_phase_cal_2to5	= False
-Carbon_phase_cal_5to1	= True
+Carbon_phase_cal_5to1	= False
 Carbon_phase_cal_5to2	= False
 
 debug 					= False
@@ -274,17 +274,17 @@ if n == 1 and Carbon_2_f_msm1:
 
 if n == 1 and Carbon_3_f_msm1:
 	#measure
-	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C3', carbon_nr= 3, detuning = detuning, el_state = 1)
+	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C3', carbon_nr= 3, detuning = detuning*2.2, el_state = 1)
 	# fit
 	f0,uf0 = cr.Carbon_Ramsey(timestamp=None, 
 	              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
-	              frequency = detuning, phase =0, 
+	              frequency = detuning*2.2, phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,
 	              title = 'msm1_freq_C3')
 	#update
-	qt.exp_params['samples']['111_1_sil18']['C3_freq_1'] += -f0 + detuning
+	qt.exp_params['samples']['111_1_sil18']['C3_freq_1'] += -f0 + detuning*2.2
 	print 'C3_freq_1'
 	print qt.exp_params['samples']['111_1_sil18']['C3_freq_1']
 	print '--------------------------------'
@@ -387,17 +387,17 @@ if n == 1 and Carbon_3_f_ms0:
 	print 'Calibrate ms=0 frequencies for all 3 carbon spins '
 	# measure
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm0_freq_C3', carbon_nr= 3, 
-						detuning = detuning, el_state = 0)
+						detuning = detuning*2.2, el_state = 0)
 	# fit
 	f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
 	              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
-	              frequency = detuning, phase =0, 
+	              frequency = detuning*2.2, phase =0, 
 	              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 	              return_freq = True,
 	              return_results = False,
 	              title = '_msm0_freq_C3')
 	#update
-	qt.exp_params['samples']['111_1_sil18']['C3_freq_0'] += -f0 + detuning
+	qt.exp_params['samples']['111_1_sil18']['C3_freq_0'] += -f0 + detuning*2.2
 	print 'C3_freq_0'
 	print qt.exp_params['samples']['111_1_sil18']['C3_freq_0']
 	print '--------------------------------'

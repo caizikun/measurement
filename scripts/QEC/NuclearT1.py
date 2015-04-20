@@ -1,6 +1,8 @@
 """
 Script for carbonT1 msmnts
 
+WARNING!
+
 OLD FILE, SEE NUCLEART1_2.py for new file
 """
 import numpy as np
