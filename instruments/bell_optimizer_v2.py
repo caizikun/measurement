@@ -234,8 +234,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
             self.dt = dt
             self.cr_checks = par_counts[2]
+            self.cr_checks_avg = par_counts_avg[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
-            self.cr_counts_avg = 0 if self.cr_checks ==0 else np.float(par_counts_avg[0])/self.cr_checks
+            self.cr_counts_avg = 0 if self.cr_checks ==0 else np.float(par_counts_avg[0])/self.cr_checks_avg
             self.repumps = par_counts[1]
             self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
             self.entanglement_events = self.par_counts_old[8]
@@ -381,17 +382,18 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 #qt.instruments['rejecter'].move('cryo_half', -0.5)
                 self.send_error_email(subject = subject, text = text)
 
-            #elif self.failed_cr_fraction > 0.99:
-            #    subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
-            #    text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
-            #    print text
-            #    #qt.instruments['rejecter'].move('cryo_half', 0.5)
-            #    self.send_error_email(subject = subject, text = text)
+            elif self.failed_cr_fraction > 0.99:
+                subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
+                text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
+                print text
+                #qt.instruments['rejecter'].move('cryo_half', 0.5)
+                self.send_error_email(subject = subject, text = text)
 
             elif self.cr_counts_avg > self.get_max_cr_counts_avg() :
                 qt.instruments['rejecter'].move('cryo_half', -0.5)
                 self.cryo_half_rot_degrees += 0.5
-                print '\nI am rotating the cryo half waveplate. So far it has been rotated of {} degrees.\n'.format(self.cryo_half_rot_degrees)
+                print '\nThe average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
+                    So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg, self.cryo_half_rot_degrees)
                 if self.cryo_half_rot_degrees > self.max_cryo_half_rot_degrees :
                     subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
                     text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rotation_degrees)
