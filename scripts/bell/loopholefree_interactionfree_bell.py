@@ -66,8 +66,8 @@ def bell_check_powers():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 3
-        cycles=24
+        start_index = 1
+        cycles=12
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break

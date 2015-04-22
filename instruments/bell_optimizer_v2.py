@@ -2,6 +2,7 @@ import qt
 import os
 from instrument import Instrument
 import numpy as np
+from collections import deque
 import gobject
 import instrument_helper
 from lib import config
@@ -12,7 +13,7 @@ import time
 import dweepy
 import requests.packages.urllib3
 
-class bell_optimizer(mo.multiple_optimizer):
+class bell_optimizer_v2(mo.multiple_optimizer):
     def __init__(self, name, setup_name='lt4'):
         mo.multiple_optimizer.__init__(self, name)
         
@@ -25,7 +26,8 @@ class bell_optimizer(mo.multiple_optimizer):
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
                     'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'nb_min_between_nf_optim'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2},
-                    'max_strain_splitting'      :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
+                    'max_strain_splitting'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
+                    'max_cr_counts_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':36},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
@@ -64,6 +66,14 @@ class bell_optimizer(mo.multiple_optimizer):
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
         self.par_counts_old          = np.zeros(10,dtype= np.int32)
         self.par_laser_old           = np.zeros(5,dtype= np.int32)
+
+        self.max_cryo_half_rot_degrees = 10 
+
+        self.nb_avg = 6
+        self.deque_par_counts_old = deque([], self.nb_avg)
+        self.deque_par_laser_old  = deque([], self.nb_avg)
+        self.deque_qrng_voltage   = deque([], self.nb_avg)
+        self.deque_t0             = deque([], self.nb_avg)
         
         self.init_counters()  
 
@@ -167,6 +177,40 @@ class bell_optimizer(mo.multiple_optimizer):
 
         return par_counts, par_laser, dt, qrng_voltage
 
+
+
+    def update_values_avg(self) :
+        par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
+        if 'lt4' in self.setup_name:
+            par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
+        else:
+            par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
+
+        deque_par_counts_new = self.deque_par_counts_old
+        deque_par_laser_new = self.deque_par_laser_old
+
+        deque_par_counts_new.append(par_counts_new)
+        deque_par_laser_new.append(par_laser_new)
+
+        par_counts_avg = (deque_par_counts_new[-1]- self.deque_par_counts_old[0])/self.nb_avg
+        par_laser_avg = (deque_par_laser_new[-1]- self.deque_par_laser_old[0])/self.nb_avg
+
+        self.deque_par_counts_old = deque_par_counts_new
+        self.deque_par_laser_old  = deque_par_laser_new
+
+        t1=time.time()
+        deque_t1=self.deque_t0
+        deque_t1.append(t1)
+        dt_for_avg = deque_t1[-1]-self.deque_t0[0]
+        self.deque_t0 = deque_t1
+
+        qrng_voltage = qt.instruments['labjack'].get_analog_in1()
+        self.deque_qrng_voltage.append(qrng_voltage)
+        qrng_voltage_avg = np.average(self.deque_qrng_voltage)
+
+        return par_counts_avg, par_laser_avg, dt_for_avg, qrng_voltage_avg
+
+
     def set_failed(self):
         if 'lt4' in self.setup_name:
             qt.instruments['lt4_measurement_helper'].set_measurement_name('bell_optimizer_failed')    
@@ -185,9 +229,13 @@ class bell_optimizer(mo.multiple_optimizer):
         try:
             
             par_counts, par_laser, dt, qrng_voltage = self.update_values()
+            # Currently we aqre using only the average value of the cr_counts
+            par_counts_avg, par_laser_avg, dt_for_avg, qrng_voltage_avg = self.update_values_avg()
+
             self.dt = dt
             self.cr_checks = par_counts[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
+            self.cr_counts_avg = 0 if self.cr_checks ==0 else np.float(par_counts_avg[0])/self.cr_checks
             self.repumps = par_counts[1]
             self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
             self.entanglement_events = self.par_counts_old[8]
@@ -220,7 +268,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
 
             #print 'script not running counter : ', self.script_not_running_counter
-            self.publish_values()
+            #self.publish_values()
 
             if not self.script_running :
                 self.script_not_running_counter += 1
@@ -333,12 +381,24 @@ class bell_optimizer(mo.multiple_optimizer):
                 #qt.instruments['rejecter'].move('cryo_half', -0.5)
                 self.send_error_email(subject = subject, text = text)
 
-            elif self.failed_cr_fraction > 0.99:
-                subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
-                text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
-                print text
-                #qt.instruments['rejecter'].move('cryo_half', 0.5)
-                self.send_error_email(subject = subject, text = text)
+            #elif self.failed_cr_fraction > 0.99:
+            #    subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
+            #    text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
+            #    print text
+            #    #qt.instruments['rejecter'].move('cryo_half', 0.5)
+            #    self.send_error_email(subject = subject, text = text)
+
+            elif self.cr_counts_avg > self.get_max_cr_counts_avg() :
+                qt.instruments['rejecter'].move('cryo_half', -0.5)
+                self.cryo_half_rot_degrees += 0.5
+                print '\nI am rotating the cryo half waveplate. So far it has been rotated of {} degrees.\n'.format(self.cryo_half_rot_degrees)
+                if self.cryo_half_rot_degrees > self.max_cryo_half_rot_degrees :
+                    subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
+                    text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rotation_degrees)
+                    print text
+                    self.set_invalid_data_marker(1)
+                    self.send_error_email(subject = subject, text = text)
+
 
             else :
                 self.script_not_running_counter = 0 
@@ -455,6 +515,7 @@ class bell_optimizer(mo.multiple_optimizer):
         self.nf_optimize_timer          = self._t0
         self.wait_counter               = 0
         self.flood_email_counter        = 0  
-        self.repump_counts              = 0      
+        self.repump_counts              = 0 
+        self.cryo_half_rot_degrees      = 0     
 
         
