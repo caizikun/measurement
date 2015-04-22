@@ -21,7 +21,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
 
     # sweep params
     rng = 0.15 if multiplicity == 1 else 0.1
-    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    m.params['MW_pulse_amplitudes'] =  -m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 
