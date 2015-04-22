@@ -207,7 +207,8 @@ class waveplates_optimizer(Instrument):
         directions = np.array([1,1,-1])
         direction_steps_taken= np.zeros(3)
         current_direction  = initial_direction
-
+        new_value = previous_value
+        
         while True:
             #print 'current direction is: ', current_direction 
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 

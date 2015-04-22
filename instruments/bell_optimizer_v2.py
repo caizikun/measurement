@@ -1,5 +1,6 @@
 import qt
 import os
+import traceback
 from instrument import Instrument
 import numpy as np
 from collections import deque
@@ -116,7 +117,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                  'SP_ref'           : self.SP_ref_LT4,
                  'repump_counts'    : self.repump_counts,
                  'strain'           : self.strain,
-                 'cr_counts'        : self.cr_counts_avg,
+                 'cr_counts'        : self.cr_counts_avg_excl_repump,
                  'starts'           : float(self.start_seq)/self.dt,
                  'cr_failed'        : self.failed_cr_fraction_avg,
                  'script_running'   : self.script_running,
@@ -139,7 +140,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             strain splitting : {:.2f} \n\
             starts {:.1f} :  '.format(self.setup_name, 
                                  self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
-                                 self.SP_ref_LT4,self.cr_counts_avg, self.repump_counts, self.strain, self.start_seq)
+                                 self.SP_ref_LT4,self.cr_counts_avg_excl_repump, self.repump_counts, self.strain, self.start_seq)
         print '-'*10
         print time.strftime('%H:%M')
         print '-'*10
@@ -208,7 +209,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             
              # Currently we aqre using only the average value of the cr_counts & failed_cr_fraction_avg
             self.cr_checks_avg =  par_counts_avg[2]
-            self.cr_counts_avg = 0 if self.cr_checks_avg ==0 else np.float(par_counts_avg[0])/self.cr_checks_avg
+            self.repumps_avg = par_counts_avg[1]
+            cr_checks_excl_repumps_avg = self.cr_checks_avg - self.repumps_avg
+            self.cr_counts_avg_excl_repump = 0 if cr_checks_excl_repumps_avg ==0 else np.float(par_counts_avg[0])/cr_checks_excl_repumps_avg
             self.failed_cr_fraction_avg = 0  if self.cr_checks_avg == 0 else np.float(par_counts_avg[9]) / self.cr_checks_avg
 
             self.start_seq = par_counts[3]
@@ -347,7 +350,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             #    #qt.instruments['rejecter'].move('cryo_half', -0.5)
             #    self.send_error_email(subject = subject, text = text)
 
-            elif self.failed_cr_fraction_avg > 0.99:
+            elif self.failed_cr_fraction_avg > 0.96:
                 subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
@@ -355,16 +358,16 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
                 self.send_error_email(subject = subject, text = text)
 
-            elif self.cr_counts_avg > self.get_max_cr_counts_avg() :
+            elif self.cr_counts_avg_excl_repump > self.get_max_cr_counts_avg() :
                 if self.cryo_half_rot_degrees < self.max_cryo_half_rot_degrees :
                     qt.instruments['rejecter'].move('cryo_half', -0.5)
                     self.cryo_half_rot_degrees += 0.5
                     print '\nThe average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
-                        So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg, self.cryo_half_rot_degrees)
+                        So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
     
                     subject = 'WARNING : cryo_half rotating'.format(self.setup_name)
                     text = 'I have passed too many cr checks.The average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
-                           So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg, self.cryo_half_rot_degrees)
+                           So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
                     print text
                     self.send_error_email(subject = subject, text = text)
 
@@ -391,6 +394,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             self.set_invalid_data_marker(1)
             text = 'Errror in bell optimizer: ' + str(e)
             print text
+            traceback.print_exc()
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             return False
