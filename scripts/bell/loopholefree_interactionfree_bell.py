@@ -4,6 +4,10 @@ import numpy as np
 
 def optimize():
     print 'Starting to optimize.'
+
+    print 'checking signalhoud:'
+    if not(check_pulse_aom_frq()):
+        return False
     powers_ok=False
     for i in range(5):
     	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -63,10 +67,19 @@ def bell_check_powers():
     qt.instruments['PMServo'].move_out()
     return all_fine
 
+def check_pulse_aom_frq():
+    f_expected = 200e6 + 470e3 #200MHz + x Hz
+    f,mi,ma=signalhound.GetSweep(do_plot=True, max_points=1030)
+    f_offset = f[argmax(mi)]
+    if np.abs(f_offset - f_expected) > 20e3:
+        return False
+    else:
+        return True
+
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 1
+        start_index = 4
         cycles=12
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
