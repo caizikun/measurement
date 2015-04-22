@@ -180,7 +180,7 @@ if __name__ == '__main__':
     # for el_after_init in el_after_init_list:
     #     for el_RO in el_RO_list:
     #         NuclearT1_2(SAMPLE + el_RO + '_C5_el' + el_after_init, el_RO= el_RO, carbon = 5, carbon_init_list = [5],
-    #             carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0], el_after_init= el_after_init)
+    #             carbon_init_methods     P=   ['swap'], carbon_init_thresholds  =   [0], el_after_init= el_after_init)
     reps=250
     el0list = np.linspace(1e-3, 400e-3,8)
     el1list = np.r_[10e-3, 500e-3, 1., 2., 5., 10.]
@@ -193,8 +193,8 @@ if __name__ == '__main__':
     el_RO_list = ['positive','negative']
     el_after_init_list = ['0','1']
 
-    carbon_list = [2]
-    el_RO_list = ['positive','negative']
+    carbon_list = [3]
+    el_RO_list = ['negative','positive']
     el_after_init_list = ['1']
 
     for carbon in carbon_list:

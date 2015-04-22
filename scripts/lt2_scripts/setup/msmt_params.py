@@ -180,8 +180,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C1_freq'       :   450.301e3,
-'C1_freq_0' : 431945.1,
-'C1_freq_1' : 469005.7,
+'C1_freq_0' : 431964.2,
+'C1_freq_1' : 469015.5,
 'C1_gate_optimize_tau_list' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
 'C1_gate_optimize_N_list': [40,34,36,32,34,36,34,36,42],
@@ -195,17 +195,17 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau'    :   [4.996e-6],
+'C1_Ren_tau'    :   [4.998e-6],
 'C1_Ren_N'      :   [34],
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [16.7] + [79.1] + [0.0] + [0.0] + [22.7] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [43.6] + [100.6] + [0.0] + [0.0] + [28.3] + [0.0] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
     ################
 
 'C2_freq'       :   421.814e3,  
-'C2_freq_0'     :   431.945e3,  
-'C2_freq_1'     :   413.455e3,
+'C2_freq_0'     :   431.919e3,  
+'C2_freq_1'     :   413.450e3,
 'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
@@ -220,7 +220,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C2_Ren_tau'    :   [13.614e-6],
 'C2_Ren_N'      :   [34],
-'C2_Ren_extra_phase_correction_list' : np.array([0]+[-0.1]+[177.9]+[0]*2+[3.7]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
+'C2_Ren_extra_phase_correction_list' : np.array([0]+[63.8]+[175.9]+[0]*2+[3.7]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
 
 
     ################
@@ -228,12 +228,12 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C3_freq'       :   421.814e3,  
-'C3_freq_0'     :   432019, # 7 Hz uncertainty 
-'C3_freq_1'     :   447243, #7Hz uncertainty
+'C3_freq_0'     :   432023.5, # 7 Hz uncertainty 
+'C3_freq_1'     :   447249.5, #7Hz uncertainty
 
-'C3_gate_optimize_tau_list' :  [11.94e-6, 11.942e-6, 11.944e-6, 11.946e-6, 11.948e-6
-                                    , 16.946, 16.498e-6, 16.5e-6],
-'C3_gate_optimize_N_list': [12,12,12,12,12,16,16,16],      
+'C3_gate_optimize_tau_list' :  [11.942e-6, 11.942e-6, 11.942e-6, 11.944e-6, 11.944e-6
+                                    , 11.944e-6, 11.946e-6, 11.946e-6,11.946e-6],
+'C3_gate_optimize_N_list': [12,14,16,12,14,16,12,14,16],      
 
 'C3_uncond_tau' :   [(9.098)*1e-6],
 'C3_uncond_pi_N':   [44],
@@ -246,7 +246,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C3_Ren_tau'    :   [11.946e-6],
 'C3_Ren_N'      :   [12],
-'C3_Ren_extra_phase_correction_list' : np.array([0]+[0]+[0]+[25.1]*2+[0]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
+'C3_Ren_extra_phase_correction_list' : np.array([0]+[0]+[0]+[27.7]*2+[0]+[0]*4), #np.array([0]+[69.95]+[184.8]+[0]*2+[66.75]+[0]*4), 
 
 
     ################
@@ -254,8 +254,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C5_freq'       :   419.894e3,
-'C5_freq_0' : 431925.4,
-'C5_freq_1' : 408299.3,
+'C5_freq_0' : 431925.8,
+'C5_freq_1' : 408299.0,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -270,8 +270,10 @@ cfg['samples']['111_1_sil18'] = {
 
 
 'C5_gate_optimize_tau_list' :  [11.308e-6, 11.308e-6, 11.308e-6, 11.310e-6, 11.310e-6, 11.310e-6, 11.312e-6, 11.312e-6, 11.312e-6],
-'C5_gate_optimize_N_list': [44,46,48,46,48,50,46,48,50],    
+'C5_gate_optimize_N_list': [44,46,48,46,48,50,46,48,50],   
 
+# 'C5_gate_optimize_tau_list' :  [11.310e-6, 11.310e-6],
+# 'C5_gate_optimize_N_list': [48,50], 
 # 'C5_Ren_tau'    :   [6.538e-6],
 # 'C5_Ren_N'      :   [32],
 # 'C5_Ren_extra_phase_correction_list' : np.array([0]+[43.7]+[92.5]+[0]*2+[-79.188]+[0]*4), 
@@ -280,8 +282,8 @@ cfg['samples']['111_1_sil18'] = {
 'C5_uncond_tau' :   [(9.52)*1e-6],
 'C5_uncond_pi_N':   [94],
 'C5_Ren_tau'    :   [11.31e-6],
-'C5_Ren_N'      :   [50],
-'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [74.3] + [-81.3] + [0.0] + [0.0] + [75.8] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_N'      :   [48],
+'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [76.5] + [-81.3] + [0.0] + [0.0] + [71.3] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
     ### Carbon 6
@@ -380,13 +382,13 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 # Pulses short with switch 
 # #     ### Pi pulses, fast & hard 
 'fast_pi_duration'          :  116e-9,    #250 MHz slow
-'fast_pi_amp'               : 0.455237 ,  #250 MHz, slow
+'fast_pi_amp'               : 0.453648,  #250 MHz, slow
 'fast_pi_mod_frpq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
 'fast_pi2_duration'         :   56e-9,#56e-9, #should be divisible by 4, slow
-'fast_pi2_amp'              :   0.477536 , # slow, only calibrated with 2 pulses
+'fast_pi2_amp'              :   0.477764, # slow, only calibrated with 2 pulses
 'fast_pi2_mod_frq'          :   f_mod_0,
 
 # # Pulses calibrated short without switch
