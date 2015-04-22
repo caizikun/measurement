@@ -314,7 +314,6 @@ if __name__ == '__main__':
         #TPQI('run_test')
         
         qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        full_bell('test')
         full_bell('TheFourth_day2_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
         output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
         output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          

@@ -24,7 +24,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
-                    'max_laser_reject_cycles'    :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'nb_min_between_nf_optim'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'max_strain_splitting'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     'max_cr_counts_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':36},
@@ -52,28 +51,21 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.add_function('optimize_yellow') 
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
-        self.add_function('optimize_rejection')
+        self.add_function('zoptimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
-        #self.add_function('optimize_half')
-        #self.add_function('optimize_quarter')
-
-        #self._mode = 'check_starts'
-        #self._mode_rep = 0
 
         self.setup_name = setup_name
         if 'lt3' in setup_name:
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
-        self.par_counts_old          = np.zeros(10,dtype= np.int32)
-        self.par_laser_old           = np.zeros(5,dtype= np.int32)
 
-        self.max_cryo_half_rot_degrees = 10 
-
-        self.nb_avg = 6
-        self.deque_par_counts_old = deque([], self.nb_avg)
-        self.deque_par_laser_old  = deque([], self.nb_avg)
-        self.deque_qrng_voltage   = deque([], self.nb_avg)
-        self.deque_t0             = deque([], self.nb_avg)
+        self.max_cryo_half_rot_degrees  = 3
+        self.max_laser_reject_cycles = 25
+        
+        self.history_length = 10
+        self.deque_par_counts   = deque([], self.history_length)
+        self.deque_par_laser    = deque([], self.history_length)
+        self.deque_t            = deque([], self.history_length)
         
         self.init_counters()  
 
@@ -115,22 +107,26 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
 
     def publish_values(self):
-        dweet_name = 'bell_board-lt4' if 'lt4' in self.setup_name else 'bell_board-lt3'
-        dweepy.dweet_for(dweet_name,
-            {'tail'             : self.tail_counts,
-             'pulse'            : self.pulse_counts,
-             'PSB_tail'         : self.PSB_tail_counts,
-             'SP_ref'           : self.SP_ref_LT4,
-             'repump_counts'    : self.repump_counts,
-             'strain'           : self.strain,
-             'cr_counts'        : self.cr_counts,
-             'starts'           : float(self.start_seq)/self.dt,
-             'cr_failed'        : self.failed_cr_fraction,
-             'script_running'   : self.script_running,
-             'invalid_marker'   : self.get_invalid_data_marker(),
-             'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
-             'ent_events'       : self.entanglement_events,
-             })
+        try:
+            dweet_name = 'bell_board-lt4' if 'lt4' in self.setup_name else 'bell_board-lt3'
+            dweepy.dweet_for(dweet_name,
+                {'tail'             : self.tail_counts,
+                 'pulse'            : self.pulse_counts,
+                 'PSB_tail'         : self.PSB_tail_counts,
+                 'SP_ref'           : self.SP_ref_LT4,
+                 'repump_counts'    : self.repump_counts,
+                 'strain'           : self.strain,
+                 'cr_counts'        : self.cr_counts_avg,
+                 'starts'           : float(self.start_seq)/self.dt,
+                 'cr_failed'        : self.failed_cr_fraction_avg,
+                 'script_running'   : self.script_running,
+                 'invalid_marker'   : self.get_invalid_data_marker(),
+                 'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
+                 'ent_events'       : self.entanglement_events,
+                 })
+        except Exception as e:
+            print 'Error in publishing values for freeboard:', str(e)
+
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
 
@@ -143,7 +139,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             strain splitting : {:.2f} \n\
             starts {:.1f} :  '.format(self.setup_name, 
                                  self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
-                                 self.SP_ref_LT4,self.cr_counts, self.repump_counts, self.strain, self.start_seq)
+                                 self.SP_ref_LT4,self.cr_counts_avg, self.repump_counts, self.strain, self.start_seq)
         print '-'*10
         print time.strftime('%H:%M')
         print '-'*10
@@ -154,8 +150,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
         self.status_message = subject
 
-
-
     def update_values(self) :
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
         if 'lt4' in self.setup_name:
@@ -163,53 +157,13 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         else:
             par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
 
-        par_counts = par_counts_new- self.par_counts_old
-        par_laser = par_laser_new- self.par_laser_old
+        self.deque_par_counts.append(par_counts_new)
+        self.deque_par_laser.append(par_laser_new)
 
-        self.par_counts_old = par_counts_new
-        self.par_laser_old = par_laser_new
+        t=time.time()
+        self.deque_t.append(t)
 
-        t1=time.time()
-        dt = t1-self._t0
-        self._t0 = t1
-
-        qrng_voltage = qt.instruments['labjack'].get_analog_in1()
-
-        return par_counts, par_laser, dt, qrng_voltage
-
-
-
-    def update_values_avg(self) :
-        par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
-        if 'lt4' in self.setup_name:
-            par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
-        else:
-            par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
-
-        deque_par_counts_new = self.deque_par_counts_old
-        deque_par_laser_new = self.deque_par_laser_old
-
-        deque_par_counts_new.append(par_counts_new)
-        deque_par_laser_new.append(par_laser_new)
-
-        par_counts_avg = (deque_par_counts_new[-1]- self.deque_par_counts_old[0])/self.nb_avg
-        par_laser_avg = (deque_par_laser_new[-1]- self.deque_par_laser_old[0])/self.nb_avg
-
-        self.deque_par_counts_old = deque_par_counts_new
-        self.deque_par_laser_old  = deque_par_laser_new
-
-        t1=time.time()
-        deque_t1=self.deque_t0
-        deque_t1.append(t1)
-        dt_for_avg = deque_t1[-1]-self.deque_t0[0]
-        self.deque_t0 = deque_t1
-
-        qrng_voltage = qt.instruments['labjack'].get_analog_in1()
-        self.deque_qrng_voltage.append(qrng_voltage)
-        qrng_voltage_avg = np.average(self.deque_qrng_voltage)
-
-        return par_counts_avg, par_laser_avg, dt_for_avg, qrng_voltage_avg
-
+        return True    
 
     def set_failed(self):
         if 'lt4' in self.setup_name:
@@ -224,27 +178,42 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         else:
             qt.instruments['lt3_measurement_helper'].set_is_running(False)
 
+    def calculate_difference(self, avg_len):
+
+        if avg_len < len(self.deque_par_counts):
+            par_counts   = self.deque_par_counts[-1]-self.deque_par_counts[-1-avg_len]
+            par_laser    = self.deque_par_laser[-1]- self.deque_par_laser[-1-avg_len]
+            dt           = self.deque_t[-1]- self.deque_t[-1-avg_len]
+        else:
+            par_counts   = self.deque_par_counts[-1]-self.deque_par_counts[0]
+            par_laser    = self.deque_par_laser[-1]- self.deque_par_laser[0]
+            dt           = self.deque_t[-1]- self.deque_t[0]
+
+        return par_counts , par_laser, dt
+
     def check(self):
 
         try:
             
-            par_counts, par_laser, dt, qrng_voltage = self.update_values()
-            # Currently we aqre using only the average value of the cr_counts
-            par_counts_avg, par_laser_avg, dt_for_avg, qrng_voltage_avg = self.update_values_avg()
-
+            self.update_values()
+            par_counts , par_laser, dt = self.calculate_difference(1)
+            par_counts_avg , _tmp, _tmp1 = self.calculate_difference(9)
+           
             self.dt = dt
             self.cr_checks = par_counts[2]
             self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
-            self.cr_counts_avg = 0 if self.cr_checks ==0 else np.float(par_counts_avg[0])/self.cr_checks
             self.repumps = par_counts[1]
             self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
-            self.entanglement_events = self.par_counts_old[8]
-
-            self.failed_cr_fraction = 0  if self.cr_checks == 0 else np.float(par_counts[9]) / self.cr_checks
+            self.entanglement_events = self.deque_par_counts[-1][8]
             
+             # Currently we aqre using only the average value of the cr_counts & failed_cr_fraction_avg
+            self.cr_checks_avg =  par_counts_avg[2]
+            self.cr_counts_avg = 0 if self.cr_checks_avg ==0 else np.float(par_counts_avg[0])/self.cr_checks_avg
+            self.failed_cr_fraction_avg = 0  if self.cr_checks_avg == 0 else np.float(par_counts_avg[9]) / self.cr_checks_avg
+
             self.start_seq = par_counts[3]
 
-            self.qrng_voltage = qrng_voltage
+            self.qrng_voltage = qt.instruments['labjack'].get_analog_in1()
 
             if self.start_seq > 0:
                 self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
@@ -263,12 +232,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         'bell_lt3.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
 
             self.strain = qt.instruments['e_primer'].get_strain_splitting()
-
             max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())
 
-
-            #print 'script not running counter : ', self.script_not_running_counter
-            #self.publish_values()
+            self.publish_values()
 
             if not self.script_running :
                 self.script_not_running_counter += 1
@@ -363,40 +329,50 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.status_message ='Bad laser rejection detected. Starting the optimizing...'
                 print self.status_message
                 self.laser_rejection_counter +=1
-                if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
-                    self.optimize_rejection()
+                if self.laser_rejection_counter <= self.max_laser_reject_cycles :
+                    self.zoptimize_rejection()
                     self.wait_counter = 1
                 else : 
-                    text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_max_laser_reject_cycles())
+                    text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.max_laser_reject_cycles)
                     subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
                     self.set_invalid_data_marker(1)
                     self.set_failed()
 
-            elif self.failed_cr_fraction < 0.5:
-                subject = 'WARNING : high CR success {} setup'.format(self.setup_name)
-                text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
-                print text
-                self.set_invalid_data_marker(1)
-                #qt.instruments['rejecter'].move('cryo_half', -0.5)
-                self.send_error_email(subject = subject, text = text)
-
-            #elif self.failed_cr_fraction > 0.99:
-            #    subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
-            #    text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
+            #elif self.failed_cr_fraction_avg < 0.5:
+            #    subject = 'WARNING : high CR success {} setup'.format(self.setup_name)
+            #    text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
             #    print text
-            #    #qt.instruments['rejecter'].move('cryo_half', 0.5)
+            #    self.set_invalid_data_marker(1)
+            #    #qt.instruments['rejecter'].move('cryo_half', -0.5)
             #    self.send_error_email(subject = subject, text = text)
 
+            elif self.failed_cr_fraction_avg > 0.99:
+                subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
+                text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
+                print text
+                self.need_to_optimize_nf = True
+                #qt.instruments['rejecter'].move('cryo_half', 0.5)
+                self.send_error_email(subject = subject, text = text)
+
             elif self.cr_counts_avg > self.get_max_cr_counts_avg() :
-                qt.instruments['rejecter'].move('cryo_half', -0.5)
-                self.cryo_half_rot_degrees += 0.5
-                print '\nI am rotating the cryo half waveplate. So far it has been rotated of {} degrees.\n'.format(self.cryo_half_rot_degrees)
-                if self.cryo_half_rot_degrees > self.max_cryo_half_rot_degrees :
+                if self.cryo_half_rot_degrees < self.max_cryo_half_rot_degrees :
+                    qt.instruments['rejecter'].move('cryo_half', -0.5)
+                    self.cryo_half_rot_degrees += 0.5
+                    print '\nThe average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
+                        So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg, self.cryo_half_rot_degrees)
+    
+                    subject = 'WARNING : cryo_half rotating'.format(self.setup_name)
+                    text = 'I have passed too many cr checks.The average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
+                           So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg, self.cryo_half_rot_degrees)
+                    print text
+                    self.send_error_email(subject = subject, text = text)
+
+                else :
                     subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
                     text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rotation_degrees)
                     print text
-                    self.set_invalid_data_marker(1)
+                    self.set_invalid_data_marker(1)  
                     self.send_error_email(subject = subject, text = text)
 
 
@@ -427,10 +403,13 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.set_pid_e_primer_running(True)
 
     def optimize_yellow(self):
+        e_primer_was_running = self.get_pid_e_primer_running()
+        self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
         qt.instruments['yellowfrq_optimizer'].optimize()
         qt.msleep(2.5)
         self.set_pidyellowfrq_running(True)
+        self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_gate(self):
         self.set_pidgate_running(False)
@@ -484,7 +463,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
     def optimize_quarter(self):
         qt.instruments['waveplates_optimizer'].optimize('Quarter')
 
-    def optimize_rejection(self):
+    def zoptimize_rejection(self):
         qt.instruments['waveplates_optimizer'].optimize_rejection()
 
 
@@ -516,6 +495,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.wait_counter               = 0
         self.flood_email_counter        = 0  
         self.repump_counts              = 0 
-        self.cryo_half_rot_degrees      = 0     
+        self.cryo_half_rot_degrees      = 0    
 
         
