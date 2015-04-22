@@ -183,9 +183,9 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 20000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
