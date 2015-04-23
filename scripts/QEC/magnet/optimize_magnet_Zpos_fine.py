@@ -51,8 +51,8 @@ if __name__ == '__main__':
 
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
-            range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-            pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+            range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=(f0m_temp)*1e9,# - N_hyperfine,
+            pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
     f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
     f0m_temp = f0m_temp# + N_hyperfine*1e-9
     delta_f0m_temp = f0m_temp*1e6-current_f_msm1*1e-3
@@ -84,6 +84,7 @@ if __name__ == '__main__':
             print 'Steps = 0 optimization converted'
             break
         if safemode == True: 
+            print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
             if str(ri) == 'y': 
                 mom.step('Z_axis',d_steps[iterations])
@@ -103,13 +104,13 @@ if __name__ == '__main__':
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
-        GreenAOM.set_power(5e-6)
+        GreenAOM.set_power(20e-6)
         optimiz0r.optimize(dims=['x','y','z'])
         
         
         DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+                pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
         delta_f0m_temp = f0m_temp*1e6-current_f_msm1*1e-3
@@ -151,4 +152,3 @@ if __name__ == '__main__':
     d.close_file()
 
     print 'Z position fine optimization finished, stepped the magnet '+ str(total_d_steps) + ' in '+str(iterations+1) +' iterations'
-

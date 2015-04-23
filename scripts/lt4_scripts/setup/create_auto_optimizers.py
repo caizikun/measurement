@@ -40,4 +40,4 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
 #if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer', setup_name='lt4')
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name='lt4')

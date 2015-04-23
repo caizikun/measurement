@@ -4,6 +4,10 @@ import numpy as np
 
 def optimize():
     print 'Starting to optimize.'
+
+    print 'checking signalhoud:'
+    if not(check_pulse_aom_frq()):
+        return False
     powers_ok=False
     for i in range(5):
     	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -19,10 +23,14 @@ def optimize():
     
     qt.msleep(3)
     optimize_ok = False
-    for i in range(3):
+    for i in range(2):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
-        optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
+        if qt.current_setup=='lt4':
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=150, cycles =1)
+        else:
+            qt.instruments['optimiz0r'].optimize(dims=['z'],cnt=1, int_time=150, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=150, cycles =1)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
@@ -55,13 +63,25 @@ def bell_check_powers():
             qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
             if n == 'NewfocusAOM':
                 qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+            break
     qt.instruments['PMServo'].move_out()
     return all_fine
+
+def check_pulse_aom_frq():
+    f_expected = 200e6 + 470e3 #200MHz + x Hz
+    f,mi,ma=signalhound.GetSweep(do_plot=True, max_points=1030)
+    f_offset = f[argmax(mi)]
+    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
+    if np.abs(f_offset - f_expected) > 20e3:
+        print 'PulseAOM frequency too far off expected value!'
+        return False
+    else:
+        return True
 
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 6
+        start_index = 4
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -69,7 +89,12 @@ if __name__ == '__main__':
             qt.bell_name_index = i
             qt.bell_succes=False
             execfile(r'bell_lt4.py')
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or not(qt.bell_succes): 
+            output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+            output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
+                    not(qt.bell_succes)                     or \
+                    (output_lt4 == 'bell_optimizer_failed') or \
+                    (output_lt3 == 'bell_optimizer_failed'): 
                 break
             qt.msleep(20)
 

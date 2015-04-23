@@ -260,3 +260,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         except KeyError:
             pass # means it's already stopped
         self.stop_measurement_process()
+
+    def stop_measurement_process(self):
+        pulsar_pq.PQPulsarMeasurement.stop_measurement_process(self)
+        self.AWG_RO_AOM.turn_off()
+        self.E_aom.turn_off()
+        self.A_aom.turn_off()
+        self.repump_aom.turn_off()

@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277513  DASTUD\tud277513
 '<Header End>
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -21,5 +21,5 @@ INIT:
 EVENT:
 
   PAR_62 = ((P2_DIGIN_Long(DIO_Module)) AND (2^channel))   'This sets the digital output with channelnr to the value given by set
-   
+  'PAR_62 = P2_DIGIN_Long(DIO_Module)
   END   

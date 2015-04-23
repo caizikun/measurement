@@ -501,7 +501,9 @@ def _LDE_element(msmt, **kw):
         noof_p = msmt.joint_params['DD_number_pi_pulses']
         index_j = np.linspace(noof_p-1, - noof_p+1, noof_p )
         for j in range(noof_p):
-            e.add(msmt.MW_pi, 
+            e.add(pulse.cp(msmt.MW_pi,
+                    amplitude=(1.)**(noof_p-j)*msmt.params['MW_pi_amp'],
+                    ), 
                 start = -expected_echo_time/(2.*noof_p)*(2*j+1) \
                     +msmt.params['free_precession_offset']*index_j[j]\
                     +msmt.params['echo_offset'],

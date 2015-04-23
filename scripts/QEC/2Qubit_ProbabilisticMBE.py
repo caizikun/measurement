@@ -20,7 +20,6 @@ def MBE(name, carbon_list   = [1,2],
         number_of_MBE_steps = 1,
         mbe_bases           = ['X','X'],
         MBE_threshold       = 1,
-
         number_of_parity_msmnts = 0,
         parity_msmnts_threshold = 1, 
 
@@ -44,7 +43,7 @@ def MBE(name, carbon_list   = [1,2],
     m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
     m.params['Nr_C13_init']         = len(carbon_init_list)
-
+    m.params['el_after_init']                = '0'
     ##################################
     ### RO bases (sweep parameter) ###
     ##################################
@@ -112,7 +111,7 @@ def MBE(name, carbon_list   = [1,2],
 if __name__ == '__main__':
 
     MBE(SAMPLE + 'positive', el_RO= 'positive')
-    MBE(SAMPLE + 'negative', el_RO= 'negative')
+    # MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 
 

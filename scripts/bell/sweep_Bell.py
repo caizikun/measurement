@@ -171,7 +171,7 @@ def tail_sweep(name):
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.35,-0.15,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -183,9 +183,9 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=5
+    pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 20000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
@@ -222,7 +222,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 40000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -263,7 +263,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt4_Sam_31CrCounts') 
+    SAMPLE_CFG = qt.exp_params['protocols']['current']
+    tail_sweep('tail') 
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('test')
+    #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
