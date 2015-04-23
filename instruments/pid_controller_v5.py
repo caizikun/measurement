@@ -93,7 +93,7 @@ class pid_controller_v5(Instrument):
         self._parlist = ['P', 'I', 'D',
                 'setpoint', 'value_factor', 'value_offset','max_value',
                 'min_value', 'max_control_deviation','use_stabilizor', 'step_size',
-                'control_coarse_step', 'do_plot', 'min_value_deviation']
+                'control_coarse_step', 'do_plot', 'min_value_deviation','fine_value_threshold']
         self.ins_cfg = config.Config(cfg_fn)
         self.load_cfg()
         self.save_cfg()
