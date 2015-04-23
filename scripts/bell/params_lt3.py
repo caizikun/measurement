@@ -94,7 +94,6 @@ params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 15e-9
 params_lt3['aom_amplitude']				 = 0.64 # CR28 2015-04-23
 
-
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
