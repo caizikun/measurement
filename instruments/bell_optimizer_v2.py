@@ -64,6 +64,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.max_laser_reject_cycles = 25
         
         self.history_length = 10
+        self.avg_length = 9
         self.deque_par_counts   = deque([], self.history_length)
         self.deque_par_laser    = deque([], self.history_length)
         self.deque_t            = deque([], self.history_length)
@@ -198,7 +199,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             
             self.update_values()
             par_counts , par_laser, dt = self.calculate_difference(1)
-            par_counts_avg , _tmp, _tmp1 = self.calculate_difference(9)
+            par_counts_avg , _tmp, _tmp1 = self.calculate_difference(self.avg_length)
            
             self.dt = dt
             self.cr_checks = par_counts[2]
@@ -239,6 +240,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
             self.publish_values()
 
+
+            self._run_counter += 1
             if not self.script_running :
                 self.script_not_running_counter += 1
                             
@@ -313,7 +316,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.need_to_optimize_nf = False
                 self.nf_optimize_timer = time.time()
                 self.wait_counter = 1
-                #self.set_invalid_data_marker(0)
+
 
             elif self.strain > self.get_max_strain_splitting():
                 text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
@@ -342,22 +345,14 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.set_invalid_data_marker(1)
                     self.set_failed()
 
-            #elif self.failed_cr_fraction_avg < 0.5:
-            #    subject = 'WARNING : high CR success {} setup'.format(self.setup_name)
-            #    text = 'Im passing too many cr checks. Please adjust the Cryo waveplate'
-            #    print text
-            #    self.set_invalid_data_marker(1)
-            #    #qt.instruments['rejecter'].move('cryo_half', -0.5)
-            #    self.send_error_email(subject = subject, text = text)
-
-            elif self.failed_cr_fraction_avg > 0.98:
+            elif (self.failed_cr_fraction_avg > 0.96) and (self._run_counter % self.avg_length == 0):
                 subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
                 if self.nf_optimize_counter < 2:
                     self.need_to_optimize_nf = True
                     self.nf_optimize_counter +=1
-                #qt.instruments['rejecter'].move('cryo_half', 0.5)
+
                 self.send_error_email(subject = subject, text = text)
 
             elif self.cr_counts_avg_excl_repump > self.get_max_cr_counts_avg() :
@@ -489,17 +484,17 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         return True
 
     def init_counters(self):
-        self._t0 = time.time()
         self.set_invalid_data_marker(0)
         self.status_message = ''
         self.update_values()
+        self._run_counter               = 0
         self.script_not_running_counter = 0
         self.gate_optimize_counter      = 0
         self.yellow_optimize_counter    = 0
         self.nf_optimize_counter        = 0
         self.laser_rejection_counter    = 0
         self.need_to_optimize_nf        = False
-        self.nf_optimize_timer          = self._t0
+        self.nf_optimize_timer          = time.time()
         self.wait_counter               = 0
         self.flood_email_counter        = 0  
         self.repump_counts              = 0 
