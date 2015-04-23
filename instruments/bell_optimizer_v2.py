@@ -204,7 +204,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             if not self.script_running:
                 self.script_not_running_counter += 1
                 self.status_message = 'Bell script not running'
-                            
+                 
+                max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())            
                 if self.script_not_running_counter > max_counter_for_waiting_time :
                     self.send_error_email(subject = 'ERROR : Bell sequence not running')
                     self.stop()
@@ -250,7 +251,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.SP_ref = self.SP_ref_LT4 if 'lt4' in self.setup_name else self.SP_ref_LT3
                     
                 self.strain = qt.instruments['e_primer'].get_strain_splitting()
-                max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())
 
                 self.publish_values()
 
