@@ -350,11 +350,13 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             #    #qt.instruments['rejecter'].move('cryo_half', -0.5)
             #    self.send_error_email(subject = subject, text = text)
 
-            elif self.failed_cr_fraction_avg > 0.96:
+            elif self.failed_cr_fraction_avg > 0.98:
                 subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
                 text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
                 print text
-                self.need_to_optimize_nf = True
+                if self.nf_optimize_counter < 2:
+                    self.need_to_optimize_nf = True
+                    self.nf_optimize_counter +=1
                 #qt.instruments['rejecter'].move('cryo_half', 0.5)
                 self.send_error_email(subject = subject, text = text)
 
@@ -373,7 +375,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
                 else :
                     subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
-                    text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rotation_degrees)
+                    text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rot_degrees)
                     print text
                     self.set_invalid_data_marker(1)  
                     self.send_error_email(subject = subject, text = text)
@@ -382,6 +384,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             else :
                 self.script_not_running_counter = 0 
                 self.gate_optimize_counter = 0 
+                self.nf_optimize_counter = 0 
                 self.yellow_optimize_counter = 0
                 self.laser_rejection_counter = 0
                 self.set_invalid_data_marker(0)
@@ -493,6 +496,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.script_not_running_counter = 0
         self.gate_optimize_counter      = 0
         self.yellow_optimize_counter    = 0
+        self.nf_optimize_counter        = 0
         self.laser_rejection_counter    = 0
         self.need_to_optimize_nf        = False
         self.nf_optimize_timer          = self._t0

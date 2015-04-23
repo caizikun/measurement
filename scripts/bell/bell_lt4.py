@@ -208,7 +208,8 @@ def measureXX(name):
              )
 
 def pulse_overlap(name):
-    m = Bell_lt4(name) 
+    m = Bell_lt4(name)
+    m.joint_params['LDE_attempts_before_CR'] = 5000 
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -314,10 +315,8 @@ if __name__ == '__main__':
         #TPQI('run_test')
         
         qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        full_bell('TheFourth_day2_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
-        output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
-        output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
-        qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
+        full_bell('TheFourth_day3_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+        qt.bell_succes = True
         
         #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
