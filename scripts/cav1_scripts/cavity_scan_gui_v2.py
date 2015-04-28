@@ -285,6 +285,8 @@ class ScanGUI(QtGui.QMainWindow):
         self.dc.coarse = False
         self.dc.use_wm = False
         self.dc.averaging_samples = 1
+        self.dc.autosave = False
+        self.dc.autostop = False
 
 
     def fileQuit(self):
@@ -298,43 +300,57 @@ class ScanGUI(QtGui.QMainWindow):
 
     def set_avg (self, value):
         self.dc.averaging_samples = value
+        print 'Averaging changed...', self.dc.averaging_samples
 
     def scan_laser(self):
-        self.dc.scan_laser_running = True
         if self.dc.coarse:
-            self.v_min_box.setRange (0.1, 10)
-            self.v_max_box.setRange (0.1, 10)
             if (self.dc._scan_manager.V_min < 0.1):
-                self.dc._scan_manager.V_min = 0.1
-                self.v_min_box.setValue (0.1)
-            if (self.dc._scan_manager.V_max >10):
-                self.dc._scan_manager.V_max = 10
-                self.v_max_box.setValue (10)
+                msg_text = 'Min_V should be larger than 0.1V!'
+                ex = MsgBox(msg_text=msg_text)
+                ex.show()
+                self.dc.scan_laser_running = False
+            elif (self.dc._scan_manager.V_max >10):
+                msg_text = 'Max_V should not exceed 10V!'
+                ex = MsgBox(msg_text=msg_text)
+                ex.show()
+                self.dc.scan_laser_running = False
+            else:
+                self.dc.scan_laser_running = True
+
         else:
-            self.v_min_box.setRange (-3, 3)
-            self.v_max_box.setRange (-3, 3)
             if (self.dc._scan_manager.V_min <-3):
-                self.dc._scan_manager.V_min = -3
-                self.v_min_box.setValue (-3)
-            if (self.dc._scan_manager.V_max > 3):
-                self.dc._scan_manager.V_max = 3
-                self.v_max_box.setValue (3)
+                msg_text = 'Min_V should be larger than -3V!'
+                ex = MsgBox(msg_text=msg_text)
+                ex.show()
+                self.dc.scan_laser_running = False
+            elif (self.dc._scan_manager.V_max > 3):
+                msg_text = 'Max_V should not exceed 3V!'
+                ex = MsgBox(msg_text=msg_text)
+                ex.show()
+                self.dc.scan_laser_running = False
+            else:
+                self.dc.scan_laser_running = True
+
 
     def scan_piezos(self):
-        self.dc.scan_piezo_running = True
-        self.v_min_box.setRange (-2, 10)
-        self.v_max_box.setRange (-2, 10)
         if (self.dc._scan_manager.V_min <-2):
-            self.dc._scan_manager.V_min = -2
-            self.v_min_box.setValue (-2)
-        if (self.dc._scan_manager.V_max >10):
-            self.dc._scan_manager.V_max = 10
-            self.v_max_box.setValue (10)
+            msg_text = 'Min_V should be larger than -2V!'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
+        elif (self.dc._scan_manager.V_max >10):
+            msg_text = 'Min_V should be larger than 0.1V!'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
+        else:
+            self.dc.scan_piezo_running = True
+
+
 
 
     def stop_scan(self):
         self.dc.scan_laser_running = False
         self.dc.scan_piezo_running = False
+
 
     def calibration(self):
         self.dc.scan_laser_running = False
@@ -376,10 +392,11 @@ class ScanGUI(QtGui.QMainWindow):
 
 
 class ControlPanelGUI (QtGui.QMainWindow):
-    def __init__(self, master_of_cavity, wavemeter, parent=None):
+    def __init__(self, master_of_cavity, wavemeter, laser, parent=None):
 
         self._moc = master_of_cavity
         self._wm = wavemeter
+        self._laser = laser
         QtGui.QWidget.__init__(self, parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #self.setWindowTitle("Laser-Piezo Scan Interface")
@@ -394,6 +411,8 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.pzk_Y = self._moc._jpe_tracker.curr_y*1000
         self.pzk_Z = self._moc._jpe_tracker.curr_z*1000
         self.use_wm = False
+        self.room_T = None
+        self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
 
         #Set all parameters and connect all events to actions
         # LASER
@@ -401,12 +420,19 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.ui.dSBox_coarse_lambda.setSingleStep (0.01)
         self.ui.dSBox_coarse_lambda.setValue(637.0)
         self.ui.dSBox_coarse_lambda.valueChanged.connect(self.set_laser_coarse)
-        self.ui.sB_power.setRange (0, 100)
-        self.ui.sB_power.setValue(0)
-        self.ui.sB_power.valueChanged.connect(self.set_laser_power)
-        self.ui.sBox_fine_laser_tuning.setRange (0, 100)
-        self.ui.sBox_fine_laser_tuning.setValue(50)
-        self.ui.sBox_fine_laser_tuning.valueChanged.connect(self.set_fine_laser_tuning)
+        self.ui.dsBox_fine_laser_tuning.setDecimals(1)
+        self.ui.dsB_power.setRange (0.0, 15.0)
+        self.ui.dsB_power.setSingleStep(0.1)     
+        self.ui.dsB_power.setValue(0)   
+        self.ui.dsB_power.valueChanged.connect(self.set_laser_power)
+        self.ui.dsBox_fine_laser_tuning.setRange (0, 100)
+        self.ui.dsBox_fine_laser_tuning.setDecimals(2)
+        self.ui.dsBox_fine_laser_tuning.setSingleStep(0.01)
+        self.ui.dsBox_fine_laser_tuning.setValue(50)
+        self.ui.dsBox_fine_laser_tuning.valueChanged.connect(self.set_fine_laser_tuning)
+        self.set_laser_coarse(637.0)
+        self.set_laser_power(0)
+        self.set_fine_laser_tuning(50)
 
         # FINE PIEZOS
         self.ui.doubleSpinBox_p1.setRange (-2, 10)
@@ -459,13 +485,14 @@ class ControlPanelGUI (QtGui.QMainWindow):
         timer.start(self.refresh_time)
 
     def set_laser_coarse (self, value):
-        print 'Laser wavelength: ', value
+        self._laser.set_wavelength (wavelength=value)
 
     def set_laser_power (self, value):
-        print 'Laser power: ', value
+        self._laser.set_power_level (power=value)
 
     def set_fine_laser_tuning (self, value):
-        print value
+        voltage = 3*(value-50)/50.
+        ### self._ HERE WE SET THE ADWIN VOLTAGE #####
 
     def set_dsb_p1 (self, value):
         self.set_fine_piezo_1 (value)
@@ -525,15 +552,22 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.pzk_Z = value
 
     def move_pzk(self):
-        s1, s2, s3 = self._moc.motion_to_spindle_steps (x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
-        msg_text = 'Moving the spindles by ['+str(s1)+' , '+str(s2)+' , '+str(s3)+' ] steps. Continue?'
-        ex = MsgBox(msg_text=msg_text)
-        ex.show()
-        if (ex.ret==0):
-            self._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
+        if (self.room_T == None):
+            msg_text = 'Set temperature before moving PiezoKnobs!'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
+        else:
+            s1, s2, s3 = self._moc.motion_to_spindle_steps (x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
+            msg_text = 'Moving the spindles by ['+str(s1)+' , '+str(s2)+' , '+str(s3)+' ] steps. Continue?'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
+            if (ex.ret==0):
+                self._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
+                self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
 
     def pzk_set_as_origin(self):
         self._moc_set_as_origin()
+        self.ui.label_curr_pos_readout.setText('[ '+str(0)+' ,'+str(0)+' ,'+str(0)+'] um')
 
     def use_wavemeter (self):
         if self.ui.checkBox_wavemeter.isChecked():
@@ -581,6 +615,8 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.set_dsb_p1 (0)
         self.set_dsb_p2 (0)
         self.set_dsb_p3 (0)
+        self.set_laser_power(0)
+        self.set_fine_laser_tuning(0)
         self.close()
 
     def closeEvent(self, ce):
@@ -589,6 +625,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
 #adwin = qt.instruments.get_instruments()['adwin']
 wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
 moc = qt.instruments.get_instruments()['master_of_cavity']
+newfocus = qt.instruments.get_instruments()['newfocus1']
 
 qApp = QtGui.QApplication(sys.argv)
 lc = CavityScan (name='test')
@@ -599,7 +636,7 @@ aw_scan = ScanGUI(scan_manager = lc)
 aw_scan.setWindowTitle('Laser & Piezo Scan Interface')
 aw_scan.show()
 
-aw_ctrl = ControlPanelGUI(master_of_cavity = moc, wavemeter = wm_adwin)
+aw_ctrl = ControlPanelGUI(master_of_cavity = moc, wavemeter = wm_adwin, laser=newfocus)
 aw_ctrl.setWindowTitle ('Control Panel')
 aw_ctrl.show()
 sys.exit(qApp.exec_())

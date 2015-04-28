@@ -82,12 +82,11 @@ class CavityScan ():
 	def piezo_scan (self, normalize = False, avg_nr_samples=1):
 
 		v_step = float(self.V_max-self.V_min)/float(self.nr_V_steps)
-		self.v_vals = np.linspace(self.V_min, self.V_max, self.nr_V_steps)	
-
+		self.v_vals = np.linspace(self.V_min, self.V_max, self.nr_V_steps)
 		for j in np.arange(avg_nr_samples):	
 			if (j==0):
 				self.PD_signal = self._adwin.fine_piezo_jpe_scan(nr_steps = self.nr_V_steps, wait_cycles = 200, start_voltages = [self.V_min, self.V_min, self.V_min], voltage_step=v_step)			
-			else:	
+			else:
 				self.PD_signal = self.PD_signal + self._adwin.fine_piezo_jpe_scan(nr_steps = self.nr_V_steps, wait_cycles = 200, start_voltages = [self.V_min, self.V_min, self.V_min], voltage_step=v_step)
 
 
