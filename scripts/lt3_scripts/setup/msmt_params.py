@@ -158,9 +158,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 180e-9, 
-        'Hermite_pi_amp': 0.920 , #BELL # 2015-04-20 for pi pulse of 180 ns
+        'Hermite_pi_amp': 0.912 , #BELL # 2015-04-28 for pi pulse of 180 ns
         'Hermite_pi2_length': 50e-9,
-        'Hermite_pi2_amp': 0.821,#2015-04-20 for pi/2 pulse of 50 ns
+        'Hermite_pi2_amp': 0.813,#2015-04-28 for pi/2 pulse of 50 ns
         'Hermite_Npi4_length': 45e-9,
         'Hermite_Npi4_amp': 0.373683, # 2014-08-21
         'Square_pi_length' : 1000e-9,#2000e-9, # calib. 2014-07-25
