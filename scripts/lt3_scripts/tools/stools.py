@@ -191,7 +191,7 @@ def start_bs_counter():
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
     qt.instruments['linescan_counts'].set_scan_value('counts')
-    qt.instruments['counters'].set_is_running(True)
+    #qt.instruments['counters'].set_is_running(True)
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
         print 'ZPL APDs off'

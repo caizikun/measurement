@@ -205,7 +205,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.script_not_running_counter += 1
                 self.status_message = 'Bell script not running'
                  
-                max_counter_for_waiting_time = np.floor(10*60/self.get_read_interval())            
+                max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())            
                 if self.script_not_running_counter > max_counter_for_waiting_time :
                     self.send_error_email(subject = 'ERROR : Bell sequence not running')
                     self.stop()
