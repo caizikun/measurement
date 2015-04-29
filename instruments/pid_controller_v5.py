@@ -272,3 +272,14 @@ class pid_controller_v5(Instrument):
                 return False
         return True
 
+    def remove(self):
+        self.save_cfg()
+        self.stop()
+        print 'removing'
+        Instrument.remove(self)
+
+    def reload(self):
+        self.save_cfg()
+        self.stop()
+        print 'reloading'
+        Instrument.reload(self)

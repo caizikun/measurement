@@ -6,9 +6,9 @@ import random
 from matplotlib.backends import qt4_compat
 use_pyside = qt4_compat.QT_API == qt4_compat.QT_API_PYSIDE
 if use_pyside:
-    from PySide import QtGui, QtCore
+    from PySide import QtGui, QtCore, uic
 else:
-    from PyQt4 import QtGui, QtCore
+    from PyQt4 import QtGui, QtCore, uic
 
 import pylab as plt
 import h5py
@@ -69,7 +69,7 @@ class MyCanvas(FigureCanvas):
 
         f = plt.figure()
         ax = f.add_subplot(1,1,1)
-        ax.plot (self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth = 2)
+        ax.plot (self._scan_manager.v_for_saving, self._scan_manager.PD_for_saving, '.b', linewidth = 2)
         ax.set_xlabel ('voltage [V]')
         ax.set_ylabel ('photodiode signal [a.u.]')
         f.savefig(os.path.join(directory, fName+'.png'))
@@ -78,9 +78,9 @@ class MyCanvas(FigureCanvas):
         #f.attrs ['laser_power'] = self._laserscan.laser_power
         #f.attrs ['laser_wavelength'] = self._laserscan.laser_wavelength
         scan_grp = f.create_group('laserscan')
-        scan_grp.create_dataset('V', data = self._scan_manager.v_vals)
-        scan_grp.create_dataset('PD_signal', data = self._scan_manager.PD_signal)
-        scan_grp.create_dataset('wm_frequency', data = self._scan_manager.frequencies)
+        scan_grp.create_dataset('V', data = self._scan_manager.v_for_saving)
+        scan_grp.create_dataset('PD_signal', data = self._scan_manager.PD_for_saving)
+        #scan_grp.create_dataset('wm_frequency', data = self._scan_manager.frequencies)
         f.close()
 
 
@@ -94,10 +94,10 @@ class ScanCanvas(MyCanvas):
         timer.start(self.refresh_time)
 
     def update_laserscan(self):
-        # Build a list of 4 random integers between 0 and 10 (both inclusive)
         self._status_label.setText("<font style='color: red;'>SCANNING LASER</font>")
+        continuous_saving = True
         self._task = 'laser'
-        self._scan_manager.laser_scan(use_wavemeter = self.use_wm)
+        self._scan_manager.laser_scan(use_wavemeter = self.use_wm, fine_scan=True, avg_nr_samples = 30)
         #self.random_noise = 0*0.1*np.random.rand(len(self._laserscan.v_vals))
         if self.use_wm:
             print 'Use_wm!!'
@@ -107,13 +107,17 @@ class ScanCanvas(MyCanvas):
             self.axes.plot(self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth =2)
             self.axes.set_xlabel ('voltage [V]')            
         self.axes.set_ylabel('photodiode signal [a.u.]')
-        self.axes.set_ylim ([-0.1, 3])
+        self.axes.set_ylim ([min(self._scan_manager.PD_signal), max(self._scan_manager.PD_signal)])
+        self._scan_manager.v_for_saving = self._scan_manager.v_vals
+        self._scan_manager.PD_for_saving = self._scan_manager.PD_signal        
         self.draw()
+        if continuous_saving:
+            print "Saving..."
+            self.save()
 
     def calibrate_laser_frequency(self):
-        # Build a list of 4 random integers between 0 and 10 (both inclusive)
         self._status_label.setText("<font style='color: red;'>CALIBRATION... please wait!</font>")
-        self._scan_manager.laser_scan(use_wavemeter = True)
+        self._scan_manager.laser_scan(use_wavemeter = True, fine_scan = True)
         self.calibrate = False
         self._status_label.setText("<font style='color: red;'>IDLE</font>")
 
@@ -148,13 +152,21 @@ class ScanCanvas(MyCanvas):
     def update_piezoscan(self):
         # Build a list of 4 random integers between 0 and 10 (both inclusive)
         self._task = 'piezos'
+        continuous_saving = True
         self._status_label.setText("<font style='color: red;'>SCANNING PIEZOs</font>")
-        self._scan_manager.piezo_scan()
+        self._scan_manager.initialize_piezos(wait_time=1)
+        self._scan_manager.piezo_scan(avg_nr_samples=30)
         self.axes.plot(self._scan_manager.v_vals, self._scan_manager.PD_signal, '.b', linewidth =2)
         self.axes.set_xlabel ('piezo voltage')
         self.axes.set_ylabel('photodiode signal [a.u.]')
-        self.axes.set_ylim ([-0.1, 3])
+        self.axes.set_ylim ([min(self._scan_manager.PD_signal), max(self._scan_manager.PD_signal)])
+        self._scan_manager.v_for_saving = self._scan_manager.v_vals
+        self._scan_manager.PD_for_saving = self._scan_manager.PD_signal        
+        #plt.tight_layout()
         self.draw()
+        if continuous_saving:
+            print "Saving..."
+            self.save()
 
     def update_plot(self):
         if self.scan_piezo_running:
@@ -172,7 +184,7 @@ class ScanGUI(QtGui.QMainWindow):
     def __init__(self, scan_manager):
         QtGui.QMainWindow.__init__(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowTitle("Laser Scan GUI")
+        self.setWindowTitle("Laser-Piezo Scan Interface")
 
         self.file_menu = QtGui.QMenu('&File', self)
         self.file_menu.addAction('&Save', self.fileSave,
@@ -240,7 +252,7 @@ class ScanGUI(QtGui.QMainWindow):
         l.addWidget (self.nr_steps_box, 8, 3)
 
         self.qlb1 = QtGui.QLabel ('min voltage')
-        l.addWidget (self.qlb1, 9, 0)
+        l.addWidget (self.qlb1, 9, 0) 
         self.qlb2 = QtGui.QLabel ('max voltage')
         l.addWidget (self.qlb2, 9, 1)
         self.qlb3 = QtGui.QLabel ('nr steps')
@@ -281,13 +293,13 @@ class ScanGUI(QtGui.QMainWindow):
                 self.dc._scan_manager.V_max = 9.9
                 self.v_max_box.setValue (10)
         else:
-            self.v_min_box.setRange (-2, 4)
-            self.v_max_box.setRange (-2, 4)
-            if (self.dc._scan_manager.V_min <-2):
-                self.dc._scan_manager.V_min = -2
-                self.v_min_box.setValue (-2)
-            if (self.dc._scan_manager.V_max >4):
-                self.dc._scan_manager.V_max = 4
+            self.v_min_box.setRange (-3, 10)
+            self.v_max_box.setRange (-3, 10)
+            if (self.dc._scan_manager.V_min <-3):
+                self.dc._scan_manager.V_min = -3
+                self.v_min_box.setValue (-3)
+            if (self.dc._scan_manager.V_max > 10):
+                self.dc._scan_manager.V_max = 10
                 self.v_max_box.setValue (4)
 
     def scan_piezos(self):
@@ -346,12 +358,14 @@ class ScanGUI(QtGui.QMainWindow):
         self.dc._scan_manager.nr_V_steps = value
 
 
+
 qApp = QtGui.QApplication(sys.argv)
 lc = CavityScan (name='test')
 lc.set_laser_params (wavelength = 637.1, power = 5)
-lc.set_scan_params (v_min=0., v_max=4., nr_points=10)
+lc.set_scan_params (v_min=0.02, v_max=4, nr_points=100)
 
-aw = ScanGUI(scan_manager = lc)
-aw.setWindowTitle("%s" % progname)
-aw.show()
+aw_scan = ScanGUI(scan_manager = lc)
+aw_scan.setWindowTitle("%s" % progname)
+aw_scan.show()
+
 sys.exit(qApp.exec_())
