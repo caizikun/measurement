@@ -209,7 +209,6 @@ def measureXX(name):
 
 def pulse_overlap(name):
     m = Bell_lt4(name)
-    m.joint_params['LDE_attempts_before_CR'] = 5000 
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -313,12 +312,18 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)
         #TPQI('run_test')
+        spcorr=False
+        if spcorr:
+            SP_PSB('SPCORR_PSB')
+        else:
+
+
+
+            qt.instruments['lt4_helper'].set_measurement_name(name_index)
+            full_bell('TheFourth_day7_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
+            qt.bell_succes = True
         
-        qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        full_bell('TheFourth_day3_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
-        qt.bell_succes = True
         
-        #SP_PSB('SPCORR_PSB')
         #lt4_only('test')
         #pulse_overlap('overlap')
         #SP_ZPL('lt3_2_no_echo')
