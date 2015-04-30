@@ -209,7 +209,8 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_cadm.get_params()
     	
     def status (self):
-		self._jpe_cadm.status (addr= self.addr)
+		output = self._jpe_cadm.status (addr= self.addr)
+		return output
 		    
     def step (self, ch, steps):
     	self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps)
