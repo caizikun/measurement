@@ -75,6 +75,8 @@ params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']#TODO Calibrate  and ad
 params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration'] #TODO Calibrate 50e-9
 params_lt4['MW_RND_amp_Q']	   = - params_lt4['MW_Npi4_amp']# 
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration'] #50e-9
+params_lt4['MW_RND_I_ispi2'] = True
+params_lt4['MW_RND_Q_ispi2'] = True
 
 params_lt4['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 

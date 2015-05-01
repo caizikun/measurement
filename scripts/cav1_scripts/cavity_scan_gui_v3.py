@@ -20,7 +20,7 @@ import h5py
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from measurement.lib.cavity.cavity_scan import CavityScan 
-from control_panel import Ui_Dialog as Ui_Form
+from control_panel_2 import Ui_Dialog as Ui_Form
 
 
 class MsgBox(QtGui.QDialog):
@@ -440,24 +440,11 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.ui.doubleSpinBox_p1.setSingleStep (0.001)
         self.ui.doubleSpinBox_p1.setValue(self.p1_V)
         self.ui.doubleSpinBox_p1.valueChanged.connect(self.set_dsb_p1)
-        self.ui.doubleSpinBox_p2.setRange (-2, 10)
-        self.ui.doubleSpinBox_p2.setDecimals (3)        
-        self.ui.doubleSpinBox_p2.setSingleStep (0.001)
-        self.ui.doubleSpinBox_p2.setValue(self.p2_V)
-        self.ui.doubleSpinBox_p2.valueChanged.connect(self.set_dsb_p2)
-        self.ui.doubleSpinBox_p3.setRange (-2, 10)
-        self.ui.doubleSpinBox_p3.setDecimals (3)        
-        self.ui.doubleSpinBox_p3.setSingleStep (0.001)
-        self.ui.doubleSpinBox_p3.setValue(self.p3_V)
-        self.ui.doubleSpinBox_p3.valueChanged.connect(self.set_dsb_p3)
+        self.ui.horizontalSlider_p1.setRange (0, 10000)
+        self.ui.horizontalSlider_p1.setSingleStep (1)        
         self.ui.horizontalSlider_p1.valueChanged.connect(self.set_hsl_p1)
-        self.ui.horizontalSlider_p2.valueChanged.connect(self.set_hsl_p2)
-        self.ui.horizontalSlider_p3.valueChanged.connect(self.set_hsl_p3)
-        self.ui.checkBox_lock_piezos.stateChanged.connect (self.piezo_lock)
         self.set_dsb_p1 (self.p1_V)
-        self.set_dsb_p2 (self.p2_V)
-        self.set_dsb_p3 (self.p3_V)
-
+        
         # PiezoKnobs
         self.ui.spinBox_X.setRange (-999, 999)
         self.ui.spinBox_X.setValue(self.pzk_X)
@@ -502,52 +489,17 @@ class ControlPanelGUI (QtGui.QMainWindow):
         ### self._ HERE WE SET THE ADWIN VOLTAGE #####
 
     def set_dsb_p1 (self, value):
-        self.set_fine_piezo_1 (value)
-        if self.piezo_locked:
-            self.set_fine_piezo_2 (value)
-            self.set_fine_piezo_3 (value)
+        self.set_fine_piezos (value)
+        self.ui.horizontalSlider_p1.setValue (int(10000*(value+2.)/12.))
 
-    def set_dsb_p2 (self, value):
-        self.set_fine_piezo_2 (value)
-        if self.piezo_locked:
-            self.set_fine_piezo_1 (value)
-            self.set_fine_piezo_3 (value)
-
-    def set_dsb_p3 (self, value):
-        self.set_fine_piezo_3 (value)
-        if self.piezo_locked:
-            self.set_fine_piezo_1 (value)
-            self.set_fine_piezo_2 (value)
-
-    def set_fine_piezo_1 (self, value):
+    def set_fine_piezos (self, value):
         self.p1_V = value
-        self.ui.doubleSpinBox_p1.setValue(value)
-        self.ui.horizontalSlider_p1.setValue (int(100*(value+2.)/12.))
-        self._moc.set_fine_piezo_voltages (v1 = self.p1_V, v2 = self.p2_V, v3 = self.p3_V)
-
-    def set_fine_piezo_2 (self, value):
-        self.p2_V = value
-        self.ui.doubleSpinBox_p2.setValue(value)
-        self.ui.horizontalSlider_p2.setValue (int(100*(value+2.)/12.))
-        self._moc.set_fine_piezo_voltages (v1 = self.p1_V, v2 = self.p2_V, v3 = self.p3_V)
-
-    def set_fine_piezo_3 (self, value):
-        self.p3_V = value
-        self.ui.doubleSpinBox_p3.setValue(value)
-        self.ui.horizontalSlider_p3.setValue (int(100*(value+2.)/12.))
-        self._moc.set_fine_piezo_voltages (v1 = self.p1_V, v2 = self.p2_V, v3 = self.p3_V)
+        self._moc.set_fine_piezo_voltages (v1 = self.p1_V, v2 = self.p1_V, v3 = self.p1_V)
 
     def set_hsl_p1 (self, value):
-        value_V = 12*value/100.-2.
-        self.set_dsb_p1 (value_V)
-
-    def set_hsl_p2 (self, value):
-        value_V = 12*value/100.-2.
-        self.set_dsb_p2 (value_V)
-
-    def set_hsl_p3 (self, value):
-        value_V = 12*value/100.-2.
-        self.set_dsb_p3 (value_V)
+        value_V = 12*value/10000.-2.
+        self.ui.doubleSpinBox_p1.setValue(value_V)
+        self.set_fine_piezos (value_V)
 
     def set_pzk_X (self, value):
         self.pzk_X = value
@@ -587,16 +539,6 @@ class ControlPanelGUI (QtGui.QMainWindow):
             wm_read = self._wm.Get_FPar (45)
             self.ui.label_wavemeter_readout.setText (str(wm_read)+ ' GHz')
 
-    def piezo_lock (self):
-        if self.ui.checkBox_lock_piezos.isChecked():
-            self.piezo_locked = True
-            self.set_dsb_p1 (self.p1_V)
-            self.set_dsb_p2 (self.p1_V)
-            self.set_dsb_p3 (self.p1_V)            
-        else:
-            self.piezo_locked = False
-        print self.piezo_locked
-
     def room_T_button (self):
         if self.ui.radioButton_roomT.isChecked():
             self.room_T =  True
@@ -620,8 +562,6 @@ class ControlPanelGUI (QtGui.QMainWindow):
     def fileQuit(self):
         print 'Closing!'
         self.set_dsb_p1 (0)
-        self.set_dsb_p2 (0)
-        self.set_dsb_p3 (0)
         self.set_laser_power(0)
         self.set_fine_laser_tuning(0)
         self.close()
