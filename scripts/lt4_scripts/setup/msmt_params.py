@@ -157,7 +157,7 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 220e-9, #XX 
-        'Hermite_pi_amp': 0.933, #2015-04-28
+        'Hermite_pi_amp': 0.925, #2015-05-01
         'Hermite_pi2_length': 100e-9, #120e-9, #XX
         'Hermite_pi2_amp': 0.6772, #0.681, #2015-04-28
         'Hermite_Npi4_length': 120e-9, #pi/4 45e-9
