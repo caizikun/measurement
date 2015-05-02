@@ -183,7 +183,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=5
+    pts=10
     m.params['pts']=pts
     m.params['repetitions'] = 15000
     
@@ -206,7 +206,7 @@ def echo_sweep(name):
     m.params['free_precession_offset'] = 0e-9
     m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(5e-9, 35e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-150e-9, 150e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -264,5 +264,5 @@ if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     tail_sweep('tail') 
     #tune('tune_lt3_PippinSil1') 
-    #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
+    #echo_sweep('Pippin_SIL3_2_DD_pi_pulse')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
