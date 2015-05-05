@@ -32,7 +32,7 @@ Carbon_3_f_ms0  		= False
 Carbon_6_f_ms0  		= False
 
 Carbon_1_f_msm1  		= False
-Carbon_2_f_msm1  		= False
+Carbon_2_f_msm1  		= True
 Carbon_5_f_msm1  		= False
 
 Carbon_3_f_msm1  		= False
@@ -64,8 +64,8 @@ Carbon_phase_cal_1to3	= False
 Carbon_phase_cal_3to1	= False
 Carbon_phase_cal_1to3	= False
 Carbon_phase_cal_3to1	= False
-Carbon_phase_cal_1to6	= True
-Carbon_phase_cal_6to1	= True
+Carbon_phase_cal_1to6	= False
+Carbon_phase_cal_6to1	= False
 
 debug 					= False
 
