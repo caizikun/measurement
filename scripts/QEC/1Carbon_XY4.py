@@ -31,6 +31,8 @@ def Single_C_DD(name,
         pulses                = 4,
         el_after_init         = 1,
         C13_init_method       = 'MBI',
+        C13_MBI_threshold     = [1],
+        C13_RO_phase          = ['X'],
         free_evolution_time = np.zeros((1))):
 
     m = DD.NuclearDD(name)
@@ -46,14 +48,14 @@ def Single_C_DD(name,
     m.params['el_after_init'] = el_after_init 
     m.params['Decoupling_pulses']=pulses
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 400
     # if pulses > 31:
     #     m.params['reps_per_ROsequence'] = 450
 
     # if pulses > 33:
     #     m.params['reps_per_ROsequence'] = 800
     m.params['C13_MBI_RO_state'] = 0 
-    m.params['C13_MBI_threshold_list'] = [1] 
+    m.params['C13_MBI_threshold_list'] = C13_MBI_threshold
     # m.params['C13_MBI_RO_duration'] = 100 
 
     m.params['C13_init_method'] = C13_init_method
@@ -99,7 +101,7 @@ def Single_C_DD(name,
             else:
                 m.params['free_evolution_time'] = np.linspace(1.5e-3,200e-3,6)
         m.params['pts'] = len(m.params['free_evolution_time'])
-        m.params['C_RO_phase'] = ['X']*len(m.params['free_evolution_time'])
+        m.params['C_RO_phase'] = C13_RO_phase*len(m.params['free_evolution_time'])
         m.params['sweep_name'] = 'Free evolution time (s)'
         m.params['sweep_pts']  = m.params['free_evolution_time']*2*pulses
 
@@ -140,8 +142,8 @@ def qstop():
         return True
 
 def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['positive'],optimize=True, ssrocalib=True, 
-    Max_FET_Dict = {'1': 1.3,'4': 2.25,'8': 3.0,'16': 5.,'32': 7.}, timepart_Dict ={'1': 1,'4': 2,'8': 4,'16': 8,'32': 8},
-    debug=False, datapoints = 8, time_min= 15e-3):
+    Max_FET_Dict = {'1': 1.3,'4': 2.25,'8': 3.0,'16': 5.,'32': 7.}, timepart_Dict ={'1': 1,'4': 1,'8': 4,'16': 8,'32': 8},
+    debug=False, datapoints = 10, time_min= 15e-3):
     for carbon in carbons:
         if qstop():
             break
@@ -169,12 +171,32 @@ def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['po
                         ssrocalibration(SAMPLE)   
                     adwin.start_set_dio(dio_no=4,dio_val=0)
                     msmtstr = SAMPLE+'_'+ DD_scheme +'_C'+str(carbon) +'_RO' + el_RO + '_N' + str(pulses).zfill(2) + '_part' + str(timepart+1)
-                    Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET[timepart*indexer:(timepart+1)*indexer])
-        
+                    Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, 
+                        C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET[timepart*indexer:(timepart+1)*indexer],
+                        C13_init_method = 'MBI', C13_MBI_threshold = [1], C13_RO_phase = ['X'])
 
+                    
 if __name__ == '__main__':
 
-    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1,4,8,16,32],el_ROs=['positive','negative'],debug=False)
+    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[6,2,3,5,1],pulses_list=[1],el_ROs=['positive','negative'],debug=False, ssrocalib=True)
+
+    # DD_scheme = 'auto'
+    # carbons = [1,2]
+    # el_ROs = ['positive','negative']
+    # pulses = 1
+    # debug = False
+    # FET=np.linspace(2.5e-3,1.4/(2*pulses),7)
+    # for carbon in carbons:
+    #     for el_RO in el_ROs:
+    #         if qstop():
+    #             break
+    #         GreenAOM.set_power(20e-6)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         msmtstr = SAMPLE+'_'+ DD_scheme +'_C'+str(carbon) +'_RO' + el_RO + '_N' + str(pulses).zfill(2) + '_part1'
+    #         Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
 
     # execfile(r'D:\measuring\measurement\scripts\QEC\NuclearT1_2.py')
     # Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[carbon],pulses_list=[1,4],el_ROs=['positive','negative'],optimize=True)
@@ -262,7 +284,7 @@ if __name__ == '__main__':
     #             adwin.start_set_dio(dio_no=4,dio_val=0)
     #             ssrocalibration(SAMPLE)
 
-
+    adwin.start_set_dio(dio_no=4,dio_val=0)
     
 
     

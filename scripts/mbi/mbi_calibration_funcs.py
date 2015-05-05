@@ -312,11 +312,10 @@ if __name__ == '__main__':
     # cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.400695-0.015, max_pulse_amp =0.400695+0.015, mbi = True)
 
 
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.458870 -0.015, max_pulse_amp = 0.458870 +0.015, mbi = True, mw_switch = True)
-    # # stools.turn_off_all_lt2_lasers()
-    # # GreenAOM.set_power(20e-6)
-    # # optimiz0r.optimize(dims=['x','y','z'])
-    # # stools.turn_off_all_lt2_lasers()
-    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.487477   -0.015, max_pulse_amp =0.487477  +0.015 , mbi = True, mw_switch = True)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.451298 -0.015, max_pulse_amp = 0.451298 +0.015, mbi = True, mw_switch = True)
+    # GreenAOM.set_power(20e-6)
+    # optimiz0r.optimize(dims=['x','y','z'], int_time=120)
+    # stools.turn_off_all_lt2_lasers()
+    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.475981   -0.015, max_pulse_amp =0.475981  +0.015 , mbi = True, mw_switch = True)
 
     print '\a\a\a'
