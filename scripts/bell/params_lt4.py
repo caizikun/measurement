@@ -75,10 +75,12 @@ params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']#TODO Calibrate  and ad
 params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration'] #TODO Calibrate 50e-9
 params_lt4['MW_RND_amp_Q']	   = - params_lt4['MW_Npi4_amp']# 
 params_lt4['MW_RND_duration_Q']= params_lt4['MW_Npi4_duration'] #50e-9
+params_lt4['MW_RND_I_ispi2'] = True
+params_lt4['MW_RND_Q_ispi2'] = True
 
 params_lt4['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt4['echo_offset'] = -85e-9 #50 ns
+params_lt4['echo_offset'] = -85e-9 # XXX    -85e-9 #50 ns    
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
@@ -89,13 +91,13 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 70e-9
-params_lt4['eom_off_amplitude']         = -.25 
+params_lt4['eom_off_amplitude']         = -.279
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.52 #CR 34  #2015-04-14
+params_lt4['aom_amplitude']             = 0.58 #CR 31  #2015-04-28
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

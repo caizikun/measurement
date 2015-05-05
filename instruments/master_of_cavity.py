@@ -145,7 +145,7 @@ class JPE_pos_tracker ():
 class master_of_cavity(CyclopeanInstrument):
 
     def __init__(self, name, jpe, adwin):
-    	print 'Initializing master_of_cavity...'
+    	print 'Initializing master_of_cavity... '
     	self.addr = 1
     	self.ch_x = 1
     	self.ch_y = 2
@@ -172,17 +172,25 @@ class master_of_cavity(CyclopeanInstrument):
     	#position control function
         self.add_function('step')
         self.add_function('set_as_origin')
-        self.add_function('move_to_xyz')
+        self.add_function('move_to_xyz')	
 
-  	def get_temperature (self):
-  		print 'Temperature is set to ', self.T, 'K'
+
+    def motion_to_spindle_steps (self, x, y, z):
+    	dz1, dz2, dz3 = self._jpe_tracker.position_to_spindle_steps (x=x, y=y, z=z)
+    	s1 = dz1/self._step_size
+    	s2 = dz2/self._step_size
+    	s3 = dz3/self._step_size
+    	return s1, s2, s3
+
+    def get_temperature (self):
+    	print 'Temperature is set to ', self.T, 'K'
 
     def set_address (self, addr):
     	self.addr = addr
 
     def get_address (self):
-       	print 'Address: ', self.addr
-        
+    	print 'Address: ', self.addr
+
     def set_temperature (self, T):
     	self.T = T
     	self._jpe_cadm.set_temperature (T = T)
@@ -201,7 +209,8 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_cadm.get_params()
     	
     def status (self):
-		self._jpe_cadm.status (addr= self.addr)
+		output = self._jpe_cadm.status (addr= self.addr)
+		return output
 		    
     def step (self, ch, steps):
     	self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps)
@@ -225,9 +234,17 @@ class master_of_cavity(CyclopeanInstrument):
     	self.ins_adwin.set_fine_piezos (voltage = np.array([v1, v2, v3]))
     	self._fine_piezo_V = np.array([v1,v2,v3])
 
-	def get_fine_piezo_voltages(self):
-		return self._fine_piezo_V
+    def get_fine_piezo_voltages(self):
+    	return self._fine_piezo_V
 
+    def move_spindle_steps (self, s1, s2, s3, x, y, z):
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
+    	qt.msleep(1)
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
+    	qt.msleep(1)
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
+    	qt.msleep(1)
+    	self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
 
     def move_to_xyz (self, x, y, z, verbose=True):
     	if (self.T == None):

@@ -57,4 +57,4 @@ if True:
             plot_name='nf_plot')
 
 if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer', setup_name = 'lt3')
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name = 'lt3')

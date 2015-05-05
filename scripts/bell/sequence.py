@@ -92,14 +92,14 @@ def pulse_defs_lt4(msmt):
                         amplitude = msmt.params['MW_RND_amp_I'],
                         length = msmt.params['MW_RND_duration_I'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_I_ispi2'])
         msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND-pulse-Q',
                         MW_channel='MW_Qmod',
                         PM_channel='MW_pulsemod',
                         amplitude = msmt.params['MW_RND_amp_Q'],
                         length = msmt.params['MW_RND_duration_Q'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_Q_ispi2'])
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
@@ -216,14 +216,14 @@ def pulse_defs_lt3(msmt):
                         amplitude = msmt.params['MW_RND_amp_I'],
                         length = msmt.params['MW_RND_duration_I'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_I_ispi2'])
         msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
                         MW_channel='MW_Qmod',
                         PM_channel='MW_pulsemod',
                         amplitude = msmt.params['MW_RND_amp_Q'],
                         length = msmt.params['MW_RND_duration_Q'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_Q_ispi2'])
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
@@ -502,7 +502,7 @@ def _LDE_element(msmt, **kw):
         index_j = np.linspace(noof_p-1, - noof_p+1, noof_p )
         for j in range(noof_p):
             e.add(pulse.cp(msmt.MW_pi,
-                    amplitude=(-1.)**(noof_p-j)*msmt.params['MW_pi_amp'],
+                    amplitude=(1.)**(noof_p-j)*msmt.params['MW_pi_amp'],
                     ), 
                 start = -expected_echo_time/(2.*noof_p)*(2*j+1) \
                     +msmt.params['free_precession_offset']*index_j[j]\

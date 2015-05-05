@@ -142,8 +142,21 @@ def bell_lt3(name):
             mw=True
             th_debug=False
         elif 'MeasXX_' in remote_name:
-            th_debug = False 
             mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+            m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+        elif 'MeasZZ_' in remote_name:
+            mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+            m.params['MW_RND_amp_Q']     = 0
+            m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+            m.params['MW_RND_I_ispi2'] = False
+            m.params['MW_RND_Q_ispi2'] = False
         else:
             print 'using standard local settings'
             #raise Exception('Unknown remote measurement: '+ remote_name)

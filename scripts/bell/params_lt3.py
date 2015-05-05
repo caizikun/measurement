@@ -72,10 +72,12 @@ params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
 params_lt3['MW_RND_amp_Q']	   = 0# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
+params_lt3['MW_RND_I_ispi2'] = True
+params_lt3['MW_RND_Q_ispi2'] = True
 
 params_lt3['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt3['echo_offset'] = -70e-9
+params_lt3['echo_offset'] = -70e-9 #XXXXX-70e-9
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -83,16 +85,16 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
-params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
+params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.049 # calibration from 2015-02-12 
-params_lt3['eom_off_duration']           = 70e-9 #XXXX
+params_lt3['eom_off_amplitude']          = -0.049 # calibration from 2015-04-23
+params_lt3['eom_off_duration']           = 70e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = 0.55 # CR30 2015-04-17
+params_lt3['aom_risetime']				 = 11e-9 # XXXX
+params_lt3['aom_amplitude']				 = 0.65 # CR28 2015-04-29
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

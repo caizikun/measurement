@@ -220,7 +220,7 @@ class bell_optimizer(mo.multiple_optimizer):
 
 
             #print 'script not running counter : ', self.script_not_running_counter
-            #self.publish_values()
+            self.publish_values()
 
             if not self.script_running :
                 self.script_not_running_counter += 1

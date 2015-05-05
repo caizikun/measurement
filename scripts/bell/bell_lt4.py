@@ -196,7 +196,29 @@ def full_bell(name):
 def measureXX(name):
     name='MeasXX_'+name
     m = Bell_lt4(name)
-    #make sure MWI and Q pulses are set correctly
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True,
+             do_upload     = True,
+             )
+
+def measureZZ(name):
+    name='MeasZZ_'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -208,7 +230,7 @@ def measureXX(name):
              )
 
 def pulse_overlap(name):
-    m = Bell_lt4(name) 
+    m = Bell_lt4(name)
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -308,20 +330,18 @@ if __name__ == '__main__':
         name_index=str(qt.bell_name_index)
     except AttributeError:
         name_index = ''
-
+    qt.instruments['lt4_helper'].set_measurement_name(name_index)
+    
     if not(jitterDetected):
-        qt.msleep(0.5)
-        #TPQI('run_test')
+        qt.msleep(0.5)  
         
-        #qt.instruments['lt4_helper'].set_measurement_name(name_index)
-        #full_bell('TheFourth_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
-        #output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
-        #output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()          
-        #qt.bell_succes = (output_lt4 != 'bell_optimizer_failed') and (output_lt3 != 'bell_optimizer_failed')
-        
-        SP_PSB('SPCORR_PSB')
+        #SP_PSB('SPCORR_PSB')           
+        #full_bell('TheFourth_day7_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')     
         #lt4_only('test')
         #pulse_overlap('overlap')
         #SP_ZPL('lt3_2_no_echo')
-        #measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
+        measureZZ('BackToZZ_day1_'+name_index)
+        #measureXX('BackToXX')
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+        
+        qt.bell_succes = True
