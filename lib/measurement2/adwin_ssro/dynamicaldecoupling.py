@@ -9426,6 +9426,8 @@ class Zeno_OneQB_Zmeasurement(MBI_C13):
 
 
         return sequence 
+
+
 class Zeno_ThreeQB(MBI_C13):
     '''
     Sequence: Sequence: |N-MBI| -|Cinit|^3-|MBE|^N-C13_Pi/2-(|Wait|-|Parity-measurement|-|Wait|)^M-|Tomography|
@@ -9466,23 +9468,60 @@ class Zeno_ThreeQB(MBI_C13):
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
+            ######################
             ### Initialize logical qubit via parity measurement.
+            ##########
+
+            C1 = self.params['carbon_MBE_list'][0]
+            C2 = self.params['carbon_MBE_list'][1]
+            C3 = self.params['carbon_MBE_list'][2]
+
+
+            ### NOTE:
+            ### states: 00 --> |X1,X2,X3>
+            ###         00p10 --> |X1>(|X2,X3>+ |-X2,-X3>)
+            ###         00p11 --> (|X1,X2> + |-X1,-X2>)|X3>
+
+            ### you have to choose the correct logical state.
+            ### the two qubits which get put into an entangled state are always in the logical two qubit state 'X'
+            do_carbonpi2 = True
+
+            if self.params['3qb_state'] == '00':
+                ### initialize all 3 carbons via MBE into |XXX>
+
+                self.params['carbon_MBE_list'] = [C1,C2,C3]
+                self.params['MBE_bases'] = ['Y','Y','Y']
+                self.params['carbon_MBE_logic_state'] = 'Z'
+                do_carbonpi2 = False
+
+            elif self.params['3qb_state'] == '00+10':
+
+                self.params['carbon_MBE_list'] = [C2,C3] ### initialized in maximally entangled state
+                self.params['carbon_MBE_logic_state'] = 'X'
+                self.params['cabon_classical'] = C1 ### rotate to +X
+
+            elif self.params['3qb_state'] == '00+11':
+
+                self.params['carbon_MBE_list'] = [C1,C2] ### initialized in maximally entangled state
+                self.params['carbon_MBE_logic_state'] = 'X'
+                self.params['cabon_classical'] = C3 ### rotate to +X
 
             for kk in range(self.params['Nr_MBE']):
                 
                 probabilistic_MBE_seq =     self.logic_init_seq(
                         prefix              = '2C_init_' + str(kk+1),
                         pt                  =  pt,
-                        carbon_list         = self.params['carbon_list'],
+                        carbon_list         = self.params['carbon_MBE_list'],
                         RO_basis_list       = self.params['MBE_bases'],
                         RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
                         el_RO_result        = '0',
-                        logic_state         = self.params['2qb_logical_state'] ,
+                        logic_state         = self.params['carbon_MBE_logic_state'] ,
                         go_to_element       = mbi,
                         event_jump_element   = 'next',
                         readout_orientation = 'positive')
 
                 gate_seq.extend(probabilistic_MBE_seq)
+
 
             ### add pi pulse after final init.
 
@@ -9490,6 +9529,16 @@ class Zeno_ThreeQB(MBI_C13):
                                     Gate_operation='pi',
                                     phase = self.params['X_phase'],
                                     el_state_after_gate = '1')])
+
+            ### rotate the last carbon to +X.
+            if do_carbonpi2:
+                UncondRen=Gate('C' + str(self.params['cabon_classical']) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                        Carbon_ind = self.params['cabon_classical'],
+                        phase = self.params['C13_Y_phase']+180)
+                gate_seq.append(UncondRen)
+
+
+            
 
 
             ### waiting time without Zeno msmmts.
@@ -9540,7 +9589,7 @@ class Zeno_ThreeQB(MBI_C13):
                         No_of_msmt=self.params['Nr_Zeno_parity_msmts']
 
                         ### this 'lengthy' formula is used to equally space the repumping intervals in time.
-                        waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)+(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)
+                        waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)+(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2+t_C13_gate3)/(No_of_msmt+1)
 
                         if i==0:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
@@ -9557,7 +9606,7 @@ class Zeno_ThreeQB(MBI_C13):
 
                         #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
                         equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6))
+                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2+t_C13_gate3)/(No_of_msmt+1),6))
                         # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
                         final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
                                      wait_time = round(waitduration,6))
