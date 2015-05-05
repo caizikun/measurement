@@ -18,9 +18,8 @@ INIT:
   P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
  
   channel=PAR_61    'Number of DIO to set 
-  set=PAR_62        'can be 1 or 0
 EVENT:
 
-  Par_80 = P2_DIGIN_Long(DIO_Module)   'This sets the digital output with channelnr to the value given by set
-   
+  PAR_62 = ((P2_DIGIN_Long(DIO_Module)) AND (2^channel))   'This sets the digital output with channelnr to the value given by set
+  'PAR_62 = P2_DIGIN_Long(DIO_Module)
   END   

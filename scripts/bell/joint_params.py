@@ -31,4 +31,3 @@ joint_params['measurement_abort_check_interval']    = 1. #sec
 joint_params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
 joint_params['RND_start'] = 10065e-9+200e-9# = dt(f,BC)-dt(AC) + margin
 joint_params['use_live_marker_filter']=True
-

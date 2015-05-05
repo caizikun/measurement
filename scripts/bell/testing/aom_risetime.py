@@ -13,8 +13,8 @@ T = pulse.SquarePulse(channel='MW_Imod', name='delay',
 sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
 X = pulse.SquarePulse(channel='EOM_AOM_Matisse',
-            amplitude=0.9,
-            length = 200e-9)
+            amplitude=0.5,
+            length = 150e-9)
 
 
 
@@ -24,7 +24,7 @@ e.append(sync)
 e.append(pulse.cp(T,length=300e-9))
 e.append(X)
 #e.append(T)
-e.append(pulse.cp(T,length=25000e-9))
+e.append(pulse.cp(T,length=1500e-9))
 
 #e.print_overview()
 s= pulsar.Sequence('Sinde')
@@ -34,4 +34,4 @@ s.append(name = 'Sine',
 qt.pulsar.upload(e)
 qt.pulsar.program_sequence(s)
 qt.instruments['AWG'].set_runmode('SEQ')
-qt.instruments['AWG'].start()
+#qt.instruments['AWG'].start()

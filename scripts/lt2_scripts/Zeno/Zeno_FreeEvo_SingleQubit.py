@@ -10,15 +10,15 @@ import qt
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
-
+import time
 import msvcrt
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Zeno(name, carbon_list   = [1,5],               
+def Zeno(name, carbon_list   = [1,2],               
         
-        carbon_init_list        = [5,1],
+        carbon_init_list        = [2,1],
         carbon_init_states      = 2*['up'], 
         carbon_init_methods     = 2*['swap'], 
         carbon_init_thresholds  = 2*[0],  
@@ -81,8 +81,8 @@ def Zeno(name, carbon_list   = [1,5],
     m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = parity_msmnts_threshold
     m.params['Nr_Zeno_parity_msmts']     = number_of_zeno_msmnts
-    m.params['Zeno_SP_A_power'] = 18e-9
-    m.params['Repump_duration']= 300e-6 #how long the 'Zeno' beam is shined in.
+    m.params['Zeno_SP_A_power'] = 108e-9
+    m.params['Repump_duration']= 30e-6 #how long the 'Zeno' beam is shined in.
 
     m.params['echo_like']=False # this is a bool to set the delay inbetween measurements.
 
@@ -137,76 +137,193 @@ if __name__ == '__main__':
     'mZ':['I','X']}
 
 
-    breakst=False    
+    breakstatement=False
+    last_check=time.time()
 
-    #0 measurements --> 9 data points per run
+    # logic_state = 'Z'
+    # evotime = [40e-3,43e-3,45e-3]
+    # for eRO in ['positive','negative']:
+    #     Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+    #                             carbon_list   = [1,2],               
+                                
+    #                             carbon_init_list        = [2,1],
+    #                             carbon_init_states      = 2*['up'], 
+    #                             carbon_init_methods     = 2*['swap'], 
+    #                             carbon_init_thresholds  = 2*[0],  
 
-    ############################ 9 data points per run
-    #                         ## 
-    # obtain single qubit proc #
-    #                         ##
-    ############################ estimated duration parity duration: 12.6 ms 2015-01-27
+    #                             number_of_MBE_steps = 1,
+    #                             logic_state         =logic_state,
+    #                             mbe_bases           = ['I','Y'],
+    #                             MBE_threshold       = 1,
 
-    # EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3]
-    # EvoTime_arr=array_slicer(9,EvoTime_arr)
-    # for logic_state in logic_state_list:
-    #     for evotime in EvoTime_arr:
-    #         for eRO in ['positive','negative']:
-    #             Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
-    #                     carbon_list   = [1,5],               
-                        
-    #                     carbon_init_list        = [5,1],
-    #                     carbon_init_states      = 2*['up'], 
-    #                     carbon_init_methods     = 2*['swap'], 
-    #                     carbon_init_thresholds  = 2*[0],  
+    #                             number_of_zeno_msmnts = 0,
+    #                             parity_msmnts_threshold = 1, 
 
-    #                     number_of_MBE_steps = 1,
-    #                     logic_state         =logic_state,
-    #                     mbe_bases           = ['I','Y'],
-    #                     MBE_threshold       = 1,
+    #                             free_evolution_time = evotime,
 
-    #                     number_of_zeno_msmnts = 0,
-    #                     parity_msmnts_threshold = 1, 
+    #                             el_RO               = eRO,
+    #                             debug               = False,
+    #                             Tomo_bases          = RO_bases_dict[logic_state],
+    #                             Repetitions         = 300)
 
-    #                     free_evolution_time = evotime,
 
-    #                     el_RO               = eRO,
-    #                     debug               = False,
-    #                     Tomo_bases          = RO_bases_dict[logic_state],
-    #                     Repetitions         = 500)
+    # RO_bases_dict={'X':['I','Z'],
+    # 'mX':['I','Z'],
+    # 'Y':['I','Y'],
+    # 'mY':['I','Y'],
+    # 'Z':['I','Y'],
+    # 'mZ':['I','Y']}
+    # for eRO in ['positive','negative']:
+    #     Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+    #                             carbon_list   = [1,5],               
+                                
+    #                             carbon_init_list        = [5,1],
+    #                             carbon_init_states      = 2*['up'], 
+    #                             carbon_init_methods     = 2*['swap'], 
+    #                             carbon_init_thresholds  = 2*[0],  
+
+    #                             number_of_MBE_steps = 1,
+    #                             logic_state         =logic_state,
+    #                             mbe_bases           = ['I','Y'],
+    #                             MBE_threshold       = 1,
+
+    #                             number_of_zeno_msmnts = 0,
+    #                             parity_msmnts_threshold = 1, 
+
+    #                             free_evolution_time = evotime,
+
+    #                             el_RO               = eRO,
+    #                             debug               = False,
+    #                             Tomo_bases          = RO_bases_dict[logic_state],
+    #                             Repetitions         = 500)
+
+    # #0 measurements --> 9 data points per run
+
+
+    # ############################ 9 data points per run
+    # #                         ## 
+    # # obtain single qubit proc #
+    # #                         ##
+    # ############################ estimated duration parity duration: 12.6 ms 2015-01-27
+
+    EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3]
+    EvoTime_arr=array_slicer(9,EvoTime_arr)
+    for logic_state in logic_state_list:
+        if not breakstatement:
+            for evotime in EvoTime_arr:
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    breakstatement=True
+                    break
+                if not breakstatement:
+                    for eRO in ['positive','negative']:
+                        Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+                                carbon_list   = [1,2],               
+                                
+                                carbon_init_list        = [2,1],
+                                carbon_init_states      = 2*['up'], 
+                                carbon_init_methods     = 2*['swap'], 
+                                carbon_init_thresholds  = 2*[0],  
+
+                                number_of_MBE_steps = 1,
+                                logic_state         =logic_state,
+                                mbe_bases           = ['I','Y'],
+                                MBE_threshold       = 1,
+
+                                number_of_zeno_msmnts = 0,
+                                parity_msmnts_threshold = 1, 
+
+                                free_evolution_time = evotime,
+
+                                el_RO               = eRO,
+                                debug               = False,
+                                Tomo_bases          = RO_bases_dict[logic_state],
+                                Repetitions         = 300)
+
+                if time.time()-last_check>2*60*60: #perform a consistency check every two hours
+                    if not breakstatement:
+
+                        print '-----------------------------------'            
+                        print 'press q to stop measurement cleanly'
+                        print '-----------------------------------'
+                        qt.msleep(2)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            breakstatement=True
+                            break
+
+                        ssrocalibration(SAMPLE_CFG)
+                        GreenAOM.set_power(15e-6)
+                        counters.set_is_running(1)
+                        optimiz0r.optimize(dims = ['x','y','z'])
+                        stools.turn_off_all_lt2_lasers()
+                        ssrocalibration(SAMPLE_CFG)                 
+                        last_check=time.time()
 
 
     
-    # logic_state_list=['Y','mY','Z','mZ']
-    # RO_bases_dict={'X':['I','Z'],
-    # 'mX':['I','Z'],
-    # 'Y':['I','X'],
-    # 'mY':['I','X'],
-    # 'Z':['I','Y'],
-    # 'mZ':['I','Y']}
+    logic_state_list=['Y','mY','Z','mZ']
+    RO_bases_dict={'X':['I','Z'],
+    'mX':['I','Z'],
+    'Y':['I','X'],
+    'mY':['I','X'],
+    'Z':['I','Y'],
+    'mZ':['I','Y']}
 
-    # for logic_state in logic_state_list:
-    #     for evotime in EvoTime_arr:
-    #         for eRO in ['positive','negative']:
-    #             Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
-    #                     carbon_list   = [1,5],               
-                        
-    #                     carbon_init_list        = [5,1],
-    #                     carbon_init_states      = 2*['up'], 
-    #                     carbon_init_methods     = 2*['swap'], 
-    #                     carbon_init_thresholds  = 2*[0],  
+    for logic_state in logic_state_list:
+        if not breakstatement:
+            for evotime in EvoTime_arr:
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    breakstatement=True
+                    break
+                if not breakstatement:
+                    for eRO in ['positive','negative']:
+                        Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(0)+'msmt_'+'singleQubit'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1],
+                                carbon_list   = [1,2],               
+                                
+                                carbon_init_list        = [2,1],
+                                carbon_init_states      = 2*['up'], 
+                                carbon_init_methods     = 2*['swap'], 
+                                carbon_init_thresholds  = 2*[0],  
 
-    #                     number_of_MBE_steps = 1,
-    #                     logic_state         =logic_state,
-    #                     mbe_bases           = ['I','Y'],
-    #                     MBE_threshold       = 1,
+                                number_of_MBE_steps = 1,
+                                logic_state         =logic_state,
+                                mbe_bases           = ['I','Y'],
+                                MBE_threshold       = 1,
 
-    #                     number_of_zeno_msmnts = 0,
-    #                     parity_msmnts_threshold = 1, 
+                                number_of_zeno_msmnts = 0,
+                                parity_msmnts_threshold = 1, 
 
-    #                     free_evolution_time = evotime,
+                                free_evolution_time = evotime,
 
-    #                     el_RO               = eRO,
-    #                     debug               = False,
-    #                     Tomo_bases          = RO_bases_dict[logic_state],
-    #                     Repetitions         = 500)
+                                el_RO               = eRO,
+                                debug               = False,
+                                Tomo_bases          = RO_bases_dict[logic_state],
+                                Repetitions         = 300)
+
+                if time.time()-last_check>2*60*60: #perform a consistency check every two hours
+                    if not breakstatement:
+
+                        print '-----------------------------------'            
+                        print 'press q to stop measurement cleanly'
+                        print '-----------------------------------'
+                        qt.msleep(2)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            breakstatement=True
+                            break
+
+                        ssrocalibration(SAMPLE_CFG)
+                        GreenAOM.set_power(15e-6)
+                        counters.set_is_running(1)
+                        optimiz0r.optimize(dims = ['x','y','z'])
+                        stools.turn_off_all_lt2_lasers()
+                        ssrocalibration(SAMPLE_CFG)
+
+                        last_check=time.time()
+

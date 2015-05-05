@@ -23,7 +23,7 @@ import types
 import gobject
 import numpy as np
 from lib import config
-from measurement.lib.config import moc_cfg as moc_cfg
+from measurement.lib.config import moc_cfg
 
 
 class JPE_pos_tracker ():
@@ -35,47 +35,45 @@ class JPE_pos_tracker ():
 		self.z3 = None
 
 		#design properties in mm (see JPE datasheet)
-		self.cfg_pars = moc_cfg ['general_stage_dims']
+		self.cfg_pars = moc_cfg.config['general_stage_dims']
 		self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
 		self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
 		self.R = self.cfg_pars['R_mm']#14.5
 
-		self.max_spindle_steps = self.cfg_pars['max_spindle_steps'] ###2000, STEFAN, check it!!!!!!
+		self.max_spindle_steps = self.cfg_pars['max_spindle_steps']
 		
 		#Cartesian coordinates in the lab-frame (mm)
 		self.curr_x = None
 		self.curr_y = None
 		self.curr_z = None
-		self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.cfg'
+		self.v_piezo_1 = None
+		self.v_piezo_2 = None
+		self.v_piezo_3 = None		
+		self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.npz'
 
-		if reinit_spindles:
+		if reinit_spindles:			
 			self.reset_spindle_tracker()
 		else:
+			print 'Tracker initialized from file...'
 			self.tracker_file_readout()
 
 
 	def tracker_file_update(self):
 		try:
-			self.tracker_file = open (self.tracker_file_name, 'rb+')
-			self.tracker_file.seek(0,0)		
-			self.tracker_file.write (str(self.z1)+'\n')
-			self.tracker_file.write (str(self.z2)+'\n')
-			self.tracker_file.write (str(self.z3)+'\n')
-			self.tracker_file.close()
-
+			np.savez (self.tracker_file_name, z1= self.z1, z2=self.z2, z3=self.z3, x=self.curr_x, y=self.curr_y, z=self.curr_z)
 		except:
 			print 'Tracker file update failed!'
 
 	def tracker_file_readout(self):
-		try:
-			self.tracker_file = open (self.tracker_file_name, 'rb+')
-			self.tracker_file.seek(0,0)
-			self.z1 = int(self.tracker_file.readline())
-			self.z2 = int(self.tracker_file.readline())
-			self.z3 = int(self.tracker_file.readline())
-			self.tracker_file.close()
-		except:
-			print 'Tracker file import error!'
+		tr_file = np.load(self.tracker_file_name)
+		self.z1 = tr_file['z1']
+		self.z2 = tr_file['z2']
+		self.z3 = tr_file['z3']
+		self.curr_x = tr_file['x']
+		self.curr_y = tr_file['y']
+		self.curr_z = tr_file['z']
+		print self.curr_x, self.curr_y, self.curr_z
+		return self.z1, self.z2, self.z3
 
 	def check_spindle_limit (self, move):
 		n1 = self.z1+move[0]
@@ -87,18 +85,23 @@ class JPE_pos_tracker ():
 		self.curr_x = 0
 		self.curr_y = 0
 		self.curr_z = 0
+		self.tracker_update (spindle_incr = [0,0,0], pos_values = [0.,0.,0.])
 		
 	def reset_spindle_tracker(self):
 		self.z1 = 0
 		self.z2 = 0
 		self.z3 = 0
 		self.tracker_file_update()
+		print 'Tracker reset to zero'
 
-	def tracker_update (self, values):
-		self.z1 = self.z1+values[0]
-		self.z2 = self.z2+values[1]
-		self.z3 = self.z3+values[2]
-		self.tracker_file_update (values=[self.z1, self.z2, self.z3])
+	def tracker_update (self, spindle_incr, pos_values):
+		self.z1 = self.z1+spindle_incr[0]
+		self.z2 = self.z2+spindle_incr[1]
+		self.z3 = self.z3+spindle_incr[2]
+		self.curr_x = pos_values[0]
+		self.curr_y = pos_values[1]
+		self.curr_z = pos_values[2]		
+		self.tracker_file_update ()
 
 	def position_to_spindle_steps (self, x, y, z):
 		Dx = x-self.curr_x
@@ -141,8 +144,8 @@ class JPE_pos_tracker ():
 					
 class master_of_cavity(CyclopeanInstrument):
 
-    def __init__(self, name, jpe):
-    	print 'Initializing master_of_cavity...'
+    def __init__(self, name, jpe, adwin):
+    	print 'Initializing master_of_cavity... '
     	self.addr = 1
     	self.ch_x = 1
     	self.ch_y = 2
@@ -152,7 +155,7 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
     	self.T = None
     	self._step_size = None
-        self.ins_adwin = qt.instrument(adwin)
+        self.ins_adwin = qt.instruments[adwin]
         self._fine_piezo_V = None
         self.set_fine_piezo_voltages (0,0,0)
 
@@ -169,17 +172,25 @@ class master_of_cavity(CyclopeanInstrument):
     	#position control function
         self.add_function('step')
         self.add_function('set_as_origin')
-        self.add_function('move_to_xyz')
+        self.add_function('move_to_xyz')	
 
-  	def get_temperature (self):
-  		print 'Temperature is set to ', self.T, 'K'
+
+    def motion_to_spindle_steps (self, x, y, z):
+    	dz1, dz2, dz3 = self._jpe_tracker.position_to_spindle_steps (x=x, y=y, z=z)
+    	s1 = dz1/self._step_size
+    	s2 = dz2/self._step_size
+    	s3 = dz3/self._step_size
+    	return s1, s2, s3
+
+    def get_temperature (self):
+    	print 'Temperature is set to ', self.T, 'K'
 
     def set_address (self, addr):
     	self.addr = addr
 
     def get_address (self):
-       	print 'Address: ', self.addr
-        
+    	print 'Address: ', self.addr
+
     def set_temperature (self, T):
     	self.T = T
     	self._jpe_cadm.set_temperature (T = T)
@@ -198,13 +209,42 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_cadm.get_params()
     	
     def status (self):
-		self._jpe_cadm.status (addr= self.addr)
+		output = self._jpe_cadm.status (addr= self.addr)
+		return output
 		    
     def step (self, ch, steps):
     	self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps)
     	
     def set_as_origin (self):
     	self._jpe_tracker.set_as_origin()
+
+    def print_current_position(self):
+    	print 'x = ', self._jpe_tracker.curr_x
+    	print 'y = ', self._jpe_tracker.curr_y
+    	print 'z = ', self._jpe_tracker.curr_z
+
+    def print_tracker_params(self):
+    	z1, z2, z3 = self._jpe_tracker.tracker_file_readout()
+    	print 'Spindle positions: ', z1, z2, z3
+
+    def set_fine_piezo_voltages (self, v1,v2,v3):
+    	#self.ins_adwin.set_dac('jpe_fine_tuning_1', v1)
+    	#self.ins_adwin.set_dac('jpe_fine_tuning_2', v2)
+    	#self.ins_adwin.set_dac('jpe_fine_tuning_3', v3)
+    	self.ins_adwin.set_fine_piezos (voltage = np.array([v1, v2, v3]))
+    	self._fine_piezo_V = np.array([v1,v2,v3])
+
+    def get_fine_piezo_voltages(self):
+    	return self._fine_piezo_V
+
+    def move_spindle_steps (self, s1, s2, s3, x, y, z):
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
+    	qt.msleep(1)
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
+    	qt.msleep(1)
+    	self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
+    	qt.msleep(1)
+    	self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
 
     def move_to_xyz (self, x, y, z, verbose=True):
     	if (self.T == None):
@@ -220,35 +260,27 @@ class master_of_cavity(CyclopeanInstrument):
 	    		print 's-1: ', s1, ' steps'
 	    		print 's-2: ', s2, ' steps'
 	    		print 's-3: ', s3, ' steps'
-	    		a = raw_input ('Actuate? [y/N]')
+	    		print 'Currently the spindle positions are the following:'
+	    		self.print_tracker_params()
+	    		a = raw_input ('Actuate? [y/n]')
 	    	else:
-	    		spindle_limit = self._jpe_tracker.check_spindle_limit([s1,s2,s3])
-    			act = 'y'
-    			if spindle_limit:
-    				print 'Spindle approaching limit!!'
-    				act = raw_input('Continue? [y/N]')
-	    		a = 'y'
+	    		a='y'
 
-	    		if ((a=='y')&(act=='y')):
-	    			self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
-	    			qt.msleep(1)    			    	
-	    			self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
-	    			qt.msleep(1)
-	    			self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
-	    			qt.msleep(1)
-	    			self._jpe_tracker.tracker_update(values=[s1,s2,s3])
-	    		self._jpe_tracker.set_as_origin() #why do we need this here????
 
-	def set_fine_piezo_voltages (self, v1,v2,v3):
-		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v1))
-		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v2))
-		self.ins_adwin.set_dac(('jpe_fine_tuning_1', v3))
-		self._fine_piezo_V = np.array([v1,v2,v3])
+	    	print 'a=', a
+	    	if (a=='y'):
+	    		print 'moving'
+	    		self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
+	    		qt.msleep(1)
+	    		self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
+	    		qt.msleep(1)
+	    		self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
+	    		qt.msleep(1)
+	    		self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
 
-	def get_fine_piezo_voltages(self):
-		return self._fine_piezo_V
 
-    def close(self):
-    	self._jpe_tracker.close()
+	def close(self):
+		self._jpe_tracker.close()
+
 
 

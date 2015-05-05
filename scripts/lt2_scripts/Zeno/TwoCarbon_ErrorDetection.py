@@ -45,9 +45,9 @@ reps_fine   = 1500 #1000
 
 
 
-def Zeno(name, carbon_list   = [1,5],               
+def Zeno(name, carbon_list   = [1,2],               
         
-        carbon_init_list        = [5,1],
+        carbon_init_list        = [2,1],
         carbon_init_states      = 2*['up'], 
         carbon_init_methods     = 2*['swap'], 
         carbon_init_thresholds  = 2*[0],  
@@ -275,14 +275,14 @@ if __name__ == '__main__':
     teststate='Z'
     EvoTime_arr=[5e-3]#,10e-3,20e-3]
     msmts=1
-    for RO in ['negative']:
+    for RO in ['positive','negative']:
         Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
                         el_RO= RO,
                         logic_state=teststate,
                         Tomo_bases = RO_bases_dict[teststate],
                         free_evolution_time=EvoTime_arr,
                         number_of_zeno_msmnts =msmts,
-                        debug=False,Repetitions=1000)
+                        debug=False,Repetitions=500)
 
 
 

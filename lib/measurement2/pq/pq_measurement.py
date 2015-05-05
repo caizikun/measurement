@@ -26,7 +26,6 @@ class PQMeasurement(m2.Measurement):
             if do_calibrate and hasattr(self.PQ_ins,'calibrate'):
                 self.PQ_ins.calibrate()
             self.PQ_ins.set_Binning(self.params['BINSIZE'])
-            print self.PQ_ins.get_ResolutionPS()
         else:
             raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
 
@@ -47,6 +46,8 @@ class PQMeasurement(m2.Measurement):
         self.start_measurement_process()
         _timer=time.time()
         _timer0=time.time()
+        hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
+        self.hist = np.zeros((hist_length,2), dtype='u4')
         while True:
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if not self.measurement_process_running():
@@ -88,6 +89,7 @@ class PQMeasurement(m2.Measurement):
         count_marker_channel = self.params['count_marker_channel']
 
         TTTR_read_count = self.params['TTTR_read_count']
+        TTTR_RepetitiveReadouts = self.params['TTTR_RepetitiveReadouts']
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
@@ -135,8 +137,13 @@ class PQMeasurement(m2.Measurement):
             
                 _timer=time.time()
 
-            _length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-
+            #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+            _length = 0
+            _data = np.array([],dtype = 'uint32')
+            for j in range(TTTR_RepetitiveReadouts):
+                cur_length, cur_data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+                _length += cur_length 
+                _data = np.hstack((_data,cur_data[:cur_length]))
            
             #ll[_length]+=1 #XXX
             if _length > 0:

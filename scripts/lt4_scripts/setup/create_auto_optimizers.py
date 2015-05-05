@@ -1,4 +1,16 @@
 if True:
+    _getval_rej  = lambda: qt.instruments['physical_adwin'].Get_Par(53)
+    _getnorm_rej = lambda: qt.instruments['physical_adwin'].Get_Par(73)
+    _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)
+    _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x) 
+    
+    waveplates_optimizer = qt.instruments.create('waveplates_optimizer', 'waveplates_optimizer', 
+            set_half_control_f=_setctrl_half, set_quarter_control_f=_setctrl_quarter,
+            get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
+            msmt_helper = 'lt4_measurement_helper',plot_name='waveplates_plot')
+
+
+if True:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
     _getctrl_gate=  lambda: qt.instruments['adwin'].get_dac_voltage('gate')
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -8,7 +20,7 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
-if True:
+#if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
@@ -18,7 +30,7 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')
 
-if True:
+#if True:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     _getctrl_nf = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -27,5 +39,5 @@ if True:
             set_control_f=_setctrl_nf, get_control_f=_getctrl_nf, 
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
-if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
+#if True:
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name='lt4')
