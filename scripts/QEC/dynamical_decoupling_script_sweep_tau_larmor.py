@@ -384,8 +384,8 @@ if __name__ == '__main__':
     if n==1 and Cont:
         N = 65536 ### number of pulses
         pts = 1 ### number of points per loading of the AWG
-        larmor_max = 17
-        larmor_min = 1
+        larmor_max = 4
+        larmor_min = 2
         reps = 1000
 
         Number_of_pulses = N
