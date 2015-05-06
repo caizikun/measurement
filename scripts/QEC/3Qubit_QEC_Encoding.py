@@ -75,7 +75,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
     m.finish()
 
-def MBE(name, carbon_list   = [1,5,2],               
+def MBE_encoding(name, carbon_list   = [1,5,2],               
         
         carbon_init_list        = [2,5,1],
         carbon_init_states      = 3*['up'], 
@@ -180,7 +180,7 @@ def MBE(name, carbon_list   = [1,5,2],
     
     funcs.finish(m, upload =True, debug=debug)
 
-def QEC_test(name, carbon_list   = [1,5,2],               
+def det_QEC(name, carbon_list   = [1,5,2],               
         
         carbon_init_list              = [2,5,1],
         carbon_init_states            = 3*['up'], 
@@ -300,20 +300,12 @@ def QEC_test(name, carbon_list   = [1,5,2],
     
 if __name__ == '__main__':
 
-    cnt = -1000
+    cnt = 1
 
     error_list = {}
-    error_list['0'] = linspace(0,0.3,4)
-    error_list['1'] = linspace(0.4,0.7,4)
-    error_list['2'] = linspace(0.8,1,3)
+    error_list['0'] = np.array([0.1,0.15,0.2])
 
-    error_list['3'] = linspace(0.45,0.45,1)
-
-    error_list['4'] = np.array([0,0.1,0.2,0.3])
-    error_list['5'] = np.array([0.4,0.45,0.5,0.6])
-    error_list['6'] = np.array([0.7,0.8,0.9,1.])    
-
-    for state in ['Z','mZ']:
+    for state in ['X','mX','Y','mY','Z','mZ']:
         logic_state = state
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -325,11 +317,11 @@ if __name__ == '__main__':
         if state == 'X' or state == 'mX':
             RO_list = [6]
         elif state == 'Y' or state == 'mY':
-            RO_list = [3,4,5,6] 
+            RO_list = [4,5,6] 
         elif state == 'Z':
-            RO_list = [6,0,1,2] 
+            RO_list = [0,1,2] 
         elif state == 'mZ': 
-            RO_list = [6,0,1,2]
+            RO_list = [0,1,2]
 
 
         for RO in RO_list:
@@ -374,14 +366,14 @@ if __name__ == '__main__':
                             qt.msleep(2)
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                                 break
-                            QEC_test(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                            QEC(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
                                 logic_state = test_state,el_RO = 'positive', 
                                 error_sign= 1, 
                                 error_on_qubit = 'all',
                                 error_probability_list= e_list,
                                 parity_orientations           = ['positive','positive'])
 
-                            QEC_test(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                            QEC(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
                                 logic_state = test_state,el_RO = 'negative', 
                                 error_sign= 1, 
                                 error_on_qubit = 'all',
