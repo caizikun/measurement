@@ -602,6 +602,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300],
+                    ['Shutter_channel'             ,   4],
                     ],
                 'params_long_index'  : 20,
                 'params_float' : [
@@ -702,6 +703,8 @@ config['adwin_lt2_processes'] = {
                     ['cycle_duration'              , 300],
                     ['sweep_length'                ,   1],
                     ['wait_after_RO_pulse_duration',   1],
+                    ['use_shutter'                 ,   0],
+                    ['Shutter_channel'             ,   4],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1173,7 +1176,12 @@ config['adwin_lt2_processes'] = {
 
                     ['Parity_RO_duration'          ,  100],  #25
                     ['C13_MBI_RO_state'              ,  0 ],  #26
-
+                    #Shutter
+                    ['use_shutter'                 ,   0], #26 (the real 26 as 17 is commented out)
+                    ['Shutter_channel'             ,   4], #27
+                    ['Shutter_rise_time'           ,    3000], #28   
+                    ['Shutter_fall_time'           ,    3000], #29
+                    ['Shutter_safety_time'           ,  50000], #30
                     ],
 
                 'params_long_index'  : 20,
@@ -1235,6 +1243,7 @@ config['adwin_lt3_dacs'] = {
         'gate_mod' : 9,
         'yellow_aom_frq':10,
         'lock_aom':11,
+        'pulse_aom_frq':12,
         }
 
 config['adwin_lt3_dios'] = {
@@ -1301,6 +1310,15 @@ config['adwin_pro_processes'] = {
         'set_dio' :  {
             'index' : 4,
             'file' : 'Set_TTL_Outputs.TB4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
+        'get_dio' :  {
+            'index' : 4,
+            'file' : 'Get_TTL_states.TB4',
             'par' : {
                 'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
                 'dio_val' : 62,
@@ -1624,6 +1642,8 @@ config['adwin_pro_processes'] = {
                     ['do_sequences'                ,   1],
                     ['wait_for_remote_CR'          ,   1],
                     ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 5],
+                    ['rnd_output_di_channel'       ,  19],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1664,7 +1684,8 @@ config['adwin_pro_processes'] = {
                     ['wait_for_AWG_done'           ,   1],
                     ['sequence_wait_time'          ,  10],
                     ['wait_before_RO'              ,  10],
-                    ['invalid_data_marker_do_channel', 8],
+                    ['invalid_data_marker_do_channel', 5],
+                    ['rnd_output_di_channel'       ,  19],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1910,13 +1931,15 @@ config['adwin_cav1_dacs'] = {
         'matisse_aom' : 6,
         'newfocus_aom': 7,
         'laser_scan': 8,
+        'newfocus_freqmod': 9
         }
 
 config['adwin_cav1_dios'] = {
         }
 
 config['adwin_cav1_adcs'] = {
-        'photodiode': 1,
+        'photodiode': 16,
+        'photodiode_ref': 32,
         }
 
 config['adwin_cav1_processes'] = {
@@ -1947,6 +1970,17 @@ config['adwin_cav1_processes'] = {
                 },
             'fpar' : {
                 'dac_voltage' : 20,
+                },
+            },
+
+        'read_adc' :  {
+            'index' : 1,
+            'file' : 'readADC.TB1',
+            'par' : {
+                'adc_no' : 21,
+                },
+            'fpar' : {
+                'adc_voltage' : 21,
                 },
             },
 
@@ -2005,6 +2039,7 @@ config['adwin_cav1_processes'] = {
                     ['DAC_ch_fpz2'                 ,   0],
                     ['DAC_ch_fpz3'                 ,   0],
                     ['ADC_channel'                 ,   1],
+                    ['ADC_ref_channel'             ,   2],
                     ['nr_steps'                    ,   1],
                     ['wait_cycles'                 ,  50],
                     ['use_counter'                 ,   0],
@@ -2023,8 +2058,43 @@ config['adwin_cav1_processes'] = {
                     },
                 'data_float' : {
                     'photodiode_voltage' : 11,
+                    'photodiode_reference' : 12,
                     },
             },
+
+        'fine_piezo_jpe_scan_CCD' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 2,
+            'file' : 'fine_piezo_jpe_scan_CCD.TB2',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['DAC_ch_fpz1'                 ,   0],
+                    ['DAC_ch_fpz2'                 ,   0],
+                    ['DAC_ch_fpz3'                 ,   0],
+                    ['nr_steps'                    ,   1],
+                    ['wait_cycles'                 ,  50],
+                    ['use_counter'                 ,   0],
+                    ],
+                'params_long_index'  : 200,
+                'params_long_length' : 8,
+                'params_float' : [
+                    ['start_voltage_1'            , 0.0],
+                    ['start_voltage_2'            , 0.0],
+                    ['start_voltage_3'            , 0.0],
+                    ['voltage_step'               , 0.01],
+                    ],
+                'params_float_index'  : 199,
+                'params_float_length' : 8,
+                'par' : {
+                    },
+                'data_float' : {
+                    'integrated_CCD_signal' : 11,
+                    'photodiode_reference' : 12,
+                    },
+            },
+
 
 
         }

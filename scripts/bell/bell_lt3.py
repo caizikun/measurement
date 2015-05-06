@@ -31,7 +31,6 @@ class Bell_lt3(bell.Bell):
             self.joint_params[k] = joint_params.joint_params[k]
         for k in params_lt3.params_lt3:
             self.params[k] = params_lt3.params_lt3[k]
-        bseq.pulse_defs_lt3(self)
 
     def autoconfig(self, **kw):
         bell.Bell.autoconfig(self, **kw)
@@ -48,14 +47,10 @@ class Bell_lt3(bell.Bell):
         else:
             return self.adwin_process_running()
 
-    def print_measurement_progress(self):
-        if self.params['remote_measurement']:
-            pass
-        else:
-            bell.Bell.print_measurement_progress(self)
-
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt3')
+
+        bseq.pulse_defs_lt3(self)
 
         elements = [] 
 
@@ -123,9 +118,15 @@ def bell_lt3(name):
     do_upload = True
     if remote_meas:
         if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
-            m.joint_params['do_echo'] = 0
-            m.joint_params['do_final_MW_rotation'] = 0
-            th_debug = True
+            m.params['MW_RND_amp_I']     = 0
+            m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+            m.params['MW_RND_amp_Q']     = 0
+            m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+            #m.joint_params['do_echo'] = 0
+            #m.joint_params['do_final_MW_rotation'] = 1
+            if 'PSB' in remote_name:
+                m.joint_params['use_live_marker_filter']=False
+            th_debug = False
             mw=True
         elif 'TPQI' in remote_name:
             m.joint_params['RO_during_LDE']=0
@@ -141,8 +142,21 @@ def bell_lt3(name):
             mw=True
             th_debug=False
         elif 'MeasXX_' in remote_name:
-            th_debug = True 
             mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+            m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+        elif 'MeasZZ_' in remote_name:
+            mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+            m.params['MW_RND_amp_Q']     = 0
+            m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+            m.params['MW_RND_I_ispi2'] = False
+            m.params['MW_RND_Q_ispi2'] = False
         else:
             print 'using standard local settings'
             #raise Exception('Unknown remote measurement: '+ remote_name)
@@ -179,3 +193,4 @@ if __name__ == '__main__':
     stools.rf_switch_non_local()
     bell_lt3('')
     stools.rf_switch_local()
+    os.chdir('D:')

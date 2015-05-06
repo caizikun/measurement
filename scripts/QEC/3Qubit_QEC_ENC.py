@@ -98,7 +98,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     m = DD.Three_QB_det_QEC_ENC(name)
     funcs.prepare(m)
-    error_sign_list                  = np.array([1,-1,1,-1])
+    error_sign_list                  = np.array([1,1,-1,-1])
     phase_error                       = [error_sign_list*2*np.arcsin(np.sqrt(error_probability))*180./np.pi]
     
     if error_on_qubit ==1:
@@ -349,9 +349,9 @@ if __name__ == '__main__':
             RO_list = [0,1,2]
 
 
-        GreenAOM.set_power(7e-6)
-        ins_counters.set_is_running(0)  
-        optimiz0r.optimize(dims=['x','y','z'])
+        # GreenAOM.set_power(7e-6)
+        # ins_counters.set_is_running(0)  
+        # optimiz0r.optimize(dims=['x','y','z'])
 
         for RO in RO_list:
             print '-----------------------------------'            
@@ -361,46 +361,46 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
 
-            ssrocalibration(SAMPLE_CFG)
+            # ssrocalibration(SAMPLE_CFG)
             
-                    cnt += 1
-                    if cnt == 2:
-                        for test_state in ['X','Y','Z']:
-                                if test_state == 'X':
-                                    test_RO_list = [6]
-                                elif test_state == 'Y':
-                                    test_RO_list = [4,5] 
-                                elif test_state == 'Z': 
-                                    test_RO_list = [0] 
+            cnt += 1
+            if cnt == 2:
+                for test_state in ['X','Y','Z']:
+                        if test_state == 'X':
+                            test_RO_list = [6]
+                        elif test_state == 'Y':
+                            test_RO_list = [4,5] 
+                        elif test_state == 'Z': 
+                            test_RO_list = [0] 
 
-                                
-                                print '-----------------------------------'            
-                                print 'press q to stop measurement cleanly'
-                                print '-----------------------------------'
-                                qt.msleep(2)
-                                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                                    break
+                        
+                        print '-----------------------------------'            
+                        print 'press q to stop measurement cleanly'
+                        print '-----------------------------------'
+                        qt.msleep(2)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            break
 
-                                for test_RO in test_RO_list:#range(7):
-                                    
-                                    e_list = np.array([0])
-                                    print '-----------------------------------'            
-                                    print 'press q to stop measurement cleanly'
-                                    print '-----------------------------------'
-                                    qt.msleep(2)
-                                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                                        break
-                                    QEC_test(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
-                                        logic_state = test_state,el_RO = 'positive', 
-                                        error_on_qubit = 'all',
-                                        error_probability_list= e_list,
-                                        parity_orientations           = ['positive','positive'])
+                        for test_RO in test_RO_list:#range(7):
+                            
+                            e_list = np.array([0])
+                            print '-----------------------------------'            
+                            print 'press q to stop measurement cleanly'
+                            print '-----------------------------------'
+                            qt.msleep(2)
+                            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                                break
+                            QEC_test(SAMPLE + '00_positive_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                                logic_state = test_state,el_RO = 'positive', 
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['positive','positive'])
 
-                                    QEC_test(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
-                                        logic_state = test_state,el_RO = 'negative', 
-                                        error_on_qubit = 'all',
-                                        error_probability_list= e_list,
-                                        parity_orientations           = ['positive','positive'])                
+                            QEC_test(SAMPLE + '00_negative_test_RO'+str(test_RO)+'_k0_sign1_'+test_state+'_test',RO_C = test_RO, 
+                                logic_state = test_state,el_RO = 'negative', 
+                                error_on_qubit = 'all',
+                                error_probability_list= e_list,
+                                parity_orientations           = ['positive','positive'])                
 
                 DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
@@ -417,7 +417,7 @@ if __name__ == '__main__':
                 
                 ssrocalibration(SAMPLE_CFG)
 
-                cnt = 0
+            cnt = 0
             
             for k in range(len(error_list)):
                 print '-----------------------------------'            
@@ -430,21 +430,21 @@ if __name__ == '__main__':
 
                 logic_state = state
 
-                e_list = error_list[str(k)]
+                e_list = error_list[k]
                
 
-                    MBE(SAMPLE + '11_ENC_positive_RO'+str(RO)+'_p'+str(100*error_list[k])+'_'+logic_state,RO_C = RO, 
-                        logic_state = logic_state,el_RO = 'positive', 
-                        error_on_qubit = 'all',
-                        error_probability= error_list[k],
-                        parity_orientations           = ['negative','negative'])
+                MBE(SAMPLE + '11_ENC_positive_RO'+str(RO)+'_p'+str(100*error_list[k])+'_'+logic_state,RO_C = RO, 
+                    logic_state = logic_state,el_RO = 'positive', 
+                    error_on_qubit = 'all',
+                    error_probability= error_list[k],
+                    parity_orientations           = ['negative','negative'])
 
-                    # MBE(SAMPLE + '11_ENC_negative_RO'+str(RO)+'_p'+str(100*error_list[k])+'_'+logic_state,RO_C = RO, 
-                    #     logic_state = logic_state,el_RO = 'negative', 
-                    #     error_on_qubit = 'all',
-                    #     error_probability= error_list[k],
-                    #     parity_orientations           = ['negative','negative'])
-                
+                # MBE(SAMPLE + '11_ENC_negative_RO'+str(RO)+'_p'+str(100*error_list[k])+'_'+logic_state,RO_C = RO, 
+                #     logic_state = logic_state,el_RO = 'negative', 
+                #     error_on_qubit = 'all',
+                #     error_probability= error_list[k],
+                #     parity_orientations           = ['negative','negative'])
+            
 
 
 
