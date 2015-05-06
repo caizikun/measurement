@@ -875,9 +875,27 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             list_of_elements.append(decoupling_elt)
 
         elif 'single_block_repeating_elements' in Gate.scheme:
+            '''MAB:4-5-15 
+            Made to repeat one single eleemnt of X, XY, XY4, xY8 or XY16 in one element
+            Gate.N has to be 1,2,4,8 or 16
+            Pulse sequences with N>16 can be constructed with Gate.reps
+            ''' 
             # print 'using single block'
             tau_cut = 0
 
+            if self.params['Initial_Pulse'] =='-x':
+                initial_phase = self.params['X_phase']+180
+            else:
+                initial_phase = self.params['X_phase']
+
+            if self.params['Final_Pulse'] =='-x':
+                final_phase   = self.params['X_phase']+180
+            else:
+                final_phase = self.params['X_phase']
+
+            pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
+            if pulse_tau_pi2 < 31e-9:
+                print 'tau too short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9)
 
             initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
                 I_channel   ='MW_Imod', Q_channel='MW_Qmod',
@@ -903,6 +921,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length      = pulse_tau, amplitude = 0.)
 
             x_list = [0,2,5,7]
+            y_list = [1,3,4,6]
+            mx_list = [8,10,13,15]
+            my_list = [9,11,12,14]
 
             decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N),
                     pulsar = qt.pulsar, global_time=True)
@@ -912,34 +933,31 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 decoupling_elt.append(initial_pulse)
                 decoupling_elt.append(T_around_pi2)
             
-            for n in range(N-1):
-                if n !=0 or 'middle' in Gate.scheme:
+            if N not in [1,2,4,8,16]:
+                raise Exception('Gate.N has to be 1,2,4,8 or 16 and then repeated by Gate.reps')
+            print N
+            
+            for n in range(N):
+                if (n != 0) or ('middle' in Gate.scheme) or ('end' in Gate.scheme):
                     decoupling_elt.append(T)
-                if n%8 in x_list:
+
+                if n%16 in x_list:
                     decoupling_elt.append(X)
-                else:
+                    print 'X'
+                elif n%16 in y_list:
                     decoupling_elt.append(Y)
-                if n !=N-1 or 'middle' in Gate.scheme:
+                    print 'Y'
+                elif n%16 in mx_list:
+                    decoupling_elt.append(mX)
+                    print 'mX'
+                elif n%16 in my_list:
+                    decoupling_elt.append(mY)
+                    print 'mY'
+                else:
+                    raise Exception('Error in pulse sequence')
+
+                if (n != N-1) or ('middle' in Gate.scheme) or ('start' in Gate.scheme):
                     decoupling_elt.append(T)
-
-            ### append the final pulse
-
-            if N%8 == 2:
-                final_pi_pulse = mX
-                P_type = 'mX'
-                print 'yes, we at 2 pulses with mX!'
-            elif N%8 in [3,4,5]:
-                final_pi_pulse = Y
-                P_type = 'Y'
-            elif N%8 == 6:
-                final_pi_pulse = mY
-                P_type = 'mY'
-            elif N%8 in [0,1,7]:
-                final_pi_pulse = X
-                P_type = 'X'
-
-            decoupling_elt.append(T)
-            decoupling_elt.append(final_pi_pulse)
 
             ### finish off with a pi/2 pulse.
             if 'end' in Gate.scheme: 
@@ -2404,7 +2422,16 @@ class SimpleDecoupling_Single_Block(DynamicalDecoupling):
     Use this version of SimpleDecoupling only when having a large amount of decoupling pulses so 
     MAB 4-5-15
     ---|pi/2| - |DD| - |pi/2| ---
+
+    Can handle following pulse sequences
+    X (x)^n
+    XmX (x mx)^n
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
     '''
+    # adwin_process = 'MBI_shutter'
+
     def generate_sequence(self,upload=True, debug=False):
         '''
         The function that is executed when a measurement script is executed
@@ -2418,95 +2445,57 @@ class SimpleDecoupling_Single_Block(DynamicalDecoupling):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
 
+        XY_pulses = self.params['Number of pulses in XY scheme']
+        print XY_pulses
         for pt in range(pts):
-            if Number_of_pulses[pt] % 8 != 0 or Number_of_pulses < 24:
-                raise Exception('Error: Number of pulses should be a multiple of 8')
+            if self.params['DD_in_eigenstate']:
+                if Number_of_pulses[pt] % XY_pulses != 0:
+                    raise Exception('Error: Number of pulses should be a multiple of ' + str(XY_pulses))
+            else:
+                if Number_of_pulses[pt] % XY_pulses != 0 or Number_of_pulses[pt] < XY_pulses*3:
+                    raise Exception('Error: Number of pulses should be a multiple of' + str(XY_pulses) + 'and more pulses than ' + str(XY_pulses*3))
 
             simple_el_dec_start = Gate('electron_decoupling', 'Carbon_Gate')
-            simple_el_dec_start.N = 8
-            simple_el_dec_start.tau = tau_list[pt]
-            simple_el_dec_middle = simple_el_dec_start
-            simple_el_dec_end = simple_el_dec_start
+            simple_el_dec_middle = Gate('electron_decoupling', 'Carbon_Gate')
+            simple_el_dec_end = Gate('electron_decoupling', 'Carbon_Gate')
+
+            if self.params['DD_in_eigenstate']:
+                gate_seq = [simple_el_dec_middle]
+            else:
+                gate_seq = [simple_el_dec_start,simple_el_dec_middle,simple_el_dec_end]
 
             #Start element
+            simple_el_dec_start.N = XY_pulses
+            simple_el_dec_start.tau = tau_list[pt]
             simple_el_dec_start.scheme = 'single_block_repeating_elements_start'
-            simple_el_dec_start.prefix = 'start_element'
+            simple_el_dec_start.prefix = 'start_element_pt' +  str(pt)
             self.generate_decoupling_sequence_elements(simple_el_dec_start)
+            simple_el_dec_start.reps = 1
 
             #Middle element
+            simple_el_dec_middle.N = XY_pulses
+            simple_el_dec_middle.tau = tau_list[pt]
             simple_el_dec_middle.scheme = 'single_block_repeating_elements_middle'
-            simple_el_dec_middle.prefix = 'middle_element'
-            simple_el_dec_middle.reps = divmod(Number_of_pulses[pt],simple_el_dec_middle.N)[0]-2
+            simple_el_dec_middle.prefix = 'middle_element_pt' +  str(pt)
             self.generate_decoupling_sequence_elements(simple_el_dec_middle)
-    
-
-
-
-            gate_seq = [simple_el_dec_start,simple_el_dec_middle,simple_el_dec_end]
-
-
-
-                        
+            if self.params['DD_in_eigenstate']:
+                simple_el_dec_middle.reps = divmod(Number_of_pulses[pt],XY_pulses)[0]
+            else:
+                simple_el_dec_middle.reps = divmod(Number_of_pulses[pt],XY_pulses)[0]-2
+                print simple_el_dec_middle.reps
             
-            #Start elements
+            #End element
+            simple_el_dec_end.N = XY_pulses
+            simple_el_dec_end.tau = tau_list[pt]
+            simple_el_dec_end.scheme = 'single_block_repeating_elements_end'
+            simple_el_dec_end.prefix = 'end_element_pt' +  str(pt)
+            self.generate_decoupling_sequence_elements(simple_el_dec_end)
+            simple_el_dec_end.reps = 1
 
-            
-            gate_seq = [simple_el_dec]
+            simple_el_dec_start.scheme = 'single_block'
+            simple_el_dec_middle.scheme = 'single_block'
+            simple_el_dec_end.scheme = 'single_block'
         
-            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
-            ## TODO Find a better way to implement it? Better script?
-            try:
-                self.params['DD_in_eigenstate']
-            except:
-                pass
-            else:
-                if self.params['DD_in_eigenstate']:
-                    simple_el_dec.N = 32
-                    simple_el_dec.prefix = 'electron_'+ str(Number_of_pulses[pt])
-                else:
-                    pass
-
-
-            ## Generate the decoupling elements
-            self.generate_decoupling_sequence_elements(simple_el_dec)
-
-            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
-            try:
-                self.params['DD_in_eigenstate']
-            except:
-                pass
-            else:
-                if self.params['DD_in_eigenstate']:
-                    simple_el_dec.reps = divmod(Number_of_pulses[pt],simple_el_dec.N)[0]
-                else:
-                    pass
-
-            #In case single block used inital and final pulse no
-            if simple_el_dec.scheme == 'single_block':
-                gate_seq = [simple_el_dec]
-                # gate_seq = [simple_el_dec,final_pi]
-
-                # initial_Pi.Gate_operation = self.params['Initial_Pulse']
-                # initial_Pi.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
-                # initial_Pi.time_after_pulse = simple_el_dec.tau_cut
-                # initial_Pi.prefix = 'init_pi2_'+str(pt)
-
-            else:
-                #Generate the start and end pulse
-                initial_Pi2.Gate_operation = self.params['Initial_Pulse']
-                initial_Pi2.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
-                initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
-                initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming
-
-
-                final_Pi2.time_before_pulse =simple_el_dec.tau_cut
-                final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
-                final_Pi2.Gate_operation = self.params['Final_Pulse']
-                final_Pi2.prefix = 'fin_pi2_'+str(pt) #to ensure unique naming
-
-                #Generate the start and end pulse
-                self.generate_electron_gate_element(initial_Pi2)
-                self.generate_electron_gate_element(final_Pi2)
 
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
@@ -3524,7 +3513,12 @@ class NuclearRabiWithInitialization(MBI_C13):
 
 class NuclearT1_2(MBI_C13):
     '''
-    Sequence: |N-MBI| -|Cinit|^N2-|MBE|^N1-|Tomography|
+    MAB 14-3-15
+    New script replacing NuclearT1_Old which allows to initialize multiple carbons
+    1. MBI initialisation
+    2. Carbon initialisation into Z or initialization of several carbons.
+    3. Carbon T1 evolution
+    4. Carbon Z-Readout
     '''
     mprefix = 'NuclearT1'
     adwin_process = 'MBI_multiple_C13'

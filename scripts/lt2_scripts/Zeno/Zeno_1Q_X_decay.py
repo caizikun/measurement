@@ -311,14 +311,14 @@ if __name__ == '__main__':
     # # 8 measurements        #
     # ######################### Minimum evo time 13 ms and 5 data points per run (logical X)
 
-    # EvoTime_arr=np.r_[np.linspace(16e-3,70e-3,10),80e-3,100e-3,110e-3]
-    # breakst, last_check=takeZenocurve(5,EvoTime_arr,8,
-    #                                         logic_state_list,
-    #                                         RO_bases_dict,
-    #                                         debug=False,
-    #                                         breakstatement=breakst,
-    #                                         last_check=last_check,
-    #                                         carbon = 2)
+    EvoTime_arr=np.r_[np.linspace(16e-3,70e-3,10),80e-3,100e-3,110e-3]
+    breakst, last_check=takeZenocurve(5,EvoTime_arr,8,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check,
+                                            carbon = 2)
 
 
     #########################
@@ -326,7 +326,7 @@ if __name__ == '__main__':
     ######################### Minimum evo time 13 ms and 5 data points per run (logical X)
 
     EvoTime_arr=np.r_[np.linspace(18e-3,70e-3,10),80e-3,100e-3,110e-3,150e-3,200e-3]
-    breakst, last_check=takeZenocurve(3,EvoTime_arr,16,
+    breakst, last_check=takeZenocurve(4,EvoTime_arr,16,
                                             logic_state_list,
                                             RO_bases_dict,
                                             debug=False,

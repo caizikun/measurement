@@ -180,8 +180,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C1_freq'       :   450.301e3,
-'C1_freq_0' : 431929.3,
-'C1_freq_1' : 469005.3,
+'C1_freq_0' : 431932.22,
+'C1_freq_1' : 469009.46,
 'C1_gate_optimize_tau_list' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
 'C1_gate_optimize_N_list': [40,34,36,32,34,36,34,36,42],
@@ -197,15 +197,15 @@ cfg['samples']['111_1_sil18'] = {
 
 'C1_Ren_tau'    :   [4.994e-6],
 'C1_Ren_N'      :   [36],
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [-17.5] + [111.69] + [105.4] + [0.0] + [36.2] + [35.0] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [-14.85] + [115.27] + [105.4] + [0.0] + [33.55] + [35.0] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
     ################
 
 'C2_freq'       :   421.814e3,  
-'C2_freq_0'     :   431972.9,  
-'C2_freq_1'     :   413.469e3,
+'C2_freq_0' : 431974.64,
+'C2_freq_1' : 413473.47,
 'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
@@ -220,7 +220,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C2_Ren_tau'    :   [13.616e-6],
 'C2_Ren_N'      :   [32],
-'C2_Ren_extra_phase_correction_list' : np.array([0.0] + [53.49] + [186.4] + [127.4] + [0.0] + [83.9] + [85.3] + [0.0] + [0.0] + [0.0]),
+'C2_Ren_extra_phase_correction_list' : np.array([0.0] + [54.35] + [185.32] + [127.4] + [0.0] + [83.3] + [85.3] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 3 ###
@@ -254,8 +254,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C5_freq'       :   419.894e3,
-'C5_freq_0' : 432005.1,
-'C5_freq_1' : 408330.3,
+'C5_freq_0' : 432011.17,
+'C5_freq_1' : 408334.33,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -283,7 +283,7 @@ cfg['samples']['111_1_sil18'] = {
 'C5_uncond_pi_N':   [94],
 'C5_Ren_tau'    :   [11.31e-6],
 'C5_Ren_N'      :   [48],
-'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [69.1] + [180.+15.8] + [61.3] + [0.0] + [95.7] + [180.-69.3] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [68.74] + [21.31] + [61.3] + [0.0] + [98.27] + [110.7] + [0.0] + [0.0] + [0.0]),
 
 
     ### Carbon 6
@@ -382,13 +382,13 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 # Pulses short with switch 
 # #     ### Pi pulses, fast & hard 
 'fast_pi_duration'          :  116e-9,    #250 MHz slow
-'fast_pi_amp'               :  0.453156,  #250 MHz, slow
+'fast_pi_amp'               :  0.452635,  #250 MHz, slow
 'fast_pi_mod_frpq'           :   f_mod_0,
 
     ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
 'fast_pi2_duration'         :   56e-9,#56e-9, #should be divisible by 4, slow
-'fast_pi2_amp'              :   0.474605, # slow, only calibrated with 2 pulses
+'fast_pi2_amp'              :   0.476118, # slow, only calibrated with 2 pulses
 'fast_pi2_mod_frq'          :   f_mod_0,
 
 # # Pulses calibrated short without switch
@@ -453,7 +453,51 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
-'repump_after_E_RO_amplitude':          15e-9}
+'repump_after_E_RO_amplitude':          15e-9,
+
+#Shutter
+'use_shutter':                          0, 
+'Shutter_channel':                      4, 
+'Shutter_rise_time':                    2500,    
+'Shutter_fall_time':                    2500,
+'Shutter_safety_time':                  50000
+}
+
+    ###############################
+    ### Nitrogen MBI parameters ###
+    ###############################
+
+cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI_shutter'] ={
+
+    #Spin pump before MBI
+'Ex_SP_amplitude'           :           15e-9,#15e-9,    #18e-9
+'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
+'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
+
+    #MBI readout power and duration
+'Ex_MBI_amplitude'          :           0.75e-9,
+'MBI_duration'              :           40,
+
+    #Repump after succesfull MBI
+'repump_after_MBI_duration' :           [150],
+'repump_after_MBI_A_amplitude':         [30e-9],  #18e-9
+'repump_after_MBI_E_amplitude':         [0e-9],
+
+    #MBI parameters
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
+'MBI_threshold'             :           1,
+'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+'repump_after_E_RO_duration':           15,
+'repump_after_E_RO_amplitude':          15e-9,
+
+#Shutter
+'use_shutter':                          0, 
+'Shutter_channel':                      4, 
+'Shutter_rise_time':                    2500,    
+'Shutter_fall_time':                    2500,
+'Shutter_safety_time':                  200000
+}
 
     #############################
     ### C13  init and control ###
