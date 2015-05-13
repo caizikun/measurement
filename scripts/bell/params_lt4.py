@@ -80,7 +80,7 @@ params_lt4['MW_RND_Q_ispi2'] = True
 
 params_lt4['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt4['echo_offset'] = -85e-9 #50 ns
+params_lt4['echo_offset'] = -85e-9 # XXX    -85e-9 #50 ns    
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
