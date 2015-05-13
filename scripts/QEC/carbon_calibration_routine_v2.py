@@ -5,6 +5,7 @@ import io,sys
 import numpy as np
 import qt
 import msvcrt
+import copy
 from analysis.scripts.QEC import carbon_ramsey_analysis as cr 
 reload(cr)
 
@@ -25,7 +26,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1,5]
+carbons = [1,2,5]
 
 #######################################################
 ######      Set the tasks you want performed     ######
@@ -53,8 +54,8 @@ cross_phase_calibration = True
 
 debug = False
 
-with open(r'D:/measuring/measurement/scripts/lt2_scripts/setup/msmt_params.py','r') as param_file:
-    dataTest = param_file.readlines()
+# with open(r'D:/measuring/measurement/scripts/lt2_scripts/setup/msmt_params.py','r') as param_file:
+#     dataTest = param_file.readlines()
 
 ######
 
@@ -371,21 +372,18 @@ if n == 1 and self_phase_calibration:
 			# measure
 			NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C'+str(c), carbon_nr= c)
 			# fit
-			phi0,u_phi_0 = 	cr.Carbon_Ramsey(timestamp=None, 
+			phi0,u_phi_0,Amp,Amp_u = 	cr.Carbon_Ramsey(timestamp=None, 
 			                       offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
 			                       frequency = 1/360., phase =0, 
 			                       plot_fit = True, show_guess = False,fixed = [2,3,4,5],
-			       	            return_phase = True,
-					            return_results = False,						title = 'phase_C'+str(c))
-			#update
-			# if A > 0:
-			#### hot fix for the phase correction. carbons which show wrong fit results can be added manually by expanding the list below.
-			if c in [2]:
+			       	            return_phase = True, return_amp = True,
+					            return_results = False,	
+                                title = 'phase_C'+str(c))
+			if Amp < 0:
 				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
 			else:
 				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0
-		# elif A < 0:
-			# 	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1] = phi0+180
+
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
 			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
 			print '--------------------------------'
@@ -549,37 +547,41 @@ Therefore the modularity is not increased.
 ########################
 ########################
 
-if cross_phase_calibration and n ==1:
-    #set all cross-phases to zero to start with
-    for c in carbons:
-    	# remove that specific carbon from the list
-    	carbons_cross = carbons
-    	carbons_cross.remove(c)
-    	# reset phases to 0
-    	for c_cross in carbons_cross:
-    		qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c_cross] = 0.
-
+if cross_phase_calibration and n ==1 and len(carbons)>1:
+	#set all cross-phases to zero to start with
+	for c in carbons:
+		# remove that specific carbon from the list
+		carbons_cross = copy.deepcopy(carbons)
+		carbons_cross.remove(c)
+		# reset phases to 0
+		for c_cross in carbons_cross:
+			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c_cross] = 0.
+print carbons
 if n == 1 and cross_phase_calibration and len(carbons)>1:
 	for c in carbons:
 		# remove that specific carbon from the list
-		carbons_cross = carbons
+		carbons_cross = copy.deepcopy(carbons)
 		carbons_cross.remove(c)
 		for cross_c in carbons_cross:
 
 			#measure
 			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c), C_measured = c, C_gate =cross_c ,debug = debug)
 
-			phi0,u_phi_0 = 	cr.Carbon_Ramsey(timestamp=None, 
+			phi0,u_phi_0,Amp,Amp_u = 	cr.Carbon_Ramsey(timestamp=None, 
 			                       offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
 			                       frequency = 1/360., phase =0, 
 			                       plot_fit = True, show_guess = False,fixed = [2,3,4,5],
-			       	            return_phase = True,
+			       	            return_phase = True,return_amp = True,
 					            return_results = False,
 								title = 'phase_cal_gateC'+str(cross_c)+'_measC'+str(c))
+			if Amp <0:
+				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
+			else:
+				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
 			#update
-			qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
 			print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']'
 			print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+
 
 #################################
 ###### Print final results ######
@@ -627,7 +629,7 @@ if cross_phase_calibration and len(carbons)>1:
 	print 'cross phases'
 	print
 	for c in carbons:
-		carbons_cross = carbons
+		carbons_cross = copy.deepcopy(carbons)
 		carbons_cross.remove(c)
 		for cross_c in carbons_cross:
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(cross_c)+']'
