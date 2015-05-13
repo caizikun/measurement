@@ -762,7 +762,6 @@ EVENT:
       CASE 13 'Closing Shutter
         IF (use_shutter > 0) THEN
           P2_DIGOUT(DIO_Module,Shutter_channel, 1)
-          INC(PAR_60)
           'wait_time = Shutter_closing_time
         ELSE
           'wait_time = 0
@@ -783,7 +782,6 @@ EVENT:
         IF (awg_in_switched_to_hi > 0) THEN
           IF (use_shutter > 0) THEN
             P2_DIGOUT(DIO_Module,Shutter_channel, 0)
-            INC(PAR_60)
             wait_time = Shutter_opening_time
           ELSE
             wait_time = 0
@@ -835,7 +833,6 @@ EVENT:
         
       CASE 17 'Case to implement safety waiting time for shutter
         wait_time = Shutter_safety_time
-        INC(PAR_60)
         run_case_selector = 1
 
       CASE 22 'If reset N retry MBI (goto spin pump E)

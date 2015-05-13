@@ -1,8 +1,8 @@
 """
 This script runs the Zeno experiment for an adjustable evolution time.
-It is compromised of 1 qubit Initialization via swap and a pi/2 pulse which rings the qubit into the X-state..
-A specified number of x-measurements is appended,
-and finally tomography of the X expectation value.
+It is compromised of 2 qubit Initialization via swap and 2 qubit MBE.
+a specified number of parity measurements,
+and finally tomography of a certain expectation value.
 
 NK 2015
 """
@@ -38,14 +38,14 @@ reps_fine   = 1500 #1000
 
 
 
-def Zeno(name, carbon_list   = [2],               
+def Zeno(name, carbon_list   = [1,2],               
         
-        carbon_init_list        = [2],
-        carbon_init_states      = ['up'], 
-        carbon_init_methods     = ['swap'], 
-        carbon_init_thresholds  = [0],  
+        carbon_init_list        = [2,1],
+        carbon_init_states      = 2*['up'], 
+        carbon_init_methods     = 2*['swap'], 
+        carbon_init_thresholds  = 2*[0],  
 
-        number_of_MBE_steps = 0,
+        number_of_MBE_steps = 1,
         logic_state         ='X',
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
@@ -58,16 +58,12 @@ def Zeno(name, carbon_list   = [2],
         el_RO               = 'positive',
         debug               = False,
         Tomo_bases          = [],
-        Repetitions         = 400,
-        do_pi=True):
+        Repetitions         = 300):
 
-    m = DD.Zeno_OneQB(name)
+    m = DD.Zeno_TwoQB_classical(name)
     funcs.prepare(m)
 
 
-
-
-    m.params['do_pi']=do_pi
 
     #############
 
@@ -81,17 +77,17 @@ def Zeno(name, carbon_list   = [2],
     m.params['carbon_list']         = carbon_list
 
     ### Carbon Initialization settings 
-    m.params['carbon_init_list']    = carbon_init_list
-    m.params['init_method_list']    = carbon_init_methods    
-    m.params['init_state_list']     = carbon_init_states    
-    m.params['Nr_C13_init']         = len(carbon_init_list)
+    # m.params['carbon_init_list']    = carbon_init_list
+    # m.params['init_method_list']    = carbon_init_methods    
+    # m.params['init_state_list']     = carbon_init_states    
+    # m.params['Nr_C13_init']         = len(carbon_init_list)
+    m.params['Nr_C13_init']         = 0
 
     ##################################
     ###         RO bases           ###
     ##################################
 
     m.params['Tomography Bases'] = Tomo_bases 
-
     
     ####################
     ### MBE settings ###
@@ -99,8 +95,12 @@ def Zeno(name, carbon_list   = [2],
 
     m.params['Nr_MBE']              = number_of_MBE_steps 
     m.params['MBE_bases']           = mbe_bases
+    ### HOT FIX: MBE bases are overwritten in case of a logical Z state.
+    if 'Z' in logic_state:
+        m.params['MBE_bases'] = ['I','X']
+
     m.params['MBE_threshold']       = MBE_threshold
-    m.params['logical_state']   = logic_state
+    m.params['2qb_logical_state']   = logic_state
     m.params['2C_RO_trigger_duration'] = 150e-6
     
     ###################################
@@ -113,21 +113,22 @@ def Zeno(name, carbon_list   = [2],
     m.params['Zeno_SP_A_power'] = 200e-9
     m.params['Repump_duration']= 30e-6 #how long the 'Zeno' beam is shined in.
 
-    m.params['echo_like']=False # this is a bool to set the delay inbetween measurements.
-
-    ### Derive other/sweep parameters
+    ### Derive other parameters
     m.params['free_evolution_time'] = free_evolution_time
     m.params['pts']                 = len(m.params['free_evolution_time'])
-
-    m.params['C_RO_phase']          = [Tomo_bases]*m.params['pts']
-
     m.params['sweep_name']          = 'free_evolution_time' 
     m.params['sweep_pts']           = [round(x*1e3,3) for x in m.params['free_evolution_time']]
     
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
 
-    m.params['wait_gates_in_parity'] = [0] * m.params['pts'] ### not needed for this measurement.
+
+
+    ####################################
+    ### waiting time and measurement ###
+    ####################################
+       
+    m.params['free_evolution_time']=free_evolution_time
 
 
     funcs.finish(m, upload =True, debug=debug)
@@ -148,7 +149,7 @@ def array_slicer(Evotime_slicer,evotime_arr):
 
     return returnEvos
 
-def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dict,debug=False,breakstatement=False,last_check=time.time(),carbon = 2,do_pi = True):
+def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dict,debug=False,breakstatement=False,last_check=time.time()):
     ### this function runs a measurement loop  
     ### after two hours of measurement we run check ups: SSRO + optimize the NV position + generation of Teststates.
     ### Parameters:
@@ -161,8 +162,7 @@ def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dic
     RO_bases_dict = is a dictionary which contains a read-out basis for each logical input state (key)
     breakstatement = if True then we don't do anything
     last_check = the time when the check of the magnetic field has been performed
-    c1ms0 = has been added for measuring the 'dip'. Changes the frequency with which we keep track of C1 if the electron is in ms=0.
-
+    
     Output:
 
     last_check = the time the last check up has been performed
@@ -191,17 +191,13 @@ def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dic
                 break
 
             for eRO in eRO_list:
-                Zeno(SAMPLE+'_C'+str(carbon)+'_' +eRO+'_logicState_'+logic_state+'_'+str(msmts)+'msmt_'+'_ROBasis_'+RO_bases_dict[logic_state][0], 
+                Zeno(SAMPLE +eRO+'_logicState_'+logic_state+'_'+str(msmts)+'msmt_'+'_ROBasis_'+RO_bases_dict[logic_state][0]+RO_bases_dict[logic_state][1], 
                     el_RO= eRO,
                     logic_state=logic_state,
                     Tomo_bases = RO_bases_dict[logic_state],
                     free_evolution_time=EvoTime,
                     number_of_zeno_msmnts = msmts,
-                    debug=debug,
-                    carbon_list = [carbon],               
-                    carbon_init_list = [carbon],
-                    do_pi=do_pi)
-        
+                    debug=debug)
 
                 if time.time()-last_check>2*60*60: #perform a consistency check every two hours
                     if not debug and not breakstatement:
@@ -221,18 +217,18 @@ def takeZenocurve(evotime_slicer,evotime_arr,msmts,logic_state_list,RO_bases_dic
                         stools.turn_off_all_lt2_lasers()
                         ssrocalibration(SAMPLE_CFG)
 
-                        Zeno(SAMPLE +'positive'+'_'+str(1)+'msmts_TESTSTATE_'+RO_bases_dict['mX'][0], 
+                        Zeno(SAMPLE +'positive'+'_'+str(1)+'msmts_TESTSTATE_'+'Z'+'Z', 
                                         el_RO= 'positive',
-                                        logic_state='X',
-                                        Tomo_bases = RO_bases_dict['X'],
+                                        logic_state='mX',
+                                        Tomo_bases = ['Z','Z'],
                                         free_evolution_time=[10e-3],
                                         number_of_zeno_msmnts = 1,
                                         debug=False,Repetitions=1000)
 
-                        Zeno(SAMPLE +'negative'+'_'+str(1)+'msmts_TESTSTATE_'+RO_bases_dict['mX'][0], 
+                        Zeno(SAMPLE +'negative'+'_'+str(1)+'msmts_TESTSTATE_'+'Z'+'Z', 
                                         el_RO= 'negative',
-                                        logic_state='X',
-                                        Tomo_bases = RO_bases_dict['X'],
+                                        logic_state='mX',
+                                        Tomo_bases = ['Z','Z'],
                                         free_evolution_time=[10e-3],
                                         number_of_zeno_msmnts = 1,
                                         debug=False,Repetitions=1000)
@@ -255,39 +251,37 @@ def check_magneticField(breakstatement=False):
 
 if __name__ == '__main__':
 
-    logic_state_list=['X']
+    logic_state_list=['X','mX','Y','mY','Z','mZ']
 
-    #gives the necessary RO basis when decoding to carbon 5
+    #gives the necessary RO basis when decoding to carbon 2
 
-    RO_bases_dict={'X':['X'],
-    'mX':['X'],
-    'Y' :['Y'],
-    'mY':['Y'],
-    'Z' : ['Z'],
-    'mZ':['Z']}
+    RO_bases_dict={'X':['Z','Z'],
+    'mX':['Z','Z'],
+    'Y':['Z','Y'],
+    'mY':['Z','Y'],
+    'Z':['I','X'],
+    'mZ':['I','X']}
 
     breakst=False    
     last_check=time.time()
 
-    # # Measure a single point for a single state.
-    # teststate='X'
-    # EvoTime_arr=[0e-3]
-    # msmts=0
-    # for RO in ['positive','negative']:
-    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
-    #                     el_RO= RO,
-    #                     logic_state=teststate,
-    #                     Tomo_bases = RO_bases_dict[teststate],
-    #                     free_evolution_time=EvoTime_arr,
-    #                     number_of_zeno_msmnts =msmts,
-    #                     debug=False,Repetitions=800)
+
+    # Measure a single point for a single state.
+    # teststate='mX'
 
     # EvoTime_arr=[0e-3]
     # msmts=0
-    # RO_bases_dict={'X':['Y'],
-    # 'mX':['X']}
+    # for RO in ['positive']:
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TEST', 
+    #                     el_RO= RO,
+    #                     logic_state=teststate,
+    #                     Tomo_bases = RO_bases_dict[teststate],
+    #                     free_evolution_time=EvoTime_arr,
+    #                     number_of_zeno_msmnts =msmts,
+    #                     debug=False,Repetitions=1000)
+    # msmts=6
     # for RO in ['positive','negative']:
-    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
     #                     el_RO= RO,
     #                     logic_state=teststate,
     #                     Tomo_bases = RO_bases_dict[teststate],
@@ -295,10 +289,9 @@ if __name__ == '__main__':
     #                     number_of_zeno_msmnts =msmts,
     #                     debug=False,Repetitions=800)
 
-    # RO_bases_dict={'X':['Z'],
-    # 'mX':['X']}
+    # msmts=5
     # for RO in ['positive','negative']:
-    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
     #                     el_RO= RO,
     #                     logic_state=teststate,
     #                     Tomo_bases = RO_bases_dict[teststate],
@@ -307,39 +300,100 @@ if __name__ == '__main__':
     #                     debug=False,Repetitions=800)
 
 
-    # #########################
-    # # 8 measurements        #
-    # ######################### Minimum evo time 13 ms and 5 data points per run (logical X)
+    # msmts=4
+    # for RO in ['positive','negative']:
+    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_'+RO_bases_dict[teststate][0]+RO_bases_dict[teststate][1], 
+    #                     el_RO= RO,
+    #                     logic_state=teststate,
+    #                     Tomo_bases = RO_bases_dict[teststate],
+    #                     free_evolution_time=EvoTime_arr,
+    #                     number_of_zeno_msmnts =msmts,
+    #                     debug=False,Repetitions=800)
 
-    EvoTime_arr=np.r_[np.linspace(16e-3,70e-3,10),80e-3,100e-3,110e-3]
-    breakst, last_check=takeZenocurve(5,EvoTime_arr,8,
+
+
+   
+
+
+    #########################
+    # 0 measurements        #
+    ######################### Minimum evo time 0 ms and 9 data points per run (logical X)
+    
+    EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3]
+    breakst, last_check=takeZenocurve(9,EvoTime_arr,0,
                                             logic_state_list,
                                             RO_bases_dict,
                                             debug=False,
                                             breakstatement=breakst,
-                                            last_check=last_check,
-                                            carbon = 2)
+                                            last_check=last_check)
+
+
 
 
     #########################
-    # 16 measurements        #
-    ######################### Minimum evo time 13 ms and 5 data points per run (logical X)
+    # 1 measurement         #
+    ######################### Minimum evo time 3.5 and 6 data points per run
 
-    EvoTime_arr=np.r_[np.linspace(18e-3,70e-3,10),80e-3,100e-3,110e-3,150e-3,200e-3]
-    breakst, last_check=takeZenocurve(4,EvoTime_arr,16,
+    EvoTime_arr=np.r_[0,np.linspace(3.5e-3,60e-3,14),80e-3,100e-3]
+    breakst,last_check=takeZenocurve(6,EvoTime_arr,1,
+                                        logic_state_list,
+                                        RO_bases_dict,
+                                        debug=False,
+                                        breakstatement=breakst,
+                                        last_check=last_check)
+
+    # check_magneticField(breakstatement=breakst)
+    ######################## 5 data points per run
+    #   2 measurements     # min length 9.4
+    ######################## estimated duration parity duration: 6.3 ms 2015-01-27
+
+    EvoTime_arr=np.r_[0,np.linspace(9.4e-3,60e-3,14),80e-3,100e-3]
+    breakst,last_check=takeZenocurve(5,EvoTime_arr,2,
                                             logic_state_list,
                                             RO_bases_dict,
                                             debug=False,
                                             breakstatement=breakst,
-                                            last_check=last_check,
-                                            carbon = 2)
+                                            last_check=last_check)
+
+    # check_magneticField(breakstatement=breakst)
+
+     ######################### 4 data points per run
+     # 3 measurements        # min length 12.5
+     ######################### estimated duration parity duration: 9.4 ms 2015-01-27
+    
+    EvoTime_arr=np.r_[0,np.linspace(12.5e-3,60e-3,14),80e-3,100e-3]
+    breakst,last_check=takeZenocurve(4,EvoTime_arr,3,
+                                            logic_state_list,
+                                            RO_bases_dict,
+                                            debug=False,
+                                            breakstatement=breakst,
+                                            last_check=last_check)
+
+
+
+    # check_magneticField(breakstatement=breakst)
+
+
+
+    ######################### 3 data points per run
+    # 4 measurements        # min length 15.8
+    ######################### estimated duration parity duration: 12.6 ms 2015-01-27
+
+    # EvoTime_arr=np.r_[0,np.linspace(15.8e-3,60e-3,14),80e-3,100e-3]
+    # breakst,last_check=takeZenocurve(3,EvoTime_arr,4,
+    #                                     logic_state_list,
+    #                                     RO_bases_dict,
+    #                                     debug=False,
+    #                                     breakstatement=breakst,
+    #                                     last_check=last_check)
+
 
     #########################
-    # 6 measurements        #
-    ######################### Minimum evo time 10 ms and 7 data points per run (logical X)
+    # 5 measurements        #
+    ######################### Minimum evo time 20 ms and 3 data points per run (logical X)
 
-    # EvoTime_arr=np.r_[np.linspace(16e-3,70e-3,10),80e-3,100e-3,110e-3]
-    # breakst, last_check=takeZenocurve(6,EvoTime_arr,6,
+    # EvoTime_arr=np.r_[0,np.linspace(20e-3,70e-3,6),80e-3,100e-3,110e-3]
+    # breakst, last_check=takeZenocurve(3,EvoTime_arr,5,
     #                                         logic_state_list,
     #                                         RO_bases_dict,
     #                                         debug=False,
@@ -347,81 +401,20 @@ if __name__ == '__main__':
     #                                         last_check=last_check)
 
     #########################
-    # 0 measurements        #
-    ######################### Minimum evo time 0 ms and 9 data points per run (logical X)
-    
-
-    # EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,14),60e-3,70e-3,80e-3,100e-3,110e-3]
-    # for carbon in [2]:
-    #     breakst, last_check=takeZenocurve(14,EvoTime_arr,0,
-    #                                             logic_state_list,
-    #                                             RO_bases_dict,
-    #                                             debug=False,
-    #                                             breakstatement=breakst,
-    #                                             last_check=last_check,
-    #                                             carbon = carbon,
-    #                                             do_pi = True)
-
-    # for carbon in [1,2,3,5]:
-    #     breakst, last_check=takeZenocurve(9,EvoTime_arr,0,
-    #                                             logic_state_list,
-    #                                             RO_bases_dict,
-    #                                             debug=False,
-    #                                             breakstatement=breakst,
-    #                                             last_check=last_check,
-    #                                             carbon = carbon,
-    #                                             do_pi = False)
-
-
-    #########################
-    # 1 measurement         #
-    ######################### Minimum evo time 3.5 and 6 data points per run
-
-    # # EvoTime_arr=np.r_[0,np.linspace(3.5e-3,60e-3,8),80e-3,100e-3,140e-3,160e-3,190e-3,220e-3,270e-3]
-    # EvoTime_arr = [75e-3,100e-3, 120e-3,150e-3, 200e-3,250e-3,300e-3,400e-3,500e-3,600e-3,800e-3,1.,1200e-3]
-    # # EvoTime_arr=[50e-3]
-    # breakst,last_check=takeZenocurve(14,EvoTime_arr,1,
-    #                                     logic_state_list,
-    #                                     RO_bases_dict,
-    #                                     debug=False,
-    #                                     breakstatement=breakst,
-    #                                     last_check=last_check)
+    # 6 measurements        #
+    ######################### Minimum evo time 25 ms and 2 data points per run (logical X)
 
     # check_magneticField(breakstatement=breakst)
 
-    # # ######################## 5 data points per run
-    # # #   2 measurements     # min length 9.4
-    # # ######################## estimated duration parity duration: 6.3 ms 2015-01-27
-
-    # EvoTime_arr=np.r_[np.linspace(6e-3,60e-3,14),80e-3,100e-3,110e-3]
-    # breakst,last_check=takeZenocurve(9,EvoTime_arr,2,
+    # EvoTime_arr=np.r_[0,np.linspace(25e-3,70e-3,6),80e-3,100e-3,110e-3]
+    # breakst, last_check=takeZenocurve(2,EvoTime_arr,6,
     #                                         logic_state_list,
     #                                         RO_bases_dict,
     #                                         debug=False,
     #                                         breakstatement=breakst,
-    #                                         last_check=last_check,
-    #                                         carbon = 2)
-
-    # check_magneticField(breakstatement=breakst)
+    #                                         last_check=last_check)
 
 
 
-
-
-    ######################### 9 data points per run
-    # 4 measurements        # min length 8 ms
-    ######################### estimated duration parity duration: 5.5 ms 2015-01-27
-
-    # EvoTime_arr=np.r_[np.linspace(14e-3,70e-3,10),80e-3,100e-3,110e-3]
-    # breakst,last_check=takeZenocurve(6,EvoTime_arr,4,
-    #                                     logic_state_list,
-    #                                     RO_bases_dict,
-    #                                     debug=False,
-    #                                     breakstatement=breakst,
-    #                                     last_check=last_check,
-    #                                     carbon = 2)
-
-    # check_magneticField(breakstatement=breakst)
-
-
+    
 

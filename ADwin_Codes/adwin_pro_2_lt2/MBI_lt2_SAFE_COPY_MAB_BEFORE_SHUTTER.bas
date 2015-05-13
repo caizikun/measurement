@@ -88,13 +88,6 @@ dim N_randomize_duration as long
 dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
-'Added for Shutter
-DIM Shutter_channel AS LONG
-DIM use_shutter AS LONG
-DIM Shutter_opening_time AS LONG
-DIM Shutter_closing_time AS LONG
-Dim Shutter_safety_time AS LONG
-
 INIT:
   init_CR()
   AWG_start_DO_channel         = DATA_20[1]
@@ -111,12 +104,6 @@ INIT:
   nr_of_ROsequences            = DATA_20[12]
   wait_after_RO_pulse_duration = DATA_20[13]
   N_randomize_duration         = DATA_20[14]
-  use_shutter                  = DATA_20[15]
-  Shutter_channel              = DATA_20[16]
-  Shutter_opening_time         = DATA_20[17]
-  Shutter_closing_time         = DATA_20[18]
-  Shutter_safety_time          = DATA_20[19]
-  
   
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
@@ -329,11 +316,6 @@ EVENT:
           IF (timer = SP_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            IF (use_shutter > 0) THEN
-              P2_DIGOUT(DIO_Module,Shutter_channel, 1)
-              'INC(PAR_60)
-            ENDIF            
-            
             wait_time = wait_after_pulse_duration
             
             mode = 5
@@ -375,12 +357,8 @@ EVENT:
               awg_in_switched_to_hi = 0
             endif
             
-            IF(awg_in_switched_to_hi > 0) THEN  
-              IF (use_shutter > 0) THEN
-                mode = 11
-              ELSE
-                mode = 6
-              ENDIF          
+            IF(awg_in_switched_to_hi > 0) THEN          
+              mode = 6
               timer = -1
               wait_time = 0
               
@@ -391,27 +369,14 @@ EVENT:
         
         ELSE
           ' if we do not run an awg sequence, we just wait the specified time, and go then to readout
-          IF (use_shutter > 0) THEN
-            mode = 11
-          ELSE
-            mode = 6
-          ENDIF  
-            
-            
+          mode = 6
           timer = -1
           wait_time = sequence_wait_time
-      
+          
           RO_duration = DATA_34[ROseq_cntr]
           E_RO_Voltage = DATA_36[ROseq_cntr]
         ENDIF
-      
-      CASE 11 'Closing Shutter
-        P2_DIGOUT(DIO_Module,Shutter_channel, 0)
-        'INC(PAR_60)
-        timer = -1
-        wait_time = Shutter_opening_time
-        mode = 6
-    
+        
       CASE 6    ' readout on the E line
        
         ' IMPORTANT: to make sure that the RO duration is set precisely there should be as little tasks as possible
@@ -432,14 +397,8 @@ EVENT:
               i = repetition_counter
               INC(DATA_27[i])
             ENDIF
-            
-            IF (use_shutter > 0) THEN
-              wait_time = Shutter_safety_time
-              'INC(PAR_60)
-            ELSE
-              wait_time = wait_after_RO_pulse_duration
-            ENDIF
-            
+                    
+            wait_time = wait_after_RO_pulse_duration
             P2_CNT_ENABLE(CTR_MODULE,0)
                         
             INC(ROseq_cntr)

@@ -25,62 +25,85 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def Multi_C_DD(name,   
         carbon_init_list        = [1,2],
         carbon_init_states      = 2*['up'], 
-        carbon_init_methods     = 2*['MBI'], 
-        carbon_init_thresholds  = 2*[1],   
+        carbon_init_methods     = 2*['swap'], 
+        carbon_init_thresholds  = 2*[0],   
         el_RO                   = 'positive',
         el_after_init           = 1,
         
         C13_DD_scheme           = 'auto',
-        pulses                  = 4,
+        pulses                  = 1,
+        wait_gate               = True,
         free_evolution_time     = np.zeros((1)),
-        single_Tomo_basis       = ['X','X']
+        single_Tomo_basis       = [['X','X']],
 
-        mode                    = 'Sweep evolution time'
-        debug                   = False):
+        number_of_MBE_steps = 1,
+        logic_state         ='X',
+        classical_state     = ['X','X'],
+        mbe_bases           = ['Y','Y'],
+        MBE_threshold       = 1,
+
+        mode                    = 'Sweep evolution time',
+        debug                   = True):
 
     m = DD.MultiNuclearDD(name)
     funcs.prepare(m)
 
     '''Set parameters'''
 
+    m.params['wait_gate'] = wait_gate
     m.params['C13_DD_Scheme'] = C13_DD_scheme
     m.params['el_after_init'] = el_after_init 
     m.params['Decoupling_pulses']=pulses
-
-    m.params['reps_per_ROsequence'] = 350
+    if mode == 'Sweep RO evolution time':
+        m.params['reps_per_ROsequence'] = 250
+    elif mode == 'Sweep phase':
+        m.params['reps_per_ROsequence'] = 250
+        m.params['use_shutter'] = 0
+    else:
+        m.params['reps_per_ROsequence'] = 250
+        m.params['use_shutter'] = 1
 
     m.params['carbon_init_list']        = carbon_init_list
     m.params['init_method_list']        = carbon_init_methods    
     m.params['init_state_list']         = carbon_init_states 
     m.params['C13_MBI_threshold_list']  = carbon_init_thresholds
-    m.params['Nr_C13_init']             = len(carbon_init_list)
+    m.params['Nr_C13_init']             = len(carbon_init_list) - carbon_init_states.count('M')
     m.params['electron_readout_orientation'] = el_RO
 
-    m.params['Nr_MBE']            = 0
-    m.params['Nr_parity_msmts']   = 0
+    ####################
+    ### MBE settings ###
+    ####################
 
-    m.params['use_shutter'] = 1
+    m.params['Nr_MBE']                 = number_of_MBE_steps 
+    m.params['MBE_bases']              = mbe_bases
+    m.params['MBE_threshold']          = MBE_threshold
+    if 'p' in logic_state:
+        logic_state = logic_state[1]
+    m.params['2qb_logical_state']      = logic_state
+    m.params['2C_RO_trigger_duration'] = 150e-6
+
+    m.params['Nr_parity_msmts']     = 0
+    m.params['classical_state']     = classical_state
+    # m.params['use_shutter'] = 1
 
     #############################
     ### Option 1; Sweep phase ###
     #############################
 
     if mode == 'Sweep phase':
-        m.params['Tomography Bases'] = ([['X','I'],['I','X'],['X','X']])
+        m.params['Tomography Bases'] = single_Tomo_basis
         m.params['pts'] = len(m.params['Tomography Bases'])
-        m.params['free_evolution_time'] = [0.001e-3]*m.params['pts']
-        m.params['free_evolution_time_RO'] = [0.001e-3]*m.params['pts']
+        m.params['free_evolution_time'] = FET*m.params['pts']
+        m.params['free_evolution_time_RO'] = FET*m.params['pts']
         m.params['sweep_name'] = 'Tomography bases'
         m.params['sweep_pts']  = []
         for BP in m.params['Tomography Bases']:
-            if len(carbon_list) == 2:
-                m.params['sweep_pts'].append(BP[0]+BP[1])
-            elif len(carbon_list) == 3:
-                m.params['sweep_pts'].append(BP[0]+BP[1]+BP[2])
+            m.params['sweep_pts'].append(''.join([str(s) for s in BP]))
 
     ######################################
     ### Option 2; Sweep evolution time ###
     ######################################
+
 
     elif mode == 'Sweep evolution time':
         m.params['free_evolution_time'] = free_evolution_time
@@ -95,17 +118,18 @@ def Multi_C_DD(name,
     ####################################################
   
     elif mode == 'Sweep RO evolution time':
-        Diff_FET = np.linspace(-2e-6,2e-6,10)
+        Diff_FET = np.linspace(-15e-3,15e-3,9)
         m.params['pts'] = len(Diff_FET)
-        m.params['free_evolution_time'] = m.params['pts']*[20e-6]
-        m.params['free_evolution_time_RO'] = Diff_FET+20e-6
+        m.params['free_evolution_time'] = m.params['pts']*[20e-3]
+        m.params['free_evolution_time_RO'] = Diff_FET+20e-3
 
         m.params['sweep_name'] = 'Delta Free Evolution time (ms)'
-        m.params['sweep_pts']  =  Diff_FET*10e6
+        m.params['sweep_pts']  =  Diff_FET*1e3
         m.params['Tomography Bases'] = m.params['pts']*[single_Tomo_basis]
 
     else:
         raise Exception('Mode not recognized')
+
     funcs.finish(m, upload =True, debug=debug)
 
 def ssrocalibration(name,RO_power=None,SSRO_duration=None):
@@ -132,11 +156,11 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
     m.finish()
 
-def qstop():
+def qstop(sleep=2):
     print '--------------------------------'
     print 'press q to stop measurement loop'
     print '--------------------------------'
-    qt.msleep(2)
+    qt.msleep(sleep)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
 
@@ -178,14 +202,149 @@ def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['po
 
 if __name__ == '__main__':
 
-    carbon_init_list = [1,2]
-    el_RO_list = ['positive','negative']
+    carbons_init_list = [[2,5],[1,5]]
+    # carbons_init_list = [[1,5]]
     pulses = 1
-    single_Tomo_basis = [['X','X']
-
-
-    msmtstring = 
-    Multi_C_DD(carbon)
+   
     
+    DD_scheme = 'auto'
+    el_after_init = 1
+    optimize = True
+    ssrocalib = True
+    debug = True
+    # FET = [0.015/(2.*pulses)]
+    FET = np.linspace(0.01,1.0/(2.*pulses),7)
+    wait_gate = True
 
+    logic_state_list = ['mX','pX']
+    # logic_state_list = ['mX']
+
+    debug = False
+    sleep = 1
+    full_Tomo_basis_list = ([['X','X'], ['Y','Y'], ['Z','Z']])
+    full_Tomo_basis_list = ([['X','X'], ['Y','Y'], ['Z','Z']])
+
+    # full_Tomo_basis_list = ([['X','X']])
+
+    # full_Tomo_basis_list = ([['DFS']])
+    el_RO_list = ['positive','negative']
+    # el_RO_list = ['positive']
+    mode='Sweep evolution time'
+    for single_Tomo_basis in full_Tomo_basis_list:
+        if qstop(sleep=sleep):
+            break
+        for carbons in carbons_init_list:
+            if qstop(sleep=sleep):
+                break
+            for logic_state in logic_state_list: 
+                if qstop(sleep=sleep):
+                    break
+                for el_RO in el_RO_list:
+                    if qstop(sleep=sleep):
+                        break
+                    msmtstring = SAMPLE + '_sweep_evolution_time_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
+                    + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
+                    + '_N' + str(pulses).zfill(2) #+ '_part' +str(ii+1)
+                    if ssrocalib and not debug:
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        ssrocalibration(SAMPLE)
+                    if optimize and not debug:
+                        GreenAOM.set_power(20e-6)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+                    #if ssrocalib and not debug:
+                    #    adwin.start_set_dio(dio_no=4,dio_val=0)
+                    #    ssrocalibration(SAMPLE)
+                    adwin.start_set_dio(dio_no=4,dio_val=0)
+                    Multi_C_DD(msmtstring,  
+                        carbon_init_list        = carbons,  
+                        el_RO                   = el_RO,
+                        el_after_init           = el_after_init,
+                        
+                        C13_DD_scheme           = DD_scheme,
+                        pulses                  = pulses,
+                        single_Tomo_basis       = single_Tomo_basis,
+                        free_evolution_time     = FET,
+                        wait_gate               = wait_gate,
+
+                        logic_state             = logic_state,
+
+                        mode                    = mode,
+                        debug                   = debug)
+
+        # single_Tomo_basis_list = [['I','X'],['X','I'],['X','X']]
+    # FET=np.linspace(0.15/(2*pulses),2.25/(2*pulses),8)
+
+    # mode = 'Sweep evolution time'
+
+    # for single_Tomo_basis in single_Tomo_basis_list:
+    #     if qstop():
+    #         break
+    #     for el_RO in el_RO_list:
+    #         if qstop():
+    #             break
+    #         for ii in range(4):
+    #             msmtstring = SAMPLE + '_Hahn_sweep_FET_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbon_init_list])   \
+    #             + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
+    #             + '_N' + str(pulses).zfill(2) + '_part' +str(ii+1)
+    #             if ssrocalib and not debug:
+    #                 adwin.start_set_dio(dio_no=4,dio_val=0)
+    #                 ssrocalibration(SAMPLE)
+    #             if optimize and not debug:
+    #                 GreenAOM.set_power(20e-6)
+    #                 adwin.start_set_dio(dio_no=4,dio_val=0)
+    #                 optimiz0r.optimize(dims=['x','y','z'], int_time=200)
+    #             if ssrocalib and not debug:
+    #                 adwin.start_set_dio(dio_no=4,dio_val=0)
+    #                 ssrocalibration(SAMPLE)
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             Multi_C_DD(msmtstring,  
+    #                 carbon_init_list        = carbon_init_list,  
+    #                 el_RO                   = el_RO,
+    #                 el_after_init           = el_after_init,
+                    
+    #                 C13_DD_scheme           = DD_scheme,
+    #                 pulses                  = pulses,
+    #                 single_Tomo_basis       = single_Tomo_basis,
+    #                 free_evolution_time     = FET[ii*2:(ii+1)*2],
+
+    #                 mode                    = mode,
+    #                 debug                   = debug)
     
+    adwin.start_set_dio(dio_no=4,dio_val=0)
+
+    # mode = 'Sweep RO evolution time'
+
+    # for single_Tomo_basis in single_Tomo_basis_list:
+    #     if qstop():
+    #         break
+    #     for el_RO in el_RO_list:
+    #         if qstop():
+    #             break
+    #         msmtstring = SAMPLE + '_Assymetric_Hahn_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbon_init_list])  \
+    #         + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
+    #         + '_N' + str(pulses).zfill(2) + '_part1'
+    #         if ssrocalib and not debug:
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             ssrocalibration(SAMPLE)
+    #         if optimize and not debug:
+    #             GreenAOM.set_power(20e-6)
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+    #         if ssrocalib and not debug:
+    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             ssrocalibration(SAMPLE)
+    #         adwin.start_set_dio(dio_no=4,dio_val=0)
+    #         Multi_C_DD(msmtstring,  
+    #             carbon_init_list        = carbon_init_list,  
+    #             el_RO                   = el_RO,
+    #             el_after_init           = el_after_init,
+                
+    #             C13_DD_scheme           = DD_scheme,
+    #             pulses                  = pulses,
+    #             single_Tomo_basis       = single_Tomo_basis,
+
+    #             mode                    = mode,
+    #             debug                   = debug)
+
+    # adwin.start_set_dio(dio_no=4,dio_val=0)
