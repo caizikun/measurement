@@ -1259,7 +1259,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
                 global_time=True)
             e.append(T)
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
-            e.append(pulse.cp(TIQ, length=2e-9))
+            e.append(pulse.cp(TIQ, length=2e-6))
             e.append(pulse.cp(pulse_pi))
             e.append(T)
             elements.append(e)
@@ -1441,6 +1441,7 @@ class GeneralNPi4Calibration(PulsarMeasurement):
 
         pulse_pi=kw.get('pulse_pi', None)
         pulse_pi2=kw.get('pulse_pi2', None)
+        pulse_pi4=pulse_pi2
 
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
@@ -1460,7 +1461,7 @@ class GeneralNPi4Calibration(PulsarMeasurement):
 
             e.append(T)
 
-            last = e.add(pulse.cp(pulse_pi2,
+            last = e.add(pulse.cp(pulse_pi4,
                         length= self.params['pulse_Npi4_sweep_durations'][i],
                         amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                         phase = self.params['pulse_Npi4_sweep_phases'][i]),
@@ -1476,7 +1477,7 @@ class GeneralNPi4Calibration(PulsarMeasurement):
                 start = self.params['evolution_times'][i],
                 name = 'pi_{}'.format(j))
 
-            e.add(pulse.cp(pulse_pi2,
+            e.add(pulse.cp(pulse_pi4,
                     length= self.params['pulse_Npi4_sweep_durations'][i],
                     amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                     phase = self.params['pulse_Npi4_sweep_phases'][i]),
@@ -1617,8 +1618,7 @@ class GeneralPi4Calibration_2(PulsarMeasurement):
 
 class GeneralNPi4Calibration_3(PulsarMeasurement):
     """
-    Do a pi/2 pulse, compare to an element with a Npi/4 + pi-pulse + Npi/4 echo; sweep the Npi4 amplitude.
-    generate_sequence needs to be supplied with a pi_pulse and pi2_pulse as kw.
+    
     """
     mprefix = 'GeneralNPi4Calibration_3'
 
@@ -1630,7 +1630,7 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
             length = 10e-9, amplitude = 0)
 
         pulse_pi=kw.get('pulse_pi', None)
-        pulse_pi2=kw.get('pulse_pi2', None)
+        pulse_pi4=kw.get('pulse_pi4', None)
 
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
@@ -1650,12 +1650,12 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
 
             e.append(T)
 
-            last = e.add(pulse.cp(pulse_pi2,
+            last = e.add(pulse.cp(pulse_pi4,
                         length= self.params['pulse_Npi4_sweep_durations'][i],
                         amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                         phase = self.params['pulse_Npi4_sweep_phases'][i]),
                     start = 200e-9,
-                    name = 'pi2_1')
+                    name = 'Npi4_1')
              
             j=0
 
@@ -1666,7 +1666,7 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
                 start = self.params['evolution_times'][i],
                 name = 'pi_{}'.format(j))
 
-            last = e.add(pulse.cp(pulse_pi2,
+            last = e.add(pulse.cp(pulse_pi4,
                     length= self.params['pulse_Npi4_sweep_durations'][i],
                     amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                     phase = self.params['pulse_Npi4_sweep_phases'][i]),
@@ -1685,7 +1685,7 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
                 start = self.params['evolution_times'][i],
                 name = 'pi_{}'.format(j))
 
-            last = e.add(pulse.cp(pulse_pi2,
+            last = e.add(pulse.cp(pulse_pi4,
                     length= self.params['pulse_Npi4_sweep_durations'][i],
                     amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                     phase = self.params['pulse_Npi4_sweep_phases'][i]),
@@ -1704,7 +1704,7 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
                 start = self.params['evolution_times'][i],
                 name = 'pi_{}'.format(j))
 
-            last = e.add(pulse.cp(pulse_pi2,
+            last = e.add(pulse.cp(pulse_pi4,
                     length= self.params['pulse_Npi4_sweep_durations'][i],
                     amplitude = self.params['pulse_Npi4_sweep_amps'][i],
                     phase = self.params['pulse_Npi4_sweep_phases'][i]),
@@ -1712,7 +1712,7 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
                 refpoint = 'center',
                 refpoint_new = 'start',#'start',
                 start = self.params['evolution_times'][i]+self.params['extra_wait_final_Npi4'][i],
-                name = 'Npi4_3')
+                name = 'Npi4_4')
 
             elements.append(e)
             seq.append(name='{}-NPi4_Pi_NPi4-{}'.format(self.params['pulse_type'],i),

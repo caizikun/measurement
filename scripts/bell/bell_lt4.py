@@ -336,12 +336,12 @@ if __name__ == '__main__':
         qt.msleep(0.5)  
         
         #SP_PSB('SPCORR_PSB')           
-        #full_bell('TheFourth_day7_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')     
+        #full_bell('TheFourth_day7_Run'+name_index)    
         #lt4_only('test')
         #pulse_overlap('overlap')
-        #SP_ZPL('lt3_2_no_echo')
-        measureZZ('BackToZZ_day1_'+name_index)
-        #measureXX('BackToXX')
+        SP_ZPL('SPCORR_lt4')
+        #measureZZ('BackToZZ_day2_'+name_index)
+        #measureXX('BackToXX_'+name_index)
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
         
         qt.bell_succes = True

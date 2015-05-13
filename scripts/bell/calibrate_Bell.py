@@ -20,7 +20,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
 
     # sweep params
-    rng = 0.15 if multiplicity == 1 else 0.1
+    rng = 0.15 if multiplicity == 1 else 0.07
     m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
@@ -32,11 +32,10 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
-def check_pi4_pulse(name, debug=False):
+def check_pi4_pulse_poles(name, debug=False):
     m = pulsar_msmt.GeneralNPi4Calibration_3(name)
     sweep_Bell._setup_params(m, setup = qt.current_setup)
 
-    m.params['multiplicity'] = multiplicity
     m.params['pulse_type'] = 'Hermite Bell'
     pts = 11
  
@@ -57,10 +56,10 @@ def check_pi4_pulse(name, debug=False):
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
-    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    m.params['sweep_pts'] = sweep_axis
     m.params['wait_for_AWG_done'] = 1
     
-    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi4=m.MW_pi2)
 
 def calibrate_pi2_pulse(name, debug=False):
     m = pulsar_msmt.GeneralPi2Calibration(name)
@@ -121,7 +120,8 @@ def calibrate_Npi4_pulse(name,debug=False):
 if __name__ == '__main__':
     stage = 4.2
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    if   stage == 0 :
+    
+    if  stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
         execfile(r'D:/measuring/measurement/scripts/espin/esr.py')
         print 'set msmt_params: f_msm1_cntr'
@@ -152,7 +152,8 @@ if __name__ == '__main__':
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2')
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
-        calibrate_Npi4_pulse(SAMPLE_CFG)
+        #calibrate_Npi4_pulse(SAMPLE_CFG)
+        check_pi4_pulse_poles(SAMPLE_CFG+'_Bell_Pi4_check', debug=False)
         print 'set msmt_params Hermite_Npi4_amp'
     elif stage == 4.1: #echo sweep tests DD
         sweep_Bell.echo_sweep(SAMPLE_CFG)

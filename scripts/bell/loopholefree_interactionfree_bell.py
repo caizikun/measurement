@@ -27,10 +27,9 @@ def optimize():
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
         if qt.current_setup=='lt4':
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=150, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
         else:
-            qt.instruments['optimiz0r'].optimize(dims=['z'],cnt=1, int_time=150, cycles =1)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=150, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
@@ -72,7 +71,7 @@ def check_pulse_aom_frq():
     f,mi,ma=signalhound.GetSweep(do_plot=True, max_points=1030)
     f_offset = f[argmax(mi)]
     print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
-    if np.abs(f_offset - f_expected) > 20e3:
+    if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
         return False
     else:
@@ -81,7 +80,7 @@ def check_pulse_aom_frq():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 1
+        start_index = 5
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -129,7 +128,7 @@ if __name__ == '__main__':
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
         lt3_succes = optimize()
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
-        #qt.msleep(5) # when you resetart bell to early, it will crash
+        qt.msleep(5) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
         qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
         qt.instruments['remote_measurement_helper'].set_is_running(False)
