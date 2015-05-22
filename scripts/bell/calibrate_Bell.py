@@ -154,7 +154,7 @@ def calibrate_Npi4_pulse(name,debug=False):
 
 if __name__ == '__main__':
 
-    stage = 3.3
+    stage = 3.4
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     
     if  stage == 0 :
