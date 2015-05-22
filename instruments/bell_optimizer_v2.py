@@ -228,7 +228,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
                 self.entanglement_events = self.deque_par_counts[-1][8]
                 
-                 # Currently we aqre using only the average value of the cr_counts & failed_cr_fraction_avg
+                 # Currently we are using only the average value of the cr_counts & failed_cr_fraction_avg
                 self.cr_checks_avg =  par_counts_avg[2]
                 self.repumps_avg = par_counts_avg[1]
                 cr_checks_excl_repumps_avg = self.cr_checks_avg - self.repumps_avg
@@ -375,8 +375,16 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-
-                else :
+                #else :   # check whether the wavemeter is working
+                #    first_value_yellow = qt.instruments['physical_adwin'].Get_FPar(42)
+                #    first_value_taper = qt.instruments['physical_adwin'].Get_FPar(43)
+                #    first_value_newfocus = qt.instruments['physical_adwin'].Get_FPar(41)
+                #    qt.msleep(1)
+                #
+                #    if qt.instruments['physical_adwin'].Get_FPar(42) == first_value_yellow or qt.instruments['physical_adwin'].Get_FPar(43) == first_value_taper or qt.instruments['physical_adwin'].Get_FPar(41) == first_value_newfocus :
+                #        self.set_invalid_data_marker(1)
+                
+                else:
                     self.script_not_running_counter = 0 
                     self.gate_optimize_counter = 0 
                     self.nf_optimize_counter = 0 
@@ -384,7 +392,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.laser_rejection_counter = 0
                     self.set_invalid_data_marker(0)
                     self.status_message = 'Relax, Im doing my job.'
-                    print self.status_message 
+                print self.status_message 
 
             return True
 
@@ -396,7 +404,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             return False
-
 
     def optimize_nf(self):
         self.set_pid_e_primer_running(False)

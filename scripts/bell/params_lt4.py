@@ -91,13 +91,13 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 70e-9
-params_lt4['eom_off_amplitude']         = -.284
+params_lt4['eom_off_amplitude']         = -.305 # calibration 2015-05-21
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.62 #CR 32  #2015-04-28
+params_lt4['aom_amplitude']             = 0.53 #CR 31  #2015-05-21
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -139,5 +139,5 @@ params_lt4['tail_start_bin'] = 5350
 params_lt4['tail_stop_bin'] = 5350 + 200
 params_lt4['live_filter_queue_length'] = 10
 
-params_lt4['measurement_time'] =   60*60#sec = 60 mins
+params_lt4['measurement_time'] =   45*60#sec = 45 mins
 

@@ -47,8 +47,8 @@ cfg['protocols']['cr_mod']={
 	'cr_mod_control_offset'     :   0.0,
 	'cr_mod_control_amp'        :   0.1, #V
 	'cr_mod_control_avg_pts'	:   200000.,
-	'repump_mod_control_offset' :   5.4, #note gets set automatically
-	'repump_mod_control_amp'    :   -.5, #V
+	'repump_mod_control_offset' :   5., #note gets set automatically
+	'repump_mod_control_amp'    :   0.5, #V 1.
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
@@ -111,7 +111,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.807425e9  #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr =  2.807375e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -135,7 +135,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1e-9, 
 		'Ex_RO_amplitude':				 1.5e-9,
-		'Ex_SP_amplitude':				 5e-9,
+		'Ex_SP_amplitude':				 10e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 50,
 		'SP_duration_ms1':				 200,
@@ -156,10 +156,10 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 140e-9, #XX 220
-        'Hermite_pi_amp': 0.9489, #2015-05-13
+    	'Hermite_pi_length': 150e-9, #XX 220
+        'Hermite_pi_amp': 0.918, # 0.8716, #2015-05-22
         'Hermite_pi2_length': 40e-9, #120e-9, #XX
-        'Hermite_pi2_amp': 0.784, #0.681, #2015-05-13
+        'Hermite_pi2_amp': 0.84,#0.749179, #0.681, #2015-05-22
         'Hermite_Npi4_length': 76e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':    0.85, # Use 0.787 pi on Sam   2015-03-27
         'Square_pi_length' : 50e-9, # 2014-12-01
