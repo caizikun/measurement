@@ -20,7 +20,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
 
     # sweep params
-    rng = 0.25 if multiplicity == 1 else 0.04
+    rng = 0.25 if multiplicity == 1 else 0.03
     m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] =  np.linspace(0.52, 0.59, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
@@ -88,6 +88,41 @@ def calibrate_pi2_pulse(name, debug=False):
     
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
+#XXXX under construction
+def calibrate_pi2_pulse_2(name, multiplicity = 1, debug=False):
+    m = pulsar_msmt.GeneralPi2Calibration_2(name)
+    sweep_Bell._setup_params(m, setup = qt.current_setup)
+
+    pts = 11
+    m.params['multiplicity'] = multiplicity
+    m.params['pulse_type'] = 'Hermite Bell'    
+    m.params['pts_awg'] = pts
+    m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
+
+    # we do actually two msmts for every sweep point, that's why the awg gets only half of the 
+    # pts;
+    m.params['pts'] = pts 
+
+    m.params['Ex_SP_amplitude']=0
+    m.params['SP_duration'] = 50
+    m.params['wait_for_AWG_done'] = 1
+
+
+    rng = 0.1 if multiplicity == 1 else 0.03
+    sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
+    m.params['pulse_pi2_sweep_amps'] = sweep_axis
+    m.params['delay_reps'] = 15
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'MW pi/2 amp (V)'
+    m.params['sweep_pts'] = sweep_axis
+    m.params['wait_for_AWG_done'] = 1
+
+    
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
+
+
+
 def calibrate_Npi4_pulse(name,debug=False):
     m = pulsar_msmt.GeneralNPi4Calibration(name)
     sweep_Bell._setup_params(m, setup = qt.current_setup)
@@ -118,7 +153,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 3.42
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     
     if  stage == 0 :
@@ -150,6 +185,9 @@ if __name__ == '__main__':
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2')
+        print 'set msmt_params Hermite_pi2_amp'
+    elif stage == 3.42: #new pi/2 pulse calibration
+        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2', multiplicity = 5)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
         #calibrate_Npi4_pulse(SAMPLE_CFG)

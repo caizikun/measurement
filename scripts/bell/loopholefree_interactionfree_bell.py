@@ -66,16 +66,6 @@ def bell_check_powers():
     qt.instruments['PMServo'].move_out()
     return all_fine
 
-def check_pulse_aom_frq():
-    f_expected = 200e6 + 470e3 #200MHz + x Hz
-    f,mi,ma=signalhound.GetSweep(do_plot=True, max_points=1030)
-    f_offset = f[argmax(mi)]
-    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
-    if np.abs(f_offset - f_expected) > 20e3: 
-        print 'PulseAOM frequency too far off expected value!'
-        return False
-    else:
-        return True
 
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
