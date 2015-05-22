@@ -20,7 +20,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['repetitions'] = 2000 if multiplicity == 1 else 5000
 
     # sweep params
-    rng = 0.25 if multiplicity == 1 else 0.03
+    rng = 0.25 if multiplicity == 1 else 0.05
     m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] =  np.linspace(0.52, 0.59, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
@@ -154,7 +154,7 @@ def calibrate_Npi4_pulse(name,debug=False):
 
 if __name__ == '__main__':
 
-    stage = 3.2
+    stage = 3.3
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     
     if  stage == 0 :
