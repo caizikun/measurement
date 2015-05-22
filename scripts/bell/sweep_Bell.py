@@ -141,7 +141,7 @@ def tail_sweep(name):
 
     pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 500# XXXXXXXXXXXXXXXXXX
+    m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -175,7 +175,7 @@ def tail_sweep(name):
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 
 def echo_sweep(name):

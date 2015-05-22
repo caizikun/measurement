@@ -244,6 +244,13 @@ def rf_switch_local():
 def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
 
+def get_pulse_aom_frq(do_plot=True):
+    f,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=1030)
+    f_offset = f[np.argmax(mi)]
+    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
+    return f_offset
+
+
 def aom_listener():
     import speech
     def do_aom(phrase,listener):

@@ -95,6 +95,7 @@ params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 11e-9 # XXXX
 params_lt3['aom_amplitude']				 = 0.556 # CR29 2015-05-21
+params_lt3['aom_amplitude']				 = 0.51 # CR29 2015-05-20
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
