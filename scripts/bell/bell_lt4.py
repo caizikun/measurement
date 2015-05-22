@@ -287,6 +287,7 @@ def SP_ZPL(name):
     m.params['MW_RND_amp_Q']     = 0
     m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
     m.joint_params['use_live_marker_filter']=True
+    m.params['live_filter_queue_length'] = 2
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -317,7 +318,7 @@ if __name__ == '__main__':
         stools.reset_plu()
 
     if DoJitterCheck:
-        for i in range(2):
+        for i in range(4):
             jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
             print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
             if not jitterDetected:
@@ -335,13 +336,13 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)  
         
-        #SP_PSB('SPCORR_PSB')           
-        #full_bell('TheFourth_day7_Run'+name_index)    
-        #lt4_only('test')
-        #pulse_overlap('overlap')
-        SP_ZPL('SPCORR_lt4')
-        #measureZZ('BackToZZ_day2_'+name_index)
-        #measureXX('BackToXX_'+name_index)
+        SP_PSB('SPCORR_PSB')           
+        # full_bell('TheFourth_day7_Run'+name_index)    
+        # lt4_only('test')
+        # pulse_overlap('overlap')
+        # SP_ZPL('SPCORR_lt4')
+        # measureZZ('BackToZZ_day5_run'+name_index)
+        #measureXX('BackToXX_day2_run'+name_index)
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
         
         qt.bell_succes = True

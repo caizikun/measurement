@@ -124,6 +124,7 @@ def bell_lt3(name):
             m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
             #m.joint_params['do_echo'] = 0
             #m.joint_params['do_final_MW_rotation'] = 1
+            m.params['live_filter_queue_length'] = 2
             if 'PSB' in remote_name:
                 m.joint_params['use_live_marker_filter']=False
             th_debug = False

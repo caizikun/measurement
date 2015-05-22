@@ -47,8 +47,8 @@ cfg['protocols']['cr_mod']={
 	'cr_mod_control_offset'     :   0.0,
 	'cr_mod_control_amp'        :   0.1, #V
 	'cr_mod_control_avg_pts'	:   200000.,
-	'repump_mod_control_offset' :   5.4, #note gets set automatically
-	'repump_mod_control_amp'    :   -.5, #V
+	'repump_mod_control_offset' :   5., #note gets set automatically
+	'repump_mod_control_amp'    :   0.5, #V 1.
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
@@ -157,7 +157,7 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
     	'Hermite_pi_length': 140e-9, #XX 220
-        'Hermite_pi_amp': 0.9489, #2015-05-13
+        'Hermite_pi_amp': 0.9215, #2015-05-13
         'Hermite_pi2_length': 40e-9, #120e-9, #XX
         'Hermite_pi2_amp': 0.784, #0.681, #2015-05-13
         'Hermite_Npi4_length': 76e-9, #pi/4 45e-9

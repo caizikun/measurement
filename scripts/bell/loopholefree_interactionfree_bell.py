@@ -67,10 +67,8 @@ def bell_check_powers():
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected = 200e6 + 470e3 #200MHz + x Hz
-    f,mi,ma=signalhound.GetSweep(do_plot=True, max_points=1030)
-    f_offset = f[argmax(mi)]
-    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
+    f_expected = 200e6 + 500e3 #200MHz + x Hz
+    f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
         return False
@@ -80,7 +78,7 @@ def check_pulse_aom_frq():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 5
+        start_index = 1
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -128,7 +126,7 @@ if __name__ == '__main__':
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
         lt3_succes = optimize()
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
-        qt.msleep(5) # when you resetart bell to early, it will crash
+        qt.msleep(10) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
         qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
         qt.instruments['remote_measurement_helper'].set_is_running(False)
