@@ -156,7 +156,7 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
@@ -206,7 +206,7 @@ def echo_sweep(name):
     m.params['free_precession_offset'] = 0e-9
     m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-200e-9, 200e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-150e-9, 20e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -264,5 +264,5 @@ if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     tail_sweep('tail') 
     #tune('tune_lt3_PippinSil1') 
-    #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
+    #echo_sweep('Sam')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))

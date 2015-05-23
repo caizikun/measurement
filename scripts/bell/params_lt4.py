@@ -80,7 +80,7 @@ params_lt4['MW_RND_Q_ispi2'] = True
 
 params_lt4['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt4['echo_offset'] = -100e-9 # XXX    -85e-9 #50 ns    
+params_lt4['echo_offset'] = -90e-9 # 2015-05-22    -85e-9 #50 ns    
 params_lt4['free_precession_time_1st_revival'] = 73.2e-6 # this is the total free precession time
 params_lt4['free_precession_offset'] = 0
 #adwin wait time after PLU signal:
@@ -97,7 +97,7 @@ params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.53 #CR 31  #2015-05-21
+params_lt4['aom_amplitude']             = 0.79 #CR 31  #2015-05-21
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
