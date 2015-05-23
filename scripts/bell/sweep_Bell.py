@@ -156,8 +156,9 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
+        print 'Im sweeping the AOM power.'
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
@@ -170,12 +171,13 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
+        print 'Im sweeping the eom off amplitude'
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         m.params['general_sweep_pts'] = np.linspace(-0.35,-0.20,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
 
 
 def echo_sweep(name):
@@ -183,7 +185,7 @@ def echo_sweep(name):
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=10
+    pts=13
     m.params['pts']=pts
     m.params['repetitions'] = 15000
     
@@ -206,7 +208,7 @@ def echo_sweep(name):
     m.params['free_precession_offset'] = 0e-9
     m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-200e-9, 200e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-100e-9, 200e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
@@ -232,7 +234,7 @@ def rnd_echo_ro(name):
     m.joint_params['do_echo'] = 1
     m.params['do_general_sweep']=0
 
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
