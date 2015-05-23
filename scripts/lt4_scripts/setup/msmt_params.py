@@ -111,7 +111,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.807375e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr =  2.80738e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -156,9 +156,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pi2_amp':0.543,
     	'CORPSE_pulse_delay': 0e-9,
     	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 150e-9, #XX 220
-        'Hermite_pi_amp': 0.918, # 0.8716, #2015-05-22
-        'Hermite_pi2_length': 40e-9, #120e-9, #XX
+    	'Hermite_pi_length': 140e-9, #XX 220
+        'Hermite_pi_amp': 0.934, # 0.8716, #2015-05-22
+        'Hermite_pi2_length': 20e-9, #120e-9, #XX
         'Hermite_pi2_amp': 0.84,#0.749179, #0.681, #2015-05-22
         'Hermite_Npi4_length': 76e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':    0.85, # Use 0.787 pi on Sam   2015-03-27
