@@ -68,6 +68,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.deque_par_counts   = deque([], self.history_length)
         self.deque_par_laser    = deque([], self.history_length)
         self.deque_t            = deque([], self.history_length)
+        self.deque_fpar_laser    = deque([], self.history_length)
         
         self.init_counters()  
 
@@ -156,11 +157,14 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
         if 'lt4' in self.setup_name:
             par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
+            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(50,5)
         else:
             par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
+            fpar_laser_new = qt.instruments['physical_adwin_lt4'].Get_FPar_Block(50,5)
 
         self.deque_par_counts.append(par_counts_new)
         self.deque_par_laser.append(par_laser_new)
+        self.deque_fpar_laser.append(fpar_laser_new)
 
         t=time.time()
         self.deque_t.append(t)
@@ -251,7 +255,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.SP_ref = self.SP_ref_LT4 if 'lt4' in self.setup_name else self.SP_ref_LT3
                     
                 self.strain = qt.instruments['e_primer'].get_strain_splitting()
-
+                
                 self.publish_values()
 
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
@@ -375,14 +379,33 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-                #else :   # check whether the wavemeter is working
-                #    first_value_yellow = qt.instruments['physical_adwin'].Get_FPar(42)
-                #    first_value_taper = qt.instruments['physical_adwin'].Get_FPar(43)
-                #    first_value_newfocus = qt.instruments['physical_adwin'].Get_FPar(41)
-                #    qt.msleep(1)
-                #
-                #    if qt.instruments['physical_adwin'].Get_FPar(42) == first_value_yellow or qt.instruments['physical_adwin'].Get_FPar(43) == first_value_taper or qt.instruments['physical_adwin'].Get_FPar(41) == first_value_newfocus :
-                #        self.set_invalid_data_marker(1)
+               
+
+                ## WM check.
+                elif self.deque_fpar_laser[-1][3] == self.deque_fpar_laser[-2][3] : # Taper value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3], self.deque_par_laser[-2][3])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+                elif self.deque_fpar_laser[-1][1] == self.deque_fpar_laser[-2][1] : # New focus value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
+                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][1], self.deque_fpar_laser[-2][1])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+                elif self.deque_fpar_laser[-1][2] == self.deque_fpar_laser[-2][2] : # Yellow value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
+                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][2], self.deque_fpar_laser[-2][2])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+
+
+
                 
                 else:
                     self.script_not_running_counter = 0 

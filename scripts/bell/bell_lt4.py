@@ -279,6 +279,29 @@ def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot t
              do_upload     = True,
              )
 
+def SP_PSB_RandomMW(name):
+    name='SPCORR_PSB_Random'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi_amp']
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+
+    m.joint_params['use_live_marker_filter']=False
+    m.joint_params['do_final_MW_rotation']=True
+
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = False,
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
 def SP_ZPL(name):
     name='SPCORR_ZPL_'+name
     m = Bell_lt4(name)
@@ -311,7 +334,7 @@ def lt4_only(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = True
+    DoJitterCheck = False
     ResetPlu = True
         
     if ResetPlu:
@@ -336,13 +359,14 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)  
         
-        SP_PSB('SPCORR_PSB')           
+        #SP_PSB('SPCORR_PSB')
+        SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
         # full_bell('TheFourth_day7_Run'+name_index)    
         # lt4_only('test')
         # pulse_overlap('overlap')
-        # SP_ZPL('SPCORR_lt4')
+        #SP_ZPL('SPCORR_lt4')
         # measureZZ('BackToZZ_day5_run'+name_index)
-        #measureXX('BackToXX_day2_run'+name_index)
+        #measureXX('test')#XXNewPulses_day1_run'+name_index)
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
         
         qt.bell_succes = True

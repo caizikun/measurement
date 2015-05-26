@@ -83,7 +83,7 @@ def check_triggering():
     peaks=np.where(hist>0)[0]*pharp.get_Resolution()/1000.
     ret=ret+'\n'+ str(peaks)
     print ret
-    peak_loc = 489.3
+    peak_loc = 489.6
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.
@@ -146,5 +146,5 @@ def do_jitter_test(resetAWG=False):
 
 
 if __name__ == '__main__':
-    testResult=do_jitter_test(resetAWG=True)
+    testResult=do_jitter_test(resetAWG=False)
     print 'jitterDetected ', testResult

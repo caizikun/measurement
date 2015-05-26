@@ -161,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.3,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        aom_power_sweep=np.linspace(0.05,0.35,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -170,12 +170,13 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
+        print 'sweeping the EOM off voltage'
         m.params['general_sweep_name'] = 'eom_off_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(-0.35,-0.20,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.25,-0.18,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
 
 
 def echo_sweep(name):
@@ -194,9 +195,9 @@ def echo_sweep(name):
     m.joint_params['LDE_attempts_before_CR'] = 1
     m.params['aom_amplitude'] = 0. #
     m.joint_params['do_echo'] = 1
-    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -262,7 +263,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('tail') 
+    tail_sweep('tail')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Sam')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))

@@ -1337,7 +1337,7 @@ class GeneralPi2Calibration_2(PulsarMeasurement):
             e = element.Element('{}_Pi2_Pi_Pi2-{}'.format(self.params['pulse_type'],i), 
                 pulsar = qt.pulsar,
                 global_time=True)
-            e.append(T)
+            e.append(pulse.cp(T, length = 2000e-9))
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
             e.append(pulse.cp(TIQ, length=50e-9))
             e.append(pulse.cp(pulse_pi))
