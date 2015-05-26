@@ -180,6 +180,14 @@ class ADwin_Pro_II(Instrument): #1
       
         return data
 
+    def Get_FPar_Block(self,start=numpy.int16, count=numpy.int16):
+        ErrorMsg=c_int32(0)
+        data = numpy.array(numpy.zeros(count), dtype = numpy.single)
+        success = self._adwin32.e_Get_ADBFPar_All(start,count,data.ctypes.data, self._address,ctypes.byref(ErrorMsg))
+        if ErrorMsg.value != 0:
+            logging.warning(__name__ + ' : error in ADwin.e_Get_ADBPar_All: %s'%ErrorMsg.value)
+        return data
+
     def Set_FPar(self,index,value):
         ErrorMsg=c_int32(0)
         self._adwin32.e_Set_ADBFPar(index,c_float(value),self._address,ctypes.byref(ErrorMsg))

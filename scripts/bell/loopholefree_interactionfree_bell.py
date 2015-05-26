@@ -78,7 +78,7 @@ def check_pulse_aom_frq():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 1
+        start_index = 15
         cycles=24
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
