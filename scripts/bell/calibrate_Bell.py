@@ -189,7 +189,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 3.3
     SAMPLE_CFG = qt.exp_params['protocols']['current']
     
     if  stage == 0 :
@@ -217,13 +217,13 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = True)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.42: #new pi/2 pulse calibration
-        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep', multiplicity = 15,debug = False)
+        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = False)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.43: #new pi/2 pulse calibration
         calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
