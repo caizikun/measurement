@@ -136,13 +136,13 @@ def fast_ssro_calibration(name):
 
     pts = 10
     m.params['pts'] = 2*pts
-    m.params['repetitions'] = 3000
+    m.params['repetitions'] = 2000
 
     m.params['wait_length']    = 1000e-9
     m.params['pq_sync_length']    = 150e-9
     m.params['init_with_MW']  = False
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']
-    m.params['E_RO_amplitudes_AWG']    =    np.linspace(.20,2.2,pts)*m.params['Ex_RO_amplitude']
+    m.params['E_RO_amplitudes_AWG']    =    np.linspace(0,4,pts)*m.params['Ex_RO_amplitude']
     m.params['E_RO_durations_AWG']    =    np.ones(pts)*50e-6
 
     m.params['E_SP_amplitudes_AWG']    =    np.ones(pts)*m.params['Ex_SP_amplitude']

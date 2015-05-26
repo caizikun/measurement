@@ -141,7 +141,7 @@ def tail_sweep(name):
 
     pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 500# XXXXXXXXXXXXXXXXXX
+    m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 1
@@ -171,34 +171,61 @@ def tail_sweep(name):
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.35,-0.20,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
+def heating_check(name):
+    m=SweepBell('heating_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
+
+    pts=1
+    m.params['pts']=pts
+    m.params['repetitions'] = 1000 # 
+
+    m.joint_params['LDE_attempts_before_CR'] = 250
+    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['RO_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['RND_during_LDE'] = 0
+    m.joint_params['LDE_element_length'] = 11e-6
+    m.joint_params['do_final_MW_rotation'] = 1
+    m.params['MW_pi2_amp']=0
+    m.params['eom_pulse_duration']         = 20e-9
+    m.params['MW_RND_amp_I'] = 0
+    m.params['MW_RND_amp_Q'] = 0
+
+    m.params['MIN_SYNC_BIN'] =       5000
+    m.params['MAX_SYNC_BIN'] =       8300 
+
+    m.params['general_sweep_name'] = 'MW_pi_amp'
+    m.params['general_sweep_pts'] = np.linspace(1.,1.,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def echo_sweep(name):
     print 'setting up the echo sweep'
     m=SweepBell('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=5
+    pts=10
     m.params['pts']=pts
     m.params['repetitions'] = 5000
     
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 1 
-    m.joint_params['do_final_MW_rotation'] = 1
+
     m.joint_params['LDE_attempts_before_CR'] = 1
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['aom_amplitude'] = 0. #0.88
-    m.joint_params['do_echo'] = 1 #XXXXXXXXXXXXXX
-    m.joint_params['DD_number_pi_pulses'] = 2
-    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
+    m.params['aom_amplitude'] = 0. #
+    m.joint_params['do_echo'] = 1
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -208,13 +235,13 @@ def echo_sweep(name):
     m.params['free_precession_offset'] = 0e-9
     m.params['echo_offset'] = -50e-9
     m.params['general_sweep_name'] = 'echo_offset'
-    m.params['general_sweep_pts'] = np.linspace(-100e-9, -50e-9, pts)
+    m.params['general_sweep_pts'] = np.linspace(-150e-9, 20e-9, pts)
 
     #for the analysis:
     m.params['sweep_name'] = m.params['general_sweep_name']
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def rnd_echo_ro(name):
     m=SweepBell('RND_RO_'+name)
@@ -222,7 +249,7 @@ def rnd_echo_ro(name):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 40000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -263,7 +290,9 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 
 if __name__ == '__main__':
-    tail_sweep('tail_lt3_Pippin_CR_threashold_29_33')
+    SAMPLE_CFG = qt.exp_params['protocols']['current']
+    #tail_sweep('tail') 
+    heating_check('test')
     #tune('tune_lt3_PippinSil1') 
-    #echo_sweep('Pippin_SIL3_1_DD_pi_pulse')
-    #rnd_echo_ro('test')
+    #echo_sweep('Sam')
+    #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))

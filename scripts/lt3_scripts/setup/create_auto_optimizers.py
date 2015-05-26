@@ -1,3 +1,31 @@
+
+if False:
+    _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(54)
+    _getnorm_rej = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(73)
+    _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)   
+    half_optimizer = qt.instruments.create('half_optimizer', 'waveplate_optimizer', 
+            set_control_f=_setctrl_half,
+            get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
+            msmt_helper = 'lt3_measurement_helper',plot_name='half_plot')
+
+    _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x)
+    quarter_optimizer = qt.instruments.create('quarter_optimizer', 'waveplate_optimizer', 
+            set_control_f=_setctrl_quarter,
+            get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
+            msmt_helper = 'lt3_measurement_helper',plot_name='quarter_plot')
+
+if True:
+    _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(54)
+    _getnorm_rej = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(73)
+    _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)
+    _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x) 
+    
+    waveplates_optimizer = qt.instruments.create('waveplates_optimizer', 'waveplates_optimizer', 
+            set_half_control_f=_setctrl_half, set_quarter_control_f=_setctrl_quarter,
+            get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
+            msmt_helper = 'lt3_measurement_helper',plot_name='waveplates_plot')
+
+
 if True:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
@@ -29,5 +57,4 @@ if True:
             plot_name='nf_plot')
 
 if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer')
-
+    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name = 'lt3')

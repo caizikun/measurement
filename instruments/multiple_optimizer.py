@@ -67,3 +67,13 @@ class multiple_optimizer(Instrument):
         self._is_waiting=False
         
         return False
+
+    def remove(self):
+        self.stop()
+        print 'removing'
+        Instrument.remove(self)
+
+    def reload(self):
+        self.stop()
+        print 'reloading'
+        Instrument.reload(self)

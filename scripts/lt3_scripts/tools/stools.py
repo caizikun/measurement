@@ -68,13 +68,14 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     else:
         qt.instruments[name].set_power(setpoint)
     qt.msleep(2)
-
-    print name, 'setpoint:', setpoint, 'value:', qt.instruments[powermeter].get_power()-bg
+    value = qt.instruments[powermeter].get_power()-bg
+    print name, 'setpoint:', setpoint, 'value:', value
 
     qt.instruments[name].turn_off()
     if move_pm_servo:
         qt.instruments[servo].move_out()
     qt.msleep(1)
+    return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
     setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
@@ -190,7 +191,7 @@ def start_bs_counter():
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
     qt.instruments['linescan_counts'].set_scan_value('counts')
-    qt.instruments['counters'].set_is_running(True)
+    #qt.instruments['counters'].set_is_running(True)
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
         print 'ZPL APDs off'
@@ -242,6 +243,13 @@ def rf_switch_local():
 
 def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
+
+def get_pulse_aom_frq(do_plot=True):
+    f,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=1030)
+    f_offset = f[np.argmax(mi)]
+    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
+    return f_offset
+
 
 def aom_listener():
     import speech

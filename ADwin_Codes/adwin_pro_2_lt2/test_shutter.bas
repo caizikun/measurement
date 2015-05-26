@@ -8,15 +8,16 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 DIM channel, set, wait_steps, shutter_open_time, timer, mode AS LONG
 
 INIT:
-  P2_Digprog(DIO_MODULE,13)  'configure DIO 08:15 as input, all other ports as output
-  channel =7        'Number of DIO to set 
+  P2_Digprog(DIO_MODULE,11)
+  ' P2_Digprog(DIO_MODULE,13)  'configure DIO 08:15 as input, all other ports as output
+  channel = 4        'Number of DIO to set 
     
   wait_steps        = 10        'number of iterations to wait between pulses, 1 iteration corresponds to 10 ms 
   shutter_open_time = 50 00000  'time that the shutter is open in 10 ns (first number is ms)

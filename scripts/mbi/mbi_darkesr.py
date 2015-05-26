@@ -21,9 +21,15 @@ def run(name):
     m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
 
     # MW pulses
+<<<<<<< HEAD
     m.params['MW_pulse_durations']  = np.ones(pts) * 2*2*5*2*2.0e-6 #3000e-9
     m.params['MW_pulse_amps']       = np.ones(pts) * 0.017/5./2. #for msp1,  0.022 for msm1, 
     f_range=0.15e6
+=======
+    m.params['MW_pulse_durations']  = np.ones(pts) * 3e-6 #3000e-9
+    m.params['MW_pulse_amps']       = np.ones(pts) * 0.01525 #for msm1,  ??? for msp1, 
+
+>>>>>>> 7c6bf382dc2db3230587053c9129441d666501af
     m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']
             -f_range, m.params['MW_modulation_frequency']+f_range, pts)
 

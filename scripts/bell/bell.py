@@ -2,6 +2,7 @@ import qt
 import numpy as np
 import time
 import logging
+from collections import deque
 import measurement.lib.measurement2.measurement as m2
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
@@ -131,12 +132,12 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         k_error_message = 0
 
         if live_filter_on_marker:
-            _prev_sync_time = np.empty((0,), dtype='u8')
-            _prev_hhtime = np.empty((0,), dtype='u8')
-            _prev_hhchannel = np.empty((0,), dtype='u1')
-            _prev_hhspecial = np.empty((0,), dtype='u1')
-            _prev_sync_number = np.empty((0,), dtype='u4')
-            prev_newlength = 0
+            _queue_hhtime      = deque([],self.params['live_filter_queue_length'])
+            _queue_sync_time   = deque([],self.params['live_filter_queue_length'])
+            _queue_hhchannel   = deque([],self.params['live_filter_queue_length'])
+            _queue_hhspecial   = deque([],self.params['live_filter_queue_length'])
+            _queue_sync_number = deque([],self.params['live_filter_queue_length'])
+            _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
@@ -192,28 +193,30 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                 if newlength > 0:
 
                     if new_entanglement_markers == 0 and live_filter_on_marker:
-                        _prev_hhtime = hhtime
-                        _prev_hhchannel = hhchannel
-                        _prev_hhspecial = hhspecial
-                        _prev_sync_time = sync_time
-                        _prev_sync_number = sync_number
-                        _prev_new_length = newlength
+                        _queue_hhtime.append(hhtime)
+                        _queue_sync_time.append(sync_time)    
+                        _queue_hhchannel.append(hhchannel)  
+                        _queue_hhspecial.append(hhspecial)  
+                        _queue_sync_number.append(sync_number)  
+                        _queue_newlength.append(newlength)   
                     else:
                         self.entanglement_markers += new_entanglement_markers
                         if live_filter_on_marker:
-                            dset_hhtime.resize((current_dset_length+prev_newlength,))
-                            dset_hhchannel.resize((current_dset_length+prev_newlength,))
-                            dset_hhspecial.resize((current_dset_length+prev_newlength,))
-                            dset_hhsynctime.resize((current_dset_length+prev_newlength,))
-                            dset_hhsyncnumber.resize((current_dset_length+prev_newlength,))
+                            for i in range(len(_queue_newlength)):
+                                prev_newlength = _queue_newlength.popleft()
+                                dset_hhtime.resize((current_dset_length+prev_newlength,))
+                                dset_hhchannel.resize((current_dset_length+prev_newlength,))
+                                dset_hhspecial.resize((current_dset_length+prev_newlength,))
+                                dset_hhsynctime.resize((current_dset_length+prev_newlength,))
+                                dset_hhsyncnumber.resize((current_dset_length+prev_newlength,))
 
-                            dset_hhtime[current_dset_length:] = _prev_hhtime
-                            dset_hhchannel[current_dset_length:] = _prev_hhchannel
-                            dset_hhspecial[current_dset_length:] = _prev_hhspecial
-                            dset_hhsynctime[current_dset_length:] = _prev_sync_time
-                            dset_hhsyncnumber[current_dset_length:] = _prev_sync_number
+                                dset_hhtime[current_dset_length:] = _queue_hhtime.popleft()
+                                dset_hhchannel[current_dset_length:] = _queue_hhchannel.popleft()
+                                dset_hhspecial[current_dset_length:] = _queue_hhspecial.popleft()
+                                dset_hhsynctime[current_dset_length:] = _queue_sync_time.popleft()
+                                dset_hhsyncnumber[current_dset_length:] = _queue_sync_number.popleft()
 
-                            current_dset_length += prev_newlength
+                                current_dset_length += prev_newlength
 
                         dset_hhtime.resize((current_dset_length+newlength,))
                         dset_hhchannel.resize((current_dset_length+newlength,))
@@ -229,14 +232,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
                         current_dset_length += newlength
                         self.h5data.flush()
-
-                        if live_filter_on_marker:
-                            _prev_sync_time = np.empty((0,), dtype='u8')
-                            _prev_hhtime = np.empty((0,), dtype='u8')
-                            _prev_hhchannel = np.empty((0,), dtype='u1')
-                            _prev_hhspecial = np.empty((0,), dtype='u1')
-                            _prev_sync_number = np.empty((0,), dtype='u4')
-                            prev_newlength = 0
  
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
@@ -265,3 +260,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         except KeyError:
             pass # means it's already stopped
         self.stop_measurement_process()
+
+    def stop_measurement_process(self):
+        pulsar_pq.PQPulsarMeasurement.stop_measurement_process(self)
+        self.AWG_RO_AOM.turn_off()
+        self.E_aom.turn_off()
+        self.A_aom.turn_off()
+        self.repump_aom.turn_off()

@@ -69,6 +69,7 @@ class JPE_CADM(Instrument):
 	def status(self, addr = 0):
 		out = sp.check_output ([self.pzknb_command, 'S', str(addr)])
 		print 'Status controller-'+str(addr)+': ', out
+		return out
 
 	def is_busy (self, addr = 0):
 		out = sp.check_output ([self.pzknb_command, 'S', str(addr)])

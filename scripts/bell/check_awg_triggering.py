@@ -83,13 +83,14 @@ def check_triggering():
     peaks=np.where(hist>0)[0]*pharp.get_Resolution()/1000.
     ret=ret+'\n'+ str(peaks)
     print ret
+    peak_loc = 489.3
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
             jitterDetected=True
-        elif (peak_max<489.8) or (peak_max>490.8):
+        elif (peak_max<peak_loc-0.25) or (peak_max>peak_loc+0.25):
             ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:
@@ -145,5 +146,5 @@ def do_jitter_test(resetAWG=False):
 
 
 if __name__ == '__main__':
-    testResult=do_jitter_test(resetAWG=False)
+    testResult=do_jitter_test(resetAWG=True)
     print 'jitterDetected ', testResult

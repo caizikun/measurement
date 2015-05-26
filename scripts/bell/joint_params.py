@@ -26,8 +26,7 @@ joint_params['MIN_HIST_SYNC_BIN'] =  1
 joint_params['MAX_HIST_SYNC_BIN'] =  15000
 joint_params['TTTR_RepetitiveReadouts'] =  10 #
 joint_params['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-joint_params['measurement_abort_check_interval']    = 1. #sec
+joint_params['measurement_abort_check_interval']    = 2. #sec
 joint_params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
 joint_params['RND_start'] = 10065e-9+200e-9+200e-9# = dt(f,BC)-dt(AC) + margin + rnd freshness (40ns propagation + k=32*5ns)
 joint_params['use_live_marker_filter']=True
-

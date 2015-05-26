@@ -12,7 +12,7 @@ SAMPLE = qt.exp_params['samples']['current']
 
 name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 51       #101
-mw_power    = -10       #in dBm
+mw_power    = -16      #in dBm
 green_power = 10e-6     #10e-6
 int_time    = 50        # in ms
 reps        = 10

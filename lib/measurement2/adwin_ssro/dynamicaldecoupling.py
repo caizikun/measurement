@@ -52,7 +52,7 @@ class Gate(object):
         self.RFfreq         = kw.pop('RFfreq',None)
 
         #Scheme is used both for generating decoupling elements as well as the combine to sequence command
-        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi','electron_repump']:
+        if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi']:
             self.scheme = 'single_element'
         else:
             self.scheme = kw.pop('scheme','auto')
@@ -111,25 +111,62 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         tau_larmor = round(1/f_larmor,9)#rounds to ns
         return tau_larmor
 
+    def _MBI_element(self,name ='MBI CNOT'):
+        # define the necessary pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
+
+        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+            length = self.params['AWG_MBI_MW_pulse_duration'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'])
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \
+                + self.params['AWG_wait_for_adwin_MBI_duration']),
+            amplitude = 2)
+
+        # the actual element
+        mbi_element = element.Element(name, pulsar=qt.pulsar)
+        mbi_element.append(T)
+        mbi_element.append(X)
+        mbi_element.append(adwin_sync)
+
+        return mbi_element
+
+
     def _X_elt(self):
         '''
         X element that is used in different measurement child classes
         '''
-        X = ps.X_pulse(self)
-        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['X_phase'])
+        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['X_phase'])
         return X
 
     def _mX_elt(self):
         '''
         X element that is used in different measurement child classes
         '''
+        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['X_phase']+180)
         X = ps.mX_pulse(self)
         # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
         #     I_channel='MW_Imod', Q_channel='MW_Qmod',
@@ -145,15 +182,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         xpi2 element that is used in different measurement child classes
         '''
-        pi2 = ps.Xpi2_pulse(self)
-        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['fast_pi2_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi2_duration'],
-        #     amplitude = self.params['fast_pi2_amp'],
-        #     phase = self.params['X_phase'])
+        pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['fast_pi2_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            length = self.params['fast_pi2_duration'],
+            amplitude = self.params['fast_pi2_amp'],
+            phase = self.params['X_phase'])
         return pi2
 
     def _mpi2_elt(self):
@@ -193,9 +230,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         electron_pulse = pulselib.MW_IQmod_pulse('electron-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
             frequency = self.params['fast_pi2_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
             length = length,
             amplitude = amplitude,
             phase = self.params['X_phase'])
@@ -210,9 +248,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
             frequency = self.params['fast_pi2_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
             length = self.params['cust_pi2_duration'],
             amplitude = self.params['cust_pi2_amp'],
             phase = self.params['X_phase'])
@@ -222,30 +261,30 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
-        Y = ps.Y_pulse(self)
-        # Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['Y_phase'])
+        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['Y_phase'])
         return Y
 
     def _mY_elt(self):
         '''
         Trigger element that is used in different measurement child classes
         '''
-        Y = ps.mY_pulse(self)
-        # Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['Y_phase']+180)
+        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            length = self.params['fast_pi_duration'],
+            amplitude = self.params['fast_pi_amp'],
+            phase =  self.params['Y_phase']+180)
         return Y
 
     def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):
@@ -336,7 +375,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if t_start[C_ind] == 0: #If not addresed before phase is arbitrary
                         g.dec_duration = 0
                     else:
-
                         desired_phase = Gate_sequence[i+1].phase/180.*np.pi #convert degrees to radians
                         precession_freq = self.params['C'+str(C_ind)+'_freq']*2*np.pi #convert to radians/s
                         if precession_freq == 0:
@@ -389,7 +427,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         NOTE: N of decoupling for connection elements must be multiple of 4 pulses.
             This is correct by default. If you want to change it be cautious.
             If N is a multiple of 2 pulses this will create a 180 degree phase offset in the electron pulses because it ends in XY.
-        '''
+            '''
+
+
         if g.dec_duration == 0:
             g.N = 0
             g.tau = 0
@@ -403,25 +443,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             g.tau = 0
             return g
 
-
         for k in range(40):
             #Sweep over possible tau's
-            tau =g.dec_duration/(2*(k+1)*self.params['dec_pulse_multiple'])
+            tau = g.dec_duration/(2*(k+1)*self.params['dec_pulse_multiple'])
             if tau == 0:
                 g.N = 0
                 g.tau = 0
             elif tau < self.params['min_dec_tau']:
+                print g.name
+                print g.dec_duration
+                print k
                 print 'Error: decoupling tau: (%s) smaller than minimum value(%s), decoupling duration (%s)' %(tau,self.params['min_dec_tau'],g.dec_duration )
                 break
-            #If the found tau is allowed (bigger than min and smaller than max loop is done)
             elif tau > self.params['min_dec_tau'] and tau< self.params['max_dec_tau']:
+
                 g.tau = tau
                 g.N = int((k+1)*self.params['dec_pulse_multiple'])
                 # print 'found the following decoupling tau: %s, N: %s' %(tau,g.N)
                 break
-            elif k == 79 and tau>self.params['max_dec_tau']:
+            elif k == 39 and tau>self.params['max_dec_tau']:
                 print 'Error: decoupling duration (%s) to large, for %s pulses decoupling tau (%s) larger than max decoupling tau (%s)' %(g.dec_duration,k,tau,self.params['max_dec_tau'])
         return g
+
 
     def determine_decoupling_scheme(self,Gate):
         '''
@@ -433,7 +476,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         if Gate.N == 0:
             ### For N==0, select a different scheme without pulses
             Gate.scheme = 'NO_Pulses'
-        elif Gate.tau>2e-6 :           ## ERROR?
+        elif Gate.tau > 2.5e-6 :           ## ERROR?
             Gate.scheme = 'repeating_T_elt'
         elif Gate.tau<= self.params['fast_pi_duration']+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?
             print 'Error: Gate(%s), tau (%s) too small: Pulses will overlap! \n Min tau = %s' %(Gate.name,Gate.tau,self.params['fast_pi_duration']+20e-9)
@@ -591,9 +634,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = np.mod(g.C_phases_before_gate[iC]+(2*g.tau*g.N)*C_freq[iC],  2*np.pi)
-
+                        
                     if g.C_phases_after_gate[iC] != None:
                         g.C_phases_after_gate[iC] += g.extra_phase_correction_list[iC]
+                    #if (iC==1) and (g.C_phases_before_gate[iC] != None):
+                        #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
 
             elif g.Gate_type =='electron_decoupling':
 
@@ -617,16 +662,17 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         g.dec_duration = 0
                     else:
                         phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi)
+                        #print 'Phase_difference: ',phase_diff, g.name
                         if ( (phase_diff <= (self.params['min_phase_correct']/180.*np.pi)) or
                                 (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ):
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
-
                             g.dec_duration = 0
                         else:
                             g.dec_duration =(round( phase_diff/C_freq[Carbon_index]
                                     *1e9/(self.params['dec_pulse_multiple']*2))
                                     *(self.params['dec_pulse_multiple']*2)*1e-9)
+                            #print 'decoupling duration: ',g.dec_duration
                             while g.dec_duration <= self.params['min_dec_duration']:
                                 phase_diff = phase_diff +2*np.pi
                                 g.dec_duration =(round( phase_diff/C_freq[Carbon_index]
@@ -647,11 +693,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':
-                            # print 'Calculating phase for gate %s for el_state == 0' %g.name
+                            #print 'Calculating phase for gate %s for el_state == 0' %g.name
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.wait_time*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
+                            # print 'Carbon ',iC
                             # print 'Calculating phase for gate %s for el_state == 1' %g.name
+                            # print 'Phase before: ', g.C_phases_before_gate[iC]
+                            # print g.wait_time
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.wait_time*C_freq_1[iC])%(2*np.pi)
+                            # print 'Phase without taking the modulus: ',(g.C_phases_before_gate[iC] + g.wait_time*C_freq_1[iC])
+                            # print 'Phase after: ',g.C_phases_after_gate[iC]
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC])%(2*np.pi)
                             # print 'Warning: %s, el state in sup for passive elt' %g.name
@@ -660,10 +711,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':
-                            # print 'Calculating phase for gate %s for el_state == 0 ' %g.name
+                            #print 'Calculating phase for gate %s for el_state == 0 ' %g.name
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
-                            # print 'Calculating phase for gate %s for el_state == 1 ' %g.name
+                            #print 'Calculating phase for gate %s for el_state == 1 ' %g.name
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_1[iC])%(2*np.pi)
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_before_gate[iC]%(2*np.pi)
@@ -708,7 +759,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Gate.scheme ='trigger'
 
-        #implement a
+        #implement output of the awg on a laser channel.
         if hasattr(Gate,'channel'):
             Gate.elements = [self._Trigger_element(Gate.elements_duration,Gate.prefix,outputChannel=Gate.channel)]
         else:
@@ -738,6 +789,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Y = self._Y_elt()
         mX = self._mX_elt()
         mY = self._mY_elt()
+
 
         ### Select scheme for generating decoupling elements
         if N==0 or Gate.scheme =='auto':
@@ -803,17 +855,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
                 I_channel   ='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel  ='MW_pulsemod',
+                PM_channel  ='MW_pulsemod', Sw_channel='MW_switch',
                 frequency   = self.params['fast_pi2_mod_frq'],
                 PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length      = self.params['fast_pi2_duration'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length      = self.params['fast_pi2_duration'], # previously: self.params['fast_R_pi2_duration'], changed by NK 20150310
                 amplitude   = self.params['fast_pi2_amp'],
                 phase       =initial_phase)
             final_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
                 I_channel   ='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel  ='MW_pulsemod',
+                PM_channel  ='MW_pulsemod', Sw_channel='MW_switch',
                 frequency   = self.params['fast_pi2_mod_frq'],
                 PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
                 length      = self.params['fast_pi2_duration'],
                 amplitude   = self.params['fast_pi2_amp'],
                 phase       = final_phase)
@@ -829,11 +883,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N),
                     pulsar = qt.pulsar, global_time=True)
-
+            
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
-            for n in range(N) :
+            for n in range(N-1) :
                 if n !=0:
                     decoupling_elt.append(T)
                 if n%8 in x_list:
@@ -843,29 +897,135 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if n !=N-1:
                     decoupling_elt.append(T)
 
+            ### append the final pulse
+
+            if N%8 == 2:
+                final_pi_pulse = mX
+                P_type = 'mX'
+                print 'yes, we at 2 pulses with mX!'
+            elif N%8 in [3,4,5]:
+                final_pi_pulse = Y
+                P_type = 'Y'
+            elif N%8 == 6:
+                final_pi_pulse = mY
+                P_type = 'mY'
+            elif N%8 in [0,1,7]:
+                final_pi_pulse = X
+                P_type = 'X'
+
+            decoupling_elt.append(T)
+            decoupling_elt.append(final_pi_pulse)
+
+
+            ### finish off with a pi/2 pulse.
+
             decoupling_elt.append(T_around_pi2)
             decoupling_elt.append(final_pulse)
             decoupling_elt.append(T_around_pi2)
             list_of_elements.append(decoupling_elt)
 
+        elif 'single_block_repeating_elements' in Gate.scheme:
+            '''MAB:4-5-15 
+            Made to repeat one single eleemnt of X, XY, XY4, xY8 or XY16 in one element
+            Gate.N has to be 1,2,4,8 or 16
+            Pulse sequences with N>16 can be constructed with Gate.reps
+            ''' 
+            # print 'using single block'
+            tau_cut = 0
+
+            if self.params['Initial_Pulse'] =='-x':
+                initial_phase = self.params['X_phase']+180
+            else:
+                initial_phase = self.params['X_phase']
+
+            if self.params['Final_Pulse'] =='-x':
+                final_phase   = self.params['X_phase']+180
+            else:
+                final_phase = self.params['X_phase']
+
+            pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
+            if pulse_tau_pi2 < 31e-9:
+                print 'tau too short !!!, tau = ' +str(tau) +'min tau = ' +str(self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0+30e-9)
+
+            initial_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel   ='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel  ='MW_pulsemod', Sw_channel='MW_switch',
+                frequency   = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length      = self.params['fast_pi2_duration'], # previously: self.params['fast_R_pi2_duration'], changed by NK 20150310
+                amplitude   = self.params['fast_pi2_amp'],
+                phase       =initial_phase)
+            final_pulse = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel   ='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel  ='MW_pulsemod', Sw_channel='MW_switch',
+                frequency   = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length      = self.params['fast_pi2_duration'],
+                amplitude   = self.params['fast_pi2_amp'],
+                phase       = final_phase)
+            T_around_pi2    = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau_pi2',
+                length      = pulse_tau_pi2, amplitude = 0.)
+            T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length      = pulse_tau, amplitude = 0.)
+
+            x_list = [0,2,5,7]
+            y_list = [1,3,4,6]
+            mx_list = [8,10,13,15]
+            my_list = [9,11,12,14]
+
+            decoupling_elt = element.Element('Single_%s _DD_elt_tau_%s_N_%s' %(prefix,tau_prnt,N),
+                    pulsar = qt.pulsar, global_time=True)
+
+            if 'start' in Gate.scheme: 
+                decoupling_elt.append(T_around_pi2)
+                decoupling_elt.append(initial_pulse)
+                decoupling_elt.append(T_around_pi2)
+            
+            if N not in [1,2,4,8,16]:
+                raise Exception('Gate.N has to be 1,2,4,8 or 16 and then repeated by Gate.reps')
+            print N
+            
+            for n in range(N):
+                if (n != 0) or ('middle' in Gate.scheme) or ('end' in Gate.scheme):
+                    decoupling_elt.append(T)
+
+                if n%16 in x_list:
+                    decoupling_elt.append(X)
+                    print 'X'
+                elif n%16 in y_list:
+                    decoupling_elt.append(Y)
+                    print 'Y'
+                elif n%16 in mx_list:
+                    decoupling_elt.append(mX)
+                    print 'mX'
+                elif n%16 in my_list:
+                    decoupling_elt.append(mY)
+                    print 'mY'
+                else:
+                    raise Exception('Error in pulse sequence')
+
+                if (n != N-1) or ('middle' in Gate.scheme) or ('start' in Gate.scheme):
+                    decoupling_elt.append(T)
+
+            ### finish off with a pi/2 pulse.
+            if 'end' in Gate.scheme: 
+                decoupling_elt.append(T_around_pi2)
+                decoupling_elt.append(final_pulse)
+                decoupling_elt.append(T_around_pi2)
+
+            list_of_elements.append(decoupling_elt)
         ################################
         ### XYn with repeating T elt ###
         ################################
         elif Gate.scheme == 'repeating_T_elt':
-
             ### Calculate durations
 
             n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) #multiplying and round is to prevent rounding errors in divmod
             tau_remaind              = tau_remaind*1e-9
 
-            # print 'tau = ', tau
-            # print 'n_wait_reps = ', n_wait_reps
-            # print 'tau_remaind = ', tau_remaind
-
-            # if tau*1e9 == 11.12 or tau*1e9 == 11.144: 
-            #     print 'tau = %s: n_wait_reps = %s, tau_remaind = %s' % ((pulse_tau + fast_pi_duration / 2.0), n_wait_reps, tau_remaind)
-
-            if tau_remaind/2 < 36e-9: ## TODO: This should really depend on the pulse mod length and offset
+            if tau_remaind/2. < X.risetime: ## The tau_remaind calculation now depends on the overall risetime of the pulse. NK 20150323
                 ''' to make sure that the time before the pulse is not shorther than the pulse mod'''
                 n_wait_reps              = n_wait_reps -4
                 tau_shortened            = tau_remaind/2.0 + 1e-6
@@ -913,7 +1073,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
 
             # commented out because XX rotations lower the fidelity of the electron state RO.
-            #NK & THT 01.12.2014
+            # NK & THT 01.12.2014
             # final_x_list = [0,1,2,7]
             # if N%8 in final_x_list:
             #     final_pulse = X
@@ -1133,7 +1293,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         tau     = Gate.tau
         tau_prnt= int(tau*1e9)
-
         tau_cut_before  = Gate.tau_cut_before
         tau_cut_after   = Gate.tau_cut_after
 
@@ -1142,6 +1301,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         X = self._X_elt()
         Y = self._Y_elt()
+        mX = self._mX_elt()
+        mY = self._mY_elt()
+
+
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
             length = pulse_tau, amplitude = 0.)
         T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
@@ -1160,9 +1323,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             eP.phase = Gate.phase
 
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
-                length = tau_cut_before-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.)
+                length = tau_cut_before-(eP.length-2*eP.risetime)/2.0, amplitude = 0.)
             T_dec_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
-                length = pulse_tau-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.)
+                length = pulse_tau-(eP.length-2*eP.risetime)/2.0, amplitude = 0.)
         else:
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
                 length = tau_cut_before, amplitude = 0.)
@@ -1176,7 +1339,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         if N == 0 and Gate.Gate_type == 'electron_Gate':
             T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
-                length = tau_cut_after-(eP.length-2*self.params['MW_pulse_mod_risetime'])/2.0, amplitude = 0.) #Overwrite length of T_final element
+                length = tau_cut_after-(eP.length-2*eP.risetime)/2.0, amplitude = 0.) #Overwrite length of T_final element
 
             decoupling_elt.append(T_initial)
             decoupling_elt.append(eP)
@@ -1194,7 +1357,29 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             x_list = [0,2,5,7]
 
-            for n in range(N) :
+
+            ### Commented out to allow for phase gates with 'XY-4'-type sequences and  a pulse number N%2=0.
+            ### So sequences with 2, 6, 10 etc. pulses are allowed as well.
+            ### In this case the last pulse might have to be altered to correct for pulse errors.
+            ############################################
+            ###     ###
+            ### old ###
+            ###     ###
+
+            # for n in range(N) :
+
+            #     if n%8 in x_list:
+            #         decoupling_elt.append(X)
+            #     else:
+            #         decoupling_elt.append(Y)
+            #     decoupling_elt.append(T)
+            #     if n !=(N-1):
+            #         decoupling_elt.append(T)
+            ##########################################
+            ###     ###
+            ### new ### 20150324
+            ###     ###
+            for n in range(N-1) :
 
                 if n%8 in x_list:
                     decoupling_elt.append(X)
@@ -1203,7 +1388,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 decoupling_elt.append(T)
                 if n !=(N-1):
                     decoupling_elt.append(T)
+
+            ### determine the type of the final pulse.
+
+            if N%8 == 2:
+                final_pulse = mX
+            elif N%8 in [3,4,5]:
+                final_pulse = Y
+            elif N%8 == 6:
+                final_pulse = mY
+            elif N%8 in [0,1,7]:
+                final_pulse = X
+
+            if N!=0:
+                decoupling_elt.append(final_pulse)
+                decoupling_elt.append(T)
+
+            ##########################################
+
+
+
             decoupling_elt.append(T_final)
+
         Gate.elements = [decoupling_elt]
 
     def generate_electron_gate_element(self,Gate):
@@ -1221,15 +1427,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = self._pi2_elt()
-            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-            #     PM_channel='MW_pulsemod',
-            #     frequency = self.params['fast_pi2_mod_frq'],
-            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-            #     length = self.params['fast_pi2_duration'],
-            #     amplitude = self.params['fast_pi2_amp'],
-            #     phase=self.params['X_phase'])
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase=self.params['X_phase'])
 
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
@@ -1247,15 +1453,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = self._mpi2_elt()
-            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-            #     PM_channel='MW_pulsemod',
-            #     frequency = self.params['fast_pi2_mod_frq'],
-            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-            #     length = self.params['fast_pi2_duration'],
-            #     amplitude = self.params['fast_pi2_amp'],
-            #     phase = self.params['X_phase']+180)
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase = self.params['X_phase']+180)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1271,14 +1477,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
-            X = self._mX_elt()
-            # X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
-            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-            #     PM_channel='MW_pulsemod',
-            #     frequency = self.params['fast_pi_mod_frq'],
-            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-            #     length = self.params['fast_pi_duration'],
-            #     amplitude = self.params['fast_pi_amp'])
+            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+                frequency = self.params['fast_pi_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length = self.params['fast_pi_duration'],
+                amplitude = self.params['fast_pi_amp'])
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1296,9 +1502,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
                 I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
                 frequency = self.params['fast_pi_mod_frq'],
                 PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
                 length = self.params['fast_pi_duration'],
                 amplitude = 0)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1316,16 +1523,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = self._Ypi2_elt()
-
-            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-            #     PM_channel='MW_pulsemod',
-            #     frequency = self.params['fast_pi2_mod_frq'],
-            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-            #     length = self.params['fast_pi2_duration'],
-            #     amplitude = self.params['fast_pi2_amp'],
-            #     phase = self.params['Y_phase'])
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase = self.params['Y_phase'])
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1342,16 +1548,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = self._mYpi2_elt()
-
-            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-            #     PM_channel='MW_pulsemod',
-            #     frequency = self.params['fast_pi2_mod_frq'],
-            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-            #     length = self.params['fast_pi2_duration'],
-            #     amplitude = self.params['fast_pi2_amp'],
-            #     phase = self.params['Y_phase']+180)
+            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+                I_channel='MW_Imod', Q_channel='MW_Qmod',
+                PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+                frequency = self.params['fast_pi2_mod_frq'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'],
+                length = self.params['fast_pi2_duration'],
+                amplitude = self.params['fast_pi2_amp'],
+                phase = self.params['Y_phase']+180)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1399,6 +1604,105 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # - add calculation for the repump power and put it into the generation of the marker trigger.
 
     def generate_RF_pulse_element(self,Gate):
+        '''
+        Written by MB. 
+        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
+        Pulse is build up out of a starting element, a repeated middle element and an end
+        element to save the memory of the AWG.
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'RF_pulse'
+
+        length     = Gate.length
+        freq       = Gate.RFfreq
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+        phase      = Gate.phase
+
+        #We choose a max length for pulse block of
+
+        # Freq_Res = 5 #Needed freq res in Hz
+        # multiplier = freq / Freq_Res
+        # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # while (periods_in_pulse / freq) % 1e-9 != 0:
+        #     periods_in_pulse += 1
+        #     if periods_in_pulse / freq > 1e-3:
+        #         print periods_in_pulse
+        #         raise Exception('Choose different freq')
+        # print periods_in_pulse / freq
+        
+
+        #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
+        # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
+        # #     print periods_in_pulse * 1e9 / freq
+        # #     periods_in_pulse *= 2
+
+        # print periods_in_pulse
+        # #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
+        # MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
+        # rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
+
+
+        # #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
+        # if length <= periods_in_pulse/freq + 2e-6:
+        #     raise Exception('RF pulse is too short')
+
+        # print periods_in_pulse
+        #Determine number of repeated elements
+        # Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
+        # tau_remaind *= 1e-9 
+        list_of_elements = []
+
+        X = pulselib.RF_erf_envelope(
+            channel = 'RF',
+            length = length,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase)
+        # Env_start_p = pulselib.RF_erf_rise_element(
+        #     channel = 'RF',
+        #     length = rise_length + tau_remaind / 2,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase,
+        #     startorend = 'start')
+        # Env_end_p = pulselib.RF_erf_rise_element(
+        #     channel = 'RF',
+        #     length = rise_length + tau_remaind / 2,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase,
+        #     startorend = 'end')
+
+        # e_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+        #         global_time = True)
+        # e_start.append(pulse.cp(Env_start_p))
+        # list_of_elements.append(e_start)
+
+        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_middle.append(pulse.cp(X))
+        list_of_elements.append(e_middle)
+
+        # e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+        #         global_time = True)
+        # e_end.append(pulse.cp(Env_end_p))
+        # list_of_elements.append(e_end)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
+        Gate.elements= list_of_elements
+        
+        return Gate
+
+    def generate_RF_pulse_element_repeated_middle(self,Gate):
         '''
         Written by MB. 
         Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
@@ -1523,7 +1827,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     pass
                 elif gate.go_to == 'next':
                     gate.go_to = gate_seq[i+1].elements[0].name
-                elif gate.go_to == 'self':
+                elif gate.go_to == 'self': 
                     gate.go_to = gate.elements[0].name
                 elif gate.go_to =='start':
                     gate.go_to = gate_seq[0].elements[0].name
@@ -1594,14 +1898,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif gate.scheme == 'RF_pulse':
                 list_of_elements.extend(gate.elements)
                 # starting envelope element
-                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
-                    trigger_wait=False,repetitions = 1)
+                # seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                #     trigger_wait=False,repetitions = 1)
                 # repeating period element
-                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
+                gate.reps = 1
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
                     trigger_wait=False,repetitions = gate.reps)
                  # ending envelope element
-                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
-                    trigger_wait=False,repetitions = 1)
+                # seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                #     trigger_wait=False,repetitions = 1)
             ######################
             ### XY4 elements
             ######################
@@ -2083,21 +2388,53 @@ class SimpleDecoupling(DynamicalDecoupling):
             initial_Pi2 = Gate('initial_pi2','electron_Gate')
             simple_el_dec = Gate('electron_decoupling', 'Carbon_Gate')
             final_Pi2 = Gate('final_pi2','electron_Gate')
-
             gate_seq = [initial_Pi2,simple_el_dec,final_Pi2]
+            
             #############
 
             simple_el_dec.N = Number_of_pulses[pt]
             simple_el_dec.tau = tau_list[pt]
             simple_el_dec.prefix = 'electron'
             simple_el_dec.scheme = self.params['Decoupling_sequence_scheme']
+        
+            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
+            ## TODO Find a better way to implement it? Better script?
+            try:
+                self.params['DD_in_eigenstate']
+            except:
+                pass
+            else:
+                if self.params['DD_in_eigenstate']:
+                    simple_el_dec.N = 32
+                    simple_el_dec.prefix = 'electron_'+ str(Number_of_pulses[pt])
+                else:
+                    pass
+
 
             ## Generate the decoupling elements
             self.generate_decoupling_sequence_elements(simple_el_dec)
 
+            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
+            try:
+                self.params['DD_in_eigenstate']
+            except:
+                pass
+            else:
+                if self.params['DD_in_eigenstate']:
+                    simple_el_dec.reps = divmod(Number_of_pulses[pt],simple_el_dec.N)[0]
+                else:
+                    pass
+
             #In case single block used inital and final pulse no
             if simple_el_dec.scheme == 'single_block':
                 gate_seq = [simple_el_dec]
+                # gate_seq = [simple_el_dec,final_pi]
+
+                # initial_Pi.Gate_operation = self.params['Initial_Pulse']
+                # initial_Pi.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
+                # initial_Pi.time_after_pulse = simple_el_dec.tau_cut
+                # initial_Pi.prefix = 'init_pi2_'+str(pt)
+
             else:
                 #Generate the start and end pulse
                 # print 'Initial_pulse'
@@ -2143,6 +2480,102 @@ class SimpleDecoupling(DynamicalDecoupling):
             print 'upload = false, no sequence uploaded to AWG'
         if return_combined_seq:
             return combined_seq,combined_list_of_elements
+class SimpleDecoupling_Single_Block(DynamicalDecoupling):
+    '''
+    Use this version of SimpleDecoupling only when having a large amount of decoupling pulses so 
+    MAB 4-5-15
+    ---|pi/2| - |DD| - |pi/2| ---
+
+    Can handle following pulse sequences
+    X (x)^n
+    XmX (x mx)^n
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
+    '''
+    # adwin_process = 'MBI_shutter'
+
+    def generate_sequence(self,upload=True, debug=False):
+        '''
+        The function that is executed when a measurement script is executed
+        It calls the different functions in this class
+        For now it is simplified and can only do one type of decoupling sequence
+        '''
+        pts = self.params['pts']
+        tau_list = self.params['tau_list']
+        Number_of_pulses = self.params['Number_of_pulses']
+
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Simple Decoupling Sequence')
+
+        XY_pulses = self.params['Number of pulses in XY scheme']
+        print XY_pulses
+        for pt in range(pts):
+            if self.params['DD_in_eigenstate']:
+                if Number_of_pulses[pt] % XY_pulses != 0:
+                    raise Exception('Error: Number of pulses should be a multiple of ' + str(XY_pulses))
+            else:
+                if Number_of_pulses[pt] % XY_pulses != 0 or Number_of_pulses[pt] < XY_pulses*3:
+                    raise Exception('Error: Number of pulses should be a multiple of' + str(XY_pulses) + 'and more pulses than ' + str(XY_pulses*3))
+
+            simple_el_dec_start = Gate('electron_decoupling', 'Carbon_Gate')
+            simple_el_dec_middle = Gate('electron_decoupling', 'Carbon_Gate')
+            simple_el_dec_end = Gate('electron_decoupling', 'Carbon_Gate')
+
+            if self.params['DD_in_eigenstate']:
+                gate_seq = [simple_el_dec_middle]
+            else:
+                gate_seq = [simple_el_dec_start,simple_el_dec_middle,simple_el_dec_end]
+
+            #Start element
+            simple_el_dec_start.N = XY_pulses
+            simple_el_dec_start.tau = tau_list[pt]
+            simple_el_dec_start.scheme = 'single_block_repeating_elements_start'
+            simple_el_dec_start.prefix = 'start_element_pt' +  str(pt)
+            self.generate_decoupling_sequence_elements(simple_el_dec_start)
+            simple_el_dec_start.reps = 1
+
+            #Middle element
+            simple_el_dec_middle.N = XY_pulses
+            simple_el_dec_middle.tau = tau_list[pt]
+            simple_el_dec_middle.scheme = 'single_block_repeating_elements_middle'
+            simple_el_dec_middle.prefix = 'middle_element_pt' +  str(pt)
+            self.generate_decoupling_sequence_elements(simple_el_dec_middle)
+            if self.params['DD_in_eigenstate']:
+                simple_el_dec_middle.reps = divmod(Number_of_pulses[pt],XY_pulses)[0]
+            else:
+                simple_el_dec_middle.reps = divmod(Number_of_pulses[pt],XY_pulses)[0]-2
+                print simple_el_dec_middle.reps
+            
+            #End element
+            simple_el_dec_end.N = XY_pulses
+            simple_el_dec_end.tau = tau_list[pt]
+            simple_el_dec_end.scheme = 'single_block_repeating_elements_end'
+            simple_el_dec_end.prefix = 'end_element_pt' +  str(pt)
+            self.generate_decoupling_sequence_elements(simple_el_dec_end)
+            simple_el_dec_end.reps = 1
+
+            simple_el_dec_start.scheme = 'single_block'
+            simple_el_dec_middle.scheme = 'single_block'
+            simple_el_dec_end.scheme = 'single_block'
+        
+
+            ## Combine to AWG sequence that can be uploaded #
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq)
+
+            combined_list_of_elements.extend(list_of_elements)
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print 'uploading list of elements'
+            # qt.pulsar.upload(*combined_list_of_elements)
+            print ' uploading sequence'
+            # qt.pulsar.program_sequence(combined_seq)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 ################################################################
 ##########   Carbon intialization and control classes   ########
 ################################################################
@@ -2210,6 +2643,204 @@ class MBI_C13(DynamicalDecoupling):
         return
 
     ### Sub sequence functions, TODO:THT delet all the superfluous functions
+    def initialize_carbon_echogate(self,
+            prefix                  = 'init_C',
+            go_to_element           = 'MBI_1',
+            wait_for_trigger        = True,
+            pt                      = 1,
+            addressed_carbon        = 1,
+            C_init_state            = 'up',
+            el_RO_result            = '0',
+            el_after_init           = '0',
+            wait_time = 4e-6):
+
+        """
+        Class to intialize a carbon spin with the 'Echo Gate'
+        """
+
+        if type(go_to_element) != str:
+            go_to_element = go_to_element.name
+
+        ### Generate sequence    
+        ################################
+        carbon_init_seq=[]
+
+        # f0=self.params['C'+str(addressed_carbon)+'_freq_0']
+        # f1=self.params['C'+str(addressed_carbon)+'_freq_1']
+        # HalfWaittime=round((1/np.abs(f1-f0))/4.,9)
+
+        HalfWaittime=wait_time/2.
+        print 'Wait: ', 2*HalfWaittime
+        #the two wait gates to be put in the beginning and end
+
+        wait_gate1 = Gate(prefix+'_Wait_gate1_'+str(pt),'passive_elt',
+                             wait_time = round(HalfWaittime,9))
+        wait_gate2 = Gate(prefix+'_Wait_gate2_'+str(pt),'passive_elt',
+                             wait_time = round(HalfWaittime,9))
+
+        ###
+        ## unconditional rotations on the two spins
+        C_uncond_Pi = Gate(prefix+'_uncond_Pi'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Carbon_nr'],
+                N = self.params['C'+str(addressed_carbon)+'_uncond_pi_N'][0],
+                tau = self.params['C'+str(addressed_carbon)+'_uncond_tau'][0],
+                phase = self.params['C13_X_phase'])
+
+        print 'N: ', self.params['C'+str(addressed_carbon)+'_uncond_pi_N'][0]
+        print 'tau: ', self.params['C'+str(addressed_carbon)+'_uncond_tau'][0]
+        #wait_gate1.C_phases_after_gate=10*[0]
+
+
+        E_Pi=Gate(prefix+'E_Pi'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'])
+
+        C_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'_RO_trig_pt'+str(pt),'Trigger',
+                wait_time= self.params['Carbon_init_RO_wait'],
+                event_jump = 'next',
+                go_to = go_to_element,
+                el_state_before_gate = el_RO_result)
+
+        ###Before piecing the sequence together, two pi/2 pulses on the elctronic state need to be defined
+        E_init_y = Gate(prefix+'E'+str(addressed_carbon)+'_y_pt'+str(pt),'electron_Gate',
+            Gate_operation ='pi2',
+            wait_for_trigger = wait_for_trigger,
+            phase =self.params['Y_phase'])
+
+        if C_init_state == 'down':
+            RO_phase=self.params['X_phase']+180
+        else:
+            RO_phase=self.params['X_phase']
+
+
+        E_RO_x = Gate(prefix+'E'+str(addressed_carbon)+'_x_pt'+str(pt),'electron_Gate',
+            Gate_operation ='pi2',
+            phase =RO_phase)
+
+        ### Piece the sequence together.
+        carbon_init_seq=[E_init_y,wait_gate1,C_uncond_Pi,E_Pi,wait_gate2,E_RO_x,C_init_RO_Trigger]
+
+
+        C_init_elec_X = Gate(prefix+str(addressed_carbon)+'_elec_X_pt'+str(pt),'electron_Gate',
+                Gate_operation='pi',
+                phase = self.params['X_phase'],
+                el_state_after_gate = '1')
+
+        if el_after_init =='1':
+            carbon_init_seq.append(C_init_elec_X)
+
+        return carbon_init_seq
+
+    def readout_single_carbon_echogate(self,
+        prefix              = 'C_RO',
+        pt                  =  1,
+        addressed_carbon              =  3,
+        RO_trigger_duration = 116e-6,
+        el_RO_result        = '0',
+        go_to_element       = 'next', event_jump_element = 'next',
+        readout_orientation = 'positive',
+        el_state_in         = 0,
+        wait_time           = 3e-6
+        ):
+
+        '''
+        Function to create a AWG sequence for Carbon spin measurements with the EchoGate.
+        carbon                  gives the carbon_nr which is read-out
+        el_RO_result            the electron state for the final trigger element (i.e. the electron measurement outcome)
+        readout_orientation     sets the orientation of the electron readout (positive or negative)
+        el_state_in             the state of the electron before the measurement
+        wait_times              the evolution before and after the unconditional pi-pulse.
+        '''
+
+        ##############################
+        ### Check input parameters ###
+        ##############################
+
+        if (type(go_to_element) != str) and (go_to_element != None):
+            go_to_element = go_to_element.name
+
+        #######################
+        ### Create sequence ###
+        #######################
+
+        carbon_RO_seq = []
+
+        ### Add initial pi/2 pulse (always) ###
+        carbon_RO_seq.append(
+                Gate(prefix+'_y_pi2_init'+str(pt),'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase']))
+
+        # f0=self.params['C'+str(addressed_carbon)+'_freq_0']
+        # f1=self.params['C'+str(addressed_carbon)+'_freq_1']
+        #HalfWaittime=(1/np.abs(f1-f0))/4.
+
+        HalfWaittime=wait_time/2.
+        print 'Wait: ', 2*HalfWaittime
+        ##the two wait gates to be put in the beginning and end
+
+        wait_gate1 = Gate(prefix+'_Wait_gate1_'+str(pt),'passive_elt',
+                             wait_time = round(HalfWaittime,9))
+        wait_gate2 = Gate(prefix+'_Wait_gate2_'+str(pt),'passive_elt',
+                             wait_time = round(HalfWaittime,9))
+
+        ###
+        ## unconditional rotations on the two spins
+        C_uncond_Pi = Gate(prefix+'_uncond_Pi'+str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['Carbon_nr'],
+                N = self.params['C'+str(addressed_carbon)+'_uncond_pi_N'][0],
+                tau = self.params['C'+str(addressed_carbon)+'_uncond_tau'][0],
+                phase = self.params['C13_X_phase'])
+
+        print 'N: ', self.params['C'+str(addressed_carbon)+'_uncond_pi_N'][0]
+        print 'tau: ', self.params['C'+str(addressed_carbon)+'_uncond_tau'][0]
+        #wait_gate1.C_phases_after_gate=10*[0]
+
+
+        E_Pi=Gate(prefix+'E_Pi'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'])
+
+        C_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'_RO_trig_pt'+str(pt),'Trigger',
+                wait_time= self.params['Carbon_init_RO_wait'],
+                event_jump = 'next',
+                go_to = go_to_element,
+                el_state_before_gate = el_RO_result)
+
+        ###Before assembling the sequence together, two pi/2 pulses on the elctronic state need to be defined
+        E_init_y = Gate(prefix+'E'+str(addressed_carbon)+'_y_pt'+str(pt),'electron_Gate',
+            Gate_operation ='pi2',
+            phase =self.params['Y_phase'])
+
+        ### Piece the sequence together.
+        carbon_RO_seq=[E_init_y,wait_gate1,C_uncond_Pi,E_Pi,wait_gate2]
+
+
+        ### Add final pi/2 and Trigger ###
+            ### set the final electron pi2 pulse phase depending on the number of qubits RO (4 options)
+        Final_pi2_pulse_phase = np.mod((self.params['X_phase']),360)
+        Final_pi2_pulse_phase_negative = np.mod(Final_pi2_pulse_phase+180,360)
+
+        if (readout_orientation == 'positive' and el_state_in == 0) or (readout_orientation == 'negative' and el_state_in == 1):
+            carbon_RO_seq.append(
+                    Gate(prefix+'_pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = Final_pi2_pulse_phase))
+
+        elif (readout_orientation == 'negative' and el_state_in == 0) or (readout_orientation == 'positive' and el_state_in == 1):
+            carbon_RO_seq.append(
+                    Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
+                    Gate_operation='pi2',
+                    phase = Final_pi2_pulse_phase_negative))
+
+
+        carbon_RO_seq.append(
+            Gate(prefix+'_Trigger_'+str(pt),'Trigger',
+            wait_time = RO_trigger_duration,
+            go_to = go_to_element, event_jump = event_jump_element,
+            el_state_before_gate = el_RO_result))
+
+        return carbon_RO_seq
 
     def initialize_carbon_sequence(self,
             prefix                  = 'init_C',
@@ -2338,9 +2969,10 @@ class MBI_C13(DynamicalDecoupling):
         readout_orientation = 'positive',
         el_state_in         = 0,
         Zeno_RO             = False,
-        phase_error         = 10*[0]
+        phase_error         = 10*[0],
+        add_wait_to_Zeno    = 0
         ):
-
+        
         '''
         Function to create a general AWG sequence for Carbon spin measurements.
         carbon_list             gives the order of the carbons that the measurement will be performed on
@@ -2348,8 +2980,9 @@ class MBI_C13(DynamicalDecoupling):
         el_RO_result            the electron state for the final trigger element (i.e. the electron measurement outcome)
         readout_orientation     sets the orientation of the electron readout (positive or negative)
         el_state_in             the state of the electron before the measurement
-        Zeno_RO                 ??
+        Zeno_RO                 boolean, if true: Turns a laser via the AWG on. Circumvents the ADWIN.
         phase_error             to apply an extra phase BEFORE this gate (can be used for phase errors and phase correction) 
+        add_wait_to_Zeno        time in seconds, if unequal to 0 --> puts a wait gate into the Zeno measurement.
         '''
 
         ##############################
@@ -2412,6 +3045,7 @@ class MBI_C13(DynamicalDecoupling):
                     RO_phase = np.mod(self.params['C13_Y_phase']+180*el_state_in,360)
                 elif RO_basis_list[kk] == 'Z':
                     RO_phase = np.mod(self.params['C13_Y_phase']+180*(1-el_state_in),360)
+
                 else:
                     RO_phase = RO_basis_list[kk]
 
@@ -2446,7 +3080,9 @@ class MBI_C13(DynamicalDecoupling):
             Laser.channel='AOM_Newfocus'
             Laser.elements_duration=RO_trigger_duration
             Laser.el_state_before_gate='0'
-
+            if add_wait_to_Zeno != 0:
+                carbon_RO_seq.extend([Gate(prefix+'_msmt_wait'+str(pt),'passive_elt',
+                                     wait_time = add_wait_to_Zeno)])
             carbon_RO_seq.append(Laser)
 
         else:
@@ -2656,9 +3292,10 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
 
         X = pulselib.MW_IQmod_pulse('Pi_2-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
             frequency = self.params['fast_pi2_mod_frq'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'],
             length = self.params['fast_pi2_duration'],
             amplitude = self.params['fast_pi2_amp'])
 
@@ -2809,6 +3446,7 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
                 el_RO_result          = str(self.params['C13_MBI_RO_state']))
             gate_seq.extend(carbon_init_seq)
 
+
             ### Free evolution_time
 
                 ### Check if free evolution time is larger than the RO time (it can't be shorter)
@@ -2936,7 +3574,126 @@ class NuclearRabiWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
-class NuclearT1(MBI_C13):
+class NuclearT1_2(MBI_C13):
+    '''
+    MAB 14-3-15
+    New script replacing NuclearT1_Old which allows to initialize multiple carbons
+    1. MBI initialisation
+    2. Carbon initialisation into Z or initialization of several carbons.
+    3. Carbon T1 evolution
+    4. Carbon Z-Readout
+    '''
+    mprefix = 'NuclearT1'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Nuclear T1')
+
+        for pt in range(pts): ### Sweep over RO basis
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init         = self.params['el_after_init'])
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+            ### MBE - measurement based entanglement
+            for kk in range(self.params['Nr_MBE']):
+
+                probabilistic_MBE_seq = self.readout_carbon_sequence(
+                        prefix              = 'MBE' + str(kk+1),
+                        pt                  = pt,
+                        go_to_element       = mbi,
+                        event_jump_element  = 'next',
+                        RO_trigger_duration = 150e-6,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        el_RO_result         = '0')
+
+                gate_seq.extend(probabilistic_MBE_seq)
+
+
+            if self.params['add_wait_gate'] == True:
+                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt])
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### Readout
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list`
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+
+                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+
+class NuclearT1_OLD(MBI_C13):
     '''
     This class generates the AWG sequence for a C13 T1 experiment.
     1. MBI initialisation
@@ -2954,28 +3711,28 @@ class NuclearT1(MBI_C13):
         combined_seq = pulsar.Sequence('Carbon T1')
 
         for pt in range(pts):
-
+            gate_seq = []
             #####################################################
             #####    Generating the sequence elements      ######
             #####################################################
             #Elements for the nitrogen and carbon initialisation
 
             mbi = Gate('MBI_'+str(pt),'MBI')
-            mbi_seq = [mbi]
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     initialization_method = 'swap', pt =pt,
-                    addressed_carbon= self.params['Addressed_Carbon'],
+                    addressed_carbon= self.params['carbon_nr'],
                     C_init_state = self.params['C13_init_state'],
                     el_RO_result = str(self.params['C13_MBI_RO_state']),
                     el_after_init = str(self.params['el_after_init']))
-
+            gate_seq.extend(carbon_init_seq)
             #Elements for T1 evolution
-
+            print self.params['Carbon_init_RO_wait']
             wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
                     wait_time = self.params['wait_times'][pt]-self.params['Carbon_init_RO_wait'])
 
-            C_evol_seq =[wait_gate]
+            C_evol_seq =[wait_gate]; gate_seq.extend(C_evol_seq)
 
             #############################
             #Readout in the Z basis
@@ -2983,32 +3740,44 @@ class NuclearT1(MBI_C13):
 
             #TODO make the read-out use the general Carbon RO sequencer function NK 20141104
 
-            if self.params['electron_readout_orientation'] == 'positive':
-                extra_phase = 0
-            elif self.params['electron_readout_orientation'] == 'negative':
-                 extra_phase = 180
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    el_state_in         = self.params['el_after_init'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
 
-            C_basis_Ren = Gate('C_basis_Ren'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'][0],
-                    phase = 'reset')
+            # if self.params['electron_readout_orientation'] == 'positive':
+            #     extra_phase = 0
+            # elif self.params['electron_readout_orientation'] == 'negative':
+            #      extra_phase = 180
 
-            C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['Y_phase']+extra_phase)
-            C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
-                    Carbon_ind = self.params['Addressed_Carbon'][0],
-                    phase = self.params['C13_Y_phase']+180)
-            C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
-                    Gate_operation='pi2',
-                    phase = self.params['X_phase'])
-            C_RO_Trigger = Gate('C_RO_Trigger_'+str(pt),'Trigger')
+            # C_basis_Ren = Gate('C_basis_Ren'+str(pt), 'Carbon_Gate',
+            #         Carbon_ind = self.params['Addressed_Carbon'][0],
+            #         phase = 'reset')
 
-            carbon_RO_seq =[C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_Trigger]
+            # C_RO_y = Gate('C_ROy_'+str(pt),'electron_Gate',
+            #         Gate_operation='pi2',
+            #         phase = self.params['Y_phase']+extra_phase)
+            # C_RO_Ren = Gate('C_RO_Ren_'+str(pt), 'Carbon_Gate',
+            #         Carbon_ind = self.params['Addressed_Carbon'][0],
+            #         phase = self.params['C13_Y_phase']+180)
+            # C_RO_x = Gate('C_RO_x_'+str(pt),'electron_Gate',
+            #         Gate_operation='pi2',
+            #         phase = self.params['X_phase'])
+            # C_RO_Trigger = Gate('C_RO_Trigger_'+str(pt),'Trigger')
+
+            # carbon_RO_seq =[C_basis_Ren, C_RO_y, C_RO_Ren, C_RO_x, C_RO_Trigger]
 
             # Gate seq consits of 3 sub sequences [MBI] [Carbon init]  [RO and evolution]
-            gate_seq = []
-            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
-            gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
+            # gate_seq = []
+            # gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+            # gate_seq.extend(C_evol_seq), gate_seq.extend(carbon_RO_seq)
             ############
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
@@ -3194,15 +3963,17 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
             ### Carbon initialization GOOD initializes in |+X>
-            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+            carbon_init_seq = self.  initialize_carbon_sequence(go_to_element = mbi,
                 prefix = 'C_MBI_',
                 wait_for_trigger      = True, pt =pt,
                 initialization_method = self.params['C13_init_method'],
                 C_init_state          = self.params['init_state'],
                 addressed_carbon      = self.params['carbon_nr'],
-                el_RO_result          = str(self.params['C13_MBI_RO_state']))
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init         = str(self.params['el_after_init']))
             gate_seq.extend(carbon_init_seq)
 
+            print 'SHUTTER RISE', self.params['Shutter_rise_time']
 
             ### Pi-Gate option1: non detuned pi gate "in once" gate
             if self.echo_choice == 'SinglePi':
@@ -3265,6 +4036,7 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = [self.params['carbon_nr']],
                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    el_state_in         = self.params['el_after_init'],
                     readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
 
@@ -3301,6 +4073,695 @@ class NuclearHahnEchoWithInitialization(MBI_C13):
 
         else:
             print 'upload = false, no sequence uploaded to AWG'
+
+class NuclearDD(MBI_C13):
+    '''
+    Made by Michiel based on NuclearHahnEchoWithInitialization
+    This class is to measure Tcoh using XY4
+    1. Nitrogen MBI initialisation
+    2. MBI initialization nuclear spin
+    3. DD on carbons
+    5. Pi/2 pulse on nuclear spin and read out in one function
+    Start time pi pulse = tau - 0.5*time pi gate
+
+    Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
+
+    Pulse sequences
+    X (x)^n
+    XmX (x mx)^n
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
+
+    '''
+    mprefix = 'NuclearDD' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+        self.params['Carbon_pi_duration'] = 4 * self.params['C'+str(self.params['carbon_nr'])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_nr'])+'_Ren_tau'][0]
+        if self.params['C13_DD_Scheme'] != 'No_DD' and min(self.params['free_evolution_time']) < self.params['Carbon_pi_duration']/2:
+            raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
+                        % (2*min(self.params['free_evolution_time']),self.params['Carbon_pi_duration']/2))
+
+        DDseq = []
+
+        if self.params['C13_DD_Scheme'] == 'auto':
+            reps, pulses_remaining = divmod(self.params['Decoupling_pulses'],16)
+            DDseq.extend(reps*['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+            if pulses_remaining >= 8:
+                pulses_remaining -= 8
+                DDseq.extend(['X', 'Y', 'X', 'Y', 'Y', 'X', 'Y', 'X'])
+            if pulses_remaining >= 4:
+                pulses_remaining -= 4
+                DDseq.extend(['X','Y','X','Y'])
+            if pulses_remaining >= 2:
+                pulses_remaining -= 2
+                DDseq.extend(['X','mX'])
+            if pulses_remaining >= 1:
+                pulses_remaining -= 1
+                DDseq.extend(['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'No_DD':
+            pass
+
+        elif self.params['C13_DD_Scheme'] == 'X':
+            DDseq.extend(self.params['Decoupling_pulses']*['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY4':
+            if self.params['Decoupling_pulses'] % 4 != 0:
+                raise Exception('Number of pulses must be dividable by 4')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','Y'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY8':
+            if self.params['Decoupling_pulses'] % 8 != 0:
+                raise Exception('Number of pulses must be dividable by 8')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 8) * ['X','Y','X','Y','Y','X','Y','X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY16':
+            if self.params['Decoupling_pulses'] % 16 != 0:
+                raise Exception('Number of pulses must be dividable by 16')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 16) * ['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+        
+        elif self.params['C13_DD_Scheme'] == 'XmX':
+            if self.params['Decoupling_pulses'] % 2 != 0:
+                raise Exception('Number of pulses must be dividable by 2')
+            else:
+                decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+            for n in np.arange(1,decoupling_repetitions+1):
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','mX'])
+
+        else:
+            raise Exception('Choose a different C13 DD scheme')
+
+        print DDseq
+        print self.params['free_evolution_time']
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization GOOD initializes in |+X>
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init         = str(self.params['el_after_init']))
+            gate_seq.extend(carbon_init_seq)
+            
+            wait_gate = (Gate('Wait_gate_start_pt'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.))
+            gate_seq.extend([wait_gate])
+
+            if len(DDseq) > 0:
+                for gate_nr, gate in enumerate(DDseq, start=1):
+                    if gate_nr > 1:
+                        wait_gate = Gate('Wait_gate' + str(gate_nr) + '_pt'+str(pt),'passive_elt',
+                                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                        gate_seq.extend([wait_gate])
+
+                    if gate == 'X':
+                        C_phase = self.params['C13_X_phase']
+                    elif gate == 'mX':
+                        C_phase = self.params['C13_X_phase']+180
+                    elif gate == 'Y':
+                        C_phase = self.params['C13_Y_phase']
+                    elif gate == 'mY':
+                        C_phase = self.params['C13_Y_phase']+180
+                    else:
+                        raise Exception('Carbon Gate '+ Gate +' not recognized')
+
+                    Pi_part_1 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate + '1_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind = self.params['carbon_nr'],
+                            phase = C_phase)
+                    Pi_part_2 = Gate('C' + str(self.params['carbon_nr']) + '_pi' + gate + '2_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind = self.params['carbon_nr'],
+                            phase = C_phase)
+                    gate_seq.extend([Pi_part_1, Pi_part_2])
+                wait_gate = Gate('Wait_gate_end_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                gate_seq.extend([wait_gate])
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    el_state_in         = self.params['el_after_init'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+class MultiNuclearDD(MBI_C13):
+    '''
+    Made by Michiel based on NuclearDD
+    This class is to measure Tcoh using XY4
+    1. Nitrogen MBI initialisation
+    2. MBI initialization nuclear spin
+    3. DD on carbons
+    5. Pi/2 pulse on nuclear spin and read out in one function
+    Start time pi pulse = tau - 0.5*time pi gate
+
+    Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
+
+    Pulse sequences
+    X (x)^n
+    XmX (x mx)^n
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
+
+    '''
+    mprefix = 'NuclearDD' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+        self.params['Carbon_pi_duration_list'] = []
+        for kk in range(self.params['Nr_C13_init']):
+            self.params['Carbon_pi_duration_list'].append(4 * self.params['C'+str(self.params['carbon_init_list'][kk])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_init_list'][kk])+'_Ren_tau'][0])
+
+
+        if self.params['C13_DD_Scheme'] != 'No_DD' and min(self.params['free_evolution_time']) < sum(self.params['Carbon_pi_duration_list'])/2:
+            raise Exception('Error: time between pulses (%s) is shorter than havle carbon Pi durations (%s)'
+                        % (min(self.params['free_evolution_time']),sum(self.params['Carbon_pi_duration_list'])/2))
+
+        DDseq = []
+
+        if self.params['C13_DD_Scheme'] == 'auto':
+            reps, pulses_remaining = divmod(self.params['Decoupling_pulses'],16)
+            DDseq.extend(reps*['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+            if pulses_remaining >= 8:
+                pulses_remaining -= 8
+                DDseq.extend(['X', 'Y', 'X', 'Y', 'Y', 'X', 'Y', 'X'])
+            if pulses_remaining >= 4:
+                pulses_remaining -= 4
+                DDseq.extend(['X','Y','X','Y'])
+            if pulses_remaining >= 2:
+                pulses_remaining -= 2
+                DDseq.extend(['X','mX'])
+            if pulses_remaining >= 1:
+                pulses_remaining -= 1
+                DDseq.extend(['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'No_DD':
+            pass
+
+        elif self.params['C13_DD_Scheme'] == 'X':
+            DDseq.extend(self.params['Decoupling_pulses']*['X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY4':
+            if self.params['Decoupling_pulses'] % 4 != 0:
+                raise Exception('Number of pulses must be dividable by 4')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','Y'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY8':
+            if self.params['Decoupling_pulses'] % 8 != 0:
+                raise Exception('Numb0er of pulses must be dividable by 8')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 8) * ['X','Y','X','Y','Y','X','Y','X'])
+
+        elif self.params['C13_DD_Scheme'] == 'XY16':
+            if self.params['Decoupling_pulses'] % 16 != 0:
+                raise Exception('Number of pulses must be dividable by 16')
+            else:
+                DDseq.extend((self.params['Decoupling_pulses'] / 16) * ['X','Y','X','Y','Y','X','Y','X','mX','mY','mX','mY','mY','mX','mY','mX'])
+        
+        elif self.params['C13_DD_Scheme'] == 'XmX':
+            if self.params['Decoupling_pulses'] % 2 != 0:
+                raise Exception('Number of pulses must be dividable by 2')
+            else:
+                decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+            for n in np.arange(1,decoupling_repetitions+1):
+                DDseq.extend((self.params['Decoupling_pulses'] / 2) * ['X','mX'])
+
+        else:
+            raise Exception('Choose a different C13 DD scheme')
+
+        print DDseq
+        print self.params['free_evolution_time']
+        print self.params['Tomography Bases']
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            init_wait_for_trigger = True
+            # elafterinit = 0
+            for kk in range(self.params['Nr_C13_init']):
+                print self.params['init_method_list'][kk]
+                print self.params['init_state_list'][kk]
+                print self.params['carbon_init_list'][kk]
+                # if kk == self.params['Nr_C13_init']-1:
+                #     elafterinit = self.params['el_after_init']
+                if self.params['init_state_list'][kk] != 'M':
+                    carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                        prefix = 'C_MBI' + str(kk+1) + '_C',
+                        wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                        initialization_method = self.params['init_method_list'][kk],
+                        C_init_state          = self.params['init_state_list'][kk],
+                        addressed_carbon      = self.params['carbon_init_list'][kk],
+                        el_after_init         = '0')
+                    gate_seq.extend(carbon_init_seq)
+                    init_wait_for_trigger = False
+
+            # Initialize classically correlated state
+            if self.params['2qb_logical_state'] == 'classical':
+                for kk in range(self.params['Nr_C13_init']):
+                    if self.params['classical_state'][kk] == 'X':
+                        C_phase = self.params['C13_Y_phase']+180
+                    elif self.params['classical_state'][kk] == 'mX':
+                        C_phase = self.params['C13_Y_phase']
+                    elif self.params['classical_state'][kk] == 'Y':
+                        C_phase = self.params['C13_Y_phase']+180
+                    elif self.params['classical_state'][kk] == 'mY':
+                        C_phase = self.params['C13_Y_phase']
+                    else:
+                        pass
+
+                    if self.params['classical_state'][kk] in ['X','mX','Y','mY']:
+                        Pi2 = Gate('C' + str(self.params['carbon_init_list'][kk]) + '_class_init_'+ self.params['classical_state'][kk] +'_pt'+str(pt), 
+                                        'Carbon_Gate', Carbon_ind = self.params['carbon_init_list'][kk],
+                                        phase = C_phase)
+                        gate_seq.extend([Pi2])
+
+            ### Initialize logical qubit via parity measurement.
+            else: 
+                for kk in range(self.params['Nr_MBE']):
+                    
+                    probabilistic_MBE_seq =     self.logic_init_seq(
+                            prefix              = '2C_init_' + str(kk+1),
+                            pt                  =  pt,
+                            carbon_list         = self.params['carbon_init_list'],
+                            RO_basis_list       = self.params['MBE_bases'],
+                            RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                            el_RO_result        = '0',
+                            logic_state         = self.params['2qb_logical_state'] ,
+                            go_to_element       = mbi,
+                            event_jump_element   = 'next',
+                            readout_orientation = 'positive')
+
+                    gate_seq.extend(probabilistic_MBE_seq)
+
+            ### add pi pulse after final init.
+            if self.params['el_after_init'] == 1:
+                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1')])    
+
+            if self.params['wait_gate'] == True:
+                if len(DDseq) > 0:
+                    wait_gate = (Gate('Wait_gate_start_pt'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]-sum(self.params['Carbon_pi_duration_list'])/2.))
+                    gate_seq.extend([wait_gate])
+                    for gate_nr, gate in enumerate(DDseq, start=1):
+                        if gate_nr > 1:
+                            wait_gate = Gate('Wait_gate' + str(gate_nr) + '_pt'+str(pt),'passive_elt',
+                                                 wait_time = 2*self.params['free_evolution_time'][pt]-sum(self.params['Carbon_pi_duration_list']))
+                            gate_seq.extend([wait_gate])
+                        for kk in range(self.params['Nr_C13_init']):
+                            if gate == 'X':
+                                C_phase = self.params['C13_X_phase']
+                            elif gate == 'mX':
+                                C_phase = self.params['C13_X_phase']+180
+                            elif gate == 'Y':
+                                C_phase = self.params['C13_Y_phase']
+                            elif gate == 'mY':
+                                C_phase = self.params['C13_Y_phase']+180
+                            else:
+                                raise Exception('Carbon Gate '+ Gate +' not recognized')
+
+                            Pi_part_1 = Gate('C' + str(self.params['carbon_init_list'][kk]) + '_pi' + gate + '1_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                                    Carbon_ind = self.params['carbon_init_list'][kk],
+                                    phase = C_phase)
+                            Pi_part_2 = Gate('C' + str(self.params['carbon_init_list'][kk]) + '_pi' + gate + '2_' + str(gate_nr) +'_pt'+str(pt), 'Carbon_Gate',
+                                    Carbon_ind = self.params['carbon_init_list'][kk],
+                                    phase = C_phase)
+                            gate_seq.extend([Pi_part_1, Pi_part_2])
+                    wait_gate = Gate('Wait_gate_end_pt'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time_RO'][pt]-sum(self.params['Carbon_pi_duration_list'])/2.)
+                    gate_seq.extend([wait_gate])
+
+                else:
+                    wait_gate = (Gate('Wait_gate_start_pt'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]))
+                    gate_seq.extend([wait_gate])
+            else:
+                wait_gate = (Gate('Wait_gate_start_pt'+str(pt),'passive_elt',
+                                 wait_time = 3e-6))
+                gate_seq.extend([wait_gate])
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_init_list'],
+                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    el_state_in         = self.params['el_after_init'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
+            #         if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+            #             print "[ None]"
+            #         else:
+            #             print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+            #         if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+            #             print "[ None]"
+            #         else:
+            #             print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+class NuclearDD_OLD(MBI_C13):
+    '''
+    Made by Michiel based on NuclearHahnEchoWithInitialization
+    This class is to measure Tcoh using XY4
+    1. Nitrogen MBI initialisation
+    2. MBI initialization nuclear spin
+    3. DD on carbons
+    5. Pi/2 pulse on nuclear spin and read out in one function
+    Start time pi pulse = tau - 0.5*time pi gate
+
+    Sequence: |N-MBI| -|CinitA|-|DD on carbons|-|Tomography|
+
+    XY-4 (xyxy)**n
+    XY-8 (xyxy yxyx)**n
+    XY-16 (xyxy yxyx mxmymxmy mymxmymx)**n
+    '''
+    mprefix = 'NuclearDD' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+
+    # def C13_pi(rep,pt,phase,nr=1):
+    #     if phase = 
+    #     C_Echo_1 = Gate('C_echoX'+ str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind =self.params['carbon_nr'],
+    #             phase = self.params['C13_X_phase'])
+    #     C_Echo_2 = Gate('C_echoX' + str(nr) +'_rep'+str(rep)+'_pt'+str(pt), 'Carbon_Gate',
+    #             Carbon_ind =self.params['carbon_nr'],
+    #             phase = self.params['C13_X_phase'])
+    #     return [C_Echo_X1,C_Echo_X2]
+
+    # def free_evolution(rep,pt,nr=1,tau=1):
+    #     wait_gate = Gate('Wait_gate' + str(nr) '_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+    #                          wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+    #     return wait_gate
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization GOOD initializes in |+X>
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init         = str(self.params['el_after_init']))
+            gate_seq.extend(carbon_init_seq)
+
+            # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+            
+            self.params['Carbon_pi_duration'] = 4 * self.params['C'+str(self.params['carbon_nr'])+'_Ren_N'][0] * self.params['C'+str(self.params['carbon_nr'])+'_Ren_tau'][0]
+            if self.params['C13_DD_Scheme'] != 'No_DD' and self.params['free_evolution_time'][pt] < self.params['Carbon_pi_duration']/2:
+                raise Exception('Error: time between pulses (%s) is shorter than carbon Pi duration (%s)'
+                            % (2*self.params['free_evolution_time'][pt],self.params['Carbon_pi_duration']/2))
+
+            #Make carbon pulses
+            
+
+            # def C13_pi_mX(rep,pt):
+            #     C_Echo_mX1 = Gate('C_echomX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase']+180)
+            #     C_Echo_mX2 = Gate('C_echomX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+            #             Carbon_ind =self.params['carbon_nr'],
+            #             phase = self.params['C13_X_phase']+180)
+            #     return [C_Echo_X1,C_Echo_X2]
+
+            if self.params['C13_DD_Scheme'] == 'No_DD':
+                pass
+
+            elif self.params['C13_DD_Scheme'] == 'X':
+                decoupling_repetitions = self.params['Decoupling_pulses']
+
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate3]
+                    gate_seq.extend(DDseq)
+
+            elif self.params['C13_DD_Scheme'] == 'XY4':
+                if self.params['Decoupling_pulses'] % 4 != 0:
+                    raise Exception('Number of pulses must be dividable by 4')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                # XY4^(N/4
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_Y1 = Gate('C_echoY1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_Y2 = Gate('C_echoY2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
+                    gate_seq.extend(DDseq)
+
+
+            elif self.params['C13_DD_Scheme'] == 'XY8':
+                if self.params['Decoupling_pulses'] % 8 != 0:
+                    raise Exception('Number of pulses must be dividable by 8')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                # XY4^(N/4
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_Y1 = Gate('C_echoY1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_Y2 = Gate('C_echoY2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_Y1,C_Echo_Y2,wait_gate3]
+                    gate_seq.extend(DDseq)
+               
+            elif self.params['C13_DD_Scheme'] == 'XmX':
+                if self.params['Decoupling_pulses'] % 2 != 0:
+                    raise Exception('Number of pulses must be dividable by 2')
+                else:
+                    decoupling_repetitions = self.params['Decoupling_pulses'] / 2
+
+                for n in np.arange(1,decoupling_repetitions+1):
+                    wait_gate1 = Gate('Wait_gate1_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2.)
+                    C_Echo_X1 = Gate('C_echoX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    C_Echo_X2 = Gate('C_echoX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase'])
+                    wait_gate2 = Gate('Wait_gate2_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = 2*self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration'])
+                    C_Echo_mX1 = Gate('C_echomX1_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase']+180)
+                    C_Echo_mX2 = Gate('C_echomX2_rep'+str(n)+'_pt'+str(pt), 'Carbon_Gate',
+                            Carbon_ind =self.params['carbon_nr'],
+                            phase = self.params['C13_X_phase']+180)
+                    wait_gate3 = Gate('Wait_gate3_rep'+str(n)+'_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_pi_duration']/2)
+                    DDseq = [wait_gate1,C_Echo_X1,C_Echo_X2,wait_gate2,C_Echo_mX1,C_Echo_mX2,wait_gate3]
+                    gate_seq.extend(DDseq)     
+
+            else:
+                raise Exception('Choose a different C13 DD scheme')
+        
+
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    el_state_in         = self.params['el_after_init'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+                        print "[ None]"
+                    else:
+                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 
 class NuclearRabiWithDirectRF(MBI_C13):
     '''
@@ -3589,6 +5050,460 @@ class Nuclear_Crosstalk_vs2(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+
+class EchoGateInit(MBI_C13):
+    """
+    Performs an initialisation via the Echo gate of the Carbon in 'up' or 'down'.
+    Afterwards the quality of the gate is analyzed via tomography in Z with conventional gates.
+    AR & NK 
+    """
+    mprefix = 'EchoGate'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug=False):
+
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear-gate sequence')
+
+        #self.get_tau_larmor()
+
+        for pt in range(pts):
+
+            ###########################################
+            #### Generating the sequence elements #####
+            ###########################################
+            #Elements for the carbon initialisation
+            print self.params['Carbon_init_RO_wait']
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+
+
+            carbon_init_seq = self.initialize_carbon_echogate(go_to_element = mbi, pt =pt,
+                    addressed_carbon= self.params['Carbon_nr'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_RO_result = '0',
+                    wait_time=self.params['waiting_times'][pt])
+            
+
+            # carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi, pt =pt,
+            #         addressed_carbon= self.params['Carbon_nr'],
+            #         C_init_state = self.params['C13_init_state'],
+            #         initialization_method   = 'swap',
+            #         el_RO_result = '0' )
+
+            
+            ###############################
+            ### generate the RO         ###
+            ###############################
+
+
+            if self.params['use_Echo_gate_RO']:
+                carbon_RO_seq =  self.readout_single_carbon_echogate(
+                    prefix              = 'C_RO',
+                    pt                  =  pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    addressed_carbon    = self.params['Carbon_nr'],
+                    RO_trigger_duration = 10e-6,
+                    el_RO_result        = '0',
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    wait_time=self.params['waiting_times'][pt]
+                    )
+
+            else:
+                carbon_RO_seq =  self.readout_carbon_sequence(
+                    prefix              = 'C_RO',
+                    pt                  =  pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    carbon_list         = [self.params['Carbon_nr']],
+                    RO_basis_list       = ['Z'],
+                    RO_trigger_duration = 10e-6,
+                    el_RO_result        = '0',
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    )
+
+
+            # Piece the gate sequence together.
+            gate_seq = []
+            gate_seq.extend(mbi_seq)
+            gate_seq.extend(carbon_init_seq)
+            gate_seq.extend(carbon_RO_seq)
+            ############
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+        if debug:
+            for g in gate_seq:
+                print '----------'
+                print g.name
+                print '----------'
+                if ((g.C_phases_before_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_before_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_before_gate[self.params['Carbon_nr']]/np.pi*180)
+
+                if ((g.C_phases_after_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_after_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_after_gate[self.params['Carbon_nr']]/np.pi*180)
+
+class EchoGate(MBI_C13):
+    '''
+    This class is used to determine the effectiveness of a new type of gate.
+    The sequence consists of the following steps:
+
+    1. MBI initialisation
+    2. Carbon initialisation (Swap or MBI)
+    2a. optional pi/2 pulse on the electronic state.
+    3. wait some time (this will entangle the two particles)
+    4a. Unconditional pi rotation on the carbon
+    4b. Pi pulse on the electronic state
+    5. wait some time (this will entangle the two particles)
+    5a. optional pi/2 pulse on the electornic state
+    6. RO of the electronic state.
+    '''
+
+    mprefix = 'Carbon_Echo_Gate'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear-gate sequence')
+
+        #self.get_tau_larmor()
+
+        for pt in range(pts):
+
+            ###########################################
+            #### Generating the sequence elements #####
+            ###########################################
+            #Elements for the carbon initialisation
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = self.params['C13_init_method'], pt =pt,
+                    addressed_carbon= self.params['Carbon_nr'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_RO_result = '0' )
+            ################################
+            ##the two wait gates to be put in the beginning and end
+            wait_gate1 = Gate('Wait_gate1_'+str(pt),'passive_elt',
+                                 wait_time = self.params['waiting_times'][pt])
+            wait_gate2 = Gate('Wait_gate2_'+str(pt),'passive_elt',
+                                 wait_time = self.params['waiting_times'][pt])
+
+            ###
+            ## unconditional rotations on the two spins
+            if self.params['do_carbon_pi'] == True:
+                C_uncond_Pi = Gate('C_uncond_Pi'+str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['Carbon_nr'],
+                        N = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_pi_N'][0],
+                        tau = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0],
+                        phase = self.params['C13_X_phase'])
+                print 'N: ', self.params['C'+str(self.params['Carbon_nr'])+'_uncond_pi_N'][0]
+                print 'tau: ', self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0]
+            #wait_gate1.C_phases_after_gate=10*[0]
+
+            else:
+                C_uncond_Pi = Gate('C_uncond_rot'+str(pt), 'Carbon_Gate',
+                        Carbon_ind = self.params['Carbon_nr'],
+                        N = self.params['Number_of_pulses'][pt],
+                        tau = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0],
+                        phase = self.params['C13_X_phase'])
+
+
+            E_Pi=Gate('E_Pi'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'])
+
+            ###Before piecing the sequence together, two pi/2 pulses on the elctronic state need to be defined
+            E_init_y = Gate('E'+str(self.params['Carbon_nr'])+'_init_y_pt'+str(pt),'electron_Gate',
+                Gate_operation ='pi2',
+                phase =self.params['Y_phase'])
+
+            if self.params['e_ro_orientation'] == 'negative':
+                RO_phase=self.params['Y_phase']+180
+            else:
+                RO_phase=self.params['Y_phase']
+
+
+            E_RO_y = Gate('E'+str(self.params['Carbon_nr'])+'_RO_y_pt'+str(pt),'electron_Gate',
+                Gate_operation ='pi2',
+                phase =RO_phase)
+
+            
+
+            ## put this part of the sequence together.
+            if self.params['E_superposition']:
+                C_pi_seq =[E_init_y,wait_gate1,C_uncond_Pi,E_Pi,wait_gate2,E_RO_y]
+            else:
+                C_pi_seq =[wait_gate1,C_uncond_Pi,E_Pi,wait_gate2]
+            #############################
+            # carbon_RO_seq = self.readout_single_carbon_sequence(
+            #         pt = pt, addressed_carbon =self.params['Carbon_nr'],
+            #         RO_Z=self.params['C_RO_Z'],
+            #         RO_phase = self.params['C_RO_phase'],
+            #         el_RO_result = '0' )
+
+            RO_Trigger = Gate('C'+str(self.params['Carbon_nr'])+'_Trigger_'+str(pt),'Trigger',
+                elements_duration= 10e-6,
+                el_state_before_gate = '0')
+
+
+
+            # Piece the gate sequence together.
+            gate_seq = []
+            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+            gate_seq.extend(C_pi_seq), gate_seq.extend([RO_Trigger])
+            ############
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+        if debug:
+            for g in gate_seq:
+                print '----------'
+                print g.name
+                print '----------'
+                if ((g.C_phases_before_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_before_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_before_gate[self.params['Carbon_nr']]/np.pi*180)
+
+                if ((g.C_phases_after_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_after_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_after_gate[self.params['Carbon_nr']]/np.pi*180)
+
+class GeometricGate(MBI_C13):
+    '''
+    This class is used to determine the effectiveness of a new type of gate.
+    The sequence consists of the following steps:
+
+    1. MBI initialisation
+    2. Carbon initialisation (Swap or MBI)
+    2a. pi/2 pulse on the electronic state.
+    3a. conditional gate on the carbon over angle theta (along x)
+    3b. unconditional gate on the carbon over the same angle (along x)
+    4. wait
+    5a. Unconditional pi rotation on the carbon
+    5b. Pi pulse on the electronic state
+    6. wait
+    7a. conditional gate on the carbon over angle theta (along -x)
+    7b. unconditional gate on the carbon over the same angle (along -x)
+    6c. pi/2 pulse on the electornic state
+    8. RO of the electronic state.
+
+    Nk 2015
+    '''
+
+    mprefix = 'Carbon_Geometric_Gate'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug = False):
+        pts = self.params['pts']
+        # #initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear-gate sequence')
+
+        #self.get_tau_larmor()
+        if (not self.params['calibrate_pulses'] and not self.params['no_unconditional_rotation']):
+            self.params['Number_of_pulses_uncond'] = self.params['C'+str(self.params['Carbon_nr'])+'_geo_uncond_N']*pts
+            self.params['Number_of_pulses_cond'] = self.params['C'+str(self.params['Carbon_nr'])+'_geo_cond_N']*pts
+
+        elif (self.params['calibrate_pulses'] and not self.params['no_unconditional_rotation']):
+            self.params['Number_of_pulses_cond'] = self.params['C'+str(self.params['Carbon_nr'])+'_geo_cond_N']*pts
+
+        elif (not self.params['calibrate_pulses'] and self.params['no_unconditional_rotation']):
+            self.params['Number_of_pulses_uncond'] = self.params['C'+str(self.params['Carbon_nr'])+'_geo_uncond_N']*pts
+        else:
+            print 'Master, you requested nonsense.'
+
+        print self.params['Number_of_pulses_cond']
+        for pt in range(pts):
+
+            ###########################################
+            #### Generating the sequence elements #####
+            ###########################################
+            #Elements for the carbon initialisation
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    initialization_method = self.params['C13_init_method'], pt =pt,
+                    addressed_carbon= self.params['Carbon_nr'],
+                    C_init_state = self.params['C13_init_state'],
+                    el_RO_result = '0' )
+
+            C_geo_cond1=Gate('C_geo_cond_Pi1'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Carbon_nr'],
+                    N = self.params['Number_of_pulses_cond'][pt],
+                    tau = self.params['C'+str(self.params['Carbon_nr'])+'_Ren_tau'][0],
+                    phase = self.params['C13_X_phase'])
+
+            C_geo_uncond1=Gate('C_geo_uncond_Pi1'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Carbon_nr'],
+                    N = self.params['Number_of_pulses_uncond'][pt],
+                    tau = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0],
+                    phase = self.params['C13_X_phase'])
+
+
+            ################################
+            ##the two wait gates to be put in the beginning and end
+            if not self.params['waiting_times'][pt]==0:
+                wait_gate1 = Gate('Wait_gate1_'+str(pt),'passive_elt',
+                                     wait_time = self.params['waiting_times'][pt])
+                wait_gate2 = Gate('Wait_gate2_'+str(pt),'passive_elt',
+                                     wait_time = self.params['waiting_times'][pt])
+
+            ###
+            ## unconditional rotations on the two spins
+            C_uncond_Pi = Gate('C_uncond_Pi'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Carbon_nr'],
+                    N = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_pi_N'][0],
+                    tau = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0],
+                    phase = self.params['C13_X_phase'])
+
+            #wait_gate1.C_phases_after_gate=10*[0]
+
+            E_Pi=Gate('E_Pi'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'])
+
+            ###Before piecing the sequence together, two pi/2 pulses on the elctronic state need to be defined
+            E_init_y = Gate('E'+str(self.params['Carbon_nr'])+'_init_y_pt'+str(pt),'electron_Gate',
+                Gate_operation ='pi2',
+                phase =self.params['Y_phase'])
+
+            if self.params['e_ro_orientation'] == 'negative':
+                RO_phase=self.params['Y_phase']+180
+            else:
+                RO_phase=self.params['Y_phase']
+
+
+            E_RO_y = Gate('E'+str(self.params['Carbon_nr'])+'_RO_y_pt'+str(pt),'electron_Gate',
+                Gate_operation ='pi2',
+                phase =RO_phase)
+
+
+            C_geo_cond2 = Gate('C_geo_cond_Pi2'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Carbon_nr'],
+                    N = self.params['Number_of_pulses_cond'][pt],
+                    tau = self.params['C'+str(self.params['Carbon_nr'])+'_Ren_tau'][0],
+                    phase = self.params['C13_X_phase'])
+
+            C_geo_uncond2 = Gate('C_geo_uncond_Pi2'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['Carbon_nr'],
+                    N = self.params['Number_of_pulses_uncond'][pt],
+                    tau = self.params['C'+str(self.params['Carbon_nr'])+'_uncond_tau'][0],
+                    phase = self.params['C13_X_phase']+180)
+
+            ## put the geometric gate part of the sequence together.
+            if not self.params['waiting_times'][pt]==0:
+                if self.params['calibrate_pulses']:
+                    C_pi_seq=[C_geo_cond1,C_geo_uncond1]
+                elif self.params['no_unconditional_rotation']:
+                    C_pi_seq =[E_init_y,C_geo_cond1,wait_gate1,C_uncond_Pi,E_Pi,wait_gate2,C_geo_cond2,E_RO_y]
+                else:
+                    C_pi_seq =[E_init_y,C_geo_cond1,C_geo_uncond1,wait_gate1,C_uncond_Pi,E_Pi,wait_gate2,C_geo_uncond2,C_geo_cond2,E_RO_y]
+            else:
+                if self.params['calibrate_pulses']:
+                    C_pi_seq=[C_geo_cond1,C_geo_uncond1]
+                elif self.params['no_unconditional_rotation']:
+                    C_pi_seq =[E_init_y,C_geo_cond1,C_uncond_Pi,E_Pi,C_geo_cond2,E_RO_y]
+                else:
+                    C_pi_seq =[E_init_y,C_geo_cond1,C_geo_uncond1,C_uncond_Pi,E_Pi,C_geo_uncond2,C_geo_cond2,E_RO_y]
+
+            #############################
+
+            #In the case of pulse calibration we need to perform tomography on the carbon.
+            if self.params['calibrate_pulses']:
+                RO_seq = self.readout_single_carbon_sequence(
+                        pt = pt, addressed_carbon =self.params['Carbon_nr'],
+                        RO_Z=True,
+                        RO_phase = 0,
+                        el_RO_result = '0' )
+            else:
+                # for testing the actual geometric gate --> RO of the electronic state
+                RO_seq = [Gate('C'+str(self.params['Carbon_nr'])+'_Trigger_'+str(pt),'Trigger',
+                    elements_duration= 10e-6,
+                    el_state_before_gate = '0')]
+
+
+
+            # Piece the gate sequence together.
+            gate_seq = []
+            gate_seq.extend(mbi_seq), gate_seq.extend(carbon_init_seq)
+            gate_seq.extend(C_pi_seq), gate_seq.extend(RO_seq)
+            ############
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+            #Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+
+        if debug:
+            for g in gate_seq:
+                print '----------'
+                print g.name
+                print '----------'
+                if ((g.C_phases_before_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_before_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_before_gate[self.params['Carbon_nr']]/np.pi*180)
+
+                if ((g.C_phases_after_gate[self.params['Carbon_nr']] == None)):
+                    print "[ None ]"
+                elif g.C_phases_after_gate[self.params['Carbon_nr']] != None:
+                    print "[ %.3f ]" %(g.C_phases_after_gate[self.params['Carbon_nr']]/np.pi*180)
+
+
 ### Multiple carbon initialization classes ###
 
 class Two_QB_Probabilistic_MBE_v3(MBI_C13):
@@ -3614,7 +5529,13 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
 
             ### Carbon initialization
             init_wait_for_trigger = True
+
             for kk in range(self.params['Nr_C13_init']):
+                print self.params['init_method_list'][kk]
+                print self.params['init_state_list'][kk]
+                print self.params['carbon_init_list'][kk]
+                print 
+
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
@@ -3640,7 +5561,6 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
 
                 gate_seq.extend(probabilistic_MBE_seq)
 
-            ### Readout
 
             carbon_tomo_seq = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
@@ -3650,12 +5570,13 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases'][pt],
+                    el_state_in         = int(self.params['el_after_init']),
                     readout_orientation = self.params['electron_readout_orientation'])
             gate_seq.extend(carbon_tomo_seq)
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
-            ### Convert elements to AWG sequence and add to combined list
+            ### Convert elements to AWG sequence and add to combined list`
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
 
@@ -3667,28 +5588,28 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
                 for g in gate_seq:
                     print g.name
 
-            if debug:
-                for g in gate_seq:
-                    print g.name
+            # if debug:
+                # for g in gate_seq:
+                #     print g.name
 
-                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
-                        print "[ None , None ]"
-                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
-                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
-                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                    #     print "[ None , None ]"
+                    # elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                    #     print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                    #     print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    # else:
+                    #     print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
 
 
-                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
-                        print "[ None , None ]"
-                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
-                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
-                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                    #     print "[ None , None ]"
+                    # elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                    #     print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                    #     print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    # else:
+                    #     print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
 
         if upload:
             print ' uploading sequence'
@@ -3821,25 +5742,25 @@ class Two_QB_Det_MBE(MBI_C13):
                     print 'el state before and after (%s,%s)'%(g.el_state_before_gate, g.el_state_after_gate)
                 elif debug:
                     print 'does not have attribute el_state_before_gate'
-                # if  debug==True:
-                #     if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
-                #         print "[ None , None ]"
-                #     elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
-                #         print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
-                #     elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
-                #         print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
-                #     else:
-                #         print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                if  debug==True:
+                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
 
 
-                #     if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
-                #         print "[ None , None ]"
-                #     elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
-                #         print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
-                #     elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
-                #         print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
-                #     else:
-                #         print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                        print "[ None , None ]"
+                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    else:
+                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
 
 
             #Convert elements to AWG sequence and add to combined list
@@ -5726,7 +7647,7 @@ class Zeno_TwoQB(MBI_C13):
     adwin_process='MBI_multiple_C13'
 
     ##### TODO: Add AOM control from the AWG for arbitrary AOM channels.
-    # def autoconfig(self):
+    # def autoconfikg(self):
 
     #     dephasing_AOM_voltage=qt.instruments[self.params['dephasing_AOM']].power_to_voltage(self.params['laser_dephasing_amplitude'],controller='sec')
     #     if dephasing_AOM_voltage > (qt.instruments[self.params['dephasing_AOM']]).get_sec_V_max():
@@ -5752,14 +7673,14 @@ class Zeno_TwoQB(MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Zeno_TwoQubit')
 
-        for pt in range(pts): ### Sweep over RO basis
+        for pt in range(pts): ### Sweep evolution times
             gate_seq = []
 
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
-            ### Carbon initialization
+             ### Carbon initialization
             init_wait_for_trigger = True
             for kk in range(self.params['Nr_C13_init']):
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
@@ -5789,16 +7710,19 @@ class Zeno_TwoQB(MBI_C13):
                         readout_orientation = 'positive')
 
                 gate_seq.extend(probabilistic_MBE_seq)
-                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
-                                        Gate_operation='pi',
-                                        phase = self.params['X_phase'],
-                                        el_state_after_gate = '1')])
+
+            ### add pi pulse after final init.
+
+            gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'],
+                                    el_state_after_gate = '1')])
 
 
             ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
 
-                self.params['parity_duration']=0
+                self.params['parity_duration']=0 ### this parameter is later used for data analysis.
 
                 if self.params['free_evolution_time'][pt]!=0:
                     if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
@@ -5810,11 +7734,13 @@ class Zeno_TwoQB(MBI_C13):
                                  wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
                     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
 
-            ### You have to implement an additional waiting time after the e-pulse. Otherwise trouble with two consecutive MW pulses.
+            ### If no waiting time:
+            ### You have to implement an additional waiting time after the pi-pulse on the electron. Otherwise trouble with two consecutive MW pulses.
                 else:
                     gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
                                      wait_time = 10e-6)])
 
+            ### One or more parity measurements
             ### interleave waiting time with parity measurements.
             else:
 
@@ -5829,12 +7755,12 @@ class Zeno_TwoQB(MBI_C13):
 
                 if self.params['free_evolution_time'][pt]!=0:
 
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
                     for i in range(self.params['Nr_Zeno_parity_msmts']):
-                        print 'Estimated length of the Carbon gates in the parity measurements: ', self.params['parity_duration']
-                        if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
-                            print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
-                                    %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
-                            qt.msleep(5)
                         
                         Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
                         No_of_msmt=self.params['Nr_Zeno_parity_msmts']
@@ -5849,33 +7775,36 @@ class Zeno_TwoQB(MBI_C13):
 
                         if i==0:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration-self.params['2C_RO_trigger_duration']) #subtract the length of the RO-trigger for the first waiting time.
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
                         elif i==self.params['Nr_Zeno_parity_msmts']-1:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration)
-
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
                         else:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration)
-
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
                         #make the sequence symmetric around the parity measurements.
                         Decoupling_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = 2*waitduration)
+                                     wait_time = round(2*waitduration,6))
 
                         #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
                         equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1))
-
+                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
                         final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = waitduration)
-                        
-                        t_C13_gate1+t_C13_gate2
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
 
                         if self.params['echo_like']: #this specifies the intertime delay of the Zeno measurements
-                        ###
-                        # echo like corresponds to the sequence: init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography
-                        ###
-                        #Add waiting time
+                            ###
+                            # echo like corresponds to the sequence: 
+                            """init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography """
+
+                            ###
+                            #Add waiting time
                             ### the case of only one measurement
                             if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
                                 wait_seq = [wait_gateA]
@@ -5906,7 +7835,7 @@ class Zeno_TwoQB(MBI_C13):
                         
                         else:
                             # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
-                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomogrpahy"""
+                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
                             
                             #Add waiting time
                             ### the case of only one measurement
@@ -5936,6 +7865,7 @@ class Zeno_TwoQB(MBI_C13):
                                 gate_seq.extend(Parity_measurement)
                                 wait_seq = [final_wait]
                                 gate_seq.extend(wait_seq)
+                                
                 ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
                 ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
                 else:
@@ -5973,28 +7903,28 @@ class Zeno_TwoQB(MBI_C13):
                 #for g in gate_seq:
                 #    print g.name
 
-            if debug:
-                for g in gate_seq:
-                    print g.name
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
 
-                    if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
-                        print "[ None , None ]"
-                    elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
-                        print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
-                        print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+            #             print "b[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "b[%.3f ,1 %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
 
 
-                    if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
-                        print "[ None , None ]"
-                    elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
-                        print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
-                    elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
-                        print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
-                    else:
-                        print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+            #             print "a[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "a[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
 
         if upload:
             print ' uploading sequence'
@@ -6035,13 +7965,587 @@ class Zeno_TwoQB(MBI_C13):
         sequence.append(Gate('2C_parity_elec_X_pt'+str(pt)+'_msmt_'+str(msmt),'electron_Gate',
                                 Gate_operation='pi',
                                 phase = self.params['X_phase'],
-                                el_state_after_gate = '1'))
+                                el_state_after_gate = '1',
+                                el_state_bfore_gate= '0'))
 
 
 
 
         return sequence 
 
+
+
+class Zeno_TwoQB_classical(MBI_C13):
+    '''
+    Sequence: Sequence: |N-MBI| -|MBE|^N-(|Wait|-|Parity-measurement|-|Wait|)^M-|Tomography|
+    '''
+    mprefix='Zeno_TwoQubit_classical'
+
+    adwin_process='MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug=False):
+
+        pts = self.params['pts']
+
+        #self.configure_AOM
+        # set the output power of the repumping AOM to the desired
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Zeno_TwoQubit')
+
+        for pt in range(pts): ### Sweep evolution times
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+             ### Carbon initialization
+             ### Initialization is not necessary for this experiment.
+
+            # init_wait_for_trigger = True
+            # for kk in range(self.params['Nr_C13_init']):
+            #     carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+            #         prefix = 'C_MBI' + str(kk+1) + '_C',
+            #         wait_for_trigger      = init_wait_for_trigger, pt =pt,
+            #         initialization_method = self.params['init_method_list'][kk],
+            #         C_init_state          = self.params['init_state_list'][kk],
+            #         addressed_carbon      = self.params['carbon_init_list'][kk],
+            #         el_after_init           = '0')
+            #     gate_seq.extend(carbon_init_seq)
+            #     init_wait_for_trigger = False
+
+            mbi_wait_for_trig = Gate('Wait_for_MBI_'+str(pt),'passive_elt',
+                         wait_time = 3e-6, wait_for_trigger = True)
+
+            gate_seq.append(mbi_wait_for_trig)
+
+            ### Abuse the MBE routine to initialize a classical 2 qubit correlation.
+
+            for kk in range(self.params['Nr_MBE']):
+                if 'Z' in self.params['2qb_logical_state']:
+                    if self.params['2qb_logical_state'] == 'mZ':
+                        init_logic_string = 'Y'
+                    else: init_logic_string = 'mY'
+                else:
+                    init_logic_string = 'mX' ## set correct phases for the initial pi/2 pulse.
+
+                probabilistic_MBE_seq =     self.logic_init_seq(
+                        prefix              = '2C_init_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'], ### needs to be changed in the exectuing script.
+                        RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = init_logic_string,
+                        go_to_element       = mbi,
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                gate_seq.extend(probabilistic_MBE_seq)
+
+            ### depending on the desired correlation we need to apply another pi/2 pulse after MBE!
+            carbon_phase = self.params['C13_X_phase'] + 180
+
+            if 'm' in self.params['2qb_logical_state']:
+                carbon_phase  = carbon_phase + 180
+
+            UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + 'init_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['carbon_list'][0],
+                    phase = carbon_phase)
+
+            UncondRenB=Gate('C' + str(self.params['carbon_list'][1]) + 'init_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['carbon_list'][1],
+                    phase = self.params['C13_X_phase'] + 180)
+
+            if 'Y' in self.params['2qb_logical_state']: ### need ZY correlations
+                gate_seq.extend([UncondRenA])
+
+            if 'X' in self.params['2qb_logical_state']: ### need ZZ correlations
+                gate_seq.extend([UncondRenA,UncondRenB])
+
+            ### add pi pulse after final init.
+
+            gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'],
+                                    el_state_after_gate = '1')])
+
+
+            ### waiting time without Zeno msmmts.
+            if self.params['Nr_Zeno_parity_msmts']==0:
+
+                self.params['parity_duration']=0 ### this parameter is later used for data analysis.
+
+                if self.params['free_evolution_time'][pt]!=0:
+                    if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                            ### Add waiting time
+                    wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
+                    wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### If no waiting time:
+            ### You have to implement an additional waiting time after the pi-pulse on the electron. Otherwise trouble with two consecutive MW pulses.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time = 10e-6)])
+
+            ### One or more parity measurements
+            ### interleave waiting time with parity measurements.
+            else:
+
+
+                #Coarsely calculate the length of the carbon gates/ parity measurements.
+                t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
+                t_C13_gate2=2*self.params['C'+str(self.params['carbon_list'][1])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][1])+'_Ren_tau'][0])
+
+                self.params['parity_duration']=(2*t_C13_gate1+2*t_C13_gate2+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts']
+
+                print 'estimated parity duration in seconds:', self.params['parity_duration']
+
+                if self.params['free_evolution_time'][pt]!=0:
+
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
+                    for i in range(self.params['Nr_Zeno_parity_msmts']):
+                        
+                        Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
+                        No_of_msmt=self.params['Nr_Zeno_parity_msmts']
+
+
+                        ### this 'lengthy' formula is used to equally space the repumping intervals in time.
+                        waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)+(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)
+
+                        if i==0:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
+                        elif i==self.params['Nr_Zeno_parity_msmts']-1:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+                        else:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+
+                        #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
+                        equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
+                        final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
+                        # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
+                        """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
+                        
+                        #Add waiting time
+                        ### the case of only one measurement
+                        if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+
+                        ### the first element of a sequence with more than one measurement
+                        elif i==0:
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### not the first but also not the last element
+                        elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### more than one measurement and the last element was reached.
+                        else:
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+                                
+                ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
+                ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+                    for kk in range(self.params['Nr_Zeno_parity_msmts']):
+                        gate_seq.extend(self.generate_parity_msmt(pt, msmt=kk))
+                    gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+            ### Readout
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    el_state_in         = 1,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                #for g in gate_seq:
+                #    print g.name
+
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
+
+            #         if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+            #             print "b[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "b[%.3f ,1 %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+            #         if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+            #             print "a[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "a[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+    def generate_parity_msmt(self,pt,msmt=0):
+
+        sequence=[]
+
+        # Add an unconditional rotation before the parity measurment.
+
+        UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = self.params['C13_X_phase'])
+
+        UncondRenB=Gate('C' + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][1],
+                phase = self.params['C13_X_phase'])
+
+        #Append the two unconditional gates to the parity measurement sequence.
+        sequence.append(UncondRenA)
+        sequence.append(UncondRenB)
+        
+        sequence.extend(self.readout_carbon_sequence(
+                                prefix              = 'Parity_msmt'+str(msmt),
+                                pt                  = pt,
+                                RO_trigger_duration = self.params['Repump_duration'],
+                                carbon_list         = self.params['carbon_list'],
+                                RO_basis_list       = ['X','X'],
+                                el_RO_result        = '0',
+                                readout_orientation = 'negative', #if correct parity --> electr0n in ms=0
+                                Zeno_RO             = True))
+
+        # Add an electorn pi pulse after repumping to ms=0
+        sequence.append(Gate('2C_parity_elec_X_pt'+str(pt)+'_msmt_'+str(msmt),'electron_Gate',
+                                Gate_operation='pi',
+                                phase = self.params['X_phase'],
+                                el_state_after_gate = '1',
+                                el_state_bfore_gate= '0'))
+
+
+
+
+        return sequence 
+class Zeno_simplified(MBI_C13):
+    """
+    This class is a simplified version of the Zeno_TwoQB class.
+    We try to build the same measurement up from scratch (in a very static way) and therefore try to reproduce the 'dip' we see in the signal.
+    """
+
+    mprefix         = 'Zeno_simplified'
+    adwin_process   = 'MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug = False):
+
+        # set the output power of the repumping AOM to the desired
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+
+        ## Generate the sequence.
+        combined_seq=pulsar.Sequence('Zeno_thin')
+        combined_list_of_elements = []
+
+
+        for pt in range(self.params['pts']):
+
+            gate_seq = []
+
+            ### Nitrogen MBI
+
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]
+
+            gate_seq.extend(mbi_seq)
+
+            ### 2x Carbon init
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt = pt,
+                    initialization_method = 'swap',
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init           = '0')
+
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+            ### 1x MBE
+            ############################################
+
+            for kk in range(self.params['Nr_MBE']):
+                
+                probabilistic_MBE_seq =     self.logic_init_seq(
+                        prefix              = '2C_init_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['2qb_logical_state'] ,
+                        go_to_element       = mbi,
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                gate_seq.extend(probabilistic_MBE_seq)
+
+            ############################################
+
+            ### add a pi pulse on the electronic state
+            gate_seq.extend([Gate('Init_elec_pi_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1')])
+
+            ### wait for a specific time
+            wait1 = Gate('wait1_'+str(pt), 'passive_elt', 
+                wait_time = self.params['waittime1'][pt]-self.params['2C_RO_trigger_duration'])
+            gate_seq.extend([wait1])
+
+
+            ### do the first parity measurement
+            C1_str = str(self.params['carbon_list'][0])
+            C2_str = str(self.params['carbon_list'][1])
+            ##################################################################
+            ### define gates 
+            #### unconditional
+            uncond1 = Gate('Uncond_C'+ C1_str + '_1_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            uncond2 = Gate('Uncond_C'+ C2_str + '_1_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+            
+            #### conditional
+            cond1 = Gate('Cond_C'+ C1_str + '_1_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            cond2 = Gate('Cond_C'+ C2_str + '_1_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+
+            #### electron pulses
+            initial_pi2 = Gate('Msmt1_initPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+
+            final_pi2 = Gate('Msmt1_finalPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase']) ## the measurement outcome for a succesfull parity measurement should be 0!
+            final_pi2.el_state_after_gate = '0' ### what if we use this for the Read-out of the carbons?
+
+            #### Zeno repumper
+            Laser = Gate('Zeno_repumper1_'+str(pt),'Trigger')
+            Laser.channel = 'AOM_Newfocus'
+            Laser.elements_duration = self.params['Repump_duration']
+            # Laser.el_state_before_gate ='0' ### this is used in the carbon RO sequence generator.
+
+            #### put together
+            gate_seq.extend([uncond1,uncond2,initial_pi2,cond1,cond2,final_pi2,Laser])
+
+            ##################################################################
+
+            ### add electronic pi pulse
+            gate_seq.extend([Gate('Msmt1_elec_pi_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1',
+                                        el_state_bfore_gate = '0')])
+
+            ### wait again
+            wait1 = Gate('wait2_'+str(pt), 'passive_elt')
+            wait1.wait_time = self.params['waittime2'][pt]
+            gate_seq.extend([wait1])
+
+
+            ### do the next parity measurement
+            ##################################################################################
+            ### define gates 
+            #### unconditional
+            uncond1 = Gate('Uncond_C'+ C1_str + '_2_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            uncond2 = Gate('Uncond_C'+ C2_str + '_2_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+            
+            #### conditional
+            cond1 = Gate('Cond_C'+ C1_str + '_2_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            cond2 = Gate('Cond_C'+ C2_str + '_2_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+
+            #### electron pulses
+            initial_pi2 = Gate('Msmt2_initPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+
+            final_pi2 = Gate('Msmt2_finalPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase']) ## the measurement outcome for a succesfull parity measurement should be 0!
+            final_pi2.el_state_after_gate = '0' ### what if we use this for the Read-out of the carbons?
+
+            #### Zeno repumper
+            Laser = Gate('Zeno_repumper2_'+str(pt),'Trigger')
+            Laser.channel = 'AOM_Newfocus'
+            Laser.elements_duration = self.params['Repump_duration']
+            # Laser.el_state_before_gate ='0' ### this is used in the carbon RO sequence generator.
+
+            #### put together
+            gate_seq.extend([uncond1,uncond2,initial_pi2,cond1,cond2,final_pi2,Laser])
+            ######################################################################################
+
+            ### add electronic pi pulse
+            gate_seq.extend([Gate('Msmt2_elec_pi_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1',
+                                        el_state_bfore_gate = '0')])
+
+            ### wait again
+            wait1 = Gate('wait3_'+str(pt), 'passive_elt')
+            wait1.wait_time = self.params['waittime2'][pt]
+            gate_seq.extend([wait1])
+
+            ### do the last parity measurement
+            ##################################################################################
+            ### define gates 
+            #### unconditional
+            uncond1 = Gate('Uncond_C'+ C1_str + '_3_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            uncond2 = Gate('Uncond_C'+ C2_str + '_3_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+            
+            #### conditional
+            cond1 = Gate('Cond_C'+ C1_str + '_3_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C1_str),
+             phase = self.params['C13_X_phase'])
+            cond2 = Gate('Cond_C'+ C2_str + '_3_' + str(pt), 'Carbon_Gate',
+             Carbon_ind = int(C2_str),
+             phase = self.params['C13_X_phase'])
+
+            #### electron pulses
+            initial_pi2 = Gate('Msmt3_initPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase'])
+
+            final_pi2 = Gate('Msmt3_finalPi2_'+str(pt), 'electron_Gate',
+                Gate_operation='pi2',
+                phase = self.params['Y_phase']) ## the measurement outcome for a succesfull parity measurement should be 0!
+            final_pi2.el_state_after_gate = '0' ### what if we use this for the Read-out of the carbons?
+
+            #### Zeno repumper
+            Laser = Gate('Zeno_repumper3_'+str(pt),'Trigger')
+            Laser.channel = 'AOM_Newfocus'
+            Laser.elements_duration = self.params['Repump_duration']
+            # Laser.el_state_before_gate ='0' ### this is used in the carbon RO sequence generator.
+
+            #### put together
+            gate_seq.extend([uncond1,uncond2,initial_pi2,cond1,cond2,final_pi2,Laser])
+            ######################################################################################
+
+            ### add electronic pi pulse
+            gate_seq.extend([Gate('Msmt3_elec_pi_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1',
+                                        el_state_bfore_gate = '0')])
+
+            ### final waiting time
+            wait1 = Gate('wait4_'+str(pt), 'passive_elt')
+            wait1.wait_time = self.params['waittime1'][pt]
+            gate_seq.extend([wait1])
+
+            ### Readout
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    el_state_in         = 1,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
 class Zeno_ErrDetection(MBI_C13):
     '''
@@ -6051,8 +8555,7 @@ class Zeno_ErrDetection(MBI_C13):
     In contrast to the Zeno_TwoQB class, this class uses actual parity measurements with full read-outs to determine whether or not an error occured.
     Conditioned on detecting corrrect parity """
 
-    #mprefix='Zeno_TwoQubit'
-    mprefix='Zeno_TwoQubit'
+    mprefix='Zeno_ErrDet'
     adwin_process='MBI_multiple_C13'
 
     def generate_sequence(self,upload=True,debug=False):
@@ -6061,7 +8564,7 @@ class Zeno_ErrDetection(MBI_C13):
 
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
-        combined_seq = pulsar.Sequence('Zeno_TwoQubit')
+        combined_seq = pulsar.Sequence('Zeno_ErrDet')
 
         for pt in range(pts): ### Sweep over RO basis
             gate_seq = []
@@ -6085,25 +8588,24 @@ class Zeno_ErrDetection(MBI_C13):
 
             ### Initialize logical qubit via parity measurement.
 
-            for kk in range(self.params['Nr_MBE']):
-                
-                probabilistic_MBE_seq =     self.logic_init_seq(
-                        prefix              = '2C_init_' + str(kk+1),
-                        pt                  =  pt,
-                        carbon_list         = self.params['carbon_list'],
-                        RO_basis_list       = self.params['MBE_bases'],
-                        RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
-                        el_RO_result        = '0',
-                        logic_state         = self.params['2qb_logical_state'] ,
-                        go_to_element       = mbi,
-                        event_jump_element   = 'next',
-                        readout_orientation = 'positive')
 
-                gate_seq.extend(probabilistic_MBE_seq)
-                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
-                                        Gate_operation='pi',
-                                        phase = self.params['X_phase'],
-                                        el_state_after_gate = '1')])
+            probabilistic_MBE_seq =     self.logic_init_seq(
+                    prefix              = '2C_init_' + str(kk+1),
+                    pt                  =  pt,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['MBE_bases'],
+                    RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                    el_RO_result        = '0',
+                    logic_state         = self.params['2qb_logical_state'] ,
+                    go_to_element       = mbi,
+                    event_jump_element   = 'next',
+                    readout_orientation = 'positive')
+
+            gate_seq.extend(probabilistic_MBE_seq)
+            gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'],
+                                    el_state_after_gate = '1')])
 
 
             ### waiting time without Zeno msmmts.
@@ -6131,18 +8633,18 @@ class Zeno_ErrDetection(MBI_C13):
                 t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
                 t_C13_gate2=2*self.params['C'+str(self.params['carbon_list'][1])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][1])+'_Ren_tau'][0])
 
-                self.params['parity_duration']=(2*t_C13_gate1+2*t_C13_gate2+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts']
+                self.params['parity_duration']=(2*t_C13_gate1+2*t_C13_gate2+150e-6)*self.params['Nr_Zeno_parity_msmts']
 
                 print 'estimated parity duration in seconds:', self.params['parity_duration']
 
                 if self.params['free_evolution_time'][pt]!=0:
 
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
                     for i in range(self.params['Nr_Zeno_parity_msmts']):
-                        print 'Estimated length of the Carbon gates in the parity measurements: ', self.params['parity_duration']
-                        if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
-                            print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
-                                    %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
-                            qt.msleep(5)
                         
                         Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
                         No_of_msmt=self.params['Nr_Zeno_parity_msmts']
@@ -6157,33 +8659,36 @@ class Zeno_ErrDetection(MBI_C13):
 
                         if i==0:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration-self.params['2C_RO_trigger_duration']) #subtract the length of the RO-trigger for the first waiting time.
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
                         elif i==self.params['Nr_Zeno_parity_msmts']-1:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration)
-
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
                         else:
                             wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
-                                        wait_time = waitduration)
-
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
                         #make the sequence symmetric around the parity measurements.
                         Decoupling_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = 2*waitduration)
+                                     wait_time = round(2*waitduration,6))
 
                         #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
                         equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1))
-
+                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
                         final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
-                                     wait_time = waitduration)
-                        
-                        t_C13_gate1+t_C13_gate2
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
 
                         if self.params['echo_like']: #this specifies the intertime delay of the Zeno measurements
-                        ###
-                        # echo like corresponds to the sequence: init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography
-                        ###
-                        #Add waiting time
+                            ###
+                            # echo like corresponds to the sequence: 
+                            """init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography """
+
+                            ###
+                            #Add waiting time
                             ### the case of only one measurement
                             if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
                                 wait_seq = [wait_gateA]
@@ -6214,23 +8719,19 @@ class Zeno_ErrDetection(MBI_C13):
                         
                         else:
                             # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
-                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomogrpahy"""
+                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
                             
                             #Add waiting time
                             ### the case of only one measurement
                             if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
                                 wait_seq = [wait_gateA]
                                 gate_seq.extend(wait_seq)
-                                gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
-                                                 wait_time =10e-6)])
                                 gate_seq.extend(Parity_measurement)
                                 wait_seq = [final_wait]
                                 gate_seq.extend(wait_seq)
 
                             ### the first element of a sequence with more than one measurement
                             elif i==0:
-                                gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
-                                                 wait_time =10e-6)])
                                 wait_seq = [wait_gateA]
                                 gate_seq.extend(wait_seq)
                                 gate_seq.extend(Parity_measurement)
@@ -6248,6 +8749,7 @@ class Zeno_ErrDetection(MBI_C13):
                                 gate_seq.extend(Parity_measurement)
                                 wait_seq = [final_wait]
                                 gate_seq.extend(wait_seq)
+                                
                 ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
                 ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
                 else:
@@ -6332,14 +8834,16 @@ class Zeno_ErrDetection(MBI_C13):
         #Append the two unconditional gates to the parity measurement sequence.
         sequence.append(UncondRenA)
         sequence.append(UncondRenB)
-        
+
         sequence.extend(self.readout_carbon_sequence(
                                 prefix              = 'Parity_msmt'+str(msmt),
                                 pt                  = pt,
-                                RO_trigger_duration = self.params['Repump_duration'],
+                                RO_trigger_duration = 150e-6,
                                 carbon_list         = self.params['carbon_list'],
                                 RO_basis_list       = ['X','X'],
                                 el_RO_result        = '0',
+                                go_to_element       = 'next',
+                                event_jump_element  = 'next', 
                                 readout_orientation = 'negative', #if correct parity --> electr0n in ms=0
                                 Zeno_RO             = False))
 
@@ -6353,8 +8857,890 @@ class Zeno_ErrDetection(MBI_C13):
 
 
         return sequence 
+class Zeno_OneQB(MBI_C13):
+    '''
+    Takes one carbon. Initialises via swap and rotates to X via a pi/2 rotation
+    Several projective X measurements are performed afterwards
+    Sequence: Sequence: |N-MBI| -|Cinit|-|C-Pi/2|-(|Wait|-|X-measurement|-|Wait|)^M-|Tomography|
+    '''
+    mprefix='Zeno_OneQubit'
+
+    adwin_process='MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug=False):
+
+        pts = self.params['pts']
+
+        #self.configure_AOM
+        # set the output power of the repumping AOM to the desired
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Zeno_TwoQubit')
+
+        for pt in range(pts): ### Sweep evolution times
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                if self.params['logical_state']=='mZ':
+                    self.params['init_state_list'][kk]='down'
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init           = '0')
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+            ### Initialize single qubit by doing a pi/2 rotation.
+            phase=0
+            init = self.params['logical_state']
+            if 'X' in init:
+                phase = self.params['C13_Y_phase']
+            if 'Y' in init:
+                phase = self.params['C13_X_phase']
+            if 'm' in init:
+                phase = phase +180
+            UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = phase)
+            if not 'Z' in init:
+                gate_seq.append(UncondRenA)
+
+            
+
+            ### add pi pulse after final init.
+            if self.params['do_pi']:
+                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1')])
 
 
+            ### waiting time without Zeno msmmts.
+            if self.params['Nr_Zeno_parity_msmts']==0:
+
+                self.params['parity_duration'] = 0 ### this parameter is later used for data analysis.
+
+                if self.params['free_evolution_time'][pt]!=0:
+                    if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                            ### Add waiting time
+                    wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
+                    wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### If no waiting time:
+            ### You have to implement an additional waiting time after the pi-pulse on the electron. Otherwise trouble with two consecutive MW pulses.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time = 10e-6)])
+
+            ### One or more parity measurements
+            ### interleave waiting time with parity measurements.
+            else:
+
+
+                #Coarsely calculate the length of the carbon gates/ parity measurements.
+                t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
+
+                self.params['parity_duration']=(t_C13_gate1+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts']
+
+                print 'estimated parity duration in seconds:', self.params['parity_duration']
+
+                if self.params['free_evolution_time'][pt]!=0:
+
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
+                    for i in range(self.params['Nr_Zeno_parity_msmts']):
+                        
+                        Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
+                        No_of_msmt=self.params['Nr_Zeno_parity_msmts']
+
+                        if self.params['echo_like']:
+                            ### Calculate the wait duration inbetween the parity measurements.
+                            waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(2.*No_of_msmt)
+                        
+                        else:
+                            ### this 'lengthy' formula is used to equally space the repumping intervals in time.
+                            waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)
+
+                        if i==0:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
+                        elif i==self.params['Nr_Zeno_parity_msmts']-1:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+                        else:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+                        #make the sequence symmetric around the parity measurements.
+                        Decoupling_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(2*waitduration,6))
+
+                        #for equally spaced measurements. 
+                        equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
+                        final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
+
+                        if self.params['echo_like']: #this specifies the intertime delay of the Zeno measurements
+                            ###
+                            # echo like corresponds to the sequence: 
+                            """init---(-wait-for-t---Msmt---wait-for-t)^n --- tomography """
+
+                            ###
+                            #Add waiting time
+                            ### the case of only one measurement
+                            if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+
+                            ### the first element of a sequence with more than one measurement
+                            elif i==0:
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [Decoupling_wait_gate]
+                                gate_seq.extend(wait_seq)
+
+                            ### not the first but also not the last element
+                            elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [Decoupling_wait_gate]
+                                gate_seq.extend(wait_seq)
+
+                            ### more than one measurement and the last element was reached.
+                            else:
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+                        
+                        else:
+                            # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
+                            """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
+                            
+                            #Add waiting time
+                            ### the case of only one measurement
+                            if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+
+                            ### the first element of a sequence with more than one measurement
+                            elif i==0:
+                                wait_seq = [wait_gateA]
+                                gate_seq.extend(wait_seq)
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [equal_wait_gate]
+                                gate_seq.extend(wait_seq)
+
+                            ### not the first but also not the last element
+                            elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [equal_wait_gate]
+                                gate_seq.extend(wait_seq)
+
+                            ### more than one measurement and the last element was reached.
+                            else:
+                                gate_seq.extend(Parity_measurement)
+                                wait_seq = [final_wait]
+                                gate_seq.extend(wait_seq)
+                                
+                ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
+                ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+                    for kk in range(self.params['Nr_Zeno_parity_msmts']):
+                        gate_seq.extend(self.generate_parity_msmt(pt, msmt=kk))
+                    gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+
+            if self.params['do_pi']:          
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 1,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['C_RO_phase'][pt],
+                        readout_orientation = self.params['electron_readout_orientation'])
+            else:
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 0,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['C_RO_phase'][pt],
+                        readout_orientation = self.params['electron_readout_orientation'])
+
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                #for g in gate_seq:
+                #    print g.name
+
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
+
+            #         if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+            #             print "b[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "b[%.3f ,1 %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+            #         if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+            #             print "a[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "a[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+    def generate_parity_msmt(self,pt,msmt=0):
+
+        sequence=[]
+
+        
+        sequence.extend(self.readout_carbon_sequence(
+                                prefix              = 'Parity_msmt'+str(msmt),
+                                pt                  = pt,
+                                RO_trigger_duration = self.params['Repump_duration'],
+                                carbon_list         = self.params['carbon_list'],
+                                RO_basis_list       = ['X'],
+                                el_RO_result        = '0',
+                                readout_orientation = 'negative', #if correct parity --> electr0n in ms=0
+                                Zeno_RO             = True,
+                                add_wait_to_Zeno    = self.params['wait_gates_in_parity'][pt]))
+
+        # Add an electorn pi pulse after repumping to ms=0
+        sequence.append(Gate('2C_parity_elec_X_pt'+str(pt)+'_msmt_'+str(msmt),'electron_Gate',
+                                Gate_operation='pi',
+                                phase = self.params['X_phase'],
+                                el_state_after_gate = '1',
+                                el_state_bfore_gate= '0'))
+        return sequence
+
+class Zeno_OneQB_Zmeasurement(MBI_C13):
+    '''
+    Takes one carbon. Initialises via swap in +Z or -Z
+    Several projective Z measurements are performed afterwards
+    Sequence: Sequence: |N-MBI| -|Cinit (swap)|-(|Wait|-|Z-measurement|-|Wait|)^M-|Tomography|
+    The class also comes with possibility to plug in a pi/2 pusel on the carbon to generate different states.
+    '''
+    mprefix='Zeno_Zcorrelations'
+
+    adwin_process='MBI_multiple_C13'
+
+    ##### TODO: Add AOM control from the AWG for arbitrary AOM channels.
+    # def autoconfikg(self):
+
+    #     dephasing_AOM_voltage=qt.instruments[self.params['dephasing_AOM']].power_to_voltage(self.params['laser_dephasing_amplitude'],controller='sec')
+    #     if dephasing_AOM_voltage > (qt.instruments[self.params['dephasing_AOM']]).get_sec_V_max():
+    #         print 'Suggested power level would exceed V_max of the AOM driver.'
+    #     else:
+    #         #not sure if the secondary channel of an AOM can be obtained in this way?
+    #         channelDict={'ch2m1': 'ch2_marker1'}
+    #         print 'AOM voltage', dephasing_AOM_voltage
+    #         self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
+    #         qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
+
+    #     MBI_C13.autoconfig()
+
+    def generate_sequence(self,upload=True,debug=False):
+
+        pts = self.params['pts']
+
+        #self.configure_AOM
+        # set the output power of the repumping AOM to the desired
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Zeno_OneQubit')
+
+        for pt in range(pts): ### Sweep evolution times
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                if self.params['logical_state']=='mZ':
+                    self.params['init_state_list'][kk]='down'
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init           = '0')
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+            ### Initialize single qubit by doing a pi/2 rotation.
+            phase=0
+            init = self.params['logical_state']
+            if 'X' in init:
+                phase = self.params['C13_Y_phase']
+            if 'Y' in init:
+                phase = self.params['C13_X_phase']
+            if 'm' in init:
+                phase = phase +180
+            UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = phase)
+            if not 'Z' in init:
+                gate_seq.append(UncondRenA)
+
+            
+
+            ### add pi pulse after final init.
+            if self.params['do_pi']:
+                gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                        Gate_operation='pi',
+                                        phase = self.params['X_phase'],
+                                        el_state_after_gate = '1')])
+
+
+            ### waiting time without Zeno msmmts.
+            if self.params['Nr_Zeno_parity_msmts']==0:
+
+                self.params['parity_duration'] = 0 ### this parameter is later used for data analysis.
+
+                if self.params['free_evolution_time'][pt]!=0:
+                    if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                            ### Add waiting time
+                    wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
+                    wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### If no waiting time:
+            ### You have to implement an additional waiting time after the pi-pulse on the electron. Otherwise trouble with two consecutive MW pulses.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time = 10e-6)])
+
+            ### One or more parity measurements
+            ### interleave waiting time with parity measurements.
+            else:
+                #Coarsely calculate the length of the carbon gates/ parity measurements.
+                t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
+
+                self.params['parity_duration']=(3*t_C13_gate1+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts'] ### Z measurements take two carobn gates.
+
+                print 'estimated parity duration in seconds:', self.params['parity_duration']
+
+                if self.params['free_evolution_time'][pt]!=0:
+
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length of a wait_gate is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
+                    for i in range(self.params['Nr_Zeno_parity_msmts']):
+                        
+                        Parity_measurement=self.generate_parity_msmt(pt, self.params['do_pi'], msmt=i)
+                        No_of_msmt=self.params['Nr_Zeno_parity_msmts']
+                        
+                        
+                        
+                        waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration']/2.)
+
+                        if i==0:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
+                        elif i==self.params['Nr_Zeno_parity_msmts']-1:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+                        else:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+
+                        #for equally spaced measurements. 
+                        equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
+                        final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
+                        # the measurement sequence should be equally spaced with respect to init and tomo
+                        """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
+                        
+                        #Add waiting time
+                        ### the case of only one measurement
+                        if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+
+                        ### the first element of a sequence with more than one measurement
+                        elif i==0:
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### not the first but also not the last element
+                        elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### more than one measurement and the last element was reached.
+                        else:
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+                                
+                ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
+                ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+                    for kk in range(self.params['Nr_Zeno_parity_msmts']):
+                        gate_seq.extend(self.generate_parity_msmt(pt, self.params['do_pi'], msmt=kk))
+                    gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+
+            if self.params['do_pi']:          
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 1,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['C_RO_phase'][pt],
+                        readout_orientation = self.params['electron_readout_orientation'])
+            else:
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 0,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['C_RO_phase'][pt],
+                        readout_orientation = self.params['electron_readout_orientation'])
+
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                #for g in gate_seq:
+                #    print g.name
+
+            # if debug:
+            #     for g in gate_seq:
+            #         print g.name
+
+            #         if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+            #             print "b[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "b[%.3f ,1 %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+            #         if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+            #             print "[ None , None ]"
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+            #             print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+            #         elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+            #             print "a[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+            #         else:
+            #             print "a[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+    def generate_parity_msmt(self,pt,do_pi,msmt=0):
+
+        sequence=[]
+
+
+        if do_pi:
+            RO_orientation = 'negative'
+        else:
+            RO_orientation = 'positive'
+
+        ### construct a Z measurement.
+
+        UncondRen=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_RenA' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = self.params['C13_Y_phase'])
+
+        sequence.append(UncondRen)
+
+        sequence.extend(self.readout_carbon_sequence(
+                                prefix              = 'Parity_msmt'+str(msmt),
+                                pt                  = pt,
+                                RO_trigger_duration = self.params['Repump_duration'],
+                                carbon_list         = self.params['carbon_list'],
+                                RO_basis_list       = ['X'],
+                                el_RO_result        = '0',
+                                readout_orientation = RO_orientation, #if correct parity --> electr0n in ms=0
+                                Zeno_RO             = True))
+
+        UncondRen=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_RenB' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = self.params['C13_Y_phase']+180)
+
+        sequence.append(UncondRen)
+            # Add an electorn pi pulse after repumping to ms=0
+        if do_pi:    
+            sequence.append(Gate('2C_parity_elec_X_pt'+str(pt)+'_msmt_'+str(msmt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'],
+                                    el_state_after_gate = '1',
+                                    el_state_bfore_gate= '0'))
+
+
+
+        return sequence 
+class Zeno_ThreeQB(MBI_C13):
+    '''
+    Sequence: Sequence: |N-MBI| -|Cinit|^3-|MBE|^N-C13_Pi/2-(|Wait|-|Parity-measurement|-|Wait|)^M-|Tomography|
+    '''
+    mprefix='Zeno_ThreeQubit'
+
+    adwin_process='MBI_multiple_C13'
+
+    def generate_sequence(self,upload=True,debug=False):
+
+        pts = self.params['pts']
+
+        #self.configure_AOM
+        # set the output power of the repumping AOM to the desired
+        qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].power_to_voltage(self.params['Zeno_SP_A_power'],controller='sec'))
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Zeno_TwoQubit')
+
+        for pt in range(pts): ### Sweep evolution times
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+             ### Carbon initialization
+            init_wait_for_trigger = True
+            for kk in range(self.params['Nr_C13_init']):
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init           = '0')
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+            ### Initialize logical qubit via parity measurement.
+
+            for kk in range(self.params['Nr_MBE']):
+                
+                probabilistic_MBE_seq =     self.logic_init_seq(
+                        prefix              = '2C_init_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['2qb_logical_state'] ,
+                        go_to_element       = mbi,
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                gate_seq.extend(probabilistic_MBE_seq)
+
+            ### add pi pulse after final init.
+
+            gate_seq.extend([Gate('2C_init_elec_X_pt'+str(pt),'electron_Gate',
+                                    Gate_operation='pi',
+                                    phase = self.params['X_phase'],
+                                    el_state_after_gate = '1')])
+
+
+            ### waiting time without Zeno msmmts.
+            if self.params['Nr_Zeno_parity_msmts']==0:
+
+                self.params['parity_duration']=0 ### this parameter is later used for data analysis.
+
+                if self.params['free_evolution_time'][pt]!=0:
+                    if self.params['free_evolution_time'][pt]< (self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                                %(self.params['free_evolution_time'][pt],self.params['2C_RO_trigger_duration']))
+                        qt.msleep(5)
+                            ### Add waiting time
+                    wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                                 wait_time = self.params['free_evolution_time'][pt]-self.params['2C_RO_trigger_duration'])
+                    wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### If no waiting time:
+            ### You have to implement an additional waiting time after the pi-pulse on the electron. Otherwise trouble with two consecutive MW pulses.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time = 10e-6)])
+
+            ### One or more parity measurements
+            ### interleave waiting time with parity measurements.
+            else:
+
+
+                #Coarsely calculate the length of the carbon gates/ parity measurements.
+                t_C13_gate1=2*self.params['C'+str(self.params['carbon_list'][0])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][0])+'_Ren_tau'][0])
+                t_C13_gate2=2*self.params['C'+str(self.params['carbon_list'][1])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][1])+'_Ren_tau'][0])
+                t_C13_gate3=2*self.params['C'+str(self.params['carbon_list'][2])+'_Ren_N'][0]*(self.params['C'+str(self.params['carbon_list'][2])+'_Ren_tau'][0])
+
+                self.params['parity_duration']=(2*t_C13_gate3+2*t_C13_gate1+2*t_C13_gate2+self.params['Repump_duration'])*self.params['Nr_Zeno_parity_msmts']
+
+                print 'estimated parity duration in seconds:', self.params['parity_duration']
+
+                if self.params['free_evolution_time'][pt]!=0:
+
+                    if self.params['free_evolution_time'][pt]< (self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6): # because min length is 3e-6
+                        print ('Error: carbon evolution time (%s) is shorter than the sum of Initialisation RO duration (%s) and the duration of the parity measurements'
+                                %(self.params['free_evolution_time'][pt],(self.params['parity_duration'] + self.params['2C_RO_trigger_duration']+3e-6)))
+                        qt.msleep(5)
+
+                    for i in range(self.params['Nr_Zeno_parity_msmts']):
+                        
+                        Parity_measurement=self.generate_parity_msmt(pt,msmt=i)
+                        No_of_msmt=self.params['Nr_Zeno_parity_msmts']
+
+                        ### this 'lengthy' formula is used to equally space the repumping intervals in time.
+                        waitduration=(self.params['free_evolution_time'][pt]-self.params['parity_duration'])/(No_of_msmt+1)+(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)
+
+                        if i==0:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration-self.params['2C_RO_trigger_duration'],6)) #subtract the length of the RO-trigger for the first waiting time.
+                            # print round(waitduration-self.params['2C_RO_trigger_duration'],6)
+                        elif i==self.params['Nr_Zeno_parity_msmts']-1:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+                        else:
+                            wait_gateA = Gate('Wait_gate_A'+str(i)+'_'+str(pt),'passive_elt',
+                                        wait_time = round(waitduration,6))
+                            # print round(waitduration,6)
+
+                        #for equally spaced measurements. see the entry in onenote of 30-01-2015 NK
+                        equal_wait_gate = Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6))
+                        # print round(waitduration-(No_of_msmt-1)*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1)-2*(t_C13_gate1+t_C13_gate2)/(No_of_msmt+1),6)
+                        final_wait=Gate('Wait_gate_B'+str(i)+'_'+str(pt),'passive_elt',
+                                     wait_time = round(waitduration,6))
+                        # print round(waitduration,6)
+
+
+                        
+
+                        # if not echo like then the measurement sequence should be equally spaced with respect to init and tomo
+                        """ init --- wait for t --- (measurement --- wait for t)^n --- tomography"""
+                        
+                        #Add waiting time
+                        ### the case of only one measurement
+                        if i==0 and 1==(self.params['Nr_Zeno_parity_msmts']):
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+
+                        ### the first element of a sequence with more than one measurement
+                        elif i==0:
+                            wait_seq = [wait_gateA]
+                            gate_seq.extend(wait_seq)
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### not the first but also not the last element
+                        elif i!=0 and i!=(self.params['Nr_Zeno_parity_msmts']-1):      
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [equal_wait_gate]
+                            gate_seq.extend(wait_seq)
+
+                        ### more than one measurement and the last element was reached.
+                        else:
+                            gate_seq.extend(Parity_measurement)
+                            wait_seq = [final_wait]
+                            gate_seq.extend(wait_seq)
+                                
+                ### No waiting time, do the parity measurements directly. You have to implement an additional waiting time after the e-pulse in the beginning.
+                ### as well as an additional wait time after the the last parity measurement because parity measurements also end with an e- pulse.
+                else:
+                    gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+                    for kk in range(self.params['Nr_Zeno_parity_msmts']):
+                        gate_seq.extend(self.generate_parity_msmt(pt, msmt=kk))
+                    gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
+                                     wait_time =10e-6)])
+            ### Readout
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    el_state_in         = 1,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'],
+                    readout_orientation = self.params['electron_readout_orientation'])
+
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+          
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+    def generate_parity_msmt(self,pt,msmt=0):
+
+        sequence=[]
+
+        # Add an unconditional rotation before the parity measurment.
+
+        UncondRenA=Gate('C' + str(self.params['carbon_list'][0]) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][0],
+                phase = self.params['C13_X_phase'])
+
+        UncondRenB=Gate('C' + str(self.params['carbon_list'][1]) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][1],
+                phase = self.params['C13_X_phase'])
+
+        UncondRenC=Gate('C' + str(self.params['carbon_list'][2]) + '_Uncond_Ren' + str(pt)+'_msmt_'+str(msmt), 'Carbon_Gate',
+                Carbon_ind = self.params['carbon_list'][2],
+                phase = self.params['C13_X_phase'])
+
+        #Append the two unconditional gates to the parity measurement sequence.
+        sequence.append(UncondRenA)
+        sequence.append(UncondRenB)
+        
+        sequence.extend(self.readout_carbon_sequence(
+                                prefix              = 'Parity_msmt'+str(msmt),
+                                pt                  = pt,
+                                RO_trigger_duration = self.params['Repump_duration'],
+                                carbon_list         = self.params['carbon_list'],
+                                RO_basis_list       = ['X','X','X'],
+                                el_RO_result        = '0',
+                                readout_orientation = 'negative', #if correct parity --> electr0n in ms=0
+                                Zeno_RO             = True))
+
+        # Add an electorn pi pulse after repumping to ms=0
+        sequence.append(Gate('2C_parity_elec_X_pt'+str(pt)+'_msmt_'+str(msmt),'electron_Gate',
+                                Gate_operation='pi',
+                                phase = self.params['X_phase'],
+                                el_state_after_gate = '1',
+                                el_state_bfore_gate= '0'))
+
+
+
+
+        return sequence 
 class DFS_check(MBI_C13):
     '''
     Sequence: Sequence: |N-MBI| -|Cinit|^2-|MBE|^N-(|Wait|-|Parity-measurement|-|Wait|)^M-|Tomography|
@@ -6432,16 +9818,23 @@ class DFS_check(MBI_C13):
                                         phase = self.params['X_phase'],
                                         el_state_after_gate = '1')])
 
-            gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
-                             wait_time = 10e-6)])
+            # gate_seq.extend([Gate('2C_init_wait_gate_'+str(pt),'passive_elt',
+            #                  wait_time = 10e-6)])
+
+            ### control the repumping laser with the AWG.
 
             if self.params['Repump_duration'][pt]!=0:
                 Laser=Gate('pump'+str(pt),'Trigger',
                     duration=self.params['Repump_duration'][pt],
                     )
                 Laser.channel='AOM_Newfocus'
-                Laser.elements_duration=self.params['Repump_duration'][pt]
-                Laser.el_state_before_gate='1'
+                Laser.elements_duration=round(self.params['Repump_duration'][pt],9)
+                if self.params['Zeno_SP_A_power'] != 0:
+                    Laser.el_state_before_gate='0'
+                    Laser.el_state_after_gate='0'
+                else:
+                    Laser.el_state_before_gate='1'
+                    Laser.el_state_after_gate='1'
 
                 gate_seq.append(Laser)
 
@@ -6449,9 +9842,9 @@ class DFS_check(MBI_C13):
 
             ### waiting time without Zeno msmmts.
 
-            wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
-                         wait_time = self.params['free_evolution_time']-self.params['2C_RO_trigger_duration']-self.params['Repump_duration'][pt])
-            gate_seq.extend([wait_gate])
+            # wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+            #              wait_time = self.params['free_evolution_time']-self.params['2C_RO_trigger_duration']-self.params['Repump_duration'][pt])
+            # gate_seq.extend([wait_gate])
             
             ### Readout
 
@@ -6461,7 +9854,7 @@ class DFS_check(MBI_C13):
                     go_to_element       = None,
                     event_jump_element  = None,
                     RO_trigger_duration = 10e-6,
-                    el_state_in         = 1,
+                    el_state_in         = 0,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases'],
                     readout_orientation = self.params['electron_readout_orientation'])
@@ -6511,4 +9904,103 @@ class DFS_check(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class Electron_T1(MBI_C13):
+    mprefix = 'NuclearDD' 
+    adwin_process='MBI_multiple_C13'
    
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        # Calculate gate duration as exact gate duration can only be calculated after sequence is configured
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI GOOD
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+            
+            # wait_gate = (Gate('Wait_gate_before_init_pulse_pt'+str(pt),'passive_elt',
+            #                      wait_time = 5e-6))
+            # gate_seq.extend([wait_gate])
+            el_state = '0'
+            print "init_el_state", self.params['init_el_state']
+            if self.params['init_el_state'] == '1':
+                gate_seq.extend([Gate('init_elec_X_pt'+str(pt),'electron_Gate',
+                                            Gate_operation='pi',
+                                            phase = self.params['X_phase'],
+                                            el_state_after_gate = '1')])
+                el_state = '1'
+
+            # wait_gate = (Gate('Wait_gate_after_init_pulse_pt'+str(pt),'passive_elt',
+            #                      wait_time = 5e-6))
+            # gate_seq.extend([wait_gate])
+
+
+            # wait_reps = self.params['free_evolution_time'][pt] / 0.5
+            #     print wait_reps
+            # for i in range(500):
+            #     wait_gate = (Gate('Wait_gate_'+ str(i+1) +'_pt'+str(pt),'passive_elt',
+            #                  wait_time = self.params['free_evolution_time'][pt]/500.))
+            #     gate_seq.extend([wait_gate])
+
+            # if self.params['free_evolution_time'][pt] > 0.5:
+            #     wait_reps = self.params['free_evolution_time'][pt] / 0.5
+            #     print wait_reps
+            #     for i in range(int(wait_reps)):
+            #         wait_gate = (Gate('Wait_gate_'+ str(i+1) +'_pt'+str(pt),'passive_elt',
+            #                      wait_time = self.params['free_evolution_time'][pt]/wait_reps))
+            #         gate_seq.extend([wait_gate])
+            # else:
+            wait_gate = (Gate('Wait_gate_pt'+str(pt),'passive_elt',
+                             wait_time = self.params['free_evolution_time'][pt]))
+            gate_seq.extend([wait_gate])
+
+            # wait_gate = (Gate('Wait_gate_before_RO_pulse_pt'+str(pt),'passive_elt',
+            #                      wait_time = 5e-6))
+            # gate_seq.extend([wait_gate])
+            print 'RO_el_state', self.params['RO_el_state']
+            if self.params['RO_el_state'] == '1':
+                # if el_state == '0':
+                #     el_state = '0'
+                # if el_state == '1':
+                #     el_state = '1'
+
+                gate_seq.extend([Gate('RO_elec_X_pt'+str(pt),'electron_Gate',
+                                            Gate_operation='pi',
+                                            phase = self.params['X_phase'],
+                                            el_state_after_gate = el_state)])
+        
+
+            # wait_gate = (Gate('Wait_gate_after_RO_pulse_pt'+str(pt),'passive_elt',
+            #                      wait_time = 5e-6))
+            # gate_seq.extend([wait_gate])
+
+            RO_trig = (Gate('RO_Trigger_'+str(pt),'Trigger',
+                wait_time = 10e-6,
+                go_to = None, event_jump = None,
+                el_state_before_gate = '0'))
+            gate_seq.extend([RO_trig])
+            
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+
+        
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'

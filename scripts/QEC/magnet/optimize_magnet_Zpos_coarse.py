@@ -6,7 +6,7 @@ Important: choose the right domain for the range of positions in get_magnet_posi
 import numpy as np
 import qt
 import msvcrt
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt; reload(pulsar_msmt)
 
 # import the dESR fit, magnet tools and master of magnet
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
@@ -22,7 +22,7 @@ current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 
 def darkesr(name, range_MHz, pts, reps):
 
-    m = pulsar_msmt.DarkESR(name)
+    m = pulsar_msmt.DarkESR_Switch(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     maximum_magnet_step_size = 250
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    only_fine = True
+    only_fine =  False
 
         ### for the first coarse step
     init_range   = 8     #Common: 10 MHz
@@ -90,6 +90,8 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
     # do the fitting, returns in MHz, input in GHz
+    print current_f_msm1
+    print qt.exp_params['samples'][SAMPLE]['N_HF_frq']
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
         qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
@@ -118,6 +120,7 @@ if __name__ == '__main__':
             print 'Steps = 0 optimization converted'
             break
         if safemode == True: 
+            print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
             if str(ri) == 'y': 
                 mom.step('Z_axis',d_steps[iterations])
@@ -137,7 +140,7 @@ if __name__ == '__main__':
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
-        GreenAOM.set_power(5e-6)
+        GreenAOM.set_power(20e-6)
         optimiz0r.optimize(dims=['x','y','z'])
         
         

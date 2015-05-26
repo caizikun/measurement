@@ -36,7 +36,7 @@ DIM DATA_21[100] AS FLOAT
 DIM DATA_24[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
 DIM DATA_25[max_SSRO_dim] AS LONG  ' SSRO counts spin readout
 
-DIM AWG_start_DO_channel, AWG_done_DI_channel AS LONG
+DIM AWG_start_DO_channel, AWG_done_DI_channel,shutter_channel AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
 DIM sequence_wait_time AS LONG
 
@@ -68,7 +68,8 @@ INIT:
   SSRO_repetitions             = DATA_20[9]
   SSRO_duration                = DATA_20[10]
   SSRO_stop_after_first_photon = DATA_20[11]
-  cycle_duration               = DATA_20[12] '(in processor clock cycles, 3.333ns)
+  cycle_duration               = DATA_20[12]'(in processor clock cycles, 3.333ns)
+  shutter_channel              = DATA_21[13]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -99,6 +100,7 @@ INIT:
 
   P2_Digprog(DIO_MODULE,13)      'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+  P2_DIGOUT(DIO_Module,shutter_channel, 0) 'Make sure shutter is open
 
   mode = 0
   timer = 0

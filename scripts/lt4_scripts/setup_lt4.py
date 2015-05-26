@@ -9,6 +9,7 @@ qt.get_setup_instrument = lambda x: qt.instruments[x] \
 print 'loading setup tools...'
 from measurement.scripts.lt4_scripts.tools import stools
 reload(stools)
+qt.stools=stools
 
 print 'reload all modules...'
 execfile(os.path.join(qt.config['startdir'],"reload_all.py"))
