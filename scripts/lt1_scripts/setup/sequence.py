@@ -34,6 +34,10 @@ qt.pulsar.define_channel(id='ch4', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) #spin_of+240e-9
 qt.pulsar.define_channel(id='ch1', name='FM', type='analog', 
         high=0.541, low=-0.541, offset=0., delay=211e-9, active=True)
+# NOTE (26-5-2015): MW switch delay uncalibrated! Current value = LT2 delay + 4 ns
+# because AWG-to-switch cable in LT1 is ~190 cm instead of ~60 cm (LT2) 
+qt.pulsar.define_channel(id='ch1_marker2', name='MW_switch', type='marker', 
+    high=2.7, low=0, offset=0., delay=-104e-9-27e-9 + 260e-9 + 4e-9, active=True)
 
 
 # FPGA
@@ -53,8 +57,8 @@ qt.pulsar.define_channel(id='ch3_marker1', name='AOM_Green', type='marker',
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 
     high=0.4, low=0, offset=0., delay=700e-9, active=True)
 
-qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
-    high=0.4, low=0, offset=0., delay=500e-9, active=True)
+# qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
+#     high=0.4, low=0, offset=0., delay=500e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',#ch4_marker1
 #    high=0.4, low=0, offset=0., delay=525e-9, active=True)
