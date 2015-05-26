@@ -2,17 +2,17 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_LT1_Gretel_SIL1_m15dBm_amp10perc'
+name='ESR_LT1_Gretel_SIL2'
 
-start_f = 2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
-steps=81
+start_f = 2.818 - 0.003#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 2.818 + 0.003#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+steps = 51
 f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
 zoom_around_three_lines = False
 
-mw_power = -15. #in dBm
+mw_power = -11. #in dBm
 green_power = 25e-6
-int_time = 20       #in ms
+int_time = 41       #in ms
 reps = 250
 
 if zoom_around_three_lines:
@@ -49,6 +49,7 @@ qt.msleep(0.2)
 total_cnts = zeros(steps)
 qt.instruments['GreenAOM'].set_power(green_power)
 stop_scan=False
+qt.msleep(10)
 for cur_rep in range(reps):
     
     print 'sweep %d/%d ...' % (cur_rep+1, reps)

@@ -9,6 +9,8 @@ import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+import pulse_select as ps
+reload(ps)
 
 
 class Gate(object):
@@ -113,42 +115,76 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         X element that is used in different measurement child classes
         '''
-        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['X_phase'])
+        X = ps.X_pulse(self)
+        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi_duration'],
+        #     amplitude = self.params['fast_pi_amp'],
+        #     phase =  self.params['X_phase'])
         return X
 
     def _mX_elt(self):
         '''
         X element that is used in different measurement child classes
         '''
-        X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['X_phase']+180)
+        X = ps.mX_pulse(self)
+        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi_duration'],
+        #     amplitude = self.params['fast_pi_amp'],
+        #     phase =  self.params['X_phase']+180)
         return X
 
     def _pi2_elt(self):
         '''
         xpi2 element that is used in different measurement child classes
         '''
-        pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['fast_pi2_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi2_duration'],
-            amplitude = self.params['fast_pi2_amp'],
-            phase = self.params['X_phase'])
+        pi2 = ps.Xpi2_pulse(self)
+        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['fast_pi2_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi2_duration'],
+        #     amplitude = self.params['fast_pi2_amp'],
+        #     phase = self.params['X_phase'])
+        return pi2
+
+    def _mpi2_elt(self):
+        '''
+        xpi2 element that is used in different measurement child classes
+        '''
+        pi2 = ps.mXpi2_pulse(self)
+        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['fast_pi2_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi2_duration'],
+        #     amplitude = self.params['fast_pi2_amp'],
+        #     phase = self.params['X_phase'])
+        return pi2
+
+    def _Ypi2_elt(self):
+        '''
+        ypi2 element that is used in different measurement child classes
+        '''
+        pi2 = ps.Ypi2_pulse(self)
+
+        return pi2
+
+    def _mYpi2_elt(self):
+        '''
+        ypi2 element that is used in different measurement child classes
+        '''
+        pi2 = ps.mYpi2_pulse(self)
+
         return pi2
 
     def _electron_pulse_elt(self, length, amplitude):
@@ -186,28 +222,30 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
-        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['Y_phase'])
+        Y = ps.Y_pulse(self)
+        # Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi_duration'],
+        #     amplitude = self.params['fast_pi_amp'],
+        #     phase =  self.params['Y_phase'])
         return Y
 
     def _mY_elt(self):
         '''
         Trigger element that is used in different measurement child classes
         '''
-        Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'],
-            phase =  self.params['Y_phase']+180)
+        Y = ps.mY_pulse(self)
+        # Y = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi_duration'],
+        #     amplitude = self.params['fast_pi_amp'],
+        #     phase =  self.params['Y_phase']+180)
         return Y
 
     def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):
@@ -714,6 +752,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         fast_pi_duration        = self.params['fast_pi_duration']
         pulse_tau               = tau - fast_pi_duration/2.0
         tau_prnt                = int(tau*1e9)  #Converts tau to ns for printing
+        # if np.mod(tau_prnt,4)!=0:
+        #     print 'TAU_PRNT NOT MOD 4 ns!!'
+        #     print 'current tau = ', tau
         n_wait_reps             = 0             #this is the default value. Script returns this unless overwritten (as is the case for tau>2e-6)
 
         ### Initial checks to see if sequence is possible
@@ -739,9 +780,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ###########################
         ### Single Block Scheme ###
         ###########################
+
         if Gate.scheme == 'single_block':
             # print 'using single block'
             tau_cut = 0
+            Gate.reps = 1
 
             if self.params['Initial_Pulse'] =='-x':
                 initial_phase = self.params['X_phase']+180
@@ -774,6 +817,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length      = self.params['fast_pi2_duration'],
                 amplitude   = self.params['fast_pi2_amp'],
                 phase       = final_phase)
+            # initial_pulse = self._pi2_elt()
+            # final_pulse = self._mpi2_elt()
+
             T_around_pi2    = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau_pi2',
                 length      = pulse_tau_pi2, amplitude = 0.)
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -811,6 +857,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) #multiplying and round is to prevent rounding errors in divmod
             tau_remaind              = tau_remaind*1e-9
+
+            # print 'tau = ', tau
+            # print 'n_wait_reps = ', n_wait_reps
+            # print 'tau_remaind = ', tau_remaind
+
+            # if tau*1e9 == 11.12 or tau*1e9 == 11.144: 
+            #     print 'tau = %s: n_wait_reps = %s, tau_remaind = %s' % ((pulse_tau + fast_pi_duration / 2.0), n_wait_reps, tau_remaind)
 
             if tau_remaind/2 < 36e-9: ## TODO: This should really depend on the pulse mod length and offset
                 ''' to make sure that the time before the pulse is not shorther than the pulse mod'''
@@ -1035,6 +1088,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         else:
             Gate.elements_duration = 2*tau*N - 2* tau_cut
         Gate.n_wait_reps= n_wait_reps
+        # print here
         Gate.tau_cut = tau_cut #is 0 when not overwritten (i.e. N=0)
         return Gate
 
@@ -1167,14 +1221,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
-                frequency = self.params['fast_pi2_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi2_duration'],
-                amplitude = self.params['fast_pi2_amp'],
-                phase=self.params['X_phase'])
+            X = self._pi2_elt()
+            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+            #     PM_channel='MW_pulsemod',
+            #     frequency = self.params['fast_pi2_mod_frq'],
+            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+            #     length = self.params['fast_pi2_duration'],
+            #     amplitude = self.params['fast_pi2_amp'],
+            #     phase=self.params['X_phase'])
 
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
@@ -1192,14 +1247,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
-                frequency = self.params['fast_pi2_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi2_duration'],
-                amplitude = self.params['fast_pi2_amp'],
-                phase = self.params['X_phase']+180)
+            X = self._mpi2_elt()
+            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+            #     PM_channel='MW_pulsemod',
+            #     frequency = self.params['fast_pi2_mod_frq'],
+            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+            #     length = self.params['fast_pi2_duration'],
+            #     amplitude = self.params['fast_pi2_amp'],
+            #     phase = self.params['X_phase']+180)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1215,13 +1271,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
-                frequency = self.params['fast_pi_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi_duration'],
-                amplitude = self.params['fast_pi_amp'])
+            X = self._mX_elt()
+            # X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+            #     PM_channel='MW_pulsemod',
+            #     frequency = self.params['fast_pi_mod_frq'],
+            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+            #     length = self.params['fast_pi_duration'],
+            #     amplitude = self.params['fast_pi_amp'])
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1259,14 +1316,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
-                frequency = self.params['fast_pi2_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi2_duration'],
-                amplitude = self.params['fast_pi2_amp'],
-                phase = self.params['Y_phase'])
+            X = self._Ypi2_elt()
+
+            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+            #     PM_channel='MW_pulsemod',
+            #     frequency = self.params['fast_pi2_mod_frq'],
+            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+            #     length = self.params['fast_pi2_duration'],
+            #     amplitude = self.params['fast_pi2_amp'],
+            #     phase = self.params['Y_phase'])
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1283,14 +1342,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi2_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi2_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod',
-                frequency = self.params['fast_pi2_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                length = self.params['fast_pi2_duration'],
-                amplitude = self.params['fast_pi2_amp'],
-                phase = self.params['Y_phase']+180)
+            X = self._mYpi2_elt()
+
+            # X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+            #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+            #     PM_channel='MW_pulsemod',
+            #     frequency = self.params['fast_pi2_mod_frq'],
+            #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+            #     length = self.params['fast_pi2_duration'],
+            #     amplitude = self.params['fast_pi2_amp'],
+            #     phase = self.params['Y_phase']+180)
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -1433,7 +1494,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.tau_cut = 1e-6
         Gate.wait_time = Gate.length + 2e-6
         Gate.elements= list_of_elements
-        
         return Gate
 
 
@@ -1999,12 +2059,13 @@ class SimpleDecoupling(DynamicalDecoupling):
     Contains initial pulse, decoupling sequence and final pulse.
     ---|pi/2| - |DD| - |pi/2| ---
     '''
-    def generate_sequence(self,upload=True, debug=False):
+    def generate_sequence(self,upload=True, debug=False,return_combined_seq=False):
         '''
         The function that is executed when a measurement script is executed
         It calls the different functions in this class
         For now it is simplified and can only do one type of decoupling sequence
         '''
+        print 'simple_decoupling generate sequence'
         pts = self.params['pts']
         tau_list = self.params['tau_list']
         Number_of_pulses = self.params['Number_of_pulses']
@@ -2039,8 +2100,18 @@ class SimpleDecoupling(DynamicalDecoupling):
                 gate_seq = [simple_el_dec]
             else:
                 #Generate the start and end pulse
-                initial_Pi2.Gate_operation = self.params['Initial_Pulse']
-                initial_Pi2.time_before_pulse = max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
+                # print 'Initial_pulse'
+                # print self.params['Initial_Pulse']
+                #initial_Pi2.Gate_operation = self.params['Initial_Pulse']
+                
+                #if np.mod(pt,2)==1:
+                #   initial_Pi2.Gate_operation = '-x'
+                #else:    
+                initial_Pi2.Gate_operation = 'x'
+                
+                initial_Pi2.time_before_pulse = 100e-9 #max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
+                # print 'time_before_pulse'
+                # print initial_Pi2.time_before_pulse
                 initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
                 initial_Pi2.prefix = 'init_pi2_'+str(pt)#to ensure unique naming
 
@@ -2049,7 +2120,8 @@ class SimpleDecoupling(DynamicalDecoupling):
                 final_Pi2.time_after_pulse = initial_Pi2.time_before_pulse
                 final_Pi2.Gate_operation = self.params['Final_Pulse']
                 final_Pi2.prefix = 'fin_pi2_'+str(pt) #to ensure unique naming
-
+                # print 'final_pulse'
+                # print self.params['Final_Pulse']
                 #Generate the start and end pulse
                 self.generate_electron_gate_element(initial_Pi2)
                 self.generate_electron_gate_element(final_Pi2)
@@ -2069,7 +2141,8 @@ class SimpleDecoupling(DynamicalDecoupling):
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'
-
+        if return_combined_seq:
+            return combined_seq,combined_list_of_elements
 ################################################################
 ##########   Carbon intialization and control classes   ########
 ################################################################

@@ -28,24 +28,24 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
-    m.params['ssmod_detuning'] = 43e6
+    m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
-    m.params['repetitions']  = 1000
+    m.params['repetitions']  = 1500
     m.params['range']        = 4e6
-    m.params['pts'] = 121
-    m.params['pulse_length'] = 2.e-6
-    m.params['ssbmod_amplitude'] = 0.03
-    
+    m.params['pts'] = 33
+    m.params['pulse_length'] = 968.22e-9
+    m.params['ssbmod_amplitude'] =0.05 * 0.12067
+    m.params['mw_power']=20
     m.params['Ex_SP_amplitude']=0
-
-
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
-
+    list_swp_pts =np.linspace(m.params['ssbmod_frq_start'],m.params['ssbmod_frq_stop'], m.params['pts'])
+    m.params['sweep_pts'] = (np.array(list_swp_pts) +  m.params['mw_frq'])*1e-9
     m.autoconfig()
+    #m.params['sweep_pts']=m.params['pts']
     m.generate_sequence(upload=True)
     m.run()
     m.save()
@@ -61,20 +61,24 @@ def darkesrp1(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+
 
     m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
-    m.params['mw_power'] = 20
+    m.params['mw_power'] = 20-6-6-6
     m.params['repetitions'] = 500
-    m.params['range']        = 20e6
-    m.params['pts'] = 151
-    m.params['pulse_length'] = 2.1e-6
-    m.params['ssbmod_amplitude'] = 0.025
+    m.params['range']        = 7e6
+    m.params['pts'] = 76
+    m.params['pulse_length'] =  0.5 * 1.95e-6#2.1e-6
+    m.params['ssbmod_amplitude'] = 2 * 0.017 #0.025
 
-    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] #- m.params['range']
-    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + 2*m.params['range']
-
+    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range'] #- m.params['range']
+    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
+    list_swp_pts =np.linspace(m.params['ssbmod_frq_start'],m.params['ssbmod_frq_stop'], m.params['pts'])
+    m.params['sweep_pts'] =(np.array(list_swp_pts) + m.params['mw_frq'])*1e-9
     m.autoconfig()
     m.generate_sequence(upload=True)
     m.run()
@@ -86,4 +90,4 @@ def darkesrp1(name):
 if __name__ == '__main__':
     darkesr(SAMPLE_CFG)
     #raw_input ('Do the fitting...')
-    #darkesrp1(SAMPLE_CFG)
+    # darkesrp1(SAMPLE_CFG)

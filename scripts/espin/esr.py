@@ -16,9 +16,9 @@ mw_power    = -10       #in dBm
 green_power = 10e-6     #10e-6
 int_time    = 50        # in ms
 reps        = 10
-center_f    = 2.81 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
+center_f    = 3.329#2.843 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
-range_f  =  0.04 # in GHz
+range_f  =  0.12 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
@@ -54,6 +54,7 @@ qt.msleep(0.2)
 #ins_counters.set_is_running(0)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
+#qt.msleep(25)
 stop_scan=False
 for cur_rep in range(reps):
 

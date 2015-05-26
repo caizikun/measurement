@@ -379,6 +379,21 @@ config['adwin_lt1_processes'] = {
                     },
                 },
 
+        'green_readout' : {
+            'index' : 9,
+            'file'  : 'green_readout_lt1.TB9',
+            'params_long' : [
+                ['AWG_start_DO_channel'         ,   16],
+                ['AWG_event_jump_DO_channel'    ,   8 ],
+                ['total_sync_nr'                ,   5], 
+                ['sync_counter_idx'                  ,   4],
+            ],
+            'params_long_index' : 20,
+            'params_long_length': 10,
+            'par'               : {
+                'completed_reps'    : 73,
+            },
+        },
 
         'integrated_ssro_msp1' : {
                 'index' : 9,
@@ -2612,3 +2627,65 @@ config['adwin_cav1_processes'] = {
 
         'laserscan_photodiode' : {
             'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 2,
+            'file' : 'voltagescan_photodiode.TB2',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['DAC_channel'                 ,   8],
+                    ['ADC_channel'                 ,   1],
+                    ['nr_steps'                    ,   1],
+                    ['wait_cycles'                 ,  50],
+                    ],
+                'params_long_index'  : 200,
+                'params_long_length' : 8,
+                'params_float' : [
+                    ['start_voltage'               , 0.0],
+                    ['voltage_step'               , 0.01],
+                    ],
+                'params_float_index'  : 199,
+                'params_float_length' : 8,
+                'par' : {
+                    },
+                'data_float' : {
+                    'photodiode_voltage' : 11,
+                    },
+            },
+
+        'fine_piezo_jpe_scan' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 2,
+            'file' : 'fine_piezo_jpe_scan.TB2',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['DAC_ch_fpz1'                 ,   0],
+                    ['DAC_ch_fpz2'                 ,   0],
+                    ['DAC_ch_fpz3'                 ,   0],
+                    ['ADC_channel'                 ,   1],
+                    ['nr_steps'                    ,   1],
+                    ['wait_cycles'                 ,  50],
+                    ['use_counter'                 ,   0],
+                    ],
+                'params_long_index'  : 200,
+                'params_long_length' : 8,
+                'params_float' : [
+                    ['start_voltage_1'            , 0.0],
+                    ['start_voltage_2'            , 0.0],
+                    ['start_voltage_3'            , 0.0],
+                    ['voltage_step'               , 0.01],
+                    ],
+                'params_float_index'  : 199,
+                'params_float_length' : 8,
+                'par' : {
+                    },
+                'data_float' : {
+                    'photodiode_voltage' : 11,
+                    },
+            },
+
+
+        }
+

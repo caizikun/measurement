@@ -20,10 +20,10 @@ def spin_echo(name):
     #############
     # Parameters for spin-echo
     #############
-    pts = 201
+    pts = 21
     tau_start = 4e-6  #!!! Measurement class has minimal tau of 4us
-    tau_final = 10e-6
-    m.params['reps_per_ROsequence'] = 200 #Repetitions of each data point
+    tau_final = 200e-6
+    m.params['reps_per_ROsequence'] = 2500 #Repetitions of each data point
 
 
     ########
@@ -32,7 +32,7 @@ def spin_echo(name):
     Number_of_pulses = 1
     m.params['Initial_Pulse'] ='x'
     m.params['Final_Pulse'] ='x'
-
+    m.params['Decoupling_sequence_scheme'] = 'single_block'
     #####
     #Calculate/set remaining paramters
     tau_list = np.linspace(tau_start/2.0,tau_final/2.0 ,pts) #The way tau is defined is different in hahn spin-echo and decoupling experiments

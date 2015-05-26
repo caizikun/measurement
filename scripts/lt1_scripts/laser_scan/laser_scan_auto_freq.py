@@ -49,19 +49,22 @@ class LaserFrequencyScan:
             self.red_voltage_frequency_relation_sign)
         set_power = kw.get('set_power', self.set_red_power)
         
-        # print 'scan to frequency', f
+        print 'scan to frequency', f
         
         v = get_voltage()
+
         success = False
 
         set_power(power)
-
+        # print self.max_v
         while ((v < self.max_v - 0.3) and (v > self.min_v + 0.3)):
             if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
                 break
             
             cur_f = self.get_frequency(wm_channel)
+            
             set_voltage(v)
+            
             v = v + voltage_step_scan * np.sign(f-cur_f) * voltage_frequency_relation_sign
             qt.msleep(dwell_time)
             
@@ -116,10 +119,11 @@ class LaserFrequencyScan:
             else:
                 data_obj_supplied = True
 
+        print 'scan_to_frequency'
         self.scan_to_frequency(start_f, **kw)
-        
+        #print 'get_voltage'
         v = get_voltage()
-
+        #print 'set_power'
         set_power(power)
         while ((v < self.max_v - 0.3) and (v > self.min_v + 0.3)):
             if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
@@ -387,8 +391,6 @@ class Scan(LaserFrequencyScan):
             data = red_data,
             **kw)
         
-
-
 def green_yellow_during_scan():
     m = Scan()
 
@@ -517,15 +519,15 @@ def repeated_red_scans_hannes(**kw):
     m = Scan()
 
 
-    pts = kw.pop('pts', 100)
+    pts = kw.pop('pts', 250)
 
-    m.mw.set_power(-27)
-    m.mw.set_frequency(2.845e9)
+    m.mw.set_power(-20)
+    m.mw.set_frequency(2.817e9)
     m.mw.set_iq('off')
     m.mw.set_pulm('off')
     m.mw.set_status('on')
 
-    red_data = qt.Data(name = 'LaserScansGreenRepump_Gretel_SIL10_LT1_Red_Yellow')
+    red_data = qt.Data(name = 'LaserScansGreenRepump_Gretel_SIL2_LT1_Red_Green')
     red_data.add_coordinate('Voltage (V)')
     red_data.add_coordinate('Frequency (GHz)')
     red_data.add_coordinate('Counts (Hz)')
@@ -554,11 +556,12 @@ def repeated_red_scans_hannes(**kw):
 
         ix=i
 
-        YellowAOM.set_power(250e-9)
+        #YellowAOM.set_power(250e-9)
+        GreenAOM.set_power(60e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
         qt.msleep(1)
-        YellowAOM.set_power(00.0e-9)
- 
-        m.red_scan(56, 75, voltage_step=0.01, integration_time_ms=20, power = 4e-9,
+        #YellowAOM.set_power(00.0e-9)
+        GreenAOM.turn_off()
+        m.red_scan(27, 57, voltage_step=0.01, integration_time_ms=10, power = 2e-9,
             data = red_data,
             data_args=[ix, time.time()-t0]
             )
@@ -568,7 +571,15 @@ def repeated_red_scans_hannes(**kw):
         plt_red_frq.update()
         plot3d_red.update()
 
+        qt.msleep(1)
+        if (msvcrt.kbhit() and msvcrt.getch()=='x'): 
+            ret=False
+            break
 
+        GreenAOM.set_power(60e-6)
+        qt.msleep(5)
+        qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=1)
+        GreenAOM.set_power(0.0e-6)
 
 
     m.mw.set_status('off')
@@ -578,13 +589,11 @@ def repeated_red_scans_hannes(**kw):
 
     return ret
 
-
 def set_gate_voltage(v):
     if v>2000. or v<-2000.:
         print 'Gate voltage too high:',v
         return False
     return qt.instruments['ivvi'].set_dac3(v)
-
 
 def fast_gate_scan(name, vmax):
     for v in np.linspace(0.,vmax,6):
@@ -607,7 +616,6 @@ def fast_gate_scan(name, vmax):
         qt.msleep(1)
     set_gate_voltage(0)
 
-
 def gate_scan_with_c_optimize():
     if repeated_red_scans(gate_scan=True, gate_range=(0,1200),pts=19):
         qt.get_setup_instrument('GreenAOM').set_power(20e-6)
@@ -623,12 +631,13 @@ def single_scan(name):
     MW = True
 
     if MW:
-        m.mw.set_power(-27)
-        m.mw.set_frequency(2.845e9)
+        m.mw.set_power(-15)
+        m.mw.set_frequency(2.817e9) # 2.838e9 for SIL3
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(45, 85, voltage_step=0.02, integration_time_ms=10, power = 2e-9)
+    m.red_scan(30,40, voltage_step=0.01, integration_time_ms=10, power = 2e-9)
+    # m.red_scan(48,80, voltage_step=0.02, integration_time_ms=10, power = 2e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(5, 20, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.03)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -643,10 +652,10 @@ def debug_scan(name):
 if __name__ == '__main__':
     qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
     repeated_red_scans_hannes()
-    #single_scan('Gretel_Sil10')
+    # single_scan('Gretel_Sil2_noGreen')
     #fast_gate_scan('The111no1_Sil8_dac3_on22',2000)
     #qt.get_setup_instrument('GreenAOM').set_power(10e-6)
-    #qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
+    # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     #qt.get_setup_instrument('GreenAOM').set_power(0e-6)
     #fast_gate_scan('The111no1_Sil8_dac3_on24',2000)
 

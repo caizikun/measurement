@@ -29,7 +29,7 @@ def darkesr(name,width=16,upload=True):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols']['Gretel_sil10']['Magnetometry'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     stools.turn_off_all_lasers()
     
     m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']

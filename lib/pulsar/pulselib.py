@@ -127,6 +127,7 @@ class MW_IQmod_pulse(pulse.Pulse):
     def __call__(self, **kw):
         self.frequency = kw.pop('frequency', self.frequency)
         self.amplitude = kw.pop('amplitude', self.amplitude)
+ 
         self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
             2*self.PM_risetime
         self.phase = kw.pop('phase', self.phase)
@@ -154,6 +155,7 @@ class MW_IQmod_pulse(pulse.Pulse):
             if chan == self.I_channel:
                 wf[idx0:idx1] += self.amplitude * np.cos(2 * np.pi * \
                     (self.frequency * tvals[idx0:idx1] + self.phase/360.))
+            # print 'phase =', self.phase
 
             if chan == self.Q_channel:
                 wf[idx0:idx1] += self.amplitude * np.sin(2 * np.pi * \
@@ -466,13 +468,17 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
         self.env_amplitude = kw.pop('amplitude', 0.1)
         MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.PM_risetime))
+        self.pi2_pulse = kw.pop('pi2_pulse', False)
+
 
     def __call__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
         MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.PM_risetime) )
+        self.pi2_pulse = kw.pop('pi2_pulse', self.pi2_pulse)
+ 
         return self
 
     def chan_wf(self, chan, tvals):
@@ -481,7 +487,11 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
 
         else: 
             t=tvals-tvals[0] 
-            env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
+            # env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
+            if self.pi2_pulse : # for  Hermite 90deg pulse
+                env = self.env_amplitude*(1-0.667*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
+            else : # for Hermite 180deg pulse
+                env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
             wf = MW_IQmod_pulse.chan_wf(self, chan, tvals)
 
             return env*wf
@@ -492,14 +502,14 @@ class HermitePulse_Envelope(MW_pulse):
         self.env_amplitude = kw.pop('amplitude', 0.1)
         MW_pulse.__init__(self, *arg,amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*self.length) # This should be 0.1667*(self.length - 2 * self.PM_risetime) (see above!)
         self.pi2_pulse = kw.pop('pi2_pulse', False)
 
     def __call__(self, *arg, **kw):
-        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude) 
         MW_pulse.__call__(self, *arg, amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*self.length)# This should be 0.1667*(self.length - 2 * self.PM_risetime) (see above!)
         self.pi2_pulse = kw.pop('pi2_pulse', self.pi2_pulse)
         return self
 

@@ -30,17 +30,22 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
 
     '''set experimental parameters'''
         #T1 experiment
+
+    # Measurement settings
+    m.params['pts'] = 6 + 3
+
     m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
     m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
-    m.params['wait_times'] =  np.linspace(100,1.5e3,16) #in us, values must be divisible by the repeat element
-    m.params['wait_times'] =  np.linspace(0,5e6,6)+100 #in us, values must be divisible by the repeat element
+    # m.params['wait_times'] =  np.linspace(100,35e3,16) #in us, values must be divisible by the repeat element
+    # m.params['wait_times'] =  np.linspace(0,5e6,6)+100 #in us, values must be divisible by the repeat element
+    # m.params['wait_times'] = np.concatenate( (np.linspace(0,int(1e5), m.params['pts'] - 3), np.linspace(int(2e5), int(4e5),3))) # in us
+    m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 3), np.linspace(int(1e6), int(2e6),m.params['pts'] - 3))) # in us
     m.params['wait_time_repeat_element'] = 100      #in us, this element is repeated to create the wait times max of 6 seconds
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 200
 
         #Plot parameters
-    m.params['sweep_name'] = 'Times (Us)'
+    m.params['sweep_name'] = 'Times (us)'
     m.params['sweep_pts'] = m.params['wait_times']
-    m.params['pts'] = len(m.params['sweep_pts'])    #Check if we need this line, Tim
 
         #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
@@ -56,7 +61,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     print 'readout_state: ' + m.params['T1_readout_state']
     print m.params['sweep_pts']
     '''generate sequence'''
-    m.generate_sequence(upload=True, debug=True)
+    m.generate_sequence(upload=True, debug=False)
     m.run()
     m.save()
     m.finish()
@@ -65,7 +70,7 @@ if __name__ == '__main__':
     
 
     T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
-    T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
+    # T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
 
     # T1(SAMPLE+'_'+'init_0_RO_-1', T1_initial_state = 'ms=0', T1_readout_state = 'ms=-1')
     # T1(SAMPLE+'_'+'init_-1_RO_0', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0')

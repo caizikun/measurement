@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Gretel_SIL1_SM'
+name = 'Gretel_SIL3_MM'
 steps=21
-max_power=80e-6       #[w]
+max_power=72e-6       #[w]
 counter=1  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=-1          #delta x position of background [um]
-bg_y=+1            #delta y position of background [um]
+bg_x=-2          #delta x position of background [um]
+bg_y=+2            #delta y position of background [um]
 
 #instruments
 if PQ_count:

@@ -35,3 +35,5 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 reload(pulsar_pq)
 from measurement.lib.measurement2.adwin_ssro import pulsar_qutau
 reload(pulsar_qutau)
+#from measurement.scripts.lt1_scripts.basic import espin_with_Green_RO as gro
+#reload(gro)

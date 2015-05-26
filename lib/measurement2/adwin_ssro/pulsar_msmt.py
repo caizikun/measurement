@@ -526,9 +526,6 @@ class ElectronRamsey(PulsarMeasurement):
             PM_channel='MW_pulsemod',
             frequency = self.params['MW_pulse_frequency'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])
-        ##This is a temp solution, I cant find the awgchannels def for lt3 -Machiel
-        qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker',
-            high=2.0, low=0, offset=0., delay=0., active=True)
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
@@ -916,6 +913,7 @@ class MBI(PulsarMeasurement):
     adwin_process = 'MBI'
 
     def autoconfig(self):
+
         self.params['sweep_length'] = self.params['pts']
         self.params['repetitions'] = \
                 self.params['nr_of_ROsequences'] * \
@@ -1237,7 +1235,7 @@ class Magnetometry(PulsarMeasurement):
 
 class RTMagnetometry(Magnetometry):
     mprefix = 'PulsarMagnetometry'
-    adwin_process = 'adaptive_magnetometry_realtime_swarm'
+    adwin_process = 'adaptive_magnetometry_realtime'
 
     def autoconfig(self):
 
@@ -1318,7 +1316,7 @@ class RTMagnetometry(Magnetometry):
                     ('CR_after', sweeps),
                     ('RO_data', m_sweeps),
                     ('set_phase', sweeps),
-                    ('theta', phase_sweeps),
+                    #('theta', sweeps),
                     ('timer', sweeps),
                     #('real_p_tn', sweeps),
                     #('real_p_2tn', sweeps),
@@ -1478,11 +1476,12 @@ class GeneralPiCalibration(PulsarMeasurement):
                     amplitude=self.params['MW_pulse_amplitudes'][i]
                     ))
             elements.append(e)
-
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
         # sequence
         seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
         for i,e in enumerate(elements):           
-            for j in range(self.params['multiplicity']):
+            for j in range(int(self.params['multiplicity'][i])):
                 seq.append(name = e.name+'-{}'.format(j), 
                     wfname = e.name,
                     trigger_wait = (j==0))
@@ -1492,6 +1491,56 @@ class GeneralPiCalibration(PulsarMeasurement):
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 5000e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+                # seq.append(name = 'wait-{}-{}'.format(i,j), 
+                #     wfname = wait_1us.name, 
+                #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
         elements.append(sync_elt)
         # upload the waveforms to the AWG
         if upload:
@@ -1899,3 +1948,57 @@ class GeneralPi4Calibration_2(PulsarMeasurement):
 
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
+
+
+
+class HermiteCalibration(PulsarMeasurement):
+    mprefix = 'HermiteCalibration'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True):
+        #print 'test'
+        # define the necessary pulses
+
+        X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
+            I_channel='MW_Imod',
+            Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod',
+            frequency = self.params['MW_pulse_frequency'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['MW_pulse_durations'][i],
+                amplitude = self.params['MW_pulse_amplitudes'][i]))
+
+            elements.append(e)
+
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                print 'using old method of uploading'
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)

@@ -21,12 +21,17 @@ qt.pulsar = pulsar.Pulsar()
 # MW
 # On scope we find that MW_1 (and MW2) arrive 108 ns after the trigger, if we set the time between MW's and (begin)trigger to 58 ns in the AWG.
 # so the delay of MW wrt trigger is 50 ns - Machiel 2014-06-23
+
+'''
+spin_of = -104e-9-27e-9 # I adjust the offset of the IQ to match lt2, so the DD scripts work
+                        # TODO make more general
+'''
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=(44+166-8)*1e-9, active=True)
+    high=2.0, low=0, offset=0., delay=(44+166-8)*1e-9, active=True)  #spin_of+260e-9
 qt.pulsar.define_channel(id='ch3', name='MW_Imod', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=(27+166)*1e-9, active=True)
+    low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) # spin_of+240e-9
 qt.pulsar.define_channel(id='ch4', name='MW_Qmod', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=(27+166)*1e-9, active=True)
+    low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) #spin_of+240e-9
 qt.pulsar.define_channel(id='ch1', name='FM', type='analog', 
         high=0.541, low=-0.541, offset=0., delay=211e-9, active=True)
 
@@ -51,12 +56,16 @@ qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker',
 qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
     high=0.4, low=0, offset=0., delay=500e-9, active=True)
 
-qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',#ch4_marker1
-    high=0.4, low=0, offset=0., delay=525e-9, active=True)
+#qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',#ch4_marker1
+#    high=0.4, low=0, offset=0., delay=525e-9, active=True)
 
 #QuTau sync
+# Extra sync to the adwin counter to verify number of syncs when measuring with qutau
+qt.pulsar.define_channel(id='ch4_marker1', name='adwin_sync_counter', type='marker', 
+    high=2.5, low=0, offset=0, delay=0., active=True)
+# actual sync to start measuring with qutau
 qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker', 
-    high=2.5, low=0, offset=0., delay=0., active=True)
+    high=2.5, low=0, offset=0, delay=0., active=True)
 
 
 ## EOM - short pulse
