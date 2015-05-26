@@ -1173,7 +1173,7 @@ class GeneralPiCalibration(PulsarMeasurement):
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
-            length = 200e-9, amplitude = 0)
+            length = 2000e-9, amplitude = 0) #XXXX 200e-9
 
         X=kw.get('pulse_pi', None)
 
@@ -1258,7 +1258,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
                 pulsar = qt.pulsar,
                 global_time=True)
             #e.append(T)
-            e.append(pulse.cp(T, length=2e-6))
+            e.append(pulse.cp(T, length=2e-6)) 
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
             e.append(pulse.cp(TIQ, length=2e-6))  
             e.append(pulse.cp(pulse_pi))
@@ -1274,7 +1274,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
                 pulsar = qt.pulsar,
                 global_time=True)
             #e.append(T)
-            e.append(pulse.cp(T, length=2e-6))
+            e.append(pulse.cp(T, length=2e-6)) 
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
             e.append(pulse.cp(TIQ, length=2e-9))
             e.append(T)

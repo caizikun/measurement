@@ -146,5 +146,5 @@ def do_jitter_test(resetAWG=False):
 
 
 if __name__ == '__main__':
-    testResult=do_jitter_test(resetAWG=False)
+    testResult=do_jitter_test(resetAWG=True)
     print 'jitterDetected ', testResult
