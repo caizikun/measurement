@@ -111,7 +111,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.80738e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr =  2.80739e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
