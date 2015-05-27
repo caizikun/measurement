@@ -97,6 +97,10 @@ class Bell_lt3(bell.Bell):
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(seq)
 
+    def finish(self):
+        bell.Bell.finish(self)
+        self.add_file(inspect.getsourcefile(measurement.scripts.lt3_scripts.setup.msmt_params))
+
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom

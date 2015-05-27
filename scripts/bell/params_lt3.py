@@ -111,7 +111,11 @@ params_lt3['RND_duration']	 	= 200e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 1e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 1e-9 #additional 1 ns delay should be there when jitter measurement
+														   # shows peak at 489.3 ns, and be commented if it is 490.3  BH 26-05-2015
+														   #This time corresponds to SP duration + 500 ns - some diff in optical pathlength 
+														   #--> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
