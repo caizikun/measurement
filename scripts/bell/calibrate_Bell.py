@@ -189,9 +189,9 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 3.3
+    stage = 4.2
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    
+
     if  stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
         execfile(r'D:/measuring/measurement/scripts/espin/esr.py')
@@ -236,7 +236,7 @@ if __name__ == '__main__':
         sweep_Bell.echo_sweep(SAMPLE_CFG)
         print 'set params_ltx echo_offset'
     elif stage == 4.2: #rnd_echo_ro tests fast ssro, DD and RND generation
-        sweep_Bell.rnd_echo_ro(SAMPLE_CFG)
+        sweep_Bell.rnd_echo_ro(SAMPLE_CFG,debug = True)
         print 'check only, if bad, check Fast SSRO params, all MW, RND and RO delays'
     elif stage == 5: # sweep tail
         print 'First optimize on ZPL, and do rejection!'
