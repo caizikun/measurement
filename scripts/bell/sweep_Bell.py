@@ -244,7 +244,7 @@ def echo_sweep(name):
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
-def rnd_echo_ro(name):
+def rnd_echo_ro(name,debug = False):
     m=SweepBell('RND_RO_'+name)
     _setup_params(m, setup = qt.current_setup)
 
@@ -267,7 +267,7 @@ def rnd_echo_ro(name):
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=debug, measure_bs=False, upload_only = True)
 
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
