@@ -189,8 +189,10 @@ def calibrate_Npi4_pulse(name,debug=False):
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 3.1
     SAMPLE_CFG = qt.exp_params['protocols']['current']
+
+    debug = False
 
     if  stage == 0 :
         print 'First measure the resonance frequency with a continuous ESR'
@@ -217,26 +219,26 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = True)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = debug)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.42: #new pi/2 pulse calibration
-        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = False)
+        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = debug)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.43: #new pi/2 pulse calibration
         calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
         #calibrate_Npi4_pulse(SAMPLE_CFG)
-        check_pi4_pulse_poles(SAMPLE_CFG+'_Bell_Pi4_check', debug=False)
+        check_pi4_pulse_poles(SAMPLE_CFG+'_Bell_Pi4_check', debug=debug)
         print 'set msmt_params Hermite_Npi4_amp'
     elif stage == 4.1: #echo sweep tests DD
         sweep_Bell.echo_sweep(SAMPLE_CFG)
         print 'set params_ltx echo_offset'
     elif stage == 4.2: #rnd_echo_ro tests fast ssro, DD and RND generation
-        sweep_Bell.rnd_echo_ro(SAMPLE_CFG,debug = True)
+        sweep_Bell.rnd_echo_ro(SAMPLE_CFG,debug = debug)
         print 'check only, if bad, check Fast SSRO params, all MW, RND and RO delays'
     elif stage == 5: # sweep tail
         print 'First optimize on ZPL, and do rejection!'
