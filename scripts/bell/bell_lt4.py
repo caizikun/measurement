@@ -106,6 +106,7 @@ class Bell_lt4(bell.Bell):
         bell.Bell.finish(self)
                 # signal BS and lt3 to stop as well
         self.add_file(inspect.getsourcefile(bseq))
+        self.add_file(inspect.getsourcefile(measurement.scripts.lt4_scripts.setup.msmt_params))
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']

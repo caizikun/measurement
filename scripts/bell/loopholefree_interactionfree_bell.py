@@ -8,6 +8,9 @@ def optimize():
     print 'checking signalhoud:'
     if not(check_pulse_aom_frq()):
         return False
+    print 'checking for SMB errors'
+    if not(check_smb_errors()):
+        return False
     powers_ok=False
     for i in range(5):
     	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -74,6 +77,9 @@ def check_pulse_aom_frq():
         return False
     else:
         return True
+
+def check_smb_errors():
+    return (qt.instruments['SMB100'].get_error_queue_length() == 0)
 
 if __name__ == '__main__':
     if qt.current_setup=='lt4':

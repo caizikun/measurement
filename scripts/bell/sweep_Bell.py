@@ -139,7 +139,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=11
+    pts=7
     m.params['pts']=pts
     m.params['repetitions'] = 1000 # 
 
@@ -156,12 +156,12 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = True
+    do_sweep_aom_power = False
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.05,0.35,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        aom_power_sweep=np.linspace(0.05,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -170,19 +170,19 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        print 'sweeping the EOM off voltage'
         m.params['general_sweep_name'] = 'eom_off_amplitude'
-        m.params['general_sweep_pts'] = np.linspace(-0.25,-0.18,pts)
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def heating_check(name):
     m=SweepBell('heating_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=1
+    pts=7
     m.params['pts']=pts
     m.params['repetitions'] = 1000 # 
 
@@ -202,7 +202,7 @@ def heating_check(name):
     m.params['MAX_SYNC_BIN'] =       8300 
 
     m.params['general_sweep_name'] = 'MW_pi_amp'
-    m.params['general_sweep_pts'] = np.linspace(1.,1.,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.,1.,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -292,8 +292,8 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    #tail_sweep('tail') 
-    heating_check('test')
+    tail_sweep('tail') 
+    #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Sam')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
