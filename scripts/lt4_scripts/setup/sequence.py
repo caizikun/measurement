@@ -54,7 +54,7 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=(194e-9 + 5e-6), active=True) #measured delay on apd's (tail) 2014-10-13: 40 ns
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=(510e-9+ 5e-6), active=True) #617 ns for normal pulses 458e-9
+    high=1.0, low=-1.0, offset=0., delay=(510e-9+ 5e-6), active=True) #617 ns for normal pulses 458e-9
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset',  qt.instruments['PulseAOM'].get_sec_V_off())
 #qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)

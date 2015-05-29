@@ -269,6 +269,35 @@ def rnd_echo_ro(name,debug = False):
 
     run_sweep(m, th_debug=debug, measure_bs=False, upload_only = False)
 
+def check_mw_position(name):
+    m=SweepBell('RND_RO_'+name)
+    _setup_params(m, setup = qt.current_setup)
+    pts=1
+    m.params['pts']=pts
+    m.params['repetitions'] = 40000
+    m.params['do_general_sweep']=0
+    m.params['aom_amplitude'] = 0.
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['MW_during_LDE'] = 1 
+
+    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
+
+def SP_correlations_PSB(name):
+    m=SweepBell('SPCorr_'+name)
+    _setup_params(m, setup = qt.current_setup)
+    pts = 1
+
+    m.params['MW_RND_amp_I']     = 0
+    m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+    #m.joint_params['do_echo'] = 0
+    #m.joint_params['do_final_MW_rotation'] = 1
+    m.params['live_filter_queue_length'] = 2
+
+    m.joint_params['use_live_marker_filter']=False
+    th_debug = False
+    mw=True
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
@@ -292,8 +321,10 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('tail') 
+    # tail_sweep('tail') 
+    # check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Sam')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
+    SP_correlations_PSB('test')
