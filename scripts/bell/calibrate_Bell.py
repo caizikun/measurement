@@ -219,7 +219,7 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = debug)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = False)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)
