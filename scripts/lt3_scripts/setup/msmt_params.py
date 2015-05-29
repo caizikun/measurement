@@ -75,6 +75,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_power':                                20,#-20,
 		'MW_pulse_mod_risetime':                   20e-9,
 		'send_AWG_start':                          1,
+		'MW_pulse_mod_frequency' : 				   43e6,
 	}
 
 
@@ -153,26 +154,25 @@ CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,
-    	'CORPSE_amp' : 0.201 ,
-    	'CORPSE_pi2_amp':0.543,
-    	'CORPSE_pulse_delay': 0e-9,
-    	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 160e-9, # 
-        'Hermite_pi_amp': 0.8987, # 2015-05-25 for pi pulse of 140 ns...0.7278
-        'Hermite_pi2_length': 60e-9,
-        'Hermite_pi2_amp': 0.87, #2015-05-25 for pi/2 pulse of 60 ns
-        'Hermite_Npi4_length': 45e-9,
-        'Hermite_Npi4_amp': 0.373683, # 2014-08-21
-        'Square_pi_length' : 1000e-9,#2000e-9, # calib. 2014-07-25
-      	'Square_pi_amp' : 0.731, 
-      	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
-    	'Square_pi2_amp'  : 0.684, # XXXXXXX not calibratedrepump
-      	'IQ_Square_pi_amp' : 0.068,#632 , # calib. for 1 us pi pulse, 2015-05-12 
-      	'IQ_Square_pi2_amp'  : 0.6967, # 
-    	'extra_wait_final_pi2' : -30e-9,
-    	'MW_pulse_mod_frequency' : 43e6,
-    	'DESR_pulse_duration' : 4e-6,
-    	'DESR_pulse_amplitude' : 0.045,
+    	'CORPSE_amp' : 				0.201 ,
+    	'CORPSE_pi2_amp':			0.543,
+    	'CORPSE_pulse_delay': 		0e-9,
+    	'CORPSE_pi_amp': 			0.517,
+    	'Hermite_pi_length': 		160e-9, # 
+        'Hermite_pi_amp': 			0.8987, # 2015-05-25 for pi pulse of 140 ns...0.7278
+        'Hermite_pi2_length':		60e-9,
+        'Hermite_pi2_amp':			0.87, #2015-05-25 for pi/2 pulse of 60 ns
+        'Hermite_Npi4_length':		45e-9,
+        'Hermite_Npi4_amp':			0.373683, # 2014-08-21
+        'Square_pi_length' :		1000e-9,#2000e-9, # calib. 2014-07-25
+      	'Square_pi_amp' :			0.731, 
+      	'Square_pi2_length' :		25e-9, # XXXXXXX not calibrated
+    	'Square_pi2_amp'  :			0.684, # XXXXXXX not calibratedrepump
+      	'IQ_Square_pi_amp' :		0.068,#632 , # calib. for 1 us pi pulse, 2015-05-12 
+      	'IQ_Square_pi2_amp'  :		0.6967, # 
+    	'extra_wait_final_pi2' :	-30e-9,
+    	'DESR_pulse_duration' :		4e-6,
+    	'DESR_pulse_amplitude' :	0.045,
 }
 
 

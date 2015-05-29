@@ -32,34 +32,6 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
-def check_pi4_pulse_poles(name, debug=False):
-    m = pulsar_msmt.GeneralNPi4Calibration_3(name)
-    sweep_Bell._setup_params(m, setup = qt.current_setup)
-
-    m.params['pulse_type'] = 'Hermite Bell'
-    pts = 11
- 
-    m.params['Ex_SP_amplitude']=0
-    m.params['SP_duration'] = 100
-
-    m.params['pts'] = pts
-    m.params['repetitions'] = 5000
-
-    # sweep params
-    sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.1, 0.1, pts) 
-    m.params['pulse_Npi4_sweep_amps'] = sweep_axis
-
-    m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
-    m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
-    m.params['evolution_times'] = np.ones(pts)*500e-9
-    m.params['extra_wait_final_Npi4'] = np.ones(pts)*0.
-
-    # for the autoanalysis
-    m.params['sweep_name'] = 'MW amplitude (V)'
-    m.params['sweep_pts'] = sweep_axis
-    m.params['wait_for_AWG_done'] = 1
-    
-    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi4=m.MW_pi2)
 
 def calibrate_pi2_pulse(name, debug=False):
     m = pulsar_msmt.GeneralPi2Calibration(name)
@@ -188,8 +160,38 @@ def calibrate_Npi4_pulse(name,debug=False):
 
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi2=m.MW_pi2)
 
+def check_pi4_pulse_poles(name, debug=False):
+    m = pulsar_msmt.GeneralNPi4Calibration_3(name)
+    sweep_Bell._setup_params(m, setup = qt.current_setup)
+
+    m.params['pulse_type'] = 'Hermite Bell'
+    pts = 11
+ 
+    m.params['Ex_SP_amplitude']=0
+    m.params['SP_duration'] = 100
+
+    m.params['pts'] = pts
+    m.params['repetitions'] = 5000
+
+    # sweep params
+    sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.05, 0.05, pts) 
+    m.params['pulse_Npi4_sweep_amps'] = sweep_axis
+
+    m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
+    m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
+    m.params['evolution_times'] = np.ones(pts)*500e-9
+    m.params['extra_wait_final_Npi4'] = np.ones(pts)*0.
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'MW amplitude (V)'
+    m.params['sweep_pts'] = sweep_axis
+    m.params['wait_for_AWG_done'] = 1
+    
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, pulse_pi4=m.MW_pi2)
+
+
 if __name__ == '__main__':
-    stage = 3.1
+    stage = 4.2
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False
@@ -226,12 +228,12 @@ if __name__ == '__main__':
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.42: #new pi/2 pulse calibration
         calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = debug)
-        print 'set msmt_params Hermite_pi2_amp'
-    elif stage == 3.43: #new pi/2 pulse calibration
-        calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
+        #calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
-        #calibrate_Npi4_pulse(SAMPLE_CFG)
+        calibrate_Npi4_pulse(SAMPLE_CFG)
+        print 'set msmt_params Hermite_Npi4_amp'
+    elif stage == 3.52:
         check_pi4_pulse_poles(SAMPLE_CFG+'_Bell_Pi4_check', debug=debug)
         print 'set msmt_params Hermite_Npi4_amp'
     elif stage == 4.1: #echo sweep tests DD

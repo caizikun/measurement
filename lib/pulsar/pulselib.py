@@ -29,6 +29,7 @@ class MW_pulse(pulse.Pulse):
         self.amplitude = kw.pop('amplitude', self.amplitude)
         self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
             2*self.PM_risetime
+        self.pulse_length = self.length-2*self.PM_risetime
         return self
 
     def chan_wf(self, chan, tvals):

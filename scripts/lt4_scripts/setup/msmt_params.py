@@ -75,6 +75,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_power':                                20,#-20,
 		'MW_pulse_mod_risetime':                   20e-9,
 		'send_AWG_start':                          1,
+		'MW_pulse_mod_frequency' : 				   43e6,
 	}
 
 ##########################################
@@ -152,24 +153,25 @@ CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
 
     	'CORPSE_rabi_frequency' : CORPSE_frq,
-    	'CORPSE_amp' : 0.201 ,
-    	'CORPSE_pi2_amp':0.543,
-    	'CORPSE_pulse_delay': 0e-9,
-    	'CORPSE_pi_amp': 0.517,
-    	'Hermite_pi_length': 190e-9, 
-        'Hermite_pi_amp': 0.874, # #2015-05-25   
-        'Hermite_pi2_length': 75e-9,
-        'Hermite_pi2_amp': 0.876, #2015-05-25
-        'Hermite_Npi4_length': 76e-9, #pi/4 45e-9
-        'Hermite_Npi4_amp':    0.85, # Use 0.787 pi on Sam   2015-03-27
-        'Square_pi_length' : 50e-9, # 2014-12-01
-      	'Square_pi_amp' : 0.7464 , #  2014-12-01
-      	'IQ_Square_pi_amp' : 0.03 , # calib. for 2 us pi pulse, 2014-07-25 
-      	'Square_pi2_length' : 25e-9, # XXXXXXX not calibrated
-    	'Square_pi2_amp'  : 0.735,#0.71104, # XXXXXXX not calibrated
-    	'IQ_Square_pi2_amp'  : 0.015, # XXXXXXX not calibrated
-    	'extra_wait_final_pi2' : -30e-9,
-    	'MW_pulse_mod_frequency' : 43e6,
+    	'CORPSE_amp' :		 		0.201,
+    	'CORPSE_pi2_amp':			0.543,
+    	'CORPSE_pulse_delay':		0e-9,
+    	'CORPSE_pi_amp':			0.517,
+    	'Hermite_pi_length':		190e-9,
+        'Hermite_pi_amp':			0.8853, # #2015-05-25   
+        'Hermite_pi2_length':		75e-9,
+        'Hermite_pi2_amp':			0.9062, #2015-05-25
+        'Hermite_Npi4_length':		115e-9, #pi/4 45e-9
+        'Hermite_Npi4_amp':			0.8636, # Use 0.787 pi on Sam   2015-03-27
+        'Square_pi_length' :		50e-9, # 2014-12-01
+      	'Square_pi_amp' :			0.7464 , #  2014-12-01
+      	'IQ_Square_pi_amp' :		0.03 , # calib. for 2 us pi pulse, 2014-07-25 
+      	'Square_pi2_length' :		25e-9, # XXXXXXX not calibrated
+    	'Square_pi2_amp'  :			0.735,#0.71104, # XXXXXXX not calibrated
+    	'IQ_Square_pi2_amp'  :		0.015, # XXXXXXX not calibrated
+    	'extra_wait_final_pi2' :	-30e-9,
+    	'DESR_pulse_duration' :		4e-6,
+    	'DESR_pulse_amplitude' :	0.045,
 }
 
 cfg['protocols'][name]['cr_linescan'] = {

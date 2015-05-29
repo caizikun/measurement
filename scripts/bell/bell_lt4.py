@@ -106,7 +106,7 @@ class Bell_lt4(bell.Bell):
         bell.Bell.finish(self)
                 # signal BS and lt3 to stop as well
         self.add_file(inspect.getsourcefile(bseq))
-        self.add_file(inspect.getsourcefile(measurement.scripts.lt4_scripts.setup.msmt_params))
+        self.add_file(r'D:/measuring/measurement/scripts/lt4_scripts/setup/msmt_params.py')
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
@@ -335,14 +335,14 @@ def lt4_only(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False
+    DoJitterCheck = True
     ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
 
     if DoJitterCheck:
-        for i in range(4):
+        for i in range(2):
             jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
             print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
             if not jitterDetected:
@@ -360,12 +360,12 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)  
         
-        #SP_PSB('SPCORR_PSB')
-        SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
+        SP_PSB('SPCORR_PSB')
+        #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
         # full_bell('TheFourth_day7_Run'+name_index)    
         # lt4_only('test')
         # pulse_overlap('overlap')
-        #SP_ZPL('SPCORR_lt4')
+        #SP_ZPL('SPCORR_lt3')
         # measureZZ('BackToZZ_day5_run'+name_index)
         #measureXX('test')#XXNewPulses_day1_run'+name_index)
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
