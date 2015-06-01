@@ -114,7 +114,7 @@ def calibrate_pi2_pulse_3(name, multiplicity = 1, debug=False):
     m.params['wait_for_AWG_done'] = 1
 
 
-    rng = 0.1 if multiplicity == 1 else 0.06
+    rng = 0.1 if multiplicity == 1 else 0.09
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
     m.params['delay_reps'] = 15
@@ -189,7 +189,7 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 4.1
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False
@@ -225,8 +225,8 @@ if __name__ == '__main__':
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.42: #new pi/2 pulse calibration
-        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = debug)
-        #calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
+        # calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = debug)
+        calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
         calibrate_Npi4_pulse(SAMPLE_CFG)

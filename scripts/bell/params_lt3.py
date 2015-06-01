@@ -77,7 +77,7 @@ params_lt3['MW_RND_Q_ispi2'] = True
 
 params_lt3['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt3['echo_offset'] = -50e-9 #2015-05-22
+params_lt3['echo_offset'] = -100e-9 #2015-06-01
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -94,7 +94,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 11e-9 # XXXX
-params_lt3['aom_amplitude']				 = 0.556 # CR29 2015-05-21
+params_lt3['aom_amplitude']				 = .62 # CR29 2015-05-21
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -104,7 +104,7 @@ params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 22e-9 #XXXXXXXXXXXX had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] 		= -25e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
 params_lt3['RND_duration']	 	= 200e-9
