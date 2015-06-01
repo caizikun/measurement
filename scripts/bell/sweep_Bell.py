@@ -224,9 +224,9 @@ def echo_sweep(name):
     m.joint_params['LDE_attempts_before_CR'] = 1
     m.params['aom_amplitude'] = 0. #
     m.joint_params['do_echo'] = 1
-    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
@@ -276,9 +276,12 @@ def check_mw_position(name):
     m.params['pts']=pts
     m.params['repetitions'] = 40000
     m.params['do_general_sweep']=0
+    m.joint_params['LDE_attempts_before_CR'] = 10
     m.params['aom_amplitude'] = 0.
     m.joint_params['opt_pi_pulses'] = 2
     m.params['MW_during_LDE'] = 1 
+    m.params['square_MW_pulses']=True
+    qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', 0.15)
 
     run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
@@ -321,10 +324,10 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    # tail_sweep('tail') 
-    # check_mw_position('test')
+    tail_sweep('tail') 
+    #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('Sam')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
-    SP_correlations_PSB('test')
+    #SP_correlations_PSB('test')

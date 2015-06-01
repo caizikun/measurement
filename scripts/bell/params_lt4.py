@@ -91,13 +91,13 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 70e-9
-params_lt4['eom_off_amplitude']         = -0.2874 # calibration 2015-05-26
+params_lt4['eom_off_amplitude']         = -0.278 # calibration 2015-05-26
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.63 #CR 33  #2015-05-25
+params_lt4['aom_amplitude']             = 0.56 #CR 33  #2015-05-25
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -107,9 +107,9 @@ params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt4['MW_opt_puls1_separation'] = 10e-9 #distance between the end of the MW and the start of opt puls1
+params_lt4['MW_opt_puls1_separation'] = 20e-9 #distance between the end of the MW and the start of opt puls1
 params_lt4['MW_1_separation'] 		  = joint_params.joint_params['opt_pulse_separation']
-params_lt4['MW_RND_wait'] 			  = -25e-9#-50e-9#160e-9 #wait start RND MW after end of RND halt pulse
+params_lt4['MW_RND_wait'] 			  = -40e-9#160e-9 #wait start RND MW after end of RND halt pulse
 params_lt4['RND_duration'] 			  = 200e-9
 params_lt4['RO_wait'] 				  = 75e-9 #wait start RO after end of RND MW pulse
 params_lt4['sync_during_LDE']   	  = 1
@@ -135,8 +135,11 @@ params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count
 params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
 params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
 params_lt4['entanglement_marker_number'] = 4
-params_lt4['tail_start_bin'] = 5350
-params_lt4['tail_stop_bin'] = 5350 + 200
+params_lt4['tail_start_bin'] = 5400
+params_lt4['tail_stop_bin'] = 5400 + 200
+params_lt4['prepulse_start_bin'] = 5395
+params_lt4['prepulse_stop_bin'] = 5395 + 18
+
 params_lt4['live_filter_queue_length'] = 10
 
 params_lt4['measurement_time'] =   45*60#sec = 45 mins

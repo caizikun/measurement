@@ -248,3 +248,11 @@ def aom_listener():
     #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
     
     listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)
+
+
+def turn_on_green_laser():
+    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=1)
+
+def turn_off_green_laser():
+    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=0)
+    

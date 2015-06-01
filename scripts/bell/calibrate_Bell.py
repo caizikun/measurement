@@ -129,8 +129,6 @@ def calibrate_pi2_pulse_3(name, multiplicity = 1, debug=False):
 
 
 
-
-
 def calibrate_Npi4_pulse(name,debug=False):
     m = pulsar_msmt.GeneralNPi4Calibration(name)
     sweep_Bell._setup_params(m, setup = qt.current_setup)
