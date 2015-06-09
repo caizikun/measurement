@@ -7,19 +7,20 @@ execfile(qt.reload_current_setup)
 import msvcrt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
+mw_channel = 'MW_Qmod'
 
-T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+T = pulse.SquarePulse(channel=mw_channel, name='delay',
             length = 200e-9, amplitude = 0.)
 sync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
 X = pulselib.MW_pulse('pulse',
-            MW_channel='MW_Imod',
+            MW_channel=mw_channel,
             PM_channel='MW_pulsemod',
             amplitude=0.9,
             length = 52e-9,
             PM_risetime = 10e-9)
 
-X2 = pulse.SquarePulse('MW_Imod','small_pulse',
+X2 = pulse.SquarePulse(mw_channel,'small_pulse',
             amplitude=0.2,
             length = 200e-9)
 

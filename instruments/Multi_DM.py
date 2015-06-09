@@ -86,6 +86,8 @@ class Multi_DM(Instrument):
         self.add_function('get_bigger_segments')
         self.add_function('voltages_from_matrix')
         self.add_function('matrix_from_voltages')
+        self.add_function('turn_off_high_voltage')
+        self.add_function('turn_on_high_voltage')
 
         # Load/ Initialize the config
         cfg_fn = os.path.abspath(
@@ -99,6 +101,13 @@ class Multi_DM(Instrument):
         self.ins_cfg = config.Config(cfg_fn)
         self.load_cfg()
         self.save_cfg()
+
+    def turn_on_high_voltage(self):
+        self._dm.CIUsb_SetControl(0,4)
+    
+    def turn_off_high_voltage(self):
+        self._dm.CIUsb_SetControl(0,5)
+
 
     def get_all(self):
         for n in self._parlist:

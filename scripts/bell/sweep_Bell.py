@@ -161,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.5,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        aom_power_sweep=np.linspace(0.4,0.8,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -289,7 +289,8 @@ def SP_correlations_PSB(name):
     m=SweepBell('SPCorr_'+name)
     _setup_params(m, setup = qt.current_setup)
     pts = 1
-
+    m.params['do_general_sweep']=0
+    m.params['repetitions'] = 40000
     m.params['MW_RND_amp_I']     = 0
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = 0
@@ -301,6 +302,9 @@ def SP_correlations_PSB(name):
     m.joint_params['use_live_marker_filter']=False
     th_debug = False
     mw=True
+
+    run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
+
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()

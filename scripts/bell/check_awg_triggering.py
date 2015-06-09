@@ -67,14 +67,14 @@ def check_triggering():
     pharp.set_CFDLevel1(50)
     qt.msleep(1)
     pharp.StartMeas(int(4 * 1e3)) #10 second measurement
-    qt.msleep(0.1)
+    qt.msleep(0.5)
     print 'starting PicoHarp measurement'
     while pharp.get_MeasRunning():
         if(msvcrt.kbhit() and msvcrt.getch()=='q'):
             print 'q pressed, quitting current run'
             pharp.StopMeas()
             break
-    hist=pharp.get_Block()
+    hist=pharp.GetHistogram()
     print 'PicoHarp measurement finished'
 
     print '-------------------------------'

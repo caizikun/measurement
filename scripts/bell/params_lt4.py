@@ -90,7 +90,7 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 # LDE Sequence in the AWGs # params taken from the previous LT1 params
 params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
-params_lt4['eom_off_duration']          = 70e-9
+params_lt4['eom_off_duration']          = 50e-9
 params_lt4['eom_off_amplitude']         = -0.278 # calibration 2015-05-26
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
