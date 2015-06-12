@@ -1260,7 +1260,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
             #e.append(T)
             e.append(pulse.cp(T, length=2e-6)) 
             e.append(pulse.cp(pulse_pi2, amplitude = self.params['pulse_pi2_sweep_amps'][i]))
-            e.append(pulse.cp(TIQ, length=2e-6))  
+            e.append(pulse.cp(TIQ, length=100e-9))  #XXXXX 2e-6
             e.append(pulse.cp(pulse_pi))
             e.append(T)
             elements.append(e)

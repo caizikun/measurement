@@ -218,7 +218,7 @@ if __name__ == '__main__':
     green_power = 200e-6
     GreenAOM.set_power(green_power)
 
-    name = 'PippinSil1_lt3_nonlocal'
+    name = 'PippinSil1_lt3_nonlocal_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
@@ -251,7 +251,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,35): #lets sweep 75 zernike modes!
+                for i in np.arange(35,70): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True

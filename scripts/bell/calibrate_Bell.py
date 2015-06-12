@@ -81,7 +81,7 @@ def calibrate_pi2_pulse_2(name, multiplicity = 1, debug=False):
     m.params['wait_for_AWG_done'] = 1
 
 
-    rng = 0.1 if multiplicity == 1 else 0.05
+    rng = 0.1 if multiplicity == 1 else 0.07
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
     m.params['delay_reps'] = 15

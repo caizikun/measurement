@@ -78,7 +78,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
+    setpoints = [5e-9, 5e-9, 15e-9,40e-9]):
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt3_lasers()
@@ -199,9 +199,9 @@ def stop_bs_counter():
         print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.instruments['AWG'].set_ch3_marker1_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch1_marker2_low(0.)
+    qt.instruments['AWG'].set_ch3_marker1_low(0.)
 
 def quantum_random_number_status():
     qt.instruments['adwin'].start_get_dio(dio_no=20)

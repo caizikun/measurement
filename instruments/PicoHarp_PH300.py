@@ -66,6 +66,7 @@ class PicoHarp_PH300(Instrument): #1
         self.add_function('StopMeas')
         self.add_function('OpenDevice')
         self.add_function('CloseDevice')
+        self.add_function('GetHistogram')
         self.start_histogram_mode()
 
 
@@ -239,7 +240,7 @@ class PicoHarp_PH300(Instrument): #1
     def _do_get_ElapsedMeasTime(self):
         return self._PH300_win32.PH_GetElapsedMeasTime(self.DevIdx)
 
-    def get_Block(self):
+    def GetHistogram(self):
         data = numpy.array(numpy.zeros(65536), dtype = numpy.uint32)
 
         success = self._PH300_win32.PH_GetBlock(self.DevIdx,data.ctypes.data,0)

@@ -291,7 +291,8 @@ def SP_correlations_PSB(name):
     m=SweepBell('SPCorr_'+name)
     _setup_params(m, setup = qt.current_setup)
     pts = 1
-
+    m.params['do_general_sweep']=0
+    m.params['repetitions'] = 40000
     m.params['MW_RND_amp_I']     = 0
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = 0
@@ -303,6 +304,9 @@ def SP_correlations_PSB(name):
     m.joint_params['use_live_marker_filter']=False
     th_debug = False
     mw=True
+
+    run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
+
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()

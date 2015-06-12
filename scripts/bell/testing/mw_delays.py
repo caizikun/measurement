@@ -7,6 +7,7 @@ execfile(qt.reload_current_setup)
 import msvcrt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
+mw_channel = 'MW_Qmod'
 
 T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
             length = 200e-9, amplitude = 0.)

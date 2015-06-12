@@ -32,6 +32,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         instrument_helper.create_get_set(self,ins_pars)
 
         self._parlist = ins_pars.keys()
+        self._pharp=qt.instruments['PH_300']
         self._parlist.append('read_interval')
 
         self.add_parameter('pidgate_running',
@@ -59,6 +60,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.setup_name = setup_name
         if 'lt3' in setup_name:
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
+
 
         self._taper_index = 1 if 'lt3' in setup_name else 0
 
@@ -260,6 +262,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 
                 self.publish_values()
 
+                if 'lt3' in self.setup_name:
+                    jitterDetected, jitter_text = self.check_jitter()
+
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
                     self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
                     print self.status_message
@@ -267,7 +272,15 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     text = 'Check the QRNG, something is wrong with the theshold voltage !!!'
                     subject = 'ERROR : QRNG threshold voltage too low {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    
+                       
+                elif jitterDetected:
+                    self.status_message = 'Jitter detected!'
+                    print self.status_message
+                    text = jitter_text
+                    subject = 'ERROR :AWG jitte detected'
+                    self.send_error_email(subject = subject, text = text)
+                    #self.set_invalid_data_marker(1)
+
                 elif self.cr_checks <= 50:
                     self.status_message = 'Waiting for the other setup to come back'
                     print self.status_message
@@ -512,7 +525,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
                 self._check)
         self.init_counters()
-
+        self.start_pharp()
 
         mname = qt.instruments['lt4_measurement_helper'].get_measurement_name()  if 'lt4' in self.setup_name else \
                     qt.instruments['lt3_measurement_helper'].get_measurement_name() 
@@ -543,4 +556,54 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.repump_counts              = 0 
         self.cryo_half_rot_degrees      = 0    
 
-        
+    def start_pharp(self):
+        self._pharp.OpenDevice()
+        self._pharp.start_histogram_mode()
+        self._pharp.ClearHistMem()
+        self._pharp.set_Range(4) # 64 ps binsize
+        self._pharp.set_CFDLevel0(50)
+        self._pharp.set_CFDLevel1(50)
+        qt.msleep(0.1)
+        self._pharp.StartMeas(int(1*60*60 * 1e3)) #1H measurement
+
+
+    def stop(self):
+        self._pharp.StopMeas()
+        self.set_is_running(False)
+        return gobject.source_remove(self._timer)
+
+    def check_jitter(self):
+        if not self._pharp.get_MeasRunning():
+            ret =  'Picoharp not running!'
+            self.start_pharp()
+            print ret
+            return False, ret
+        jitterDetected= False
+        hist=self._pharp.GetHistogram()
+        self._pharp.ClearHistMem()
+        ret=''
+        ret=ret+ str(hist[hist>0])
+        peaks=np.where(hist>0)[0]*self._pharp.get_Resolution()/1000.
+        ret=ret+'\n'+ str(peaks)
+
+        peak_loc = 890.1
+        if len(peaks)>1:
+            peaks_width=peaks[-1]-peaks[0]
+            peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
+            if (peaks_width)>.5:
+                ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
+                jitterDetected=True
+            elif (peak_max<peak_loc-0.25) or (peak_max>peak_loc+0.25):
+                ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
+                jitterDetected=True
+            else:
+                ret=ret+'\n'+'No Jitter detected'
+            ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
+
+            ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
+
+
+        ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
+        #print ret
+        return jitterDetected, ret
+
