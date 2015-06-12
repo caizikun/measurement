@@ -32,7 +32,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         instrument_helper.create_get_set(self,ins_pars)
 
         self._parlist = ins_pars.keys()
-        self._pharp=qt.instruments['PH_300']
+        
         self._parlist.append('read_interval')
 
         self.add_parameter('pidgate_running',
@@ -60,6 +60,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.setup_name = setup_name
         if 'lt3' in setup_name:
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
+            self._pharp=qt.instruments['PH_300']
 
 
         self._taper_index = 1 if 'lt3' in setup_name else 0
@@ -131,6 +132,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                  'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
                  'ent_events'       : self.entanglement_events,
                  })
+            log_file=open(self.log_fp, 'a')  
+            log_file.write(time.strftime('%Y%m%d%H%M%S')+' : '+self.status_message + '\n')
+            log_file.close()
         except Exception as e:
             print 'Error in publishing values for freeboard:', str(e)
 
@@ -264,6 +268,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
                 if 'lt3' in self.setup_name:
                     jitterDetected, jitter_text = self.check_jitter()
+                else:
+                    jitterDetected = False
 
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
                     self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
@@ -525,17 +531,16 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
                 self._check)
         self.init_counters()
-        self.start_pharp()
+        if 'lt3' in self.setup_name:
+            self.start_pharp()
 
         mname = qt.instruments['lt4_measurement_helper'].get_measurement_name()  if 'lt4' in self.setup_name else \
                     qt.instruments['lt3_measurement_helper'].get_measurement_name() 
-        d=qt.Data(name='Bell_optimizer_'+mname)
+        d=qt.Data(name='Bell_optimizer_run'+mname)
         d.create_file()
         d.close_file()
-        fp=d.get_filepath()
-        self.log_file=open(fp, 'a')
-        f.write('test')
-        self.log_file.close()
+        self.log_fp=d.get_filepath()
+            
         
         return True
 
@@ -568,7 +573,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
 
     def stop(self):
-        self._pharp.StopMeas()
+        if 'lt3' in self.setup_name:
+            self._pharp.StopMeas()
+        self.log_file.close()
         self.set_is_running(False)
         return gobject.source_remove(self._timer)
 
