@@ -83,7 +83,7 @@ def check_triggering():
     peaks=np.where(hist>0)[0]*pharp.get_Resolution()/1000.
     ret=ret+'\n'+ str(peaks)
     print ret
-    peak_loc = 490.2
+    peak_loc = 489.9
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.

@@ -207,7 +207,7 @@ def measureXX(name):
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
-             measure_bs    = True,
+             measure_bs    = True, 
              do_upload     = True,
              )
 
@@ -335,7 +335,7 @@ def lt4_only(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False #not always necc as now in bell optimizer
+    DoJitterCheck = False  #not always necc as now in bell optimizer
     ResetPlu = True
         
     if ResetPlu:
@@ -364,7 +364,7 @@ if __name__ == '__main__':
         #SP_PSB('test')
         #SP_PSB('SPCORR_PSB')
         #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-        # full_bell('TheFourth_day7_Run'+name_index)    
+        #full_bell('TheFourth_day7_Run'+name_index)    
         # lt4_only('test')
         # pulse_overlap('overlap')
         #SP_ZPL('SPCORR_lt3')
