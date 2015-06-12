@@ -144,12 +144,12 @@ def tail_sweep(name):
     m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
-    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
     m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 9e-6
+    m.joint_params['LDE_element_length'] = 12e-6
     m.joint_params['do_final_MW_rotation'] = 0
     m.joint_params['wait_for_1st_revival'] = 0
 
@@ -160,8 +160,8 @@ def tail_sweep(name):
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
-        max_power_aom=p_aom.voltage_to_power(p_aom.get_V_max())
-        aom_power_sweep=np.linspace(0.5,1.0,pts)*max_power_aom #%power XXXXXXXXXXXXXXX
+        max_power_aom=p_aom.voltage_to_power(1.)
+        aom_power_sweep=np.linspace(0.6,1.0,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -170,11 +170,13 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        m.params['general_sweep_name'] = 'eom_off_amplitude'
-        print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
+        sweep_off_voltage = False
+        if sweep_off_voltage:
+            m.params['general_sweep_name'] = 'eom_off_amplitude'
+            print 'sweeping the', m.params['general_sweep_name']
+            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
+            m.params['sweep_name'] = m.params['general_sweep_name'] 
+            m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 

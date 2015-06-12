@@ -88,13 +88,13 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
 params_lt3['eom_off_amplitude']          = -0.038 # calibration from 2015-05-15
-params_lt3['eom_off_duration']           = 70e-9 
+params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 11e-9 # XXXX
-params_lt3['aom_amplitude']				 = .62 # CR29 2015-05-21
+params_lt3['aom_risetime']				 = 11e-9 #
+params_lt3['aom_amplitude']				 = .64 # CR29 2015-06-11
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -104,7 +104,7 @@ params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['MW_opt_puls1_separation'] = 22e-9 #XXXXXXXXXXXX had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 22e-9 # had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
 params_lt3['MW_RND_wait'] 		= -25e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
 params_lt3['RND_duration']	 	= 200e-9
@@ -137,6 +137,8 @@ params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_da
 params_lt3['entanglement_marker_number'] = 4
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
+params_lt3['prepulse_start_bin'] = 7570
+params_lt3['prepulse_stop_bin'] = 7570 + 18
 params_lt3['live_filter_queue_length'] = 10
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H

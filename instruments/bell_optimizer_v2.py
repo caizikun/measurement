@@ -60,6 +60,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         if 'lt3' in setup_name:
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
 
+        self._taper_index = 1 if 'lt3' in setup_name else 0
+
         self.max_cryo_half_rot_degrees  = 3
         self.max_laser_reject_cycles = 25
         
@@ -157,10 +159,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
         if 'lt4' in self.setup_name:
             par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
-            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(50,5)
+            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
         else:
             par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
-            fpar_laser_new = qt.instruments['physical_adwin_lt4'].Get_FPar_Block(50,5)
+            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
 
         self.deque_par_counts.append(par_counts_new)
         self.deque_par_laser.append(par_laser_new)
@@ -382,10 +384,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                
 
                 ## WM check.
-                elif self.deque_fpar_laser[-1][3] == self.deque_fpar_laser[-2][3] : # Taper value not updated
+                elif self.deque_fpar_laser[-1][3+self._taper_index] == self.deque_fpar_laser[-2][3+self._taper_index] : # Taper value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3], self.deque_par_laser[-2][3])
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3], self.deque_fpar_laser[-2][3])
                     print text
                     print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
@@ -403,7 +405,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     print text
                     print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
-
 
 
                 
@@ -511,6 +512,18 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
                 self._check)
         self.init_counters()
+
+
+        mname = qt.instruments['lt4_measurement_helper'].get_measurement_name()  if 'lt4' in self.setup_name else \
+                    qt.instruments['lt3_measurement_helper'].get_measurement_name() 
+        d=qt.Data(name='Bell_optimizer_'+mname)
+        d.create_file()
+        d.close_file()
+        fp=d.get_filepath()
+        self.log_file=open(fp, 'a')
+        f.write('test')
+        self.log_file.close()
+        
         return True
 
     def init_counters(self):

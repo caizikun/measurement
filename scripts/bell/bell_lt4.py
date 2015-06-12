@@ -275,7 +275,7 @@ def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot t
              th_debug      = False,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = True,
+             measure_lt3   = True, 
              measure_bs    = False,
              do_upload     = True,
              )
@@ -335,7 +335,7 @@ def lt4_only(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = True
+    DoJitterCheck = False #not always necc as now in bell optimizer
     ResetPlu = True
         
     if ResetPlu:
@@ -360,14 +360,16 @@ if __name__ == '__main__':
     if not(jitterDetected):
         qt.msleep(0.5)  
         
-        SP_PSB('SPCORR_PSB')
+
+        #SP_PSB('test')
+        #SP_PSB('SPCORR_PSB')
         #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
         # full_bell('TheFourth_day7_Run'+name_index)    
         # lt4_only('test')
         # pulse_overlap('overlap')
         #SP_ZPL('SPCORR_lt3')
-        # measureZZ('BackToZZ_day5_run'+name_index)
-        #measureXX('test')#XXNewPulses_day1_run'+name_index)
+        #measureZZ('BackToZZ_day5_run'+name_index)
+        measureXX('finallyXX_day3_run'+name_index)
         #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
         
         qt.bell_succes = True

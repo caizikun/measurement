@@ -250,9 +250,12 @@ def aom_listener():
     listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)
 
 
-def turn_on_green_laser():
-    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=1)
-
-def turn_off_green_laser():
+def switch_green():
     qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=0)
+
+
     
