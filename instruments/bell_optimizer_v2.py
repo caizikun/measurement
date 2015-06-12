@@ -435,7 +435,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.laser_rejection_counter = 0
                     self.set_invalid_data_marker(0)
                     self.status_message = 'Relax, Im doing my job.'
-                print self.status_message 
+                    print self.status_message 
 
             return True
 

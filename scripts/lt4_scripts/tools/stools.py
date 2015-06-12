@@ -71,7 +71,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
 
 
 def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','PulseAOM', 'YellowAOM' ],
-    setpoints = [5e-9, 10e-9, 30e-9,50e-9]):
+    setpoints = [5e-9, 10e-9, 15e-9,50e-9]):
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt4_lasers()
