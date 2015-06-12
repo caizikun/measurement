@@ -406,7 +406,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 elif self.deque_fpar_laser[-1][3+self._taper_index] == self.deque_fpar_laser[-2][3+self._taper_index] : # Taper value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3], self.deque_fpar_laser[-2][3])
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3+self._taper_index], self.deque_fpar_laser[-2][3+self._taper_index])
                     print text
                     print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
@@ -575,7 +575,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
     def stop(self):
         if 'lt3' in self.setup_name:
             self._pharp.StopMeas()
-        self.log_file.close()
         self.set_is_running(False)
         return gobject.source_remove(self._timer)
 
