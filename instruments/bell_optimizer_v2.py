@@ -534,9 +534,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         if 'lt3' in self.setup_name:
             self.start_pharp()
 
-        mname = qt.instruments['lt4_measurement_helper'].get_measurement_name()  if 'lt4' in self.setup_name else \
-                    qt.instruments['lt3_measurement_helper'].get_measurement_name() 
-        d=qt.Data(name='Bell_optimizer_run'+mname)
+        d=qt.Data(name='Bell_optimizer')
         d.create_file()
         d.close_file()
         self.log_fp=d.get_filepath()
@@ -591,6 +589,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+ str(hist[hist>0])
         peaks=np.where(hist>0)[0]*self._pharp.get_Resolution()/1000.
         ret=ret+'\n'+ str(peaks)
+        print ret
 
         peak_loc = 890.1
         if len(peaks)>1:
