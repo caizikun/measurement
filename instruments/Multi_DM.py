@@ -40,26 +40,13 @@ class Multi_DM(Instrument):
          # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument Multi_DM')
         Instrument.__init__(self, name, tags=['physical'])
-
-        # Create the interface to the com object
-        self._dm = cc.CreateObject(progid, interface=Multi_DM_interface.IHostDrv)
-
-        # find available devices
-        self.res =  self._dm.CIUsb_GetAvailableDevices(32)
-        self.noof_devices = np.sum(np.array(self.res[0][:31]) == 0)
-        if self.noof_devices > 1:
-            print  'found more than one DM, please adapt the driver. number of devices found = ', self.noof_devices
-
-
-        self._dm.CIUsb_SetControl(0,3) # 
-        self._dm.CIUsb_SetControl(0,2) # these two lines reset clear data buffer and reset the CPLD, see manual page 18
-        self._dm.CIUsb_SetControl(0,4) # this turns on the HV 
-
-
-        self.add_parameter('cur_voltages',
-                flags=Instrument.FLAG_GETSET,
-                type=types.ListType,
-                doc='')
+        self._progid = progid
+        self.load_dm_device()
+        
+        #self.add_parameter('cur_voltages',
+        #        flags=Instrument.FLAG_GETSET,
+        #        type=types.ListType,
+        #        doc='')
         
         self.cur_voltages = [0.]*160
         
@@ -88,19 +75,41 @@ class Multi_DM(Instrument):
         self.add_function('matrix_from_voltages')
         self.add_function('turn_off_high_voltage')
         self.add_function('turn_on_high_voltage')
+        self.add_function('load_dm_device')
+        self.add_function('set_cur_voltages')
+        self.add_function('get_cur_voltages')
 
         # Load/ Initialize the config
-        cfg_fn = os.path.abspath(
-                os.path.join(qt.config['cfg_path'], name+'.cfg'))
-        if not os.path.exists(cfg_fn):
-            _f = open(cfg_fn, 'w')
-            _f.write('')
-            _f.close()
+        #cfg_fn = os.path.abspath(
+        #        os.path.join(qt.config['cfg_path'], name+'.cfg'))
+        #if not os.path.exists(cfg_fn):
+        #    _f = open(cfg_fn, 'w')
+        #    _f.write('')
+        #    _f.close()
         
-        self._parlist = ['cur_voltages']
-        self.ins_cfg = config.Config(cfg_fn)
-        self.load_cfg()
-        self.save_cfg()
+        #self._parlist = ['cur_voltages']
+        #self.ins_cfg = config.Config(cfg_fn)
+        #self.load_cfg()
+        #self.save_cfg()
+
+    def load_dm_device(self):
+        try:
+            self._dm.Close()
+        except AttributeError:
+            pass
+        # Create the interface to the com object
+        self._dm = cc.CreateObject(self._progid, interface=Multi_DM_interface.IHostDrv)
+
+        # find available devices
+        self.res =  self._dm.CIUsb_GetAvailableDevices(32)
+        self.noof_devices = np.sum(np.array(self.res[0][:31]) == 0)
+        if self.noof_devices > 1:
+            print  'found more than one DM, please adapt the driver. number of devices found = ', self.noof_devices
+
+
+        self._dm.CIUsb_SetControl(0,3) # 
+        self._dm.CIUsb_SetControl(0,2) # these two lines reset clear data buffer and reset the CPLD, see manual page 18
+        self.turn_on_high_voltage()
 
     def turn_on_high_voltage(self):
         self._dm.CIUsb_SetControl(0,4)
@@ -109,20 +118,20 @@ class Multi_DM(Instrument):
         self._dm.CIUsb_SetControl(0,5)
 
 
-    def get_all(self):
-        for n in self._parlist:
-            self.get(n)
+    #def get_all(self):
+    #    for n in self._parlist:
+    #        self.get(n)
         
-    def load_cfg(self):
-        params_from_cfg = self.ins_cfg.get_all()
-        for p in params_from_cfg:
-            if p in self._parlist:
-                self.set(p, value=self.ins_cfg.get(p))
+    #def load_cfg(self):
+    #    params_from_cfg = self.ins_cfg.get_all()
+    #    for p in params_from_cfg:
+    #        if p in self._parlist:
+    #            self.set(p, value=self.ins_cfg.get(p))
 
-    def save_cfg(self):
-        for param in self._parlist:
-            value = self.get(param)
-            self.ins_cfg[param] = value
+    #def save_cfg(self):
+    #    for param in self._parlist:
+    #        value = self.get(param)
+    #        self.ins_cfg[param] = value
 
     def _from_DM_to_input_list(self,voltages):
         """
@@ -141,7 +150,7 @@ class Multi_DM(Instrument):
             input_list[i]= voltages[self._map[i]]           
         return input_list    
 
-    def do_set_cur_voltages(self,voltages,do_save_cfg = True):
+    def set_cur_voltages(self,voltages,do_save_cfg = True):
         """
         sets the voltages of the actuators to specified values. 
         voltages should be a list with 160 floats. the values are between 0 and 100.
@@ -158,9 +167,10 @@ class Multi_DM(Instrument):
 
         self._dm.CIUsb_StepFrameData(0,ushort_data,320)
         if do_save_cfg:    
-            self.save_cfg()
+            pass
+            #self.save_cfg()
 
-    def do_get_cur_voltages(self):
+    def get_cur_voltages(self):
         return self.cur_voltages
 
     def set_single_actuator(self,actuator_nr,voltage, do_save_cfg=True):    

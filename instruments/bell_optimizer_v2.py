@@ -133,7 +133,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                  'ent_events'       : self.entanglement_events,
                  })
             log_file=open(self.log_fp, 'a')  
-            log_file.write(time.strftime('%Y%m%d%H%M%S')+' : '+self.status_message + '\n')
+            log_file.write(time.strftime('%Y%m%d%H%M%S')+' :{}:'.format(self.get_invalid_data_marker())+self.status_message + '\n')
             log_file.close()
         except Exception as e:
             print 'Error in publishing values for freeboard:', str(e)
@@ -287,6 +287,33 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.send_error_email(subject = subject, text = text)
                     #self.set_invalid_data_marker(1)
 
+
+
+                ## WM check.
+                elif self.deque_fpar_laser[-1][3+self._taper_index] == self.deque_fpar_laser[-2][3+self._taper_index] : # Taper value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3+self._taper_index], self.deque_fpar_laser[-2][3+self._taper_index])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+                elif self.deque_fpar_laser[-1][1] == self.deque_fpar_laser[-2][1] : # New focus value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
+                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][1], self.deque_fpar_laser[-2][1])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+                elif self.deque_fpar_laser[-1][2] == self.deque_fpar_laser[-2][2] : # Yellow value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
+                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][2], self.deque_fpar_laser[-2][2])
+                    print text
+                    print self.deque_fpar_laser
+                    self.send_error_email(subject = subject, text = text)
+
+
+
                 elif self.cr_checks <= 50:
                     self.status_message = 'Waiting for the other setup to come back'
                     print self.status_message
@@ -401,29 +428,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.send_error_email(subject = subject, text = text)
 
                
-
-                ## WM check.
-                elif self.deque_fpar_laser[-1][3+self._taper_index] == self.deque_fpar_laser[-2][3+self._taper_index] : # Taper value not updated
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3+self._taper_index], self.deque_fpar_laser[-2][3+self._taper_index])
-                    print text
-                    print self.deque_fpar_laser
-                    self.send_error_email(subject = subject, text = text)
-                elif self.deque_fpar_laser[-1][1] == self.deque_fpar_laser[-2][1] : # New focus value not updated
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
-                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][1], self.deque_fpar_laser[-2][1])
-                    print text
-                    print self.deque_fpar_laser
-                    self.send_error_email(subject = subject, text = text)
-                elif self.deque_fpar_laser[-1][2] == self.deque_fpar_laser[-2][2] : # Yellow value not updated
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
-                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][2], self.deque_fpar_laser[-2][2])
-                    print text
-                    print self.deque_fpar_laser
-                    self.send_error_email(subject = subject, text = text)
 
 
                 
@@ -591,7 +595,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+'\n'+ str(peaks)
         print ret
 
-        peak_loc = 890.1
+        peak_loc = 890.1#  889.8
         if len(peaks)>1:
             peaks_width=peaks[-1]-peaks[0]
             peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
