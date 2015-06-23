@@ -217,8 +217,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.script_not_running_counter += 1
                 self.status_message = 'Bell script not running'
                  
-                max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())            
-                if self.script_not_running_counter > max_counter_for_waiting_time :
+                            
+                if self.script_not_running_counter > self.max_counter_for_waiting_time :
                     self.send_error_email(subject = 'ERROR : Bell sequence not running')
                     self.stop()
                     return False
@@ -318,7 +318,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.waiting_for_other_setup_counter += 1
                     self.status_message = 'Waiting for the other setup to come back'
                     print self.status_message
-                    if self.waiting_for_other_setup_counter > max_counter_for_waiting_time:
+                    if self.waiting_for_other_setup_counter > self.max_counter_for_waiting_time:
                         self.send_error_email(subject = 'ERROR : Bell sequence waiting for other setup', text = 'waiting too long')
 
                 elif self.wait_counter > 0:
@@ -567,6 +567,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.flood_email_counter        = 0  
         self.repump_counts              = 0 
         self.cryo_half_rot_degrees      = 0    
+        self.max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())
 
     def start_pharp(self):
         self._pharp.OpenDevice()
