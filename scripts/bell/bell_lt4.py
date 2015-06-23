@@ -7,8 +7,6 @@ import numpy as np
 import inspect
 import qt
 import time
-from measurement.scripts.bell import check_awg_triggering as JitterChecker
-reload(JitterChecker)
 #reload all parameters and modules
 #execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
@@ -322,34 +320,25 @@ def SP_ZPL(name):
              do_upload     = True,
              )
 
-def lt4_only(name):
+def lt3_tail(name):
+    name='tail_'+name
     m = Bell_lt4(name)
     bell_lt4(name, 
              m,
              th_debug      = True,
              sequence_only = False,
-             mw            = True,
-             measure_lt3   = False,
-             measure_bs    = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = True,
              do_upload     = True,
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = False  #not always necc as now in bell optimizer
+
     ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
-
-    if DoJitterCheck:
-        for i in range(2):
-            jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
-            print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
-            if not jitterDetected:
-                break
-    else: 
-        jitterDetected = False
-        print 'I will skip the jitter test.'
     
     try:
         name_index=str(qt.bell_name_index)
@@ -357,19 +346,18 @@ if __name__ == '__main__':
         name_index = ''
     qt.instruments['lt4_helper'].set_measurement_name(name_index)
     
-    if not(jitterDetected):
-        qt.msleep(0.5)  
+    qt.msleep(0.5)  
         
 
-        #SP_PSB('test')
-        #SP_PSB('SPCORR_PSB')
-        #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-        #full_bell('TheFourth_day7_Run'+name_index)    
-        # lt4_only('test')
-        # pulse_overlap('overlap')
-        #SP_ZPL('SPCORR_lt3')
-        #measureZZ('BackToZZ_day5_run'+name_index)
-        measureXX('finallyXX_day3_run'+name_index)
-        #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
-        
-        qt.bell_succes = True
+    #SP_PSB('SPCORR_PSB')
+    #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
+    #full_bell('TheFourth_day7_Run'+name_index)    
+    # lt4_only('test')
+    #pulse_overlap('overlap')
+    #SP_ZPL('SPCORR_lt3')
+    #lt3_tail('')
+    #measureZZ('BackToZZ_day5_run'+name_index)
+    measureXX('finallyXX_day10_run'+name_index)
+    #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+    
+    qt.bell_succes = True
