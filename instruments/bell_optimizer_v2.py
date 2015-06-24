@@ -63,7 +63,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             self._pharp=qt.instruments['PH_300']
 
 
-        self._taper_index = 1 if 'lt3' in setup_name else 0
+        self._taper_index = 4 if 'lt3' in setup_name else 3
 
         self.max_cryo_half_rot_degrees  = 3
         self.max_laser_reject_cycles = 25
@@ -163,13 +163,12 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
     def update_values(self) :
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
+        fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
         if 'lt4' in self.setup_name:
             par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
-            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
         else:
             par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
-            fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
-
+            
         self.deque_par_counts.append(par_counts_new)
         self.deque_par_laser.append(par_laser_new)
         self.deque_fpar_laser.append(fpar_laser_new)
@@ -232,6 +231,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.update_values()
                 par_counts , par_laser, dt = self.calculate_difference(1)
                 par_counts_avg , _tmp, _tmp1 = self.calculate_difference(self.avg_length)
+                fpar_laser_array=np.array(self.deque_fpar_laser)
                
                 self.dt = dt
                 self.cr_checks = par_counts[2]
@@ -287,32 +287,25 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.send_error_email(subject = subject, text = text)
                     #self.set_invalid_data_marker(1)
 
-
-
                 ## WM check.
-                elif self.deque_fpar_laser[-1][3+self._taper_index] == self.deque_fpar_laser[0][3+self._taper_index] : # Taper value not updated
+                elif len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][3+self._taper_index], self.deque_fpar_laser[-2][3+self._taper_index])
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
                     print text
-                    print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
-                elif self.deque_fpar_laser[-1][1] == self.deque_fpar_laser[0][1] : # New focus value not updated
+                elif len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
-                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][1], self.deque_fpar_laser[-2][1])
+                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
                     print text
-                    print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
-                elif self.deque_fpar_laser[-1][2] == self.deque_fpar_laser[0][2] : # Yellow value not updated
+                elif len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
-                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(self.deque_fpar_laser[-1][2], self.deque_fpar_laser[-2][2])
+                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
                     print text
-                    print self.deque_fpar_laser
                     self.send_error_email(subject = subject, text = text)
-
-
 
                 elif self.cr_checks <= 50:
                     self.waiting_for_other_setup_counter += 1

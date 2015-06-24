@@ -87,7 +87,7 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 8
+        start_index = 3
         cycles=24
         DoJitterCheck = True  #not always necc as now in bell optimizer
 
