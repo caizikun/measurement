@@ -190,7 +190,7 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 5
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False

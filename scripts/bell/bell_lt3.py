@@ -43,9 +43,19 @@ class Bell_lt3(bell.Bell):
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
-            return self.remote_measurement_helper.get_is_running()
+            if not self.remote_measurement_helper.get_is_running():
+                print 'Measurement helper stopped.'
+                return False
         else:
-            return self.adwin_process_running()
+            if not self.adwin_process_running():
+                print 'Adwin stopped'
+                return False
+        return True
+
+    def stop_measurement_process(self):
+        bell.Bell.stop_measurement_process(self)
+        dio_cr = self.params['remote_CR_DO_channel']
+        self.adwin.start_set_dio(dio_no=dio_cr, dio_val=0)
 
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt3')

@@ -42,7 +42,7 @@ qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker',
 qt.pulsar.define_channel(id='ch3_marker2', name='RND_halt', type='marker', 
     high=2.0, low=0, offset=0, delay=100e-9, active=True)
 qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=125e-9, active=True)
+    high=2.0, low=0, offset=0., delay=182e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
