@@ -227,7 +227,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
         vs.append(v)
         adwin.set_dac_voltage(('yellow_aom_frq',v))
-        qt.msleep(0.1)
+        qt.msleep(0.5)
         p=qt.instruments['powermeter'].get_power()
         ps.append(p)
         print 'V: {:.2f}, P: {:.3g}'.format(v,p)

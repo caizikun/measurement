@@ -545,6 +545,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
     def init_counters(self):
         self.set_invalid_data_marker(0)
+        self.deque_par_counts   = deque([], self.history_length)
+        self.deque_par_laser    = deque([], self.history_length)
+        self.deque_t            = deque([], self.history_length)
+        self.deque_fpar_laser   = deque([], self.history_length)
         self.status_message = ''
         self.update_values()
         self._run_counter               = 0
@@ -594,7 +598,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+'\n'+ str(peaks)
         print ret
 
-        peak_loc = 890.1#  889.8
+        peak_loc = 889.9#890.1#  889.8
         if len(peaks)>1:
             peaks_width=peaks[-1]-peaks[0]
             peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
