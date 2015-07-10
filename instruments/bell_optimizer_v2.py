@@ -7,6 +7,7 @@ from collections import deque
 import gobject
 import instrument_helper
 from lib import config
+from analysis.lib.fitting import common,fit
 import multiple_optimizer as mo
 reload(mo)
 import types
@@ -56,6 +57,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.add_function('zoptimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
+        self.add_function('check_laser_lock')
 
         self.setup_name = setup_name
         if 'lt3' in setup_name:
@@ -268,6 +270,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
                 if 'lt3' in self.setup_name:
                     jitterDetected, jitter_text = self.check_jitter()
+                    lock_ok, lock_text = self.check_laser_lock()
                 else:
                     jitterDetected = False
 
@@ -423,8 +426,12 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-               
-
+                elif not(lock_ok):
+                    self.status_message = 'Laser Lock issue!'
+                    print self.status_message
+                    text = lock_text
+                    subject = 'ERROR : Laser Lock issue!'
+                    self.send_error_email(subject = subject, text = text)
 
                 
                 else:
@@ -619,3 +626,33 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         #print ret
         return jitterDetected, ret
 
+    def check_laser_lock(self, do_plot=False):
+        if qt.instruments['signalhound'].get_frequency_center() > 136e6 or qt.instruments['signalhound'].get_frequency_center() < 134e6:
+            qt.instruments['signalhound'].set_frequency_center(135e6)
+            qt.instruments['signalhound'].set_frequency_span(5e6) 
+            qt.instruments['signalhound'].set_rbw(25e3)
+            qt.instruments['signalhound'].set_vbw(25e3)
+            qt.instruments['signalhound'].ConfigSweepMode()
+        freq,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=650)
+
+        f = common.fit_lorentz
+
+        #f = a + 2*A/np.pi*gamma/(4*(x-x0)**2+gamma**2)
+        #args = ['g_a', 'g_A', 'g_x0', 'g_gamma']
+        x = freq/1e6
+        y = mi
+
+        args=[y[0], np.max(y), x[np.argmax(y)], 0.4]
+        fitres = fit.fit1d(x, y, f, *args, fixed = [],
+                           do_print = False, ret = True, maxfev=100)
+
+        if not fitres['success']:
+            return False, 'loaser lock fit failed'
+
+        x0 = fitres['params_dict']['x0']
+        gamma = fitres['params_dict']['gamma']
+        A = fitres['params_dict']['A']
+        if gamma < 0.4 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV
+            return True, 'laser lock ok,  gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)
+
+        return False, 'laser lock NOT ok, gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)

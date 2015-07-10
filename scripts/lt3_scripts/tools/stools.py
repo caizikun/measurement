@@ -245,6 +245,11 @@ def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
 
 def get_pulse_aom_frq(do_plot=True):
+    qt.instruments['signalhound'].set_frequency_center(200.5e6)
+    qt.instruments['signalhound'].set_frequency_span(0.5e6) 
+    qt.instruments['signalhound'].set_rbw(5e3)
+    qt.instruments['signalhound'].set_vbw(5e3)
+    qt.instruments['signalhound'].ConfigSweepMode()
     f,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=1030)
     f_offset = f[np.argmax(mi)]
     print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)

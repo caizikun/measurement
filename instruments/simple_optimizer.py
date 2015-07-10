@@ -113,7 +113,7 @@ class simple_optimizer(Instrument):
             maxx=x[np.argmax(y)]
             if self.get_do_fit() and len(x)>5:
                 fit_maxx=self._fit(x,y)
-                if fit_maxx != None:
+                if fit_maxx != None and fit_maxx > np.min(x) and fit_maxx < np.max(x):
                     print 'fit succes'
                     maxx = fit_maxx
             variance=np.sum(np.abs(np.ediff1d(y)))
@@ -149,8 +149,9 @@ class simple_optimizer(Instrument):
         if fitres['success'] != False:
             p1 = fitres['params_dict']
             fd = fitres['fitfunc'](X)
-            p=plt.plot(name=self._plot_name)
-            p.add(X, fd, '-b')   
+            if self.get_do_plot():
+                p=plt.plot(name=self._plot_name)
+                p.add(X, fd, '-b')   
         else:
             print '\tCould not fit curve!'
             return None
