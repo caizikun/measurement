@@ -75,7 +75,7 @@ def bell_check_powers():
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected =200e6 + 523e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
+    f_expected =200e6 + 500e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
     f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
@@ -89,7 +89,7 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 5
+        start_index = 15
 
         cycles=24
         DoJitterCheck = True  #not always necc as now in bell optimizer

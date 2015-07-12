@@ -138,8 +138,7 @@ def calibrate_Npi4_pulse(name,debug=False):
     m.params['pulse_type'] = 'Hermite Bell'   
     m.params['pts_awg'] = pts
     m.params['repetitions'] = 5000
-    # we do actually two msmts for every sweep point, that's why the awg gets only half of the 
-    # pts;
+    # we do actually two msmts for every sweep point, that's why the awg gets only half of the pts;
     m.params['pts'] = 2*pts 
     m.params['Ex_SP_amplitude']=0
     m.params['SP_duration'] = 50

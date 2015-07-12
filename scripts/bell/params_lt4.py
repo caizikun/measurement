@@ -96,8 +96,8 @@ params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
-params_lt4['aom_risetime']              = 15e-9
-params_lt4['aom_amplitude']             = 0.623 #CR 33/36  #2015-07-02
+params_lt4['aom_risetime']              = 17e-9
+params_lt4['aom_amplitude']             = 0.53#0.65 #CR 33/36  #2015-07-08
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -142,5 +142,5 @@ params_lt4['prepulse_stop_bin'] = 5378
 
 params_lt4['live_filter_queue_length'] = 10
 
-params_lt4['measurement_time'] =   40*60#sec = 45 mins
+params_lt4['measurement_time'] =   40*60#sec = 40 mins
 
