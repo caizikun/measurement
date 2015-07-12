@@ -156,7 +156,7 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = True
+    do_sweep_aom_power = False
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
@@ -177,6 +177,13 @@ def tail_sweep(name):
             m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
+        else:
+            m.params['general_sweep_name'] = 'aom_amplitude'
+            print 'sweeping the', m.params['general_sweep_name']
+            m.params['general_sweep_pts'] = np.linspace(0.3,1.,pts)
+            m.params['sweep_name'] = m.params['general_sweep_name'] 
+            m.params['sweep_pts'] = m.params['general_sweep_pts']
+
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 

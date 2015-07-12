@@ -352,10 +352,10 @@ if __name__ == '__main__':
 
     #SP_PSB('SPCORR_PSB')
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-    full_bell('TheFinal_day12_run'+name_index)
+    full_bell('TheFinal_day15_run'+name_index)
     #lt4_only('test')
     #pulse_overlap('overlap')
-    # SP_ZPL('SPCORR_lt3')
+    # SP_ZPL('SPCORR_lt4')
     #lt3_tail('')
     #measureZZ('BackToZZ_day5_run'+name_index)
     #measureXX('finallyXX_day13_run'+name_index)

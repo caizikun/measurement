@@ -159,7 +159,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         print 'sending email:', subject, text
 
         self.flood_email_counter +=1
-        if self.get_email_recipient() != '' and self.flood_email_counter < 10 and self.status_message != subject:
+        if self.get_email_recipient() != '' and (self.flood_email_counter < 10 or self.status_message != subject):
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
         self.status_message = subject
 
@@ -272,7 +272,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     jitterDetected, jitter_text = self.check_jitter()
                     lock_ok, lock_text = self.check_laser_lock()
                 else:
-                    jitterDetected = False
+                    jitterDetected, jitter_text = False, ''
+                    lock_ok, lock_text = True, ''
 
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
                     self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
@@ -437,7 +438,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 else:
                     self.script_not_running_counter = 0 
                     self.waiting_for_other_setup_counter = 0
-                    self.gate_optimize_counter = 0 
+                    self.gate_optimize_counter = 0
+                    self.flood_email_counter   = 0  
                     self.nf_optimize_counter = 0 
                     self.yellow_optimize_counter = 0
                     self.laser_rejection_counter = 0
