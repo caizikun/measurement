@@ -605,7 +605,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+'\n'+ str(peaks)
         print ret
 
-        peak_loc = 889.9#890.1#  889.8
+        peak_loc = 889.95#890.1#  889.8
         if len(peaks)>1:
             peaks_width=peaks[-1]-peaks[0]
             peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
