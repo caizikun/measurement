@@ -30,6 +30,8 @@ def darkesr(name, range_MHz, pts, reps):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+
+
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
@@ -64,7 +66,9 @@ if __name__ == '__main__':
 
         ### for the first coarse step
     init_range   = 8     #Common: 10 MHz
+    # init_range = 20
     init_pts     = 121    #Common: 121
+    # init_pts     = 300
     init_reps    = 500   #Common: 500
 
         ### for the remainder of the steps
@@ -85,10 +89,11 @@ if __name__ == '__main__':
     d_steps = []; f0 = []; u_f0 = []; delta_f0 =[];iterations_list =[]
   
      #turn on magnet stepping in Z
-    mom.set_mode('Z_axis', 'stp')
+    # mom.set_mode('Z_axis', 'stp')
 
     # start: define B-field and position by first ESR measurement
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
+
     # do the fitting, returns in MHz, input in GHz
     print current_f_msm1
     print qt.exp_params['samples'][SAMPLE]['N_HF_frq']
@@ -123,12 +128,19 @@ if __name__ == '__main__':
             print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
             if str(ri) == 'y': 
+                mom.set_mode('Z_axis','stp')
+                qt.msleep(10)
                 mom.step('Z_axis',d_steps[iterations])
+                qt.msleep(10)
+                mom.set_mode('Z_axis','gnd')
             else :
                 break 
         else: 
+            mom.set_mode('Z_axis','stp')
+            qt.msleep(10)
             mom.step('Z_axis',d_steps[iterations])
-
+            qt.msleep(10)
+            mom.set_mode('Z_axis','gnd')
 
         # To cleanly exit the optimization
         print '--------------------------------'

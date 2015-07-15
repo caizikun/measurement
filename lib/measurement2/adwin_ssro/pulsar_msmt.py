@@ -632,6 +632,7 @@ class ElectronT1(PulsarMeasurement):
 
 
 
+
 class RepElectronRamseys(ElectronRamsey):
     mprefix = 'RepElectronRamsey'
     adwin_process='ssro_multiple_RO'
@@ -879,16 +880,29 @@ class MBI(PulsarMeasurement):
 
     def _MBI_element(self,name ='MBI CNOT'):
         # define the necessary pulses
+        
+        if 'MW_switch_risetime' in self.params.to_dict().keys():
+            X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+                I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+                PM_channel = 'MW_pulsemod',Sw_channel='MW_switch',
+                frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+                amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+                length = self.params['AWG_MBI_MW_pulse_duration'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'],
+                Sw_risetime = self.params['MW_switch_risetime'])
+
+        else:
+            X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+                I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+                PM_channel = 'MW_pulsemod',
+                frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+                amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+                length = self.params['AWG_MBI_MW_pulse_duration'],
+                PM_risetime = self.params['MW_pulse_mod_risetime'])
         T = pulse.SquarePulse(channel='MW_pulsemod',
             length = 100e-9, amplitude = 0)
 
-        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
-            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
-            PM_channel = 'MW_pulsemod',
-            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
-            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
-            length = self.params['AWG_MBI_MW_pulse_duration'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'])
+        
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \

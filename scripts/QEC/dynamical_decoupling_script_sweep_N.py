@@ -14,14 +14,15 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
+def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4), reps_per_ROsequence=1000):
 
     m = DD.SimpleDecoupling(name)
     funcs.prepare(m)
 
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =np.arange(2,50,2)
+    Number_of_pulses =NoP
+
     pts = len(Number_of_pulses)
 
     if tau == None: 
@@ -46,7 +47,10 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000):
     funcs.finish(m, upload =True, debug=False)
 
 if __name__ == '__main__':
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N',tau =9.668e-6, reps_per_ROsequence = 500)
-
-
-
+    tau = 2.370304e-3/(16*2) # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,124,4)
+    NoP2=np.arange(124,194,4)
+    NoP3=np.arange(194,254,4)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)

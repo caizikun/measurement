@@ -16,4 +16,5 @@ if qstop(sleep=5):
     print 'Finished without executing queue'
     print '--------------------------------'
 else:
-    # execfile(r'D:\measuring\measurement\scripts\Decoupling_Memory\MultiCarbon_DD_determine_coupling.py')
+    execfile(r'D:\measuring\measurement\scripts\QEC\NuclearT1_2.py')
+    #execfile(r'D:\measuring\measurement\scripts\QEC\1Carbon_XY4.py')

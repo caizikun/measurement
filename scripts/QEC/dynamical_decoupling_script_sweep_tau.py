@@ -23,7 +23,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
         m.params['Final_Pulse'] ='-x'
     else:
         m.params['Final_Pulse'] ='x'
-    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
+    m.params['Decoupling_sequence_scheme'] = 'single_block'
 
     Number_of_pulses = N 
     tau_list = np.arange(tau_min,tau_max,tau_step) 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
     # stools.turn_off_all_lt2_lasers()
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=2.7e-6,tau_max=2.78e-6,tau_step =4e-9, N =64)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=0.260e-6,tau_max=0.29e-6,tau_step =2e-9, N =64)
     # stools.turn_off_all_lt2_lasers()
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])

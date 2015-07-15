@@ -9,7 +9,7 @@ import copy
 from analysis.scripts.QEC import carbon_ramsey_analysis as cr 
 reload(cr)
 
-execfile(qt.reload_current_setup)
+# execfile(qt.reload_current_setup)
 
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
@@ -26,55 +26,30 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1,2,5]
+carbons = [1,2]
+
 #######################################################
-######      Set the tasks you want perfo
-######
-#######################################################Gr
+######      Set the tasks you want performed     ######
+#######################################################
+
 """
 AFTER THE CALIBRATION IS DONE:
 
 The measured values are directly written into msmt_params.py
 """
-use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 
 cross_phase_calibration = True
-cross_phase_steps       = 1
 
 debug = False
 
-freq_reps = 500
-phase_reps = 300
-crosstalk_reps = 300
-
-# phase_reps = 900
-# crosstalk_reps = 1200
-
-detuning_basic = 0.44e3
-detuning_dict = {
-	'1' : detuning_basic,
-	'2' : detuning_basic*2,
-	'3' : detuning_basic*3.,
-	'5' : detuning_basic,
-	'6' : detuning_basic*4.}
 
 ######
-
-def stop_msmt():
-	print '--------------------------------'
-	print 'press q to stop measurement loop'
-	print '--------------------------------'
-	qt.msleep(5)
-	if msvcrt.kbhit() and msvcrt.getch() == 'q':
-		return 0
-
-	else: return 1
 
 def NuclearRamseyWithInitialization_cal(name, 
         carbon_nr           = 5,               
@@ -90,7 +65,7 @@ def NuclearRamseyWithInitialization_cal(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = freq_reps
+    m.params['reps_per_ROsequence'] = 500
     m.params['C13_MBI_RO_state'] = el_state
     ### overwritten from msmnt params
            
@@ -137,12 +112,11 @@ def NuclearRamseyWithInitialization_phase(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = phase_reps
+    m.params['reps_per_ROsequence'] = 200
     m.params['C13_MBI_RO_state'] = el_state
-    m.params['pts'] = 25
-    if carbon_nr == 6:
-    	m.params['pts'] = 21
-
+    
+    
+    m.params['pts'] = 24
     m.params['add_wait_gate'] = False
     # m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
     m.params['C_RO_phase'] = np.linspace(-60, 400,m.params['pts'])    
@@ -166,7 +140,7 @@ def NuclearRamseyWithInitialization_phase(name,
 
 
 def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_init_method = 'MBI', 
-					N_list = np.arange(4,300,24), debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1):
+					N_list = np.arange(4,300,24), phase_array = np.linspace(-60, 400,19),   debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1):
     m = DD.Nuclear_Crosstalk_vs2(name)
     funcs.prepare(m)
 
@@ -175,14 +149,12 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     m.params['carbon_nr'] 			= C_measured    ### Carbon spin that the Ramsey is performed on
     m.params['Carbon_B'] 			= C_gate        ### Carbon spin that the Rabi/Gate is performed on
     
-    m.params['reps_per_ROsequence'] = crosstalk_reps 
+    m.params['reps_per_ROsequence'] = 300 
     m.params['init_state']      	= 'up' 
-    # m.params['nr_of_gates']          = nr_of_gates
-   	
-    m.params['pts'] 				= 19
-    if C_measured == 6:
-    	m.params['pts'] = 16
-    m.params['C_RO_phase'] 			= np.linspace(-60, 400,m.params['pts'])    
+    m.params['nr_of_gates']          = nr_of_gates
+   
+    m.params['pts'] 				= len(phase_array)
+    m.params['C_RO_phase'] 			= phase_array
 
     m.params['sweep_name'] 			= 'phase'
     m.params['sweep_pts']  			= m.params['C_RO_phase']
@@ -239,8 +211,6 @@ def write_to_file_subroutine(data,search_string):
     It is assumed that the string occurs within the dictionary part of msmt_params.
     Beware: Will delete any comments attached to the specific parameter.
     """
-
-    ## get the calibrated value
     params = qt.exp_params['samples']['111_1_sil18'][search_string]
 
     for ii,x in enumerate(data):
@@ -284,11 +254,12 @@ qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C1
 qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 
 
+detuning = 0.44e3
 # measure
 if f_ms1 and n == 1:
 
 	for c in carbons:
-		detuning = detuning_dict[str(c)]
+
 		if n == 1:
 
 			NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 1)
@@ -302,14 +273,13 @@ if f_ms1 and n == 1:
 			              title = 'msm1_freq_C'+str(c))
 			#update
 			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_1'] += -f0 + detuning
-
-			n = stop_msmt()
+			print 'press q to stop measurement loop'
+			print '--------------------------------'
+			qt.msleep(5)
+			if msvcrt.kbhit() and msvcrt.getch() == 'q':
+				n = 0
 	
-	GreenAOM.set_power(20e-6)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=180)
-
-
-
+	
 ###############################################################
 ###### 				Calibrate ms=0 frequencies 	 		 ######
 ###############################################################
@@ -320,7 +290,6 @@ if n == 1 and f_ms0:
 	print 'Calibrate ms=0 frequencies'
 	# measure
 	for c in carbons:
-		detuning = detuning_dict[str(c)]
 		if n == 1:
 			NuclearRamseyWithInitialization_cal(SAMPLE+'_msm0_freq_C'+str(c), carbon_nr= c, 
 								detuning = detuning, el_state = 0)
@@ -336,10 +305,13 @@ if n == 1 and f_ms0:
 			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0'] += -f0 + detuning
 			print 'C'+str(c)+'_freq_0'
 			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0']
-			
-			n = stop_msmt()
+			print '--------------------------------'
+			print 'press q to stop measurement loop'
+			print '--------------------------------'
+			qt.msleep(5)
+			if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+			    n = 0
 
-			    
 ##################################################################
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
@@ -373,16 +345,18 @@ if n == 1 and self_phase_calibration:
 
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
 			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
-			
-
-			n = stop_msmt()
+			print '--------------------------------'
+			print 'press q to stop measurement loop'
+			print '--------------------------------'
+			qt.msleep(5)
+			if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+			    n = 0
 
 
 
 ########################
 ######################## Cross-phase calibraiton.
 ########################
-
 
 if cross_phase_calibration and n ==1 and len(carbons)>1:
 	#set all cross-phases to zero to start with
@@ -396,19 +370,25 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
-	GreenAOM.set_power(20e-6)
-	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=180)
-	# phase_overview = [0.0]
+	GreenAOM.set_power(25e-6)
+	optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=180)
+	phase_overview = []
+	phase_u_overview = []
 	for c in carbons:
 		# remove that specific carbon from the list
 		carbons_cross = copy.deepcopy(carbons)
 		carbons_cross.remove(c)
+		if n == 0:
+			break
+		else:
 		for cross_c in carbons_cross:
+			if n==0:
+				break
 			#measure
-			# phase_list = [0]*cross_phase_steps
-			# phase_u_list = [0]*cross_phase_steps
-			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c), C_measured = c, C_gate =cross_c ,debug = debug, nr_of_gates=1)
+			phase_list = []
+			phase_u_list = []
+			NrG = 1
+			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c) +'_NrG'+str(NrG), C_measured = c, C_gate =cross_c ,debug = debug, nr_of_gates=NrG)
 
 			phi0,u_phi_0,Amp,Amp_u = 	cr.Carbon_Ramsey(timestamp=None, 
 			                       offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
@@ -416,37 +396,60 @@ if n == 1 and cross_phase_calibration and len(carbons)>1:
 			                       plot_fit = True, show_guess = False,fixed = [2,3,4,5],
 			       	            return_phase = True,return_amp = True,
 					            return_results = False,
-								title = 'phase_cal_gateC'+str(cross_c)+'_measC'+str(c))
-
-			# if Amp <0:
-			# 	phase_list[kk] = (phi0+180)/(kk+1)
-	
-			# 	phase_list[kk] = (phi0)/(kk+1)
-
-			# phase_u_list[kk] = u_phi_0/(kk+1)
-
-			# print phase_list
-			# print phase_u_list
-			# phase_overview.append(phase_list)
+								title = 'phase_cal_gateC'+str(cross_c)+'_measC'+str(c) +'_NrG' +str(NrG))
 
 			if Amp <0:
 				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
 			else:
 				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
-			#update
-			print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
 			
-			if n == 1:
-				n = stop_msmt()
-			if n == 0:
-				break
+			print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']' + ' One gate'
+			print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+			print '--------------------------------'
+			print 'press q to stop measurement loop'
+			print '--------------------------------'
+			qt.msleep(5)
+			if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+			    n = 0
+			else:
+				NrG = 8
+				phase_array = np.linspace(-60, 400,19) 
+				for i in range(4):
+					Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c) +'_NrG'+str(NrG) +'_part' +str(i+1), phase_array = phase_array[i::4], C_measured = c, C_gate =cross_c ,debug = debug, nr_of_gates=NrG)
 
-		if n == 1:
-			n = stop_msmt()
-		if n == 0:
-			break
+				phi0,u_phi_0,Amp,Amp_u = cr.Carbon_Ramsey_mult_msmts(timestamp=None, 
+			                          offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+			                          frequency = 1/360., phase =0, 
+			                          plot_fit = True, show_guess = False,fixed = [2,3,4,5],
+			          	            return_phase = True,return_amp = True,
+			   		            return_results = False, partstr='part',
+			   					title = 'phase_cal_gateC'+str(cross_c)+'_measC'+str(c) +'_NrG' +str(NrG))
 
+
+				if Amp <0:
+					qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] += (phi0+180)/NrG
+				else:
+					qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] += (phi0)/NrG
+
+				print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']' + ' Multiple gates'
+				print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+				print '--------------------------------'
+				print 'press q to stop measurement loop'
+				print '--------------------------------'
+				qt.msleep(5)
+				if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+				    n = 0
+
+			# print phase_list
+			# print phase_u_list
+			# phase_overview.append(phase_list)
+			# phase_u_overview.append(phase_list)
+			# #update
+			# print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']'
+			# print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+
+# print phase_list
+# print phase_u_list
 #################################
 ###### Print final results ######
 #################################
@@ -502,7 +505,4 @@ if cross_phase_calibration and len(carbons)>1:
 # print phase_overview
 
 write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase_calibration,cross_phase_calibration,debug)
-
-
-if use_queue:
-	execfile(r'D:\measuring\measurement\scripts\Decoupling_Memory\queue.py')
+# execfile(r'D:\measuring\measurement\scripts\QEC\NuclearT1_2.py')

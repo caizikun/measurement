@@ -31,6 +31,7 @@ if __name__ == '__main__':
     ######################
     ## Input parameters ##
     ######################
+    no_stepping_mode = False
     safemode=True
     maximum_magnet_step_size = 100
     opimization_target = 8     # target difference in kHz (or when 0 magnet steps are required)
@@ -47,7 +48,8 @@ if __name__ == '__main__':
     d_steps = [0]; f0m = [0]; u_f0m = [0]; delta_f0m =[0];iterations_list =[0]
   
      #turn on magnet stepping in Z
-    mom.set_mode('Z_axis', 'stp')
+     #Change mode to step for normal operation
+    mom.set_mode('Z_axis', 'gnd')
 
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
@@ -83,16 +85,26 @@ if __name__ == '__main__':
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
-        if safemode == True: 
+        if safemode == True and no_stepping_mode == False: 
             print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
-            if str(ri) == 'y': 
+            if str(ri) == 'y':
+                #kick out
+                mom.set_mode('Z_axis','stp')
+                qt.msleep(2)
                 mom.step('Z_axis',d_steps[iterations])
+                qt.msleep(2)
+                mom.set_mode('Z_axis','gnd')
             else :
                 break 
-        else: 
+        elif no_stepping_mode:
+            print 'Doesnt step, as no_stepping_mode is True'
+        else:
+            mom.set_mode('Z_axis','stp')
+            qt.msleep(2)
             mom.step('Z_axis',d_steps[iterations])
-
+            qt.msleep(2)
+            mom.set_mode('Z_axis','gnd')
 
         # To cleanly exit the optimization
         print '--------------------------------'
@@ -105,7 +117,7 @@ if __name__ == '__main__':
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
         GreenAOM.set_power(20e-6)
-        optimiz0r.optimize(dims=['x','y','z'])
+        optimiz0r.optimize(dims=['x','y','z'],int_time=100)
         
         
         DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 

@@ -724,6 +724,48 @@ config['adwin_lt2_processes'] = {
                     'RO_data' : 25,
                     },
                 },
+        'T1_without_AWG_SHUTTER' : {
+                'index' : 9,
+                'file' : 'T1_without_AWG_SHUTTER_lt2.TB9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   16], #1
+                    ['AWG_done_DI_channel'         ,    8], #2
+                    ['send_AWG_start'              ,    0], #3
+                    ['wait_for_AWG_done'           ,    0], #4
+                    ['SP_duration'                 ,  100], #5
+                    ['SP_filter_duration'          ,    0], #6
+                    ['sequence_wait_time'          ,    0], #7
+                    ['wait_after_pulse_duration'   ,    1], #8
+                    ['SSRO_repetitions'            , 1000], #9
+                    ['SSRO_duration'               ,   50], #10
+                    ['SSRO_stop_after_first_photon',    0], #11
+                    ['cycle_duration'              ,  300], #12
+                    ['sweep_length'                ,    1], #13
+                    ['use_shutter'                 ,    0], #14
+                    ['Shutter_channel'             ,    4], #15
+                    ['Shutter_opening_time'        , 3000], #16
+                    ['Shutter_safety_time'         ,50000], #17
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'T1_wait_times' : 28,
+                    },
+                },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delay
         'ssro_multiple_RO' : {
                 'index' : 9,

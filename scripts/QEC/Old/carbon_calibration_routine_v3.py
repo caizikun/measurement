@@ -28,8 +28,8 @@ Carbon_list_ms0 = [1,2,3,5,6]
 Carbon_list_ms1 = [1,2,3,5,6]
 Carbon_list_selfphase = [1,2,3,5,6]
 Carbon_list_crossphase = [1,2,3,5,6]
-cal_f_ms1 = False
-cal_f_ms0 = False
+cal_f_ms1 = True
+cal_f_ms0 = True
 cal_self_phase = True
 cal_crossphase = False
 

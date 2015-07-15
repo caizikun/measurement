@@ -161,10 +161,11 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             length = 1000e-9, amplitude = 1.)
 
         X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod',
+            I_channel = 'MW_Imod', Sw_channel='MW_switch',
             Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
-            PM_risetime = self.params['MW_pulse_mod_risetime'])
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'])
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
@@ -185,13 +186,13 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                     phase = self.params['MW_pulse_1_phases'][i]))
 
             e.append(
-                pulse.cp(T, length=100e-9))
+                pulse.cp(T, length=self.params['MW_repump_delay1'][i]))
 
             e.append(
                 pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
 
             e.append(
-                pulse.cp(T, length=500e-9))
+                pulse.cp(T, length=self.params['MW_repump_delay2'][i]))
 
             e.append(
                 pulse.cp(X,
@@ -199,7 +200,8 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                     amplitude = self.params['MW_pulse_2_amps'][i],
                     length = self.params['MW_pulse_2_durations'][i],
                     phase = self.params['MW_pulse_2_phases'][i]))
-
+            e.append(
+                pulse.cp(T, length=2e-6))
             e.append(adwin_sync)
             elts.append(e)
 
