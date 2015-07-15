@@ -47,7 +47,7 @@ self_phase_calibration = True
 cross_phase_calibration = True
 cross_phase_steps       = 1
 
-debug = False
+debug = True
 
 freq_reps = 500
 phase_reps = 300

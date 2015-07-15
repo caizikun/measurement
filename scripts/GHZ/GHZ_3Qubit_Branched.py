@@ -343,32 +343,6 @@ if __name__ == '__main__':
         # ['negative','positive','positive','negative'],
         ]  
 
-    orientations_name=[
-        'pppp',
-        'pppn',
-        'ppnp',
-        'ppnn',
-        'pnpp',
-        'pnpn',
-        'pnnp',
-        'pnnn',
-        'nppp',
-        'nppn',
-        'npnp',
-        'npnn',
-        'nnpp',
-        'nnpn',
-        'nnnp',
-        'nnnn'
-        ]
-
-    debug_orientations_name =[
-        'pp',
-        'pn',
-        'np',
-        'nn',      
-        ]
-
     tomo_lists = [
         ['X','X','X'],
         ['Z','Z','I'],
@@ -565,30 +539,39 @@ if __name__ == '__main__':
                     initialize_carbons = False, init_carbon_list = [3], init_carbon_states =['up'], init_carbon_methods = ['swap'],
                     init_carbon_thresholds = [0], debug=False)
 
-    debug_mmtB_lists = [
-        #['I','I','X'],
-        # ['X','X','I'],     
-        # ['X','Y','Y'],
-        # ['Y','X','Y'],
-        # ['Y','Y','X'],
-        ['X','X','I']
-        ]
+    if debug_X_X_X_tomo:
+        tomo_lists = [['X'],['Y'],['Z']]
 
-    debug_mmtC_lists = [
-        # ['I','I','X'],
-        # ['X','X','X'],     
-        # ['X','Y','Y'],
-        # ['Y','X','Y'],
-        # ['X','Y','I'],
-        # ['X','Z','I'],
-        # ['Y','X','I'],
-        # ['Y','Y','I'],
-        # ['Y','Z','I'],
-        # ['Z','X','I'],
-        # ['Z','Y','I'],
-        ['Z','Z','I']
-        ]
-            
+        for jj,tomo_list in enumerate(tomo_lists):
+            print '-----------------------------------'
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            GreenAOM.set_power(25e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
+
+            ssrocalibration(SAMPLE_CFG+'GHZ_'+tomo_name[jj])
+
+            for kk,orientations in enumerate(debug_orientations_list):
+                print '-----------------------------------'
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+                tomo_name = tomo_list[0]+tomo_list[1]+tomo_list[2]
+
+                print 'mmtA: '+mmtA_name+ ' tomo: '+tomo_name
+                print orientations
+
+                GHZ(SAMPLE+'GHZ_C1_branched_X_X_X_tomo_'+tomo_name+'_'+debug_orientations_name[kk], feedforward=False,carbon_list = [1], 
+                    xyy_list = ['X'],yxy_list=['X'],yyx_list=['X'],tomo_list = tomo_list, parity_orientations = orientations, 
+                    initialize_carbons=False,debug=False)
+
+
     if debug_ZZ_Tomo_1mmt:
 
             

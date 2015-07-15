@@ -96,6 +96,7 @@ def NoBranching_and_invert_test(name,
     m.params['wait_in_msm1']  = False
 
     ###### RO mmtA params
+    m.params['Parity_A_do_init_pi2'] = True
     m.params['Parity_A_carbon_list'] = carbon_list
     m.params['Parity_A_RO_list'] = A_list
     m.params['Parity_A_RO_orientation'] = parity_orientations[0]

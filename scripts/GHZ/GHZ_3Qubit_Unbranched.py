@@ -87,7 +87,7 @@ def GHZ(name,
     m = DD.GHZ_ThreeQB_Unbranched(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 3000
+    m.params['reps_per_ROsequence'] = 2000
     m.params['pts'] = 1
 
     ##### Carbon initializations params
@@ -215,7 +215,8 @@ if __name__ == '__main__':
 
 
     test_unbranched_GHZ=False
-    test_unbranched_GHZ_with_init=True
+    test_unbranched_GHZ_with_init=False
+    test_X_X_X_tomo=True
 
     orientations_list=[
         ['positive','positive','positive','positive'],
@@ -325,3 +326,36 @@ if __name__ == '__main__':
                     tomo_list = tomo_list, parity_orientations = orientations, 
                     initialize_carbons = True, init_carbon_list = [1,2,5], init_carbon_states = 3*['up'], init_carbon_methods = 3*['swap'],
                     init_carbon_thresholds = 3*[0], debug=False)
+
+    if test_X_X_X_tomo:
+        tomo_lists = [['X'],['Y'],['Z']]
+
+        for jj,tomo_list in enumerate(tomo_lists):
+            print '-----------------------------------'
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            GreenAOM.set_power(25e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
+
+            ssrocalibration(SAMPLE_CFG+'GHZ_'+tomo_name[jj])
+
+            for kk,orientations in enumerate(debug_orientations_list):
+                print '-----------------------------------'
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+                tomo_name = tomo_list[0]+tomo_list[1]+tomo_list[2]
+
+                print 'mmtA: '+mmtA_name+ ' tomo: '+tomo_name
+                print orientations
+
+                GHZ(SAMPLE+'GHZ_C1_unbranched_X_X_X_tomo_'+tomo_name+'_'+debug_orientations_name[kk], feedforward=False,carbon_list = [1], 
+                    xyy_list = ['X'],yxy_list=['X'],yyx_list=['X'],tomo_list = tomo_list, parity_orientations = orientations, 
+                    initialize_carbons=False,debug=False)
+
