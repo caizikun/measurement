@@ -550,6 +550,7 @@ def repeated_red_scans_hannes(**kw):
     ret=True
     t0 = time.time()
     for i in range(pts):
+        qt.msleep(2)
         if (msvcrt.kbhit() and msvcrt.getch()=='x'): 
             ret=False
             break
@@ -557,7 +558,7 @@ def repeated_red_scans_hannes(**kw):
         ix=i
 
         #YellowAOM.set_power(250e-9)
-        GreenAOM.set_power(60e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+        GreenAOM.set_power(50e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
         qt.msleep(1)
         #YellowAOM.set_power(00.0e-9)
         GreenAOM.turn_off()
@@ -576,9 +577,9 @@ def repeated_red_scans_hannes(**kw):
             ret=False
             break
 
-        GreenAOM.set_power(60e-6)
+        GreenAOM.set_power(50e-6)
         qt.msleep(5)
-        qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=1)
+        # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=1)
         GreenAOM.set_power(0.0e-6)
 
 

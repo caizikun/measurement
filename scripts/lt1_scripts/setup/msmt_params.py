@@ -1,3 +1,4 @@
+import numpy as np
 
 cfg={}
 
@@ -39,7 +40,7 @@ cfg['protocols']['AdwinSSRO']={
     'counter_channel'           :       1,
     'cycle_duration'            :       300,
     'green_off_amplitude'       :       0.0,
-    'green_repump_amplitude'    :       10e-6, # Previously 15e-6
+    'green_repump_amplitude'    :       30e-6, # Previously 15e-6
     'green_repump_duration'     :       15,
     'send_AWG_start'            :       0,
     'sequence_wait_time'        :       1,
@@ -93,6 +94,7 @@ mw_power = 20
 cfg['protocols']['AdwinSSRO+espin'] = {
         'mw_frq'                :     mw_frq, 
         'mw_power'              :     mw_power,
+        'MW_switch_risetime'    :     500.00e-9, # Taken from LT2 msmt params (KvB 26-5-2015)
         'send_AWG_start'        :     1,
         'MW_pulse_mod_risetime' :     10e-9,
         'MW_pulse_mod_frequency':     46e6,
@@ -156,10 +158,9 @@ cfg['protocols']['Magnetometry']={
 ####################################################
 
 # NOTE: F_MSM1_CNTR = SIL 2!!!
-# See 'quantum memory' OneNote (tab: SIL2) to find SIL3 resonant frequency
-f_msm1_cntr = (2.817638 - 0.0) *1e9#2.816464e9 #2.817393e9 #2.81558e9#2.817419e9#2.84628e9#2.845609e9#2.848291e9#2.847321e9 #2.845634e9 # 2.845256e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
-# NOTE: f_msp1_cntr = SIL 3
-f_msp1_cntr = 2.93744e9#3.753180e9            #Electron spin ms=+1 frequency
+f_msm1_cntr = (2.828845 - 0.0) *1e9#2.816464e9 #2.817393e9 #2.81558e9#2.817419e9#2.84628e9#2.845609e9#2.848291e9#2.847321e9 #2.845634e9 # 2.845256e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
+f_msp1_cntr = 2.925786e9#2.926302e9#3.753180e9            #Electron spin ms=+1 frequency
+
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.189e6 # from FM calibration msmnts#2.189e6        #calibrated 20140918/202617 # for Gretel
@@ -170,22 +171,40 @@ cfg['samples'][sample_name] = {
     'ms+1_cntr_frq' :       f_msp1_cntr,
     'N_0-1_splitting_ms-1': N_frq,
     'N_HF_frq'      :       N_HF_frq,
-    'C_split'       :       C_split}
+    'C_split'       :       C_split,
+    'C1_freq'       :   450.301e3, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
+    'C1_freq_0' : 431932.22, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
+    'C1_freq_1' : 469009.46, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
+    'C1_Ren_tau'    :   [13.240e-6],
+    'C1_Ren_N'      :   [128],
+    'C1_Ren_extra_phase_correction_list' : np.array([0] * 10),
+    'C2_freq'       :   450.301e3,
+    'C2_freq_0' : 431932.22,
+    'C2_freq_1' : 469009.46,
+    'C2_Ren_tau'    :   [14.592E-6],
+    'C2_Ren_N'      :   [72/4], # NOTE: period actually 70 pulses --> no control possible yet
+    'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
+    'C3_freq'       :   450.301e3,
+    'C3_freq_0' : 431932.22,
+    'C3_freq_1' : 469009.46,
+    'C3_Ren_tau'    :   [11.976E-6],
+    'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
+    'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
     'SSRO_repetitions'  : 5000,
-    'SSRO_duration'     :  100,
+    'SSRO_duration'     :  200,
     'SSRO_stop_after_first_photon' : 0,
-    'A_CR_amplitude': 5e-9,# 13 nW #8nW
+    'A_CR_amplitude': 8e-9,# 13 nW #8nW
     'A_RO_amplitude': 0,
-    'A_SP_amplitude': 2e-9, # Previously 20
+    'A_SP_amplitude': 10e-9, # Previously 20
     'CR_duration' :  250,
     'CR_preselect':  1000,
     'CR_probe':      1000,
     'CR_repump':     1000,
-    'Ex_CR_amplitude':  2.0e-9,#2.5e-9,#2.5e-9,#1nW
+    'Ex_CR_amplitude':  3e-9,#2.5e-9,#2.5e-9,#1nW
     'Ex_RO_amplitude':  1e-9, #15e-9,
-    'Ex_SP_amplitude':  1e-9,
+    'Ex_SP_amplitude':  2e-9,
     'SP_duration'        : 300, # was 300 with proper alignment of NewFocus
     'SP_duration_ms0' : 300,
     'SP_duration_ms1' : 300,
@@ -226,22 +245,7 @@ cfg['protocols'][name]['pulses'] = {
 
 
 
-######################
-#### SIL 1 ##########
-######################
 
-f_mod_0=31e6
-#f_msm1_cntr = 2.838037e9         #Electron spin ms=-1 frquency
-#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
-cfg['protocols']['Gretel_sil1']={}
-cfg['protocols']['Gretel_sil1']['pulses'] ={
-'MW_modulation_frequency'   :   f_mod_0,
-'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
-'Square_pi2_amp': 0.01125,
-'Square_pi2_length': 1.219e-6,
-'RO_stop':          700+780,
-'GreenAOM_pulse_length':2e-6,
-}
 
 ######################
 #### SIL 2 ##########
@@ -261,12 +265,12 @@ f_mod_0= 0 * 250e6#31e6
 # 'GreenAOM_pulse_length':2e-6,
 # }
 
-# NOTE: ONLY FAST PI/2 PULSE (SQUARE) AND FAST HERMITE PI/2 PULSE NOT CALIBRATED YET!!
-Hermite_fast_pi_duration   =  137e-9#140e-9 
-Hermite_fast_pi_amp        =  0.122140
+# NOTE: ONLY FAST PI/2 PULSE (SQUARE) NOT CALIBRATED YET!!
+Hermite_fast_pi_duration   =  140e-9#137e-9#140e-9 
+Hermite_fast_pi_amp        =  0.228#0.218#0.202, #0.122140
 Hermite_fast_pi_mod_frq    =  f_mod_0
 Hermite_fast_pi2_duration  =  70e-9
-Hermite_fast_pi2_amp       =  0.092117
+Hermite_fast_pi2_amp       =  0.177#0.1794#0.184566 #0.092117
 Hermite_fast_pi2_mod_frq   =  f_mod_0 # NOTE: Hermite Pi pulse calibrated for 0 mod freq
 
 
@@ -294,6 +298,7 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 #Pulse type
 ###########
 'pulse_shape': 'Hermite',
+# 'pulse_shape': 'Square',
 
 ############
 #SQUARE pulses
@@ -302,15 +307,19 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 
 
 # #     ### Pi pulses, fast & hard 
-'fast_pi_duration'          :  44e-9,
-'fast_pi_amp'               :  0.139491,#0.12067,#0.1267 @ 250MHz modulation & 44 ns yields 94.5% fidelity, #0.2129,# @ 31MHz modulation & 44ns duration, yields 93.5% fidelity
-'fast_pi_mod_frq'           :   f_mod_0,
 
-    ### Pi/2 pulses, fast & hard 
-# 'fast_pi2_duration'         :   
-'fast_pi2_duration'         :   24e-9, # NOTE: UNCALIBRATED!! (COPIED FROM SIL3)
-'fast_pi2_amp'              :   0.49, # NOTE: UNCALIBRATED!! (COPIED FROM SIL3)
-'fast_pi2_mod_frq'          :   f_mod_0,
+# NOTE: when using Hermite pulses, all 'fast_pi' & 'fast_pi2' parameters should be equal to 'Hermite_fast_pi' etc.
+# Reason:  dynamicaldecoupling.py contains hard-coded dependencies on 'fast_pi_duration' (e.g. in computing time between pulses) (KvB, 28-05-2015)
+
+# 'fast_pi_duration'          :  44e-9,
+# 'fast_pi_amp'               :  0.106, #0.139491,#0.12067,#0.1267 @ 250MHz modulation & 44 ns yields 94.5% fidelity, #0.2129,# @ 31MHz modulation & 44ns duration, yields 93.5% fidelity
+# 'fast_pi_mod_frq'           :   f_mod_0,
+
+#     ### Pi/2 pulses, fast & hard 
+# # 'fast_pi2_duration'         :   
+# 'fast_pi2_duration'         :   24e-9, # NOTE: UNCALIBRATED!! (COPIED FROM SIL3)
+# 'fast_pi2_amp'              :   0.091,#0.49, # NOTE: UNCALIBRATED!! (COPIED FROM SIL3)
+# 'fast_pi2_mod_frq'          :   f_mod_0,
 
 
 'Hermite_fast_pi_duration'          :  Hermite_fast_pi_duration,#140e-9 # @ 100 MHz,    #250 MHz slow
@@ -322,16 +331,21 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'Hermite_fast_pi2_mod_frq'          :  Hermite_fast_pi2_mod_frq, 
 
 
-# 'fast_pi_duration'          :  Hermite_fast_pi_duration,
-# 'fast_pi_amp'               :  Hermite_fast_pi_amp, 
-# 'fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
+'fast_pi_duration'          :  Hermite_fast_pi_duration,
+'fast_pi_amp'               :  Hermite_fast_pi_amp, 
+'fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
 
-#     ### Pi/2 pulses, fast & hard 
-# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-# 'fast_pi2_duration'         :   Hermite_fast_pi2_duration,
-# 'fast_pi2_amp'              :   Hermite_fast_pi2_amp, 
-# 'fast_pi2_mod_frq'          :   Hermite_fast_pi2_mod_frq,
-
+    ### Pi/2 pulses, fast & hard 
+# 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'fast_pi2_duration'         :   Hermite_fast_pi2_duration,
+'fast_pi2_amp'              :   Hermite_fast_pi2_amp, 
+'fast_pi2_mod_frq'          :   Hermite_fast_pi2_mod_frq,
+    
+    ### DESR pulses ###
+'desr_pulse_duration'       :   2*4*2.085e-6,#(2.262e-6)/4.,
+'desr_pulse_amp'            :   0.016/2.,#0.005*4,
+'desr_modulation_frequency' : 40e6,
+'desr_MW_power'             : 11-6-12,#-12,
 
     ### MBI pulses ###
 'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
@@ -340,10 +354,56 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 # 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
 'AWG_MBI_MW_pulse_duration' :   2500e-9}
 
+###########################################
+### Gretel SIL2: nuclear spin params ###
+###########################################
+
+################
+### Carbon 1 ###
+################
+# cfg['samples']['Gretel'] = {
+# 'C1_Ren_tau'    :   [26.240e-6],
+# 'C1_Ren_N'      :   [244]
+# }
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################
+#### SIL 1 ##########
+######################
+
+f_mod_0=31e6
+#f_msm1_cntr = 2.838037e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil1']={}
+cfg['protocols']['Gretel_sil1']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.01125,
+'Square_pi2_length': 1.219e-6,
+'RO_stop':          700+780,
+'GreenAOM_pulse_length':2e-6,
+}
 ######################
 #### SIL 3 ##########
 ######################

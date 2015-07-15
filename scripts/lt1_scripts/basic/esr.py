@@ -4,9 +4,9 @@ import msvcrt
 
 name='ESR_LT1_Gretel_SIL2'
 
-start_f = 2.818 - 0.003#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.818 + 0.003#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
-steps = 51
+start_f = 2.817638 - 0.004#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 2.817638 + 0.004#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+steps = 41
 f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
 zoom_around_three_lines = False
 

@@ -46,7 +46,8 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000, mbi = True):
     funcs.prepare(m)
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =np.arange(4,115,22)
+    Number_of_pulses =np.arange(4,453,32)
+    # Number_of_pulses = np.arange(4,84,4) # NOTE: N = 452 is the max that fits in the AWG!
     pts = len(Number_of_pulses)
 
     if tau == None: 
@@ -56,7 +57,7 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000, mbi = True):
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x'
+    m.params['Final_Pulse'] ='nopulse'
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
@@ -75,20 +76,22 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000, mbi = True):
 
     funcs.finish(m, upload =True, debug=False)
 
-def interrupt_script():
+def interrupt_script(wait = 5):
     print 'press q now to exit measurement script'
-    qt.msleep(5)
+    qt.msleep(wait)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         sys.exit()
 
 if __name__ == '__main__':
-    #taus = np.arange(5.62, 5.78,0.02)
-    taus = np.arange(59.,59.4,0.02)
-    for tau in taus:
-    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + 'tau_8.30', tau =8.40e-6, reps_per_ROsequence = 1000, mbi = False)
+    # taus = np.arange(26.226,26.264, 0.008)
+    # taus = np.array([26.228, 26.236, 26.244])
+    # taus = np.arange(11.976-0.001,11.976+0.002, 0.001)
+    # for tau in taus:
+    # interrupt_script(wait = 3)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + 'tau_26.240', tau =26.240e-6, reps_per_ROsequence = 1000, mbi = False)
     # interrupt_script()
-        SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + '_tau_' + str(tau), tau =tau*1e-6, reps_per_ROsequence = 1000, mbi = False)
-        interrupt_script()
+        # SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + '_tau_' + str(format(tau, '.3f')), tau =tau*1e-6, reps_per_ROsequence = 400, mbi = False)
+        # interrupt_script()
 
 
 

@@ -41,8 +41,8 @@ qt.pulsar.define_channel(id='ch1_marker2', name='MW_switch', type='marker',
 
 
 # FPGA
-qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
-        high=4.0, low=0, offset=0., delay=226e-9, active=True)
+#qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
+#        high=4.0, low=0, offset=0., delay=226e-9, active=True)
 qt.pulsar.define_channel(id='ch2_marker1', name='fpga_clock', type='marker', 
         high=1.0, low=0, offset=0., delay=226e-9, active=True)
 

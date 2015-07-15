@@ -6,7 +6,7 @@ import logging
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
-reload(ssro)
+# reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 class PulsarMeasurement(ssro.IntegratedSSRO):
@@ -1575,9 +1575,9 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             seq.append(name = e.name+'-{}'.format(j), 
                 wfname = e.name,
                 trigger_wait = True)
-                # seq.append(name = 'wait-{}-{}'.format(i,j), 
-                #     wfname = wait_1us.name, 
-                #     repetitions = self.params['delay_reps'])
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         # elements.append(wait_1us)
@@ -1590,6 +1590,120 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+class PiCalibration_SweepDelay(PulsarMeasurement):
+    """
+    Goal: measure unwanted coherent processes between calibrated pi pulses.
+    Given a calibrated pi pulse (as kw to generate_sequence), the interpulse delay is sweeped for multiplicity > 1.
+
+    """
+    mprefix = 'Pi_Calibration'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = 20
+
+        PulsarMeasurement.autoconfig(self)
+
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 2000e-9, amplitude = 0) #XXXX 200e-9
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            e.append(T,
+                pulse.cp(X,
+                    amplitude=self.params['MW_pulse_amplitudes'][i]
+                    ))
+            elements.append(e)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            for j in range(int(self.params['multiplicity'][i])):
+                seq.append(name = e.name+'-{}'.format(j), 
+                    wfname = e.name,
+                    trigger_wait = (j==0))
+                seq.append(name = 'wait-{}-{}'.format(i,j), 
+                    wfname = wait_1us.name, 
+                    repetitions = self.params['delay_reps'][i])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+
+class PiCalibrationSingleElement_SweepDelay(GeneralPiCalibration):
+    """
+    For a calibrated pi pulse, sweeps the time between the pulses when multiplicy > 1.
+    """
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 5000e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(pulse.cp(T, length = self.params['interpulse_delay'][i]),
+                    pulse.cp(X,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration sweep delay'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
 
 
 class GeneralPi2Calibration(PulsarMeasurement):
@@ -1852,6 +1966,10 @@ class GeneralElectronRamsey(PulsarMeasurement):
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 200e-9, amplitude = 0.)
 
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude = 2)
+
         # make the elements - one for each ssb frequency
         elements = []
         for i in range(self.params['pts']):
@@ -1868,6 +1986,9 @@ class GeneralElectronRamsey(PulsarMeasurement):
 
             e.append(pulse.cp(X,
                 phase = self.params['pulse_sweep_pi2_phases2'][i]))
+
+            e.append(T)
+            e.append(adwin_sync)
 
             elements.append(e)
         return_e=e

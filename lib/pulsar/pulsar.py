@@ -304,6 +304,8 @@ class Pulsar:
             self.AWG.set_sqel_loopcnt_to_inf(idx, False)
             self.AWG.set_sqel_loopcnt(elt['repetitions'], idx)
 
+            if (elt['repetitions'] <1) or (elt['repetitions']>65536):
+                raise Exception('The number of repetitions out of range. Valid range = 1 to 65536 (%s recieved)' %elt['repetitions'])
             if elt['goto_target'] != None:
                 self.AWG.set_sqel_goto_state(idx, '1')
                 self.AWG.set_sqel_goto_target_index(idx,
@@ -389,6 +391,12 @@ class Pulsar:
             _t0 = time.time()
 
             tvals, wfs = element.normalized_waveforms()
+            '''
+            channels_to_print=['MW_Imod']
+            for i in channels_to_print:
+                if len(np.where(wfs[i]>0)[0]) !=0:
+                    print i, np.where(wfs[i]>0)
+            '''    
             for id in chan_ids:
                 wfname = element.name + '_%s' % id
 
@@ -469,6 +477,9 @@ class Pulsar:
         for elt in sequence.elements:
 
             nrep_l.append(elt['repetitions'])
+            if (elt['repetitions'] <1) or (elt['repetitions']>65536):
+                raise Exception('pulsar: The number of repetitions of this AWG element are out of range. Valid range = 1 to 65536 (%s recieved)' %elt['repetitions'])
+
             if elt['goto_target'] != None:
                 goto_l.append(sequence.element_index(elt['goto_target']))
             else:
@@ -604,6 +615,8 @@ class Sequence:
 
     def element_index(self, name, start_idx=1):
         names = [self.elements[i]['name'] for i in range(len(self.elements))]
+        #print name
+        #print names
         return names.index(name)+start_idx
 
     def set_djump(self, state):
