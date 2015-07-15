@@ -32,7 +32,7 @@ Carbon_3_f_ms0  		= False
 Carbon_6_f_ms0  		= False
 
 Carbon_1_f_msm1  		= False
-Carbon_2_f_msm1  		= True
+Carbon_2_f_msm1  		= False
 Carbon_5_f_msm1  		= False
 
 Carbon_3_f_msm1  		= False

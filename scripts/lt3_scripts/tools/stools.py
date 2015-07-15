@@ -78,7 +78,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
+    setpoints = [5e-9, 5e-9, 15e-9,40e-9]):
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt3_lasers()
@@ -199,9 +199,9 @@ def stop_bs_counter():
         print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.instruments['AWG'].set_ch3_marker1_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch1_marker2_low(0.)
+    qt.instruments['AWG'].set_ch3_marker1_low(0.)
 
 def quantum_random_number_status():
     qt.instruments['adwin'].start_get_dio(dio_no=20)
@@ -227,7 +227,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
         vs.append(v)
         adwin.set_dac_voltage(('yellow_aom_frq',v))
-        qt.msleep(0.1)
+        qt.msleep(0.5)
         p=qt.instruments['powermeter'].get_power()
         ps.append(p)
         print 'V: {:.2f}, P: {:.3g}'.format(v,p)
@@ -245,6 +245,11 @@ def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
 
 def get_pulse_aom_frq(do_plot=True):
+    qt.instruments['signalhound'].set_frequency_center(200.5e6)
+    qt.instruments['signalhound'].set_frequency_span(0.5e6) 
+    qt.instruments['signalhound'].set_rbw(5e3)
+    qt.instruments['signalhound'].set_vbw(5e3)
+    qt.instruments['signalhound'].ConfigSweepMode()
     f,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=1030)
     f_offset = f[np.argmax(mi)]
     print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)

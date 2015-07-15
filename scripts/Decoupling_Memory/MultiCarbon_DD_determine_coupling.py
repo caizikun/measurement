@@ -49,6 +49,7 @@ def Multi_C_DD(name,
     funcs.prepare(m)
 
     '''Set parameters'''
+    print free_evolution_time
 
     m.params['wait_gate'] = wait_gate
     m.params['C13_DD_Scheme'] = C13_DD_scheme
@@ -57,10 +58,10 @@ def Multi_C_DD(name,
     if mode == 'Sweep RO evolution time':
         m.params['reps_per_ROsequence'] = 250
     elif mode == 'Sweep phase':
-        m.params['reps_per_ROsequence'] = 250
+        m.params['reps_per_ROsequence'] = 350
         m.params['use_shutter'] = 0
     else:
-        m.params['reps_per_ROsequence'] = 250
+        m.params['reps_per_ROsequence'] = 350
         m.params['use_shutter'] = 1
 
     m.params['carbon_init_list']        = carbon_init_list
@@ -206,91 +207,137 @@ def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['po
         
 
 if __name__ == '__main__':
-    mode='Sweep evolution time'
-    carbons_init_list = [[3,6],[1,3],[2,6]]
+    if False:
+        mode = 'Sweep evolution time'
+        DD_scheme = 'auto'
+        carbons = [1,2]
+        logic_state = 'pX'
+        single_Tomo_basis = ['X','X']
+        el_RO_list = ['positive']
+        pulses = 1
+        ii = 0
+        el_after_init = 1
+        mode = 'Sweep evolution time'
+        for el_RO in el_RO_list:
+            msmtstring = SAMPLE + '_sweep_evolution_time_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
+                                            + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
+                                            + '_N' + str(pulses).zfill(2) + '_part' +str(ii+1).zfill(2)
+            Multi_C_DD(msmtstring,  
+                carbon_init_list        = carbons,  
+                el_RO                   = el_RO,
+                el_after_init           = el_after_init,
+                
+                C13_DD_scheme           = DD_scheme,
+                pulses                  = pulses,
+                single_Tomo_basis       = [single_Tomo_basis],
+                free_evolution_time     = np.array([2e-3]),
+                wait_gate               = True,
 
+                logic_state             = logic_state,
+
+                mode                    = mode,
+                debug                   = debug)
+            adwin.start_set_dio(dio_no=4,dio_val=0)
+
+    # carbons_init_list = [[1, 2], [1, 3],  [1, 6], [2, 3], [2, 6],  [3, 6], [5, 6], [1, 5], [3, 5]] 
+    # carbons_init_list = [[2,5]]
+    carbons_init_list = [[1,2]]
     full_Tomo_basis_list = ([['X','X'],['Y','Y'],['Z','Z']])
     # full_Tomo_basis_list = ([['X','X']])
-    pulses = 1
-    FET = np.linspace(0.005,1./(2.*pulses),10)
-    FET_parts = 5
+    pulses_list = [4]
+    maxtimes_list = [1.1,2.15,2.8]
+    maxtimes_list = [1.5]
+    FET_parts_list  = [2]
     el_RO_list = ['positive','negative']
-    logic_state_list = ['pX','mX']
+    logic_state_list = ['mX']
     TomoCheck = True
     RunMsmt = True
     DD_scheme = 'auto'
     optimize = True
     ssrocalib = True
     debug = False
-    sleep = 1
-    if False:
+    sleep = 2
+    if True:
         for single_Tomo_basis in full_Tomo_basis_list:
             if qstop(sleep=sleep):
                 break
             for carbons in carbons_init_list:
                 if qstop(sleep=sleep):
                     break
-                for logic_state in logic_state_list:
-                    print logic_state
+                for pp, pulses in enumerate(pulses_list):
                     if qstop(sleep=sleep):
                         break
-                    for el_RO in el_RO_list:
-                        if qstop(sleep=sleep*3):
+                    FET = np.linspace(max(0.02/(2*pulses),2e-3),maxtimes_list[pp]/(2*pulses),8)
+                    FET_parts = FET_parts_list[pp]
+                    print FET
+                    if ssrocalib and RunMsmt and not debug:
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        ssrocalibration(SAMPLE)
+                    for logic_state in logic_state_list:
+                        print 
+
+                        if qstop(sleep=sleep):
                             break
-                        if ssrocalib and RunMsmt and not debug:
-                            adwin.start_set_dio(dio_no=4,dio_val=0)
-                            ssrocalibration(SAMPLE)
-                        if optimize and RunMsmt and not debug:
-                            GreenAOM.set_power(20e-6)
-                            adwin.start_set_dio(dio_no=4,dio_val=0)
-                            optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-                        if TomoCheck:
-                            msmtstring = SAMPLE + '_TomoCheck_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
-                            + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
-                            + '_N' + str(pulses).zfill(2) 
-                            adwin.start_set_dio(dio_no=4,dio_val=0)
-                            Multi_C_DD(msmtstring,  
-                                carbon_init_list        = carbons,  
-                                el_RO                   = el_RO,
-                                el_after_init           = el_after_init,
-                                
-                                C13_DD_scheme           = 'No_DD',
-                                pulses                  = pulses,
-                                single_Tomo_basis       = [single_Tomo_basis],
-                                free_evolution_time     = [0.001],
-                                wait_gate               = False,
-
-                                logic_state             = logic_state,
-
-                                mode                    = 'Sweep phase',
-                                debug                   = debug)
-                        if RunMsmt:
-                            for ii in range(FET_parts):
-                                if qstop(sleep=sleep*3):
-                                    break
-                                adwin.start_set_dio(dio_no=4,dio_val=0)
-                                msmtstring = SAMPLE + '_sweep_evolution_time_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
+                        for el_RO in el_RO_list:
+                            if qstop(sleep=sleep*3):
+                                break
+                            if TomoCheck:
+                                if optimize and RunMsmt and not debug:
+                                    GreenAOM.set_power(20e-6)
+                                    adwin.start_set_dio(dio_no=4,dio_val=0)
+                                    optimiz0r.optimize(dims=['x','y','z'], int_time=200)
+                                msmtstring = SAMPLE + '_TomoCheck_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
                                 + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
-                                + '_N' + str(pulses).zfill(2) + '_part' +str(ii+1).zfill(2)
+                                + '_N' + str(pulses).zfill(2) 
+                                adwin.start_set_dio(dio_no=4,dio_val=0)
                                 Multi_C_DD(msmtstring,  
                                     carbon_init_list        = carbons,  
                                     el_RO                   = el_RO,
                                     el_after_init           = el_after_init,
                                     
-                                    C13_DD_scheme           = DD_scheme,
+                                    C13_DD_scheme           = 'No_DD',
                                     pulses                  = pulses,
                                     single_Tomo_basis       = [single_Tomo_basis],
-                                    free_evolution_time     = FET[ii::FET_parts],
-                                    wait_gate               = True,
+                                    free_evolution_time     = [0.001],
+                                    wait_gate               = False,
 
                                     logic_state             = logic_state,
 
-                                    mode                    = mode,
+                                    mode                    = 'Sweep phase',
                                     debug                   = debug)
-                                adwin.start_set_dio(dio_no=4,dio_val=0)
+                            if RunMsmt:
+                                for ii in range(FET_parts):
+                                    if qstop(sleep=sleep*3):
+                                        break
+                                    if optimize and RunMsmt and not debug:
+                                        GreenAOM.set_power(20e-6)
+                                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                                        optimiz0r.optimize(dims=['x','y','z'], int_time=180)
+                                    adwin.start_set_dio(dio_no=4,dio_val=0)
+                                    msmtstring = SAMPLE + '_sweep_evolution_time_'+ DD_scheme + '_C' + '&'.join([str(s) for s in carbons]) + '_Logic' +logic_state    \
+                                    + '_Tomo' +  ''.join([str(s) for s in single_Tomo_basis]) +'_RO' + el_RO + '_el' + str(el_after_init)       \
+                                    + '_N' + str(pulses).zfill(2) + '_part' +str(ii+1).zfill(2)
+                                    Multi_C_DD(msmtstring,  
+                                        carbon_init_list        = carbons,  
+                                        el_RO                   = el_RO,
+                                        el_after_init           = el_after_init,
+                                        
+                                        C13_DD_scheme           = DD_scheme,
+                                        pulses                  = pulses,
+                                        single_Tomo_basis       = [single_Tomo_basis],
+                                        free_evolution_time     = FET[ii::FET_parts],
+                                        wait_gate               = True,
+
+                                        logic_state             = logic_state,
+
+                                        mode                    = mode,
+                                        debug                   = debug)
+                                    adwin.start_set_dio(dio_no=4,dio_val=0)
 
 
-
+    if ssrocalib and RunMsmt and not debug:
+        adwin.start_set_dio(dio_no=4,dio_val=0)
+        ssrocalibration(SAMPLE)
     all_carbons = [1,2,3,5,6]
     carbons_init_list = []
     for carbon in all_carbons:
@@ -298,11 +345,12 @@ if __name__ == '__main__':
             if carbon != carbon2 and [carbon2, carbon] not in carbons_init_list:
                 carbons_init_list.append([carbon,carbon2])
 
-    # carbons_init_list = [[1,6],[1,3],[1,5],[1,2],[2,3],[2,5],[
-    # carbons_init_list = [[1,5]]
-    pulses = 1
-    carbons_init_list = [[3,6],[1,3],[2,6]]
-    FET = np.linspace(0.005,1./(2.*pulses),10)
+    carbons_init_list = [[1, 2], [1, 3],  [1, 6], [2, 3], [2, 6],  [3, 6], [5, 6], [1, 5], [3, 5]]
+    max_time = [0.5,0.35,0.72,0.3,0.5,0.45,0.3]
+
+    pulses = 4
+    # carbons_init_list = [[3,6],[1,3],[2,6]]
+    # FET = np.linspace(0.005,1./(2.*pulses),10)
     FET_parts = 5
 
     DD_scheme = 'auto'
@@ -317,24 +365,32 @@ if __name__ == '__main__':
     TomoCheck = True
     RunMsmt = True
     debug = False
-    sleep = 1
+    sleep = 2
     #full_Tomo_basis_list = ([['X','X'], ['Y','Y'], ['Z','Z']])
 
     # FET = np.linspace(0.04/(2.*pulses),0.8/(2.*pulses),9)
     # FET_parts = 8
     # carbons_init_list = [[1,5]]
-    full_Tomo_basis_list = ([['X','X']])
+    full_Tomo_basis_list = ([['I','X']])
 
+    # TomoCheck = True
+    # FET = np.array([0.004])
+    # FET_parts = 1
+    # pulses = 4
+    # carbons_init_list = [[1,2]]
+    # ssrocalib = False
+    # optimize = False
     # full_Tomo_basis_list = ([['X','X']])
 
     # full_Tomo_basis_list = ([['DFS']])
     # el_RO_list = ['positive','negative']
     el_RO_list = ['positive','negative']
-    if True:
+    if False:
         for single_Tomo_basis in full_Tomo_basis_list:
             if qstop(sleep=sleep):
                 break
-            for carbons in carbons_init_list:
+            for cc,carbons in enumerate(carbons_init_list):
+                FET = np.linspace(0.005,max_time[cc]/(2.*pulses),10)
                 if qstop(sleep=sleep):
                     break
                 if ssrocalib and not debug and RunMsmt:
@@ -346,7 +402,7 @@ if __name__ == '__main__':
                     if optimize and not debug and RunMsmt:
                         GreenAOM.set_power(20e-6)
                         adwin.start_set_dio(dio_no=4,dio_val=0)
-                        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+                        optimiz0r.optimize(dims=['x','y','z'], int_time=180)
                     if TomoCheck:
                         msmtstring = SAMPLE + '_TomoCheck_No_DD_C' + '&'.join([str(s) for s in carbons])  \
                         + '_initXX_TomoXX_RO' + el_RO + '_el' + str(el_after_init)        \

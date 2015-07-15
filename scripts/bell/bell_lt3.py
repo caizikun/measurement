@@ -43,9 +43,19 @@ class Bell_lt3(bell.Bell):
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
-            return self.remote_measurement_helper.get_is_running()
+            if not self.remote_measurement_helper.get_is_running():
+                print 'Measurement helper stopped.'
+                return False
         else:
-            return self.adwin_process_running()
+            if not self.adwin_process_running():
+                print 'Adwin stopped'
+                return False
+        return True
+
+    def stop_measurement_process(self):
+        bell.Bell.stop_measurement_process(self)
+        dio_cr = self.params['remote_CR_DO_channel']
+        self.adwin.start_set_dio(dio_no=dio_cr, dio_val=0)
 
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt3')
@@ -96,6 +106,10 @@ class Bell_lt3(bell.Bell):
         #qt.pulsar.program_awg(seq,*elements)
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(seq)
+
+    def finish(self):
+        bell.Bell.finish(self)
+        self.add_file(r'D:/measuring/measurement/scripts/lt3_scripts/setup/msmt_params.py')
 
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
@@ -158,6 +172,9 @@ def bell_lt3(name):
             m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
             m.params['MW_RND_I_ispi2'] = False
             m.params['MW_RND_Q_ispi2'] = False
+        elif 'tail' in remote_name:
+            th_debug = False
+            mw=False
         else:
             print 'using standard local settings'
             #raise Exception('Unknown remote measurement: '+ remote_name)

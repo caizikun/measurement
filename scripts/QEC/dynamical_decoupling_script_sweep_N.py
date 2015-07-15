@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000, mbi = True):
+def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True):
 
     m = DD.SimpleDecoupling(name)
     """
@@ -46,8 +46,8 @@ def SimpleDecoupling_swp_N(name,tau=None, reps_per_ROsequence=1000, mbi = True):
     funcs.prepare(m)
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =np.arange(4,453,32)
-    # Number_of_pulses = np.arange(4,84,4) # NOTE: N = 452 is the max that fits in the AWG!
+    Number_of_pulses =NoP
+
     pts = len(Number_of_pulses)
 
     if tau == None: 
@@ -83,15 +83,10 @@ def interrupt_script(wait = 5):
         sys.exit()
 
 if __name__ == '__main__':
-    # taus = np.arange(26.226,26.264, 0.008)
-    # taus = np.array([26.228, 26.236, 26.244])
-    # taus = np.arange(11.976-0.001,11.976+0.002, 0.001)
-    # for tau in taus:
-    # interrupt_script(wait = 3)
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + 'tau_26.240', tau =26.240e-6, reps_per_ROsequence = 1000, mbi = False)
-    # interrupt_script()
-        # SimpleDecoupling_swp_N(SAMPLE+'sweep_N' + '_tau_' + str(format(tau, '.3f')), tau =tau*1e-6, reps_per_ROsequence = 400, mbi = False)
-        # interrupt_script()
-
-
-
+    tau = 2.370304e-3/(16*2) # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,124,4)
+    NoP2=np.arange(124,194,4)
+    NoP3=np.arange(194,254,4)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)

@@ -35,10 +35,10 @@ def darkesr(name):
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
     m.params['repetitions']  = 1500
     m.params['range']        = 4e6
-    m.params['pts'] = 33
-    m.params['pulse_length'] = 968.22e-9
-    m.params['ssbmod_amplitude'] =0.05 * 0.12067
-    m.params['mw_power']=20
+    m.params['pts'] = 121
+    m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
+    m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
+    
     m.params['Ex_SP_amplitude']=0
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
@@ -71,10 +71,10 @@ def darkesrp1(name):
     m.params['mw_frq']         = m.params['ms+1_cntr_frq'] - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     m.params['mw_power'] = 20-6-6-6
     m.params['repetitions'] = 500
-    m.params['range']        = 7e6
-    m.params['pts'] = 76
-    m.params['pulse_length'] =  0.5 * 1.95e-6#2.1e-6
-    m.params['ssbmod_amplitude'] = 2 * 0.017 #0.025
+    m.params['range']        = 20e6
+    m.params['pts'] = 151
+    m.params['pulse_length'] = m.params['DESR_pulse_duration'] #2.1e-6 changed to msmt params # NK 2015-05 27
+    m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
 
     m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range'] #- m.params['range']
     m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']

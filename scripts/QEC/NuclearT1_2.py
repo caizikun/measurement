@@ -7,6 +7,9 @@ import msvcrt
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
+#from measurement.lib.measurement2.adwin_ssro import pulsar_msmt; reload(pulsar_msmt)
+#drom measurement.lib.measurement2.adwin_ssro import ssro
+
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -22,7 +25,7 @@ def NuclearT1_2(name, carbon            =   1,
 
         el_RO               = 'positive',
         debug               = False):
-
+    import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
     m = DD.NuclearT1_2(name)
     funcs.prepare(m)
 
@@ -34,12 +37,13 @@ def NuclearT1_2(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 400
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
 
-    ### Carbon Initialization settings 
+    ### Carb
+
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
@@ -51,7 +55,7 @@ def NuclearT1_2(name, carbon            =   1,
 
     m.params['free_evolution_time'] = free_ev_time
     # m.params['free_evolution_time'] = np.r_[10e-4, 50e-4,50e-3,100e-3, 200e-3, 500e-3, 1., 2.,5.]
-    # m.params['use_shutter'] = 1
+    m.params['use_shutter'] = 0
 
     # if el_after_init == '0':
         # m.params['free_evolution_time'] = np.linspace(1e-3, 400e-3,8)
@@ -104,7 +108,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 350
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -174,6 +178,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
     m.finish()
 
+
     
 if __name__ == '__main__':
 
@@ -193,42 +198,101 @@ if __name__ == '__main__':
     # carbon_list = [5,1,2]
     # el_RO_list = ['positive','negative']
     # el_after_init_list = ['0','1']
-
-    carbon_list = [1]
-    el_RO_list = ['positive','negative']
-    # el_RO_list = ['positive']
-    # carbon_list = [1]
-    el_after_init_list = ['0']
-    # FET = np.r_[15e-3, 250e-3, 500e-3, 1., 2., 5.,10.]
-    FET = EvoTime_arr=np.r_[np.linspace(500e-6,50e-3,10),60e-3,80e-3]
-    for carbon in carbon_list:
-        for el_RO in el_RO_list:
-            for el_after_init in el_after_init_list:
-                for ii in range(1):
-                    print '--------------------------------'
-                    print 'press q to stop measurement loop'
-                    print '--------------------------------'
-                    qt.msleep(5)
-                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #el_RO='negative'
+    #carbon = 2
+    #el_after_init = '1'
+    #NuclearT1_2(SAMPLE + '_'+ el_RO +'_C' + str(carbon) +'_el' + el_after_init +'_partTEST', el_RO= 'negative', carbon = carbon, carbon_init_list = [carbon]
+    #                                         ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0], el_after_init = '1',
+    #                                         free_ev_time = np.array([50.]))
+    #daf
+    
+    #execfile(r'D:\measuring\measurement\scripts\Decoupling_Memory\electron_T1_using_DD_class.py')
+    FET_dict = {}
+    FET_dict['2'] = [np.linspace(0.0006,0.05,9),np.linspace(0.05,0.5,11)[1::],np.linspace(0.5,1.0,6)[1::],np.linspace(1.0,1.5,4)[1::],np.linspace(1.5,2.0,3)[1::],np.linspace(2.0,3.0,3)[1::]]
+    FET_dict['1'] = [np.linspace(0.0006,0.05,9),np.linspace(0.05,0.5,11)[1::],np.linspace(0.5,1.0,6)[1::],np.linspace(1.0,1.5,4)[1::]]
+    FET_dict['5'] = [np.linspace(0.0006,0.05,9),np.linspace(0.05,0.5,11)[1::],np.linspace(0.5,1.0,6)[1::]]
+    FET_dict['6'] = FET_dict['5']
+    FET_dict['3'] = FET_dict['5']
+    if True:
+        carbon_list = [2,5,6,3,1]
+        el_RO_list = ['positive','negative']
+        # el_RO_list = ['positive']
+        # carbon_list = [1]
+        el_after_init_list = ['0']
+        #FET = [np.linspace(0.0006,0.05,9),np.linspace(0.05,0.5,11)[1::],np.linspace(0.5,1.0,6)[1::],np.linspace(1.0,1.5,4)[1::],np.linspace(1.5,2.0,3)[1::],np.linspace(2.0,3.0,3)[1::],np.linspace(3.0,3.5,1)[1::]]
+        stop = False
+        #FET_parts= len(FET)
+        #FET = EvoTime_arr=np.r_[np.linspace(500e-6,50e-3,10),60e-3,80e-3]
+        for carbon in carbon_list:
+            FET = FET_dict[str(carbon)]
+            FET_parts = len(FET)
+            if stop:
+                break
+            if carbon == 2:
+                el_RO_list = ['negative']
+            for el_RO in el_RO_list:
+                if stop:
+                    break
+                for el_after_init in el_after_init_list:
+                    if stop:
                         break
-                    adwin.start_set_dio(dio_no=4,dio_val=0)
-                    # ssrocalibration(SAMPLE)
-                    GreenAOM.set_power(25e-6)
-                    adwin.start_set_dio(dio_no=4,dio_val=0)
-                    optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-                    adwin.start_set_dio(dio_no=4,dio_val=0)
-                    # ssrocalibration(SAMPLE)
-                    # adwin.start_set_dio(dio_no=4,dio_val=0)
-                    # MBE(SAMPLE + '_'+ el_RO +'_' + str(carbon) +'_el' + el_after_init +'swap', el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
-                    #                          ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])  
-                    NuclearT1_2(SAMPLE + '_'+ el_RO +'_C' + str(carbon) +'_el' + el_after_init +'_part'+str(ii+1), el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
-                                             ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0], el_after_init = el_after_init,
-                                             free_ev_time = FET[ii::1])
+                    for ii in range(FET_parts):
+                        print '--------------------------------'
+                        print 'press q to stop measurement loop'
+                        print '--------------------------------'
+                        qt.msleep(5)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            stop=True
+                            break
+                        GreenAOM.set_power(25e-6)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=180)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        # MBE(SAMPLE + '_'+ el_RO +'_' + str(carbon) +'_el' + el_after_init +'swap', el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
+                        #                          ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])  
+                        NuclearT1_2(SAMPLE + '_'+ el_RO +'_C' + str(carbon) +'_el' + el_after_init +'_part'+str(ii+1), el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
+                                                ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0], el_after_init = el_after_init,
+                                               free_ev_time = FET[ii])
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        #ssrocalibration(SAMPLE)
+        adwin.start_set_dio(dio_no=4,dio_val=0)
 
-    adwin.start_set_dio(dio_no=4,dio_val=0)
+
+    if False:
+        carbon_list = [2,1]
+        el_RO_list = ['positive','negative']
+        # el_RO_list = ['positive']
+        # carbon_list = [1]
+        el_after_init_list = ['1']
+        FET = [np.r_[20e-3,250e-3,500e-3,1.,2.,5.],np.r_[20e-3,10.,20.],np.array([20e-3,35.]),np.array([20e-3,50.])]
+        FET_parts= len(FET)
+        #FET = EvoTime_arr=np.r_[np.linspace(500e-6,50e-3,10),60e-3,80e-3]
+        for carbon in carbon_list:
+            for el_RO in el_RO_list:
+                for el_after_init in el_after_init_list:
+                    for ii in range(FET_parts):
+                        print '--------------------------------'
+                        print 'press q to stop measurement loop'
+                        print '--------------------------------'
+                        qt.msleep(5)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            break
+                        GreenAOM.set_power(25e-6)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=180)
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        # MBE(SAMPLE + '_'+ el_RO +'_' + str(carbon) +'_el' + el_after_init +'swap', el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
+                        #                          ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])  
+                        NuclearT1_2(SAMPLE + '_'+ el_RO +'_C' + str(carbon) +'_el' + el_after_init +'_part'+str(ii+1), el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon]
+                                                ,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0], el_after_init = el_after_init,
+                                               free_ev_time = FET[ii])
+                        adwin.start_set_dio(dio_no=4,dio_val=0)
+                        execfile('QEC/QEC_ssro_calibration.py')
+                        #ssrocalibration(SAMPLE)
+        adwin.start_set_dio(dio_no=4,dio_val=0)
 
 
-    # execfile(r'D:\measuring\measurement\scripts\QEC\1Carbon_XY4_C2.py')
+    # execfile(r'D:\measuring\measurement\scripts\QEC\NuclearT1_2.py')
 
     # NuclearT1_2(SAMPLE + 'positive_5_swap', el_RO= 'positve', carbon = 5, carbon_init_list = [5],
     #             carbon_init_methods     =   ['swap'], carbon_init_thresholds  =  [0], el_after_init= '1')

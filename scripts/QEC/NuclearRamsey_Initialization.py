@@ -23,7 +23,8 @@ def NuclearRamseyWithInitialization(name,
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        C13_init_method       = 'MBI'):
+        C13_init_method       = 'MBI',
+        C13_MBI_RO_state      = 1):
 
     m = DD.NuclearRamseyWithInitialization_v2(name)
     funcs.prepare(m)
@@ -31,7 +32,7 @@ def NuclearRamseyWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 300
+    m.params['reps_per_ROsequence'] = 150
     m.params['C13_MBI_RO_state'] = 1
     #m.params['C13_MBI_threshold_list']=[0]
 
@@ -42,7 +43,15 @@ def NuclearRamseyWithInitialization(name,
     ###################################
     
     #      1A - Rotating frame with detuning
-    detuning = 0.100e3
+    detuning_basic = 0.100e3
+    detuning_dict = {
+    '1' : detuning_basic,
+    '2' : detuning_basic,
+    '3' : detuning_basic*3.,
+    '5' : detuning_basic,
+    '6' : detuning_basic*4.}
+
+    detuning = detuning_dict[str(carbon_nr)] 
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
@@ -93,6 +102,9 @@ def NuclearRamseyWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE+'_ms1',debug=False,carbon_nr =5)
+    NuclearRamseyWithInitialization(SAMPLE+'_positive__ms1',debug=False,carbon_nr =5,el_RO='postive',C13_MBI_RO_state=1)
+    NuclearRamseyWithInitialization(SAMPLE+'_positive__ms0',debug=False,carbon_nr =5,el_RO='postive',C13_MBI_RO_state=0)
+    NuclearRamseyWithInitialization(SAMPLE+'_negative__ms1',debug=False,carbon_nr =5,el_RO='negative',C13_MBI_RO_state=1)
+    NuclearRamseyWithInitialization(SAMPLE+'_negative__ms0',debug=False,carbon_nr =5,el_RO='negative',C13_MBI_RO_state=0)
 
 

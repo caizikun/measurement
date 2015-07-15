@@ -1,39 +1,39 @@
 import qt
 import numpy as np
 from measurement.lib.measurement2.adwin_ssro import pulsar_mbi_espin
+import time
+import msvcrt
 
 execfile(qt.reload_current_setup)
 import measurement.scripts.mbi.mbi_funcs as funcs
 reload(funcs)
 
 
-def run(name):
-    m = pulsar_mbi_espin.ElectronRabi(name)
+def run(name, mw_switch = False):
+
+    if mw_switch:
+        m = pulsar_mbi_espin.ElectronRabi_Switch(name)
+    else:
+        m = pulsar_mbi_espin.ElectronRabi(name)
+
     funcs.prepare(m)
 
     print 'threshold =' + str(m.params['MBI_threshold'])
 
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
-    pts = 76
+    pts = 121
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 3000
+    m.params['reps_per_ROsequence'] = 250
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
 
     # MW pulses
-<<<<<<< HEAD
-    m.params['MW_pulse_durations']  = np.ones(pts) * 2*2*5*2*2.0e-6 #3000e-9
-    m.params['MW_pulse_amps']       = np.ones(pts) * 0.017/5./2. #for msp1,  0.022 for msm1, 
-    f_range=0.15e6
-=======
-    m.params['MW_pulse_durations']  = np.ones(pts) * 3e-6 #3000e-9
-    m.params['MW_pulse_amps']       = np.ones(pts) * 0.01525 #for msm1,  ??? for msp1, 
+    m.params['MW_pulse_durations']  = np.ones(pts) * m.params['AWG_MBI_MW_pulse_duration'] #3e-6 #3000e-9
+    m.params['MW_pulse_amps']       = np.ones(pts) * m.params['AWG_MBI_MW_pulse_amp']  #0.01525 #for msm1,  ??? for msp1, 
 
->>>>>>> 7c6bf382dc2db3230587053c9129441d666501af
     m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']
-            -f_range, m.params['MW_modulation_frequency']+f_range, pts)
+            -1.5e6, m.params['MW_modulation_frequency']+5.5e6, pts)
 
-    m.params['mw_power']=20-6-6-6-6
     print m.params['MW_pulse_mod_frqs']
 
     # for the autoanalysis
@@ -46,9 +46,25 @@ def run(name):
 
     print m.params['AWG_MBI_MW_pulse_mod_frq']
 
+# def show_stopper():
+#     print '-----------------------------------'            
+#     print 'press q to stop measurement cleanly'
+#     print '-----------------------------------'
+#     qt.msleep(2)
+#     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+#         return True
+#     else: return False
 
+# def optimize():
+#     GreenAOM.set_power(15e-6)
+#     counters.set_is_running(1)
+#     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
-    run('MBI_DESR')
+    run('MBI_DESR',mw_switch = True)
+
+
+
+
 
 
