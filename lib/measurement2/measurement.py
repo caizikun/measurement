@@ -417,14 +417,14 @@ def save_instrument_settings_file(parent):
     inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
     
     for (iname, ins) in inslist:
+        if 'remote' in ins.get_options()['tags']:
+            continue
         insgroup = h5settingsgroup.create_group(iname)
         parlist = dict_to_ordered_tuples(ins.get_parameters())
         
         for (param, popts) in parlist:
             try:
-                insgroup.attrs[param] = ins.get(param, query=True) \
-                        if 'remote' in ins.get_options()['tags'] \
-                        else ins.get(param, query=False)
+                insgroup.attrs[param] = ins.get(param, query=False)
             except (ValueError, TypeError):
                     insgroup.attrs[param] = str(ins.get(param, query=False))
 
