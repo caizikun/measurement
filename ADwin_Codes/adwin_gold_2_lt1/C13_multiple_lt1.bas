@@ -44,6 +44,7 @@
 #DEFINE max_nr_of_Carbon_init_steps 20
 #DEFINE max_nr_of_Carbon_MBE_steps 20
 
+
 ' ####################
 ' Declaration of variables
 ' ####################
@@ -72,11 +73,11 @@ DIM DATA_29[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number
 DIM DATA_32[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number of carbon initialization SUCCES events
 
 'C13 MBE data
-DIM DATA_41[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE START events
-DIM DATA_42[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE SUCCES events
+DIM DATA_51[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE START events
+DIM DATA_52[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE SUCCES events
 
 'C13 Parity data
-DIM DATA_43[max_repetitions] AS LONG 'Parity measurement outcomes (NOTE: multiple parity measurements are stored in a single array of length Nr_parity * repetitions
+DIM DATA_53[max_repetitions] AS LONG 'Parity measurement outcomes (NOTE: multiple parity measurements are stored in a single array of length Nr_parity * repetitions
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
@@ -140,7 +141,7 @@ DIM Shutter_opening_time AS LONG
 DIM Shutter_closing_time AS LONG
 Dim Shutter_safety_time AS LONG
 
-INIT:
+LowINIT:
   ' ####################
   ' Initializing variables from Data
   ' ####################
@@ -209,7 +210,7 @@ INIT:
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
     DATA_27[i] = 0
-    DATA_43[i] = 0
+    DATA_53[i] = 0
   NEXT i
 
   FOR i = 1 TO max_nr_of_Carbon_init_steps
@@ -218,8 +219,8 @@ INIT:
   NEXT i
 
   FOR i = 1 TO max_nr_of_Carbon_init_steps
-    DATA_41[i] = 0
-    DATA_42[i] = 0
+    DATA_51[i] = 0
+    DATA_52[i] = 0
   NEXT i
 
 
@@ -259,7 +260,7 @@ INIT:
   DIGOUT(AWG_start_DO_channel,0)
   DIGOUT(Shutter_channel, 0)
   
-  tmp = Digin_Edge(0)
+  'tmp = Digin_Edge(0)
   mode = 0
   timer = 0
   processdelay = cycle_duration
@@ -297,7 +298,7 @@ EVENT:
   ' #############
   IF (run_case_selector = 1) THEN 'Start case selector
     SelectCase mode
-
+     
       CASE 0    'CR check // go to SP-E
         mode = 1
 
@@ -645,7 +646,7 @@ EVENT:
           CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           DIGOUT(AWG_start_DO_channel,0)
 
-          INC(DATA_41[MBE_counter+1]) ' count the number of MBE starts
+          INC(DATA_51[MBE_counter+1]) ' count the number of MBE starts
 
         ELSE
 
@@ -681,7 +682,7 @@ EVENT:
             case_success      = 1
             run_case_selector = 1
 
-            INC(DATA_42[MBE_counter+1]) ' count the number of MBE successes
+            INC(DATA_52[MBE_counter+1]) ' count the number of MBE successes
 
           ELSE ' If at the end of RO duration without enough counts
             IF (timer = MBE_RO_duration ) THEN
@@ -750,7 +751,7 @@ EVENT:
               CPU_SLEEP(9)                                       ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               DIGOUT(AWG_event_jump_DO_channel,0)
             ELSE
-              INC(DATA_43[(repetition_counter-1) * Nr_parity_msmts + Parity_msmnt_counter +1])
+              INC(DATA_53[(repetition_counter-1) * Nr_parity_msmts + Parity_msmnt_counter +1])
             ENDIF
 
             run_case_selector = 1

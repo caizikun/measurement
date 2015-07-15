@@ -239,6 +239,42 @@ cfg['protocols'][name]['pulses'] = {
         'extra_wait_final_pi2' : -30e-9
         }
 
+cfg['protocols'][name]['AdwinSSRO+C13'] = {
+
+#C13-MBI  
+'C13_MBI_threshold_list':               [1],
+'C13_MBI_RO_duration':                  60,  
+'E_C13_MBI_RO_amplitude':               0.5e-9, #this was 0.3e-9 NK 20150316
+'SP_duration_after_C13':                300, #300 in case of swap init! 
+'A_SP_amplitude_after_C13_MBI':         10e-9, # was 15e-9
+'E_SP_amplitude_after_C13_MBI':         0e-9,
+'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+                
+#C13-MBE  
+'MBE_threshold':                        1,
+'MBE_RO_duration':                      40, # was 40 20150329
+'E_MBE_RO_amplitude':                   0.5e-9, #this was 0.35e-9 NK 20150316
+'SP_duration_after_MBE':                30,
+'A_SP_amplitude_after_MBE':             10e-9,
+'E_SP_amplitude_after_MBE':             0e-9 ,
+
+#C13-parity msmnts
+'Parity_threshold':                     1,
+'Parity_RO_duration':                   108,
+'E_Parity_RO_amplitude':                0.3e-9,
+
+#Shutter
+'use_shutter':                          0, 
+'Shutter_channel':                      4, 
+'Shutter_rise_time':                    2500,    
+'Shutter_fall_time':                    2500,
+'Shutter_safety_time':                  50000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
+
+'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
+'min_dec_tau'         : 20e-9 + 140e-9,#140e-9 = fast_pi_duration (check pulselib below)
+'max_dec_tau'         : 0.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
+'dec_pulse_multiple'  : 4      #4. 
+}
 
 
 

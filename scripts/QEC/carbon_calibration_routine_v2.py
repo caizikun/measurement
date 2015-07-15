@@ -26,7 +26,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1,2,5]
+carbons = [1]
 #######################################################
 ######      Set the tasks you want perfo
 ######
@@ -38,13 +38,13 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
 self_phase_calibration = True
 
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 debug = False
