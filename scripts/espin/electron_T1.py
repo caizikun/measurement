@@ -37,6 +37,10 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
 
     '''set experimental paramqeters'''
         #T1 experiment
+
+    # Measurement settings
+    m.params['pts'] = 6 + 3
+
     m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
     m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
     # m.params['wait_times'] =  np.linspace(1e3,1.5e3,16) #in us, values must be divisible by the repeat element
@@ -48,9 +52,8 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     m.params['use_shutter'] = 1
 
         #Plot parameters
-    m.params['sweep_name'] = 'Times (Us)'
+    m.params['sweep_name'] = 'Times (us)'
     m.params['sweep_pts'] = m.params['wait_times']
-    m.params['pts'] = len(m.params['sweep_pts'])    #Check if we need this line, Tim
 
         #Set sequence wait time for AWG triggering
     m.params['sequence_wait_time'] = 0
@@ -153,6 +156,8 @@ if __name__ == '__main__':
     # times = np.r_[1e5,1e6,3e6,10e6,30e6, 60e6]
     
 
+    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
+    # T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
 
     # T1(SAMPLE+'_'+'init_0_RO_0_SWITCH', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.r_[1e5,3e5, 1e6])
 

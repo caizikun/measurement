@@ -12,6 +12,7 @@ def cp(pulse, *arg, **kw):
         call method of the pulse class), and return the copy
     """
     pulse_copy = deepcopy(pulse)
+
     return pulse_copy(*arg, **kw)
 
 

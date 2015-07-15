@@ -10,12 +10,12 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+
 def ssrocalibration(name, **additional_params):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
-
-    
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(additional_params)
 

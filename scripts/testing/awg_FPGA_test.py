@@ -83,10 +83,9 @@ def generate_sequence (do_program = True):
 
     qt.pulsar.define_channel(id='ch2', name='gate', type='analog', 
         high=4.0, low=0, offset=0., delay=0., active=True)
-    qt.pulsar.define_channel(id='ch4', name='clock', type='analog', 
-        high=4.0, low=0, offset=0., delay=0., active=True)
+    qt.pulsar.define_channel(id='ch2_marker1', name='clock', type='marker', 
+        high=1.0, low=0, offset=0., delay=0., active=True)
     
-
     pulse_length = 2e-9
 
     gate = pulse.SquarePulse(channel = 'gate')
@@ -103,13 +102,13 @@ def generate_sequence (do_program = True):
         elt1.append(pulse.cp(clock_up, amplitude = 4.0, length = pulse_length))
         elt1.append(pulse.cp(clock_down, amplitude = 0, length = pulse_length))
     elt1.append(pulse.cp(clock_down, amplitude = 0, length = 1000e-9))
-    elt1.add(pulse.cp(gate, amplitude = 4.0, length = 100*pulse_length))    
+    elt1.add(pulse.cp(gate, amplitude = 4.0, length = 200*pulse_length))    
     for i in arange (2):
         elt1.append(pulse.cp(clock_up, amplitude = 4.0, length = pulse_length))
         elt1.append(pulse.cp(clock_down, amplitude = 0, length = pulse_length))
     #pprint.pprint (elt1.pulses)
     seq = pulsar.Sequence('FPGA_test')
-    seq.append(name = 'trigger', wfname = elt1.name, trigger_wait = False, repetitions = 1, goto_target = 'trigger')
+    seq.append(name = 'trigger', wfname = elt1.name, trigger_wait = False, repetitions = 100)
     #pprint.pprint (seq.elements)
 
     qt.pulsar.upload(elt1)
