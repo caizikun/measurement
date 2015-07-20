@@ -1559,7 +1559,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
-            length = 5000e-9, amplitude = 0)
+            length = 15000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
 

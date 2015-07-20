@@ -803,6 +803,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         mY = self._mY_elt()
 
 
+        # if self.params['pulse_shape'] = 'Hermite':
+        #     self.params['Hermite_fast_pi_duration'] = self.params['Hermite_fast_pi_duration']
+
         ### Select scheme for generating decoupling elements
         if N==0 or Gate.scheme =='auto':
             Gate = self.determine_decoupling_scheme(Gate)
@@ -923,7 +926,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             if N%8 == 2:
                 final_pi_pulse = mX
                 P_type = 'mX'
-                print 'yes, we at 2 pulses with mX!'
+                print 'yes, we ate 2 pulses with mX!'
             elif N%8 in [3,4,5]:
                 final_pi_pulse = Y
                 P_type = 'Y'
@@ -3305,7 +3308,7 @@ class MBI_C13(DynamicalDecoupling):
         do_init_pi2         = True,
         flip_RO             = False,
         do_RO_electron      = False,
-        wait_for_trigger    = False
+        wait_for_trigger    = False,
         ):
         
         '''
@@ -3333,6 +3336,8 @@ class MBI_C13(DynamicalDecoupling):
 
         if len(carbon_list) != len(RO_basis_list):
             print 'Warning: #carbons does not match #RO bases'
+            print 'carbon list: ',carbon_list
+            print 'RO basis list: ',RO_basis_list
 
         if len(carbon_list) == 0 and do_RO_electron==False:
             print 'Warning: No Carbons selected for readout'
@@ -3586,7 +3591,7 @@ class MBI_C13(DynamicalDecoupling):
         '''
         Function that by means of a pi-pulse undoes the phases on the carbons that accumulated during a RO
         RO_trigger_duration     The duration of the wait element after the pi pulse should equal the duration of the RO element 
-        conditional_pi          It is possible to not do the second pi, even if electron in is 1, in case a pi/2 pulse follows.
+        conditional_pi          It is possible to not do the second pi, even if electron in is 0, in case a pi/2 pulse follows.
         conditional_pi2         This incorporates the conditional pi pulse with a pi2 pulse that follows
         pi2_phase               The phase of the pi2 pulse that is merged with the pi pulse. Default is Y phase (i.e. X or Y RO).
         el_state_in             The electron state after the RO
@@ -3609,7 +3614,8 @@ class MBI_C13(DynamicalDecoupling):
 
         if conditional_pi:
             second_pi_phase = first_pi_phase+180
-            if el_state_in == 1:
+            ### The electron state in = 0 is rotated to 1 by the pi pulse, so this one needs an additional pulse
+            if el_state_in == 0:
                 undo_ROphases_seq.append(
                     Gate(prefix+'_second_pi_phase=' +str(second_pi_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi',
@@ -3618,11 +3624,11 @@ class MBI_C13(DynamicalDecoupling):
 
         if conditional_pi2:
             if pi2_phase == None:
-                second_pi2_phase0 = self.params['Y_phase']
-                second_pi2_phase1 = np.mod(self.params['Y_phase']+180,360)
+                second_pi2_phase0 = np.mod(self.params['Y_phase']+180,360)
+                second_pi2_phase1 = self.params['Y_phase']
             else:
-                second_pi2_phase0 = pi2_phase
-                second_pi2_phase1 = np.mod(pi2_phase+180,360)
+                second_pi2_phase0 = np.mod(pi2_phase+180,360)
+                second_pi2_phase1 = pi2_phase
 
             if el_state_in == 1:
                 undo_ROphases_seq.append(
@@ -3676,14 +3682,14 @@ class MBI_C13(DynamicalDecoupling):
         ### Undo RO phase Parity YXY ###
         ######################
 
-        undo_RO_phases_Parity_seq_xyy = self.undo_ROphases(
+        undo_RO_phases_seq = self.undo_ROphases(
                     prefix              = 'Undo_phases_'+prefix,
                     pt                  = pt,
                     RO_trigger_duration = RO_trigger_duration,
                     conditional_pi      = False,
                     conditional_pi2     = False)
 
-        RO_and_invert_seq.extend(undo_RO_phases_Parity_seq_xyy)
+        RO_and_invert_seq.extend(undo_RO_phases_seq)
 
         ######################
         ### Parity msmt YXY ###
@@ -3700,7 +3706,7 @@ class MBI_C13(DynamicalDecoupling):
                     inv_el_state_in     = 0,
                     el_state_in         = 0)
 
-        RO_and_invert_seq.extend(Invert_readout_sequence)
+        RO_and_invert_seq.extend(Invert_readout_seq)
 
         return(RO_and_invert_seq)
 
@@ -6119,6 +6125,112 @@ class GeometricGate(MBI_C13):
                     print "[ %.3f ]" %(g.C_phases_after_gate[self.params['Carbon_nr']]/np.pi*180)
 
 
+class Sweep_Carbon_Gate(MBI_C13):
+    """
+    Performs MBI on a carbon and allows for varying gate parameters.
+    """
+
+    mprefix = 'Sweep_carbon_Gate'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('SweepCarbonInit')
+
+        for pt in range(pts): ### Sweep over RO basis
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            
+            for kk in range(self.params['Nr_C13_init']):
+                print self.params['init_method_list'][kk]
+                print self.params['init_state_list'][kk]
+                print self.params['carbon_init_list'][kk]
+                print 
+
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init         = self.params['el_after_init'])
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    el_state_in         = int(self.params['el_after_init']),
+                    readout_orientation = self.params['electron_readout_orientation'])            
+
+
+            gate_seq.extend(carbon_tomo_seq)
+
+            ### sweep carbon gates!
+            for i,g in enumerate(gate_seq):
+                if g.Gate_type == 'Carbon_Gate':
+                    g.N = self.params['N_list'][pt]
+                    g.tau = self.params['tau_list'][pt]
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list`
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if not debug:
+                print '*'*10
+                for g in gate_seq:
+                    print g.name
+
+            # if debug:
+                # for g in gate_seq:
+                #     print g.name
+
+                    # if ((g.C_phases_before_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_before_gate[self.params['carbon_list'][1]] == None)):
+                    #     print "[ None , None ]"
+                    # elif g.C_phases_before_gate[self.params['carbon_list'][0]] == None:
+                    #     print "[ None , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # elif g.C_phases_before_gate[self.params['carbon_list'][1]] == None:
+                    #     print "[ %.3f, None ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    # else:
+                    #     print "[ %.3f , %.3f ]" %(g.C_phases_before_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_before_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+
+                    # if ((g.C_phases_after_gate[self.params['carbon_list'][0]] == None) and (g.C_phases_after_gate[self.params['carbon_list'][1]] == None)):
+                    #     print "[ None , None ]"
+                    # elif g.C_phases_after_gate[self.params['carbon_list'][0]] == None:
+                    #     print "[ None , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+                    # elif g.C_phases_after_gate[self.params['carbon_list'][1]] == None:
+                    #     print "[ %.3f, None ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180)
+                    # else:
+                    #     print "[ %.3f , %.3f ]" %(g.C_phases_after_gate[self.params['carbon_list'][0]]/np.pi*180, g.C_phases_after_gate[self.params['carbon_list'][1]]/np.pi*180)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 ### Multiple carbon initialization classes ###
 
 class Two_QB_Probabilistic_MBE_v3(MBI_C13):
@@ -11144,140 +11256,41 @@ class GHZ_ThreeQB_Unbranched(MBI_C13):
             ### Parity msmt XYY ###
             #######################
 
-            Parity_seq_xyy = self.readout_carbon_sequence(
-                        prefix              = 'Parity_XYY_' ,
-                        pt                  = pt,
-                        RO_trigger_duration = self.params['RO_trigger_duration'],#?? Is this a good value?
+
+            RO_and_invert_Parity_seq_xyy = self.readout_and_invert_carbons_sequence(
+                        prefix = 'Parity_xyy_',
+                        RO_trigger_duration = self.params['RO_trigger_duration'],
                         carbon_list         = self.params['Parity_xyy_carbon_list'],
                         RO_basis_list       = self.params['Parity_xyy_RO_list'],
                         readout_orientation = self.params['Parity_xyy_RO_orientation'],
-                        do_init_pi2         = self.params['Parity_xyy_do_init_pi2'],
-                        do_RO_electron      = self.params['Parity_xyy_do_RO_electron'],
                         wait_for_trigger    = init_wait_for_trigger,
-                        el_RO_result        = '0',
-                        el_state_in         = 0)
-
-            gate_seq.extend(Parity_seq_xyy)
-
-            ######################
-            ### Undo RO phase Parity YXY ###
-            ######################
-
-            undo_RO_phases_Parity_seq_xyy = self.undo_ROphases(
-                        prefix              = 'undo_phases_parity_xyy_',
-                        pt                  = pt,
-                        RO_trigger_duration = self.params['RO_trigger_duration'],
-                        conditional_pi      = False,
-                        conditional_pi2     = False)
-
-            gate_seq.extend(undo_RO_phases_Parity_seq_xyy)
+                        do_init_pi2         = self.params['Parity_xyy_do_init_pi2'],
+                        do_final_pi2        = self.params['Invert_xyy_do_final_pi2'])
+            gate_seq.extend(RO_and_invert_Parity_seq_xyy)
 
 
-            ######################
-            ### Parity msmt YXY ###
-            ######################
-    
-
-            Invert_parity_seq_xyy = self.invert_readout_carbon_sequence(
-                        prefix              = 'Invert_XYY_',
-                        pt                  = pt,
-                        carbon_list         = self.params['Invert_Parity_xyy_carbon_list'],
-                        RO_basis_list       = self.params['Invert_Parity_xyy_RO_list'],
-                        readout_orientation = self.params['Parity_xyy_RO_orientation'],
-                        do_final_pi2        = self.params['Invert_xyy_do_final_pi2'],
-                        did_undo_RO_phases  = True,
-                        inv_el_state_in     = 0,
-                        el_state_in         = 0)
-
-            Parity_seq_yxy = self.readout_carbon_sequence(
-                        prefix              = 'Parity_YXY_' ,
-                        pt                  = pt,
+            RO_and_invert_Parity_seq_yxy = self.readout_and_invert_carbons_sequence(
+                        prefix = 'Parity_yxy_',
                         RO_trigger_duration = self.params['RO_trigger_duration'],
                         carbon_list         = self.params['Parity_yxy_carbon_list'],
                         RO_basis_list       = self.params['Parity_yxy_RO_list'],
                         readout_orientation = self.params['Parity_yxy_RO_orientation'],
                         do_init_pi2         = self.params['Parity_yxy_do_init_pi2'],
-                        el_RO_result         = '0',
-                        el_state_in         = 0)                        
+                        do_final_pi2        = self.params['Invert_yxy_do_final_pi2'])
 
+            gate_seq.extend(RO_and_invert_Parity_seq_yxy)
 
-            gate_seq.extend(Invert_parity_seq_xyy)
-            gate_seq.extend(Parity_seq_yxy)
-
-
-            ######################
-            ### Undo RO phase Parity YXY ###
-            ######################
-
-            undo_RO_phases_Parity_seq_yxy = self.undo_ROphases(
-                        prefix              = 'undo_phases_parity_yxy_',
-                        pt                  = pt,
-                        RO_trigger_duration = self.params['RO_trigger_duration'],
-                        conditional_pi      = False,
-                        conditional_pi2     = False)
-
-            gate_seq.extend(undo_RO_phases_Parity_seq_yxy)
-
-
-            ######################
-            ### Parity msmt YYX ###
-            ######################
-
-
-            Invert_parity_seq_yxy = self.invert_readout_carbon_sequence(
-                        prefix              = 'Invert_YXY_' ,
-                        pt                  = pt,
-                        carbon_list         = self.params['Parity_yxy_carbon_list'],
-                        RO_basis_list       = self.params['Parity_yxy_RO_list'],
-                        readout_orientation = self.params['Parity_yxy_RO_orientation'],
-                        do_final_pi2        = self.params['Invert_yxy_do_final_pi2'],
-                        did_undo_RO_phases  = True,
-                        inv_el_state_in     = 0,
-                        el_state_in         = 0)
-
-            Parity_seq_yyx = self.readout_carbon_sequence(
-                        prefix              = 'Parity_YYX_' ,
-                        pt                  = pt,
+            RO_and_invert_Parity_seq_yyx = self.readout_and_invert_carbons_sequence(
+                        prefix = 'Parity_yyx_',
                         RO_trigger_duration = self.params['RO_trigger_duration'],
                         carbon_list         = self.params['Parity_yyx_carbon_list'],
                         RO_basis_list       = self.params['Parity_yyx_RO_list'],
                         readout_orientation = self.params['Parity_yyx_RO_orientation'],
+                        wait_for_trigger    = init_wait_for_trigger,
                         do_init_pi2         = self.params['Parity_yyx_do_init_pi2'],
-                        el_RO_result         = '0',
-                        el_state_in         = 0)
-
-      
-            gate_seq.extend(Invert_parity_seq_yxy)
-            gate_seq.extend(Parity_seq_yyx)
-
-            ######################
-            ### Undo RO phase Parity YXY ###
-            ######################
-
-            undo_RO_phases_Parity_seq_yyx = self.undo_ROphases(
-                        prefix              = 'undo_phases_parity_yyx_',
-                        pt                  = pt,
-                        RO_trigger_duration = self.params['RO_trigger_duration'],
-                        conditional_pi      = False,
-                        conditional_pi2     = False)
-
-            gate_seq.extend(undo_RO_phases_Parity_seq_yyx)
-
-
-            ######################
-            ### Tomography or Parity Msmt XXX ###
-            ######################
-
-            Invert_parity_seq_yyx= self.invert_readout_carbon_sequence(
-                        prefix              = 'Invert_YYX_' ,
-                        pt                  = pt,
-                        carbon_list         = self.params['Parity_yyx_carbon_list'],
-                        RO_basis_list       = self.params['Parity_yyx_RO_list'],
-                        readout_orientation = self.params['Parity_yyx_RO_orientation'],
-                        do_final_pi2        = self.params['Invert_yyx_do_final_pi2'],
-                        did_undo_RO_phases  = True,
-                        inv_el_state_in     = 0,
-                        el_state_in         = 0)
+                        do_final_pi2        = self.params['Invert_yyx_do_final_pi2'])
+            
+            gate_seq.extend(RO_and_invert_Parity_seq_yyx)
 
             carbon_tomo_seq = self.readout_carbon_sequence(
                         prefix              = 'Tomo_',
@@ -11292,32 +11305,15 @@ class GHZ_ThreeQB_Unbranched(MBI_C13):
                         phase_error         = self.params['final_phases'],
                         flip_RO             = self.params['flip_000'],
                         do_RO_electron      = self.params['RO_electron'],
-                        el_state_in         = 0)#el_in_state_tomo000)
+                        el_state_in         = 0)
 
-            gate_seq.extend(Invert_parity_seq_yyx)
             gate_seq.extend(carbon_tomo_seq)
-
-            #####################################
-            ### Jumps statements for feedback ###
-            #####################################
-            ### default is next, which is good, so I can leave them out
-
-            #Parity_seq_xyy[-1].go_to       = undo_RO_phases_Parity_seq_xyy[0].name
-            #Parity_seq_xyy[-1].event_jump  = undo_RO_phases_Parity_seq_xyy[0].name
-        
-            #Parity_seq_yxy[-1].go_to        = undo_RO_phases_Parity_seq_yxy[0].name
-            #Parity_seq_yxy[-1].event_jump   = undo_RO_phases_Parity_seq_yxy[0].name
-
-            #Parity_seq_yyx[-1].go_to       = undo_RO_phases_Parity_seq_yyx[0].name
-            #Parity_seq_yyx[-1].event_jump  = undo_RO_phases_Parity_seq_yyx[0].name
-        
 
             # In the end all roads lead to Rome
             Rome = Gate('Rome_'+str(pt),'passive_elt',
                     wait_time = 3e-6)
             gate_seq.append(Rome)
 
-   
             ######################################
             ### Generate the AWG sequence ###
             ######################################
@@ -11650,58 +11646,13 @@ class test_undo_RO_phase_and_invert(MBI_C13):
                         RO_basis_list       = self.params['Parity_A_RO_list'],
                         readout_orientation = self.params['Parity_A_RO_orientation'],
                         wait_for_trigger    = init_wait_for_trigger,
-                        do_init_pi2         = self.params['Parity_A_do_init_pi2'].
+                        do_init_pi2         = self.params['Parity_A_do_init_pi2'],
                         do_final_pi2        = self.params['Invert_A_do_final_pi2'])
             gate_seq.extend(RO_and_invert_Parity_seq_A)
 
-            # ######################
-            # ### Parity msmt ###
-            # ######################
-
-            # Parity_seq_A = self.readout_carbon_sequence(
-            #             prefix              = 'Parity_A_' ,
-            #             pt                  = pt,
-            #             RO_trigger_duration = self.params['RO_trigger_duration'],#?? Is this a good value?
-            #             carbon_list         = self.params['Parity_A_carbon_list'],
-            #             RO_basis_list       = self.params['Parity_A_RO_list'],
-            #             readout_orientation = self.params['Parity_A_RO_orientation'],
-            #             wait_for_trigger    = init_wait_for_trigger,
-            #             el_RO_result        = '0',
-            #             el_state_in         = 0)
-
-            # gate_seq.extend(Parity_seq_A)
-
-            # ######################
-            # ### undo RO phases ###
-            # ######################
-
-            # undo_RO_phases_seq_A = self.undo_ROphases(
-            #             prefix              = 'undo_phases_parity_A0_',
-            #             pt                  = pt,
-            #             RO_trigger_duration = self.params['RO_trigger_duration'],
-            #             conditional_pi      = False,
-            #             conditional_pi2     = False)
-
-            # gate_seq.extend(undo_RO_phases_seq_A)
-
-            # ##########################
-            # ### invert parity msmt ###
-            # ##########################
-
-
-            # Invert_parity_seq_A = self.invert_readout_carbon_sequence(
-            #             prefix              = 'Invert_A_',
-            #             pt                  = pt,
-            #             carbon_list         = self.params['Parity_A_carbon_list'],
-            #             RO_basis_list       = self.params['Parity_A_RO_list'],
-            #             readout_orientation = self.params['Parity_A_RO_orientation'],
-            #             did_undo_RO_phases  = True,
-            #             do_final_pi2        = self.params['Invert_A_do_final_pi2'],
-            #             inv_el_state_in     = 0,
-            #             el_state_in         = 0)  
-
-            # gate_seq.extend(Invert_parity_seq_A)
-
+            ######################
+            ### Tomography ####
+            ######################
             Tomo_seq_B = self.readout_carbon_sequence(
                         prefix              = 'Tomo_B_' ,
                         pt                  = pt,
@@ -11722,8 +11673,8 @@ class test_undo_RO_phase_and_invert(MBI_C13):
             #####################################
             ### doing this because the adwin will give the triggers. But both lead to the same sequence.
 
-            Parity_seq_A[-1].go_to       = undo_RO_phases_seq_A[0].name
-            Parity_seq_A[-1].event_jump  = undo_RO_phases_seq_A[0].name
+            # Parity_seq_A[-1].go_to       = undo_RO_phases_seq_A[0].name
+            # Parity_seq_A[-1].event_jump  = undo_RO_phases_seq_A[0].name
 
             # In the end the road leads to Rome
             Rome = Gate('Rome_'+str(pt),'passive_elt',
@@ -11893,7 +11844,7 @@ class test_undo_RO_phase(MBI_C13):
             gate_seq1.append(Rome)
 
             gate_seq0[-1].go_to         = gate_seq1[-1].name
-            gate_seq0[-1].event_jump    = gate_seq1[-1].name
+            #gate_seq0[-1].event_jump    = gate_seq1[-1].name
         
             ######################################
             ### Generate the AWG sequence ###
@@ -11912,7 +11863,7 @@ class test_undo_RO_phase(MBI_C13):
             merged_sequence.extend(gate_seq)
             merged_sequence.extend(gate_seq0[len(gate_seq):])                
 
-            #only add the undo_RO_phases part of the sequence 1
+            #only add the undo_RO_phases part of sequence1
             merged_sequence.extend(gate_seq1[len(gate_seq):len(gate_seq)+len(undo_RO_phases_seq_A1)])
 
             merged_sequence.append(gate_seq1[-1])
