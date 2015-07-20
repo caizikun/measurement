@@ -109,11 +109,11 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 21
+    pts = 25
 
-    m.params['repump_wait'] =  pts*[1000e-9] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(-1e-6,0.9e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[100]
+    m.params['repump_wait'] =  pts*[2000e-9] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = np.linspace(0e-6,1.7e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[60]
 
 
     m.params['fast_repump_duration'] = pts*[5e-6] #how long the 'Zeno' beam is shined in.

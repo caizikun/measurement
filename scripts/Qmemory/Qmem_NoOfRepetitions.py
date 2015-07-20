@@ -110,18 +110,18 @@ def QMem(name, carbon_list   = [5],
 
     ### determine sweep parameters
     pts = 16
-    minReps = 10 # minimum number of LDE reps
-    maxReps = 1010 # max number of LDe reps. this number is going to be rounded
+    minReps = 1 # minimum number of LDE reps
+    maxReps = 101 # max number of LDe reps. this number is going to be rounded
     step = int((maxReps-minReps)/pts)
     maxReps = minReps + step*pts
 
 
-    m.params['repump_wait'] =  pts*[300e-9] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[90e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['repump_wait'] =  pts*[380e-9] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[241e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
     m.params['fast_repump_repetitions'] = np.arange(minReps,maxReps,step)
 
 
-    m.params['fast_repump_duration'] = pts*[2e-6] #how long the 'Zeno' beam is shined in.
+    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
 
     m.params['fast_repump_power'] = 600e-9
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_Y',debug=True,tomo_list = ['Y'])
 
     
-    for c in [1]:
+    for c in [1,2]:
         if breakst:
             break
         for tomo in ['X','Y']:

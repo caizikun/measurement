@@ -97,26 +97,27 @@ def erabi_hermite(name):
     
     m.params['pts'] = 18
     pts = m.params['pts']
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 300
+    m.params['reps_per_ROsequence'] = m.params['repetitions']
     m.params['Ex_SP_amplitude']=0
 
-    sweep_param = 'length'
+    sweep_param = 'amplitude'
 
-    m.params['mw_power']=20 
+    # m.params['mw_power']=20 
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
         m.params['MW_pulse_durations'] =  np.linspace(0, 420, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['Hermite_fast_pi_amp'] # * 0.05 #*0.49
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.5#m.params['Hermite_fast_pi_amp'] # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
 
     elif sweep_param == 'amplitude':    
-        m.params['MW_pulse_durations'] =  np.ones(pts)*44e-9 
-        m.params['MW_pulse_amplitudes'] = np.linspace(0.3,0.6,pts) #0.02
+        m.params['MW_pulse_durations'] =  np.ones(pts)*180e-9 
+        m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.9,pts) #0.02
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
@@ -128,11 +129,12 @@ def erabi_hermite(name):
 
     m.autoconfig() #Redundant because executed in m.run()? Tim
     m.generate_sequence(upload=True)
-    m.run()
-    qt.msleep(2)
-    m.save()
-    qt.msleep(2)
-    m.finish()
+    if True:
+        m.run()
+        qt.msleep(2)
+        m.save()
+        qt.msleep(2)
+        m.finish()
 
 if __name__ == '__main__':
     erabi_hermite(SAMPLE+'_'+'msm1')

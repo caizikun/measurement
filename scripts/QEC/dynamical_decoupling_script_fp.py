@@ -30,7 +30,7 @@ def optimize_NV(cycles = 3):
     GreenAOM.set_power(50e-6)
     optimiz0r.optimize(dims=['x','y','z','x','y'], cycles = cycles)
 
-def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x', optimize = True, reps_per_RO = 1500):
+def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x', optimize = True, reps_per_RO = 300):
 
     m = DD.SimpleDecoupling(name)
 
@@ -116,15 +116,15 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
     m.finish()
 
 if __name__ == '__main__':
-    start=40
-    N=64
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 8e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
+    start=45
+    N=4
+    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 200e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
     
-    N=128
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 8e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
+    # N=128
+    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 8e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
 
-    N=32
-    SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 8e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
+    # N=32
+    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = 8e-9, start_point= start, tot = 50, final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
 
     #####################
     #### Last measurements Koen did

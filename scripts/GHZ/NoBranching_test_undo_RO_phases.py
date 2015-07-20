@@ -75,7 +75,7 @@ def NoBranching_and_invert_test(name,
     m = DD.test_undo_RO_phase_and_invert(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 4000
+    m.params['reps_per_ROsequence'] = 800
     m.params['pts'] = 1
 
     m.params['RO_trigger_duration'] = 150e-6
@@ -131,7 +131,7 @@ def NoBranching_no_invert_test(name,
     m = DD.test_undo_RO_phase(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 4000
+    m.params['reps_per_ROsequence'] = 1200
     m.params['pts'] = 1
 
     m.params['RO_trigger_duration'] = 150e-6
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         ['negative','negative'],
         ]      
 
-    tomo_lists = [['X','X']]#[['X'],['Y']]
+    tomo_lists = [['X'],['Y']]
 
     test_nobranching_and_invert = False
     test_nobranching_noinvert = True
@@ -215,19 +215,20 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
 
-                mmtA_name = mmtA_list[0]
-                tomo_name = tomo_list[0]
-                orientations_name = orientations[0][0]+orientations[1][0]
+                mmtA_name = ''.join([a for a in mmtA_list])
+                tomo_name = ''.join([b for b in tomo_list])
+                orientations_name = ''.join([o[0] for o in orientations])
 
                 print 'mmtA: '+mmtA_name+ ' tomo: '+tomo_name
-                print orientations
+                print orientations_name
 
                 NoBranching_and_invert_test(SAMPLE+'NoBranching_C1_test_mmt_'+mmtA_name+'_'+'tomo'+tomo_name+'_'+orientations_name, 
                     carbon_list = [1], A_list = mmtA_list, tomo_list = tomo_list, parity_orientations = orientations, debug=False)
 
 
     if test_nobranching_noinvert:   
-        mmtA_list = ['X','X']      
+        mmtA_list = ['X','X']
+        tomo_lists = [['X','X']]      
         for jj,tomo_list in enumerate(tomo_lists):
             # print '-----------------------------------'
             # print 'press q to stop measurement cleanly'

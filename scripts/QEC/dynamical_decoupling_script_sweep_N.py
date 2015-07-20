@@ -18,30 +18,30 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     m = DD.SimpleDecoupling(name)
     """
-    ##### MODIFICATION FOR LT1 ######
-    """
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    # ##### MODIFICATION FOR LT1 ######
+    # """
+    # m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    # # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+MBI'])
+    # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    # m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
-    # Default values when no MBI
-    if mbi == False:
-        m.params['MBI_threshold'] = 0
-        m.params['Ex_SP_amplitude'] = 0
-        m.params['Ex_MBI_amplitude'] = 0
-        m.params['SP_E_duration'] = 20 #2000
+    # # Default values when no MBI
+    # if mbi == False:
+    #     m.params['MBI_threshold'] = 0
+    #     m.params['Ex_SP_amplitude'] = 0
+    #     m.params['Ex_MBI_amplitude'] = 0
+    #     m.params['SP_E_duration'] = 20 #2000
         
-        m.params['repump_after_MBI_A_amplitude'] = [15e-9]
-        m.params['repump_after_MBI_duration'] = [300] # 50  
-    """
-    END MODIFICATIONS FOR LT1
-    """
+    #     m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+    #     m.params['repump_after_MBI_duration'] = [300] # 50  
+    # """
+    # END MODIFICATIONS FOR LT1
+    # """
 
     funcs.prepare(m)
     #input parameters
@@ -57,7 +57,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='nopulse'
+    m.params['Final_Pulse'] ='-x'
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
@@ -69,10 +69,10 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['sweep_name'] = 'Number of pulses'
 
     m.autoconfig()
-    ### MODIFICATION FOR LT1 ###
-    m.params['E_RO_durations'] = [m.params['SSRO_duration']]
-    m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
-    ### END MODIFICATION FOR LT1 ###
+    # ### MODIFICATION FOR LT1 ###
+    # m.params['E_RO_durations'] = [m.params['SSRO_duration']]
+    # m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
+    # ### END MODIFICATION FOR LT1 ###
 
     funcs.finish(m, upload =True, debug=False)
 
@@ -83,10 +83,10 @@ def interrupt_script(wait = 5):
         sys.exit()
 
 if __name__ == '__main__':
-    tau = 2.370304e-3/(16*2) # tau_L nr 32 dip in N=16
+    tau = 4.998e-6 # tau_L nr 32 dip in N=16
     NoP1=np.arange(4,124,4)
-    NoP2=np.arange(124,194,4)
-    NoP3=np.arange(194,254,4)
+    # NoP2=np.arange(124,194,4)
+    # NoP3=np.arange(194,254,4)
     SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)

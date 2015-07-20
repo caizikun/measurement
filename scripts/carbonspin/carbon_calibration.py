@@ -15,6 +15,8 @@ ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
 ins_aom = qt.instruments['GreenAOM']
 
+SETUP = qt.current_setup
+
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -27,10 +29,7 @@ n = 1
 #######################################################
 
 carbons = [1,2,5]
-#######################################################
-######      Set the tasks you want perfo
-######
-#######################################################Gr
+
 """
 AFTER THE CALIBRATION IS DONE:
 
@@ -44,18 +43,18 @@ f_ms1 = True
 
 self_phase_calibration = True
 
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 debug = False
 
+### repetitions per data point.
 freq_reps = 500
 phase_reps = 300
 crosstalk_reps = 300
 
-# phase_reps = 900
-# crosstalk_reps = 1200
 
+### this is used to determine the detuning of the ramsey measurements.
 detuning_basic = 0.44e3
 detuning_dict = {
 	'1' : detuning_basic,
@@ -206,7 +205,7 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,debug):
     """
 
     if not debug:
-        with open(r'D:/measuring/measurement/scripts/lt2_scripts/setup/msmt_params.py','r') as param_file:
+        with open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','r') as param_file:
             data = param_file.readlines()
 
         for c in carbons:
@@ -227,7 +226,7 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,debug):
 
 
         ### after compiling the new msmt_params, the are flushed to the python file.
-        f = open(r'D:/measuring/measurement/scripts/lt2_scripts/setup/msmt_params.py','w')
+        f = open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','w')
         f.writelines(data)
         f.close()
 
@@ -241,10 +240,23 @@ def write_to_file_subroutine(data,search_string):
     """
 
     ## get the calibrated value
-    params = qt.exp_params['samples']['111_1_sil18'][search_string]
+    params = qt.exp_params['samples'][SAMPLE][search_string]
+
+    ### correct file position (makes sure that we do not overwrite parameters for the wrong sample.
+    ### is also used to break the loop when we have looped over the sample
+    correct_pos = False
 
     for ii,x in enumerate(data):
-        if search_string in x and not '#' in x[:5]:
+
+    	### check if we write params to the correct sample.
+
+    	if 'samples' in x and SAMPLE in x:
+    		correct_pos = True
+    	elif 'samples' in x and not SAMPLE in x:
+    		corrrect_pos = False
+
+    	### write params to sample
+        if search_string in x and not '#' in x[:5] and correct_pos:
 
             ### detect if we must write a list to the msmt_params or an integer
             if type(params) == list or type(params) == np.ndarray:
@@ -265,9 +277,6 @@ def write_to_file_subroutine(data,search_string):
             # print fill_in
             data[ii] = fill_in
 
-        ### we have reached the parameters for the wrong NV center.
-        if ii>400 and 'Hans' in x:
-            break
     ### return the contents of msmt_params.py
     return data
 

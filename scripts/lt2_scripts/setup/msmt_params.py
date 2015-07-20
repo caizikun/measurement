@@ -155,8 +155,8 @@ N_frq    = 7.13429e6      # not calibrated
 N_HF_frq = 2.182e6 # was2.196e6       
 Q        = 4.938e6        # not calibrated
 
-mw_mod_frequency = 250e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
-
+# mw_mod_frequency = 250e6       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+mw_mod_frequency = (0)*1e6
 # For ms = -1
 mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequency
@@ -167,7 +167,7 @@ mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequen
 
 cfg['samples']['111_1_sil18'] = {
 'mw_mod_freq'   :       mw_mod_frequency,
-'mw_frq'        :       mw_freq_MBI,
+'mw_frq'        :       mw_freq, #mw_freq_MBI
 'mw_power'      :       mw_power,
 'ms-1_cntr_frq' :       f_msm1_cntr,
 'ms+1_cntr_frq' :       f_msp1_cntr,
@@ -188,8 +188,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C1_freq'       :   450.301e3,
-'C1_freq_0' : 431912.83,
-'C1_freq_1' : 468999.81,
+'C1_freq_0' : 431903.51,
+'C1_freq_1' : 469004.55,
 'C1_gate_optimize_tau_list' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
 'C1_gate_optimize_N_list': [40,34,36,32,34,36,34,36,42],
@@ -203,25 +203,25 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau'    :   [4.998e-6],
-'C1_Ren_N'      :   [34],
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [39.16] + [109.02] + [-12.02] + [0.0] + [29.43] + [31.0] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_tau'    :   [4.996e-6],
+'C1_Ren_N'      :   [36],
+'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [11.61] + [117.48] + [-12.02] + [0.0] + [43.17] + [31.0] + [0.0] + [0.0] + [0.0]),
 #104.92
     ################
     ### Carbon 2 ###
     ################
 
 'C2_freq'       :   421.814e3,  
-'C2_freq_0' : 431996.31,
-'C2_freq_1' : 413479.64,
+'C2_freq_0' : 432025.38,
+'C2_freq_1' : 413500.78,
 'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
 
 
 'C2_Ren_tau'    :   [13.614e-6],
-'C2_Ren_N'      :   [32],
-'C2_Ren_extra_phase_correction_list' : np.array([0.0] + [51.6] + [172.41] + [135.85] + [0.0] + [78.84] + [87.22] + [0.0] + [0.0] + [0.0]),
+'C2_Ren_N'      :   [34],
+'C2_Ren_extra_phase_correction_list' : np.array([0.0] + [44.89] + [132.92] + [135.85] + [0.0] + [81.12] + [87.22] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 3 ###
@@ -255,8 +255,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C5_freq'       :   419.894e3,
-'C5_freq_0' : 431990.73,
-'C5_freq_1' : 408324.06,
+'C5_freq_0' : 432037.45,
+'C5_freq_1' : 408342.82,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -282,9 +282,9 @@ cfg['samples']['111_1_sil18'] = {
 'C5_geo_uncond_N':  [28],
 'C5_uncond_tau' :   [(9.52)*1e-6],
 'C5_uncond_pi_N':   [94],
-'C5_Ren_tau'    :   [11.312e-6],
+'C5_Ren_tau'    :   [11.308e-6],
 'C5_Ren_N'      :   [48],
-'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [63.24] + [22.52] + [80.13] + [0.0] + [124.52] + [104.98] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [62.45] + [27.51] + [80.13] + [0.0] + [71.34] + [104.98] + [0.0] + [0.0] + [0.0]),
 
 
     ### Carbon 6
@@ -344,6 +344,29 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
     ### pulse parameters    ###
     ###########################
 
+    ################ predefs for the params. Select pulse shape!
+
+Hermite_pi_duration = 210e-9    
+Hermite_pi_amp = 0.587
+
+Hermite_pi2_duration = 100e-9#56e-9, #should be divisible by 4, slow
+Hermite_pi2_amp = 0.501 
+
+Square_pi_duration = 116e-9   #250 MHz slow
+Square_pi_amp = 0.407225 #without switch #0.469424,with switch  #250 MHz, slow
+
+Square_pi2_duration = 56e-9 #56e-9, #should be divisible by 4, slow
+Square_pi2_amp =  0.426252 #0.493036, # slow, only calibrated with 2 pulses
+
+pulse_shape = 'Hermite' # or alternatively 'Hermite', or 'Square'
+
+## decide which parameters to use.
+if pulse_shape == 'Hermite':
+    fast_pi_duration, fast_pi_amp, fast_pi2_duration, fast_pi2_amp = Hermite_pi_duration, Hermite_pi_amp, Hermite_pi2_duration, Hermite_pi2_amp
+else:
+     fast_pi_duration, fast_pi_amp, fast_pi2_duration, fast_pi2_amp =Square_pi_duration, Square_pi_amp, Square_pi2_duration, Square_pi2_amp
+
+
 f_mod_0     = cfg['samples']['111_1_sil18']['mw_mod_freq']
 
 cfg['protocols']['111_1_sil18']['pulses'] ={
@@ -357,79 +380,49 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 
 'C13_X_phase' :0,
 'C13_Y_phase' :270,
+############
+#Pulse type
+###########
+'pulse_shape': pulse_shape,
+# 'pulse_shape': 'Square',
 
 'MW_pulse_mod_frequency' : f_mod_0,
 
-# Pulses calibrated very long with switch 
-# # 'fast_pi_duration'          :  64e-9, #140e-9,#      #250 MHz
-# 'fast_pi_duration'          :  (136+32)*1e-9,#116e-9, #140e-9,#      #250 MHz slow
-# # 'fast_pi_amp'               :  0.794559, #250 MHz, slow
-# 'fast_pi_amp'               :  0.313663, #  0.403496,#0.389050,#0.393042,#0.401147,#0.392860,#0.794559, #250 MHz, slow
-# 'fast_pi_mod_frq'           :   f_mod_0,
+'fast_pi_mod_frq'           :  f_mod_0,
+'fast_pi2_mod_frq'          :  f_mod_0,
+'Hermite_fast_pi_mod_frq'   :  f_mod_0,
+'Hermite_fast_pi2_mod_frq'  :  f_mod_0,
 
-#     ### Pi/2 pulses, fast & hard 
-# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-# 'fast_pi2_duration'         :   (68+16)*1e-9,#56e-9, #should be divisible by 4, slow
-# # 'fast_pi2_amp'              :   0.395251, # 
-# 'fast_pi2_amp'              :   0.314146, #0.421937,#0.407681,#0.410445, # slow, only calibrated with 2 pulses
-# 'fast_pi2_mod_frq'          :   f_mod_0,
-
-
-# # Pulses calibrated long with switch
-# # #     ### Pi pulses, fast & hard 
-# # 'fast_pi_duration'          :  64e-9, #140e-9,#      #250 MHz
-# 'fast_pi_duration'          :  136e-9,#116e-9, #140e-9,#      #250 MHz slow
-# # 'fast_pi_amp'               :  0.794559, #250 MHz, slow
-# 'fast_pi_amp'               :  0.398466, #  0.403496,#0.389050,#0.393042,#0.401147,#0.392860,#0.794559, #250 MHz, slow
-# 'fast_pi_mod_frq'           :   f_mod_0,
-
-#     ### Pi/2 pulses, fast & hard 
-# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-# 'fast_pi2_duration'         :   68e-9,#56e-9, #should be divisible by 4, slow
-# # 'fast_pi2_amp'              :   0.395251, # 
-# 'fast_pi2_amp'              :   0.398571, #0.421937,#0.407681,#0.410445, # slow, only calibrated with 2 pulses
-# 'fast_pi2_mod_frq'          :   f_mod_0,
-
+###############
+#
+#   General pulses used
+#
+#######
 
 # Pulses short with switch 
 # #     ### Pi pulses, fast & hard 
-'fast_pi_duration'          :  116e-9,    #250 MHz slow
-'fast_pi_amp'               :  0.469424,  #250 MHz, slow
-'fast_pi_mod_frq'           :  f_mod_0,
+'fast_pi_duration'          : fast_pi_duration, #116e-9,    #250 MHz slow
+'fast_pi_amp'               :  fast_pi_amp, #without switch #0.469424,with switch  #250 MHz, slow
+
 
 ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-'fast_pi2_duration'         :  56e-9,#56e-9, #should be divisible by 4, slow
-'fast_pi2_amp'              :  0.493036, # slow, only calibrated with 2 pulses
-'fast_pi2_mod_frq'          :  f_mod_0,
+'fast_pi2_duration'         :  fast_pi2_duration,#56e-9,#56e-9, #should be divisible by 4, slow
+'fast_pi2_amp'              :  fast_pi2_amp,#0.493036, # slow, only calibrated with 2 pulses
 
-# # Pulses calibrated short without switch
-# # 'fast_pi_duration'          :  64e-9, #140e-9,#      #250 MHz
-# 'fast_pi_duration'          :  116e-9, #140e-9,#      #250 MHz slow
-# # 'fast_pi_amp'               :  0.794559, #250 MHz, slow
-# 'fast_pi_amp'               :  0.403203,#0.389050,#0.393042,#0.401147,#0.392860,#0.794559, #250 MHz, slow
-# 'fast_pi_mod_frq'           :   f_mod_0,
+####################
+#
+#   HERMITE
+#
+#####################
 
-#     ### Pi/2 pulses, fast & hard 
-# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-# 'fast_pi2_duration'         :   56e-9, #should be divisible by 4, slow
-# # 'fast_pi2_amp'              :   0.395251, # 
-# 'fast_pi2_amp'              :   0.427983,#0.407681,#0.410445, # slow, only calibrated with 2 pulses
-# 'fast_pi2_mod_frq'          :   f_mod_0,
+# #no SSB
+'Hermite_fast_pi_duration'          :  Hermite_pi_duration,    
+'Hermite_fast_pi_amp'               :  Hermite_pi_amp, 
 
-# # Longer pulses calibrated short without switch
-# # 'fast_pi_duration'          :  64e-9, #140e-9,#      #250 MHz
-# 'fast_pi_duration'          :  144e-9, #140e-9,#      #250 MHz slow
-# # 'fast_pi_amp'               :  0.794559, #250 MHz, slow
-# 'fast_pi_amp'               :  0.321366,#0.389050,#0.393042,#0.401147,#0.392860,#0.794559, #250 MHz, slow
-# 'fast_pi_mod_frq'           :   f_mod_0,
-
-#     ### Pi/2 pulses, fast & hard 
-# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
-# 'fast_pi2_duration'         :   72e-9, #should be divisible by 4, slow
-# # 'fast_pi2_amp'              :   0.395251, # 
-# 'fast_pi2_amp'              :   0.318457,#0.407681,#0.410445, # slow, only calibrated with 2 pulses
-# 'fast_pi2_mod_frq'          :   f_mod_0,
+# 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'Hermite_fast_pi2_duration'         :  Hermite_pi2_duration,#56e-9, #should be divisible by 4, slow
+'Hermite_fast_pi2_amp'              :  Hermite_pi2_amp, # slow, only calibrated with 2 pulses
 
 
     ### MBI pulses ###
@@ -461,7 +454,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #MBI parameters
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
-'MBI_threshold'             :           1,
+'MBI_threshold'             :           0, #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
@@ -496,8 +489,9 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI_shutter'] ={
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
+
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
-'MBI_threshold'             :           1,
+'MBI_threshold'             :           0,
 'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 'repump_after_E_RO_duration':           15,
@@ -548,7 +542,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
 'min_dec_tau'         : 20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],#20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'], 
-'max_dec_tau'         : 0.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
+'max_dec_tau'         : 0.48e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
 'dec_pulse_multiple'  : 4      #4. 
 }
 

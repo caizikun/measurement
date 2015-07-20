@@ -27,10 +27,10 @@ qt.pulsar.define_channel(id='ch4_marker2', name='MW_switch', type='marker',
     high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
 # qt.pulsar.define_channel(id='ch4_marker2', name='MW_invswitch', type='marker',
 #     high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
-qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.55, #MAB: was 0.9, lowered to protect MW switch
-    low=-0.55, offset=0., delay=spin_of+240e-9, active=True)
-qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.55,
-    low=-0.55, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9, #MAB: was 0.9, lowered to protect MW switch
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 
 #RF
@@ -72,7 +72,7 @@ qt.pulsar.define_channel(id='ch3_marker2', name='EOM_trigger', type='marker',
 #    high=1.0, low=0.02, offset=0., delay=416e-9, active=True)
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0., delay=416e-9, active=True)
+    high=0.4, low=0.0, offset=0., delay=450e-9, active=True) #delay was with switch 416e-9. #2015-07-17
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 

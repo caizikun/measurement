@@ -24,7 +24,7 @@ def run(name, mbi = True, mw_switch = False):
     #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 31
+    pts = 11
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
@@ -54,8 +54,8 @@ def run(name, mbi = True, mw_switch = False):
             m.params['repump_after_MBI_duration'] = [50]            
     else:
         # tau_larmor = 2.999e-6 #why?
-        m.params['MW_pulse_amps']       = np.linspace(0.0015,0.05,pts)
-        m.params['MW_pulse_durations']  = np.ones(pts)* 1e-6
+        m.params['MW_pulse_amps']       = np.linspace(0.0015,0.45,pts)
+        m.params['MW_pulse_durations']  = np.ones(pts)* 116e-9
         m.params['sweep_name'] = 'MW pulse amp'
         m.params['sweep_pts']  = m.params['MW_pulse_amps']
     if sweep_detuning:    
@@ -72,6 +72,6 @@ def run(name, mbi = True, mw_switch = False):
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run('nr1_sil18_MBI_rabi',mbi = True, mw_switch = True)
+    run('nr1_sil18_MBI_rabi',mbi = False, mw_switch = True)
     #run('hans1_calib_MBI')
 

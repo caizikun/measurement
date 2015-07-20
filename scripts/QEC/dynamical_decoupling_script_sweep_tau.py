@@ -14,16 +14,36 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16):
 
     m = DD.SimpleDecoupling(name)
+
+    # NOTE: ADDED from ElectronT1_Hermite on 23-04-2015
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+
     funcs.prepare(m)
 
+    if True: ### if you don't want to do MBI for this script.
+        m.params['MBI_threshold'] = 0
+        m.params['Ex_SP_amplitude'] = 0
+        m.params['Ex_MBI_amplitude'] = 0
+        m.params['SP_E_duration'] = 20 #2000
+        
+        m.params['repump_after_MBI_A_amplitude'] = [25e-9]
+        m.params['repump_after_MBI_duration'] = [300] # 50  
+
+
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 250 #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
     if N%4 == 0: 
         m.params['Final_Pulse'] ='-x'
     else:
         m.params['Final_Pulse'] ='x'
-    m.params['Decoupling_sequence_scheme'] = 'single_block'
+    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
     Number_of_pulses = N 
     tau_list = np.arange(tau_min,tau_max,tau_step) 
@@ -35,8 +55,8 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
     m.params['sweep_pts']        = tau_list*1e6
     m.params['sweep_name']       = 'tau (us)'
 
-    print m.params['fast_pi_duration']
-    print m.params['fast_pi_amp']
+    # print m.params['fast_pi_duration']
+    # print m.params['fast_pi_amp']
 
     # m.params['fast_pi2_duration'] = pi_dur
     # m.params['fast_pi2_amp'] = pi_amp
@@ -55,7 +75,7 @@ if __name__ == '__main__':
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
     # stools.turn_off_all_lt2_lasers()
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=0.260e-6,tau_max=0.29e-6,tau_step =2e-9, N =64)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=4e-6,tau_max=16e-6,tau_step =200e-9, N=32)
     # stools.turn_off_all_lt2_lasers()
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
