@@ -81,7 +81,7 @@ def MBE(name, carbon            =   1,
 if __name__ == '__main__':
     carbons = [1,2,5]
     debug = False
-    init_method = 'MBI'
+    init_method = 'swap'
 
     if init_method == 'swap':
         for c in carbons:

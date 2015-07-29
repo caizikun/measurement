@@ -43,7 +43,7 @@ f_ms1 = True
 
 self_phase_calibration = True
 
-cross_phase_calibration = False
+cross_phase_calibration = True
 cross_phase_steps       = 1
 
 debug = False
@@ -315,7 +315,7 @@ if f_ms1 and n == 1:
 			n = stop_msmt()
 	
 	GreenAOM.set_power(20e-6)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=180)
+	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
 
 
 
@@ -407,7 +407,7 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 if n == 1 and cross_phase_calibration and len(carbons)>1:
 	GreenAOM.set_power(20e-6)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=180)
+	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
 	# phase_overview = [0.0]
 	for c in carbons:
 		# remove that specific carbon from the list
@@ -510,7 +510,12 @@ if cross_phase_calibration and len(carbons)>1:
 
 # print phase_overview
 
-write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase_calibration,cross_phase_calibration,debug)
+# write to msmt_params.py if the calibration was finished succesfully.
+if n== 1:
+	print 'Parameters have been written to msmt_params.py'
+	write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase_calibration,cross_phase_calibration,debug)
+else:
+	print 'Sequence was aborted: I did not save the calibration results'
 
 
 if use_queue:

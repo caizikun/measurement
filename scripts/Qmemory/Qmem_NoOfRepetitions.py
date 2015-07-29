@@ -48,11 +48,12 @@ def QMem(name, carbon_list   = [5],
         number_of_MBE_steps = 0,
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
+        logic_state         = 'X',
 
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
-        Repetitions         = 250):
+        Repetitions         = 125):
 
 
 
@@ -63,7 +64,7 @@ def QMem(name, carbon_list   = [5],
 
     #############
 
-    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
 
     ''' set experimental parameters '''
 
@@ -74,8 +75,8 @@ def QMem(name, carbon_list   = [5],
 
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
-    m.params['init_method_list']    = carbon_init_methods    
-    m.params['init_state_list']     = carbon_init_states    
+    m.params['init_method_list']    = carbon_init_methods*len(carbon_init_list)
+    m.params['init_state_list']     = carbon_init_states*len(carbon_init_list)    
     m.params['Nr_C13_init']         = len(carbon_init_list)
 
     m.params['el_after_init']       = '0'
@@ -89,13 +90,12 @@ def QMem(name, carbon_list   = [5],
     ####################
     ### MBE settings ###
     ####################
-    """these parameters will be used later on"""
 
     m.params['Nr_MBE']              = number_of_MBE_steps 
-    m.params['MBE_bases']           = []# should be mbe_bases as soon as mbe is implemented
+    m.params['MBE_bases']           = mbe_bases
     m.params['MBE_threshold']       = MBE_threshold
-    # m.params['2qb_logical_state']   = logic_state
-    # m.params['2C_RO_trigger_duration'] = 150e-6
+    m.params['2qb_logical_state']   = logic_state
+    m.params['2C_RO_trigger_duration'] = 150e-6
     
     ###################################
     ### Parity measurement settings ###
@@ -109,21 +109,27 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 16
+    pts = 11
     minReps = 1 # minimum number of LDE reps
-    maxReps = 101 # max number of LDe reps. this number is going to be rounded
+    maxReps = 501 # max number of LDe reps. this number is going to be rounded
     step = int((maxReps-minReps)/pts)
     maxReps = minReps + step*pts
 
 
-    m.params['repump_wait'] =  pts*[380e-9] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[241e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    tau_larmor = round(1/f_larmor,9)
+
+    # tau_larmor = 500e-9
+    m.params['repump_wait'] =  pts*[26.95e-6]#pts*[tau_larmor] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[290e-9] #this parameter has to be estimated from calibration curves, goes into phase calculation
     m.params['fast_repump_repetitions'] = np.arange(minReps,maxReps,step)
 
 
     m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
 
-    m.params['fast_repump_power'] = 600e-9
+    m.params['fast_repump_power'] = 700e-9
+    m.params['do_pi'] = False
+    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
 
 
     ### For the Autoanalysis
@@ -137,32 +143,7 @@ def QMem(name, carbon_list   = [5],
 
     funcs.finish(m, upload =True, debug=debug)
 
-def array_slicer(Evotime_slicer,evotime_arr):
-    """
-    this function is used to slice up the free evolution times into a list of lists
-    such that the sequence can be loaded into the AWG 
-    """
 
-    no_of_cycles=int(np.floor(len(evotime_arr)/Evotime_slicer))
-    returnEvos = []
-    for i in range(no_of_cycles):
-        returnEvos.append(evotime_arr[i*Evotime_slicer:(i+1)*Evotime_slicer])
-
-    if len(evotime_arr)%Evotime_slicer !=0 : #only add the remaining array if there are some elements left to add.
-        (returnEvos.append(evotime_arr[no_of_cycles*Evotime_slicer:]))
-
-    return returnEvos
-
-def check_magneticField(breakstatement=False):
-    if not breakstatement:
-        DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
-
-
-        DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.006,mw_switch = True)
 def show_stopper():
     print '-----------------------------------'            
     print 'press q to stop measurement cleanly'
@@ -172,35 +153,73 @@ def show_stopper():
         return True
     else: return False
 
-def optimize():
-    GreenAOM.set_power(15e-6)
-    counters.set_is_running(1)
-    optimiz0r.optimize(dims = ['x','y','z','y','x'])
+def optimize(breakst):
+    if not breakst:
+        GreenAOM.set_power(15e-6)
+        counters.set_is_running(1)
+        optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
 
-    # logic_state_list=['X','mX','Y','mY','Z','mZ'] doesn't do anything at the moment
+    
 
     breakst=False    
-    last_check=time.time()
+    # last_check=time.time()
+    # QMem('RO_electron',debug=False,tomo_list = ['Z'])
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
-    # QMem('C5_positive_tomo_Y',debug=True,tomo_list = ['Y'])
 
-    
-    for c in [1,2]:
-        if breakst:
-            break
-        for tomo in ['X','Y']:
-            optimize()
+    #########################
+    ### single qubit loop ###
+    #########################
+
+    n = 1 ### turn measurement on/off
+    if n == 1:
+        for c in [1]:
             if breakst:
                 break
-            for ro in ['positive','negative']:
-                breakst = show_stopper()
+            for tomo in ['X','Y']:
+                optimize(breakst)
                 if breakst:
                     break
-                QMem('NoOf_Repetitions_'+ro+'_Tomo_'+tomo+'_C'+str(c),
-                                                                    debug=False,
-                                                                    tomo_list = [tomo], 
-                                                                    el_RO = ro,
-                                                                    carbon_list   = [c],               
-                                                                    carbon_init_list        = [c])
+                for ro in ['positive','negative']:
+                    breakst = show_stopper()
+                    if breakst:
+                        break
+                    QMem('NoOf_Repetitions_'+ro+'_Tomo_'+tomo+'_C'+str(c),
+                                                                        debug=False,
+                                                                        tomo_list = [tomo], 
+                                                                        el_RO = ro,
+                                                                        carbon_list   = [c],               
+                                                                        carbon_init_list        = [c])
+
+    ######################
+    ### two qubit loop ###
+    ######################
+
+    n = 0 ### turn measurement on/off
+    if n == 1:
+        logic_state_list=['X','mX'] ### for DFS creation.
+        for c_list in [[1,2],[2,5]]:
+            for logic_state in logic_state_list:
+                if breakst:
+                    break
+                for tomo in [['X','X'],['X','Y'],['Y','Y'],['Y','X']]:
+                    optimize(breakst)
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        msmt_name = 'NoOf_Repetitions_'+ro+'_state'+logic_state+'_Tomo_'+tomo+'_C'+str(c_list[0])+str(c_list[1])
+                        
+                        QMem(msmt_name,
+                                debug                   = False,
+                                tomo_list               = tomo, 
+                                el_RO                   = ro,
+                                carbon_list             = c_list,               
+                                carbon_init_list        = c_list,
+                                carbon_init_thresholds  = [0],
+                                number_of_MBE_steps     = 1,
+                                carbon_init_methods     = ['swap'],
+                                logic_state             = logic_state)

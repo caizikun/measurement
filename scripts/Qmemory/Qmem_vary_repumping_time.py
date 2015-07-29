@@ -111,14 +111,18 @@ def QMem(name, carbon_list   = [5],
     ### determine sweep parameters
     pts = 25
 
-    m.params['repump_wait'] =  pts*[2000e-9] # time between pi pulse and beginning of the repumper
+    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    tau_larmor = round(1/f_larmor,9)
+
+    m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
     m.params['average_repump_time'] = np.linspace(0e-6,1.7e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[60]
+    m.params['fast_repump_repetitions'] = pts*[50]
+    m.params['do_pi'] = True
+    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
 
+    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
 
-    m.params['fast_repump_duration'] = pts*[5e-6] #how long the 'Zeno' beam is shined in.
-
-    m.params['fast_repump_power'] = 200e-9
+    m.params['fast_repump_power'] = 700e-9
 
 
     ### For the Autoanalysis
@@ -132,32 +136,7 @@ def QMem(name, carbon_list   = [5],
 
     funcs.finish(m, upload =True, debug=debug)
 
-def array_slicer(Evotime_slicer,evotime_arr):
-    """
-    this function is used to slice up the free evolution times into a list of lists
-    such that the sequence can be loaded into the AWG 
-    """
 
-    no_of_cycles=int(np.floor(len(evotime_arr)/Evotime_slicer))
-    returnEvos = []
-    for i in range(no_of_cycles):
-        returnEvos.append(evotime_arr[i*Evotime_slicer:(i+1)*Evotime_slicer])
-
-    if len(evotime_arr)%Evotime_slicer !=0 : #only add the remaining array if there are some elements left to add.
-        (returnEvos.append(evotime_arr[no_of_cycles*Evotime_slicer:]))
-
-    return returnEvos
-
-def check_magneticField(breakstatement=False):
-    if not breakstatement:
-        DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
-
-
-        DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.006,mw_switch = True)
 def show_stopper():
     print '-----------------------------------'            
     print 'press q to stop measurement cleanly'
@@ -177,7 +156,7 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
 
     
-    for c in [1]:
+    for c in [5]:
         if breakst:
             break
         for tomo in ['X','Y']:

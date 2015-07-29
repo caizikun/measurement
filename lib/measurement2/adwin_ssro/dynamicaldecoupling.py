@@ -8,6 +8,7 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
+reload(pulsar)
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 import pulse_select as ps
 
@@ -744,8 +745,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 # print g.repump_duration,g.t_rep,g.reps,g.t
                 for iC in range(len(g.C_phases_before_gate)):
                     if g.C_phases_before_gate[iC] != None:
-                        g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + ((900e-9+g.repump_duration-g.t_rep-416e-9)*g.reps)*C_freq_0[iC]+g.reps*C_freq[iC]*2*g.t)%(2*np.pi)
-                    
+                        g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + (g.duration_initial+g.repump_duration-g.t_rep-g.AOM_delay)*g.reps*C_freq_0[iC]+g.reps*C_freq[iC]*2*g.t)%(2*np.pi)
+                # print 'phase before LDE ', g.C_phases_before_gate
+                # print 'phase after LDE ', g.C_phases_after_gate                    
 
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
@@ -1966,12 +1968,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_LDE_element(self,Gate):
         '''
         Generates the primitive of an LDE element.
-        Optical pi pulses are excluded.
+        Optical pi pulses are not implemented.
         NK
         '''
 
-        ###TODO
+        ###TODO (maybe)
         ### Add an AOM delay time at the end! then there is no overlap between the following pi/2 and the repumper.
+        ### note that this is not strictly necessary if the Switch risetime at the beginning of the element is long enough.
+
 
         ###################
         ## Set paramters ##
@@ -1985,41 +1989,77 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         repump_duration      = Gate.repump_duration
 
-        ### define necessary pulses
+        ### whether or not you want to do a pi pulse during the sequence is determined by this bool.
+        if not hasattr(Gate,'do_pi'):
+            Gate.do_pi = False
 
+        
+        ### define necessary pulses
         #MW pulses
         pi2 = self._pi2_elt()
         X = self._X_elt()
+        mX = self._mX_elt()
 
+        RepumpX = pulse.cp(X, amplitude = Gate.pi_amp)
+
+
+        # SquareX = pulselib.MW_IQmod_pulse('electron Pi-pulse',
+        #         I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #         PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+        #         frequency = 0,
+        #         PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #         Sw_risetime = self.params['MW_switch_risetime'],
+        #         length = self.params['fast_pi_duration'],
+        #         amplitude = 0.11795)
         #wait times
-        duration_initial = 900e-9 ## because MW switch
-        T_init =  pulse.SquarePulse(channel='MW_Imod', name='Wait t',
-                length = duration_initial-self.params['fast_pi2_duration']/2, amplitude = 0.)
-        T =  pulse.SquarePulse(channel='MW_Imod', name='Wait t',
-                length = t-self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2, amplitude = 0.)
-        T_rep = pulse.SquarePulse(channel='MW_Imod',name='Wait t-trep',
-                length = (t-t_rep)-self.params['fast_pi_duration']/2, amplitude = 0.)
+        # print 'X risetime {}'.format(X.risetime*1e9)
+        duration_initial = X.risetime + self.params['fast_pi2_duration']/2 + 30e-9 ## because MW switch
+        Gate.duration_initial = duration_initial
 
-        #defined on a marker channel, amp has to be 1
+
+        T_init =  pulse.SquarePulse(channel='MW_Imod', name='Wait t',
+                    length = duration_initial-self.params['fast_pi2_duration']/2, amplitude = 0.)
+        if Gate.do_pi:
+            T =  pulse.SquarePulse(channel='MW_Imod', name='Wait t',
+                    length = t-self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2, amplitude = 0.)
+            T2 =  pulse.SquarePulse(channel='MW_Imod', name='Wait t',
+                    length = 2*t-self.params['fast_pi_duration'], amplitude = 0.)
+            T_rep = pulse.SquarePulse(channel='MW_Imod',name='Wait t-trep',
+                    length = (t-t_rep)-self.params['fast_pi_duration']/2, amplitude = 0.)
+
+        else:
+            T_rep = pulse.SquarePulse(channel='MW_Imod',name='Wait t-trep',
+                    length = (t-t_rep)-self.params['fast_pi2_duration']/2, amplitude = 0.)
+        #defined on a marker channel, amp has to be 1 in order to switch on.
         AWG_repump = pulse.SquarePulse(channel = Gate.channel,name = 'repump',
             length = repump_duration,amplitude = 1)
+
+
+        
         
         #create element
         rep_LDE_elt = element.Element('%s' %(Gate.prefix), pulsar = qt.pulsar, global_time=True)
 
         rep_LDE_elt.append(T_init)
         rep_LDE_elt.append(pi2)
-        rep_LDE_elt.append(T)
-        rep_LDE_elt.append(X)
+        if Gate.do_pi:
+            rep_LDE_elt.append(T)
+            rep_LDE_elt.append(RepumpX)
+            # rep_LDE_elt.append(T2)
+            # rep_LDE_elt.append(mX)
+
         rep_LDE_elt.append(T_rep)
         rep_LDE_elt.append(AWG_repump)
 
         Gate.elements =  [rep_LDE_elt]
         Gate.elements_duration = (duration_initial +  2*t-t_rep+repump_duration)*Gate.reps
 
-        #DIRTY HACK. For now we do not care about carbon phase
+        #DIRTY HACK. For now we do not care compatibility with other element types and leave the phase calculation out.
         Gate.tau_cut = 1e-6
-        Gate.phase = 'reset'
+
+        ### might be useful for future phase calcs
+        Gate.AOM_delay = qt.pulsar.channels[Gate.channel]['delay']
+        # print 'AOM_delay {}'.format(Gate.AOM_delay)
 
 
 
@@ -5671,6 +5711,103 @@ class Nuclear_Crosstalk_vs2(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+# class Nuclear_pi_calibration(MBI_C13):
+#     '''
+#     update description still
+#     This class is to determine the effect of many carbon gates
+#     Sequence: |N-MBI| -|Ren|^(2n)-|Tomography|
+#     '''
+#     mprefix = 'CarbonPiCal'
+#     adwin_process = 'MBI_multiple_C13'
+
+#     def generate_sequence(self, upload=True, debug=False):
+#         pts = self.params['pts']
+
+#         ### initialise empty sequence and elements
+#         combined_list_of_elements =[]
+#         combined_seq = pulsar.Sequence('Initialized Nuclear Rabi Sequence')
+
+#         for pt in range(pts): ### Sweep over trigger time (= wait time)
+#             gate_seq = []
+
+#             ### Nitrogen MBI
+#             mbi = Gate('MBI_'+str(pt),'MBI')
+#             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+#             ### Carbon initialization
+#             carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+#                 prefix = 'C_MBI_',
+#                 wait_for_trigger      = True, pt =pt,
+#                 initialization_method = 'swap',#self.params['C13_init_method'],
+#                 C_init_state          = self.params['init_state'],
+#                 addressed_carbon      = self.params['carbon_nr'],
+#                 el_RO_result          = '0'))
+#             gate_seq.extend(carbon_init_seq)
+
+#             if self.params['electron_state_during'] == 'sup':
+#                 pi2_electron =    Gate(prefix+'_init_pi2_el_'+str(pt),'electron_Gate',
+#                         Gate_operation='pi2',
+#                         phase = m.params))
+
+
+#             ### Free evolution_time/ number of gates
+
+#                 ### Check if free evolution time is larger than the RO time (it can't be shorter)
+#             if self.params['add_wait_gate'] == True:
+#                 if self.params['free_evolution_time'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
+#                     print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+#                             %(self.params['free_evolution_time'][pt],self.params['Carbon_init_RO_wait']))
+#                     qt.msleep(5)
+#                     ### Add waiting time
+#                 wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+#                          wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_init_RO_wait'])
+#                 wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+#             ### Readout
+#             carbon_tomo_seq = self.readout_carbon_sequence(
+#                     prefix              = 'Tomo',
+#                     pt                  = pt,
+#                     go_to_element       = None,
+#                     event_jump_element  = None,
+#                     RO_trigger_duration = 10e-6,
+#                     carbon_list         = [self.params['carbon_nr']],
+#                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
+#                     readout_orientation = self.params['electron_readout_orientation'])
+#             gate_seq.extend(carbon_tomo_seq)
+
+#             gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+#             ### Convert elements to AWG sequence and add to combined list
+#             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+#             combined_list_of_elements.extend(list_of_elements)
+
+#             for seq_el in seq.elements:
+#                 combined_seq.append_element(seq_el)
+
+#             if not debug:
+#                 print '*'*10
+#                 for g in gate_seq:
+#                     print g.name
+
+#             if debug:
+#                 for g in gate_seq:
+#                     print g.name
+#                     if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
+#                         print "[ None]"
+#                     else:
+#                         print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
+
+#                     if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
+#                         print "[ None]"
+#                     else:
+#                         print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
+
+#         if upload:
+#             print ' uploading sequence'
+#             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+#         else:
+#             print 'upload = false, no sequence uploaded to AWG'
 
 class EchoGateInit(MBI_C13):
     """
@@ -11929,10 +12066,6 @@ class QMemory_repumping(MBI_C13):
             init_wait_for_trigger = True
             
             for kk in range(self.params['Nr_C13_init']):
-                print self.params['init_method_list'][kk]
-                print self.params['init_state_list'][kk]
-                print self.params['carbon_init_list'][kk]
-                print 
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
@@ -11944,32 +12077,37 @@ class QMemory_repumping(MBI_C13):
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
-            """ we don't do this for now"""
-            ### MBE - measurement based entanglement
-            # for kk in range(self.params['Nr_MBE']):
+            
+            ############################
+            ###  DFS initialization  ###
+            ############################
 
-            #     probabilistic_MBE_seq = self.readout_carbon_sequence(
-            #             prefix              = 'MBE' + str(kk+1),
-            #             pt                  = pt,
-            #             go_to_element       = mbi,
-            #             event_jump_element  = 'next',
-            #             RO_trigger_duration = 150e-6,
-            #             carbon_list         = self.params['carbon_list'],
-            #             RO_basis_list       = self.params['MBE_bases'],
-            #             el_RO_result         = '0')
+            for kk in range(self.params['Nr_MBE']):
+                
+                probabilistic_MBE_seq =     self.logic_init_seq(
+                        prefix              = '2C_init_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        RO_trigger_duration = self.params['2C_RO_trigger_duration'],#150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['2qb_logical_state'] ,
+                        go_to_element       = mbi,
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
 
-            #     gate_seq.extend(probabilistic_MBE_seq)
+                gate_seq.extend(probabilistic_MBE_seq)
 
             ############################
             ### Repetitive repumping ###
             ############################
-            gate_seq.extend(self.generate_repumper(pt,self.params['Tomo_bases']))
+            if self.params['fast_repump_repetitions'][pt] != 0:
+                gate_seq.extend(self.generate_repumper(pt))
 
 
             ############################
             ###     Tomography       ###
-            ############################ 
-            print self.params['Tomo_bases'] 
+            ############################  
             carbon_tomo_seq = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
                     pt                  = pt,
@@ -11980,6 +12118,12 @@ class QMemory_repumping(MBI_C13):
                     RO_basis_list       = self.params['Tomo_bases'],
                     el_state_in         = 0,
                     readout_orientation = self.params['electron_readout_orientation'])
+            
+            # gate_seq.append(
+            #     Gate('ro'+'_Trigger_'+str(pt),'Trigger',
+            #     wait_time = 10e-6,
+            #     go_to = None, event_jump = None,
+            #     el_state_before_gate = '0'))
             gate_seq.extend(carbon_tomo_seq)
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
@@ -12000,11 +12144,8 @@ class QMemory_repumping(MBI_C13):
             print 'upload = false, no sequence uploaded to AWG'
 
 
-    def generate_repumper(self,pt,tomo, aom_delay = False):
-        """ 
-        The boolean aom_delay is going to be implemented.
-        The goal of aom_dealy is going to be the
-        calibration of the relative delay betweeen repumper and MW."""
+    def generate_repumper(self,pt):
+        """ generate a primitive LDE element."""
 
         #extract parameters
         t = self.params['repump_wait'][pt]
@@ -12013,14 +12154,16 @@ class QMemory_repumping(MBI_C13):
         N = self.params['fast_repump_repetitions'][pt]
 
 
-        Laser=Gate('repump'+str(pt)+'_'+tomo[0],'LDE',
+        Laser=Gate('repump'+str(pt),'LDE',
             duration = repump_duration+2*t-t_rep
             )
 
+        Laser.pi_amp = self.params['pi_amps'][pt]
         Laser.t = t
         Laser.t_rep = t_rep
         Laser.reps = N
         Laser.repump_duration = repump_duration
+        Laser.do_pi = self.params['do_pi']
 
         Laser.channel='AOM_Newfocus'
         Laser.elements_duration= repump_duration+2*t-t_rep

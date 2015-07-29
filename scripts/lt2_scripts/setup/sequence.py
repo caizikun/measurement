@@ -22,9 +22,9 @@ spin_of = -104e-9-27e-9
 
 # MW
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker',
-    high=2.0, low=0, offset=0., delay=spin_of+260e-9, active=True)
+    high=2.0, low=0, offset=0., delay=spin_of+255e-9, active=True)
 qt.pulsar.define_channel(id='ch4_marker2', name='MW_switch', type='marker',
-    high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
+    high=2.7, low=0, offset=0., delay=spin_of+255e-9, active=True)
 # qt.pulsar.define_channel(id='ch4_marker2', name='MW_invswitch', type='marker',
 #     high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9, #MAB: was 0.9, lowered to protect MW switch
@@ -42,8 +42,8 @@ qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
 
 # #HH
-# qt.pulsar.define_channel(id='ch2_marker2', name='HH_sync', type='marker',
-#     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch4_marker1', name='sync', type='marker',
+     high=2.0, low=0, offset=0., delay=0., active=True)
 # qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker',
 #     high=2.0, low=0, offset=0., delay=0., active=True)
 
@@ -54,8 +54,8 @@ qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
 
 qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
         high=4.0, low=0, offset=0., delay=148e-9, active=True)
-qt.pulsar.define_channel(id='ch4_marker1', name='fpga_clock', type='marker', 
-        high=1.0, low=0, offset=0., delay=0., active=True)
+# qt.pulsar.define_channel(id='ch4_marker1', name='fpga_clock', type='marker', 
+#         high=1.0, low=0, offset=0., delay=0., active=True)
  
 
 '''

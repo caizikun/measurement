@@ -83,10 +83,10 @@ def interrupt_script(wait = 5):
         sys.exit()
 
 if __name__ == '__main__':
-    tau = 4.998e-6 # tau_L nr 32 dip in N=16
-    NoP1=np.arange(4,124,4)
-    # NoP2=np.arange(124,194,4)
-    # NoP3=np.arange(194,254,4)
+    tau = 4.63e-6 # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,335,16)
+    # NoP2=np.arange(1154,1345,64)
+    # NoP3=np.arange(200,3201,3200)
     SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
     # SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
     # SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)

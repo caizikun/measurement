@@ -384,10 +384,11 @@ def GHZ_branched(name,
 if __name__ == '__main__':
 
 
-    unbranched_GHZ=True
-    unbranched_GHZ_test_permuted=False
+    unbranched_GHZ=False
+    unbranched_GHZ_test_permuted=True
     test_unbranched_GHZ_with_init=False
     test_X_X_X_tomo=False
+    unbranched_GHZ_contextuality_test=False
 
     orientations_list=[
         ['positive','positive','positive','positive'],
@@ -509,7 +510,55 @@ if __name__ == '__main__':
                     initialize_carbons = False, debug=False)
 
     if unbranched_GHZ_test_permuted:
-        mmt_lists = list(itertools.permutations([['X','Y','Y'],['Y','X','Y'],['Y','Y','X'],['X','X','X']]))
+        #mmt_lists = list(itertools.permutations([['X','Y','Y'],['Y','X','Y'],['Y','Y','X'],['X','X','X']]))
+        mmt_lists = [[['X','Y','I'],['I','X','I'],['I','Y','X'],['X','X','X']]]
+        for mmt_list in mmt_lists:
+            print '-----------------------------------'
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+
+            GreenAOM.set_power(25e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
+
+            ssrocalibration(SAMPLE_CFG)
+
+            xyy_list = mmt_list[0]
+            yxy_list = mmt_list[1]
+            yyx_list = mmt_list[2]
+            tomo_list = mmt_list[3]
+            xyy_list_name = ''.join([a for a in xyy_list])                
+            yxy_list_name = ''.join([a for a in yxy_list])                
+            yyx_list_name = ''.join([a for a in yyx_list])
+            tomo_name = ''.join([a for a in tomo_list])
+
+            for kk,orientations in enumerate(orientations_list):
+                print '-----------------------------------'
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+
+                orientations_name = ''.join([o[0] for o in orientations])
+
+                print xyy_list_name, yxy_list_name, yyx_list_name, tomo_name
+                print orientations_name
+
+                GHZ(SAMPLE+'GHZ_C125_unbranched_tomo_'+xyy_list_name+'_'+yxy_list_name+'_'+yyx_list_name+'_'+tomo_name+'_'+orientations_name, carbon_list = [1,2,5], 
+                    xyy_list = xyy_list, yxy_list = yxy_list, yyx_list = yyx_list, tomo_list = tomo_list, 
+                    parity_orientations = orientations, initialize_carbons = False,feedforward=False, debug=False)
+
+    if unbranched_GHZ_contextuality_test:
+        mmt_lists = [[['X','Y','Y'],['Y','X','Y'],['Y','Y','X'],['X','X','X']],
+                    [['X','I','I'],['I','X','I'],['I','I','X'],['X','X','X']],
+                    [['X','I','I'],['I','Y','I'],['I','I','Y'],['X','Y','Y']],
+                    [['Y','I','I'],['I','X','I'],['I','I','Y'],['Y','X','Y']],
+                    [['Y','I','I'],['I','Y','I'],['I','I','X'],['Y','Y','X']]
+                    ]
 
         for mmt_list in mmt_lists:
             print '-----------------------------------'
@@ -547,9 +596,10 @@ if __name__ == '__main__':
                 print xyy_list_name, yxy_list_name, yyx_list_name, tomo_name
                 print orientations_name
 
-                GHZ(SAMPLE+'GHZ_C125_unbranched_tomo_'+tomo_name+'_'+orientations_name, carbon_list = [1,2,5], 
+                GHZ(SAMPLE+'GHZ_C125_unbranched_contextuality_'+tomo_name+'_'+orientations_name, carbon_list = [1,2,5], 
                     xyy_list = xyy_list, yxy_list = yxy_list, yyx_list = yyx_list, tomo_list = tomo_list, 
                     parity_orientations = orientations, initialize_carbons = False,feedforward=False, debug=False)
+
 
 
     if test_unbranched_GHZ_with_init:

@@ -44,11 +44,11 @@ def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'
     # m.params['wait_times'] = np.concatenate( (np.linspace(0,int(1e5), m.params['pts'] - 3), np.linspace(int(2e5), int(4e5),3))) # in us
     # m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 3), np.linspace(int(1e6), int(15e6),m.params['pts'] - 3))) # in us
     if start_time != None:
-        m.params['wait_times'] = np.linspace(start_time, end_time, pts)
+        m.params['wait_times'] = np.linspace(start_time, end_time, m.params['pts'])
     else:
          m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 4), np.linspace(int(1e6), int(2e6),m.params['pts'] - 4))) # in us
 
-    m.params['repetitions'] = 600
+    m.params['repetitions'] = 250
     m.params['T1_initial_state'] = T1_initial_state
     m.params['T1_readout_state'] = T1_readout_state
 
@@ -166,4 +166,5 @@ if __name__ == '__main__':
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0, end_time = 1.5e6, pts = 4)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0.0e6, end_time = 4.0e5, pts = 5)
-    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = None, end_time = None, pts = None)
+    electronT1hermite(SAMPLE_CFG+'0to0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 800e3, pts = 8)
+    electronT1hermite(SAMPLE_CFG+'1to0', T1_initial_state = 'ms=1', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 800e3, pts = 8)

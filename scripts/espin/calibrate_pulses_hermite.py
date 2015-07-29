@@ -59,7 +59,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
 
     # Add Hermite X pulse
     # m.MW_pi = hermite_Xpi(m)
-    m.MW_pi = ps.X_pulse(m)
+    m.MW_pi = pulse.cp(ps.X_pulse(m),phase = 0)
 
     print 'duration ', m.params['MW_duration']
     print 'amp ', m.params['MW_pulse_amplitudes'][0]
@@ -197,7 +197,7 @@ def calibrate_pi2_pulse(name, debug=False):
     pts = 11
     m.params['pulse_type'] = 'Hermite QuMem'    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 4000
+    m.params['repetitions'] = 2000
 
     # Append pi & pi/2 pulses to instance
     m.MW_pi = ps.X_pulse(m)
@@ -217,7 +217,7 @@ def calibrate_pi2_pulse(name, debug=False):
     # m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # Hermite pulses
-    sweep_axis =  m.params['Hermite_fast_pi2_amp'] + np.linspace(-0.08, 0.08, pts)  
+    sweep_axis =  m.params['Hermite_fast_pi2_amp'] + np.linspace(-0.12, 0.12, pts)  
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # for the autoanalysis
@@ -257,7 +257,7 @@ def hermite_Xpi(msmt):
     return MW_pi 
 
 if __name__ == '__main__':
-    # calibrate_pi_pulse(SAMPLE_CFG + 'QuanMem_Pi', multiplicity =11,debug = False)
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Hermite_Pi', multiplicity =5,debug = False)
     # pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'QuMem_Pi2', debug = False)
+    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
