@@ -1,4 +1,5 @@
 # import the msmt class
+import numpy as np
 import qt
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
@@ -45,6 +46,10 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0,
     m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
+
+    m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
+                    m.params['ssbmod_frq_stop'], m.params['pts']) 
+                    + m.params['mw_frq'])*1e-9
 
     m.autoconfig()
     m.generate_sequence(upload=True)

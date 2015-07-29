@@ -14,11 +14,9 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name,tau = None,N=None):
+def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
 
-    # m = DD.NuclearRamsey(name)
-    m = DD.NuclearRamsey_v2(name)
-    # m = DD.NuclearRamsey_no_elDD(name)
+    m = DD.NuclearRamsey(name)
 
     funcs.prepare(m)
 
@@ -28,13 +26,10 @@ def Carbon_Ramsey(name,tau = None,N=None):
     m.params['Final_Pulse']         =   '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 1 
+    m.params['addressed_carbon'] = carbon 
 
     ### Sweep parmater
-    m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
-                                                           np.linspace(15e3,22e3,25).astype(int)*1e-9]))
-
-    m.params['free_evolution_times']    = np.linspace(1e3,7e3,20).astype(int)*1e-9
+    m.params['free_evolution_times']    = evolution_times
 
     m.params['pts']                     = len(m.params['free_evolution_times'])
     m.params['sweep_pts']               = m.params['free_evolution_times']
@@ -51,16 +46,17 @@ def Carbon_Ramsey(name,tau = None,N=None):
     else: 
         m.params['C_Ren_tau'] = tau 
 
-    #############################
-    #!NB: These should go into msmt params
-    #############################
-    m.params['min_dec_tau'] = 20e-9 + m.params['fast_pi_duration']/2.0
-    m.params['max_dec_tau'] = 0.35e-6 #Based on measurement for fingerprint at low tau
-    m.params['dec_pulse_multiple'] = 4#lowest multiple of 4 pulses
-
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE)
+
+    evolution_times1 = np.linspace(2e3,8e3,20).astype(int)*1e-9
+    evolution_times2 = np.linspace(15e3,21e3,20).astype(int)*1e-9
+    evolution_times3 = np.linspace(28e3,34e3,20).astype(int)*1e-9
+
+    for carbon in [1,5]:
+        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
+        Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
+        Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)

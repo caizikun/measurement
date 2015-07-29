@@ -1,8 +1,8 @@
 """
-Initializes a carbon via MBi into |x>
+Initializes a carbon via SWAP into |Z>
 Repeptitively goes through an LDE element.
 Perofrms tomogrpahy on the carbon.
-We vary the power of the repumper at the end of the LDE.
+We vary the timing of the sequence in order to detect spurious resonances.
 
 NK 2015
 """
@@ -43,7 +43,7 @@ def QMem(name, carbon_list   = [5],
         carbon_init_list        = [5],
         carbon_init_states      = ['up'], 
         carbon_init_methods     = ['MBI'], 
-        carbon_init_thresholds  = [1],  
+        carbon_init_thresholds  = [1],
 
         number_of_MBE_steps = 0,
         mbe_bases           = ['Y','Y'],
@@ -52,7 +52,7 @@ def QMem(name, carbon_list   = [5],
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
-        Repetitions         = 300):
+        Repetitions         = 500):
 
 
 
@@ -107,23 +107,31 @@ def QMem(name, carbon_list   = [5],
     ###################################
     ###	   LDE element settings		###
     ###################################
-    pts = 10
 
-    m.params['repump_wait'] =  pts*[800e-9] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[500e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[40]
+    pts = 11
+
+    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    tau_larmor = round(1/f_larmor,9)
+
+    m.params['repump_wait'] =  [tau_larmor]*pts # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[190e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = [150]*pts
     m.params['do_pi'] = True
-     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    
 
-    m.params['fast_repump_duration'] = pts*[5e-6] 
+    centre = 0.8346
+    rng = 0.1
+    m.params['pi_amps'] = np.linspace(centre-rng,centre+rng,pts)
 
-    m.params['fast_repump_power'] = np.linspace(10e-9,200e-9,pts)
+    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
+
+    m.params['fast_repump_power'] = 700e-9
 
 
     ### For the Autoanalysis
     m.params['pts']                 = pts
-    m.params['sweep_name']          = 'repump repetitions' 
-    m.params['sweep_pts']           =  m.params['fast_repump_repetitions']
+    m.params['sweep_name']          = 'MW pulse amplitude' 
+    m.params['sweep_pts']           =  m.params['pi_amps']
     
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
@@ -131,33 +139,20 @@ def QMem(name, carbon_list   = [5],
 
     funcs.finish(m, upload =True, debug=debug)
 
-def array_slicer(Evotime_slicer,evotime_arr):
-    """
-    this function is used to slice up the free evolution times into a list of lists
-    such that the sequence can be loaded into the AWG 
-    """
 
-    no_of_cycles=int(np.floor(len(evotime_arr)/Evotime_slicer))
-    returnEvos = []
-    for i in range(no_of_cycles):
-        returnEvos.append(evotime_arr[i*Evotime_slicer:(i+1)*Evotime_slicer])
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
 
-    if len(evotime_arr)%Evotime_slicer !=0 : #only add the remaining array if there are some elements left to add.
-        (returnEvos.append(evotime_arr[no_of_cycles*Evotime_slicer:]))
-
-    return returnEvos
-
-def check_magneticField(breakstatement=False):
-    if not breakstatement:
-        DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
-
-
-        DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
-        range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.006,mw_switch = True)
-
+def optimize():
+    GreenAOM.set_power(15e-6)
+    counters.set_is_running(1)
+    optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
 
@@ -165,8 +160,24 @@ if __name__ == '__main__':
 
     breakst=False    
     last_check=time.time()
-    # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
-    # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
-    for tomo in ['X','Y']:
-    	for ro in ['positive','negative']:
-        	QMem('RepumpPower_'+ro+'_Tomo_'+tomo+'_C5',debug=True,tomo_list = [tomo], el_RO = ro)
+
+    # QMem('C5_positive_tomo_Y',debug=True,tomo_list = ['Y'])
+    n = 1
+    if n == 1:
+        for c in [2]:
+            if breakst:
+                break
+            for tomo in ['X','Y']:
+                optimize()
+                if breakst:
+                    break
+                for ro in ['positive','negative']:
+                    breakst = show_stopper()
+                    if breakst:
+                        break
+                    QMem('sweep_pi_amps_'+ro+'_Tomo_'+tomo+'_C'+str(c),
+                                                                        debug=False,
+                                                                        tomo_list = [tomo], 
+                                                                        el_RO = ro,
+                                                                        carbon_list   = [c],               
+                                                                        carbon_init_list        = [c])

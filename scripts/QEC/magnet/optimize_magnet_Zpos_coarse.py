@@ -43,6 +43,11 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['pulse_length'] = 2e-6
     m.params['ssbmod_amplitude'] = 0.01
 
+    m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
+                    m.params['ssbmod_frq_stop'], m.params['pts']) 
+                    + m.params['mw_frq'])*1e-9
+
+
     m.autoconfig()
     m.generate_sequence(upload=True)
     m.run()

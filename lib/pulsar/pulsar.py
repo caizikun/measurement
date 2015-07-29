@@ -303,7 +303,6 @@ class Pulsar:
 
             self.AWG.set_sqel_loopcnt_to_inf(idx, False)
             self.AWG.set_sqel_loopcnt(elt['repetitions'], idx)
-
             if (elt['repetitions'] <1) or (elt['repetitions']>65536):
                 raise Exception('The number of repetitions out of range. Valid range = 1 to 65536 (%s recieved)' %elt['repetitions'])
             if elt['goto_target'] != None:
@@ -475,9 +474,9 @@ class Pulsar:
             wfname_l.append(el_wfnames)
 
         for elt in sequence.elements:
-
             nrep_l.append(elt['repetitions'])
             if (elt['repetitions'] <1) or (elt['repetitions']>65536):
+                print elt['wfname']
                 raise Exception('pulsar: The number of repetitions of this AWG element are out of range. Valid range = 1 to 65536 (%s recieved)' %elt['repetitions'])
 
             if elt['goto_target'] != None:

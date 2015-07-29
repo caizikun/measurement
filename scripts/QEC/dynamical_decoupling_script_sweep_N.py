@@ -31,17 +31,18 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     # Default values when no MBI
-    if mbi == False:
-        m.params['MBI_threshold'] = 0
-        m.params['Ex_SP_amplitude'] = 0
-        m.params['Ex_MBI_amplitude'] = 0
-        m.params['SP_E_duration'] = 20 #2000
+    # # Default values when no MBI
+    # if mbi == False:
+    #     m.params['MBI_threshold'] = 0
+    #     m.params['Ex_SP_amplitude'] = 0
+    #     m.params['Ex_MBI_amplitude'] = 0
+    #     m.params['SP_E_duration'] = 20 #2000
         
-        m.params['repump_after_MBI_A_amplitude'] = [15e-9]
-        m.params['repump_after_MBI_duration'] = [300] # 50  
-    """
-    END MODIFICATIONS FOR LT1
-    """
+    #     m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+    #     m.params['repump_after_MBI_duration'] = [300] # 50  
+    # """
+    # END MODIFICATIONS FOR LT1
+    # """
 
     funcs.prepare(m)
     #input parameters
@@ -60,7 +61,6 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['Final_Pulse'] ='x'
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
-    #m.params['Decoupling_sequence_scheme'] = 'single_block'
 
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
@@ -70,10 +70,10 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['sweep_name'] = 'Number of pulses'
 
     m.autoconfig()
-    ### MODIFICATION FOR LT1 ###
-    m.params['E_RO_durations'] = [m.params['SSRO_duration']]
-    m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
-    ### END MODIFICATION FOR LT1 ###
+    # ### MODIFICATION FOR LT1 ###
+    # m.params['E_RO_durations'] = [m.params['SSRO_duration']]
+    # m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
+    # ### END MODIFICATION FOR LT1 ###
 
     funcs.finish(m, upload =True, debug=False)
 

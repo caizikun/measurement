@@ -312,8 +312,8 @@ class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
         self.length = self.length_24p3 + self.length_m318p6 + self.length_384p3 + \
             2*self.pulse_delay + 2*self.PM_risetime
 
-        # self.start_offset = self.PM_risetime
-        # self.stop_offset = self.PM_risetime
+        self.start_offset = self.PM_risetime
+        self.stop_offset = self.PM_risetime
 
     def __call__(self, **kw):
         MW_IQmod_pulse.__call__(self, **kw)

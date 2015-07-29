@@ -18,7 +18,7 @@ ins_counters = qt.instruments['counters']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-carbons = [1,2,3,5,6]
+carbons = [2,5]
 
 def SimpleDecoupling_swp_N(name,tau=None, Number_of_pulses=np.arange(80,100,2), 
             Final_Pulse='x', Initial_Pulse ='x', reps_per_ROsequence=1000):

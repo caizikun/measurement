@@ -24,7 +24,7 @@ class ElectronT1_without_AWG(ssro.IntegratedSSRO):
     mprefix = 'ElectronT1'
     adwin_process = 'T1_without_AWG_SHUTTER'
 
-def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = False, wait_times = np.r_[1e5,1e6,3e6,10e6]):
+def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = False, wait_times = np.linspace(10e3,300e3,10)):
     print 'Hello1'
     m = pulsar_msmt.ElectronT1(name)
     print 'Hello2'
@@ -39,18 +39,17 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
         #T1 experiment
 
     # Measurement settings
-    m.params['pts'] = 6 + 3
+    m.params['pts'] = len(wait_times)
 
     m.params['T1_initial_state'] = T1_initial_state #currently 'ms=0' or 'ms=-1'
     m.params['T1_readout_state'] = T1_readout_state #currently 'ms=0' or 'ms=-1'
     # m.params['wait_times'] =  np.linspace(1e3,1.5e3,16) #in us, values must be divisible by the repeat element
     # m.params['wait_times'] =  np.r_[1000,np.linspace(1e6,5.0e6,5),10e6,15e6,30e6,60e6] #in us, values must be divisible by the repeat element
     # m.params['wait_times'] =  np.r_[1000,np.linspace(1e6,5.0e6,5),60e6] 
-    m.params['wait_times'] =  wait_times #,2.5e6] 
-    m.params['wait_time_repeat_element'] = 1e3      #in us, this element is repeated to create the wait times max of 6 seconds
-    m.params['repetitions'] = 1
-    m.params['use_shutter'] = 1
-
+    m.params['wait_times'] =  wait_times
+    m.params['wait_time_repeat_element'] = 10 #in us, this element is repeated to create the wait times max of 6 seconds
+    m.params['repetitions'] = 100
+    m.params['use_shutter'] = 0
         #Plot parameters
     m.params['sweep_name'] = 'Times (us)'
     m.params['sweep_pts'] = m.params['wait_times']
@@ -156,7 +155,7 @@ if __name__ == '__main__':
     # times = np.r_[1e5,1e6,3e6,10e6,30e6, 60e6]
     
 
-    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
+    # T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
     # T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
 
     # T1(SAMPLE+'_'+'init_0_RO_0_SWITCH', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.r_[1e5,3e5, 1e6])
@@ -183,7 +182,7 @@ if __name__ == '__main__':
 
 
 
-    T1_without_AWG(SAMPLE + 'T1_test_without_AWG') 
+    # T1_without_AWG(SAMPLE + 'T1_test_without_AWG') 
 
 
 

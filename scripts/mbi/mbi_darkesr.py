@@ -18,12 +18,10 @@ def run(name, mw_switch = False):
 
     funcs.prepare(m)
 
-    print 'threshold =' + str(m.params['MBI_threshold'])
-
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
-    pts = 121
+    pts = 31
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 125
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
 
@@ -32,7 +30,7 @@ def run(name, mw_switch = False):
     m.params['MW_pulse_amps']       = np.ones(pts) * m.params['AWG_MBI_MW_pulse_amp']  #0.01525 #for msm1,  ??? for msp1, 
 
     m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']
-            -1.5e6, m.params['MW_modulation_frequency']+5.5e6, pts)
+            -3.5e6, m.params['MW_modulation_frequency']+3.5e6, pts)
 
     print m.params['MW_pulse_mod_frqs']
 
@@ -61,7 +59,7 @@ def run(name, mw_switch = False):
 #     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
-    run('MBI_DESR',mw_switch = True)
+    run('MBI_DESR',mw_switch = False)
 
 
 

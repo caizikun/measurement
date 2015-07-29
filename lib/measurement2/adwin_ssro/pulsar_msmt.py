@@ -1562,7 +1562,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
-            length = 5000e-9, amplitude = 0)
+            length = 15000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
 
@@ -2460,3 +2460,74 @@ class GeneralNPi4Calibration_3(PulsarMeasurement):
 
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(np.array([e.length() for e in elements])*1e6))+10)
+
+class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        Phi60 = kw.get('Phi60', None)
+        Phi300 = kw.get('Phi300',None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T)
+
+                ### select which pulse amplitude are swept and choose the pulses accordingly
+                if '1' in self.params['swept_pulses']:
+                    e.append( pulse.cp(Phi60,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+                else:
+                    e.append(pulse.cp(Phi60))
+                if '2' in self.params['swept_pulses']:
+                    e.append(pulse.cp(Phi300,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+                else:
+                    e.append(pulse.cp(Phi300))
+
+                if '3' in self.params['swept_pulses']:
+                    e.append( pulse.cp(Phi60,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+                else:
+                    e.append(pulse.cp(Phi60))
+
+                    
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)

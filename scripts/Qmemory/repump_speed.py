@@ -1,5 +1,5 @@
 """
-Measures the relative how fast we repump by elongating the repumping time for a given power.
+Measures how fast we repump by elongating the repumping time for a given power.
 
 NK 2015
 """

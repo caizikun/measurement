@@ -3,6 +3,8 @@ import qt
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+import pulse_select as ps
+
 
 
 class ElectronRabi(pulsar_msmt.MBI):
@@ -160,12 +162,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
         Dephasing = pulse.SquarePulse(channel=self.params['Channel_alias'],
             length = 1000e-9, amplitude = 1.)
 
-        X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod', Sw_channel='MW_switch',
-            Q_channel = 'MW_Qmod',
-            PM_channel = 'MW_pulsemod',
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            Sw_risetime = self.params['MW_switch_risetime'])
+        X = ps.X_pulse(self)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
@@ -178,28 +175,31 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                 global_time = True)
             e.append(T)
 
-            e.append(
-                pulse.cp(X,
-                    frequency = self.params['MW_pulse_mod_frqs'][i],
-                    amplitude = self.params['MW_pulse_amps'][i],
-                    length = self.params['MW_pulse_durations'][i],
-                    phase = self.params['MW_pulse_1_phases'][i]))
+            if self.params['MW_pulse_amps'][i] != 0:
+                e.append(
+                    pulse.cp(X,
+                        frequency = self.params['MW_pulse_mod_frqs'][i],
+                        amplitude = self.params['MW_pulse_amps'][i],
+                        length = self.params['MW_pulse_durations'][i],
+                        phase = self.params['MW_pulse_1_phases'][i]))
 
             e.append(
                 pulse.cp(T, length=self.params['MW_repump_delay1'][i]))
 
-            e.append(
-                pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
+            if self.params['repumping_time'][i] != 0:
+                e.append(
+                    pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
 
             e.append(
                 pulse.cp(T, length=self.params['MW_repump_delay2'][i]))
 
-            e.append(
-                pulse.cp(X,
-                    frequency = self.params['MW_pulse_mod_frqs'][i],
-                    amplitude = self.params['MW_pulse_2_amps'][i],
-                    length = self.params['MW_pulse_2_durations'][i],
-                    phase = self.params['MW_pulse_2_phases'][i]))
+            if self.params['MW_pulse_2_amps'][i] != 0:
+                e.append(
+                    pulse.cp(X,
+                        frequency = self.params['MW_pulse_mod_frqs'][i],
+                        amplitude = self.params['MW_pulse_2_amps'][i],
+                        length = self.params['MW_pulse_2_durations'][i],
+                        phase = self.params['MW_pulse_2_phases'][i]))
             e.append(
                 pulse.cp(T, length=2e-6))
             e.append(adwin_sync)

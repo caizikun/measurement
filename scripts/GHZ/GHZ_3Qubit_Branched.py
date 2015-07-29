@@ -110,7 +110,7 @@ def GHZ(name,
     m = DD.GHZ_ThreeQB(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 1500
+    m.params['reps_per_ROsequence'] = 4000
     m.params['pts'] = 1
 
     ##### Carbon initializations params
@@ -238,22 +238,31 @@ def GHZ_debug(name,
     debug = False,
     parity_orientations = ['positive','positive'],
     final_phases = [0,0,0], 
-    do_invert_RO=True):
+    do_invert_RO=True,
+    initialize_carbons=False):
 
 
     m = DD.GHZ_Debug_ZZTomo(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 4000
+    m.params['reps_per_ROsequence'] = 1200
     m.params['pts'] = 1
 
     ##### Carbon initializations params
-    m.params['Nr_C13_init'] = 3
-    m.params['carbon_init_list']        = [1,2,5]
-    m.params['init_state_list']         = 3*['up']
-    m.params['init_method_list']        = 3*['swap']
-    m.params['C13_MBI_threshold_list']  = 3*[0]
-
+    m.params['initialize_carbons'] = initialize_carbons
+    if initialize_carbons:
+        m.params['Nr_C13_init'] = len(init_carbon_list)
+        m.params['carbon_init_list']        = init_carbon_list
+        m.params['init_state_list']         = init_carbon_states
+        m.params['init_method_list']        = init_carbon_methods
+        m.params['C13_MBI_threshold_list']  = init_carbon_thresholds
+    else:
+        m.params['Nr_C13_init'] = 0
+        m.params['carbon_init_list']        = []
+        m.params['init_state_list']         = []
+        m.params['init_method_list']        = []
+        m.params['C13_MBI_threshold_list']  = []
+    
 
     m.params['Nr_MBE']              = 0 
     #m.params['MBE_bases']           = []
@@ -305,10 +314,11 @@ if __name__ == '__main__':
     test_ZII = False
     single_qubit_tomo=False
     two_qubit_tomo=False
-    debug_ZZ_Tomo_1mmt=False
+    debug_X_Tomo=False
     tomography=True
     debug_ZZ_Tomo_3mmts=False
     debug_electron_readout= False
+    debug_X_X_X_tomo = False
 
     orientations_list=[
         ['positive','positive','positive','positive'],
@@ -343,40 +353,14 @@ if __name__ == '__main__':
         # ['negative','positive','positive','negative'],
         ]  
 
-    orientations_name=[
-        'pppp',
-        'pppn',
-        'ppnp',
-        'ppnn',
-        'pnpp',
-        'pnpn',
-        'pnnp',
-        'pnnn',
-        'nppp',
-        'nppn',
-        'npnp',
-        'npnn',
-        'nnpp',
-        'nnpn',
-        'nnnp',
-        'nnnn'
-        ]
-
-    debug_orientations_name =[
-        'pp',
-        'pn',
-        'np',
-        'nn',      
-        ]
-
     tomo_lists = [
         ['X','X','X'],
-        ['Z','Z','I'],
-        ['Z','I','Z'],
-        ['I','Z','Z'],
-        ['X','Y','Y'],
-        ['Y','X','Y'],
-        ['Y','Y','X']
+        # ['Z','Z','I'],
+        # ['Z','I','Z'],
+        # ['I','Z','Z'],
+        # ['X','Y','Y'],
+        # ['Y','X','Y'],
+        # ['Y','Y','X']
         ]
 
     full_tomo_lists = [
@@ -391,33 +375,33 @@ if __name__ == '__main__':
 
         # ['X','X','I'],
         # ['X','Y','I'],
-        # ['X','Z','I'],
-        ['Y','X','I'],
-        ['Y','Y','I'],
-        # ['Y','Z','I'],
+        ['X','Z','I'],
+        #['Y','X','I'],
+        #['Y','Y','I'],
+        ['Y','Z','I']
         # ['Z','X','I'],['Z','Y','I'],
         # ['Z','Z','I'],
 
-        ['X','I','X'],
-        ['Y','I','X'],
+        # ['X','I','X'],
+        # ['Y','I','X'],
         # ['Z','I','X'],
-        ['X','I','Y'],
-        ['Y','I','Y'],
+        # ['X','I','Y'],
+        # ['Y','I','Y'],
         # ['Z','I','Y'],
         # ['X','I','Z'],['Y','I','Z'],['Z','I','Z'],
 
-        ['I','X','X'],
-        ['I','Y','X'],
+        # ['I','X','X'],
+        # ['I','Y','X'],
         # ['I','Z','X'],
-        ['I','X','Y'],
-        ['I','Y','Y'],
+        # ['I','X','Y'],
+        # ['I','Y','Y'],
         # ['I','Z','Y'],
         # ['I','X','Z'],['I','Y','Z'],['I','Z','Z'],
 
         # ['X','X','X'],
-        ['X','Y','X'],
+        # ['X','Y','X'],
         # ['X','Z','X'],
-        ['Y','X','X'],
+        # ['Y','X','X'],
         # ['Y','Y','X'],
         # ['Y','Z','X'],
         # ['Z','X','X'],['Z','Y','X'],
@@ -533,7 +517,7 @@ if __name__ == '__main__':
 
     if tomography:
 
-        for jj,tomo_list in enumerate(tomo_lists):
+        for jj,tomo_list in enumerate(full_tomo_lists):
             print '-----------------------------------'
             print 'press q to stop measurement cleanly'
             print '-----------------------------------'
@@ -565,36 +549,47 @@ if __name__ == '__main__':
                     initialize_carbons = False, init_carbon_list = [3], init_carbon_states =['up'], init_carbon_methods = ['swap'],
                     init_carbon_thresholds = [0], debug=False)
 
-    debug_mmtB_lists = [
-        #['I','I','X'],
-        # ['X','X','I'],     
-        # ['X','Y','Y'],
-        # ['Y','X','Y'],
-        # ['Y','Y','X'],
-        ['X','X','I']
-        ]
+    if debug_X_X_X_tomo:
+        tomo_lists = [['X'],['Y'],['Z']]
 
-    debug_mmtC_lists = [
-        # ['I','I','X'],
-        # ['X','X','X'],     
-        # ['X','Y','Y'],
-        # ['Y','X','Y'],
-        # ['X','Y','I'],
-        # ['X','Z','I'],
-        # ['Y','X','I'],
-        # ['Y','Y','I'],
-        # ['Y','Z','I'],
-        # ['Z','X','I'],
-        # ['Z','Y','I'],
-        ['Z','Z','I']
-        ]
-            
-    if debug_ZZ_Tomo_1mmt:
+        for jj,tomo_list in enumerate(tomo_lists):
+            print '-----------------------------------'
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(2)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                break
+            GreenAOM.set_power(25e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
 
-            
-        tomo_list = ['Y','Y','I']
+            ssrocalibration(SAMPLE_CFG)
 
-        for jj,mmtA_list in enumerate(debug_mmtB_lists):
+            for kk,orientations in enumerate(orientations_list):
+                print '-----------------------------------'
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    break
+
+                orientations_name = ''.join([o[0] for o in orientations])
+                tomo_name = ''.join([b for b in tomo_list])
+                print 'tomo'+tomo_name
+                print orientations_name
+
+
+                GHZ(SAMPLE+'GHZ_C1_branched_X_X_X_tomo_'+tomo_name+'_'+orientations_name, feedforward=False,carbon_list = [1], 
+                    xyy_list = ['X'],yxy_list=['X'],yyx_list=['X'],tomo_list = tomo_list, tomo_carbons=[1], parity_orientations = orientations, 
+                    initialize_carbons=False,debug=False)
+
+
+    if debug_X_Tomo:
+
+        mmtA_list = ['X','X']
+        tomo_lists = [['X','X']]#,['Y'],['Z']]
+
+        for jj,tomo_list in enumerate(tomo_lists):
             print '-----------------------------------'
             print 'press q to stop measurement cleanly'
             print '-----------------------------------'
@@ -616,15 +611,17 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
 
-                mmtA_name = mmtA_list[0]+mmtA_list[1]+mmtA_list[2]
-                tomo_name = tomo_list[0]+tomo_list[1]+tomo_list[2]
+                orientations_name = ''.join([o[0] for o in orientations])
+                mmtA_name = ''.join([a for a in mmtA_list])
+                tomo_name = ''.join([b for b in tomo_list])
 
-                print 'mmtA: '+mmtA_name+ ' tomo: '+tomo_name
-                print orientations
+                print mmtA_name
+                print tomo_name
+                print orientations_name
 
-                GHZ_debug(SAMPLE+'GHZ_C125_debug_mmt_'+mmtA_name+'_'+'tomo'+tomo_name+'_'+debug_orientations_name[kk], carbon_list = [1,2,5], 
+                GHZ_debug(SAMPLE+'GHZ_C1_'+mmtA_name+'_'+'tomo'+tomo_name+'_'+orientations_name, carbon_list = [1,2], 
                     A_list = mmtA_list, tomo_list = tomo_list, parity_orientations = orientations, do_invert_RO=True, debug=False)
-
+   
     if debug_ZZ_Tomo_3mmts:
 
         mmtA_list = ['I','I','X']

@@ -24,7 +24,7 @@ def run(name, mbi = True, mw_switch = False):
     #print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     #print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 31
+    pts = 11
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
@@ -41,8 +41,8 @@ def run(name, mbi = True, mw_switch = False):
     
     if sweep_duration:        
     # MW pulses
-        m.params['MW_pulse_amps']       = np.ones(pts) * m.params['fast_pi_amp']
-        m.params['MW_pulse_durations']  = np.linspace(0,400e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
+        m.params['MW_pulse_amps']       = np.ones(pts) * 0.005#m.params['fast_pi_amp']
+        m.params['MW_pulse_durations']  = np.linspace(0,3000e-9,pts) # 05-30-'14 Took away the +10 ns -Machiel
         m.params['sweep_name'] = 'MW pulse duration (ns)'
         m.params['sweep_pts']  = m.params['MW_pulse_durations'] * 1e9
         if mbi == False:
@@ -54,10 +54,19 @@ def run(name, mbi = True, mw_switch = False):
             m.params['repump_after_MBI_duration'] = [50]            
     else:
         # tau_larmor = 2.999e-6 #why?
-        m.params['MW_pulse_amps']       = np.linspace(0.0015,0.05,pts)
-        m.params['MW_pulse_durations']  = np.ones(pts)* 1e-6
+        m.params['MW_pulse_amps']       = np.linspace(0.0015,0.3,pts)
+        m.params['MW_pulse_durations']  = np.ones(pts)*  160e-9
         m.params['sweep_name'] = 'MW pulse amp'
         m.params['sweep_pts']  = m.params['MW_pulse_amps']
+
+        if mbi == False:
+            m.params['MBI_threshold'] = 0
+            m.params['Ex_SP_amplitude'] = 0
+            m.params['Ex_MBI_amplitude'] = 0
+           
+            m.params['repump_after_MBI_A_amplitude'] = [15e-9]
+            m.params['repump_after_MBI_duration'] = [50]      
+
     if sweep_detuning:    
         m.params['MW_pulse_amps']       = np.ones(pts) * 0.022#m.params['fast_pi_amp']
         m.params['MW_pulse_durations']  = np.ones(pts)* 2000e-9 # 05-30-'14 Took away the +10 ns -Machiel

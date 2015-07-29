@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\tud277246
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -142,7 +142,7 @@ INIT:
   ROseq_cntr          = 1
   seq_cntr            = 1
   
-  next_MBI_stop = -2 ' deprecated? -Machiel 18-9-2014
+  next_MBI_stop = -2
   AWG_is_done = 0
   current_MBI_attempt = 1
   next_MBI_laser_stop = -2
