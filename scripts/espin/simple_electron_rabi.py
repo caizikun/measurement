@@ -42,8 +42,8 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 70, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.106 # * 0.05 #*0.49
+        m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.5# * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         

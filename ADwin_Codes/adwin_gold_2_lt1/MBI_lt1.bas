@@ -166,7 +166,7 @@ EVENT:
   IF (awg_in_is_hi>0)then
     PAR_76=42
   endif
-  
+  PAR_13=1
   if ((awg_in_was_hi = 0) and (awg_in_is_hi > 0)) then
     awg_in_switched_to_hi = 1
   else
@@ -344,7 +344,7 @@ EVENT:
             if(awg_in_switched_to_hi > 0) then          
               mode = 6
               timer = -1
-              wait_time = 0
+              wait_time =1
             endif
           ENDIF
         
@@ -352,7 +352,7 @@ EVENT:
           ' if we do not run an awg sequence, we just wait the specified time, and go then to readout
           mode = 6
           timer = -1
-          wait_time = sequence_wait_time
+          wait_time = 1'sequence_wait_time
         endif
         
       CASE 6    ' readout on the E line

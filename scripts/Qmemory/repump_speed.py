@@ -14,20 +14,22 @@ reload(funcs)
 
 SAMPLE = qt.cfgman['samples']['current']
 SAMPLE_CFG = qt.cfgman['protocols']['current']
-Name='111_No1_Sil18_'
+
 
 
 def run(name):
     m = pulsar_mbi_espin.ElectronRamsey_Dephasing(name)
     funcs.prepare(m)
 
-    pts = 31
+    pts = 21
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 500
     m.params['detuning'] = 0e6 #artificial detuning
 
     # MW pulses
         ## First pulse
+    #print 'PULSE AMP'
+    #print m.params['fast_pi_amp']
     m.params['MW_pulse_durations'] = np.ones(pts) * m.params['fast_pi_duration']
     m.params['MW_pulse_amps'] = np.ones(pts) * m.params['fast_pi_amp']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
@@ -42,11 +44,11 @@ def run(name):
 
     # laser beam
     m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 640e-9 #in Watts
-    m.params['repumping_time'] = np.linspace(0.0e-6,1e-6,pts) 
-    m.params['MW_repump_delay1'] =  np.ones(pts) * 500e-9
+    m.params['laser_dephasing_amplitude']= 110e-9 #in Watts
+    m.params['repumping_time'] = np.linspace(0.0e-6,5e-6,pts) 
+    m.params['MW_repump_delay1'] =  np.ones(pts) * 2500e-9
     #sweep param
-    m.params['MW_repump_delay2'] = np.ones(pts) * 500e-9
+    m.params['MW_repump_delay2'] = np.ones(pts) * 2500e-9
 
     # for the autoanalysis
     m.params['sweep_name'] = 'Repump duration (us)'
@@ -56,7 +58,7 @@ def run(name):
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run(Name+'ElectronRepump')
+    run(SAMPLE_CFG+'ElectronRepump')
 
 
 

@@ -2109,6 +2109,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ###  single elements  ###
             ####################
             elif gate.scheme in single_elements_list :
+
                 e = gate.elements[0]
                 list_of_elements.append(e)
                 if gate.reps ==0:
@@ -3962,7 +3963,7 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
     '''
     update description still
     This class is to test multiple carbon initialization and Tomography.
-    Sequence: |N-MBI| -|CinitA|-|CinitB|-|MBE|-|Tomography|
+    Sequence: |N-MBI| -|CinitA|-|CinitB|-|Tomography|
     '''
     mprefix = 'CarbonRamseyInitialised'
     adwin_process = 'MBI_multiple_C13'
@@ -3991,7 +3992,10 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
                 el_RO_result          = str(self.params['C13_MBI_RO_state']))
             gate_seq.extend(carbon_init_seq)
 
-
+            if self.params['el_pi_after_mbi'] == True:
+                El_Pi = Gate('El_Pi_'+str(pt),'electron_Gate',Gate_operation='pi')
+                
+                gate_seq.extend([El_Pi])
             ### Free evolution_time
 
                 ### Check if free evolution time is larger than the RO time (it can't be shorter)

@@ -14,7 +14,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
-reload(funcs)
+#reload(funcs)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -102,7 +102,7 @@ def Generaldarkesr(name):
     m.params['ssmod_detuning'] = m.params['desr_modulation_frequency']
     m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
     m.params['repetitions']  = 750
-    m.params['range']        = 0.35e6
+    m.params['range']        = 2.35e6
     m.params['pts'] = 41
     m.params['mw_power']=m.params['desr_MW_power']
     m.params['Ex_SP_amplitude']=0

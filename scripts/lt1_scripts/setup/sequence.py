@@ -28,7 +28,7 @@ spin_of = -104e-9-27e-9 # I adjust the offset of the IQ to match lt2, so the DD 
 '''
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=(44+166-8)*1e-9, active=True)  #spin_of+260e-9
-qt.pulsar.define_channel(id='ch3', name='MW_Imod', type='analog', high=0.9,
+qt.pulsar.define_channel(id='ch2', name='MW_Imod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) # spin_of+240e-9
 qt.pulsar.define_channel(id='ch4', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) #spin_of+240e-9

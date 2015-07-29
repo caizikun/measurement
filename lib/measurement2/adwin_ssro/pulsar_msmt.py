@@ -992,10 +992,11 @@ class MBI(PulsarMeasurement):
     def run(self, autoconfig=True, setup=True):
         if autoconfig:
             self.autoconfig()
-        print 'setup'
+       
+        
         if setup:
             self.setup()
-        print 'stop processes'
+
         for i in range(10):
             self.physical_adwin.Stop_Process(i+1)
             qt.msleep(0.1)
@@ -1003,13 +1004,13 @@ class MBI(PulsarMeasurement):
         # self.adwin.load_MBI()   
         # New functionality, now always uses the adwin_process specified as a class variables 
         loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
-        print 'load process'
+
         exec(loadstr)
         qt.msleep(1)
         # print loadstr 
 
         length = self.params['nr_of_ROsequences']
-        print 'setting data arrays'
+
         self.physical_adwin.Set_Data_Long(
                 np.array(self.params['repump_after_MBI_duration'], dtype=int), 33, 1, length)
         self.physical_adwin.Set_Data_Long(
@@ -1029,7 +1030,7 @@ class MBI(PulsarMeasurement):
 
         self.physical_adwin.Set_Data_Long(
                 np.array(self.params['sequence_wait_time'], dtype=int), 38, 1, length)
-        print 'starting process'
+
         self.start_adwin_process(stop_processes=['counter'], load=False)
         qt.msleep(1)
         self.start_keystroke_monitor('abort')
@@ -1058,6 +1059,7 @@ class MBI(PulsarMeasurement):
 
 
     def save(self, name='adwindata'):
+        
         reps = self.adwin_var('completed_reps')
         sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
 
@@ -1069,6 +1071,7 @@ class MBI(PulsarMeasurement):
                     ('ssro_results', reps),
                     ('MBI_cycles', sweeps),
                     ('MBI_time', sweeps),  ])
+        
         return
 
     def _MBI_element(self,name ='MBI CNOT'):
@@ -1581,6 +1584,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
                     pulse.cp(X,
                         amplitude=self.params['MW_pulse_amplitudes'][i]
                         ))
+            e.append(T)
             elements.append(e)
 
         # sequence

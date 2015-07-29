@@ -8,7 +8,7 @@ import msvcrt
 import copy
 from analysis.scripts.QEC import carbon_ramsey_analysis as cr 
 reload(cr)
-
+reload(funcs)
 execfile(qt.reload_current_setup)
 
 ins_adwin = qt.instruments['adwin']
@@ -56,7 +56,7 @@ crosstalk_reps = 300
 # phase_reps = 900
 # crosstalk_reps = 1200
 
-detuning_basic = 0.44e3
+detuning_basic = 0.005e3
 detuning_dict = {
 	'1' : detuning_basic,
 	'2' : detuning_basic*2,
@@ -82,6 +82,7 @@ def NuclearRamseyWithInitialization_cal(name,
         el_RO               = 'positive',
         detuning            = 0.5e3,
         el_state            = 1,
+        el_pi_after_mbi		= False,
         debug               = False):
     
     m = DD.NuclearRamseyWithInitialization_v2(name)
@@ -92,6 +93,7 @@ def NuclearRamseyWithInitialization_cal(name,
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = freq_reps
     m.params['C13_MBI_RO_state'] = el_state
+    m.params['el_pi_after_mbi'] = el_pi_after_mbi
     ### overwritten from msmnt params
            
     ####################################
@@ -100,8 +102,10 @@ def NuclearRamseyWithInitialization_cal(name,
     
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
-    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
+    m.params['pts'] = 14
+    m.params['free_evolution_time'] = 400e-6 + np.linspace(0*2*1./detuning,3*1./detuning ,m.params['pts'])
+    #m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 75e-6,m.params['pts'])
+
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
@@ -121,7 +125,9 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
+    print '##########################'
 
+    print 'C1_freq_0',m.params['C1_freq_0']
     funcs.finish(m, upload =True, debug=debug)
 
 def NuclearRamseyWithInitialization_phase(name, 
@@ -129,6 +135,7 @@ def NuclearRamseyWithInitialization_phase(name,
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         el_state            = 0,
+        el_pi_after_mbi		= False,
         debug               = False):
 
     m = DD.NuclearRamseyWithInitialization_v2(name)
@@ -139,7 +146,8 @@ def NuclearRamseyWithInitialization_phase(name,
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = phase_reps
     m.params['C13_MBI_RO_state'] = el_state
-    m.params['pts'] = 25
+    m.params['el_pi_after_mbi'] = el_pi_after_mbi
+    m.params['pts'] = 14
     if carbon_nr == 6:
     	m.params['pts'] = 21
 
@@ -241,7 +249,7 @@ def write_to_file_subroutine(data,search_string):
     """
 
     ## get the calibrated value
-    params = qt.exp_params['samples']['111_1_sil18'][search_string]
+    params = qt.exp_params['samples'][SAMPLE_CFG][search_string]
 
     for ii,x in enumerate(data):
         if search_string in x and not '#' in x[:5]:
@@ -278,11 +286,15 @@ def write_to_file_subroutine(data,search_string):
 ###### 				Calibrate ms=-1 frequencies 	      ######
 ################################################################
 print 'Calibrate ms=-1 frequencies for all 3 carbon spins'
+#This is without pi pulse
+#qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
+#qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
+#qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
-
+#With pi pulse, so after MBI SP to ms=0
+qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
+qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 
 # measure
 if f_ms1 and n == 1:
@@ -291,22 +303,22 @@ if f_ms1 and n == 1:
 		detuning = detuning_dict[str(c)]
 		if n == 1:
 
-			NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 1)
+			NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 0,el_pi_after_mbi=True)
 			# fit
 			f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
-			              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
+			              offset = 0.5, amplitude = 0.4, x0=0, decay_constant = 1e5, exponent = 2, 
 			              frequency = detuning, phase =0, 
 			              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 			              return_freq = True,
 			              return_results = False,
 			              title = 'msm1_freq_C'+str(c))
 			#update
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_1'] += -f0 + detuning
+			qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_freq_1'] += -f0 + detuning
 
 			n = stop_msmt()
 	
-	GreenAOM.set_power(20e-6)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=180)
+	#GreenAOM.set_power(20e-6)
+	#optimiz0r.optimize(dims=['x','y','z'], int_time=180)
 
 
 
@@ -314,9 +326,9 @@ if f_ms1 and n == 1:
 ###### 				Calibrate ms=0 frequencies 	 		 ######
 ###############################################################
 if n == 1 and f_ms0:
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	print 'Calibrate ms=0 frequencies'
 	# measure
 	for c in carbons:
@@ -326,16 +338,16 @@ if n == 1 and f_ms0:
 								detuning = detuning, el_state = 0)
 			# fit
 			f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
-			              offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+			              offset = 0.5, amplitude = 0.4, x0=0, decay_constant = 1e5, exponent = 2, 
 			              frequency = detuning, phase =0, 
 			              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 			              return_freq = True,
 			              return_results = False,
 			              title = '_msm0_freq_C'+str(c))
 			#update
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0'] += -f0 + detuning
+			qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_freq_0'] += -f0 + detuning
 			print 'C'+str(c)+'_freq_0'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0']
+			print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_freq_0']
 			
 			n = stop_msmt()
 
@@ -343,9 +355,9 @@ if n == 1 and f_ms0:
 ##################################################################
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+	qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	
 	print 'Calibrate extra phase for gate for all 3 carbon spins'
 
@@ -355,7 +367,7 @@ if n == 1 and f_ms0:
 if n == 1 and self_phase_calibration:
 	for c in carbons:
 		if n == 1:
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = 0
+			qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = 0
 			# measure
 			NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C'+str(c), carbon_nr= c)
 			# fit
@@ -367,12 +379,12 @@ if n == 1 and self_phase_calibration:
 					            return_results = False,	
                                 title = 'phase_C'+str(c))
 			if Amp < 0:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
+				qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
 			else:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0
+				qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0
 
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
+			print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
 			
 
 			n = stop_msmt()
@@ -392,7 +404,7 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 		carbons_cross.remove(c)
 		# reset phases to 0
 		for c_cross in carbons_cross:
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c_cross] = 0.
+			qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c_cross] = 0.
 
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
@@ -430,12 +442,12 @@ if n == 1 and cross_phase_calibration and len(carbons)>1:
 			# phase_overview.append(phase_list)
 
 			if Amp <0:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
+				qt.exp_params['samples'][SAMPLE_CFG]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
 			else:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
+				qt.exp_params['samples'][SAMPLE_CFG]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
 			#update
 			print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+			print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
 			
 			if n == 1:
 				n = stop_msmt()
@@ -460,7 +472,7 @@ if f_ms1:
 	print 'ms = 1 frequencies'
 	for c in carbons:
 		print 'Carbon '+str(c)
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_1']
+		print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_freq_1']
 	print
 	print '#########################'
 
@@ -472,7 +484,7 @@ if f_ms0:
 	print
 	for c in carbons:
 		print 'Carbon '+str(c)
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0']
+		print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_freq_0']
 	print
 	print '#########################'
 print
@@ -483,7 +495,7 @@ if self_phase_calibration:
 	print
 	for c in carbons:
 		print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
+		print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
 	print
 	print '#########################'
 print
@@ -497,7 +509,7 @@ if cross_phase_calibration and len(carbons)>1:
 		carbons_cross.remove(c)
 		for cross_c in carbons_cross:
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(cross_c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][cross_c]
+			print qt.exp_params['samples'][SAMPLE_CFG]['C'+str(c)+'_Ren_extra_phase_correction_list'][cross_c]
 
 # print phase_overview
 
