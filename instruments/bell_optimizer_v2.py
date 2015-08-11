@@ -432,6 +432,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     print self.status_message
                     text = lock_text
                     subject = 'ERROR : Laser Lock issue!'
+                    self.set_invalid_data_marker(1)  
                     self.send_error_email(subject = subject, text = text)
 
                 
