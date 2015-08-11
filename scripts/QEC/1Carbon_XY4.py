@@ -33,6 +33,7 @@ def Single_C_DD(name,
         C13_init_method       = 'MBI',
         C13_MBI_threshold     = [1],
         C13_RO_phase          = ['X'],
+        reps                  = 400,
         free_evolution_time = np.zeros((1))):
 
     m = DD.NuclearDD(name)
@@ -48,7 +49,7 @@ def Single_C_DD(name,
     m.params['el_after_init'] = el_after_init 
     m.params['Decoupling_pulses']=pulses
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = reps
     # if pulses > 31:
     #     m.params['reps_per_ROsequence'] = 450
 
@@ -133,7 +134,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
     m.finish()
 
-def qstop():
+def qstop(sleep):
     print '--------------------------------'
     print 'press q to stop measurement loop'
     print '--------------------------------'
@@ -141,23 +142,33 @@ def qstop():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
 
-def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['positive'],optimize=True, ssrocalib=True, 
+def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['positive'],optimize=True, ssrocalib=False, 
     Max_FET_Dict = {'1': 1.3,'4': 2.25,'8': 3.0,'16': 5.,'32': 7.}, timepart_Dict ={'1': 1,'4': 1,'8': 4,'16': 8,'32': 8},
-    debug=False, datapoints = 10, time_min= 15e-3):
+    debug=False, datapoints = 10, time_min= 50e-3, repitions = 500,el_after_init=1,tau_min =1.5e-3):
+    stopper = False
+    Calc_time = False
+    sleep = 2
+    if Calc_time == True:
+        debug =True
+        sleep = 0
+        Totaltime = 0
     for carbon in carbons:
-        if qstop():
+        if stopper:
             break
         for pulses in pulses_list:
-            if qstop():
+            if stopper:
                 break
-            FET = np.linspace(max(time_min/(2*pulses),1.5e-3),Max_FET_Dict[str(pulses)]/(2*pulses),datapoints)
-            print FET
+            FET = np.linspace(max(time_min/(2*pulses),tau_min),Max_FET_Dict[str(pulses)]/(2*pulses),datapoints)
+            if Calc_time:
+                Total_time += FET*2*pulses*2*repitions
+                print carbon, pusles, Totaltime
             indexer = datapoints/timepart_Dict[str(pulses)]
             for el_RO in el_ROs:
-                if qstop():
+                if stopper:
                     break
                 for timepart in range(timepart_Dict[str(pulses)]):
-                    if qstop():
+                    if stopper or qstop(sleep):
+                        stopper = True
                         break
                     if ssrocalib and not debug:
                         adwin.start_set_dio(dio_no=4,dio_val=0)
@@ -171,14 +182,25 @@ def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['po
                         ssrocalibration(SAMPLE)   
                     adwin.start_set_dio(dio_no=4,dio_val=0)
                     msmtstr = SAMPLE+'_'+ DD_scheme +'_C'+str(carbon) +'_RO' + el_RO + '_N' + str(pulses).zfill(2) + '_part' + str(timepart+1)
-                    Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, 
-                        C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET[timepart*indexer:(timepart+1)*indexer],
-                        C13_init_method = 'MBI', C13_MBI_threshold = [1], C13_RO_phase = ['X'])
+                    if not Calc_time:
+                        Single_C_DD(msmtstr, carbon_nr = carbon, el_RO=el_RO,pulses = pulses, 
+                            C13_DD_scheme=DD_scheme, debug=debug, free_evolution_time=FET[timepart*indexer:(timepart+1)*indexer],
+                            C13_init_method = 'MBI', C13_MBI_threshold = [1], el_after_init=el_after_init, C13_RO_phase = ['X'],reps=repitions)
 
                     
 if __name__ == '__main__':
 
-    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[6,2,3,5,1],pulses_list=[1],el_ROs=['positive','negative'],debug=False, ssrocalib=True)
+    tau=4.996e-6
+    N=36
+    t_pi = 2*tau*N
+    # t_min = t_pi+10e-6#1,2,4,8,16,32,
+    # Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1,2,4,8,16,32],el_ROs=['positive','negative'],debug=False, ssrocalib=False,el_after_init=0
+    #     ,Max_FET_Dict = {'1': 0.13, '2':0.2, '4': 0.28,'8': 0.45,'16': 0.73,'32': 1.1, '64':56},tau_min=t_min,
+    #     timepart_Dict ={'1':1, '2':2, '4': 2,'8': 4,'16': 10,'32': 20,'64': 20},datapoints=20)
+
+    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1],el_ROs=['positive'],debug=False, ssrocalib=False,el_after_init=1
+        ,Max_FET_Dict = {'1': 50e-3, '2':0.2, '4': 0.28,'8': 0.45,'16': 0.73,'32': 1.1, '64':56},tau_min=t_min,
+        timepart_Dict ={'1':1, '2':2, '4': 2,'8': 4,'16': 10,'32': 20,'64': 20},datapoints=9)
 
     # DD_scheme = 'auto'
     # carbons = [1,2]
@@ -275,7 +297,7 @@ if __name__ == '__main__':
     #                 break     
     #             msmtstr = SAMPLE+'_'+ 'XY4' +'_C'+str(carbon) +'_RO' + el_RO + '_N64' + '_part' + str(timepart+1) 
     #             GreenAOM.set_power(25e-6)
-    #             adwin.start_set_dio(dio_no=4,dio_val=0)
+    #             adwin.start_set_dio(dio_no=4q,dio_val=0)
     #             optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
     #             adwin.start_set_dio(dio_no=4,dio_val=0)
     #             ssrocalibration(SAMPLE)
@@ -287,4 +309,4 @@ if __name__ == '__main__':
     adwin.start_set_dio(dio_no=4,dio_val=0)
     
 
-    
+    # execfile(r'D:\measuring\measurement\scripts\Decoupling_Memory\queue.py')

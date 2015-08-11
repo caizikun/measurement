@@ -742,6 +742,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         if ans != 0:
             return self.err_dict[ans]
         else:
+
             return timestamps, channels, valid.value
             #return np.ctypeslib.as_array(timestamps), np.ctypeslib.as_array(channels), valid.value
     

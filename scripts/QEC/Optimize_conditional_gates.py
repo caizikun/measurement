@@ -18,6 +18,8 @@ ins_counters = qt.instruments['counters']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+carbons = [2,5]
+
 def SimpleDecoupling_swp_N(name,tau=None, Number_of_pulses=np.arange(80,100,2), 
             Final_Pulse='x', Initial_Pulse ='x', reps_per_ROsequence=1000):
 
@@ -83,15 +85,15 @@ def XY_initialization(name, carbon_list = [1],
 
     # m.params['C5_Ren_tau']  = [tau]
     # m.params['C5_Ren_N']    = [N]
-    
+
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000 
+    m.params['reps_per_ROsequence'] = 1000
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
 
-    ### Carbon Initialization settings 
+    ### Carbon Initialization settings
     m.params['carbon_init_list']    = carbon_list
     m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 
     # ########## CARBON 1 ###############
 
-    if True:
+    if 1 in carbons:
         tau_list = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list']
         N_list   = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list']
         for ii in range(len(tau_list)):
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 
         # ######## CARBON 2 ###############
 
-    if True:
+    if 2 in carbons:
         tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list']
         N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list']
 
@@ -205,7 +207,7 @@ if __name__ == '__main__':
 
 
     # ######## CARBON 3 ###############
-    if False:
+    if 3 in carbons:
 
         tau_list = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_tau_list']
         N_list   = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_N_list']
@@ -257,7 +259,7 @@ if __name__ == '__main__':
 
         # ######## CARBON 5 ###############
 
-    if False:
+    if 5 in carbons:
         tau_list = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list']
         N_list   = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list']
 

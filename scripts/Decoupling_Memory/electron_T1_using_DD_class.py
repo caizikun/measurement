@@ -18,7 +18,8 @@ def ElectronT1(name,
         init_el_state           = 0,
         RO_el_state             = 0,
         free_evolution_time     = np.linspace(10e-3,500e-3,2),
-        debug                   = True):
+        debug                   = True,
+        Shutter_rise_time       = 2500):
 
     m = DD.Electron_T1(name)
     funcs.prepare(m)
@@ -27,18 +28,23 @@ def ElectronT1(name,
 
     m.params['init_el_state'] = str(init_el_state)
     m.params['RO_el_state'] = str(RO_el_state)
+    
     #############################
     ### Option 1; Sweep phase ###
     #############################
-    m.params['use_shutter'] = 1
-    m.params['Nr_C13_init']     = 0
+    m.params['Shutter_rise_time'] = Shutter_rise_time
+    m.params['use_shutter']         = 1
+    m.params['Nr_C13_init']         = 0
     m.params['Nr_MBE']              = 0 
     m.params['Nr_parity_msmts']     = 0
-    m.params['reps_per_ROsequence'] = 10
+    m.params['reps_per_ROsequence'] = 400
     m.params['free_evolution_time'] = free_evolution_time
-    m.params['pts'] = len(m.params['free_evolution_time'])
+    # m.params['pts'] = len(m.params['free_evolution_time'])
+    m.params['pts'] = 1
     m.params['sweep_name'] = 'Free evolution time (s)'
-    m.params['sweep_pts']  = m.params['free_evolution_time']
+    m.params['sweep_name'] = 'Shutter_rise_time (ms)'
+    # m.params['sweep_pts']  = m.params['free_evolution_time']
+    m.params['sweep_pts']  = np.array(m.params['Shutter_rise_time']) / 1000
 
     ####################################################
     ### Option 3; Sweep assymetric RO evolution time ###
@@ -81,25 +87,28 @@ def qstop(sleep=2):
 
 
 if __name__ == '__main__':
-    '''================'''
-    '''TIM FILL THIS IN IN HOURS'''
-    total_measurement_time = 26.
-    '''TIM FILL THIS IN IN HOURS'''
-    '''================'''
-    
+
+
+
     sleep = 2
     optimize = True
-    ssrocalib = True
+    ssrocalib = False
     debug = False
-    init_el_state_list = [0,1]
-    RO_el_state_list = [0,1]
+    init_el_state_list = [1]
+    RO_el_state_list = [1]
+    
+
     
 
     FET = [[0.05,10.,30.],[60.],[100.],[250.]]
-    FET = np.linspace(0.05,30,10)
-    Total_time = 10*4.*sum(sum(FET))
-    Number_of_Parts = total_measurement_time*3600./Total_time
-    Number_of_Parts = 12 
+    
+    FET = np.linspace(0.05,40,10)
+    FET = [FET[2:9:3],FET[1:9:3],FET[:8:3],np.array([FET[-1]]),np.array([50.])]
+    FET = [np.linspace(0.005,1.5,8)]
+    # FET = [np.array([0.10])]
+    # Total_time = 10*4.*sum(sum(FET))
+    # Number_of_Parts = total_measurement_time*3600./Total_time
+    Number_of_Parts = len(FET)
     # Number_of_Parts = 5
     # ElectronT1(SAMPLE + 'test',
     #                     init_el_state           = 1,
@@ -109,42 +118,65 @@ if __name__ == '__main__':
 
     # adwin.start_set_dio(dio_no=4,dio_val=0)
     # ssss
+    stopper = 0
 
-    for init_el_state in init_el_state_list:
-        if qstop(sleep=sleep):
-            break
-        for RO_el_state in RO_el_state_list:
-            if qstop(sleep=sleep):
+    if False:
+        for init_el_state in init_el_state_list:
+            if stopper == 1 or qstop(sleep=sleep):
+                stopper=1
                 break
-            for reppart in range(Number_of_Parts):
-                    if qstop(sleep=sleep):
+            for RO_el_state in RO_el_state_list:
+                if stopper == 1 or qstop(sleep=sleep):
+                    stopper=1
+                    break
+                for reppart in range(1):
+                    if stopper == 1 or qstop(sleep=sleep):
+                        stopper=1
                         break
-                    for part in range(1):
-                        if qstop(sleep=sleep):
-                            break
-                        msmtstring = SAMPLE + 'electronT1'+'_init_el' + str(init_el_state) + '_RO_el' + str(RO_el_state) + '_reppart' + str(reppart+1) + '_FETpart'+ str(part+1)
-                        if ssrocalib and not debug:
+                    for FETpart in range(Number_of_Parts):
+                            if stopper == 1 or qstop(sleep=sleep):
+                                stopper = 1
+                                break
+                            msmtstring = SAMPLE + 'electronT1'+'_init_el' + str(init_el_state) + '_RO_el' + str(RO_el_state) + '_reppart' + str(reppart+1) + '_FETpart'+ str(FETpart+1)
+                            if ssrocalib and not debug:
+                                adwin.start_set_dio(dio_no=4,dio_val=0)
+                                ssrocalibration(SAMPLE)
+                            if optimize and not debug:
+                                GreenAOM.set_power(20e-6)
+                                adwin.start_set_dio(dio_no=4,dio_val=0)
+                                optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=210)
+                            # if ssrocalib and not debug:
+                            #     adwin.start_set_dio(dio_no=4,dio_val=0)
+                            #     ssrocalibration(SAMPLE)
                             adwin.start_set_dio(dio_no=4,dio_val=0)
-                            ssrocalibration(SAMPLE)
-                        if optimize and not debug:
-                            GreenAOM.set_power(20e-6)
-                            adwin.start_set_dio(dio_no=4,dio_val=0)
-                            optimiz0r.optimize(dims=['x','y','z','y','x'], int_time=200)
-                        # if ssrocalib and not debug:
-                        #     adwin.start_set_dio(dio_no=4,dio_val=0)
-                        #     ssrocalibration(SAMPLE)
-                        adwin.start_set_dio(dio_no=4,dio_val=0)
-                        ElectronT1(msmtstring,
-                        init_el_state           = init_el_state,
-                        RO_el_state             = RO_el_state,
-                        free_evolution_time     = FET,
-                        debug                   = debug)
+                            ElectronT1(msmtstring,
+                            init_el_state           = init_el_state,
+                            RO_el_state             = RO_el_state,
+                            free_evolution_time     = FET[FETpart],
+                            debug                   = debug)
     
-    adwin.start_set_dio(dio_no=4,dio_val=0)
+        if ssrocalib and not debug and stopper == 0:
+            adwin.start_set_dio(dio_no=4,dio_val=0)
+            ssrocalibration(SAMPLE)
+        adwin.start_set_dio(dio_no=4,dio_val=0)
     # single_Tomo_basis_list = [['I','X'],['X','I'],['X','X']]
     # FET=np.linspace(0.15/(2*pulses),2.25/(2*pulses),8)
 
     # mode = 'Sweep evolution time'
+    Shutter_rise_times = np.linspace(750,5000,18)
+    
+    for aa, Shutter_rise_time in enumerate(Shutter_rise_times):
+        if stopper == 1 or qstop(sleep=sleep):
+            stopper = 1
+            break
+        msmtstring = SAMPLE + 'electronT1_shutter_test' + '_FETpart'+ str(aa+1).zfill(2)
+        ElectronT1(msmtstring,   
+        init_el_state           = 0,
+        RO_el_state             = 0,
+        free_evolution_time     = np.array([50e-3]),
+        debug                   = False,
+        Shutter_rise_time       = Shutter_rise_time)
+        adwin.start_set_dio(dio_no=4,dio_val=0)
 
     # for single_Tomo_basis in single_Tomo_basis_list:
     #     if qstop():

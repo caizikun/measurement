@@ -21,9 +21,9 @@ def spin_echo(name):
     # Parameters for spin-echo
     #############
     pts = 21
-    tau_start = 8e-6  #!!! Measurement class has minimal tau of 4us
-    tau_final = 2.5e-3
-    m.params['reps_per_ROsequence'] = 400 #Repetitions of each data point
+    tau_start = 4e-6  #!!! Measurement class has minimal tau of 4us
+    tau_final = 200e-6
+    m.params['reps_per_ROsequence'] = 2500 #Repetitions of each data point
 
 
     ########

@@ -241,12 +241,12 @@ def check_magneticField(breakstatement=False):
     if not breakstatement:
         DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm',
         range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.0025)
+        pulse_length = 8e-6, ssbmod_amplitude = 0.0025,mw_switch = True)
 
 
         DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
         range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+        pulse_length = 8e-6, ssbmod_amplitude = 0.006,mw_switch = True)
 
 
 if __name__ == '__main__':

@@ -344,7 +344,7 @@ class AdwinControlledMeasurement(Measurement):
         proc = getattr(self.adwin, 'start_'+self.adwin_process)
         proc(load=load, stop_processes=stop_processes,
                 **self.adwin_process_params.to_dict())
-
+        print 'starting ADwin process', self.adwin_process
     def stop_adwin_process(self):
         func = getattr(self.adwin, 'stop_'+self.adwin_process)
         return func()
@@ -377,7 +377,6 @@ class AdwinControlledMeasurement(Measurement):
     def adwin_var(self, var):
         v = var
         getfunc = getattr(self.adwin, 'get_'+self.adwin_process+'_var')
-        
         if type(v) == str:
                 return getfunc(v)
         elif type(v) == tuple:
@@ -415,13 +414,13 @@ class AdwinControlledMeasurement(Measurement):
 def save_instrument_settings_file(parent):
     h5settingsgroup = parent.create_group('instrument_settings')
     inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
-    
+
     for (iname, ins) in inslist:
         if 'remote' in ins.get_options()['tags']:
             continue
         insgroup = h5settingsgroup.create_group(iname)
         parlist = dict_to_ordered_tuples(ins.get_parameters())
-        
+        #print iname
         for (param, popts) in parlist:
             try:
                 insgroup.attrs[param] = ins.get(param, query=False)
