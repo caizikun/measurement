@@ -16,7 +16,7 @@ NOTE: do adjust the MW duration & amplitudes to refer to the proper type of puls
 """
 
 
-def calibrate_pi_pulse(name, multiplicity=1, debug=False):
+def calibrate_pi_pulse(name, multiplicity=1, debug=False, sweep_range=0.03):
     m = pulsar_msmt.GeneralPiCalibrationSingleElement(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -40,15 +40,15 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['multiplicity'] = np.ones(pts)*multiplicity
 
     # For square pulses
-    m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
-    m.params['MW_pulse_amplitudes'] = m.params['Hermite_fast_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    m.params['MW_duration'] = m.params['fast_pi_duration']
+    m.params['MW_pulse_amplitudes'] = m.params['fast_pi_amp'] + np.linspace(-sweep_range, sweep_range, pts)  #XXXXX -0.05, 0.05 
     
     # For hermite pulses
     # m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
     # m.params['MW_pulse_amplitudes'] =  m.params['Hermite_fast_pi_amp'] + np.linspace(-0.04, 0.02, pts)  #XXXXX -0.05, 0.05 
 
     m.params['delay_reps'] = 195 ## Currently not used
-    # m.params['mw_power'] = 20 ###put in msmt_params.
+    m.params['mw_power'] = 20
     
 
     # for the autoanalysis
@@ -59,7 +59,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
 
     # Add Hermite X pulse
     # m.MW_pi = hermite_Xpi(m)
-    m.MW_pi = ps.X_pulse(m)
+    m.MW_pi = ps.Y_pulse(m)
 
     print 'duration ', m.params['MW_duration']
     print 'amp ', m.params['MW_pulse_amplitudes'][0]
@@ -195,9 +195,9 @@ def calibrate_pi2_pulse(name, debug=False):
     print 'pulse_shape =', m.params['pulse_shape']
 
     pts = 11
-    m.params['pulse_type'] = 'Hermite QuMem'    
+    m.params['pulse_type'] = 'Square QuMem'    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 4000
+    m.params['repetitions'] = 1500
 
     # Append pi & pi/2 pulses to instance
     m.MW_pi = ps.X_pulse(m)
@@ -213,8 +213,8 @@ def calibrate_pi2_pulse(name, debug=False):
     m.params['wait_for_AWG_done'] = 1
 
     # Square pulses
-    # sweep_axis =  m.params['fast_pi2_amp'] + np.linspace(-0.02, 0.02, pts)  
-    # m.params['pulse_pi2_sweep_amps'] = sweep_axis
+    sweep_axis =  m.params['fast_pi2_amp'] + np.linspace(-0.1, 0.1, pts)  
+    m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
     # Hermite pulses
     sweep_axis =  m.params['Hermite_fast_pi2_amp'] + np.linspace(-0.08, 0.08, pts)  
@@ -257,7 +257,7 @@ def hermite_Xpi(msmt):
     return MW_pi 
 
 if __name__ == '__main__':
-    # calibrate_pi_pulse(SAMPLE_CFG + 'QuanMem_Pi', multiplicity =11,debug = False)
+    #calibrate_pi_pulse(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 7, sweep_range=0.03)
     # pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
     calibrate_pi2_pulse(SAMPLE_CFG + 'QuMem_Pi2', debug = False)

@@ -36,7 +36,7 @@ def optimize_NV(cycles = 3):
     GreenAOM.set_power(12e-6)
     optimiz0r.optimize(dims=['x','y','z','x','y'], cycles = cycles)
 
-def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pulse = '-x', optimize = True, reps_per_RO = 300):
+def SimpleDecoupling(name, N, step_size, start_point, tot, pts=21,mbi = True, final_pulse = '-x', optimize = True, reps_per_RO = 1500):
 
     m = DD.SimpleDecoupling(name)
 
@@ -77,10 +77,12 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, mbi = True, final_pul
         
         if optimize:
             qt.msleep(2)
-            if mod(kk,2)==1:
+            if mod(kk,5)==0:
+                AWG.clear_visa()
+                stools.turn_off_all_lasers()
                 qt.msleep(1)
-                GreenAOM.set_power(14e-6)
-                optimiz0r.optimize(dims=['x','y','z','x','y'],int_time=100)
+                GreenAOM.set_power(20e-6)
+                optimiz0r.optimize(dims=['x','y','z','x','y'])
 
             ### Define and print parameters
         funcs.prepare(m)

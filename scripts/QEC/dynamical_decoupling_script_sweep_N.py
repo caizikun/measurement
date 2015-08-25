@@ -18,8 +18,8 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     m = DD.SimpleDecoupling(name+'_tau_'+str(tau*1e9))
     """
-    # ##### MODIFICATION FOR LT1 ######
-    # """
+    ##### MODIFICATION FOR LT1 ######
+    """
     # m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     # m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -30,6 +30,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     # m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
+    # Default values when no MBI
     # # Default values when no MBI
     # if mbi == False:
     #     m.params['MBI_threshold'] = 0
@@ -57,7 +58,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x'
+    m.params['Final_Pulse'] ='x'
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
@@ -79,16 +80,43 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 def interrupt_script(wait = 5):
     print 'press q now to exit measurement script'
     qt.msleep(wait)
-    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'x')):
         sys.exit()
 
 if __name__ == '__main__':
+### LT 2 parameters
     tau = 4.63e-6 # tau_L nr 32 dip in N=16
     NoP1=np.arange(4,200,8)
 
     NoP2=np.arange(4,240,12)
     # NoP2=np.arange(1154,1345,64)
     # NoP3=np.arange(200,3201,3200)
+#### LT 1 parameters
+    tau_ctr = 39.472e-6
+    #tau_ctr = 65.836e-6
+    #tau_ctr=26.75e-6
+    #tau_ctr=53.154
+    NoP1=np.arange(100,160,20)
+    idx=0
+    t=tau_ctr
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N_larm_tauidx_'+str(idx)+'_',NoP=NoP1,tau =t, reps_per_ROsequence = 750)
+    '''
+    tau_array = tau_ctr+np.linspace(-.048e-6,.048e-6,9)
+    for idx,t in enumerate(tau_array):
+        #2.370304e-3/(16*2) # tau_L nr 32 dip in N=16
+        
+        SimpleDecoupling_swp_N(SAMPLE+'sweep_N_tauidx_'+str(idx),NoP=NoP1,tau =t, reps_per_ROsequence = 750)
+        interrupt_script()
+        #print 'start counters in script'
+        #qt.instruments[counters].set_is_running(True)
+    '''
+    
+    '''
+    NoP1=np.arange(4,124,4)
+    NoP2=np.arange(124,194,4)
+    NoP3=np.arange(194,254,4)
+
+### LT 2 parameters
     # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP1,tau =10.888e-6, reps_per_ROsequence = 500)
     # interrupt_script()
     # SimpleDecoupling_swp_N(SAMPLE+'sweep_N_C1',NoP=NoP2,tau =4.994e-6, reps_per_ROsequence = 500)
@@ -105,3 +133,9 @@ if __name__ == '__main__':
     # interrupt_script()
     # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP2,tau =3.068e-6, reps_per_ROsequence = 500)
 
+
+#### LT 1 parameters
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)
+    '''

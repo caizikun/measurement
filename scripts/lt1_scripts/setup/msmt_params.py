@@ -158,7 +158,7 @@ cfg['protocols']['Magnetometry']={
 ####################################################
 
 # NOTE: F_MSM1_CNTR = SIL 2!!!
-f_msm1_cntr = (2.828845 - 0.0) *1e9#2.816464e9 #2.817393e9 #2.81558e9#2.817419e9#2.84628e9#2.845609e9#2.848291e9#2.847321e9 #2.845634e9 # 2.845256e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
+f_msm1_cntr = (2.828808) *1e9#2.816464e9 #2.817393e9 #2.81558e9#2.817419e9#2.84628e9#2.845609e9#2.848291e9#2.847321e9 #2.845634e9 # 2.845256e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
 f_msp1_cntr = 2.925786e9#2.926302e9#3.753180e9            #Electron spin ms=+1 frequency
 
 
@@ -172,38 +172,25 @@ cfg['samples'][sample_name] = {
     'N_0-1_splitting_ms-1': N_frq,
     'N_HF_frq'      :       N_HF_frq,
     'C_split'       :       C_split,
-    'C1_freq'       :   450.301e3, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
-    'C1_freq_0' : 431932.22, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
-    'C1_freq_1' : 469009.46, # NOTE: copied blindly from LT2 msmt params (not used in msmt)
-    'C1_Ren_tau'    :   [13.240e-6],
-    'C1_Ren_N'      :   [128],
-    'C1_Ren_extra_phase_correction_list' : np.array([0] * 10),
-    'C2_freq'       :   450.301e3,
-    'C2_freq_0' : 431932.22,
-    'C2_freq_1' : 469009.46,
-    'C2_Ren_tau'    :   [14.592E-6],
-    'C2_Ren_N'      :   [72/4], # NOTE: period actually 70 pulses --> no control possible yet
-    'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
-    'C3_freq'       :   450.301e3,
-    'C3_freq_0' : 431932.22,
-    'C3_freq_1' : 469009.46,
-    'C3_Ren_tau'    :   [11.976E-6],
-    'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
-    'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)}
+}
+
+
+
+
 
 cfg['protocols'][name]['AdwinSSRO'] = {
     'SSRO_repetitions'  : 5000,
     'SSRO_duration'     :  200,
     'SSRO_stop_after_first_photon' : 0,
-    'A_CR_amplitude': 8e-9,# 13 nW #8nW
+    'A_CR_amplitude': 7e-9,# 13 nW #8nW
     'A_RO_amplitude': 0,
-    'A_SP_amplitude': 10e-9, # Previously 20
+    'A_SP_amplitude': 20e-9, # Previously 20
     'CR_duration' :  250,
     'CR_preselect':  1000,
     'CR_probe':      1000,
     'CR_repump':     1000,
     'Ex_CR_amplitude':  3e-9,#2.5e-9,#2.5e-9,#1nW
-    'Ex_RO_amplitude':  1e-9, #15e-9,
+    'Ex_RO_amplitude':  0.5e-9, #15e-9,
     'Ex_SP_amplitude':  2e-9,
     'SP_duration'        : 300, # was 300 with proper alignment of NewFocus
     'SP_duration_ms0' : 300,
@@ -213,7 +200,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
     
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-    'SSRO_duration' : 75,
+    'SSRO_duration' : 90,
     'Ex_SP_amplitude':  0e-9,}
 
 
@@ -243,10 +230,10 @@ cfg['protocols'][name]['AdwinSSRO+C13'] = {
 
 #C13-MBI  
 'C13_MBI_threshold_list':               [1],
-'C13_MBI_RO_duration':                  60,  
+'C13_MBI_RO_duration':                  70,  
 'E_C13_MBI_RO_amplitude':               0.5e-9, #this was 0.3e-9 NK 20150316
 'SP_duration_after_C13':                300, #300 in case of swap init! 
-'A_SP_amplitude_after_C13_MBI':         10e-9, # was 15e-9
+'A_SP_amplitude_after_C13_MBI':         0*10e-9, # was 15e-9
 'E_SP_amplitude_after_C13_MBI':         0e-9,
 'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
                 
@@ -272,8 +259,10 @@ cfg['protocols'][name]['AdwinSSRO+C13'] = {
 
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
 'min_dec_tau'         : 20e-9 + 140e-9,#140e-9 = fast_pi_duration (check pulselib below)
-'max_dec_tau'         : 0.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
+'max_dec_tau'         : 2.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
 'dec_pulse_multiple'  : 4      #4. 
+
+
 }
 
 
@@ -303,10 +292,10 @@ f_mod_0= 0 * 250e6#31e6
 
 # NOTE: ONLY FAST PI/2 PULSE (SQUARE) NOT CALIBRATED YET!!
 Hermite_fast_pi_duration   =  140e-9#137e-9#140e-9 
-Hermite_fast_pi_amp        =  0.228#0.218#0.202, #0.122140
+Hermite_fast_pi_amp        =  0.245#0.5735#0.218#0.202, #0.122140
 Hermite_fast_pi_mod_frq    =  f_mod_0
-Hermite_fast_pi2_duration  =  70e-9
-Hermite_fast_pi2_amp       =  0.177#0.1794#0.184566 #0.092117
+Hermite_fast_pi2_duration  =  80e-9
+Hermite_fast_pi2_amp       =  0.174#0.1794#0.184566 #0.092117
 Hermite_fast_pi2_mod_frq   =  f_mod_0 # NOTE: Hermite Pi pulse calibrated for 0 mod freq
 
 
@@ -367,9 +356,9 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'Hermite_fast_pi2_mod_frq'          :  Hermite_fast_pi2_mod_frq, 
 
 
-'fast_pi_duration'          :  Hermite_fast_pi_duration,
-'fast_pi_amp'               :  Hermite_fast_pi_amp, 
-'fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
+'fast_pi_duration'          :  115e-9,#Hermite_fast_pi_duration,
+'fast_pi_amp'               :  0.14,#Hermite_fast_pi_amp, 
+'fast_pi_mod_frq'           :  0,#Hermite_fast_pi_mod_frq,
 
     ### Pi/2 pulses, fast & hard 
 # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
@@ -378,8 +367,8 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'fast_pi2_mod_frq'          :   Hermite_fast_pi2_mod_frq,
     
     ### DESR pulses ###
-'desr_pulse_duration'       :   2*4*2.085e-6,#(2.262e-6)/4.,
-'desr_pulse_amp'            :   0.016/2.,#0.005*4,
+'desr_pulse_duration'       :   2.085e-6,#(2.262e-6)/4.,
+'desr_pulse_amp'            :   8*0.016,#0.005*4,
 'desr_modulation_frequency' : 40e6,
 'desr_MW_power'             : 11-6-12,#-12,
 
@@ -393,6 +382,28 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 ###########################################
 ### Gretel SIL2: nuclear spin params ###
 ###########################################
+cfg['samples']['Gretel_sil2'] ={
+#C13-params
+
+'C1_freq'       :   19109, 
+'C1_freq_0' : 18898, 
+'C1_freq_1' : 20099.153, 
+'C1_Ren_tau'    :   [39.472e-6],
+'C1_Ren_N'      :   [128],
+'C1_Ren_extra_phase_correction_list' : np.array([8] * 10),
+'C2_freq'       :   450.301e3,
+'C2_freq_0' : 431932.22,
+'C2_freq_1' : 469009.46,
+'C2_Ren_tau'    :   [14.592E-6],
+'C2_Ren_N'      :   [72/4], # NOTE: period actually 70 pulses --> no control possible yet
+'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
+'C3_freq'       :   450.301e3,
+'C3_freq_0' : 431932.22,
+'C3_freq_1' : 469009.46,
+'C3_Ren_tau'    :   [11.976E-6],
+'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
+'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)
+}
 
 ################
 ### Carbon 1 ###

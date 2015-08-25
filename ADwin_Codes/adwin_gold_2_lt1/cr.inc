@@ -1,5 +1,4 @@
 '<ADbasic Header, Headerversion 001.001>
-' Foldings                       = 172
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -83,8 +82,8 @@ ENDSUB
 
 FUNCTION CR_check(first_cr, repetition_index) As LONG
 
-  CR_check = 0
-  
+  CR_check = 1
+  PAR_1=1
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE

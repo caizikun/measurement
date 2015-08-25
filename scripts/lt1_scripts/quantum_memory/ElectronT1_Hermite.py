@@ -19,7 +19,7 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = None, end_time = None, pts = None):
+def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 4e-6, end_time = 100e-6, pts = 6):
     '''Electron T1 measurement using Hermite pulses
     '''
 
@@ -33,22 +33,21 @@ def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     # Measurement settings
-    if pts != None:
-        m.params['pts'] = pts
-    else:
-        m.params['pts'] = 6
+
+    m.params['pts'] = pts
+
 
     # m.params['pts'] = 5
-    m.params['wait_time_repeat_element'] = 1000 # in us
+    m.params['wait_time_repeat_element'] = 500 # in us
     # m.params['wait_times'] = np.linspace(0,200000,m.params['pts'])
     # m.params['wait_times'] = np.concatenate( (np.linspace(0,int(1e5), m.params['pts'] - 3), np.linspace(int(2e5), int(4e5),3))) # in us
     # m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 3), np.linspace(int(1e6), int(15e6),m.params['pts'] - 3))) # in us
-    if start_time != None:
-        m.params['wait_times'] = np.linspace(start_time, end_time, m.params['pts'])
-    else:
-         m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 4), np.linspace(int(1e6), int(2e6),m.params['pts'] - 4))) # in us
+    #if start_time != None:
+    m.params['wait_times'] = np.linspace(start_time, end_time, pts)
+    #else:
+    #     m.params['wait_times'] = np.concatenate( (np.linspace(0,int(6e5), 4), np.linspace(int(1e6), int(2e6),m.params['pts'] - 4))) # in us
 
-    m.params['repetitions'] = 250
+    m.params['repetitions'] = 600
     m.params['T1_initial_state'] = T1_initial_state
     m.params['T1_readout_state'] = T1_readout_state
 
@@ -147,10 +146,14 @@ class ElectronT1Hermite(pulsar_msmt.ElectronT1):
                         seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=False)
                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
             else:
+                e = element.Element('Wait_time_%d'%i,  pulsar=qt.pulsar, global_time = True)
+                e.append(pulse.cp(T,length = self.params['wait_times'][i]*1e-6))
                 if self.params['T1_initial_state'] == 'ms=-1' and self.params['T1_readout_state'] == 'ms=0':
                     seq.append(name='Init_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
+                    seq.append(name='Wait_time_%d'%i,wfname='Wait_time_%d'%i,trigger_wait=False)
                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
                 elif self.params['T1_initial_state'] == 'ms=0' and self.params['T1_readout_state'] == 'ms=-1':
+                    seq.append(name='Wait_time_%d'%i,wfname='Wait_time_%d'%i,trigger_wait=False)
                     seq.append(name='Readout_Pi_pulse_%d'%i,wfname='Pi_pulse',trigger_wait=True)
                     seq.append(name='ElectronT1_ADwin_trigger_%d'%i, wfname='ADwin_trigger', trigger_wait=False)
                 #elif self.params['T1_initial_state'] == 'ms=+1' and self.params['T1_readout_state'] == 'ms=0':
@@ -166,5 +169,14 @@ if __name__ == '__main__':
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0, end_time = 1.5e6, pts = 4)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0.0e6, end_time = 4.0e5, pts = 5)
-    electronT1hermite(SAMPLE_CFG+'0to0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 800e3, pts = 8)
-    electronT1hermite(SAMPLE_CFG+'1to0', T1_initial_state = 'ms=1', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 800e3, pts = 8)
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 505, end_time = 500e3, pts = 6)
+    GreenAOM.set_power(20e-6)
+    qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
+    
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=+1', T1_readout_state = 'ms=0', start_time = 505, end_time = 500e3, pts = 6)
+    GreenAOM.set_power(20e-6)
+    qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 505, end_time = 1000e6, pts = 6)
+    GreenAOM.set_power(20e-6)
+    qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=+1', T1_readout_state = 'ms=0', start_time = 505, end_time = 1000e6, pts = 6)
