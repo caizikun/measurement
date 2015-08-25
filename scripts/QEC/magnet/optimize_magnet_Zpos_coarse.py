@@ -64,7 +64,7 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
     safemode=True
-    maximum_magnet_step_size = 250
+    maximum_magnet_step_size = 400
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
     only_fine =  False
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
-            print 'd_steps>+/-00, step only 250 steps!'
+            print 'd_steps>+/-00, step only 400 steps!'
             if d_steps[iterations] > 0:
                 d_steps[iterations] = maximum_magnet_step_size
             if d_steps[iterations] < 0:

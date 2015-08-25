@@ -43,13 +43,13 @@ def Carbon_Ramsey(name,tau = None,N=None):
     print 'free evolution times: %s' %m.params['free_evolution_times']
     
     if N ==None: 
-        m.params['C_Ren_N'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'][0]  
+        m.params['C_Ren_N'+m.params['electron_transition']] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'+m.params['electron_transition']][0]  
     else:
-        m.params['C_Ren_N'] = N
+        m.params['C_Ren_N'+m.params['electron_transition']] = N
     if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'][0]
+        m.params['C_Ren_tau'+m.params['electron_transition']] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'+m.params['electron_transition']][0]
     else: 
-        m.params['C_Ren_tau'] = tau 
+        m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
     #############################
     #!NB: These should go into msmt params

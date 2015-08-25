@@ -20,6 +20,8 @@ SETUP = qt.current_setup
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+electron_transition_string = qt.exp_params['samples'][SAMPLE]['electron_transition']
+
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 n = 1
@@ -28,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1,2,5]
+carbons = [1,2]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -37,11 +39,11 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 =False
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 
 cross_phase_calibration = True
 cross_phase_steps       = 1
@@ -50,8 +52,8 @@ debug = False
 
 ### repetitions per data point.
 freq_reps = 500
-phase_reps = 300
-crosstalk_reps = 300
+phase_reps = 500
+crosstalk_reps = 500
 
 
 ### this is used to determine the detuning of the ramsey measurements.
@@ -105,7 +107,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
 
     m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
-    m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
+    m.params['C'+str(carbon_nr)+'_freq_1'+m.params['electron_transition']]  += detuning
     m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
 
     m.params['sweep_name'] = 'free_evolution_time'
@@ -165,7 +167,7 @@ def NuclearRamseyWithInitialization_phase(name,
 
 
 def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_init_method = 'MBI', 
-					N_list = np.arange(4,300,24), debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1):
+					N_list = np.arange(4,300,24), debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1,smart_sweep_pts=False,estimate_phase=0):
     m = DD.Nuclear_Crosstalk_vs2(name)
     funcs.prepare(m)
 
@@ -181,7 +183,22 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     m.params['pts'] 				= 19
     if C_measured == 6:
     	m.params['pts'] = 16
-    m.params['C_RO_phase'] 			= np.linspace(-60, 400,m.params['pts'])    
+
+    if smart_sweep_pts:
+        if np.mod(m.params['pts'],2)!=0:
+            print 'to use smart data points, the number of points has to be even. Changing # pts: ', m.params['pts'], ' to # pts: ' , m.params['pts']+1
+            m.params['pts']+=1
+        print m.params['pts']
+        #estimate_phase=m.params['C'+str(C_gate)+'_Ren_extra_phase_correction_list'+electron_transition_string][C_measured]
+        print 'estimated phase for params = ', estimate_phase
+        phases_a  = np.round(np.mod(np.rad2deg(np.arccos(np.linspace(-1,1,(m.params['pts']/2-2)))) - estimate_phase, 360))
+        phases_b  = np.mod(phases_a[1:-1] + 180, 360)
+        phases_ab = np.sort(np.append(phases_a,phases_b))
+        phases = np.sort(np.append(phases_ab,(phases_ab[:6]+360)))
+        m.params['C_RO_phase'] = phases
+        print m.params['C_RO_phase']
+    else:
+        m.params['C_RO_phase'] 		= np.linspace(-60, 400,m.params['pts'])    
 
     m.params['sweep_name'] 			= 'phase'
     m.params['sweep_pts']  			= m.params['C_RO_phase']
@@ -216,12 +233,12 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,debug):
 
             if f_ms1:
 
-                search_string = 'C'+str(c)+'_freq_1'
+                search_string = 'C'+str(c)+'_freq_1'+electron_transition_string
                 data = write_to_file_subroutine(data,search_string)
 
             if self_phase or cross_phase:
 
-                search_string = 'C'+str(c)+'_Ren_extra_phase_correction_list'
+                search_string = 'C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string
                 data = write_to_file_subroutine(data,search_string)
 
 
@@ -286,17 +303,17 @@ def write_to_file_subroutine(data,search_string):
 ################################################################
 ###### 				Calibrate ms=-1 frequencies 	      ######
 ################################################################
-print 'Calibrate ms=-1 frequencies for all 3 carbon spins'
 
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
-qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
+qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
+qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
+qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 
 
 # measure
 if f_ms1 and n == 1:
-
-	for c in carbons:
+    print 'Calibrate ms=-1 frequencies'
+    
+    for c in carbons:
 		detuning = detuning_dict[str(c)]
 		if n == 1:
 
@@ -310,12 +327,12 @@ if f_ms1 and n == 1:
 			              return_results = False,
 			              title = 'msm1_freq_C'+str(c))
 			#update
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_1'] += -f0 + detuning
+			qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_1'+electron_transition_string] += -f0 + detuning
 
 			n = stop_msmt()
 	
-	GreenAOM.set_power(20e-6)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
+    GreenAOM.set_power(20e-6)
+    optimiz0r.optimize(dims=['x','y','z'], int_time=100)
 
 
 
@@ -323,9 +340,9 @@ if f_ms1 and n == 1:
 ###### 				Calibrate ms=0 frequencies 	 		 ######
 ###############################################################
 if n == 1 and f_ms0:
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	print 'Calibrate ms=0 frequencies'
 	# measure
 	for c in carbons:
@@ -342,9 +359,9 @@ if n == 1 and f_ms0:
 			              return_results = False,
 			              title = '_msm0_freq_C'+str(c))
 			#update
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0'] += -f0 + detuning
+			qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_0'] += -f0 + detuning
 			print 'C'+str(c)+'_freq_0'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0']
+			print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_0']
 			
 			n = stop_msmt()
 
@@ -352,9 +369,9 @@ if n == 1 and f_ms0:
 ##################################################################
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	
 	print 'Calibrate extra phase for gate for all 3 carbon spins'
 
@@ -364,7 +381,7 @@ if n == 1 and f_ms0:
 if n == 1 and self_phase_calibration:
 	for c in carbons:
 		if n == 1:
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = 0
+			qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = 0
 			# measure
 			NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C'+str(c), carbon_nr= c)
 			# fit
@@ -376,12 +393,12 @@ if n == 1 and self_phase_calibration:
 					            return_results = False,	
                                 title = 'phase_C'+str(c))
 			if Amp < 0:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
+				qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = phi0+180
 			else:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c] = phi0
+				qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = phi0
 
 			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
+			print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c]
 			
 
 			n = stop_msmt()
@@ -394,14 +411,16 @@ if n == 1 and self_phase_calibration:
 
 
 if cross_phase_calibration and n ==1 and len(carbons)>1:
-	#set all cross-phases to zero to start with
-	for c in carbons:
-		# remove that specific carbon from the list
-		carbons_cross = copy.deepcopy(carbons)
-		carbons_cross.remove(c)
-		# reset phases to 0
-		for c_cross in carbons_cross:
-			qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c_cross] = 0.
+    #set all cross-phases to zero to start with
+    estimate_phase=np.zeros([7,7])
+    for c in carbons:
+        # remove that specific carbon from the list
+        carbons_cross = copy.deepcopy(carbons)
+        carbons_cross.remove(c)
+        # reset phases to 0
+        for c_cross in carbons_cross:
+            estimate_phase[c,c_cross]=qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c_cross]
+            qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c_cross] = 0.
 
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
@@ -417,7 +436,8 @@ if n == 1 and cross_phase_calibration and len(carbons)>1:
 			#measure
 			# phase_list = [0]*cross_phase_steps
 			# phase_u_list = [0]*cross_phase_steps
-			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c), C_measured = c, C_gate =cross_c ,debug = debug, nr_of_gates=1)
+			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c), C_measured = c, C_gate =cross_c ,
+                debug = debug, nr_of_gates=1,smart_sweep_pts=True,estimate_phase=estimate_phase[cross_c,c])
 
 			phi0,u_phi_0,Amp,Amp_u = 	cr.Carbon_Ramsey(timestamp=None, 
 			                       offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
@@ -439,12 +459,12 @@ if n == 1 and cross_phase_calibration and len(carbons)>1:
 			# phase_overview.append(phase_list)
 
 			if Amp <0:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0+180
+				qt.exp_params['samples'][SAMPLE]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = phi0+180
 			else:
-				qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c] = phi0
+				qt.exp_params['samples'][SAMPLE]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = phi0
 			#update
 			print 'C'+str(cross_c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(cross_c)+'_Ren_extra_phase_correction_list'][c]
+			print qt.exp_params['samples'][SAMPLE]['C'+str(cross_c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c]
 			
 			if n == 1:
 				n = stop_msmt()
@@ -469,7 +489,7 @@ if f_ms1:
 	print 'ms = 1 frequencies'
 	for c in carbons:
 		print 'Carbon '+str(c)
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_1']
+		print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_1'+electron_transition_string]
 	print
 	print '#########################'
 
@@ -481,7 +501,7 @@ if f_ms0:
 	print
 	for c in carbons:
 		print 'Carbon '+str(c)
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_freq_0']
+		print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_0']
 	print
 	print '#########################'
 print
@@ -491,8 +511,8 @@ if self_phase_calibration:
 	print 'self phases'
 	print
 	for c in carbons:
-		print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(c)+']'
-		print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][c]
+		print 'C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string+'['+str(c)+']'
+		print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c]
 	print
 	print '#########################'
 print
@@ -505,8 +525,8 @@ if cross_phase_calibration and len(carbons)>1:
 		carbons_cross = copy.deepcopy(carbons)
 		carbons_cross.remove(c)
 		for cross_c in carbons_cross:
-			print 'C'+str(c)+'_Ren_extra_phase_correction_list['+str(cross_c)+']'
-			print qt.exp_params['samples']['111_1_sil18']['C'+str(c)+'_Ren_extra_phase_correction_list'][cross_c]
+			print 'C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string+'['+str(cross_c)+']'
+			print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][cross_c]
 
 # print phase_overview
 

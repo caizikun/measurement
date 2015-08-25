@@ -50,7 +50,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
 
     m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
-    m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
+    m.params['C'+str(carbon_nr)+'_freq_1'+m.params['electron_transition']]  += detuning
     m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
 
     m.params['sweep_name'] = 'free_volution_time'

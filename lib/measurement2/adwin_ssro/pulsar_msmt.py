@@ -1605,6 +1605,57 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+class CompositePiCalibrationSingleElement(GeneralPiCalibration):
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude_p2=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+
 class PiCalibration_SweepDelay(PulsarMeasurement):
     """
     Goal: measure unwanted coherent processes between calibrated pi pulses.
@@ -2463,8 +2514,7 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
         T = pulse.SquarePulse(channel='MW_Imod',
             length = 15000e-9, amplitude = 0)
 
-        Phi60 = kw.get('Phi60', None)
-        Phi300 = kw.get('Phi300',None)
+        pulse_dict = kw.get('pulse_dict',None) ### pulses are given in this dict
 
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
@@ -2482,27 +2532,15 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
             for j in range(int(self.params['multiplicity'][i])):
                 e.append(T)
 
-                ### select which pulse amplitude are swept and choose the pulses accordingly
-                if '1' in self.params['swept_pulses']:
-                    e.append( pulse.cp(Phi60,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi60))
-                if '2' in self.params['swept_pulses']:
-                    e.append(pulse.cp(Phi300,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi300))
-
-                if '3' in self.params['swept_pulses']:
-                    e.append( pulse.cp(Phi60,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi60))
-
+                ### pulse_keys gives the order of pulses for the composite pulse.
+                for ii,key in enumerate(self.params['composite_pulse_keys']):
+                    ### select which pulse amplitudes are swept and choose the pulses accordingly
+                    if str(ii+1) in self.params['swept_pulses']:
+                        e.append( pulse.cp(pulse_dict[key],
+                            amplitude=self.params['MW_pulse_amplitudes'][i]
+                            ))
+                    else:
+                        e.append(pulse.cp(pulse_dict[key]))
                     
             elements.append(e)
 
@@ -2527,3 +2565,4 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
+

@@ -315,6 +315,50 @@ def mY_pulse(msmt):
 						 pi2_pulse = False)
 	return Y
 
+def comp_pi2_pi_pi2_pulse(msmt):
+	'''
+	Pi2 pulse around Y, Pi pulse around X, Pi2 pulse around Y
+	'''
+	pulse_shape = check_pulse_shape(msmt)
+
+	if pulse_shape == 'Square':
+		comp_pulse = pulselib.composite_pi2_pi_pi2_pulse_IQ('electron comp_pi2-pi-pi2-pulse',
+            I_channel='MW_Imod', Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            frequency = msmt.params['AWG_MBI_MW_pulse_mod_frq'],
+            PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+            Sw_risetime = msmt.params['MW_switch_risetime'],
+			length_p1 = msmt.params['fast_pi2_duration'],
+			length_p2 = msmt.params['fast_pi_duration'],
+			length_p3 = msmt.params['fast_pi2_duration'], 
+			pulse_delay = 12e-9,
+			amplitude_p1 = msmt.params['fast_pi2_amp'],
+			amplitude_p2 = msmt.params['fast_pi_amp'],						 
+			amplitude_p3 = msmt.params['fast_pi2_amp'],
+			phase_p1 = msmt.params['Y_phase'],
+			phase_p2 = msmt.params['X_phase'],
+			phase_p3 = msmt.params['Y_phase'])
+	elif pulse_shape == 'Hermite':
+		comp_pulse = pulselib.composite_pi2_pi_pi2_Hermite_pulse_IQ('Hermite comp_pi2-pi-pi2-pulse',
+						'MW_Imod',
+						'MW_Qmod',
+						'MW_pulsemod', Sw_channel = 'MW_switch',
+						frequency = msmt.params['Hermite_fast_pi_mod_frq'],
+						amplitude_p1 = msmt.params['Hermite_fast_pi2_amp'],
+						amplitude_p2 = msmt.params['Hermite_fast_pi_amp'],						 
+						amplitude_p3 = msmt.params['Hermite_fast_pi2_amp'],
+						length_p1 = msmt.params['Hermite_fast_pi2_duration'],
+						length_p2 = msmt.params['Hermite_fast_pi_duration'],
+						length_p3 = msmt.params['Hermite_fast_pi2_duration'], 
+						pulse_delay = 12e-9,
+						PM_risetime = msmt.params['MW_pulse_mod_risetime'],
+						Sw_risetime = msmt.params['MW_switch_risetime'],
+						phase_p1 = msmt.params['Y_phase'],
+						phase_p2 = msmt.params['X_phase'],
+						phase_p3 = msmt.params['Y_phase'])
+	return comp_pulse
+
+
 def desr_pulse(msmt):
 	'''
 	desr pi pulse

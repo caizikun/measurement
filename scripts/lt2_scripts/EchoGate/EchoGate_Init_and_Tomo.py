@@ -30,7 +30,7 @@ def Echo_gate(name, carbon_nr = 5,C13_init_state='up',e_RO='positive'):
     m.params['electron_readout_orientation']    = e_RO
 
     f0=m.params['C'+str(carbon_nr)+'_freq_0']
-    f1=m.params['C'+str(carbon_nr)+'_freq_1']
+    f1=m.params['C'+str(carbon_nr)+'_freq_1'+m.params['electron_transition']]
     Waittime=2*(1/np.abs(f1-f0))/4. ### Half waittime multiplied by 2.
 #     ### Sweep parameters
     # m.params['waiting_times']=[round(x,9) for x in np.linspace(Waittime-2e-6,HalfWaittime+2e-6,11)]

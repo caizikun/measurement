@@ -42,7 +42,7 @@ def run(name):
 
     # laser beam
     m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 600e-9 #in Watts
+    m.params['laser_dephasing_amplitude']= 700e-9 #in Watts
     m.params['repumping_time'] = np.ones(pts)*1e-6 
     m.params['MW_repump_delay1'] =  np.ones(pts) * 500e-9
     #sweep param

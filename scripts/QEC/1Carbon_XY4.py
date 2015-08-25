@@ -27,7 +27,7 @@ def Single_C_DD(name,
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        C13_DD_scheme         = 'XY4',
+        C13_DD_scheme         = 'X',
         pulses                = 4,
         el_after_init         = 1,
         C13_init_method       = 'MBI',
@@ -69,7 +69,7 @@ def Single_C_DD(name,
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
 
-    m.params['use_shutter'] = 1
+    m.params['use_shutter'] = 0
     ### overwritten from msmnt params
            
      # Free evolution time in the order of
@@ -90,17 +90,18 @@ def Single_C_DD(name,
     ######################################
     
     if True:
-        if sum(free_evolution_time) > 1e-3:
-            m.params['free_evolution_time'] = free_evolution_time
-        else:
-            if pulses == 1:
-                m.params['free_evolution_time'] = np.linspace(10e-3,1.3/(2.),8) 
-            elif pulses == 2:
-                m.params['free_evolution_time'] = np.linspace(5e-3,120e-3,8)
-            elif pulses == 4:
-                m.params['free_evolution_time'] = np.linspace(2.5e-3,2.0/(2.*pulses),8)
-            else:
-                m.params['free_evolution_time'] = np.linspace(1.5e-3,200e-3,6)
+        # if sum(free_evolution_time) > 1e-3:
+        #     m.params['free_evolution_time'] = free_evolution_time
+        # else:
+        #     if pulses == 1:
+        #         m.params['free_evolution_time'] = np.linspace(10e-3,1.3/(2.),8) 
+        #     elif pulses == 2:
+        #         m.params['free_evolution_time'] = np.linspace(5e-3,120e-3,8)
+        #     elif pulses == 4:
+        #         m.params['free_evolution_time'] = np.linspace(2.5e-3,2.0/(2.*pulses),8)
+        #     else:
+        #         m.params['free_evolution_time'] = np.linspace(1.5e-3,200e-3,6)
+        m.params['free_evolution_time'] = np.zeros(1)
         m.params['pts'] = len(m.params['free_evolution_time'])
         m.params['C_RO_phase'] = C13_RO_phase*len(m.params['free_evolution_time'])
         m.params['sweep_name'] = 'Free evolution time (s)'
@@ -189,18 +190,58 @@ def Carbon_DD_mult_msmts(DD_scheme='XY4',carbons=[1],pulses_list=[4],el_ROs=['po
 
                     
 if __name__ == '__main__':
+    Single_C_DD(SAMPLE+'8_pulses', 
+        carbon_nr             = 1,               
+        carbon_init_state     = 'up', 
+        el_RO                 = 'positive',
+        debug                 = False,
+        C13_DD_scheme         = 'X',
+        pulses                = 8,
+        el_after_init         = 0,
+        C13_init_method       = 'MBI',
+        C13_MBI_threshold     = [1],
+        C13_RO_phase          = ['X'],
+        reps                  = 400,
+        free_evolution_time = np.zeros((1)))
 
-    tau=4.996e-6
-    N=36
-    t_pi = 2*tau*N
+    Single_C_DD(SAMPLE+'10_pulses', 
+        carbon_nr             = 1,               
+        carbon_init_state     = 'up', 
+        el_RO                 = 'positive',
+        debug                 = False,
+        C13_DD_scheme         = 'X',
+        pulses                = 10,
+        el_after_init         = 0,
+        C13_init_method       = 'MBI',
+        C13_MBI_threshold     = [1],
+        C13_RO_phase          = ['X'],
+        reps                  = 400,
+        free_evolution_time = np.zeros((1)))
+
+    Single_C_DD(SAMPLE+'14_pulses', 
+        carbon_nr             = 1,               
+        carbon_init_state     = 'up', 
+        el_RO                 = 'positive',
+        debug                 = False,
+        C13_DD_scheme         = 'X',
+        pulses                = 14,
+        el_after_init         = 0,
+        C13_init_method       = 'MBI',
+        C13_MBI_threshold     = [1],
+        C13_RO_phase          = ['X'],
+        reps                  = 400,
+        free_evolution_time = np.zeros((1)))
+    # tau=4.996e-6
+    # N=36
+    # t_pi = 2*tau*N
     # t_min = t_pi+10e-6#1,2,4,8,16,32,
     # Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1,2,4,8,16,32],el_ROs=['positive','negative'],debug=False, ssrocalib=False,el_after_init=0
     #     ,Max_FET_Dict = {'1': 0.13, '2':0.2, '4': 0.28,'8': 0.45,'16': 0.73,'32': 1.1, '64':56},tau_min=t_min,
     #     timepart_Dict ={'1':1, '2':2, '4': 2,'8': 4,'16': 10,'32': 20,'64': 20},datapoints=20)
 
-    Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1],el_ROs=['positive'],debug=False, ssrocalib=False,el_after_init=1
-        ,Max_FET_Dict = {'1': 50e-3, '2':0.2, '4': 0.28,'8': 0.45,'16': 0.73,'32': 1.1, '64':56},tau_min=t_min,
-        timepart_Dict ={'1':1, '2':2, '4': 2,'8': 4,'16': 10,'32': 20,'64': 20},datapoints=9)
+    # Carbon_DD_mult_msmts(DD_scheme='auto',carbons=[1],pulses_list=[1],el_ROs=['positive'],debug=False, ssrocalib=False,el_after_init=1
+    #     ,Max_FET_Dict = {'1': 50e-3, '2':0.2, '4': 0.28,'8': 0.45,'16': 0.73,'32': 1.1, '64':56},tau_min=t_min,
+    #     timepart_Dict ={'1':1, '2':2, '4': 2,'8': 4,'16': 10,'32': 20,'64': 20},datapoints=9)
 
     # DD_scheme = 'auto'
     # carbons = [1,2]
@@ -306,7 +347,7 @@ if __name__ == '__main__':
     #             adwin.start_set_dio(dio_no=4,dio_val=0)
     #             ssrocalibration(SAMPLE)
 
-    adwin.start_set_dio(dio_no=4,dio_val=0)
+    # adwin.start_set_dio(dio_no=4,dio_val=0)
     
 
     # execfile(r'D:\measuring\measurement\scripts\Decoupling_Memory\queue.py')

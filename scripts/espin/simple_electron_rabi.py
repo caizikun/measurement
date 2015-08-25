@@ -36,9 +36,10 @@ def erabi(name):
     m.params['Ex_SP_amplitude']=0
 
 
-    m.params['pulse_shape'] = 'Hermite'
+    # m.params['pulse_shape'] = 'Hermite'
+    # print m.params['pulse_shape']
 
-    sweep_param = 'amplitude'
+    sweep_param = 'length'
 
     m.params['mw_power']=20 
     m.params['mw_frq'] = m.params['ms+1_cntr_frq']-m.params['MW_modulation_frequency'] - m.params['N_HF_frq'] 
@@ -46,8 +47,14 @@ def erabi(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 7000, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.03568 # * 0.05 #*0.49
+        if m. params['electron_transition'] == '_m1':
+            print 'minus 1 transition'
+            m.params['MW_pulse_durations'] =  np.linspace(0, 500, pts) * 1e-9
+        elif m. params['electron_transition'] == '_p1':
+            print 'plus 1 transition'
+            m.params['MW_pulse_durations'] =  np.linspace(0, 800, pts) * 1e-9            
+        # m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.694552 # * 0.05 #*0.49
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['fast_pi_amp'] # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
@@ -75,4 +82,4 @@ def erabi(name):
     m.finish()
 
 if __name__ == '__main__':
-    erabi(SAMPLE+'_'+'msp1')
+    erabi(SAMPLE+'_'+'msm1')

@@ -31,7 +31,7 @@ def SimpleDecoupling_swp_N(name,tau=None, Number_of_pulses=np.arange(80,100,2),
     pts = len(Number_of_pulses)
 
     if tau == None: 
-        tau = m.params['C3_Ren_tau'][0] 
+        tau = m.params['C3_Ren_tau'+m.params['electron_transition']][0] 
     tau_list = tau*np.ones(pts)
     print 'tau_list =' + str(tau_list)
 
@@ -71,8 +71,8 @@ def XY_initialization(name, carbon_list = [1],
     if len(carbon_list) > 1:
         raise Exception('More than one carbon used, see syntax')
     else:
-        m.params['C'+str(carbon_list[0])+'_Ren_tau']  = [tau]
-        m.params['C'+str(carbon_list[0])+'_Ren_N']    = [N]
+        m.params['C'+str(carbon_list[0])+'_Ren_tau'+m.params['electron_transition']]  = [tau]
+        m.params['C'+str(carbon_list[0])+'_Ren_N'+m.params['electron_transition']]    = [N]
 
     # m.params['C1_Ren_tau']  = [tau]
     # m.params['C1_Ren_N']    = [N]
@@ -139,10 +139,10 @@ if __name__ == '__main__':
     ''' for sweeping specific sets of params for each carbon'''
 
     # ########## CARBON 1 ###############
-
+    electron_transition = qt.exp_params['samples']['111_1_sil18']['electron_transition']
     if 1 in carbons:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list']
+        tau_list = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list'+electron_transition]
+        N_list   = qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list'+electron_transition]
         for ii in range(len(tau_list)):
 
             print '-----------------------------------'            
@@ -185,8 +185,8 @@ if __name__ == '__main__':
         # ######## CARBON 2 ###############
 
     if 2 in carbons:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list']
+        tau_list = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list'+electron_transition]
+        N_list   = qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list'+electron_transition]
 
         for ii in range(len(tau_list)):
 
@@ -209,8 +209,8 @@ if __name__ == '__main__':
     # ######## CARBON 3 ###############
     if 3 in carbons:
 
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_tau_list']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_N_list']
+        tau_list = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_tau_list'+electron_transition]
+        N_list   = qt.exp_params['samples']['111_1_sil18']['C3_gate_optimize_N_list'+electron_transition]
 
         for ii in range(len(tau_list)):
             print '-----------------------------------'            
@@ -260,8 +260,8 @@ if __name__ == '__main__':
         # ######## CARBON 5 ###############
 
     if 5 in carbons:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list']
+        tau_list = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list'+electron_transition]
+        N_list   = qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list'+electron_transition]
 
         for ii in range(len(tau_list)):
 

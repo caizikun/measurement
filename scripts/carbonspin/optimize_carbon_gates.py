@@ -72,8 +72,8 @@ def SweepGates(name,**kw):
 	##################################
 
 	# m.params['Tomography Bases'] = [['X'],['Y']]
-
-	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'],m.params['C'+str(carbon)+'_gate_optimize_tau_list'])
+	print m.params['electron_transition']
+	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'+m.params['electron_transition']],m.params['C'+str(carbon)+'_gate_optimize_tau_list'+m.params['electron_transition']])
  
 	####################
 	### MBE settings ###
@@ -116,7 +116,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [1,2,5]
+	carbons = [5]
 
 
 	brekast = False

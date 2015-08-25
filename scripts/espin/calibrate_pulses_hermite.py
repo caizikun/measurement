@@ -256,8 +256,55 @@ def hermite_Xpi(msmt):
 
     return MW_pi 
 
+def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
+    m = pulsar_msmt.CompositePiCalibrationSingleElement(name)
+    
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+
+    m.params['pulse_type'] = 'Hermite composite'
+    # m.params['pulse_type'] = 'Square quantum memory'
+    pts = 16
+
+    m.params['pts'] = pts
+    # m.params['repetitions'] = 3000 if multiplicity == 1 else 5000
+    m.params['repetitions'] = 600 if multiplicity == 1 else 600
+    rng = 0.1 if multiplicity == 1 else 0.08
+
+    ### Pulse settings
+    m.params['multiplicity'] = np.ones(pts)*multiplicity
+
+    # For square pulses
+    #m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
+    m.params['MW_pulse_amplitudes'] = m.params['Hermite_fast_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    
+    m.params['delay_reps'] = 195 ## Currently not used
+    
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'MW amplitude (V)'
+   
+    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
+    m.params['wait_for_AWG_done'] = 1
+
+    # Add Hermite X pulse
+    # m.MW_pi = hermite_Xpi(m)
+    m.comp_pi = pulse.cp(ps.comp_pi2_pi_pi2_pulse(m),phase = 0)
+    # m.comp_pi = pulse.cp(ps.X_pulse(m),phase = 0)
+
+    #print 'duration ', m.params['MW_duration']
+    print 'amp ', m.params['MW_pulse_amplitudes'][0]
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.comp_pi)
+
+
 if __name__ == '__main__':
-    # calibrate_pi_pulse(SAMPLE_CFG + 'Hermite_Pi', multiplicity =5,debug = False)
-    # pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
-    # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
+    calibrate_pi_pulse(SAMPLE_CFG + 'Hermite_Pi', multiplicity =11,debug = False)
+    #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
+    #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
     calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)
