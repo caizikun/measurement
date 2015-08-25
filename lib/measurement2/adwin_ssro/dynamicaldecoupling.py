@@ -4182,11 +4182,12 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
                 addressed_carbon      = self.params['carbon_nr'],
                 el_RO_result          = str(self.params['C13_MBI_RO_state']))
             gate_seq.extend(carbon_init_seq)
-
-            if self.params['el_pi_after_mbi'] == True:
-                El_Pi = Gate('El_Pi_'+str(pt),'electron_Gate',Gate_operation='pi')
+            print 'EL PI AFTER MBI HAS BEEN COMMENTED OUT, NK 150825'
+            #XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            # if self.params['el_pi_after_mbi'] == True:
+            #     El_Pi = Gate('El_Pi_'+str(pt),'electron_Gate',Gate_operation='pi')
                 
-                gate_seq.extend([El_Pi])
+            #     gate_seq.extend([El_Pi])
             ### Free evolution_time
 
                 ### Check if free evolution time is larger than the RO time (it can't be shorter)

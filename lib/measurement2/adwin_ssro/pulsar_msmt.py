@@ -2568,4 +2568,4 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
                 qt.pulsar.upload(*elements)
                 qt.pulsar.program_sequence(seq)
             else:
-
+                qt.pulsar.program_awg(seq,*elements)
