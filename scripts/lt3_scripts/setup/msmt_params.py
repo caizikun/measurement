@@ -21,6 +21,7 @@ cfg['protocols']['AdwinSSRO']={
 		'AWG_event_jump_DO_channel':    8,
 		'AWG_start_DO_channel':         9,
 		'counter_channel':              1,
+		'counter_ch_input_pattern':		0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
 		'green_repump_amplitude':       45e-6, #XXXX 50e-6
@@ -127,20 +128,20 @@ cfg['samples'][sample_name] = {
 	'N_HF_frq'      :       N_HF_frq,
 	'C_split'		:		C_split}
 
-cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 1e-9,
-		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 25e-9,   #2015-06-27 was 30 
-		'CR_duration' :				 	 50, 
+cfg['protocols'][name]['AdwinSSRO'] = { 
+		'A_CR_amplitude':				 3e-9, #3 
+		'A_RO_amplitude' :				 0e-9,
+		'A_SP_amplitude':				 25e-9,   #2015-08-12 was 25 
+		'CR_duration' :				 	 50, #50
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 3e-9,
+		'Ex_CR_amplitude':				 5e-9, #5e-9
 		'Ex_RO_amplitude':				 5e-9, #5e-9
-		'Ex_SP_amplitude':				 5e-9,  #2015-05-25
+		'Ex_SP_amplitude':				 5e-9, #5e-9
 		'SP_duration':					 100,
-		'SP_duration_ms0':				 50,
-		'SP_duration_ms1':				 1000, #2015-05-25
+		'SP_duration_ms0':				 50,  #50
+		'SP_duration_ms1':				 100, #100
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 50,
 		'SSRO_repetitions':				 5000,
@@ -159,7 +160,7 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 		0e-9,
     	'CORPSE_pi_amp': 			0.517,
     	'Hermite_pi_length': 		150e-9,
-        'Hermite_pi_amp': 			0.925, # 2015-07-15 for pi pulse of 140 ns...0.7278
+        'Hermite_pi_amp': 			0.932, # 2015-07-15 for pi pulse of 140 ns...0.7278
         'Hermite_pi2_length':		60e-9,
         'Hermite_pi2_amp': 			0.854, #2015-07-15 for pi/2 pulse of 60 ns
         'Hermite_Npi4_length':		45e-9,

@@ -12,8 +12,9 @@ import mbi.mbi_funcs as funcs
 reload(funcs)
 
 
-SAMPLE = qt.cfgman['samples']['current']
-SAMPLE_CFG = qt.cfgman['protocols']['current']
+#SAMPLE = qt.cfgman['samples']['current']
+#SAMPLE_CFG = qt.cfgman['protocols']['current']
+SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 
 

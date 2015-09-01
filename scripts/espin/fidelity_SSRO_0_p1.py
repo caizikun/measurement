@@ -13,6 +13,7 @@ import measurement.lib.measurement2.measurement as m2
 # import the msmt class
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulse_select as ps #hermite or square?
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -37,9 +38,10 @@ def fidelity_SSRO_0_p1 (name):
 
     print m.params['sweep_pts']
 
+    X = ps.X_pulse(m)
 
-    m.autoconfig() #Redundant because executed in m.run()? Tim
-    m.generate_sequence(upload=True)
+    # m.autoconfig() #Redundant because executed in m.run()? Tim
+    m.generate_sequence(upload=True,Pi_pulse = X)
     m.run()
     qt.msleep(2)
     m.save()
@@ -48,4 +50,4 @@ def fidelity_SSRO_0_p1 (name):
     
 
 if __name__ == '__main__':
-    fidelity_SSRO_0_p1(SAMPLE+'_'+'SIL10')
+    fidelity_SSRO_0_p1(SAMPLE+'_'+'SIL18')

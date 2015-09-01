@@ -15,15 +15,15 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 import bell
 reload(bell)
-import sequence as bseq
+import pol_sequence as bseq
 reload(bseq)
 
-class SweepBell(bell.Bell):
+class Polarization_entanglement(bell.Bell):
     adwin_process = pulsar_pq.PQPulsarMeasurement.adwin_process
     
     def generate_sequence(self):
   
-        self.sweep_bell_seq = pulsar.Sequence('Bell_sweep')
+        self.sweep_bell_seq = pulsar.Sequence('Pol_Entanglement')
 
         elements = [] 
 
@@ -68,7 +68,7 @@ class SweepBell(bell.Bell):
     def print_measurement_progress(self):
         pulsar_pq.PQPulsarMeasurement.print_measurement_progress(self)
 
-SweepBell.bs_helper = qt.instruments['bs_helper']
+Polarization_entanglement.bs_helper = qt.instruments['bs_helper']
 
 def _setup_params(msmt, setup):
     msmt.params['setup']=setup
@@ -115,53 +115,38 @@ def _setup_params(msmt, setup):
 ###########################measurements####################################
 ###########################################################################
 
-
-def tune(name):
-
-    m=SweepBell('tail_sweep_'+name)
-    _setup_params(m, setup = qt.current_setup)
-
-    pts=1
-    m.params['pts']=pts
-    m.params['repetitions'] = 100000
-
-    m.joint_params['RO_during_LDE']=0
-    m.joint_params['opt_pi_pulses'] = 10
-    m.joint_params['LDE_attempts_before_CR'] = 250
-    m.params['MW_during_LDE'] = 0
-
-    m.params['general_sweep_name'] = 'aom_amplitude' 
-    m.params['general_sweep_pts'] = [0.5]
-
-    run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
-
 def tail_sweep(name):
-    m=SweepBell('tail_sweep_'+name)
+    m=Polarization_entanglement('tail_sweep'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=19
+    pts=11
     m.params['pts']=pts
-    m.params['repetitions'] = 1000 # 
-
+    m.params['repetitions'] = 500 #
+    m.params['LDE_SP_duration'] = 5e-6
+    m.params['opt_pulse_start'] = 0.5e-6
     m.joint_params['LDE_attempts_before_CR'] = 250
-    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['DD_number_pi_pulses'] = 0
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['opt_pulse_start'] = 2e-6
+    m.joint_params['opt_pulse_separation'] = 0.6e-6
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
-    m.params['MW_during_LDE'] = 0
-    m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 12e-6
+    m.params['MW_during_LDE'] = 1
+    m.params['MW_PiInit_Delay'] = 1e-6
+    m.params['Spin_Init_MW'] = False
+    m.joint_params['LDE_element_length'] = 16e-6
     m.joint_params['do_final_MW_rotation'] = 0
     m.joint_params['wait_for_1st_revival'] = 0
 
-    m.params['MIN_SYNC_BIN'] =       5000
-    m.params['MAX_SYNC_BIN'] =       8300 
+    m.params['MIN_SYNC_BIN'] =       0
+    m.params['MAX_SYNC_BIN'] =       16000 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(1.)
-        aom_power_sweep=np.linspace(0.1,1.0,pts)*max_power_aom #%power 
+        aom_power_sweep=np.linspace(0.01,1,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -180,46 +165,61 @@ def tail_sweep(name):
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.1,1.,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.01,1.,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
-def heating_check(name):
-    m=SweepBell('heating_sweep_'+name)
+def pol_entanglement(name):
+    m=Polarization_entanglement('pol_entanglement'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 1000 # 
-
+    m.params['repetitions'] = 100000 #
+    m.params['LDE_SP_duration'] = 5e-6
+    m.params['opt_pulse_start'] = 0.5e-6
     m.joint_params['LDE_attempts_before_CR'] = 250
+    m.joint_params['DD_number_pi_pulses'] = 0
     m.joint_params['opt_pi_pulses'] = 1
-    m.joint_params['RO_during_LDE'] = 0
-    m.params['MW_during_LDE'] = 1
+    m.params['opt_pulse_start'] = 1e-6
+    m.joint_params['opt_pulse_separation'] = 0.6e-6
     m.joint_params['RND_during_LDE'] = 0
-    m.joint_params['LDE_element_length'] = 11e-6
-    m.joint_params['do_final_MW_rotation'] = 1
-    m.params['MW_pi2_amp']=0
-    m.params['eom_pulse_duration']         = 20e-9
-    m.params['MW_RND_amp_I'] = 0
-    m.params['MW_RND_amp_Q'] = 0
+    m.joint_params['RO_during_LDE'] = 1
+    m.joint_params['LDE_RO_duration'] = 10e-6
+    m.params['RO_wait'] = 3e-6
+    m.params['MW_1_separation']= 1e-6
+    m.params['MW_during_LDE'] = 1
+    m.params['MW_PiInit_Delay'] = 1e-6
+    m.params['Spin_Init_MW'] = False
+    m.joint_params['LDE_element_length'] = 20e-6
+    m.joint_params['do_final_MW_rotation'] = 0
+    m.joint_params['wait_for_1st_revival'] = 0
 
-    m.params['MIN_SYNC_BIN'] =       5000
-    m.params['MAX_SYNC_BIN'] =       8300 
+    m.params['MIN_SYNC_BIN'] =       0
+    m.params['MAX_SYNC_BIN'] =       20000 
 
-    m.params['general_sweep_name'] = 'MW_pi_amp'
-    m.params['general_sweep_pts'] = np.linspace(0.,1.,pts)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    p_aom= qt.instruments['PulseAOM']
+    aom_voltage_sweep = np.zeros(pts)
+    max_power_aom=p_aom.voltage_to_power(1.)
+    aom_power_sweep=np.linspace(1.,1.,pts)*max_power_aom #%power 
+    for i,p in enumerate(aom_power_sweep):
+        aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
+
+    m.params['general_sweep_name'] = 'aom_amplitude' 
+    m.params['general_sweep_pts'] = aom_voltage_sweep
+    m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
+    m.params['sweep_pts'] = aom_power_sweep/max_power_aom
+
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
+
 def echo_sweep(name):
     print 'setting up the echo sweep'
-    m=SweepBell('echo_sweep_'+name)
+    m=Polarization_entanglement('echo_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
     pts=10
@@ -233,11 +233,13 @@ def echo_sweep(name):
     m.joint_params['LDE_attempts_before_CR'] = 1
     m.params['aom_amplitude'] = 0. #
     m.joint_params['do_echo'] = 1
+    m.params['Spin_Init_MW'] = False
     m.params['MW_RND_amp_I']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
-    
+    m.joint_params['LDE_element_length']=20e-6
+
     # 2 parameters can be swept : free_precession_time_1st_revival and echo_offset
     # see PPT 2014-07-14_DataMeeting_PulseCalibration for scheme
     m.joint_params['wait_for_1st_revival'] = 0 # to measure the echo on the 1st revival
@@ -253,66 +255,67 @@ def echo_sweep(name):
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
-def rnd_echo_ro(name,debug = False):
-    m=SweepBell('RND_RO_'+name)
+def spinpumping_sweep(name):
+    m=Polarization_entanglement('_'+name)
     _setup_params(m, setup = qt.current_setup)
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 40000
-    
-    m.joint_params['RND_during_LDE'] = 1
-    m.joint_params['RO_during_LDE'] = 1
-    m.params['MW_during_LDE'] = 1 
-    m.joint_params['do_final_MW_rotation'] = 1
-    m.joint_params['LDE_attempts_before_CR'] = 10
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['aom_amplitude'] = 0. #0.88
-    m.joint_params['do_echo'] = 1
-    m.params['do_general_sweep']=0
+    m.params['repetitions'] = 10000 # 
 
+    m.joint_params['LDE_attempts_before_CR'] = 250
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['aom_amplitude'] = 0. # no optical pulses
+    m.joint_params['RND_during_LDE'] = 0
+    m.joint_params['RO_during_LDE'] = 1
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['LDE_element_length'] = 15e-6
+    m.joint_params['do_final_MW_rotation'] = 1
+    m.joint_params['wait_for_1st_revival'] = 0
+
+    m.params['MIN_SYNC_BIN'] =       0
+    m.params['MAX_SYNC_BIN'] =       15000 
+
+    m.params['general_sweep_name'] = 'LDE_SP_duration'
+    m.params['general_sweep_pts'] = np.linspace(4.9e-6, 5e-6, pts)
+    #for the analysis:
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+
+def num_decoupling_pulses_sweep(name):
+    m=Polarization_entanglement('num_decoupling_pulses_sweep_'+name)
+    _setup_params(m, setup = qt.current_setup)
+
+    pts=1
+    m.params['pts']=pts
+    m.params['repetitions'] = 5000
+    
+    m.joint_params['RND_during_LDE'] = 0
+    m.joint_params['RO_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1 
+
+    m.joint_params['LDE_attempts_before_CR'] = 1
+    m.params['aom_amplitude'] = 0. #
+    m.joint_params['do_echo'] = 1
     m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp']
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi2_amp']
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+    m.joint_params['wait_for_1st_revival'] = 1 # to measure the echo on the 1st revival
+    m.joint_params['DD_number_pi_pulses'] =10
+    m.params['free_precession_offset'] = 0e-9
+    m.params['echo_offset'] = -50e-9
+    m.params['general_sweep_name'] = 'DD_number_pi_pulses'
+    m.params['general_sweep_pts'] = np.linspace(1, 5, pts)
 
-    run_sweep(m, th_debug=debug, measure_bs=False, upload_only = False)
-
-def check_mw_position(name):
-    m=SweepBell('RND_RO_'+name)
-    _setup_params(m, setup = qt.current_setup)
-    pts=1
-    m.params['pts']=pts
-    m.params['repetitions'] = 40000
-    m.params['do_general_sweep']=0
-    m.joint_params['LDE_attempts_before_CR'] = 10
-    m.params['aom_amplitude'] = 0.
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['MW_during_LDE'] = 1 
-    m.params['square_MW_pulses']=True
-    qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', 0.15)
+    #for the analysis:
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     run_sweep(m, th_debug=True, measure_bs=False, upload_only = False)
 
-def SP_correlations_PSB(name):
-    m=SweepBell('SPCorr_'+name)
-    _setup_params(m, setup = qt.current_setup)
-    pts = 1
-    m.params['do_general_sweep']=0
-    m.params['repetitions'] = 40000
-    m.params['MW_RND_amp_I']     = 0
-    m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
-    m.params['MW_RND_amp_Q']     = 0
-    m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
-    #m.joint_params['do_echo'] = 0
-    #m.joint_params['do_final_MW_rotation'] = 1
-    m.params['live_filter_queue_length'] = 2
-
-    m.joint_params['use_live_marker_filter']=False
-    th_debug = False
-    mw=True
-
-    run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
@@ -336,10 +339,9 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('tail') 
-    #check_mw_position('test')
-    #heating_check('test')
-    #tune('tune_lt3_PippinSil1') 
+    pol_entanglement('Ex_RotatingHalf_65deg')
+    #tail_sweep('tail') 
+    #spinpumping_sweep('spinpumping')
     #echo_sweep('PippinSil1')
+    #num_decoupling_pulses_sweep('PippinSil1_10Pulses')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
-    #SP_correlations_PSB('test')

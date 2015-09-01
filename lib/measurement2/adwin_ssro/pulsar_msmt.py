@@ -105,17 +105,24 @@ class SSRO_calibration_msp1(PulsarMeasurement):
     def autoconfig(self):
         PulsarMeasurement.autoconfig(self)
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True,**kw):
 
+        
+        # commented out. current script runs with pulse_select.py now. 20150901 NK
         # define the necessary pulses
-        X = pulselib.MW_IQmod_pulse('pi-pulse-on-p1',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            amplitude = self.params['MW_pi_msp1_amp'],
-            length = self.params['MW_pi_msp1_dur'],
-            frequency = self.params['ms+1_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'])
-        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 5e-6, amplitude = 2)
+        # X = pulselib.MW_IQmod_pulse('pi-pulse-on-p1',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     amplitude = self.params['MW_pi_msp1_amp'],
+        #     length = self.params['MW_pi_msp1_dur'],
+        #     frequency = self.params['ms+1_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'])
+        
+
+        X = kw.get('Pi_pulse', None)
+
+
+        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 10e-6, amplitude = 2)
 
         T = pulse.SquarePulse(channel='MW_Imod', name='delay')
         T.amplitude = 0.
@@ -130,9 +137,9 @@ class SSRO_calibration_msp1(PulsarMeasurement):
         n.append(pulse.cp(T,length=1e-6))
         n.append(Trig)
         elements.append(n)
-        #Dark esr element
-        e = element.Element('pi_pulse_msp1', pulsar=qt.pulsar)
-        e.append(T, length = 1e-6)
+        #Spin RO element.
+        e = element.Element('pi_pulse_msm1', pulsar=qt.pulsar)
+        e.append(T, length = 2e-6)
         e.append(X)
         e.append(Trig)
         elements.append(e)
