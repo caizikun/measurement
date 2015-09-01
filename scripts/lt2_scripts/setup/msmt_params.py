@@ -25,7 +25,7 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 
 ### Asummes a cylindrical magnet
 cfg['magnet']={
-'nm_per_step'       :   22.68, # = 1.4*10.4*12./21.*428./200.*107./84.,   ## Z-movement, for 18 V and 200 Hz 
+'nm_per_step'       :   22.68/1.3, # = 1.4*10.4*12./21.*428./200.*107./84.,   ## Z-movement, for 18 V and 200 Hz 
 'radius'            :   5.,     ## millimeters
 'thickness'         :   4.,     ## millimeters
 'strength_constant' :   1.3}    ## Tesla
@@ -47,8 +47,8 @@ cfg['protocols']['AdwinSSRO']={
 'counter_channel'           :       1,
 'cycle_duration'            :       300,
 'green_off_amplitude'       :       0.0,
-'green_repump_amplitude'    :       70e-6,#50e-6, #200e-6,
-'green_repump_duration'     :       20,#10, #50 
+'green_repump_amplitude'    :       40e-6,#70#50e-6, #200e-6,
+'green_repump_duration'     :       40,#20#10, #50 
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
 'wait_after_RO_pulse_duration':     3,   
@@ -114,7 +114,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
-'Ex_N_randomize_amplitude'              :    15e-9, #15e-9
+'Ex_N_randomize_amplitude'              :    15e-9,#15e-9, #15e-9
 'A_N_randomize_amplitude'               :    15e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
@@ -146,7 +146,7 @@ cfg['protocols']['Magnetometry']={
 mw_power = 20
 
 f_msm1_cntr =   1.746666e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
-f_msp1_cntr =   4.008602e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
+f_msp1_cntr =   4.008621e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
                 
 zero_field_splitting = 2.877623e9   # not calibrated #contains + 2*N_hf
                                  
@@ -156,7 +156,7 @@ N_HF_frq = 2.182e6 # was2.196e6
 Q        = 4.938e6        # not calibrated
 
 
-pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
+pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
 electron_transition = '-1'
 
 
@@ -174,15 +174,16 @@ print '*****************************************************'
 
 
 if electron_transition == '-1':
+    electron_transition_string = '_m1'
     mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequency
     AWG_MBI_MW_pulse_amp = 0.01525
     
     Hermite_pi_duration = 160e-9    
-    Hermite_pi_amp = 0.802581 #for 160 ns
+    Hermite_pi_amp = 0.829 #for 160 ns
 
-    Hermite_pi2_duration = 68e-9#56e-9, #should be divisible by 4, slow
-    Hermite_pi2_amp = 0.745322 
+    Hermite_pi2_duration = 66e-9#56e-9, #should be divisible by 4, slow
+    Hermite_pi2_amp = 0.798802  
 
     # Hermite_pi_duration = 490e-9    
     # Hermite_pi_amp = 0.224 #for 490 ns
@@ -191,7 +192,7 @@ if electron_transition == '-1':
     # Hermite_pi2_amp = 0.199689 
 
     Square_pi_duration = 116e-9   #250 MHz slow
-    Square_pi_amp =  0.402931  #250 MHz, slow
+    Square_pi_amp = 0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
 
     Square_pi2_duration = 56e-9 #should be divisible by 4, slow
     Square_pi2_amp =  0.402931  #0.493036,
@@ -199,23 +200,25 @@ if electron_transition == '-1':
 
 # # For ms = +1
 elif electron_transition == '+1':
+    electron_transition_string = '_p1'
     mw_freq             = f_msp1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI         = f_msp1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequency
     AWG_MBI_MW_pulse_amp = 0.03
 
     Hermite_pi_duration = 490e-9    
-    Hermite_pi_amp = 0.74  
+    Hermite_pi_amp = 0.707#0.759 
 
     Hermite_pi2_duration = 220e-9#56e-9, #should be divisible by 4, slow
-    Hermite_pi2_amp = 0.675974 
+    Hermite_pi2_amp = 0.678533   
 
-    Square_pi_duration = 180e-9   #250 MHz slow
-    Square_pi_amp =  0.694552  #0.407225 #without switch #0.469424,with switch  #250 MHz, slow
+    Square_pi_duration = 191e-9#180e-9   #250 MHz slow
+    Square_pi_amp =  0.666457#0.694552  #0.407225 #without switch #0.469424,with switch  #250 MHz, slow
 
     Square_pi2_duration = 92e-9 #56e-9, #should be divisible by 4, slow
     Square_pi2_amp =  0.738335 #0.493036, # slow, only calibrated with 2 pulses
 
 cfg['samples']['111_1_sil18'] = {
+'electron_transition' : electron_transition_string,
 'mw_mod_freq'   :       mw_mod_frequency,
 'mw_frq'        :       mw_freq_MBI, # this is automatically changed to mw_freq if hermites are selected.
 'mw_power'      :       mw_power,
@@ -237,12 +240,18 @@ cfg['samples']['111_1_sil18'] = {
     ### Carbon 1 ###
     ################
 
-'C1_freq'       :   450.301e3,
-'C1_freq_0' : 431914.09,
-'C1_freq_1' : 468998.93,
-'C1_gate_optimize_tau_list' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
+
+'C1_freq_m1'        :  450166.28,##+-104.6 #450301.0, 
+'C1_freq_0' : 432001.39,
+'C1_freq_1_m1' : 469025.53,
+# 'C1_gate_optimize_tau_list_m1' : [4.994e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
+#                                4.996e-6,4.998e-6,4.998e-6,4.998e-6],
+
+'C1_gate_optimize_tau_list_m1' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
-'C1_gate_optimize_N_list': [40,34,36,32,34,36,34,36,42],
+
+# 'C1_gate_optimize_N_list_m1': [32,34,36,32,34,36,34,36,38],
+'C1_gate_optimize_N_list_m1': [40,34,36,32,34,36,34,36,42],
 
 
 # 'C1_Ren_tau'    :   [4.994e-6],
@@ -253,40 +262,45 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau'    :   [4.998e-6],
-'C1_Ren_N'      :   [36],
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [45.83] + [116.81] + [-12.02] + [0.0] + [38.11] + [31.0] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_tau_m1'    :   [4.994e-6],
+'C1_Ren_N_m1'      :   [34],
+'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-1.66] + [93.48] + [-2.27] + [0.0] + [9.28] + [40.09] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
     ################
 
-'C2_freq'       :   421.814e3,  
-'C2_freq_0' : 432015.82,
-'C2_freq_1' : 413489.39,
-'C2_gate_optimize_tau_list' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
+'C2_freq_m1'       :  421891.91,## +-81.2 #421.814e3,  #XXXXXXXXXXXXX
+'C2_freq_0' : 431879.73,
+'C2_freq_1_m1' : 413434.74,
+'C2_gate_optimize_tau_list_m1' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
-'C2_gate_optimize_N_list': [26,28,30,30,32,34,32,34,36],           
+'C2_gate_optimize_N_list_m1': [26,28,30,30,32,34,32,34,36],           
 
 
-'C2_Ren_tau'    :   [13.614e-6],
-'C2_Ren_N'      :   [30],
-'C2_Ren_extra_phase_correction_list' : np.array([0.0] + [46.82] + [163.52] + [135.85] + [0.0] + [79.08] + [87.22] + [0.0] + [0.0] + [0.0]),
+# 'C2_Ren_tau_m1'    :   [13.614e-6],
+# 'C2_Ren_N_m1'      :   [30],
+# 'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [43.26] + [169.41] + [135.85] + [0.0] + [78.79] + [87.22] + [0.0] + [0.0] + [0.0]),
+
+'C2_Ren_tau_m1'    :   [13.614e-6],
+'C2_Ren_N_m1'      :   [32],
+'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [119.21] + [154.83] + [167.12] + [0.0] + [27.34] + [79.64] + [0.0] + [0.0] + [0.0]),
+
 
     ################
     ### Carbon 3 ###
     ################
 
-'C3_freq'       :   421.814e3,  
-'C3_freq_0' : 431815.16,
-'C3_freq_1' : 447205.81,
+'C3_freq_m1'       :   421.814e3,  
+'C3_freq_0' : 432032.14,
+'C3_freq_1_m1' : 447261.17,
 
-'C3_gate_optimize_tau_list' :  [11.942e-6, 11.942e-6, 11.942e-6, 11.944e-6, 11.944e-6
+'C3_gate_optimize_tau_list_m1' :  [11.942e-6, 11.942e-6, 11.942e-6, 11.944e-6, 11.944e-6
                                     , 11.944e-6, 11.946e-6, 11.946e-6,11.946e-6],
-'C3_gate_optimize_N_list': [12,14,16,12,14,16,12,14,16],      
+'C3_gate_optimize_N_list_m1': [12,14,16,12,14,16,12,14,16],      
 
-'C3_uncond_tau' :   [(9.098)*1e-6],
-'C3_uncond_pi_N':   [44],
+'C3_uncond_tau_m1' :   [(9.098)*1e-6],
+'C3_uncond_pi_N_m1':   [44],
 # 'C3_uncond_tau' :   [(6.824)*1e-6],
 # 'C3_uncond_pi_N':   [64],    
 # 'C3_uncond_tau' :   [(7.962)*1e-6],
@@ -295,18 +309,18 @@ cfg['samples']['111_1_sil18'] = {
 
 # 'C3_uncond_pi_N':   [94],   
 
-'C3_Ren_tau'    :   [11.942e-6],
-'C3_Ren_N'      :   [14],
-'C3_Ren_extra_phase_correction_list' : np.array([0.0] + [15.11] + [114.74] + [-6.59] + [0.0] + [34.77] + [29.26] + [0.0] + [0.0] + [0.0]),
+'C3_Ren_tau_m1'    :   [11.942e-6],
+'C3_Ren_N_m1'      :   [14],
+'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [1.81] + [8.01] + [10.58] + [0.0] + [8.47] + [29.07] + [0.0] + [0.0] + [0.0]),
 
 
     ################
     ### Carbon 5 ###
     ################
 
-'C5_freq'       :   419.894e3,
-'C5_freq_0' : 432008.57,
-'C5_freq_1' : 408332.5,
+'C5_freq_m1' :    420021.01,### +-85.5 # 419.894e3,#XXXXXXXXXX
+'C5_freq_0' : 431901.39,
+'C5_freq_1_m1' : 408287.96,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -320,41 +334,137 @@ cfg['samples']['111_1_sil18'] = {
 # 'C5_gate_optimize_N_list': [30,32,34,30,32,34,30,32,34],    
 
 
-'C5_gate_optimize_tau_list' :  [11.308e-6, 11.308e-6, 11.308e-6, 11.310e-6, 11.310e-6, 11.310e-6, 11.312e-6, 11.312e-6, 11.312e-6],
-'C5_gate_optimize_N_list': [44,46,48,46,48,50,46,48,50],   
+'C5_gate_optimize_tau_list_m1' :  [11.308e-6, 11.308e-6, 11.308e-6, 11.310e-6, 11.310e-6, 11.310e-6, 11.312e-6, 11.312e-6, 11.312e-6],
+'C5_gate_optimize_N_list_m1': [44,46,48,46,48,50,46,48,50],   
 
 # 'C5_gate_optimize_tau_list' :  [11.310e-6, 11.310e-6],
 # 'C5_gate_optimize_N_list': [48,50], 
 # 'C5_Ren_tau'    :   [6.538e-6],
 # 'C5_Ren_N'      :   [32],
 # 'C5_Ren_extra_phase_correction_list' : np.array([0]+[43.7]+[92.5]+[0]*2+[-79.188]+[0]*4), 
-'C5_geo_cond_N':    [36],
-'C5_geo_uncond_N':  [28],
-'C5_uncond_tau' :   [(9.52)*1e-6],
-'C5_uncond_pi_N':   [94],
-'C5_Ren_tau'    :   [11.31e-6],
-'C5_Ren_N'      :   [48],
-'C5_Ren_extra_phase_correction_list' : np.array([0.0] + [66.16] + [23.46] + [80.13] + [0.0] + [96.69] + [104.98] + [0.0] + [0.0] + [0.0]),
+'C5_geo_cond_N_m1':    [36],
+'C5_geo_uncond_N_m1':  [28],
+'C5_uncond_tau_m1' :   [(9.52)*1e-6],
+'C5_uncond_pi_N_m1':   [94],
+'C5_Ren_tau_m1'    :   [11.312e-6],
+'C5_Ren_N_m1'      :   [48],
+'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [142.58] + [-33.48] + [109.97] + [0.0] + [104.49] + [115.37] + [0.0] + [0.0] + [0.0]),
 
 
     ### Carbon 6
-'C6_freq'       :   456e3,         #Only roughly calibrated
-'C6_freq_0' : 431969.86,
-'C6_freq_1' : 480623.11,
+'C6_freq_m1'       :   456e3,         #Only roughly calibrated
+'C6_freq_0' : 431962.3,
+'C6_freq_1_m1' : 480615.23,
 
-'C6_Ren_tau'    :   [4.932e-6],
-'C6_Ren_N'      :   [92],
-'C6_Ren_extra_phase_correction_list' : np.array([0.0] + [35.43] + [-63.73] + [-6.02] + [0.0] + [88.17] + [35.69] + [0.0] + [0.0] + [0.0]),
+'C6_Ren_tau_m1'    :   [4.932e-6],
+'C6_Ren_N_m1'      :   [92],
+'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.67] + [-0.11] + [28.44] + [0.0] + [7.3] + [38.0] + [0.0] + [0.0] + [0.0]),
 
 ########## dummy carbon 7
-'C7_freq'       :   456e3,         #Only roughly calibrated
+'C7_freq_m1'       :   456e3,         #Only roughly calibrated
 'C7_freq_0' : 431959.87,
-'C7_freq_1' : 480615.5,
+'C7_freq_1_m1' : 480615.5,
 
-'C7_Ren_tau'    :   [2.315e-6],
-'C7_Ren_N'      :   [12],
-'C7_Ren_extra_phase_correction_list' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C7_Ren_tau_m1'    :   [2.315e-6],
+'C7_Ren_N_m1'      :   [12],
+'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
+
+
+###########################################
+### 111 No1 Sil 18: nuclear spin params ms = +1 ###
+###########################################
+
+################
+### Carbon 1 ###
+################
+
+
+
+'C1_freq_p1'       :   450.301e3,
+'C1_freq_1_p1' : 468994.63,
+'C1_gate_optimize_tau_list_p1' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
+                               4.996e-6,4.998e-6,4.998e-6,7.214e-6],
+'C1_gate_optimize_N_list_p1': [40,34,36,32,34,36,34,36,42],
+
+
+'C1_Ren_tau_p1'    :   [4.998e-6],
+'C1_Ren_N_p1'      :   [36],
+'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [41.76] + [120.91] + [-12.02] + [0.0] + [34.09] + [31.0] + [0.0] + [0.0] + [0.0]),
+
+    ################
+    ### Carbon 2 ###
+    ################
+
+'C2_freq_p1'       :   421.814e3,  
+'C2_freq_1_p1' : 413500.47,
+'C2_gate_optimize_tau_list_p1' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
+                                ,13.616e-6,13.616e-6],
+'C2_gate_optimize_N_list_p1': [26,28,30,30,32,34,32,34,36],           
+
+
+'C2_Ren_tau_p1'    :   [13.614e-6],
+'C2_Ren_N_p1'      :   [30],
+'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [50.14] + [170.36] + [135.85] + [0.0] + [83.42] + [87.22] + [0.0] + [0.0] + [0.0]),
+
+    ################
+    ### Carbon 3 ###
+    ################
+
+'C3_freq_p1'       :   421.814e3,  
+'C3_freq_1_p1' : 447205.81,
+
+'C3_gate_optimize_tau_list_p1' :  [11.942e-6, 11.942e-6, 11.942e-6, 11.944e-6, 11.944e-6
+                                    , 11.944e-6, 11.946e-6, 11.946e-6,11.946e-6],
+'C3_gate_optimize_N_list_p1': [12,14,16,12,14,16,12,14,16],      
+
+'C3_uncond_tau_p1' :   [(9.098)*1e-6],
+'C3_uncond_pi_N_p1':   [44],
+
+'C3_Ren_tau_p1'    :   [11.090e-6],#[11.942e-6],
+'C3_Ren_N_p1'      :   [12],#[14],
+'C3_Ren_extra_phase_correction_lis_p1t' : np.array([0.0] + [15.11] + [114.74] + [-6.59] + [0.0] + [34.77] + [29.26] + [0.0] + [0.0] + [0.0]),
+
+
+    ################
+    ### Carbon 5 ###
+    ################
+
+'C5_freq_p1'       :   419.894e3,
+'C5_freq_1_p1' : 408334.78,
+
+'C5_gate_optimize_tau_list_p1' :  [11.308e-6, 11.308e-6, 11.308e-6, 11.310e-6, 11.310e-6, 11.310e-6, 11.312e-6, 11.312e-6, 11.312e-6],
+'C5_gate_optimize_N_list_p1': [44,46,48,46,48,50,46,48,50],   
+
+# 'C5_gate_optimize_tau_list' :  [11.310e-6, 11.310e-6],
+# 'C5_gate_optimize_N_list': [48,50], 
+# 'C5_Ren_tau'    :   [6.538e-6],
+# 'C5_Ren_N'      :   [32],
+# 'C5_Ren_extra_phase_correction_list' : np.array([0]+[43.7]+[92.5]+[0]*2+[-79.188]+[0]*4), 
+'C5_geo_cond_N_p1':    [36],
+'C5_geo_uncond_N_p1':  [28],
+'C5_uncond_tau_p1' :   [(9.52)*1e-6],
+'C5_uncond_pi_N_p1':   [94],
+'C5_Ren_tau_p1'    :   [11.31e-6],
+'C5_Ren_N_p1'      :   [48],
+'C5_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [60.93] + [39.07] + [80.13] + [0.0] + [103.24] + [104.98] + [0.0] + [0.0] + [0.0]),
+
+
+    ### Carbon 6
+'C6_freq_p1'       :   456e3,         #Only roughly calibrated
+'C6_freq_1_p1' : 480623.11,
+
+'C6_Ren_tau_p1'    :   [4.932e-6],
+'C6_Ren_N_p1'      :   [92],
+'C6_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [35.43] + [-63.73] + [-6.02] + [0.0] + [88.17] + [35.69] + [0.0] + [0.0] + [0.0]),
+
+########## dummy carbon 7
+'C7_freq_p1'       :   456e3,         #Only roughly calibrated
+'C7_freq_1_p1' : 480615.5,
+
+'C7_Ren_tau_p1'    :   [2.315e-6],
+'C7_Ren_N_p1'      :   [12],
+'C7_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 }
 
@@ -482,7 +592,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           15e-9,#15e-9,    #18e-9
+'Ex_SP_amplitude'           :           15e-9,   #15e-9,#15e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
 'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
 
@@ -520,7 +630,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI_shutter'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           15e-9,#15e-9,    #18e-9
+'Ex_SP_amplitude'           :           15e-9,  #15e-9,#15e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
 'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
 
@@ -704,9 +814,9 @@ cfg['samples']['Hans_sil1'] = {
     ######################################
 
 'C1_freq'       :   345.124e3,   
-'C1_freq_0' : 431914.09,
-'C1_freq_1' : 468998.93,
-'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [45.83] + [116.81] + [-12.02] + [0.0] + [38.11] + [31.0] + [0.0] + [0.0] + [0.0]),
+'C1_freq_0' : 431895.87,
+'C1_freq_1' : 468994.63,
+'C1_Ren_extra_phase_correction_list' : np.array([0.0] + [41.76] + [120.91] + [-12.02] + [0.0] + [34.09] + [31.0] + [0.0] + [0.0] + [0.0]),
 'C1_Ren_tau'    :   [9.420e-6, 6.522e-6],
 'C1_Ren_N'      :   [18      , 10],
 
@@ -715,7 +825,7 @@ cfg['samples']['Hans_sil1'] = {
 'C2_Ren_N'      :   [26     , 28      , 32],
 
 'C3_freq'       :   302.521e3,
-'C3_freq_0' : 431815.16,
+'C3_freq_0' : 432032.14,
 'C3_freq_1' : 447205.81,
 'C3_Ren_extra_phase_correction_list' : np.array([0.0] + [15.11] + [114.74] + [-6.59] + [0.0] + [34.77] + [29.26] + [0.0] + [0.0] + [0.0]),
 'C3_Ren_tau'    :   [18.564e-6, 15.328e-6, 16.936e-6],

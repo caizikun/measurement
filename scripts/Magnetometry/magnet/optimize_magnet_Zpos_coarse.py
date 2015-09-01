@@ -62,8 +62,8 @@ if __name__ == '__main__':
     laser_power = 20e-6
     
         ### for the first coarse step
-    init_range   = 20     #Common: 10 MHz
-    init_pts     = 221    #Common: 121
+    init_range   = 50     #Common: 10 MHz
+    init_pts     = 521    #Common: 121
     init_reps    = 750   #Common: 500
         ### for the remainder of the steps
     repeat_range = 4.5

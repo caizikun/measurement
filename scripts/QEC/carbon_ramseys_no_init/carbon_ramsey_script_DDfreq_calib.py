@@ -38,13 +38,13 @@ def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
     print 'free evolution times: %s' %m.params['free_evolution_times']
     
     if N ==None: 
-        m.params['C_Ren_N'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'][0]  
+        m.params['C_Ren_N'+m.params['electron_transition']] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'+m.params['electron_transition']][0]  
     else:
-        m.params['C_Ren_N'] = N
+        m.params['C_Ren_N'+m.params['electron_transition']] = N
     if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'][0]
+        m.params['C_Ren_tau'+m.params['electron_transition']] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'+m.params['electron_transition']][0]
     else: 
-        m.params['C_Ren_tau'] = tau 
+        m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
     m.autoconfig()
     funcs.finish(m, upload =True, debug=False)
@@ -52,11 +52,15 @@ def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
 
 if __name__ == '__main__':
 
-    evolution_times1 = np.linspace(5e3,80e3,14).astype(int)*1e-9
-    evolution_times2 = np.linspace(85e3,165e3,14).astype(int)*1e-9
-    evolution_times3 = np.linspace(165e3,245e3,14).astype(int)*1e-9
-    carbon=1
-    #for carbon in [1,5]:
-    #Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
-    Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
-    Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)
+    evolution_times1 = np.linspace(4.5e3,10.5e3,20).astype(int)*1e-9
+    evolution_times2 = np.linspace(15e3,21e3,20).astype(int)*1e-9
+    evolution_times3 = np.linspace(28e3,34e3,20).astype(int)*1e-9
+    evolution_times4 = np.linspace(41e3,47e3,20).astype(int)*1e-9
+    # evolution_times3 = np.linspace(41e3,49e3,20).astype(int)*1e-9
+
+    for carbon in [2,5]:
+        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
+        Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
+        Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)
+        Carbon_Ramsey(SAMPLE + '_evo_times_4' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times4)
+

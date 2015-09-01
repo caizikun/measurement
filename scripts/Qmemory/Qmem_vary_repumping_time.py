@@ -92,10 +92,10 @@ def QMem(name, carbon_list   = [5],
     """these parameters will be used later on"""
 
     m.params['Nr_MBE']              = number_of_MBE_steps 
-    m.params['MBE_bases']           = []# should be mbe_bases as soon as mbe is implemented
+    m.params['MBE_bases']           = mbe_bases
     m.params['MBE_threshold']       = MBE_threshold
-    # m.params['2qb_logical_state']   = logic_state
-    # m.params['2C_RO_trigger_duration'] = 150e-6
+    m.params['2qb_logical_state']   = logic_state
+    m.params['2C_RO_trigger_duration'] = 150e-6
     
     ###################################
     ### Parity measurement settings ###
@@ -109,15 +109,18 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 25
+    pts = 11
 
     f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
     tau_larmor = round(1/f_larmor,9)
 
-    m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(0e-6,1.7e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[50]
-    m.params['do_pi'] = True
+    m.params['repump_wait'] =  pts*[2e-6] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = np.linspace(0,2e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[500]
+
+    m.params['do_pi'] = False ### does a regular pi pulse
+    m.params['do_BB1'] = True ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
+
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
 
     m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
@@ -156,10 +159,10 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
 
     
-    for c in [5]:
+    for c in [1,2,5]:
         if breakst:
             break
-        for tomo in ['X','Y']:
+        for tomo in ['Z']:
             if breakst:
                 break
             for ro in ['positive','negative']:
@@ -171,4 +174,6 @@ if __name__ == '__main__':
                                                                     tomo_list = [tomo], 
                                                                     el_RO = ro,
                                                                     carbon_list   = [c],               
-                                                                    carbon_init_list        = [c])
+                                                                    carbon_init_list        = [c],
+                                                                    carbon_init_methods     = ['swap'], 
+                                                                    carbon_init_thresholds  = [0])

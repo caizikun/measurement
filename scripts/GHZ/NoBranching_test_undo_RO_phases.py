@@ -70,22 +70,25 @@ def NoBranching_and_invert_test(name,
     A_list = ['X'],
     tomo_list = ['X'],
     debug = False,
-    parity_orientations = ['positive','positive']):
+    parity_orientations = ['positive','positive'],
+    use_composite_pi= True):
 
     m = DD.test_undo_RO_phase_and_invert(name)
     funcs.prepare(m)
 
-    m.params['reps_per_ROsequence'] = 800
+    m.params['reps_per_ROsequence'] = 5000
     m.params['pts'] = 1
 
     m.params['RO_trigger_duration'] = 150e-6
 
+    m.params['use_composite_pi'] = use_composite_pi
+
     ##### Carbon initializations params
     m.params['Nr_C13_init'] = 1
-    m.params['carbon_init_list']        = [1]
-    m.params['init_state_list']         = ['up']
-    m.params['init_method_list']        = ['swap']
-    m.params['C13_MBI_threshold_list']  = [0]
+    m.params['carbon_init_list']        = [1]#[]
+    m.params['init_state_list']         = ['down']#['up','up']#['up']
+    m.params['init_method_list']        = ['MBI']#['swap','swap']# ['swap']
+    m.params['C13_MBI_threshold_list']  = [1]#[0,0]#[0]
 
 
     m.params['Nr_MBE']              = 0
@@ -186,14 +189,18 @@ if __name__ == '__main__':
         ['negative','negative'],
         ]      
 
-    tomo_lists = [['X'],['Y']]
+    tomo_lists = [['X','X'],['X','Y'],['Y','X'],['Y','Y']]
 
-    test_nobranching_and_invert = False
-    test_nobranching_noinvert = True
+    test_nobranching_and_invert = True
+    test_nobranching_noinvert = False
 
     if test_nobranching_and_invert:   
-        mmtA_list = ['X']      
-        for jj,tomo_list in enumerate(tomo_lists):
+        mmt_lists=[[['I','I','X'],['I','X','I']],
+                    [['I','I','X'],['I','Y','I']],
+                    [['X','I','I'],['I','X','I']],
+                    [['X','I','I'],['I','Y','I']]]
+
+        for mmt_list in mmt_lists:
             print '-----------------------------------'
             print 'press q to stop measurement cleanly'
             print '-----------------------------------'
@@ -201,11 +208,16 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 break
 
-            # GreenAOM.set_power(25e-6)
-            # ins_counters.set_is_running(0)
-            # optimiz0r.optimize(dims=['x','y','z'])
+            GreenAOM.set_power(25e-6)
+            ins_counters.set_is_running(0)
+            optimiz0r.optimize(dims=['x','y','z'])
 
-            # ssrocalibration(SAMPLE_CFG+'GHZ_'+tomo_name[jj])
+            ssrocalibration(SAMPLE_CFG)
+
+            A_list = mmt_list[0]
+            tomo_list = mmt_list[1]
+            A_list_name = ''.join([a for a in A_list])                           
+            tomo_name = ''.join([a for a in tomo_list])
 
             for kk,orientations in enumerate(orientations_list):
                 print '-----------------------------------'
@@ -215,15 +227,17 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     break
 
-                mmtA_name = ''.join([a for a in mmtA_list])
-                tomo_name = ''.join([b for b in tomo_list])
                 orientations_name = ''.join([o[0] for o in orientations])
 
-                print 'mmtA: '+mmtA_name+ ' tomo: '+tomo_name
+                print 'mmtA: '+A_list_name+ ' tomo: '+tomo_name
                 print orientations_name
 
-                NoBranching_and_invert_test(SAMPLE+'NoBranching_C1_test_mmt_'+mmtA_name+'_'+'tomo'+tomo_name+'_'+orientations_name, 
-                    carbon_list = [1], A_list = mmtA_list, tomo_list = tomo_list, parity_orientations = orientations, debug=False)
+                NoBranching_and_invert_test(SAMPLE+'C512_test_init1-X_mmt_'+A_list_name+'_'+'tomo'+tomo_name+'_'+orientations_name, 
+                    carbon_list = [5,1,2], A_list = A_list, tomo_list = tomo_list, 
+                    use_composite_pi=True,
+                    parity_orientations = orientations, debug=False)
+
+
 
 
     if test_nobranching_noinvert:   

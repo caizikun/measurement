@@ -48,6 +48,7 @@ if __name__ == '__main__':
     save_plots = True
     fine_only = True
 
+    do_m1 =True
     range_coarse  = 6.00
     pts_coarse    = 81   
     reps_coarse   = 750 #750
@@ -147,9 +148,10 @@ if __name__ == '__main__':
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='right')
             #ms=-1 fine
         
-        DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
+        if do_m1 == True:
+            DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    

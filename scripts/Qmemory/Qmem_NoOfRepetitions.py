@@ -53,7 +53,7 @@ def QMem(name, carbon_list   = [5],
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
-        Repetitions         = 125):
+        Repetitions         = 200):
 
 
 
@@ -111,7 +111,7 @@ def QMem(name, carbon_list   = [5],
     ### determine sweep parameters
     pts = 11
     minReps = 1 # minimum number of LDE reps
-    maxReps = 501 # max number of LDe reps. this number is going to be rounded
+    maxReps = 51 # max number of LDe reps. this number is going to be rounded
     step = int((maxReps-minReps)/pts)
     maxReps = minReps + step*pts
 
@@ -120,15 +120,16 @@ def QMem(name, carbon_list   = [5],
     tau_larmor = round(1/f_larmor,9)
 
     # tau_larmor = 500e-9
-    m.params['repump_wait'] =  pts*[26.95e-6]#pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[290e-9] #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['repump_wait'] =  pts*[2e-6] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[180e-9] #this parameter has to be estimated from calibration curves, goes into phase calculation
     m.params['fast_repump_repetitions'] = np.arange(minReps,maxReps,step)
 
 
-    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
+    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the beam is shined in.
 
-    m.params['fast_repump_power'] = 700e-9
-    m.params['do_pi'] = False
+    m.params['fast_repump_power'] = 900e-9
+    m.params['do_pi'] = False ### does a regular pi pulse
+    m.params['do_BB1'] = True ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
 
 
@@ -161,20 +162,38 @@ def optimize(breakst):
 
 if __name__ == '__main__':
 
-    
+    last_check = time.time() ### time reference for long mesaurement loops
 
     breakst=False    
-    # last_check=time.time()
+
     # QMem('RO_electron',debug=False,tomo_list = ['Z'])
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
 
+
+    ###############
+    ### Testing ###
+    ###############
+    # c_list = [2]
+    # tomo = ['Z']
+    # logic_state = 'X'
+    # msmt_name = 'Testing_C25_logicstate_X_'+tomo[0]+tomo[1]
+    # QMem(msmt_name,
+    #                             debug                   = False,
+    #                             tomo_list               = tomo, 
+    #                             el_RO                   = ro,
+    #                             carbon_list             = c_list,               
+    #                             carbon_init_list        = c_list,
+    #                             carbon_init_thresholds  = [0],
+    #                             number_of_MBE_steps     = 1,
+    #                             carbon_init_methods     = ['swap'],
+    #                             logic_state = logic_state)
     #########################
     ### single qubit loop ###
     #########################
 
-    n = 1 ### turn measurement on/off
+    n = 1### turn measurement on/off
     if n == 1:
-        for c in [1]:
+        for c in [2]:
             if breakst:
                 break
             for tomo in ['X','Y']:
@@ -190,7 +209,9 @@ if __name__ == '__main__':
                                                                         tomo_list = [tomo], 
                                                                         el_RO = ro,
                                                                         carbon_list   = [c],               
-                                                                        carbon_init_list        = [c])
+                                                                        carbon_init_list        = [c],
+                                                                        carbon_init_thresholds  = [1],
+                                                                        carbon_init_methods     = ['MBI'])
 
     ######################
     ### two qubit loop ###
@@ -198,21 +219,27 @@ if __name__ == '__main__':
 
     n = 0 ### turn measurement on/off
     if n == 1:
+
+        
         logic_state_list=['X','mX'] ### for DFS creation.
-        for c_list in [[1,2],[2,5]]:
+        tomo_list = [['X','X'],['Y','Y'],['X','Y'],['Y','X']]
+        # tomo_list = [['Z','Z']]
+        # tomo_list = [['Z','Z']]
+
+
+        for c_list in [[2,5]]:
             for logic_state in logic_state_list:
                 if breakst:
                     break
-                for tomo in [['X','X'],['X','Y'],['Y','Y'],['Y','X']]:
-                    optimize(breakst)
+                for tomo in tomo_list: 
                     if breakst:
                         break
                     for ro in ['positive','negative']:
                         breakst = show_stopper()
                         if breakst:
                             break
-                        msmt_name = 'NoOf_Repetitions_'+ro+'_state'+logic_state+'_Tomo_'+tomo+'_C'+str(c_list[0])+str(c_list[1])
-                        
+                        msmt_name = 'NoOf_Repetitions_'+ro+'_state'+logic_state+'_Tomo_'+tomo[0]+tomo[1]+'_C'+str(c_list[0])+str(c_list[1])
+                        print last_check-time.time()
                         QMem(msmt_name,
                                 debug                   = False,
                                 tomo_list               = tomo, 
@@ -223,3 +250,7 @@ if __name__ == '__main__':
                                 number_of_MBE_steps     = 1,
                                 carbon_init_methods     = ['swap'],
                                 logic_state             = logic_state)
+
+                        if abs(last_check-time.time()) > 30*60: ## check every 30 minutes
+                            optimize(breakst)
+                            last_check = time.time()                  

@@ -43,9 +43,9 @@ def run(name):
 
     # laser beam
     m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 110e-9 #in Watts
-    m.params['repumping_time'] = np.linspace(0.0e-6,5e-6,pts) 
-    m.params['MW_repump_delay1'] =  np.ones(pts) * 2500e-9
+    m.params['laser_dephasing_amplitude']= 900e-9 #in Watts
+    m.params['repumping_time'] = np.linspace(0.0e-6,2e-6,pts) 
+    m.params['MW_repump_delay1'] =  np.ones(pts) * 500e-9
     #sweep param
     m.params['MW_repump_delay2'] = np.ones(pts) * 2500e-9
 

@@ -16,7 +16,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True):
 
-    m = DD.SimpleDecoupling(name)
+    m = DD.SimpleDecoupling(name+'_tau_'+str(tau*1e9))
     """
     ##### MODIFICATION FOR LT1 ######
     """
@@ -84,6 +84,14 @@ def interrupt_script(wait = 5):
         sys.exit()
 
 if __name__ == '__main__':
+### LT 2 parameters
+    tau = 4.63e-6 # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,200,8)
+
+    NoP2=np.arange(4,240,12)
+    # NoP2=np.arange(1154,1345,64)
+    # NoP3=np.arange(200,3201,3200)
+#### LT 1 parameters
     tau_ctr = 39.472e-6
     #tau_ctr = 65.836e-6
     #tau_ctr=26.75e-6
@@ -107,6 +115,26 @@ if __name__ == '__main__':
     NoP1=np.arange(4,124,4)
     NoP2=np.arange(124,194,4)
     NoP3=np.arange(194,254,4)
+
+### LT 2 parameters
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP1,tau =10.888e-6, reps_per_ROsequence = 500)
+    # interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N_C1',NoP=NoP2,tau =4.994e-6, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N_C2',NoP=NoP2,tau =13.614e-6, reps_per_ROsequence = 500)
+    SimpleDecoupling_swp_N(SAMPLE+'sweep_N_C5',NoP=NoP2,tau =11.310e-6, reps_per_ROsequence = 500)
+    interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP1,tau =11.090e-6, reps_per_ROsequence = 500)
+    # # interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP2,tau =11.172e-6, reps_per_ROsequence = 500)
+    # interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP2,tau =3.064e-6, reps_per_ROsequence = 500)
+    # interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP2,tau =3.066e-6, reps_per_ROsequence = 500)
+    # interrupt_script()
+    # SimpleDecoupling_swp_N(SAMPLE+'sweep_N',NoP=NoP2,tau =3.068e-6, reps_per_ROsequence = 500)
+
+
+#### LT 1 parameters
     SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part1',NoP=NoP1,tau =tau, reps_per_ROsequence = 500)
     SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part2',NoP=NoP2,tau =tau, reps_per_ROsequence = 500)
     SimpleDecoupling_swp_N(SAMPLE+'sweep_N'+'_part3',NoP=NoP3,tau =tau, reps_per_ROsequence = 500)

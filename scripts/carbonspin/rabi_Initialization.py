@@ -14,18 +14,21 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def NuclearRabiWithInitialization(name,tau = None):
+def NuclearRabiWithInitialization(name,carbon = 1):
 
     m = DD.NuclearRabiWithInitialization(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 350 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 200 #Repetitions of each data point
     m.params['electron_init_state'] = '0'
-
+    m.params['C13_init_method'] = 'swap'
     m.params['Addressed_Carbon'] = 1
     m.params['C13_init_state'] = 'up' 
+    m.params['Addressed_Carbon'] = carbon
+
+    m.params[params['C_RO_basis'] = ['Z']
 
     m.params['sweep_name'] = 'Number of pulses'
 

@@ -87,7 +87,10 @@ def cal_fast_pi(name, mult=1,Range = 0.04, mbi = True, mw_switch = False):
     m.params['MW_pulse_durations'] =  m.params['fast_pi_duration']*(np.ones(pts))
     # print     m.params['MW_pulse_durations'] 
     m.params['MW_pulse_amps'] = np.linspace(m.params['fast_pi_amp']-Range/2.,m.params['fast_pi_amp']+Range/2.,pts)
-    # print m.params['MW_pulse_amps']
+    print m.params['electron_transition']
+    # if m.params['electron_transition'] == '_p1':
+    #     m.params['MW_pulse_amps'] = np.linspace(0.69-Range/2.,0.69+Range/2.,pts)
+    #     print m.params['MW_pulse_amps']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -288,7 +291,7 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
     
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,Range = 0.08, mbi = True, mw_switch = False)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,Range = 0.06, mbi = True, mw_switch = False)
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z','y','x'])
     # stools.turn_off_all_lt2_lasers()

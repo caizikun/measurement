@@ -37,9 +37,9 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
     m.params['Rabi_N_Sweep']= [0] + N
     
     if tau_list == None:
-        tau_list = m.params['C'+str(carbon_B)+'_Ren_tau']*len(N)
+        tau_list = m.params['C'+str(carbon_B)+'_Ren_tau'+m.params['electron_transition']]*len(N)
     
-    m.params['Rabi_tau_Sweep']= m.params['C'+str(carbon_B)+'_Ren_tau'] +  tau_list
+    m.params['Rabi_tau_Sweep']= m.params['C'+str(carbon_B)+'_Ren_tau'+m.params['electron_transition']] +  tau_list
 
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
 

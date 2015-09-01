@@ -10,20 +10,21 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Single_C_rabi_initialized(name, 
+def Single_C_gate_characterization(name, 
         carbon_nr             = 1,               
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
-        el_during_experiment  = 0, 
-        C13_init_method       = 'swap',
-        C13_MBI_threshold     = [0],
+        el_during_experiment  = 1, 
+        C13_init_method       = 'MBI',
+        C13_MBI_threshold     = [1],
         C13_RO_basis          = ['Y'],
-        nr_of_pulses_list      = np.linspace(0,5,6),
-        gate_phase            = 'X',
+        nr_of_gates_list      = np.linspace(0,5,6),
+        gate_phase            = 'Y',
+        constant_time         = False,
         reps                  = 200):
 
-    m = DD.NuclearRabiWithInitialization_v2(name)
+    m = DD.Nuclear_gate_characterization(name)
     funcs.prepare(m)
 
     '''Set parameters'''
@@ -34,14 +35,15 @@ def Single_C_rabi_initialized(name,
     else:
         m.params['el_after_init'] ='0'
 
-    m.params['nr_of_pulses_list'] = nr_of_pulses_list
+    m.params['nr_of_gates_list'] = nr_of_gates_list
 
-    m.params['pts'] = len(nr_of_pulses_list)
+    m.params['pts'] = len(nr_of_gates_list)
     ### Derive other parameters
 
-    m.params['sweep_name']          = 'Nr of pulses' 
-    m.params['sweep_pts']           = nr_of_pulses_list
+    m.params['sweep_name']          = 'Nr of gates' 
+    m.params['sweep_pts']           = nr_of_gates_list
 
+    m.params['constant_time'] = constant_time
 
     m.params['gate_phase'] = 'C13_'+gate_phase+'_phase'
 
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     n = 1
     # c = 1
     # Single_C_gate_characterization(SAMPLE+'positive_constant_time_prt1_carbon_'+str(c), 
-    #                 el_RO= 'positive',carbon_nr = c,nr_of_pulses_list= np.linspace(0,4,2))
+    #                 el_RO= 'positive',carbon_nr = c,nr_of_gates_list= np.linspace(0,4,2))
 
     for c in [5]:
         print '--------------------------------'
@@ -88,9 +90,12 @@ if __name__ == '__main__':
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             n = 0
-        for el_during in [0,1]:
 
-            for C13_RO_basis in ['X','Z']:#,'Y','Z']:
+
+        el_during_list = [0,1]
+        for el_during in el_during_list:
+
+            for C13_RO_basis in ['X','Z']:
                 print '--------------------------------'
                 print 'press q to stop measurement loop'
                 print '--------------------------------'
@@ -98,8 +103,17 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     n = 0
 
-                Single_C_rabi_initialized(SAMPLE+'positive_Rabi_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during),el_during_experiment = el_during,
-                                     C13_RO_basis = [C13_RO_basis], el_RO= 'positive',carbon_nr = c,nr_of_pulses_list= np.arange(0,130,12))
-                Single_C_rabi_initialized(SAMPLE+'negative_Rabi_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during),el_during_experiment = el_during,
-                                     C13_RO_basis = [C13_RO_basis], el_RO= 'negative',carbon_nr = c,nr_of_pulses_list= np.arange(0,130,12))
-            
+                if n ==1:
+                    Single_C_gate_characterization(SAMPLE+'positive_prt1_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during), el_during_experiment  = el_during, C13_RO_basis = [C13_RO_basis], el_RO= 'positive',carbon_nr = c,nr_of_gates_list= np.linspace(0,8,5))
+                    Single_C_gate_characterization(SAMPLE+'negative_prt1_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during), el_during_experiment  = el_during, C13_RO_basis = [C13_RO_basis], el_RO= 'negative',carbon_nr = c,nr_of_gates_list= np.linspace(0,8,5))
+                
+                print '--------------------------------'
+                print 'press q to stop measurement loop'
+                print '--------------------------------'
+                qt.msleep(2)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    n = 0
+                
+                if n ==1:
+                    Single_C_gate_characterization(SAMPLE+'positive_prt2_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during), el_during_experiment  = el_during, C13_RO_basis = [C13_RO_basis], el_RO= 'positive',carbon_nr = c,nr_of_gates_list= np.linspace(10,14,2))
+                    Single_C_gate_characterization(SAMPLE+'negative_prt2_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during), el_during_experiment  = el_during, C13_RO_basis = [C13_RO_basis], el_RO= 'negative',carbon_nr = c,nr_of_gates_list= np.linspace(10,14,2))

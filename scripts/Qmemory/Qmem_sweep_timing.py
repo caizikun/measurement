@@ -108,7 +108,7 @@ def QMem(name, carbon_list   = [5],
     ###	   LDE element settings		###
     ###################################
 
-    pts = 16
+    pts = 11
     f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
     tau_larmor = round(1/f_larmor,9)
     ### calculate the carbon revival:
@@ -119,10 +119,14 @@ def QMem(name, carbon_list   = [5],
     print tau_c2,tau_larmor,mod(1/df,tau_larmor)
     print 1/df
     rng = tau_larmor*pts/2
-    m.params['repump_wait'] =  np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[290e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = [50]*pts
-    m.params['do_pi'] = False
+    m.params['repump_wait'] =  np.linspace(tau_larmor-500e-9,tau_larmor+500e-9,pts)#np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[200e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = [500]*pts
+
+    m.params['do_pi'] = False ### does a regular pi pulse
+    m.params['do_BB1'] = True ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
+
+
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
     print m.params['repump_wait']
     print np.mod(m.params['repump_wait'],tau_larmor)
@@ -170,10 +174,10 @@ if __name__ == '__main__':
 
     n = 1
     if n ==1:
-        for c in [1]:
+        for c in [2,5]:
             if breakst:
                 break
-            for tomo in ['X','Y']:
+            for tomo in ['Z']:
                 optimize()
                 if breakst:
                     break
@@ -186,4 +190,6 @@ if __name__ == '__main__':
                                                                         tomo_list = [tomo], 
                                                                         el_RO = ro,
                                                                         carbon_list   = [c],               
-                                                                        carbon_init_list        = [c])
+                                                                        carbon_init_list        = [c],
+                                                                        carbon_init_methods     = ['swap'], 
+                                                                        carbon_init_thresholds  = [0])
