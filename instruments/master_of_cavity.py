@@ -72,7 +72,7 @@ class JPE_pos_tracker ():
 		self.curr_x = tr_file['x']
 		self.curr_y = tr_file['y']
 		self.curr_z = tr_file['z']
-		print self.curr_x, self.curr_y, self.curr_z
+		#print self.curr_x, self.curr_y, self.curr_z
 		return self.z1, self.z2, self.z3
 
 	def check_spindle_limit (self, move):
@@ -103,7 +103,7 @@ class JPE_pos_tracker ():
 		self.curr_z = pos_values[2]		
 		self.tracker_file_update ()
 
-	def position_to_spindle_steps (self, x, y, z):
+	def position_to_spindle_steps (self, x, y, z, update_tracker=False):
 		Dx = x-self.curr_x
 		Dy = y-self.curr_y
 		Dz = z-self.curr_z
@@ -112,9 +112,10 @@ class JPE_pos_tracker ():
 		DZ2 = (3.**0.5/2.)*(self.R/self.h)*Dx+(0.5*self.R/self.h)*Dy+Dz
 		DZ3 = -(3.**0.5/2.)*(self.R/self.h)*Dx+(0.5*self.R/self.h)*Dy+Dz
 		
-		self.curr_x = x
-		self.curr_y = y
-		self.curr_z = z
+		if update_tracker:
+			self.curr_x = x
+			self.curr_y = y
+			self.curr_z = z
 		
 		return DZ1, DZ2, DZ3
 		
@@ -175,12 +176,21 @@ class master_of_cavity(CyclopeanInstrument):
         self.add_function('move_to_xyz')	
 
 
-    def motion_to_spindle_steps (self, x, y, z):
-    	dz1, dz2, dz3 = self._jpe_tracker.position_to_spindle_steps (x=x, y=y, z=z)
+    def motion_to_spindle_steps (self, x, y, z, update_tracker = False):
+    	dz1, dz2, dz3 = self._jpe_tracker.position_to_spindle_steps (x=x, y=y, z=z, update_tracker = update_tracker)
     	s1 = dz1/self._step_size
     	s2 = dz2/self._step_size
     	s3 = dz3/self._step_size
     	return s1, s2, s3
+
+    def check_range_problem (self, s1, s2, s3):
+    	new_z1 = self._jpe_tracker.z1+s1
+    	new_z2 = self._jpe_tracker.z2+s2
+    	new_z3 = self._jpe_tracker.z3+s3
+    	if ((new_z1<100) or (new_z2<100) or (new_z3<100)):
+    		return True
+    	else:
+    		return False
 
     def get_temperature (self):
     	print 'Temperature is set to ', self.T, 'K'
@@ -218,6 +228,10 @@ class master_of_cavity(CyclopeanInstrument):
     def set_as_origin (self):
     	self._jpe_tracker.set_as_origin()
 
+    def reset_spindle_tracker(self):
+    	self._jpe_tracker.reset_spindle_tracker()
+    	print 'S1, S2, S3 ', self._jpe_tracker.z1, self._jpe_tracker.z2, self._jpe_tracker.z3
+
     def print_current_position(self):
     	print 'x = ', self._jpe_tracker.curr_x
     	print 'y = ', self._jpe_tracker.curr_y
@@ -245,6 +259,7 @@ class master_of_cavity(CyclopeanInstrument):
     	self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
     	qt.msleep(1)
     	self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
+    	print "Current position (MOC): ", x,y,z
 
     def move_to_xyz (self, x, y, z, verbose=True):
     	if (self.T == None):
@@ -277,6 +292,7 @@ class master_of_cavity(CyclopeanInstrument):
 	    		self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
 	    		qt.msleep(1)
 	    		self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
+
 
 
 	def close(self):

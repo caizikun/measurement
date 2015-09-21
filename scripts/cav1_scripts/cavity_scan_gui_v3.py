@@ -19,7 +19,7 @@ import pylab as plt
 import h5py
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from measurement.lib.cavity.cavity_scan import CavityScan 
+from measurement.lib.cavity.cavity_scan import CavityScanManager 
 from control_panel_2 import Ui_Dialog as Ui_Form
 
 
@@ -45,7 +45,7 @@ class MyCanvas(FigureCanvas):
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
-        FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        #FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
         self._scan_manager = scan_manager
@@ -423,7 +423,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.ui.dsBox_fine_laser_tuning.setDecimals(1)
         self.ui.dsB_power.setRange (0.0, 15.0)
         self.ui.dsB_power.setSingleStep(0.1)     
-        self.ui.dsB_power.setValue(0)   
+        #self.ui.dsB_power.setValue(0)   
         self.ui.dsB_power.valueChanged.connect(self.set_laser_power)
         self.ui.dsBox_fine_laser_tuning.setRange (0, 100)
         self.ui.dsBox_fine_laser_tuning.setDecimals(2)
@@ -431,7 +431,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.ui.dsBox_fine_laser_tuning.setValue(50)
         self.ui.dsBox_fine_laser_tuning.valueChanged.connect(self.set_fine_laser_tuning)
         self.set_laser_coarse(637.0)
-        self.set_laser_power(0)
+        #self.set_laser_power(0)
         self.set_fine_laser_tuning(50)
 
         # FINE PIEZOS
@@ -473,7 +473,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
 
         a = self._moc.status()
         if (a[:5]=='ERROR'):
-            msg_text = 'JPE controller is OFF!'
+            msg_text = 'JPE controller is OFF or in manual mode!'
             ex = MsgBox(msg_text=msg_text)
             ex.show()
 
@@ -511,22 +511,45 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.pzk_Z = value
 
     def move_pzk(self):
+
+        a = self._moc.status()
         if (self.room_T == None):
             msg_text = 'Set temperature before moving PiezoKnobs!'
             ex = MsgBox(msg_text=msg_text)
             ex.show()
+        elif (a[:5]=='ERROR'):
+            msg_text = 'JPE controller is OFF or in manual mode!'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
         else:
-            s1, s2, s3 = self._moc.motion_to_spindle_steps (x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
+            print 'Current JPE position: ', self._moc.print_current_position(), self._moc.print_tracker_params()
+            s1, s2, s3 = self._moc.motion_to_spindle_steps (x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000., update_tracker=False)
+
             msg_text = 'Moving the spindles by ['+str(s1)+' , '+str(s2)+' , '+str(s3)+' ] steps. Continue?'
             ex = MsgBox(msg_text=msg_text)
             ex.show()
+            print ex.ret
             if (ex.ret==0):
-                self._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
-                self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
+                endpoint_problem = self._moc.check_range_problem (s1 = s1, s2=s2, s3=s3)
+                print 'Spindle end-point problem: ', endpoint_problem
+                print 'current steps: '
+                if endpoint_problem:
+                    msg_text = 'Spindles step close to end-point. Shall I really move?'
+                    ex = MsgBox(msg_text=msg_text)
+                    ex.show()
+                if (ex.ret==0):
+                    self._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
+                    self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
 
     def pzk_set_as_origin(self):
-        self._moc_set_as_origin()
+        self._moc.set_as_origin()
         self.ui.label_curr_pos_readout.setText('[ '+str(0)+' ,'+str(0)+' ,'+str(0)+'] um')
+        msg_text = 'Reset spindle counter to zero?'
+        ex = MsgBox(msg_text=msg_text)
+        ex.show()
+        if (ex.ret==0):
+            self._moc.reset_spindle_tracker()
+
 
     def use_wavemeter (self):
         if self.ui.checkBox_wavemeter.isChecked():
@@ -562,21 +585,22 @@ class ControlPanelGUI (QtGui.QMainWindow):
     def fileQuit(self):
         print 'Closing!'
         self.set_dsb_p1 (0)
-        self.set_laser_power(0)
+        #self.set_laser_power(0)
         self.set_fine_laser_tuning(0)
         self.close()
 
     def closeEvent(self, ce):
         self.fileQuit()
 
-#adwin = qt.instruments.get_instruments()['adwin']
+adwin = qt.instruments.get_instruments()['adwin']
 wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
 moc = qt.instruments.get_instruments()['master_of_cavity']
 newfocus = qt.instruments.get_instruments()['newfocus1']
 
 qApp = QtGui.QApplication(sys.argv)
-lc = CavityScan (name='test')
-lc.set_laser_params (wavelength = 637.1, power = 5)
+lc = CavityScanManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus)
+lc.name = ''
+#lc.set_laser_params (wavelength = 637.1, power = 5)
 lc.set_scan_params (v_min=0.02, v_max=4, nr_points=100)
 
 aw_scan = ScanGUI(scan_manager = lc)
