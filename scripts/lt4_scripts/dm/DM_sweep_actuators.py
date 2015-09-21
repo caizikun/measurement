@@ -10,7 +10,7 @@ import time
 
 current_adwin = qt.instruments['adwin']
 counter=3
-int_time= 100 # in ms XXXXXXXXXX200
+int_time= 1000 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     green_power = 200e-6
     GreenAOM.set_power(green_power)
 
-    name = 'PippinSil1_lt3_local_no_pol'
+    name = 'PippinSil1_lt3_local_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
@@ -251,7 +251,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,30): #lets sweep 75 zernike modes!
+                for i in np.arange(2,75): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
@@ -285,7 +285,7 @@ if __name__ == '__main__':
             dat_tot.new_block() 
             print 'after new block'
             if stop_scan: break
-            qt.msleep(2)
+            #qt.msleep(2)
             #optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
             #stools.recalibrate_lt3_lasers(names=['GreenAOM'],awg_names=[])
             GreenAOM.set_power(green_power)

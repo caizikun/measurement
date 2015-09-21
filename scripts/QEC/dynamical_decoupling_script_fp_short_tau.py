@@ -16,7 +16,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling(name, N, step_size, start_point, tot):
+def SimpleDecoupling(name, N, step_size, start_point, tot,start_tau = 0.52e-6):
 
     m = DD.SimpleDecoupling(name)
 
@@ -30,8 +30,8 @@ def SimpleDecoupling(name, N, step_size, start_point, tot):
 
         Number_of_pulses = N 
         pts = 41
-        start    = 0.13e-6  + (kk+start_point)     * (pts-1)*step_size 
-        end      = 0.13e-6  + (kk+1+start_point)   * (pts-1)*step_size
+        start    = start_tau + (kk+start_point)     * (pts-1)*step_size 
+        end      = start_tau + (kk+1+start_point)   * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
 
         ### Start measurement ###
@@ -85,6 +85,8 @@ if __name__ == '__main__':
     #SimpleDecoupling('Fingerprint_' + SAMPLE + str(8), N=8, step_size = 10e-9, start_point=0,tot = 250)
 
     #SimpleDecoupling('Fingerprint_Short_Tau_' + SAMPLE +'_N_' + str(32), N=32, step_size = 10e-9, start_point = 0, tot = 1)
-    SimpleDecoupling('Fingerprint_' + SAMPLE + str(16), N=16, step_size = 10e-9,  start_point = 0, tot = 1)
+    # SimpleDecoupling('Fingerprint_short_tau_' + SAMPLE + str(16), N=16, step_size = 4e-9,  start_point = 0, tot = 5,start_tau = 2.1e-6)
+    # SimpleDecoupling('Fingerprint_short_tau_' + SAMPLE + str(32), N=32, step_size = 4e-9,  start_point = 0, tot = 5,start_tau = 2.1e-6)
+    SimpleDecoupling('Fingerprint_short_tau_' + SAMPLE + str(64), N=64, step_size = 4e-9,  start_point = 0, tot = 5,start_tau = 2.1e-6)
     
 

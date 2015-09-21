@@ -66,19 +66,19 @@ def Zeno(name, carbon_list   = [1,5],
     ### Overwrite msmt_params. Set parameters to the values of the 'dip'
 
     m.params['C1_freq_0']     =   c1ms0
-    m.params['C1_freq_1']     =   469.023e3
-    m.params['C1_freq']       =   450.301e3
-    m.params['C1_Ren_tau']    =   [4.998e-6]
-    m.params['C1_Ren_N']      =   [36]
-    m.params['C1_Ren_extra_phase_correction_list'] =  np.array([0] + [53.6] + [107.8]+[0]*2+[26.8]+ 4*[0]) 
+    m.params['C1_freq_1'+m.params['electron_transition']]     =   469.023e3
+    m.params['C1_freq'+m.params['electron_transition']]       =   450.301e3
+    m.params['C1_Ren_tau'+m.params['electron_transition']]    =   [4.998e-6]
+    m.params['C1_Ren_N'+m.params['electron_transition']]      =   [36]
+    m.params['C1_Ren_extra_phase_correction_list'+m.params['electron_transition']] =  np.array([0] + [53.6] + [107.8]+[0]*2+[26.8]+ 4*[0]) 
 
     
     m.params['C5_freq_0']     =   431.937e3
-    m.params['C5_freq_1']     =   408.304e3
-    m.params['C5_freq']       =   419.894e3
-    m.params['C5_Ren_tau']    =   [11.31e-6]
-    m.params['C5_Ren_N']      =   [48]
-    m.params['C5_Ren_extra_phase_correction_list'] =  np.array([0]+[83.24]+[-7.4]+[0]*2+[72.7]+[0]*4) #np.array([0]+[0.36]+[-103.5]+[0]*2+[83.27]+[0]*4),
+    m.params['C5_freq_1'+m.params['electron_transition']]     =   408.304e3
+    m.params['C5_freq'+m.params['electron_transition']]       =   419.894e3
+    m.params['C5_Ren_tau'+m.params['electron_transition']]    =   [11.31e-6]
+    m.params['C5_Ren_N'+m.params['electron_transition']]      =   [48]
+    m.params['C5_Ren_extra_phase_correction_list'+m.params['electron_transition']] =  np.array([0]+[83.24]+[-7.4]+[0]*2+[72.7]+[0]*4) #np.array([0]+[0.36]+[-103.5]+[0]*2+[83.27]+[0]*4),
 
     #############
 
@@ -265,7 +265,7 @@ def check_magneticField(breakstatement=False):
 
         DESR_msmt.darkesr('magnet_' +  'msp1', ms = 'msp',
         range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine,
-        pulse_length = 8e-6, ssbmod_amplitude = 0.006)
+        pulse_length = 8e-6, ssbmod_amplitude = 0.006,mw_switch = True)
 
 
 if __name__ == '__main__':

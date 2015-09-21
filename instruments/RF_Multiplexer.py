@@ -9,7 +9,7 @@ import os
 
 class RF_Multiplexer(Instrument):
 
-    def __init__(self, name, address='UM245R', reset=False):
+    def __init__(self, name, serial='UM245R', reset=False):
         """
         Creates an interface to Raymond's RF Multiplexer, allowing each RF relais to be switched
         on or off. The manual overide switch should be in the down position, thereby turining the 
@@ -24,7 +24,7 @@ class RF_Multiplexer(Instrument):
         Instrument.__init__(self, name)
 
 
-        self._address = address
+        self._serial = serial
 
         self.add_parameter('state', 
                            type=types.IntType,
@@ -38,14 +38,17 @@ class RF_Multiplexer(Instrument):
         self.add_function('toggle_relay')
         self.add_function('get_dev')
 
-        dev_str_list = list(d2xx.listDevices(d2xx.OPEN_BY_DESCRIPTION))
-
-        try:
-            dev_id = dev_str_list.index(self._address)
-        except ValueError as e:
-            print dev_str_list
-            logging.error('Device address {} not found in device list'.format(self._address))
-            raise e
+        dev_list_len = d2xx.createDeviceInfoList()
+        dev_id=-1
+        for i in range(dev_list_len):
+            dev_info = d2xx.getDeviceInfoDetail(i)
+            if dev_info['serial']==self._serial:
+                dev_id = i
+                break
+        if dev_id == -1:
+            error_str = 'Device address serial {} not found in device list'.format(self._serial)
+            logging.error(error_str)
+            raise Exception(error_str)
 
         self._dev = d2xx.open(dev_id)
         self._dev.setBitMode(0xFF,1) #BitBangMode!

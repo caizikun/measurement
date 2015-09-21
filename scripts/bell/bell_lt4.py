@@ -6,9 +6,8 @@ lt4 script for Measuring a tail with a picoquant time correlator
 import numpy as np
 import inspect
 import qt
+execfile(qt.reload_current_setup)
 import time
-from measurement.scripts.bell import check_awg_triggering as JitterChecker
-reload(JitterChecker)
 #reload all parameters and modules
 #execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
@@ -106,6 +105,7 @@ class Bell_lt4(bell.Bell):
         bell.Bell.finish(self)
                 # signal BS and lt3 to stop as well
         self.add_file(inspect.getsourcefile(bseq))
+        self.add_file(r'D:/measuring/measurement/scripts/lt4_scripts/setup/msmt_params.py')
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
@@ -196,7 +196,29 @@ def full_bell(name):
 def measureXX(name):
     name='MeasXX_'+name
     m = Bell_lt4(name)
-    #make sure MWI and Q pulses are set correctly
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True, 
+             do_upload     = True,
+             )
+
+def measureZZ(name):
+    name='MeasZZ_'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -252,7 +274,30 @@ def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot t
              th_debug      = False,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = True,
+             measure_lt3   = True, 
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
+def SP_PSB_RandomMW(name):
+    name='SPCORR_PSB_Random'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi_amp']
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+
+    m.joint_params['use_live_marker_filter']=False
+    m.joint_params['do_final_MW_rotation']=True
+
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = False,
              measure_bs    = False,
              do_upload     = True,
              )
@@ -265,6 +310,7 @@ def SP_ZPL(name):
     m.params['MW_RND_amp_Q']     = 0
     m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
     m.joint_params['use_live_marker_filter']=True
+    m.params['live_filter_queue_length'] = 2
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -275,57 +321,44 @@ def SP_ZPL(name):
              do_upload     = True,
              )
 
-def lt4_only(name):
+def lt3_tail(name):
+    name='tail_'+name
     m = Bell_lt4(name)
     bell_lt4(name, 
              m,
              th_debug      = True,
              sequence_only = False,
-             mw            = True,
-             measure_lt3   = False,
-             measure_bs    = False,
+             mw            = False,
+             measure_lt3   = True,
+             measure_bs    = True,
              do_upload     = True,
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = True
+
     ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
-
-    if DoJitterCheck:
-        for i in range(2):
-            jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
-            print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
-            if not jitterDetected:
-                break
-    else: 
-        jitterDetected = False
-        print 'I will skip the jitter test.'
     
     try:
         name_index=str(qt.bell_name_index)
     except AttributeError:
         name_index = ''
-
-    if not(jitterDetected):
-        qt.msleep(0.5)
-        #TPQI('run_test')
-        spcorr=False
-        if spcorr:
-            SP_PSB('SPCORR_PSB')
-        else:
-
-
-
-            qt.instruments['lt4_helper'].set_measurement_name(name_index)
-            full_bell('TheFourth_day7_Run'+name_index)# last run:('high_strain_short_pulsesep_day1_run2')
-            qt.bell_succes = True
+    qt.instruments['lt4_helper'].set_measurement_name(name_index)
+    
+    qt.msleep(0.5)  
         
-        
-        #lt4_only('test')
-        #pulse_overlap('overlap')
-        #SP_ZPL('lt3_2_no_echo')
-        #measureXX('LOTR_01isTheNew10_day4_run7') #Lock, Other-pair, Terribly-fast Readout
-        #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+
+    #SP_PSB('SPCORR_PSB')
+    #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
+    full_bell('TheFinal_day15_run'+name_index)
+    #lt4_only('test')
+    #pulse_overlap('overlap')
+    # SP_ZPL('SPCORR_lt4')
+    #lt3_tail('')
+    #measureZZ('BackToZZ_day5_run'+name_index)
+    #measureXX('finallyXX_day13_run'+name_index)
+    #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+    
+    qt.bell_succes = True

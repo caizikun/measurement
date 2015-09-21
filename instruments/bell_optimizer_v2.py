@@ -7,6 +7,7 @@ from collections import deque
 import gobject
 import instrument_helper
 from lib import config
+from analysis.lib.fitting import common,fit
 import multiple_optimizer as mo
 reload(mo)
 import types
@@ -32,6 +33,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         instrument_helper.create_get_set(self,ins_pars)
 
         self._parlist = ins_pars.keys()
+        
         self._parlist.append('read_interval')
 
         self.add_parameter('pidgate_running',
@@ -55,10 +57,15 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.add_function('zoptimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
+        self.add_function('check_laser_lock')
 
         self.setup_name = setup_name
         if 'lt3' in setup_name:
             requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
+            self._pharp=qt.instruments['PH_300']
+
+
+        self._taper_index = 4 if 'lt3' in setup_name else 3
 
         self.max_cryo_half_rot_degrees  = 3
         self.max_laser_reject_cycles = 25
@@ -68,6 +75,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.deque_par_counts   = deque([], self.history_length)
         self.deque_par_laser    = deque([], self.history_length)
         self.deque_t            = deque([], self.history_length)
+        self.deque_fpar_laser    = deque([], self.history_length)
         
         self.init_counters()  
 
@@ -126,6 +134,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                  'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
                  'ent_events'       : self.entanglement_events,
                  })
+            log_file=open(self.log_fp, 'a')  
+            log_file.write(time.strftime('%Y%m%d%H%M%S')+' :{}:'.format(self.get_invalid_data_marker())+self.status_message + '\n')
+            log_file.close()
         except Exception as e:
             print 'Error in publishing values for freeboard:', str(e)
 
@@ -148,19 +159,21 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         print 'sending email:', subject, text
 
         self.flood_email_counter +=1
-        if self.get_email_recipient() != '' and self.flood_email_counter < 10 and self.status_message != subject:
+        if self.get_email_recipient() != '' and (self.flood_email_counter < 10 or self.status_message != subject):
             qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
         self.status_message = subject
 
     def update_values(self) :
         par_counts_new = qt.instruments['physical_adwin'].Get_Par_Block(70,10)
+        fpar_laser_new = qt.instruments['physical_adwin'].Get_FPar_Block(40,5)
         if 'lt4' in self.setup_name:
             par_laser_new = qt.instruments['physical_adwin'].Get_Par_Block(50,5)
         else:
             par_laser_new = qt.instruments['physical_adwin_lt4'].Get_Par_Block(50,5)
-
+            
         self.deque_par_counts.append(par_counts_new)
         self.deque_par_laser.append(par_laser_new)
+        self.deque_fpar_laser.append(fpar_laser_new)
 
         t=time.time()
         self.deque_t.append(t)
@@ -205,8 +218,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.script_not_running_counter += 1
                 self.status_message = 'Bell script not running'
                  
-                max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())            
-                if self.script_not_running_counter > max_counter_for_waiting_time :
+                            
+                if self.script_not_running_counter > self.max_counter_for_waiting_time :
                     self.send_error_email(subject = 'ERROR : Bell sequence not running')
                     self.stop()
                     return False
@@ -220,6 +233,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.update_values()
                 par_counts , par_laser, dt = self.calculate_difference(1)
                 par_counts_avg , _tmp, _tmp1 = self.calculate_difference(self.avg_length)
+                fpar_laser_array=np.array(self.deque_fpar_laser)
                
                 self.dt = dt
                 self.cr_checks = par_counts[2]
@@ -228,7 +242,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
                 self.entanglement_events = self.deque_par_counts[-1][8]
                 
-                 # Currently we aqre using only the average value of the cr_counts & failed_cr_fraction_avg
+                 # Currently we are using only the average value of the cr_counts & failed_cr_fraction_avg
                 self.cr_checks_avg =  par_counts_avg[2]
                 self.repumps_avg = par_counts_avg[1]
                 cr_checks_excl_repumps_avg = self.cr_checks_avg - self.repumps_avg
@@ -251,8 +265,15 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                 self.SP_ref = self.SP_ref_LT4 if 'lt4' in self.setup_name else self.SP_ref_LT3
                     
                 self.strain = qt.instruments['e_primer'].get_strain_splitting()
-
+                
                 self.publish_values()
+
+                if 'lt3' in self.setup_name:
+                    jitterDetected, jitter_text = self.check_jitter()
+                    lock_ok, lock_text = self.check_laser_lock()
+                else:
+                    jitterDetected, jitter_text = False, ''
+                    lock_ok, lock_text = True, ''
 
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
                     self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
@@ -261,10 +282,41 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     text = 'Check the QRNG, something is wrong with the theshold voltage !!!'
                     subject = 'ERROR : QRNG threshold voltage too low {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    
+                       
+                elif jitterDetected:
+                    self.status_message = 'Jitter detected!'
+                    print self.status_message
+                    text = jitter_text
+                    subject = 'ERROR :AWG jitte detected'
+                    self.send_error_email(subject = subject, text = text)
+                    #self.set_invalid_data_marker(1)
+
+                ## WM check.
+                elif len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
+                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
+                    print text
+                    self.send_error_email(subject = subject, text = text)
+                elif len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
+                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
+                    print text
+                    self.send_error_email(subject = subject, text = text)
+                elif len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
+                    self.set_invalid_data_marker(1)
+                    subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
+                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
+                    print text
+                    self.send_error_email(subject = subject, text = text)
+
                 elif self.cr_checks <= 50:
+                    self.waiting_for_other_setup_counter += 1
                     self.status_message = 'Waiting for the other setup to come back'
                     print self.status_message
+                    if self.waiting_for_other_setup_counter > self.max_counter_for_waiting_time:
+                        self.send_error_email(subject = 'ERROR : Bell sequence waiting for other setup', text = 'waiting too long')
 
                 elif self.wait_counter > 0:
                     self.wait_counter -=1
@@ -375,10 +427,20 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
+                elif not(lock_ok):
+                    self.status_message = 'Laser Lock issue!'
+                    print self.status_message
+                    text = lock_text
+                    subject = 'ERROR : Laser Lock issue!'
+                    self.set_invalid_data_marker(1)  
+                    self.send_error_email(subject = subject, text = text)
 
-                else :
+                
+                else:
                     self.script_not_running_counter = 0 
-                    self.gate_optimize_counter = 0 
+                    self.waiting_for_other_setup_counter = 0
+                    self.gate_optimize_counter = 0
+                    self.flood_email_counter   = 0  
                     self.nf_optimize_counter = 0 
                     self.yellow_optimize_counter = 0
                     self.laser_rejection_counter = 0
@@ -396,7 +458,6 @@ class bell_optimizer_v2(mo.multiple_optimizer):
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
             self.send_error_email(subject = subject, text = text)
             return False
-
 
     def optimize_nf(self):
         self.set_pid_e_primer_running(False)
@@ -481,14 +542,28 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
                 self._check)
         self.init_counters()
+        if 'lt3' in self.setup_name:
+            self.start_pharp()
+
+        d=qt.Data(name='Bell_optimizer')
+        d.create_file()
+        d.close_file()
+        self.log_fp=d.get_filepath()
+            
+        
         return True
 
     def init_counters(self):
         self.set_invalid_data_marker(0)
+        self.deque_par_counts   = deque([], self.history_length)
+        self.deque_par_laser    = deque([], self.history_length)
+        self.deque_t            = deque([], self.history_length)
+        self.deque_fpar_laser   = deque([], self.history_length)
         self.status_message = ''
         self.update_values()
         self._run_counter               = 0
         self.script_not_running_counter = 0
+        self.waiting_for_other_setup_counter = 0
         self.gate_optimize_counter      = 0
         self.yellow_optimize_counter    = 0
         self.nf_optimize_counter        = 0
@@ -499,5 +574,88 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         self.flood_email_counter        = 0  
         self.repump_counts              = 0 
         self.cryo_half_rot_degrees      = 0    
+        self.max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())
 
-        
+    def start_pharp(self):
+        self._pharp.OpenDevice()
+        self._pharp.start_histogram_mode()
+        self._pharp.ClearHistMem()
+        self._pharp.set_Range(4) # 64 ps binsize
+        self._pharp.set_CFDLevel0(50)
+        self._pharp.set_CFDLevel1(50)
+        qt.msleep(0.1)
+        self._pharp.StartMeas(int(1*60*60 * 1e3)) #1H measurement
+
+
+    def stop(self):
+        if 'lt3' in self.setup_name:
+            self._pharp.StopMeas()
+        self.set_is_running(False)
+        return gobject.source_remove(self._timer)
+
+    def check_jitter(self):
+        if not self._pharp.get_MeasRunning():
+            ret =  'Picoharp not running!'
+            self.start_pharp()
+            print ret
+            return False, ret
+        jitterDetected= False
+        hist=self._pharp.GetHistogram()
+        self._pharp.ClearHistMem()
+        ret=''
+        ret=ret+ str(hist[hist>0])
+        peaks=np.where(hist>0)[0]*self._pharp.get_Resolution()/1000.
+        ret=ret+'\n'+ str(peaks)
+        print ret
+
+        peak_loc = 889.95#890.1#  889.8
+        if len(peaks)>1:
+            peaks_width=peaks[-1]-peaks[0]
+            peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
+            if (peaks_width)>.5:
+                ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
+                jitterDetected=True
+            elif (peak_max<peak_loc-0.25) or (peak_max>peak_loc+0.25):
+                ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
+                jitterDetected=True
+            else:
+                ret=ret+'\n'+'No Jitter detected'
+            ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
+
+            ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
+
+
+        ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
+        #print ret
+        return jitterDetected, ret
+
+    def check_laser_lock(self, do_plot=False):
+        if qt.instruments['signalhound'].get_frequency_center() > 136e6 or qt.instruments['signalhound'].get_frequency_center() < 134e6:
+            qt.instruments['signalhound'].set_frequency_center(135e6)
+            qt.instruments['signalhound'].set_frequency_span(5e6) 
+            qt.instruments['signalhound'].set_rbw(25e3)
+            qt.instruments['signalhound'].set_vbw(25e3)
+            qt.instruments['signalhound'].ConfigSweepMode()
+        freq,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=650)
+
+        f = common.fit_lorentz
+
+        #f = a + 2*A/np.pi*gamma/(4*(x-x0)**2+gamma**2)
+        #args = ['g_a', 'g_A', 'g_x0', 'g_gamma']
+        x = freq/1e6
+        y = mi
+
+        args=[y[0], np.max(y), x[np.argmax(y)], 0.4]
+        fitres = fit.fit1d(x, y, f, *args, fixed = [],
+                           do_print = False, ret = True, maxfev=100)
+
+        if not fitres['success']:
+            return False, 'loaser lock fit failed'
+
+        x0 = fitres['params_dict']['x0']
+        gamma = fitres['params_dict']['gamma']
+        A = fitres['params_dict']['A']
+        if gamma < 0.4 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV
+            return True, 'laser lock ok,  gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)
+
+        return False, 'laser lock NOT ok, gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)

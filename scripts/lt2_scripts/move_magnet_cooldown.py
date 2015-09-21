@@ -4,6 +4,7 @@
 import numpy as np
 import qt
 import msvcrt
+import time
 # from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 # from measurement.lib.tools import magnet_tools as mt; reload(mt)
@@ -12,6 +13,7 @@ mom = qt.instruments['master_of_magnet'];
 
 if __name__ == '__main__':
 
+    print time.asctime()
     
     #create the data lists
     d_steps = 20

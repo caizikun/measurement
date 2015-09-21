@@ -64,6 +64,8 @@ def recalibrate_lt2_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
 def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
     qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()    
+    print name
+    print 'WL: ', qt.instruments[name].get_wavelength()
     qt.instruments[powermeter].set_wavelength(qt.instruments[name].get_wavelength())
     bg=qt.instruments[powermeter].get_power()
     if bg>5e-9:
@@ -86,12 +88,12 @@ def check_lt1_powers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1',
         check_power(n, s, 'adwin_lt1', 'powermeter_lt1', 'PMServo_lt1',False)
     qt.instruments['PMServo_lt1'].move_out()
 
-def check_lt2_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM','YellowAOM'],
-    setpoints = [10e-9, 20e-9, 50e-6,50e-9]):
+def check_lt2_powers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM'],
+    setpoints = [10e-9, 20e-9, 10e-6]):
     
     turn_off_all_lt2_lasers()
     for n,s in zip(names, setpoints):
-        check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
+        check_power(n, s, 'adwin', 'powermeter', 'PMServo',False)
     qt.instruments['PMServo'].move_out()
         
 def disconnect_lt1_remote():
@@ -159,12 +161,13 @@ def set_GreenAOM_power_lt1(power):
 
 
 def init_AWG():
-    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
-    qt.pulsar.setup_channels()
-    qt.instruments['AWG'].set_ch1_status('on')
-    qt.instruments['AWG'].set_ch2_status('on')
-    qt.instruments['AWG'].set_ch3_status('on')
-    qt.instruments['AWG'].set_ch4_status('on')
-
+    ### above part commented out since it does not work at the moment. NK 25-08-2015
+    # qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    # qt.pulsar.setup_channels()
+    # qt.instruments['AWG'].set_ch1_status('on')
+    # qt.instruments['AWG'].set_ch2_status('on')
+    # qt.instruments['AWG'].set_ch3_status('on')
+    # qt.instruments['AWG'].set_ch4_status('on')
+    qt.instruments['AWG'].initialize_dc_waveforms()
 
 

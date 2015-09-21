@@ -72,10 +72,12 @@ params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
 params_lt3['MW_RND_amp_Q']	   = 0# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
+params_lt3['MW_RND_I_ispi2'] = True
+params_lt3['MW_RND_Q_ispi2'] = True
 
 params_lt3['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt3['echo_offset'] = -70e-9
+params_lt3['echo_offset'] = -100e-9 #2015-06-01
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -85,14 +87,14 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 # LDE Sequence in the AWG
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.049 # calibration from 2015-04-23
-params_lt3['eom_off_duration']           = 70e-9 
+params_lt3['eom_off_amplitude']          = -0.038 # calibration from 2015-05-15
+params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 11e-9 # XXXX
-params_lt3['aom_amplitude']				 = 0.65 # CR28 2015-04-29
+params_lt3['aom_risetime']				 = 11e-9 #
+params_lt3['aom_amplitude']				 = .3 # on A2
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -102,14 +104,18 @@ params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on L
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 22e-9 # had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
-params_lt3['MW_RND_wait'] 		= -50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse#XXXXXX was 160
+params_lt3['MW_RND_wait'] 		= -25e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
 params_lt3['RND_duration']	 	= 200e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 1e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 5e-9 #additional 1 ns delay should be there when jitter measurement
+														   # shows peak at 489.3 ns, and be commented if it is 490.3  BH 26-05-2015
+														   #This time corresponds to SP duration + 500 ns - some diff in optical pathlength 
+														   #--> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
@@ -131,6 +137,8 @@ params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_da
 params_lt3['entanglement_marker_number'] = 4
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
+params_lt3['prepulse_start_bin'] = 7570
+params_lt3['prepulse_stop_bin'] = 7570 + 18
 params_lt3['live_filter_queue_length'] = 10
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H

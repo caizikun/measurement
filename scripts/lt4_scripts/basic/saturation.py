@@ -5,10 +5,10 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'SAM_PSB_MM_LCH5215'
+name = 'SAM_ZPL_local_no_pol_old_fltr'
 steps=21
-max_power=70e-6       #[w]
-counter=2 #number of counter
+max_power=150e-6       #[w]
+counter=1 #number of counter
 PQ_count= True    # counting with the HH, assumes apd on channel 0
 bg_x=0        #delta x position of background [um]
 bg_y=3          #delta y position of background [um]

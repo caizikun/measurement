@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
         for k in range(len(Tomo_bases)/7):
             tomo = Tomo_bases[0+k*7:7+k*7]
-            #tomo = Tomo_bases_000
+            tomo = Tomo_bases_000
             MBE(SAMPLE +'_positive_000init'+str(k), el_RO= 'positive',Tomo_bases = tomo)
             MBE(SAMPLE +'_negative_000init'+str(k), el_RO= 'negative',Tomo_bases = tomo)
 

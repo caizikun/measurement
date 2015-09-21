@@ -3,6 +3,8 @@ Script for fine optimization of the magnet XY-position (using the average ms=-1,
 Fine optimization measures only the center resonance
 Important: choose the right domain for the range of positions in get_magnet_position in magnet tools!
 """
+import time
+
 import numpy as np
 import qt
 import msvcrt
@@ -41,19 +43,25 @@ if __name__ == '__main__':
     #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
     #no_of_steps      = 5               # with a total of no_of_steps measurment points.
     min_counts_before_optimize = 5e4    #optimize position if counts are below this
-    mom.set_mode(axis, 'stp')     # turn on or off the stepper
-    laser_power = 5e-6
-
+    # mom.set_mode(axis, 'stp')     # turn on or off the stepper
+    laser_power = 25e-6
+    save_plots = True
     fine_only = True
 
+    do_m1 =True
     range_coarse  = 6.00
     pts_coarse    = 81   
     reps_coarse   = 750 #750
-
+    numer_of_reps = 1
     range_fine  = 0.40
-    pts_fine    = 51   
+    pts_fine    = 51  
     reps_fine   = 1500 # 3000 #1000
-
+    
+    #reps_fine = 4000
+    #pts_fine = 81
+    #range_fine = 0.5
+    #reps_coarse = 1250
+    #pts_coarse = 121
     ###########
     ## start ##
     ###########
@@ -63,7 +71,7 @@ if __name__ == '__main__':
     #steps = [0] + (no_of_steps-1)/2*[stepsize] + (no_of_steps-1)*[-stepsize] + (no_of_steps-1)/2*[stepsize] 
     No_steps = True
     if No_steps == True: 
-        steps = [0] # !!!! if we use this to measure for a long time, do not forget to save data: remove if-loop!
+        steps = [0]*numer_of_reps # !!!! if we use this to measure for a long time, do not forget to save data: remove if-loop!
     else: 
         if axis == 'Y_axis':
             steps = [200,200,200] #[-scan_range/2] + (no_of_steps-1)*[stepsize]
@@ -83,6 +91,7 @@ if __name__ == '__main__':
     f_centre_list = []
     f_diff_list = []
     positions = []
+    timestamps = []
     pos = 0
 
     
@@ -94,6 +103,10 @@ if __name__ == '__main__':
         qt.msleep(5)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
+
+        GreenAOM.set_power(laser_power)
+        optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=100)
+        
 
         step = steps[k]
         pos += step
@@ -124,7 +137,7 @@ if __name__ == '__main__':
                     break
 
                     
-            optimiz0r.optimize(dims=['x','y','z'])
+                optimiz0r.optimize(dims=['x','y','z'])
 
         #measure both frequencies
             #ms=-1 coarse
@@ -132,13 +145,14 @@ if __name__ == '__main__':
             DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', 
                     range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9, mw_switch = True)
             f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
-                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='right')
+                qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='right')
             #ms=-1 fine
         
-        DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
+        if do_m1 == True:
+            DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
+        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    
         print '-----------------------------------'            
@@ -153,12 +167,12 @@ if __name__ == '__main__':
             DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
                     range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
             f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
-                    qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=True, sweep_direction ='left')
+                    qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='left')
                 #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
                 pulse_length = 8e-6, ssbmod_amplitude = 0.006, mw_switch = True)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
+        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
         f0p_temp = f0p_temp# - N_hyperfine*1e-9
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
@@ -173,6 +187,10 @@ if __name__ == '__main__':
         f_centre    = (f0m_temp+f0p_temp)/2
         f_diff = (f_centre-ZFS*1e-9)*1e6
 
+        f = open(r'D:\measuring\Tracking_Frequency.txt', 'a')
+        f.write(time.strftime("%y%m%d%H%M%S") +' '+ str(f0m_temp) +' '+ str(u_f0m_temp) + ' ' + str(f0p_temp) + ' ' + str(u_f0p_temp) + ' ' + str(f_centre) + ' ' + str(f_diff) + ' ' + str(Bx_measured) + ' ' + str(Bz_measured) + '\n')
+        f.close()
+
         f0m.append(f0m_temp)
         u_f0m.append(u_f0m_temp)
         f0p.append(f0p_temp)
@@ -181,7 +199,7 @@ if __name__ == '__main__':
         f_diff_list.append(f_diff)
         Bx_field_measured.append(Bx_measured)
         Bz_field_measured.append(Bz_measured)
-
+    
 
 
         print 

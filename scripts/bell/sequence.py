@@ -63,9 +63,9 @@ def pulse_defs_lt4(msmt):
 
         
         msmt.MW_pi = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
-                         MW_channel='MW_Imod',
+                         MW_channel='MW_Imod', 
                          PM_channel='MW_pulsemod',
-                         second_MW_channel='MW_Qmod', 
+                         second_MW_channel= 'MW_Qmod',
                          amplitude = msmt.params['MW_pi_amp'],
                          length = msmt.params['MW_pi_duration'],
                          PM_risetime = msmt.params['MW_pulse_mod_risetime'],
@@ -73,7 +73,7 @@ def pulse_defs_lt4(msmt):
         msmt.MW_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                          MW_channel='MW_Imod',
                          PM_channel='MW_pulsemod',
-                         second_MW_channel='MW_Qmod', 
+                         second_MW_channel='MW_Qmod',
                          amplitude = msmt.params['MW_pi2_amp'],
                          length = msmt.params['MW_pi2_duration'],
                          PM_risetime = msmt.params['MW_pulse_mod_risetime'],
@@ -81,7 +81,7 @@ def pulse_defs_lt4(msmt):
         msmt.MW_first_pi2 = pulselib.HermitePulse_Envelope('Hermite pi/2-pulse',
                         MW_channel='MW_Imod',
                         PM_channel='MW_pulsemod',
-                        second_MW_channel='MW_Qmod', 
+                        second_MW_channel='MW_Qmod',
                         amplitude = msmt.params['MW_pi2_amp'] + msmt.params['MW_BellStateOffset'],
                         length = msmt.params['MW_pi2_duration'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
@@ -92,14 +92,14 @@ def pulse_defs_lt4(msmt):
                         amplitude = msmt.params['MW_RND_amp_I'],
                         length = msmt.params['MW_RND_duration_I'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_I_ispi2'])
         msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND-pulse-Q',
                         MW_channel='MW_Qmod',
                         PM_channel='MW_pulsemod',
                         amplitude = msmt.params['MW_RND_amp_Q'],
                         length = msmt.params['MW_RND_duration_Q'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_Q_ispi2'])
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',
@@ -130,7 +130,7 @@ def pulse_defs_lt4(msmt):
     msmt.RO_pulse = pulse.SquarePulse(channel = 'EOM_AOM_Matisse', amplitude = 0.0)
     msmt.yellow_pulse = pulse.SquarePulse(channel = 'AOM_Yellow', amplitude = 1.0)
 
-    msmt.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = 1.0, 
+    msmt.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = 0.0, 
                                     length = msmt.params['PLU_gate_duration'])
 
     return True
@@ -216,14 +216,14 @@ def pulse_defs_lt3(msmt):
                         amplitude = msmt.params['MW_RND_amp_I'],
                         length = msmt.params['MW_RND_duration_I'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_I_ispi2'])
         msmt.MW_RND_Q = pulselib.HermitePulse_Envelope('Hermite RND1-pulse',
                         MW_channel='MW_Qmod',
                         PM_channel='MW_pulsemod',
                         amplitude = msmt.params['MW_RND_amp_Q'],
                         length = msmt.params['MW_RND_duration_Q'],
                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                        pi2_pulse = True)
+                        pi2_pulse = msmt.params['MW_RND_Q_ispi2'])
 
     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
                     eom_channel = 'EOM_Matisse',

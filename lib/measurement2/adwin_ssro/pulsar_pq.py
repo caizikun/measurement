@@ -30,6 +30,7 @@ class PQPulsarMeasurement(PulsarMeasurement,  pq.PQMeasurement ): # pq.PQ_Thread
 
     def start_measurement_process(self):
         qt.msleep(.5)
+        
         self.start_adwin_process(stop_processes=['counter'])
         qt.msleep(.5)
 
