@@ -233,5 +233,33 @@ class ScanCanvas(MyCanvas):
         else:
             self._status_label.setText("<font style='color: red;'>IDLE</font>")
 
+class XYCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+
+        # Clear axes every time plot() is called
+        self.axes.hold(False)
+
+        FigureCanvas.__init__(self, self.fig)
+        self.setParent(parent)
+
+        #FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def update_plot(self, x, y, cts):
+        self.im = self.axes.pcolor (x, y, cts, cmap = 'gist_earth')
+        self.axes.set_xlabel ('x [$\mu$m]')
+        self.axes.set_ylabel ('y [$\mu$m]')
+        self.axes.set_aspect ('equal')
+        self.draw()
+
+    def colorbar (self):
+        self.fig.colorbar(self.im)
+
+
+
+
 
 

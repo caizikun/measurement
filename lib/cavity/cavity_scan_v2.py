@@ -17,35 +17,62 @@ class CavityExpManager ():
 		self._moc = moc
 		self._wm_port = 45
 
+		self._system_updated = False
+		self._laser_wavelength = None
+		self._laser_power = None
+		self._laser_fine_tuning = None
+		self._coarse_piezos = None
+		self._fine_piezos = None
+
 	def set_laser_wavelength (self, wavelength):
 		if ((wavelength>636) and (wavelength<640)):
 			self._laser.set_wavelength (wavelength=wavelength)
+			self.update_coarse_wavelength (wavelength)
 			return 0
 		else:
 			return 1
 	def get_laser_wavelength (self):
 		try:
 			l = self._laser.get_wavelength()
+			self.update_coarse_wavelength (l)
 			return l
 		except:
 			return 'error'
 
-	def set_piezo_voltage (self, V):
+	def get_laser_power (self):
+		try:
+			l = self._laser.get_power_level()
+			self.update_laser_power (l)
+			return l
+		except:
+			return 'error'
+
+	def set_piezo_voltage (self, V, wait_time = 0.01):
 		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=V)
 		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=V)
 		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=V)
-		qt.msleep(0.01)
-
-	def initialize_piezos (self, wait_time=0.2):
-		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.V_min)
-		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.V_min)
-		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.V_min)
+		self.update_fine_piezos (V)
 		qt.msleep(wait_time)
 
+	def update_coarse_wavelength (self, value):
+		self._laser_wavelength = value
+		self._system_updated = True
+
+	def update_laser_power (self, value):
+		self._laser_power = value
+		self._system_updated = True
+
+	def update_coarse_piezos (self, x, y, z):
+		self._coarse_piezos = np.array([x, y, z])
+		self._system_updated = True
+
+	def update_fine_piezos (self, value):
+		self._finee_piezos = np.array([value, value, value])
+		self._system_updated = True
 
 class CavityScan ():
 
-	def __init (self, exp_mngr):
+	def __init__ (self, exp_mngr):
 
 		self._exp_mngr = exp_mngr
 
@@ -92,14 +119,11 @@ class CavityScan ():
 				self.frequencies[n] = self._wm_adwin.Get_FPar (self._wm_port)
 				qt.msleep (0.05)
 
-	def initialize_scan_voltage (self, fine_scan = False):
-		if fine_scan:
-			dac_no = self._adwin.dacs['laser_scan']
-		else:
-			dac_no = self._adwin.dacs['newfocus_freqmod']
-		self._adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.V_min)
-		qt.msleep(0.2)
-
+	def initialize_piezos (self, wait_time=0.2):
+		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.V_min)
+		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.V_min)
+		self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.V_min)
+		qt.msleep(wait_time)
 
 	def piezo_scan (self, normalize = False, avg_nr_samples=1, wait_cycles=1):
 
