@@ -218,11 +218,14 @@ class scan2d_counts(scan):
         scan._start_running(self)
 
     def _stop_running(self):
+        print 'Executing the stop running func in scan2d'
         if self._counter_was_running:
             if (self._linescan.get_scan_value() != 'counter_process'):
                 self._counters.set_is_running(True)
             self._counter_was_running = False
         self.save()
+
+
 
     def _setup_data(self):
         self.reset_data('countrates', (self._ysteps, self._xsteps))
@@ -237,7 +240,8 @@ class scan2d_counts(scan):
 
 
     def _scan_finished(self):
-         self.save()
+        self.set_is_running(False)
+         #self.save()
          #if not(self._counters.get_is_running()):
          #   self._counters.set_is_running(True)
 

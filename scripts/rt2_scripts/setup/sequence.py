@@ -27,19 +27,20 @@ qt.pulsar = pulsar.Pulsar()
 # MW
 
 qt.pulsar.define_channel(id='ch2_marker1', name='MW_pulsemod', type='marker', 
-    high=1.0, low=0, offset=0., delay=(44+165-8)*1e-9, active=True)
+    high=2.0, low=0, offset=0., delay=(44+165-8)*1e-9, active=True)
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+165)*1e-9, active=True)
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+165)*1e-9, active=True)
 
-# light (green)
-qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Green', type='marker', 
-    high=0.3, low=0, offset=0., delay=0., active=True)
-
 # p7889 start trigger
-qt.pulsar.define_channel(id='ch2_marker2', name='p7889_start', type='marker', 
-    high=1.0, low=0, offset=0., delay=0, active=True)
+qt.pulsar.define_channel(id='ch1_marker1', name='p7889_start', type='marker', 
+    high=0.5, low=0, offset=0., delay=0., active=True)
+
+
+# light (green)
+qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Green', type='marker', 
+    high=0.3, low=0, offset=0., delay=0, active=True)
 
 
 #RND
