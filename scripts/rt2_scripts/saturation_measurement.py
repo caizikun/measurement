@@ -4,7 +4,7 @@ import numpy as np
 
 from lib.math import fit
 
-from measurement.measurement_v2 import Measurement
+from lib.measurement2.measurement import Measurement
 
 CTR = qt.instruments['counters']
 GETCTS = CTR.get_cntr1_countrate
@@ -101,7 +101,7 @@ class SaturationMeasurement(Measurement):
         return
 
 if __name__ == '__main__':
-    m = SaturationMeasurement('SAM_NV_alignment_SM')
-    p,c,bg = m.measure(bgstep=(1.5,1.5),steps=41,maxpower=800e-6)
+    m = SaturationMeasurement('Cavity_membrane_big_nothing')
+    p,c,bg = m.measure(bgstep=(1.5,1.5),steps=41,maxpower=400e-6)
     m.analyze(p,c,bg)
 

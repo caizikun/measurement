@@ -2714,6 +2714,18 @@ config['adwin_rt2_processes'] = {
                 },
             },
 
+        'read_adc' :  {
+            'index' : 1,
+            'file' : 'rt2_readADC.TB1',
+            'par' : {
+                'adc_no' : 21,
+                },
+            'fpar' : {
+                'adc_voltage' : 21,
+                },
+            },
+
+
         'trigger_dio' : {
             'index' : 4,
             'file' : 'rt2_dio_trigger.tb4',

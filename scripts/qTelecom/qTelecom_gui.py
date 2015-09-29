@@ -20,22 +20,23 @@ import h5py
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm
-from measurement.lib.cavity.cavity_scan import CavityScanManager 
+#from measurement.lib.cavity.cavity_scan import CavityScanManager 
 from temperature_ctrl_panel import Ui_Form as Ui_Temp_Ctrl
 from analysis.lib.fitting import fit
 
 
 class TempCtrlPanelGUI (QtGui.QMainWindow):
-    def __init__(self,adwin, parent=None):
+    def __init__(self,adwin, powermeter, parent=None):
 
         self._adwin = adwin
+        self._pmeter = powermeter
         QtGui.QWidget.__init__(self, parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #self.setWindowTitle("Laser-Piezo Scan Interface")
         self.ui = Ui_Temp_Ctrl()
         self.ui.setupUi(self)
 
-        self.dac_no = 1
+        self.dac_no = 8
         self.adc_no = 2
 
         #Set all parameters and connect all events to actions
@@ -81,13 +82,13 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
         f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
         scan_grp = f5.create_group('TScan')
         scan_grp.create_dataset('temperature', data = self.temperature)
-        scan_grp.create_dataset('powermeter_readout', data = self.power_readout)
+        scan_grp.create_dataset('powermeter_readout', data = self.power_readout*1e6)
         f5.close()
 
         fig = plt.figure()
-        plt.plot (self.temperature, self.power_readout, 'ob')
-        plt.xlabel ('temperature', fontsize = 15)
-        plt.ylabel ('power', fontsize = 15)
+        plt.plot (self.temperature, self.power_readout*1e6, 'ob')
+        plt.xlabel ('temperature [deg]', fontsize = 15)
+        plt.ylabel ('power [uW]', fontsize = 15)
         plt.savefig (os.path.join(directory, fName+'.png'))
         plt.close(fig)
 
@@ -115,17 +116,21 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
     	voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
     	T = 0.01*int(voltage*20.*100)
     	self.ui.label_T_readout.setText(str(T))
+        self.curr_temperature = T
 
     def manage_tasks (self):
-    	self.read_temperature ()
-    	if (self.curr_task == 'scan'):
-    		self.run_new_temperature_point()
-    	elif (self.curr_task == 'dwell'):
-    		self.dwell = self.dwell + 1
-    		if (self.dwell > self.total_dwell):
-    			self.temperature [self.curr_step] = self.read_temperature()
-    			#self.power_readout [self.curr_step] = self._powermeter.get_power()
-    			self.curr_task = 'scan'
+        self.read_temperature ()
+        if (self.curr_task == 'scan'):
+            self.run_new_temperature_point()
+        elif (self.curr_task == 'dwell'):
+            self.dwell = self.dwell + 1
+            if (self.dwell > self.total_dwell):
+                print 'Measuring datapoint nr ', self.curr_step
+                self.temperature [self.curr_step] = self.curr_temperature
+                self.power_readout [self.curr_step] = self._pmeter.get_power()
+                print 'Values: ', self.temperature [self.curr_step], self.power_readout [self.curr_step]
+                self.curr_step = self.curr_step + 1
+                self.curr_task = 'scan'
 
     def start_scan (self):
     	print 'Start scan!!'
@@ -145,8 +150,13 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
      	self.curr_temp_point = self.curr_temp_point + self.temp_step
     	self.dwell = 0
     	self.curr_task = 'dwell'
-    	if (self.curr_temp_point > self.T_max):
-    		self.curr_task = 'idle'
+        if (self.curr_step >= self.nr_steps):
+            plt.figure()
+            plt.plot (self.temperature, self.power_readout*1e6, 'ob')
+            plt.xlabel ('temperature [deg]', fontsize = 15)
+            plt.ylabel ('power [uW]', fontsize = 15)
+            plt.show()
+            self.curr_task = 'idle'
 
     def fileQuit(self):
     	print 'Closing!'
@@ -156,9 +166,11 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
     	self.fileQuit()
 
 adwin = qt.instruments.get_instruments()['adwin']
+powermeter = qt.instruments.get_instruments()['powermeter']
+powermeter.set_wavelength (637e-9)
 
 qApp = QtGui.QApplication(sys.argv)
-TCtrlGUI = TempCtrlPanelGUI (adwin = adwin)   
+TCtrlGUI = TempCtrlPanelGUI (adwin = adwin, powermeter = powermeter)   
 TCtrlGUI.setWindowTitle('Temperature Control')
 TCtrlGUI.show()
 
