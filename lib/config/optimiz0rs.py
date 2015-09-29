@@ -41,17 +41,17 @@ dimension_sets = {
 
             'lt3' : {
                 'x' : {
-                    'scan_length' : 1.,
+                    'scan_length' : 1.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 1.,
+                    'scan_length' : 0.8,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 4.0,
+                    'scan_length' : 3.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },

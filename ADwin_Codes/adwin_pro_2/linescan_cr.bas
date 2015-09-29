@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\tud277513
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -76,7 +76,7 @@ LOWINIT:
     scan_average = 2*ROUND((PAR_64+1)/2)-1 'number of avg should be uneven!
   ENDIF
   
-  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),1)
+  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),10)
     
   FOR i = 1 TO NoOfDACs
     DACVoltage = DATA_199[i]

@@ -33,6 +33,6 @@ if __name__ == '__main__':
 	#conversion (source,target), 0 = gold, 1 = pro 
 	#--> (0,1) = gold to pro
 	#--> (1,0) = pro to gold
-	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\cr_mod.inc',
-			r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2\cr_mod.inc', 
-			conversion=(0,1))
+	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2_lt2\C13_multiple_lt2.bas',
+			r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\C13_multiple_lt1.bas', 
+			conversion=(1,0))

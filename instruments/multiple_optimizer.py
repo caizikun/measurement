@@ -32,11 +32,14 @@ class multiple_optimizer(Instrument):
         if self._is_waiting:
             return True
         else:
-            self.check()
+            if self.get_is_running():
+                return self.check()
+            else:
+                return False
         pass
     
     def manual_check(self):
-        return self._check()
+        return self.check()
 
     def check(self):
         pass
@@ -67,3 +70,13 @@ class multiple_optimizer(Instrument):
         self._is_waiting=False
         
         return False
+
+    def remove(self):
+        self.stop()
+        print 'removing'
+        Instrument.remove(self)
+
+    def reload(self):
+        self.stop()
+        print 'reloading'
+        Instrument.reload(self)

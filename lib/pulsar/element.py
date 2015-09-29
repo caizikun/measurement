@@ -18,8 +18,8 @@ class Element:
         self.name = name
         
         self.clock = kw.pop('clock', 1e9)
-        self.granularity = kw.pop('granularity', 4)
-        self.min_samples = kw.pop('min_samples', 960)
+        self.granularity = kw.pop('granularity', 4) 
+        self.min_samples = kw.pop('min_samples', 960) 
         self.pulsar = kw.pop('pulsar', None)
 
         self.global_time = kw.pop('global_time', False)
@@ -97,7 +97,7 @@ class Element:
         else:
             while(samples % self.granularity > 0):
                 samples += 1
-                
+        #print samples    
         return samples
 
     def real_time(self, t, channel):

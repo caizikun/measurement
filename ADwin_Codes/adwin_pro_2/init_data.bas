@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
 '<Header End>
 '#INCLUDE ADwinPro_All.inc
 '#INCLUDE configuration.inc
@@ -19,11 +19,11 @@ DIM DATA_197[8] AS FLOAT
 DIM DATA_198[8] AS FLOAT
 DIM DATA_199[8] AS FLOAT
 DIM DATA_200[8] AS LONG
-'DIM DATA_11[100000] AS LONG
-'DIM DATA_12[100000] AS LONG
-'DIM DATA_13[100000] AS LONG
-'DIM DATA_14[100000] AS LONG
-'DIM DATA_15[100000] AS FLOAT
+DIM DATA_11[100000] AS LONG
+DIM DATA_12[100000] AS LONG
+DIM DATA_13[100000] AS LONG
+DIM DATA_14[100000] AS LONG
+DIM DATA_15[100000] AS FLOAT
 
 'Conditional repump TPQI:
 DIM DATA_8[100] AS LONG

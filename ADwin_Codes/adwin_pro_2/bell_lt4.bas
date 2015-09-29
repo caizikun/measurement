@@ -55,12 +55,13 @@ DIM first AS LONG
 DIM repetition_counter AS LONG
 
 
-DIM counts, old_counts AS LONG
+DIM counts, old_counts, rnd_output AS LONG
 
 DIM remote_mode, check_remote, do_sequences, remote_CR_wait_timer AS LONG
 DIM remote_CR_trigger_di_channel,remote_CR_trigger_di_pattern, remote_CR_was_high,remote_CR_is_high ,wait_for_remote_CR  AS LONG
 DIM PLU_di_channel, PLU_di_pattern AS LONG
 DIM AWG_in_is_high, AWG_in_was_high, PLU_is_high, PLU_was_high, DIO_register AS LONG
+DIM invalid_data_marker_do_channel, rnd_output_di_channel, rnd_output_di_pattern AS LONG
 DIM wait_for_AWG_done, sequence_wait_time, wait_before_RO AS LONG
 DIM succes_event_counter AS LONG
 DIM CR_result,first_local AS LONG
@@ -80,6 +81,8 @@ LOWINIT:
   do_sequences                 = DATA_20[10]
   wait_for_remote_CR           = DATA_20[11]
   wait_before_RO               = DATA_20[12]
+  invalid_data_marker_do_channel= DATA_20[13]
+  rnd_output_di_channel        = DATA_20[14]
 
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -103,6 +106,7 @@ LOWINIT:
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   PLU_di_pattern = 2 ^ PLU_di_channel
   remote_CR_trigger_di_pattern = 2 ^ remote_CR_trigger_di_channel
+  rnd_output_di_pattern = 2 ^ rnd_output_di_channel
   remote_CR_is_high = 0
   
   repetition_counter  = 0
@@ -156,6 +160,7 @@ EVENT:
           remote_mode = 2
         ENDIF
         check_remote = 0
+        P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 0) ' turn off invalid data marker
                                               
       case 1 'remote CR check running
       
@@ -250,6 +255,9 @@ EVENT:
           
           INC(repetition_counter)
           INC(par_73)
+          IF (Par_55>0) THEN
+            P2_DIGOUT(DIO_MODULE,invalid_data_marker_do_channel, 1)
+          ENDIF
           
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel, 1) ' trigger the AWG to start LDE
           CPU_SLEEP(9)
@@ -269,12 +277,14 @@ EVENT:
           IF ((PLU_was_high = 0) AND (PLU_is_high > 0)) THEN              
             INC(par_77)
             INC(succes_event_counter)
-            mode = 5
+            mode = 0 '5 XXX no adwin RO
             timer = -1
-            remote_mode = 3
+            remote_mode = 0 '3 XXX no adwin RO
             first = 1
             first_local = 1
             local_wait_time = wait_before_RO
+            rnd_output = (DIO_register AND rnd_output_di_pattern)
+            DATA_25[succes_event_counter] = rnd_output             
           ELSE  
             IF (wait_for_AWG_done > 0) THEN
               IF ((AWG_in_was_high = 0) AND (AWG_in_is_high > 0)) THEN
@@ -317,7 +327,7 @@ EVENT:
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             counts = P2_CNT_READ(CTR_MODULE,counter_channel) - old_counts
             old_counts = counts
-            DATA_25[succes_event_counter] = counts
+            'DATA_25[succes_event_counter] = counts
             P2_CNT_ENABLE(CTR_MODULE,0)
             
             mode = 6

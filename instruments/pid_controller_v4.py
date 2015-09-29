@@ -158,6 +158,9 @@ class pid_controller_v4(Instrument):
 
     ### public methods
     def start(self):
+        if self.get_is_running():
+            print self.get_name() + ': ALREADY RUNNING'
+            return False
         self.set_is_running(True)
 
         self._error = 0.
@@ -254,3 +257,14 @@ class pid_controller_v4(Instrument):
                 return False
         return True
 
+    def remove(self):
+        self.save_cfg()
+        self.stop()
+        print 'removing'
+        Instrument.remove(self)
+
+    def reload(self):
+        self.save_cfg()
+        self.stop()
+        print 'reloading'
+        Instrument.reload(self)

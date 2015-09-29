@@ -67,14 +67,14 @@ def check_triggering():
     pharp.set_CFDLevel1(50)
     qt.msleep(1)
     pharp.StartMeas(int(4 * 1e3)) #10 second measurement
-    qt.msleep(0.1)
+    qt.msleep(0.5)
     print 'starting PicoHarp measurement'
     while pharp.get_MeasRunning():
         if(msvcrt.kbhit() and msvcrt.getch()=='q'):
             print 'q pressed, quitting current run'
             pharp.StopMeas()
             break
-    hist=pharp.get_Block()
+    hist=pharp.GetHistogram()
     print 'PicoHarp measurement finished'
 
     print '-------------------------------'
@@ -83,20 +83,21 @@ def check_triggering():
     peaks=np.where(hist>0)[0]*pharp.get_Resolution()/1000.
     ret=ret+'\n'+ str(peaks)
     print ret
+    peak_loc = 489.95
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.
         if (peaks_width)>.5:
             ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
             jitterDetected=True
-        elif (peak_max<489.8) or (peak_max>490.8):
+        elif (peak_max<peak_loc-0.25) or (peak_max>peak_loc+0.25):
             ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
             jitterDetected=True
         else:
             ret=ret+'\n'+'No Jitter detected'
         ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
     
-    ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
+        ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
 
 
     ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
@@ -135,10 +136,12 @@ def do_jitter_test(resetAWG=False):
             jitterDetected=True
         else: jitterDetected =False
     else:
+        stools.rf_switch_non_local()
         print 'Starting Jitter Test LT3, reset= ' + str(resetAWG)
         program_test_slave(reset=resetAWG)
         jitterDetected = check_triggering()
         qt.instruments['AWG'].stop()
+        stools.rf_switch_local()
     return jitterDetected
 
 

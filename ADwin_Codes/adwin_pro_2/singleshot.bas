@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -131,7 +131,16 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
           old_counts = 0
         ELSE 
-          counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+          IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
+            counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+          ELSE 
+            counts = 0
+            P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
+            FOR i = 1 TO 4
+              counts = counts + DATA_32[i]
+            NEXT i
+          ENDIF 
+          
           DATA_24[timer] = DATA_24[timer] + counts - old_counts
 
           old_counts = counts
@@ -161,7 +170,15 @@ EVENT:
           IF (timer = SP_filter_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
+              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+            ELSE 
+              counts = 0
+              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
+              FOR i = 1 TO 4
+                counts = counts + DATA_32[i]
+              NEXT i
+            ENDIF 
             P2_CNT_ENABLE(CTR_MODULE, 0)
             IF (counts > 0) THEN
               mode = 1
@@ -230,7 +247,16 @@ EVENT:
           IF (timer = SSRO_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            counts = P2_CNT_READ(CTR_MODULE,counter_channel) - old_counts
+            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
+              counts = P2_CNT_READ(CTR_MODULE, counter_channel) - old_counts
+            ELSE 
+              counts = 0
+              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
+              FOR i = 1 TO 4
+                counts = counts + DATA_32[i]
+              NEXT i
+              counts = counts - old_counts
+            ENDIF 
             old_counts = counts
             PAR_74 = PAR_74 + counts
             i = timer + repetition_counter * SSRO_duration
@@ -250,8 +276,15 @@ EVENT:
             first = 1
           
           ELSE
-            
-            counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
+              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
+            ELSE 
+              counts = 0
+              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
+              FOR i = 1 TO 4
+                counts = counts + DATA_32[i]
+              NEXT i
+            ENDIF
             i = timer + repetition_counter * SSRO_duration
             
             IF ((SSRO_stop_after_first_photon > 0 ) and (counts > 0)) THEN

@@ -16,8 +16,8 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def Carbon_Ramsey(name,tau = None,N=None):
 
-    m = DD.NuclearRamsey(name)
-    # m = DD.NuclearRamsey_v2(name)
+    # m = DD.NuclearRamsey(name)
+    m = DD.NuclearRamsey_v2(name)
     # m = DD.NuclearRamsey_no_elDD(name)
 
     funcs.prepare(m)
@@ -28,7 +28,7 @@ def Carbon_Ramsey(name,tau = None,N=None):
     m.params['Final_Pulse']         =   '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 2 
+    m.params['addressed_carbon'] = 1 
 
     ### Sweep parmater
     m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
@@ -43,11 +43,11 @@ def Carbon_Ramsey(name,tau = None,N=None):
     print 'free evolution times: %s' %m.params['free_evolution_times']
     
     if N ==None: 
-        m.params['C_Ren_N'] = m.params['C6_Ren_N'][0]  
+        m.params['C_Ren_N'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_N'][0]  
     else:
         m.params['C_Ren_N'] = N
     if tau ==None: 
-        m.params['C_Ren_tau'] = m.params['C6_Ren_tau'][0]
+        m.params['C_Ren_tau'] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'][0]
     else: 
         m.params['C_Ren_tau'] = tau 
 

@@ -6,11 +6,10 @@ lt4 script for Measuring a tail with a picoquant time correlator
 import numpy as np
 import inspect
 import qt
-import time
-from measurement.scripts.bell import check_awg_triggering as JitterChecker
-reload(JitterChecker)
-#reload all parameters and modules
 execfile(qt.reload_current_setup)
+import time
+#reload all parameters and modules
+#execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 from measurement.lib.config import moss as moscfg
 
@@ -33,22 +32,22 @@ class Bell_lt4(bell.Bell):
             self.joint_params[k] = joint_params.joint_params[k]
         for k in params_lt4.params_lt4:
             self.params[k] = params_lt4.params_lt4[k]
-        bseq.pulse_defs_lt4(self)
-
-
+        
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt4')
+
+        bseq.pulse_defs_lt4(self)
 
         elements = [] 
 
         dummy_element = bseq._dummy_element(self)
         succes_element = bseq._lt4_entanglement_event_element(self)
         elements.append(succes_element)
-        #finished_element = bseq._sequence_finished_element(self)
+        finished_element = bseq._lt4_sequence_finished_element(self)
         start_element = bseq._lt4_sequence_start_element(self)
         elements.append(start_element)
-        #elements.append(finished_element)
-        elements.append(dummy_element)
+        elements.append(finished_element)
+       #elements.append(dummy_element)
         LDE_element = bseq._LDE_element(self, name='LDE_lt4')   
         elements.append(LDE_element)
 
@@ -70,12 +69,13 @@ class Bell_lt4(bell.Bell):
         seq.append(name = 'LDE_lt4',
             wfname = LDE_element.name,
             jump_target = 'late_RO' if self.joint_params['wait_for_1st_revival'] else 'RO_dummy',
-            goto_target = 'start_LDE_2' if self.joint_params['TPQI_normalisation_measurement'] else 'start_LDE',
+            goto_target = 'start_LDE_2' if self.joint_params['TPQI_normalisation_measurement'] else 'LDE_timeout',
             repetitions = self.joint_params['LDE_attempts_before_CR'])
 
-        #seq.append(name = 'LDE_timeout',
-        #    wfname = finished_element.name,
-        #    goto_target = 'start_LDE')
+        seq.append(name = 'LDE_timeout',
+            wfname = finished_element.name,
+            goto_target = 'start_LDE')
+
         if self.joint_params['wait_for_1st_revival']:
             seq.append(name = 'late_RO',
                 wfname = late_RO.name,
@@ -98,26 +98,20 @@ class Bell_lt4(bell.Bell):
         qt.pulsar.upload(*elements) 
         qt.pulsar.program_sequence(seq)
 
-    def stop_measurement_process(self):
-        bell.Bell.stop_measurement_process(self)
-
-        # signal BS and lt3 to stop as well
-        if self.bs_helper != None:
-            self.bs_helper.set_is_running(False)
-        if self.lt3_helper != None:    
-            self.lt3_helper.set_is_running(False)
-
-    def print_measurement_progress(self):
-        pass
+    def measurement_process_running(self):
+        return self.lt4_helper.get_is_running() and bell.Bell.measurement_process_running(self)
 
     def finish(self):
         bell.Bell.finish(self)
+                # signal BS and lt3 to stop as well
         self.add_file(inspect.getsourcefile(bseq))
+        self.add_file(r'D:/measuring/measurement/scripts/lt4_scripts/setup/msmt_params.py')
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
 Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
+Bell_lt4.lt4_helper = qt.instruments['lt4_helper']
 
 def bell_lt4(name, 
              m,
@@ -147,7 +141,8 @@ def bell_lt4(name,
             m.bs_helper.set_measurement_name(name)
             m.bs_helper.set_is_running(True)
             m.bs_helper.execute_script()
-    
+        m.lt4_helper.set_is_running(True)
+
     m.autoconfig()
     if do_upload:
         m.generate_sequence()
@@ -165,12 +160,16 @@ def bell_lt4(name,
     if measure_lt3: 
         m.lt3_helper.set_is_running(True)
         qt.msleep(2)
-    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'], live_histogram=False)
+    m.run(autoconfig=False, setup=False,debug=th_debug,live_filter_on_marker=m.joint_params['use_live_marker_filter'])
     m.save()
 
+
+
+    m.lt4_helper.set_is_running(False)
+
     if measure_lt3:
-        m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
         m.lt3_helper.set_is_running(False)
+        m.params['lt3_data_path'] = m.lt3_helper.get_data_path()
     if measure_bs:
         m.bs_helper.set_is_running(False)
         m.params['bs_data_path'] = m.bs_helper.get_data_path()  
@@ -197,10 +196,32 @@ def full_bell(name):
 def measureXX(name):
     name='MeasXX_'+name
     m = Bell_lt4(name)
-    #make sure MWI and Q pulses are set correctly
+    m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+    m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+    m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = True,
+             measure_bs    = True, 
+             do_upload     = True,
+             )
+
+def measureZZ(name):
+    name='MeasZZ_'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
              measure_lt3   = True,
@@ -209,7 +230,7 @@ def measureXX(name):
              )
 
 def pulse_overlap(name):
-    m = Bell_lt4(name) 
+    m = Bell_lt4(name)
     bell_lt4(name, 
              m,
              th_debug      = True,
@@ -240,23 +261,68 @@ def TPQI(name):
              do_upload     = True,
              )
 
-def SP_lt4(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
-    name='SPCORR_'+name
+def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+    name='SPCORR_PSB_'+name
     m = Bell_lt4(name)
-    m.joint_params['do_echo'] = 0
-    m.joint_params['do_final_MW_rotation'] = 0
+    m.params['MW_RND_amp_I']     = 0
+    m.params['MW_RND_duration_I']= m.params['MW_Npi4_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
+    m.joint_params['use_live_marker_filter']=False
     bell_lt4(name, 
              m,
-             th_debug      = True,
+             th_debug      = False,
              sequence_only = False,
              mw            = True,
+             measure_lt3   = True, 
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
+def SP_PSB_RandomMW(name):
+    name='SPCORR_PSB_Random'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_I_ispi2'] = False
+    m.params['MW_RND_Q_ispi2'] = False
+    m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+    m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+    m.params['MW_RND_amp_Q']     = m.params['MW_pi_amp']
+    m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+
+    m.joint_params['use_live_marker_filter']=False
+    m.joint_params['do_final_MW_rotation']=True
+
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True,
+             measure_lt3   = False,
+             measure_bs    = False,
+             do_upload     = True,
+             )
+
+def SP_ZPL(name):
+    name='SPCORR_ZPL_'+name
+    m = Bell_lt4(name)
+    m.params['MW_RND_amp_I']     = 0
+    m.params['MW_RND_duration_I']= m.params['MW_Npi4_duration'] 
+    m.params['MW_RND_amp_Q']     = 0
+    m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
+    m.joint_params['use_live_marker_filter']=True
+    m.params['live_filter_queue_length'] = 2
+    bell_lt4(name, 
+             m,
+             th_debug      = False,
+             sequence_only = False,
+             mw            = True, #False,
              measure_lt3   = True,
              measure_bs    = True,
              do_upload     = True,
              )
 
-def SP_lt3(name):
-    name='SPCORR_'+name
+def lt3_tail(name):
+    name='tail_'+name
     m = Bell_lt4(name)
     bell_lt4(name, 
              m,
@@ -269,26 +335,30 @@ def SP_lt3(name):
              )
 
 if __name__ == '__main__':
-    DoJitterCheck = True
+
     ResetPlu = True
         
     if ResetPlu:
         stools.reset_plu()
-
-    if DoJitterCheck:
-        jitterDetected = JitterChecker.do_jitter_test(resetAWG=False)
-        print 'Here comes the result of the jitter test: jitter detected = '+ str(jitterDetected)
-    else: 
-        jitterDetected = False
-        print 'I will skip the jitter test.'
     
+    try:
+        name_index=str(qt.bell_name_index)
+    except AttributeError:
+        name_index = ''
+    qt.instruments['lt4_helper'].set_measurement_name(name_index)
+    
+    qt.msleep(0.5)  
+        
 
-    if not(jitterDetected):
-        qt.msleep(0.5)
-        #TPQI('run_test')
-        #full_bell('ZZ_RND_day2_run14')   
-        #SP_lt4('SPCORR_lt4')
-        #pulse_overlap('testing')
-        #SP_lt3('SPCORR_lt3')
-        measureXX('Entanglement_XX_basic_day3_run26')
-        pass
+    #SP_PSB('SPCORR_PSB')
+    #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
+    full_bell('TheFinal_day15_run'+name_index)
+    #lt4_only('test')
+    #pulse_overlap('overlap')
+    # SP_ZPL('SPCORR_lt4')
+    #lt3_tail('')
+    #measureZZ('BackToZZ_day5_run'+name_index)
+    #measureXX('finallyXX_day13_run'+name_index)
+    #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+    
+    qt.bell_succes = True

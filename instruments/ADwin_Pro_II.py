@@ -114,12 +114,10 @@ class ADwin_Pro_II(Instrument): #1
         return data
 
     def Get_Data_Long(self, index, start, count):
-        
         ErrorMsg=c_int32(0)
         data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
         success = self._adwin32.e_Get_Data(data.ctypes.data,2,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            print 'Get_Data_Long:idx, start, ct', index, start, count
             logging.warning(__name__ + ' : error in ADwin.Get_Data_Long: %s'%ErrorMsg.value)
         return data
 
@@ -143,7 +141,6 @@ class ADwin_Pro_II(Instrument): #1
 
     def Set_Data_Float(self, data=numpy.array, index=numpy.int32, 
             start=numpy.int32, count=numpy.int32):
-        #print 'Set_Data_Float: index:',index, 'data', data,'start', start, 'count', count
         ErrorMsg=c_int32(0)        
         # Auto type conversion
         d=numpy.array(data,numpy.single)
@@ -161,6 +158,14 @@ class ADwin_Pro_II(Instrument): #1
       
         return data
 
+    def Get_Par_Block(self,start=numpy.int16, count=numpy.int16):
+        ErrorMsg=c_int32(0)
+        data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
+        success = self._adwin32.e_Get_ADBPar_All(start,count,data.ctypes.data, self._address,ctypes.byref(ErrorMsg))
+        if ErrorMsg.value != 0:
+            logging.warning(__name__ + ' : error in ADwin.e_Get_ADBPar_All: %s'%ErrorMsg.value)
+        return data
+
     def Set_Par(self,index,value):
         ErrorMsg=c_int32(0)
         self._adwin32.e_Set_ADBPar(index,value,self._address,ctypes.byref(ErrorMsg))
@@ -173,6 +178,14 @@ class ADwin_Pro_II(Instrument): #1
         if ErrorMsg.value != 0:
             logging.warning(__name__ + ' : error in ADwin.Get_FPar: %s'%ErrorMsg.value)
       
+        return data
+
+    def Get_FPar_Block(self,start=numpy.int16, count=numpy.int16):
+        ErrorMsg=c_int32(0)
+        data = numpy.array(numpy.zeros(count), dtype = numpy.single)
+        success = self._adwin32.e_Get_ADBFPar_All(start,count,data.ctypes.data, self._address,ctypes.byref(ErrorMsg))
+        if ErrorMsg.value != 0:
+            logging.warning(__name__ + ' : error in ADwin.e_Get_ADBPar_All: %s'%ErrorMsg.value)
         return data
 
     def Set_FPar(self,index,value):

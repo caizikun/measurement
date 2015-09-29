@@ -2,12 +2,12 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_SIL8_Hans_LT4'
+name='ESR_SAM_SIL5_LT4'
 start_f = 2.79#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
 stop_f  = 2.83#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
 steps   = 50
 mw_power = -12. #in dBm
-green_power = 3e-6
+green_power = 10e-6
 int_time = 30       #in ms
 reps = 250
 
