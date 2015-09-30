@@ -66,7 +66,7 @@ class ScanPlotCanvas (FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def update_plot (self, x, y, x_axis, y_axis, color, autoscale=False):
-        self.axes.plot(x, y, '.', color=color, linewidth =2)
+        self.axes.plot(x, y, color=color, linewidth =2)
         self.axes.set_xlabel(x_axis)
         self.axes.set_ylabel(y_axis)
         if autoscale:
@@ -77,12 +77,12 @@ class ScanPlotCanvas (FigureCanvas):
         rows, cols = np.shape (y)
         colori = cm.gist_earth(np.linspace(0,0.75, rows))
         for j in np.arange(rows):
-            
-            self.axes.plot(x, y[j,:], linewidth =2)
+            self.axes.plot(x, y[j,:], 'RoyalBlue')            
+            self.axes.plot(x, y[j,:], 'o', color = colori[j])
             self.axes.set_xlabel(x_axis)
             self.axes.set_ylabel(y_axis)
-            self.draw()
-            time.sleep (0.01)
+        self.draw()
+        time.sleep (0.01)
 
 
 class MyCanvas(FigureCanvas):

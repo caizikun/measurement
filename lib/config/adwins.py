@@ -3057,6 +3057,45 @@ config['adwin_cav1_processes'] = {
                 },
             },
 
+        'voltage_scan_sync' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 2,
+            'file' : 'voltage_scan_sync.TB2',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['DAC_ch_1'                    ,   0],
+                    ['DAC_ch_2'                    ,   0],
+                    ['DAC_ch_3'                    ,   0],
+                    ['ADC_channel'                 ,   1],
+                    ['use_sync'                    ,   0],
+                    ['sync_ch'                     ,   1],
+                    ['nr_steps'                    ,   1],
+                    ['nr_scans'                    ,   1],                    
+                    ['wait_cycles'                 ,  50],
+                    ['delay_us'                    ,   0],
+                    ],
+                'params_long_index'  : 200,
+                'params_long_length' : 10,
+                'params_float' : [
+                    ['start_voltage_1'            ,  0.0],
+                    ['start_voltage_2'            ,  0.0],
+                    ['start_voltage_3'            ,  0.0],
+                    ['voltage_step'               , 0.01],
+                    ],
+                'params_float_index'  : 199,
+                'params_float_length' : 8,
+                'par' : {
+                    },
+                'data_float' : {
+                    'photodiode_voltage' : 11,
+                    },
+                'data_long'   : {
+                    'timestamps' : 12,
+                },
+            },
+
 
         'widerange_laserscan' : {
             'doc' : '',

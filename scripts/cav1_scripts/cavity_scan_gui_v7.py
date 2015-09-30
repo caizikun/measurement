@@ -40,12 +40,12 @@ from slow_piezo_scan_panel import Ui_Form as Ui_SlowScan
 from XYscan_panel import Ui_Form as Ui_XYScan
 
 class SlowPiezoScanGUI (QtGui.QMainWindow):
-    def __init__(self, scan_manager):
+    def __init__(self, exp_mngr):
 
         QtGui.QWidget.__init__(self)
         self.ui = Ui_SlowScan()
         self.ui.setupUi(self)
-        self._scan_mngr = scan_manager
+        self._exp_mngr = exp_mngr
 
         #SETTINGS EVENTS
         self.ui.dsb_min_V.setRange(-2, 10)
@@ -96,7 +96,7 @@ class SlowPiezoScanGUI (QtGui.QMainWindow):
 
     def set_new_voltage (self):
         self.ui.label_ctr_V_2.setText ("V = "+str(self.curr_v)+"V")
-        self._scan_mngr.set_piezo_voltage (V=self.curr_v)
+        self._exp_mngr.set_piezo_voltage (V=self.curr_v)
         self.curr_v = self.curr_v + self.v_step
         qt.msleep (self._wait_time/1000.)
         if (self.curr_v > self._max_V):
@@ -105,16 +105,18 @@ class SlowPiezoScanGUI (QtGui.QMainWindow):
     def stop (self):
         self._curr_task = None
 
+
 class ScanGUI(QtGui.QMainWindow):
-    def __init__(self, scan_manager, slowscan_gui):
+    def __init__(self, exp_mngr, slowscan_gui):
 
         QtGui.QWidget.__init__(self)
         #self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #self.setWindowTitle("Laser-Piezo Scan Interface")
         self.ui = Ui_Scan()
         self.ui.setupUi(self)
-        self._scan_mngr = scan_manager
+        self._exp_mngr = exp_mngr
         self._slowscan_gui = slowscan_gui
+        self._scan_mngr = CavityScan (exp_mngr = exp_mngr)
 
         self.ui.plot_canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
@@ -212,7 +214,7 @@ class ScanGUI(QtGui.QMainWindow):
         self.coarse_wavelength_step = 0.1 
         self._scan_mngr.file_tag = ''
         self._2D_scan_is_active = False
-        self._montana_sync = True
+        self._use_sync = False
         self.set_nr_scans_msync(1)
         self.set_delay_msync(1)
 
@@ -253,12 +255,12 @@ class ScanGUI(QtGui.QMainWindow):
 
     def montana_sync (self, state):
         if state == QtCore.Qt.Checked:
-            self._scan_mngr.montana_sync = True
+            self._scan_mngr.use_sync = True
         else:
-            self._scan_mngr.montana_sync = False
+            self._scan_mngr.use_sync = False
 
     def set_avg (self, value):
-        self._scan_mngr.averaging_samples = value
+        self._scan_mngr.nr_avg_scans = value
 
     def set_file_tag (self, text):
         self._scan_mngr.file_tag = str(text)
@@ -275,8 +277,6 @@ class ScanGUI(QtGui.QMainWindow):
         if self._scan_mngr.file_tag:
             fName = fName + '_' + self._scan_mngr.file_tag
         print fName  
-        if (self._scan_mngr.save_scan_type == 'msync'  ):
-            fName = fName+'_msync'
         f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
         directory = os.path.join(f0, fName)
         if not os.path.exists(directory):
@@ -286,24 +286,46 @@ class ScanGUI(QtGui.QMainWindow):
         scan_grp = f5.create_group(self._scan_mngr.curr_task)
         scan_grp.create_dataset(self._scan_mngr.saveX_label, data = self._scan_mngr.saveX_values)
         scan_grp.create_dataset(self._scan_mngr.saveY_label, data = self._scan_mngr.saveY_values)
-        if (self._scan_mngr.save_scan_type == 'msync'):
-            scan_grp.create_dataset('timestamps_ms', data = self._scan_mngr.save_tstamps_ms)
-            f5.attrs['delay_ms'] = self._scan_mngr.delay_msync
+
+        try:
+            data_grp = f5.create_group('DataSets')
+            for j in np.arange (self._scan_mngr.nr_avg_scans):
+                data_grp.create_dataset('dataset_'+str(j+1), data = self._scan_mngr.data [j,:])
+        except:
+            print 'Unable to save data'
+        
+        try:
+            time_grp = f5.create_group('TimeStamps')
+            time_grp.create_dataset('timestamps [ms]', data = self._scan_mngr.tstamps_ms)
+        except:
+            print 'Unable to save timestamps'
+
+        try:
+            for k in self._scan_mngr.scan_params:
+                f5.attrs [k] = self._scan_mngr.scan_params[k]
+        except:
+            print 'Unable to save scan params'
 
         f5.close()
-
-        fig = plt.figure()
-        if (self._scan_mngr.save_scan_type == 'msync'):
-            rows, cols = np.shape (self._scan_mngr.saveY_values)
-            colori = cm.gist_earth(np.linspace(0,0.75, rows))
-            for j in np.arange(rows):
-                plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.saveY_values[j,:], color = colori[j])
-        else:          
-            plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.saveY_values, 'ob')
+        
+        fig = plt.figure(figsize = (15,10))
+        plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.saveY_values, 'RoyalBlue')
+        plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.saveY_values, 'ob')
         plt.xlabel (self._scan_mngr.saveX_label, fontsize = 15)
         plt.ylabel (self._scan_mngr.saveY_label, fontsize = 15)
-        plt.savefig (os.path.join(directory, fName+'.png'))
+        plt.savefig (os.path.join(directory, fName+'_avg.png'))
         plt.close(fig)
+
+        if (self._scan_mngr.nr_avg_scans > 1):
+            fig = plt.figure(figsize = (15,10))
+            colori = cm.gist_earth(np.linspace(0,0.75, self._scan_mngr.nr_avg_scans))
+            for j in np.arange(self._scan_mngr.nr_avg_scans):
+                plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.data[j,:], color = colori[j])
+                plt.plot (self._scan_mngr.saveX_values, self._scan_mngr.data[j,:], 'o', color = colori[j])
+            plt.xlabel (self._scan_mngr.saveX_label, fontsize = 15)
+            plt.ylabel (self._scan_mngr.saveY_label, fontsize = 15)
+            plt.savefig (os.path.join(directory, fName+'.png'))
+            plt.close(fig)     
 
     def save_2D_scan(self):
 
@@ -360,6 +382,7 @@ class ScanGUI(QtGui.QMainWindow):
     def stop_finelaser(self):
         if (self._running_task == 'fine_laser_scan'):
             self._running_task = None
+            self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)
 
     def calibrate_finelaser(self):
         print 'CALIBRATE fine scan'
@@ -377,10 +400,10 @@ class ScanGUI(QtGui.QMainWindow):
         self._scan_mngr.nr_steps_lr_scan = value
 
     def set_nr_scans_msync (self, value):
-        self._scan_mngr.nr_scans_msync = value
+        self._scan_mngr.nr_avg_scans = value
 
     def set_delay_msync (self, value):
-        self._scan_mngr.delay_msync = value
+        self._scan_mngr.sync_delay_ms = value
 
     def start_lr_scan(self):
         if (self._running_task==None):
@@ -407,20 +430,13 @@ class ScanGUI(QtGui.QMainWindow):
             self._2D_scan_is_active = False
             print 'Stopping!'
 
-    def set_nr_steps_timeseries (self, value):
-        self._scan_mngr.nr_steps_timeseries = value
-
-    def set_wait_cycles (self, value):
-        self._scan_mngr.wait_cycles_timeseries = value
-
     def activate_slowscan(self):
-        #track_gui.setWindowTitle('Cavity Resonance Tracking')
         self._slowscan_gui.show()
 
     def activate_2D_scan (self):
         if (self._running_task==None):
             self.curr_pz_volt = self._scan_mngr.minV_pzscan
-            self._scan_mngr.set_piezo_voltage (self.curr_pz_volt) 
+            self._exp_mngr.set_piezo_voltage (self.curr_pz_volt) 
             self.pzV_step = (self._scan_mngr.maxV_pzscan-self._scan_mngr.minV_pzscan)/float(self._scan_mngr.nr_steps_pzscan)
             self.dict_2D_scan = {}
             self.dict_pzvolt = {}
@@ -455,58 +471,43 @@ class ScanGUI(QtGui.QMainWindow):
             self._running_task = None
             self._2D_scan_is_active = False
 
-    def fileQuit(self):
-        self.close()
-
-    def fileSave(self):
-        self.dc.save()
-
-    def closeEvent(self, ce):
-        self.fileQuit()
-
     def run_new_pzscan(self):
+
+        self.reinitialize()
         self.ui.label_status_display.setText("<font style='color: red;'>SCANNING PIEZOs</font>")
         self._scan_mngr.set_scan_params (v_min=self._scan_mngr.minV_pzscan, v_max=self._scan_mngr.maxV_pzscan, nr_points=self._scan_mngr.nr_steps_pzscan)
         self._scan_mngr.initialize_piezos(wait_time=1)
 
-        if self._scan_mngr.montana_sync:
-            self._scan_mngr.piezo_scan_msync(nr_scans = self._scan_mngr.nr_scans_msync, delay_ms = self._scan_mngr.delay_msync)
-            if self._scan_mngr.success:
-                self.ui.plot_canvas.update_multiple_plots (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'piezo voltage [V]', 
-                            y_axis = 'photodiode signal (a.u.)')
-                self._scan_mngr.saveX_values = self._scan_mngr.v_vals
-                self._scan_mngr.saveY_values = self._scan_mngr.PD_signal
-                self._scan_mngr.save_tstamps_ms = self._scan_mngr.tstamps_ms                  
-                self._scan_mngr.saveX_label = 'piezo_voltage'
-                self._scan_mngr.saveY_label = 'PD_signal'
-                self._scan_mngr.save_scan_type = 'msync'
-                self._scan_mngr.curr_task = 'piezo_scan'
-            else:        
-                msg_text = 'Cannot Sync to Montana signal!'
-                ex = MsgBox(msg_text=msg_text)
-                ex.show()
-                self._scan_mngr.curr_task = None
-        else:
-            self._scan_mngr.piezo_scan(avg_nr_samples=self._scan_mngr.averaging_samples, wait_cycles = self._scan_mngr.wait_cycles_finelaser)
+        self._scan_mngr.piezo_scan ()
+        if self._scan_mngr.success:
             self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'piezo voltage [V]', 
-                        y_axis = 'photodiode signal (a.u.)', color = 'b')
+                        y_axis = 'photodiode signal (a.u.)', color = 'RoyalBlue')
             self._scan_mngr.saveX_values = self._scan_mngr.v_vals
-            self._scan_mngr.saveY_values = self._scan_mngr.PD_signal  
+            self._scan_mngr.saveY_values = self._scan_mngr.PD_signal
+            self._scan_mngr.save_tstamps_ms = self._scan_mngr.tstamps_ms                  
             self._scan_mngr.saveX_label = 'piezo_voltage'
             self._scan_mngr.saveY_label = 'PD_signal'
-            self._scan_mngr.save_scan_type = 'normal'        
+            self._scan_mngr.save_scan_type = 'msync'
             self._scan_mngr.curr_task = 'piezo_scan'
-        self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
+        else:        
+            msg_text = 'Cannot Sync to Montana signal!'
+            ex = MsgBox(msg_text = msg_text)
+            ex.show()
+            self._scan_mngr.curr_task = None
       
         if self._scan_mngr.autosave:
             self.save()
         if self._scan_mngr.autostop:
             self._running_task = None
+            self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)
+
 
     def run_new_fine_laser_scan(self):
+
+        self.reinitialize()
         self.ui.label_status_display.setText("<font style='color: red;'>FINE LASER SCAN</font>")
         self._scan_mngr.set_scan_params (v_min=self._scan_mngr.minV_finelaser, v_max=self._scan_mngr.maxV_finelaser, nr_points=self._scan_mngr.nr_steps_finelaser)
-        self._scan_mngr.laser_scan(use_wavemeter = False, fine_scan=True, avg_nr_samples = self._scan_mngr.averaging_samples)
+        self._scan_mngr.laser_scan(use_wavemeter = False)
         self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'laser-tuning voltage [V]', 
                     y_axis = 'photodiode signal (a.u.)', color = 'b')
         self._scan_mngr.saveX_values = self._scan_mngr.v_vals
@@ -558,22 +559,34 @@ class ScanGUI(QtGui.QMainWindow):
         #depending on the number of calibration pts.
         #This is the number of points actually measured on the wavemeter
         #(should be minimized to keep the scan fast)
+
+        self.reinitialize()
         nr_calib_pts = self._scan_mngr.nr_calib_pts
         b0 = -21.3
         c0 = -0.13
         d0 = 0.48
-        self._scan_mngr.set_laser_wavelength(self.curr_l)
+        self._exp_mngr.set_laser_wavelength(self.curr_l)
         qt.msleep (0.1)
         if self._2D_scan_is_active:
             self.ui.label_status_display.setText("<font style='color: red;'>LASER SCAN: "+str(self.curr_l)+"nm - pzV = "+str(self.curr_pz_volt)+"</font>")
         else:
             self.ui.label_status_display.setText("<font style='color: red;'>LASER SCAN: "+str(self.curr_l)+"nm</font>")
-        self._scan_mngr.set_scan_params (v_min=-3, v_max=3, nr_points=nr_calib_pts)
-        self._scan_mngr.laser_scan(use_wavemeter = True, fine_scan=True, avg_nr_samples = nr_calib_pts) #calibration scan
-        V_calib = self._scan_mngr.v_vals
-        f_calib = self._scan_mngr.frequencies
+
+        #acquire calibration points
+        dac_no = self._exp_mngr._adwin.dacs['newfocus_freqmod']
+        self._exp_mngr._adwin.start_set_dac(dac_no=dac_no, dac_voltage=-3)
+        qt.msleep (0.1)
+        V_calib = np.linspace (-3, 3, nr_calib_pts)
+        f_calib = np.zeros(nr_calib_pts)
+        for n in np.arange (nr_calib_pts):
+            self._exp_mngr._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
+            qt.msleep (0.01)
+            f_calib[n] = self._exp_mngr._wm_adwin.Get_FPar (self._exp_mngr._wm_port)
+            qt.msleep (0.05)
+
+        #finel laser scan
         self._scan_mngr.set_scan_params (v_min=-3, v_max=3, nr_points=self._scan_mngr.nr_steps_lr_scan) #real fine-scan
-        self._scan_mngr.laser_scan(use_wavemeter = False, fine_scan=True, avg_nr_samples = 1)
+        self._scan_mngr.laser_scan(use_wavemeter = False)
         V = self._scan_mngr.v_vals
         if (nr_calib_pts==1):
             V_calib = int(V_calib)
@@ -619,35 +632,21 @@ class ScanGUI(QtGui.QMainWindow):
         else:
             self._running_task = 'lr_laser_scan'
 
+    def reinitialize (self):
+        self._scan_mngr.data = None
+        self._scan_mngr.PD_signal = None
+        self._scan_mngr.tstamps_ms = None
+        self._scan_mngr.scan_params = None
 
-    def run_new_timeseries (self):
-        self._scan_mngr.record_time_series (nr_samples = self._scan_mngr.nr_steps_timeseries, wait_cycles = self._scan_mngr.wait_cycles_timeseries)
-        self.ui.plot_canvas.update_plot (x = self._scan_mngr.timestamps*1000, y=self._scan_mngr.PD_signal, x_axis = 'time [us]', 
-                    y_axis = 'photodiode signal (a.u.)', color = 'b')
-        self._scan_mngr.saveX_values = self._scan_mngr.v_vals
-        self._scan_mngr.saveY_values = self._scan_mngr.PD_signal  
-        self._scan_mngr.saveX_label = 'time'
-        self._scan_mngr.saveY_label = 'PD_signal'        
-        self._scan_mngr.curr_task = 'timeseries'      
-        if self._scan_mngr.autosave:
-            self.save()
-        if self._scan_mngr.autostop:
-            self._running_task = None
+    def fileQuit(self):
+        self.close()
 
-    def run_new_fine_laser_calibration (self):
-        #self._status_label.setText("<font style='color: red;'>CALIBRATION... please wait!</font>")
-        curr_l = int(100*self._scan_mngr.get_laser_wavelength())
-        self._scan_mngr.laser_scan(use_wavemeter = True, fine_scan = True)
-        #self._status_label.setText("<font style='color: red;'>IDLE</font>")
-        self.ui.plot_canvas.update_plot (x = self._scan_mngr.frequencies, y=self._scan_mngr.v_vals, x_axis = 'frequency [GHz]', 
-                    y_axis = 'laser-tuning voltage [V]', color = 'r')
-        self._scan_mngr.curr_x = self._scan_mngr.frequencies
-        self._scan_mngr.curr_y = self._scan_mngr.v_vals  
-        self._scan_mngr.curr_x_label = 'freq [GHz]'
-        self._scan_mngr.curr_y_label = 'laser-tuning voltage'
+    def fileSave(self):
+        self.dc.save()
 
-        self._scan_mngr.curr_task = 'calibration_'+str(curr_l)
-        self._running_task = None     
+    def closeEvent(self, ce):
+        self.fileQuit()
+
 
 class XYScanGUI (QtGui.QMainWindow):
     def __init__(self, exp_mngr):
@@ -713,6 +712,7 @@ class XYScanGUI (QtGui.QMainWindow):
         plt.colorbar()
         plt.xlabel ('x [$\mu$m', fontsize = 15)
         plt.ylabel ('y [$\mu$m', fontsize = 15)
+        plt.axis ('equal')
         plt.savefig (os.path.join(directory, fName+'.png'))
         plt.close(fig)
 
@@ -886,7 +886,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.refresh_time = 100
 
         timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.update_wm)
+        timer.timeout.connect(self.update)
         timer.start(self.refresh_time)
 
         a = self._moc.status()
@@ -961,12 +961,12 @@ class ControlPanelGUI (QtGui.QMainWindow):
         else:
             self.use_wm = False
 
-    def update_wm (self):
+    def update (self):
         if self.use_wm:
             wm_read = self._wm.Get_FPar (45)
             self.ui.label_wavemeter_readout.setText (str(wm_read)+ ' GHz')
-        if self._exp_mngr._system_updated:
-            print 'Params changed... updating Control Panel'
+        if self._exp_mngr._laser_updated:
+            print 'Laser params changed... updating Control Panel'
             try:
                 l = self._exp_mngr.get_laser_wavelength()
                 self.ui.dSBox_coarse_lambda.setValue(l)
@@ -977,9 +977,12 @@ class ControlPanelGUI (QtGui.QMainWindow):
                 self.ui.dsB_power.setValue(p)   
             except:
                 print 'Laser problem: power'
+            self._exp_mngr._laser_updated = False
+        if self._exp_mngr._moc_updated:
             self.pzk_X, self.pzk_Y, self.pzk_Z = self._exp_mngr._coarse_piezos
             self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
-            self._exp_mngr._system_updated = False
+            self._exp_mngr._moc_updated = False
+
 
     def room_T_button (self):
         if self.ui.radioButton_roomT.isChecked():
@@ -1018,17 +1021,15 @@ newfocus = qt.instruments.get_instruments()['newfocus1']
 
 qApp = QtGui.QApplication(sys.argv)
 expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus, moc=moc)
-scanMngr = CavityScan (exp_mngr = expMngr)
-scanMngr.set_scan_params (v_min=0.02, v_max=4, nr_points=100)
 
 xyscan_gui = XYScanGUI (exp_mngr = expMngr)
 xyscan_gui.setWindowTitle('XY Scan')
 xyscan_gui.show()
 
-#slowscan_gui = SlowPiezoScanGUI(exp_mngr = expMngr)
-#aw_scan = ScanGUI(exp_mngr = expMngr, slowscan_gui = slowscan_gui)
-#aw_scan.setWindowTitle('Laser & Piezo Scan Interface')
-#aw_scan.show()
+slowscan_gui = SlowPiezoScanGUI(exp_mngr = expMngr)
+aw_scan = ScanGUI(exp_mngr = expMngr, slowscan_gui = slowscan_gui)
+aw_scan.setWindowTitle('Laser & Piezo Scan Interface')
+aw_scan.show()
 
 aw_ctrl = ControlPanelGUI(exp_mngr = expMngr)
 aw_ctrl.setWindowTitle ('Control Panel')
