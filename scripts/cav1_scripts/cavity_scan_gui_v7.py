@@ -22,22 +22,25 @@ from matplotlib.figure import Figure
 from matplotlib import cm
 from analysis.lib.fitting import fit
 import measurement.lib.cavity.cavity_scan_v2
-import measurement.lib.cavity.scan_gui_panels 
-import control_panel_2, scan_panel_v8, slow_piezo_scan_panel, XYscan_panel 
+import measurement.lib.cavity.panels.scan_gui_panels 
+import measurement.lib.cavity.panels.control_panel_2
+import measurement.lib.cavity.panels.scan_panel_v8
+import measurement.lib.cavity.panels.slow_piezo_scan_panel
+import measurement.lib.cavity.panels.XYscan_panel 
 
 reload (measurement.lib.cavity.cavity_scan_v2)
-reload (measurement.lib.cavity.scan_gui_panels)
-reload (control_panel_2)
-reload (scan_panel_v8)
-reload (slow_piezo_scan_panel)
-reload (XYscan_panel)
+reload (measurement.lib.cavity.panels.scan_gui_panels)
+reload (measurement.lib.cavity.panels.control_panel_2)
+reload (measurement.lib.cavity.panels.scan_panel_v8)
+reload (measurement.lib.cavity.panels.slow_piezo_scan_panel)
+reload (measurement.lib.cavity.panels.XYscan_panel)
 
 from measurement.lib.cavity.cavity_scan_v2 import CavityExpManager, CavityScan
-from measurement.lib.cavity.scan_gui_panels import MsgBox, ScanPlotCanvas
-from control_panel_2 import Ui_Dialog as Ui_Form
-from scan_panel_v8 import Ui_Form as Ui_Scan
-from slow_piezo_scan_panel import Ui_Form as Ui_SlowScan
-from XYscan_panel import Ui_Form as Ui_XYScan
+from measurement.lib.cavity.panels.scan_gui_panels import MsgBox, ScanPlotCanvas
+from measurement.lib.cavity.panels.control_panel_2 import Ui_Dialog as Ui_Form
+from measurement.lib.cavity.panels.scan_panel_v8 import Ui_Form as Ui_Scan
+from measurement.lib.cavity.panels.slow_piezo_scan_panel import Ui_Form as Ui_SlowScan
+from measurement.lib.cavity.panels.XYscan_panel import Ui_Form as Ui_XYScan
 
 class SlowPiezoScanGUI (QtGui.QMainWindow):
     def __init__(self, exp_mngr):
