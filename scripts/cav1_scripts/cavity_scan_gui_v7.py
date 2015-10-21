@@ -419,8 +419,8 @@ class ScanGUI(QtGui.QMainWindow):
 
             print 'Scan direction: ', self._scan_direction
             print self.curr_l
-            self.lr_scan_frq = []
-            self.lr_scan_sgnl = []
+            self.lr_scan_frq_list = []
+            self.lr_scan_sgnl_list = []
             self._running_task = 'lr_laser_scan'
 
     def resume_lr_scan(self):
@@ -482,6 +482,7 @@ class ScanGUI(QtGui.QMainWindow):
         self._scan_mngr.initialize_piezos(wait_time=1)
 
         self._scan_mngr.piezo_scan ()
+        self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
         if self._scan_mngr.success:
             self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'piezo voltage [V]', 
                         y_axis = 'photodiode signal (a.u.)', color = 'RoyalBlue')
@@ -577,16 +578,22 @@ class ScanGUI(QtGui.QMainWindow):
 
         #acquire calibration points
         dac_no = self._exp_mngr._adwin.dacs['newfocus_freqmod']
+        print "DAC no ", dac_no
         self._exp_mngr._adwin.start_set_dac(dac_no=dac_no, dac_voltage=-3)
         qt.msleep (0.1)
         V_calib = np.linspace (-3, 3, nr_calib_pts)
         f_calib = np.zeros(nr_calib_pts)
+        print "----- Frequency claibration routine:"
         for n in np.arange (nr_calib_pts):
+            qt.msleep (0.3)
             self._exp_mngr._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
-            qt.msleep (0.01)
+            print "Point nr. ", n, " ---- voltage: ", V_calib[n]
+            qt.msleep (0.5)
             f_calib[n] = self._exp_mngr._wm_adwin.Get_FPar (self._exp_mngr._wm_port)
-            qt.msleep (0.05)
+            qt.msleep (0.2)
+            print "        ", n, " ---- frq: ", f_calib[n]
 
+        print 'f_calib:', f_calib
         #finel laser scan
         self._scan_mngr.set_scan_params (v_min=-3, v_max=3, nr_points=self._scan_mngr.nr_steps_lr_scan) #real fine-scan
         self._scan_mngr.laser_scan(use_wavemeter = False)
@@ -605,10 +612,14 @@ class ScanGUI(QtGui.QMainWindow):
         else:
             a, b, c, d = self.fit_calibration(V = V_calib, freq = f_calib, fixed=[])
         freq = a + b*V + c*V**2 + d*V**3
-        self.lr_scan_frq.append(freq)
-        self.lr_scan_sgnl.append(self._scan_mngr.PD_signal)
+
+        self.lr_scan_frq_list.append(freq)
+        self.lr_scan_sgnl_list.append(self._scan_mngr.PD_signal)
+        self.lr_scan_frq = (np.array(self.lr_scan_frq_list)).flatten()
+        self.lr_scan_sgnl = (np.array(self.lr_scan_sgnl_list)).flatten()
+
         self.ui.plot_canvas.update_plot (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency [GHz]', 
-                y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'b')
+                y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'RoyalBlue')
         self._scan_mngr.saveX_values = self.lr_scan_frq
         self._scan_mngr.saveY_values = self.lr_scan_sgnl  
         self._scan_mngr.saveX_label = 'frequency_GHz'
@@ -955,7 +966,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
                 self._exp_mngr.update_coarse_piezos (x = self.pzk_X, y = self.pzk_Y, z = self.pzk_Z)
 
     def pzk_set_as_origin(self):
-        self._moc_set_as_origin()
+        self._moc.set_as_origin()
         self.ui.label_curr_pos_readout.setText('[ '+str(0)+' ,'+str(0)+' ,'+str(0)+'] um')
 
     def use_wavemeter (self):

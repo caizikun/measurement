@@ -66,7 +66,8 @@ class ScanPlotCanvas (FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def update_plot (self, x, y, x_axis, y_axis, color, autoscale=False):
-        self.axes.plot(x, y, color=color, linewidth =2)
+        print 'Updating plot'
+        self.axes.plot(x, y, '.', color=color, linewidth =2)
         self.axes.set_xlabel(x_axis)
         self.axes.set_ylabel(y_axis)
         if autoscale:
