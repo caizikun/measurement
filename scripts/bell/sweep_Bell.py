@@ -141,7 +141,7 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 1000 # 
+    m.params['repetitions'] = 10000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 2
@@ -156,12 +156,12 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(1.)
-        aom_power_sweep=np.linspace(0.6,1.0,pts)*max_power_aom #%power 
+        aom_power_sweep=np.linspace(0.4,0.8,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -174,18 +174,18 @@ def tail_sweep(name):
         if sweep_off_voltage:
             m.params['general_sweep_name'] = 'eom_off_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
+            m.params['general_sweep_pts'] = np.linspace(-0.24,-0.32,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.3,1.,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.6,0.6,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
 
-    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
 
 def heating_check(name):
     m=SweepBell('heating_sweep_'+name)
