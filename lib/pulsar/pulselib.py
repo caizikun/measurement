@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.special as ssp
-import pulse
+import pulse; 
 
 ### Basic multichannel pulses
 
@@ -69,12 +69,13 @@ class MW_IQmod_pulse(pulse.Pulse):
         self.PM_risetime = kw.pop('PM_risetime', 0)
         # self.Sw_risetime = kw.pop('Sw_risetime', 100e-9)
         self.Sw_risetime = kw.pop('Sw_risetime', 0)
+
         self.phaselock = kw.pop('phaselock', True)
         self.risetime = kw.pop('risetime', max(self.PM_risetime,self.Sw_risetime))
 
         self.length += 2*self.risetime
-        # self.start_offset = self.risetime
-        # self.stop_offset = self.risetime
+        self.start_offset = self.risetime
+        self.stop_offset = self.risetime
 
 
     def __call__(self, **kw):
@@ -152,15 +153,17 @@ class MW_IQmod_pulse(pulse.Pulse):
 #         self.stop_offset = self.PM_risetime
 
 
-#     def __call__(self, **kw):
-#         self.frequency = kw.pop('frequency', self.frequency)
-#         self.amplitude = kw.pop('amplitude', self.amplitude)
-#         self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
-#             2*self.PM_risetime
-#         self.phase = kw.pop('phase', self.phase)
-#         self.phaselock = kw.pop('phaselock', self.phaselock)
-
-#         return self
+#    def __call__(self, **kw):
+#        self.frequency = kw.pop('frequency', self.frequency)
+#        self.amplitude = kw.pop('amplitude', self.amplitude)
+# 
+#        self.length = kw.pop('length', self.length-2*self.PM_risetime) + \
+#            2*self.PM_risetime
+#        self.phase = kw.pop('phase', self.phase)
+#        self.phaselock = kw.pop('phaselock', self.phaselock)
+#
+#
+#        return self
 
 #     def chan_wf(self, chan, tvals):
 #         if chan == self.PM_channel:
@@ -182,6 +185,7 @@ class MW_IQmod_pulse(pulse.Pulse):
 #             if chan == self.I_channel:
 #                 wf[idx0:idx1] += self.amplitude * np.cos(2 * np.pi * \
 #                     (self.frequency * tvals[idx0:idx1] + self.phase/360.))
+            # print 'phase =', self.phase
 
 #             if chan == self.Q_channel:
 #                 wf[idx0:idx1] += self.amplitude * np.sin(2 * np.pi * \
@@ -246,7 +250,6 @@ class CORPSE_pulse:
 
         return start_1, end_1, start_2, end_2, start_3, end_3 
 
-
 ### Shaped pulses
 class IQ_CORPSE_pulse(MW_IQmod_pulse, CORPSE_pulse):
     
@@ -293,6 +296,7 @@ class IQ_CORPSE_pulse(MW_IQmod_pulse, CORPSE_pulse):
                     (self.frequency * tvals[start_3:end_3] + self.phase/360.))
 
             return wf
+
 class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
     # this is between the driving pulses (not PM)
 
@@ -308,8 +312,8 @@ class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
         self.length = self.length_24p3 + self.length_m318p6 + self.length_384p3 + \
             2*self.pulse_delay + 2*self.PM_risetime
 
-        # self.start_offset = self.PM_risetime
-        # self.stop_offset = self.PM_risetime
+        self.start_offset = self.PM_risetime
+        self.stop_offset = self.PM_risetime
 
     def __call__(self, **kw):
         MW_IQmod_pulse.__call__(self, **kw)
@@ -371,7 +375,216 @@ class IQ_CORPSE_pi2_pulse(MW_IQmod_pulse):
                     (self.frequency * tvals[start_24p3:end_24p3] + self.phase/360.))
 
             return wf
-            
+
+class composite_pi2_pi_pi2_pulse_IQ(MW_IQmod_pulse):
+    def __init__(self, *arg, **kw):
+        MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
+
+        self.length_p1 = kw.pop('length_p1', 0)
+        self.length_p2 = kw.pop('length_p2', 0)
+        self.length_p3 = kw.pop('length_p3', 0) 
+        self.pulse_delay = kw.pop('pulse_delay', 1e-9)
+        self.length = self.length_p1 + self.length_p2 + self.length_p3 + self.pulse_delay*2 +self.risetime*2
+
+        self.env_p1_amplitude = kw.pop('amplitude_p1', 0.1)
+        self.env_p2_amplitude = kw.pop('amplitude_p2', 0.1)
+        self.env_p3_amplitude = kw.pop('amplitude_p3', 0.1)
+        self.phase_p1 = kw.pop('phase_p1',0)
+        self.phase_p2 = kw.pop('phase_p2',0)
+        self.phase_p3 = kw.pop('phase_p3',0)
+
+        self.start_offset = self.risetime
+        self.stop_offset = self.risetime
+
+    def __call__(self, *arg, **kw):
+        MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
+
+        self.length_p1 = kw.pop('length_p1', self.length_p1)
+        self.length_p2 = kw.pop('length_p2', self.length_p2)
+        self.length_p3 = kw.pop('length_p3', self.length_p3) 
+        self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
+        self.length = self.length_p1 + self.length_p2 + self.length_p3 + self.pulse_delay*2 +self.risetime*2
+
+        self.env_p1_amplitude = kw.pop('amplitude_p1', self.env_p1_amplitude)
+        self.env_p2_amplitude = kw.pop('amplitude_p2', self.env_p2_amplitude)
+        self.env_p3_amplitude = kw.pop('amplitude_p3', self.env_p3_amplitude)
+        self.phase_p1 = kw.pop('phase_p1',self.phase_p1)
+        self.phase_p2 = kw.pop('phase_p2',self.phase_p2)
+        self.phase_p3 = kw.pop('phase_p3',self.phase_p3)
+
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return MW_IQmod_pulse.chan_wf(self,chan,tvals)
+
+        elif hasattr(self,'Sw_channel') and chan == self.Sw_channel: # Sw channel is digital, just like PM mod channel
+            return MW_IQmod_pulse.chan_wf(self,chan,tvals)
+
+        else:
+            idx0 = np.where(tvals >= tvals[0] + self.risetime)[0][0]
+            idx1 = np.where(tvals <= tvals[0] + self.length - self.risetime)[0][-1] + 1
+
+            start_p1 = np.where(tvals <= (tvals[0] + self.risetime))[0][-1]
+            end_p1 = np.where(tvals <= (tvals[0] + self.length_p1 + self.risetime))[0][-1]
+            start_p2 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay))[0][-1]
+            end_p2 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2))[0][-1]
+            start_p3 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2 + self.pulse_delay))[0][-1]
+            end_p3 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2 + self.pulse_delay + \
+                self.length_p3))[0][-1]
+
+            wf = np.zeros(len(tvals))
+
+            # in this case we start the wave with zero phase at the effective start time
+            # (up to the specified phase)
+            if not self.phaselock:
+                tvals = tvals.copy() - tvals[idx0]
+
+                print self.name, tvals[0]
+
+            if chan == self.I_channel:
+                wf[start_p1:end_p1] += self.env_p1_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_p1:end_p1] + self.phase_p1/360.))
+                wf[start_p2:end_p2] -= self.env_p2_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_p2:end_p2] + self.phase_p2/360.))
+                wf[start_p3:end_p3] += self.env_p3_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * tvals[start_p3:end_p3] + self.phase_p3/360.))
+
+            if chan == self.Q_channel:
+                wf[start_p1:end_p1] += self.env_p1_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_p1:end_p1] + self.phase_p1/360.))
+                wf[start_p2:end_p2] -= self.env_p2_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_p2:end_p2] + self.phase_p2/360.))
+                wf[start_p3:end_p3] += self.env_p3_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * tvals[start_p3:end_p3] + self.phase_p3/360.))
+
+            return wf
+
+class composite_pi2_pi_pi2_Hermite_pulse_IQ(MW_IQmod_pulse):
+    def __init__(self, *arg, **kw):
+        MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
+
+        self.length_p1 = kw.pop('length_p1', 0)
+        self.length_p2 = kw.pop('length_p2', 0)
+        self.length_p3 = kw.pop('length_p3', 0) 
+        self.pulse_delay = kw.pop('pulse_delay', 1e-9)
+        self.length = self.length_p1 + self.length_p2 + self.length_p3 + self.pulse_delay*2 +self.risetime*2
+
+        self.env_p1_amplitude = kw.pop('amplitude_p1', 0.1)
+        self.env_p2_amplitude = kw.pop('amplitude_p2', 0.1)
+        self.env_p3_amplitude = kw.pop('amplitude_p3', 0.1)
+        self.phase_p1 = kw.pop('phase_p1',0)
+        self.phase_p2 = kw.pop('phase_p2',0)
+        self.phase_p3 = kw.pop('phase_p3',0)
+
+        self.mu_p1 = kw.pop('mu_p1',0.5*(self.length_p1+2*self.risetime))
+        self.mu_p2 = kw.pop('mu_p2',0.5*(self.length_p2+2*self.pulse_delay+2*self.length_p1+2*self.risetime))
+        self.mu_p3 = kw.pop('mu_p2',0.5*(self.length_p3+2*self.pulse_delay+2*self.length_p2+2*self.pulse_delay+2*self.length_p1+2*self.risetime))
+        self.T_herm_p1 = kw.pop('T_herm_p1',0.1667*(self.length_p1)) 
+        self.T_herm_p2 = kw.pop('T_herm_p2',0.1667*(self.length_p2)) 
+        self.T_herm_p3 = kw.pop('T_herm_p3',0.1667*(self.length_p3)) 
+
+        self.start_offset = self.risetime
+        self.stop_offset = self.risetime
+
+    def __call__(self, *arg, **kw):
+        MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
+
+        self.length_p1 = kw.pop('length_p1', self.length_p1)
+        self.length_p2 = kw.pop('length_p2', self.length_p2)
+        self.length_p3 = kw.pop('length_p3', self.length_p3) 
+        self.pulse_delay = kw.pop('pulse_delay', self.pulse_delay)
+        self.length = self.length_p1 + self.length_p2 + self.length_p3 + self.pulse_delay*2 +self.risetime*2
+
+        self.env_p1_amplitude = kw.pop('amplitude_p1', self.env_p1_amplitude)
+        self.env_p2_amplitude = kw.pop('amplitude_p2', self.env_p2_amplitude)
+        self.env_p3_amplitude = kw.pop('amplitude_p3', self.env_p3_amplitude)
+        self.phase_p1 = kw.pop('phase_p1',self.phase_p1)
+        self.phase_p2 = kw.pop('phase_p2',self.phase_p2)
+        self.phase_p3 = kw.pop('phase_p3',self.phase_p3)
+
+        self.mu_p1 = kw.pop('mu_p1',0.5*(self.length_p1+2*self.risetime))
+        self.mu_p2 = kw.pop('mu_p2',0.5*(self.length_p2+2*self.pulse_delay+2*self.length_p1+2*self.risetime))
+        self.mu_p3 = kw.pop('mu_p2',0.5*(self.length_p3+2*self.pulse_delay+2*self.length_p2+2*self.pulse_delay+2*self.length_p1+2*self.risetime))
+        self.T_herm_p1 = kw.pop('T_herm_p1',0.1667*(self.length_p1)) 
+        self.T_herm_p2 = kw.pop('T_herm_p2',0.1667*(self.length_p2)) 
+        self.T_herm_p3 = kw.pop('T_herm_p3',0.1667*(self.length_p3)) 
+
+        return self
+
+    def chan_wf(self, chan, tvals):
+        if chan == self.PM_channel:
+            return MW_IQmod_pulse.chan_wf(self,chan,tvals)
+
+        elif hasattr(self,'Sw_channel') and chan == self.Sw_channel: # Sw channel is digital, just like PM mod channel
+            return MW_IQmod_pulse.chan_wf(self,chan,tvals)
+
+        else:
+            idx0 = np.where(tvals >= tvals[0] + self.risetime)[0][0]
+            idx1 = np.where(tvals <= tvals[0] + self.length - self.risetime)[0][-1] + 1
+
+            start_p1 = np.where(tvals <= (tvals[0] + self.risetime))[0][-1]
+            end_p1 = np.where(tvals <= (tvals[0] + self.length_p1 + self.risetime))[0][-1]
+            start_p2 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay))[0][-1]
+            end_p2 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2))[0][-1]
+            start_p3 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2 + self.pulse_delay))[0][-1]
+            end_p3 = np.where(tvals <= (tvals[0] + self.risetime + self.length_p1 + \
+                self.pulse_delay + self.length_p2 + self.pulse_delay + \
+                self.length_p3))[0][-1]
+
+            wf = np.zeros(len(tvals))
+
+            # in this case we start the wave with zero phase at the effective start time
+            # (up to the specified phase)
+            if not self.phaselock:
+                tvals = tvals.copy() - tvals[idx0]
+
+                print self.name, tvals[0]
+
+            t_p1 = tvals[start_p1:end_p1]-tvals[0]
+            t_p2 = tvals[start_p2:end_p2]-tvals[0]
+            t_p3 = tvals[start_p3:end_p3]-tvals[0]
+
+            if chan == self.I_channel:
+                wf[start_p1:end_p1] += self.env_p1_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * t_p1 + self.phase_p1/360.))
+                wf[start_p2:end_p2] -= self.env_p2_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * t_p2 + self.phase_p2/360.))
+                wf[start_p3:end_p3] += self.env_p3_amplitude * np.cos(2 * np.pi * \
+                    (self.frequency * t_p3 + self.phase_p3/360.))
+
+            if chan == self.Q_channel:
+                wf[start_p1:end_p1] += self.env_p1_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * t_p1 + self.phase_p1/360.))
+                wf[start_p2:end_p2] -= self.env_p2_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * t_p2 + self.phase_p2/360.))
+                wf[start_p3:end_p3] += self.env_p3_amplitude * np.sin(2 * np.pi * \
+                    (self.frequency * t_p3 + self.phase_p3/360.))
+
+            env = np.zeros(len(tvals))
+
+            # print start_p1,end_p1,start_p2,end_p2,start_p3,end_p3
+            # print self.mu_p1,self.mu_p2,self.mu_p3
+            # print self.T_herm_p1,self.T_herm_p2,self.T_herm_p3
+
+            (1-0.667*((t_p1-self.mu_p1)/self.T_herm_p1)**2)*np.exp(-((t_p1-self.mu_p1)/self.T_herm_p1)**2)
+
+            env[start_p1:end_p1] = (1-0.667*((t_p1-self.mu_p1)/self.T_herm_p1)**2)*np.exp(-((t_p1-self.mu_p1)/self.T_herm_p1)**2) #literature value for pi2 pulse
+            env[start_p2:end_p2] = (1-0.956*((t_p2-self.mu_p2)/self.T_herm_p2)**2)*np.exp(-((t_p2-self.mu_p2)/self.T_herm_p2)**2) #literature value for pi pulse
+            env[start_p3:end_p3] = (1-0.667*((t_p3-self.mu_p3)/self.T_herm_p3)**2)*np.exp(-((t_p3-self.mu_p3)/self.T_herm_p3)**2) #literature value for pi2 pulse
+
+            # print env[start_p1:end_p1]
+
+            return wf*env
+
+
 class MW_CORPSE_pulse(MW_pulse, CORPSE_pulse):
 
     # this is between the driving pulses (not PM)
@@ -461,7 +674,6 @@ class GaussianPulse_Envelope_IQ(MW_IQmod_pulse):
             return env*wf
 
 
-
 class GaussianPulse_Envelope(MW_pulse):
     def __init__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', 0.1)
@@ -493,27 +705,37 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', 0.1)
         MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
-        self.mu = kw.pop('mu',0.5*(self.length))
-        self.T_herm = kw.pop('T_herm',0.1667*(self.pulse_length)) ###  needed pulse_length for width calculation! AR & NK 20150522
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.risetime)) # without MW switch: - 2 * self.PM_risetime
+        self.pi2_pulse = kw.pop('pi2_pulse', False)
+
 
     def __call__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
         MW_IQmod_pulse.__call__(self, *arg,amplitude=1., **kw)
-        self.mu = kw.pop('mu',0.5*(self.length-2*self.PM_risetime))
-        self.T_herm = kw.pop('T_herm',0.1667*(self.length-2*self.PM_risetime))
+        self.mu = kw.pop('mu',0.5*self.length)
+        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.risetime) ) # without MW switch: - 2 * self.PM_risetime (KvB, 028-05-2015)
+        self.pi2_pulse = kw.pop('pi2_pulse', self.pi2_pulse)
+ 
         return self
 
     def chan_wf(self, chan, tvals):
         if chan == self.PM_channel:
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
+        elif hasattr(self,'Sw_channel') and chan == self.Sw_channel: # Sw channel is digital, just like PM mod channel
+            return MW_IQmod_pulse.chan_wf(self,chan,tvals)
+
         else: 
             t=tvals-tvals[0] 
-            env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
+            # env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
+            if self.pi2_pulse : # for  Hermite 90deg pulse
+                env = self.env_amplitude*(1-0.667*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
+            else : # for Hermite 180deg pulse
+                env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2) #literature values
             wf = MW_IQmod_pulse.chan_wf(self, chan, tvals)
 
             return env*wf
-
 
 class HermitePulse_Envelope(MW_pulse):
     def __init__(self, *arg, **kw):
@@ -524,7 +746,7 @@ class HermitePulse_Envelope(MW_pulse):
         self.pi2_pulse = kw.pop('pi2_pulse', False)
 
     def __call__(self, *arg, **kw):
-        self.env_amplitude = kw.pop('amplitude', self.env_amplitude)
+        self.env_amplitude = kw.pop('amplitude', self.env_amplitude) 
         MW_pulse.__call__(self, *arg, amplitude=1., **kw)
         self.mu = kw.pop('mu',0.5*(self.length))
         self.T_herm = kw.pop('T_herm',0.1667*(self.pulse_length)) ## needed pulse_length for width calculation! AR & NK 20150522

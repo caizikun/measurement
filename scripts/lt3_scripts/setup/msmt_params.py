@@ -21,6 +21,7 @@ cfg['protocols']['AdwinSSRO']={
 		'AWG_event_jump_DO_channel':    8,
 		'AWG_start_DO_channel':         9,
 		'counter_channel':              1,
+		#'counter_ch_input_pattern':		0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
 		'green_repump_amplitude':       45e-6, #XXXX 50e-6
@@ -159,9 +160,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 		0e-9,
     	'CORPSE_pi_amp': 			0.517,
     	'Hermite_pi_length': 		150e-9,
-        'Hermite_pi_amp': 			0.934, #952,  # 2015-07-09 for pi pulse of 140 ns...0.7278
+        'Hermite_pi_amp': 			0.932, # 2015-07-15 for pi pulse of 140 ns...0.7278
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp': 			0.866, #2015-07-09 for pi/2 pulse of 60 ns
+        'Hermite_pi2_amp': 			0.854, #2015-07-15 for pi/2 pulse of 60 ns
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
         'Square_pi_length' :		1000e-9,#2000e-9, # calib. 2014-07-25

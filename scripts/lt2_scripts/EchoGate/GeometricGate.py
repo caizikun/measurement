@@ -34,7 +34,7 @@ def GeometricGate(name, C13_init_method='swap',carbon_nr = 5,C13_init_state='up'
     m.params['no_unconditional_rotation'] = False
 
     f0=m.params['C'+str(carbon_nr)+'_freq_0']
-    f1=m.params['C'+str(carbon_nr)+'_freq_1']
+    f1=m.params['C'+str(carbon_nr)+'_freq_1'+m.params['electron_transition']]
     HalfWaittime=(1/np.abs(f1-f0))/4.
 
 

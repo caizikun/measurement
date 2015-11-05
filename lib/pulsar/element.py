@@ -18,8 +18,8 @@ class Element:
         self.name = name
         
         self.clock = kw.pop('clock', 1e9)
-        self.granularity = kw.pop('granularity', 4)
-        self.min_samples = kw.pop('min_samples', 960)
+        self.granularity = kw.pop('granularity', 4) 
+        self.min_samples = kw.pop('min_samples', 960) 
         self.pulsar = kw.pop('pulsar', None)
 
         self.global_time = kw.pop('global_time', False)

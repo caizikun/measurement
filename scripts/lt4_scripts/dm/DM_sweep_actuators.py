@@ -9,8 +9,8 @@ import logging
 import time
 
 current_adwin = qt.instruments['adwin']
-counter=3
-int_time= 1000 # in ms XXXXXXXXXX200
+counter=2
+int_time= 100 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -215,7 +215,7 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     return max_cnts, opt_amp
 
 if __name__ == '__main__':
-    green_power = 200e-6
+    green_power = 100e-6
     GreenAOM.set_power(green_power)
 
     name = 'PippinSil1_lt3_local_new_dm'
@@ -251,7 +251,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,75): #lets sweep 75 zernike modes!
+                for i in np.arange(75,100): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True

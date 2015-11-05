@@ -213,7 +213,7 @@ if __name__ == '__main__':
     ssrocalib = True
     debug = True
     # FET = [0.015/(2.*pulses)]
-    FET = np.linspace(0.01,1.0/(2.*pulses),7)
+    FET = np.r_(0.01,0.5)
     wait_gate = True
 
     logic_state_list = ['mX','pX']
@@ -223,11 +223,11 @@ if __name__ == '__main__':
     sleep = 1
     full_Tomo_basis_list = ([['X','X'], ['Y','Y'], ['Z','Z']])
     full_Tomo_basis_list = ([['X','X'], ['Y','Y'], ['Z','Z']])
-
+    full_Tomo_basis_list = ([['X','X']])
     # full_Tomo_basis_list = ([['X','X']])
 
     # full_Tomo_basis_list = ([['DFS']])
-    el_RO_list = ['positive','negative']
+
     # el_RO_list = ['positive']
     mode='Sweep evolution time'
     for single_Tomo_basis in full_Tomo_basis_list:
@@ -249,7 +249,7 @@ if __name__ == '__main__':
                         adwin.start_set_dio(dio_no=4,dio_val=0)
                         ssrocalibration(SAMPLE)
                     if optimize and not debug:
-                        GreenAOM.set_power(20e-6)
+                        GreenAOM.set_power(7e-6)
                         adwin.start_set_dio(dio_no=4,dio_val=0)
                         optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
                     #if ssrocalib and not debug:

@@ -65,7 +65,7 @@ def cal_fast_rabi(name):
     funcs.finish(m)
 
 # Calibration stage 3
-def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True, mw_switch = False):
+def cal_fast_pi(name, mult=1,Range = 0.04, mbi = True, mw_switch = False):
     if mw_switch:
         m = pulsar_mbi_espin.ElectronRabiSplitMultElements_Switch(
             'cal_fast_pi_'+name+'_M=%d' % mult)
@@ -78,16 +78,19 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
     # measurement settings
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000 #0
+    m.params['reps_per_ROsequence'] = 500 #0
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
     m.params['MW_pulse_delays'] = np.ones(pts) * 15e-6
 
     # hard pi pulses
     # m.params['MW_pulse_durations'] = m.params['fast_pi_duration']*(np.ones(pts))
     m.params['MW_pulse_durations'] =  m.params['fast_pi_duration']*(np.ones(pts))
-    print     m.params['MW_pulse_durations'] 
-    m.params['MW_pulse_amps'] = np.linspace(min_pulse_amp,max_pulse_amp,pts)
-    print m.params['MW_pulse_amps']
+    # print     m.params['MW_pulse_durations'] 
+    m.params['MW_pulse_amps'] = np.linspace(m.params['fast_pi_amp']-Range/2.,m.params['fast_pi_amp']+Range/2.,pts)
+    print m.params['electron_transition']
+    # if m.params['electron_transition'] == '_p1':
+    #     m.params['MW_pulse_amps'] = np.linspace(0.69-Range/2.,0.69+Range/2.,pts)
+    #     print m.params['MW_pulse_amps']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -107,7 +110,7 @@ def cal_fast_pi(name, mult=1,min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True
 
     funcs.finish(m)
 
-def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = True, mw_switch = False):
+def cal_fast_pi2(name,  mult=1, Range = 0.05, mbi = True, mw_switch = False):
     if mw_switch:
         m = pulsar_mbi_espin.ElectronRabi_Switch(
             'cal_fast_pi_over_2_'+name+'_M=%d' % mult)
@@ -120,16 +123,16 @@ def cal_fast_pi2(name,  mult=1, min_pulse_amp =0.1, max_pulse_amp =0.95, mbi = T
 
     # measurement settings
     pts = 21
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
     m.params['pts'] = pts
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
     m.params['MW_pulse_delays'] = np.ones(pts) * 30e-9
 
     # pulses
     m.params['MW_pulse_durations'] = m.params['fast_pi2_duration']*(np.ones(pts))
-    print     m.params['MW_pulse_durations'] 
-    m.params['MW_pulse_amps'] = np.linspace(min_pulse_amp,max_pulse_amp,pts)
-    print m.params['MW_pulse_amps']
+    # print     m.params['MW_pulse_durations'] 
+    m.params['MW_pulse_amps'] = np.linspace(m.params['fast_pi2_amp']-Range/2.,m.params['fast_pi2_amp']+Range/2.,pts)
+    # print m.params['MW_pulse_amps']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
 
@@ -287,35 +290,11 @@ def run_calibrations(stage):
 
 
 if __name__ == '__main__':
-    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.477988-0.015, max_pulse_amp =0.477988+0.015, mbi = True)
-    # stools.turn_off_all_lt2_lasers()
-    # GreenAOM.set_power(20e-6)
-    # optimiz0r.optimize(dims=['x','y','z'])
-    # stools.turn_off_all_lt2_lasers()
-    # cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.503209-0.015, max_pulse_amp =0.503209+0.015, mbi = True)
     
-
-    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.397580-0.015, max_pulse_amp = 0.397580+0.015, mbi = True)
-    # stools.turn_off_all_lt2_lasers()
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,Range = 0.06, mbi = True, mw_switch = False)
     # GreenAOM.set_power(20e-6)
-    # optimiz0r.optimize(dims=['x','y','z'])
+    # optimiz0r.optimize(dims=['x','y','z','y','x'])
     # stools.turn_off_all_lt2_lasers()
-    # cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.420471-0.015, max_pulse_amp =0.420471+0.015, mbi = True)
+    # cal_fast_pi2(SAMPLE_CFG, mult=14, Range = 0.05, mbi = True, mw_switch = True)
 
-
-
-    # cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp =  0.397830-0.015, max_pulse_amp = 0.397830+0.015, mbi = True)
-    # stools.turn_off_all_lt2_lasers()
-    # GreenAOM.set_power(20e-6)
-    # optimiz0r.optimize(dims=['x','y','z'])
-    # stools.turn_off_all_lt2_lasers()
-    # cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.400695-0.015, max_pulse_amp =0.400695+0.015, mbi = True)
-
-
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,min_pulse_amp = 0.453156 -0.02, max_pulse_amp = 0.453156 +0.02, mbi = True, mw_switch = True)
-    GreenAOM.set_power(20e-6)
-    optimiz0r.optimize(dims=['x','y','z','y','x'], int_time=120)
-    stools.turn_off_all_lt2_lasers()
-    cal_fast_pi2(SAMPLE_CFG, mult=14, min_pulse_amp = 0.474605   -0.02, max_pulse_amp =0.474605  +0.02 , mbi = True, mw_switch = True)
-
-    print '\a\a\a'
+    # print '\a\a\a'
