@@ -103,9 +103,12 @@ class Multi_DM(Instrument):
         # find available devices
         self.res =  self._dm.CIUsb_GetAvailableDevices(32)
         self.noof_devices = np.sum(np.array(self.res[0][:31]) == 0)
+        
         if self.noof_devices > 1:
             print  'found more than one DM, please adapt the driver. number of devices found = ', self.noof_devices
-
+        elif self.noof_devices  == 0:
+            print 'FM number of devices', self.noof_devices
+            raise Exception('No DM found')
 
         self._dm.CIUsb_SetControl(0,3) # 
         self._dm.CIUsb_SetControl(0,2) # these two lines reset clear data buffer and reset the CPLD, see manual page 18
@@ -245,6 +248,9 @@ class Multi_DM(Instrument):
     def load_mirror_surf(self,filepath):
         d= np.load(filepath)
         self.set_cur_voltages(d['voltages'])
+
+    def get_raw_dev(self):
+        return self._dm
 
 
 
