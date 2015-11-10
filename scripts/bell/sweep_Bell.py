@@ -139,7 +139,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=1
     m.params['pts']=pts
     m.params['repetitions'] = 10000 # 
 
@@ -156,12 +156,12 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       8300 
 
-    do_sweep_aom_power = True
+    do_sweep_aom_power = False
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(1.)
-        aom_power_sweep=np.linspace(0.4,0.8,pts)*max_power_aom #%power 
+        aom_power_sweep=np.linspace(0.1,1.0,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -174,18 +174,18 @@ def tail_sweep(name):
         if sweep_off_voltage:
             m.params['general_sweep_name'] = 'eom_off_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.24,-0.32,pts)
+            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.6,0.6,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.5,.5,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
 
-    run_sweep(m, th_debug=False, measure_bs=True, upload_only = False)
+    run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
 def heating_check(name):
     m=SweepBell('heating_sweep_'+name)
@@ -259,7 +259,7 @@ def rnd_echo_ro(name,debug = False):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 40000
+    m.params['repetitions'] = 400000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
@@ -314,7 +314,6 @@ def SP_correlations_PSB(name):
 
     run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
 
-
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
     m.generate_sequence()
@@ -341,6 +340,6 @@ if __name__ == '__main__':
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
-    #echo_sweep('Sam')
+    #echo_sweep('PippinSil1')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
     #SP_correlations_PSB('test')

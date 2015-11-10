@@ -10,7 +10,7 @@ import time
 
 current_adwin = qt.instruments['adwin']
 counter=2
-int_time= 100 # in ms XXXXXXXXXX200
+int_time= 500 # in ms XXXXXXXXXX200
 
 class Struct:
     pass
@@ -22,7 +22,7 @@ if 1==1:
     extremum_seek_opts.A1     = 0.1/2*4
     extremum_seek_opts.A2     = 0.1/2*4
     extremum_seek_opts.gamma  = 5e-6
-    extremum_seek_opts.maxfev = 500
+    extremum_seek_opts.maxfev = 1000
     extremum_seek_opts.nact   = 160
 
 
@@ -59,7 +59,7 @@ def get_countrates_at_voltages(new_voltages):
 
 
         
-def optimize_extremum(merit_function, x0, options):
+def optimize_extremum(merit_function, x0, options, dat_tot, plt):
 
     N = options.maxfev    
     n_signal = len(x0)    
@@ -86,6 +86,8 @@ def optimize_extremum(merit_function, x0, options):
     for k in range(1,N):
         # compute plant output - with delay!
         y[k] = merit_function(u[k-1,:])
+        dat_tot.add_data_point(k,y[k])
+        plt.update()
         # high-pass filter
         y_hp[k] = y[k]-y[k-1]+h*y_hp[k-1]
         # perturbation signal
@@ -115,10 +117,10 @@ def optimize_extremum(merit_function, x0, options):
     return resu
 
 
-def extremum_seek():
+def extremum_seek(dat_tot, plt):
 
     x0 = np.array(dm.get_cur_voltages())#np.random.rand(extremum_seek_opts.nact)-0.5
-    res = optimize_extremum(get_countrates_at_voltages, x0, extremum_seek_opts)
+    res = optimize_extremum(get_countrates_at_voltages, x0, extremum_seek_opts, dat_tot, plt)
     return res
 
         
@@ -313,7 +315,7 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     return max_cnts, opt_amp
 
 if __name__ == '__main__':
-    green_power = 100e-6
+    green_power = 150e-6
     GreenAOM.set_power(green_power)
 
     name = 'PippinSil1_lt3_local_new_dm'
@@ -380,7 +382,7 @@ if __name__ == '__main__':
             elif scan_mode == 'newton':
                 result = newton_zernike()
             elif scan_mode == 'extremum_seek':
-                result = extremum_seek()
+                result = extremum_seek(dat_tot, plt)
 
             print 'before new block'
             dat_tot.new_block() 

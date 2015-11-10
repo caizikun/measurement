@@ -16,10 +16,15 @@ class RF_Multiplexer(Instrument):
         LED off. The LED then indicates if any of the relais are switched on. 
         Note that 8 bits can be set, but currently only relays 1-5 are connected.
 
-        Requires pyusb package (http://bleyer.org/pyusb/)
+        Requires pyusb package (http://bleyer.org/pyusb/), and the FTDI usb drivers (http://www.ftdichip.com/Drivers/D2XX.htm) installed.
 
         Arguments:
-        - address corresponds to the Device description.
+        - serial: FTDI serial id. To see available devices, run:
+        
+        import d2xx
+        for i in d2xx.createDeviceInfoList():
+            print d2xx.getDeviceInfoDetail(i)
+        
         """
         Instrument.__init__(self, name)
 
