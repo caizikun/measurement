@@ -94,7 +94,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 11e-9 #
-params_lt3['aom_amplitude']				 = 0.9 # on A2
+params_lt3['aom_amplitude']				 = 0.5 # on 
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -112,7 +112,7 @@ params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 5e-9 #additional 1 ns delay should be there when jitter measurement
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 5e-9 +1e-9 #additional 1 ns delay should be there when jitter measurement
 														   # shows peak at 489.3 ns, and be commented if it is 490.3  BH 26-05-2015
 														   #This time corresponds to SP duration + 500 ns - some diff in optical pathlength 
 														   #--> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
