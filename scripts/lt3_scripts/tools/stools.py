@@ -176,7 +176,7 @@ def turn_on_lt3_pulse_path():
 def init_AWG():
     qt.instruments['AWG'].initialize_dc_waveforms()
 
-def start_bs_counter():
+def start_bs_counter(int_time=100):
     if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
         print 'ZPL APDs on'
@@ -185,6 +185,8 @@ def start_bs_counter():
     qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
+    params={'int_time':int_time}
+    qt.instruments['bs_helper'].set_measurement_params(params)
     qt.instruments['bs_helper'].execute_script()
     qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
