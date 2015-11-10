@@ -22,7 +22,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     # sweep params
     rng = 0.2 if multiplicity == 1 else 0.05
     # rng = 0.05
-    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    m.params['MW_pulse_amplitudes'] = m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] =  np.linspace(0.52, 0.59, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15  # spacing between pi pulses in us
 
@@ -189,7 +189,7 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 3.3
+    stage = 4.1
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False
