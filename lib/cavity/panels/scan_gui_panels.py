@@ -247,16 +247,19 @@ class XYCanvas(FigureCanvas):
 
         #FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+        cts = np.zeros ((5,5))
+        self.im = self.axes.imshow (cts, cmap = 'gist_earth', interpolation='none')
+        self.cb = self.fig.colorbar(self.im)
 
     def update_plot(self, x, y, cts):
-        self.im = self.axes.pcolor (x, y, cts, cmap = 'gist_earth')
+        self.im.set_data (cts)
         self.axes.set_xlabel ('x [$\mu$m]')
         self.axes.set_ylabel ('y [$\mu$m]')
         self.axes.set_aspect ('equal')
+        self.cb.set_clim (np.min(cts), np.max(cts))
+        self.cb.draw_all()
         self.draw()
-
-    def colorbar (self):
-        self.fig.colorbar(self.im)
+        
 
 
 

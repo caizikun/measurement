@@ -2852,11 +2852,11 @@ config['adwin_cav1_dacs'] = {
         'jpe_fine_tuning_2': 2,
         'jpe_fine_tuning_3': 3,
         'green_aom' : 4,
-        'yellow_aom' : 5,
+        'yellow_aom' : 9,
         'matisse_aom' : 6,
         'newfocus_aom': 7,
         'laser_coarse_wav_imput': 8,
-        'newfocus_freqmod': 9
+        'newfocus_freqmod': 5
         }
 
 config['adwin_cav1_dios'] = {
