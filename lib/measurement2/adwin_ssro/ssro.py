@@ -104,7 +104,6 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         if setup:
             self.setup()
         print self.adwin_process
-        print 'input channel pattern ', self.params['counter_ch_input_pattern'], ' set this to 0 to use the old channel variable.'
         self.start_adwin_process(stop_processes=['counter'])
         qt.msleep(1)
         self.start_keystroke_monitor('abort',timer=False)

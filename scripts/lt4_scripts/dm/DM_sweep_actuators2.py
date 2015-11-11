@@ -10,7 +10,21 @@ import time
 
 current_adwin = qt.instruments['adwin']
 counter=2
-int_time= 100 # in ms XXXXXXXXXX200
+int_time= 500 # in ms XXXXXXXXXX200
+
+class Struct:
+    pass
+
+# Options for the extremum seeking
+if 1==1:
+    extremum_seek_opts  = Struct()
+    extremum_seek_opts.h      = 0.99
+    extremum_seek_opts.A1     = 0.1/2*4
+    extremum_seek_opts.A2     = 0.1/2*4
+    extremum_seek_opts.gamma  = 5e-6
+    extremum_seek_opts.maxfev = 1000
+    extremum_seek_opts.nact   = 160
+
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -25,6 +39,92 @@ for i in [0,2,4,6,8,10]:
     for j  in [0,2,4,6,8,10]:
         big_segs.append([i,i+1,j,j+1])
 
+
+
+def get_countrates_at_voltages(new_voltages):
+    if (msvcrt.kbhit() and msvcrt.getch() =='q'):
+        raise Exception('User abort')
+
+    # Change the format of the voltages suitable for dm class
+    #grid_size = 12
+    #voltages = np.zeros((grid_size, grid_size))
+    #voltages[:,:] = np.reshape(new_voltages, (grid_size, grid_size))
+
+    voltages = new_voltages.tolist()
+    
+    dm.set_cur_voltages(voltages)
+    crs = measure_counts()
+    print 'avg_amplitude : {:.2f}, Countrates: {:.0f}'.format(np.mean(np.abs(new_voltages)), crs)
+    return -1.*crs
+
+
+        
+def optimize_extremum(merit_function, x0, options, dat_tot, plt):
+
+    N = options.maxfev    
+    n_signal = len(x0)    
+    
+    h = options.h
+    A1 = options.A1
+    A2 = options.A2
+    gamma = options.gamma
+    
+    y = np.zeros(N)
+    y_hp = np.zeros(N)
+    d = np.zeros((N,n_signal))
+    s = np.zeros((N,n_signal))
+    e = np.zeros((N,n_signal))
+    u_i = np.zeros((N,n_signal))
+    u = np.zeros((N,n_signal))
+    
+    # initial condition
+    u_i[0,:] = x0
+    u[0,:]   = u_i[0,:]
+    y[0]     = merit_function(u[0,:])
+    
+
+    for k in range(1,N):
+        # compute plant output - with delay!
+        y[k] = merit_function(u[k-1,:])
+        dat_tot.add_data_point(k,y[k])
+        plt.update()
+        # high-pass filter
+        y_hp[k] = y[k]-y[k-1]+h*y_hp[k-1]
+        # perturbation signal
+        if 1==1: #k >= N_start:
+            # d[k,:] = A*np.sin(2*np.pi*k/npertu)
+            # Let's try random noise
+            rn = np.random.rand(len(x0))-0.5
+            rn[rn <= 0] = -1
+            rn[rn > 0]  = 1
+            d[k,:] = A1*rn
+        else:
+            d[k,:] = np.zeros(len(x0))
+            
+        # normalized modulation
+        # - with delayed perturbation, since plant is delayed!
+        s[k,:] = d[k-1,:] * y_hp[k] *2/A2**2
+        # moving average filter - e(k) is gradient estimation
+        e[k,:] = s[k,:]
+        #e[k,:] = [sum(s[k:-1:max(k-n1+1,1),1)]/n1, ...
+        #          sum(s[k:-1:max(k-n2+1,1),2)]/n2]
+        # optimizer
+        u_i[k,:] = u_i[k-1,:]-gamma*e[k,:]
+        # update input signal
+        u[k,:] = u_i[k,:] + d[k,:]
+  
+    resu = (y, u, s, e, u, u_i, d)
+    return resu
+
+
+def extremum_seek(dat_tot, plt):
+
+    x0 = np.array(dm.get_cur_voltages())#np.random.rand(extremum_seek_opts.nact)-0.5
+    res = optimize_extremum(get_countrates_at_voltages, x0, extremum_seek_opts, dat_tot, plt)
+    return res
+
+        
+        
 def optimize_single_segment(name, seg_nr):
     #measurement parameters
     name = name+ '_step_nr_' + str(seg_nr+1)
@@ -156,7 +256,7 @@ def optimize_zernike_amplitude_brent(i):
 
 def optimize_zernike_amplitude(name, zernike_mode, **kw):
     name = name + '_zernike_' + str(zernike_mode)
-    X,Y,Z_matrix = zernike.zernike_grid_i(zernike_mode, 12)
+    X,Y,Z_matrix = zernike.zernike_gridq_i(zernike_mode, 12)
     return optimize_matrix_amplitude(name,Z_matrix,**kw)
 
 def optimize_segments(name, imin,imax, jmin, jmax, **kw):
@@ -231,7 +331,8 @@ if __name__ == '__main__':
     #plt.set_y2tics(True)
     #plt.set_y2label('Optimum amplitude')
 
-    scan_mode = 'zernike'
+    # scan_mode = 'zernike'
+    scan_mode = 'extremum_seek'
 
     try:
         for j in np.arange(1):
@@ -280,6 +381,8 @@ if __name__ == '__main__':
                 result = nelder_mead_zernike()
             elif scan_mode == 'newton':
                 result = newton_zernike()
+            elif scan_mode == 'extremum_seek':
+                result = extremum_seek(dat_tot, plt)
 
             print 'before new block'
             dat_tot.new_block() 

@@ -94,7 +94,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 11e-9 #
-params_lt3['aom_amplitude']				 = .3 # on A2
+params_lt3['aom_amplitude']				 = 0.5 # on 
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
@@ -106,7 +106,7 @@ params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is 
 
 params_lt3['MW_opt_puls1_separation'] = 22e-9 # had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
-params_lt3['MW_RND_wait'] 		= -25e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
+params_lt3['MW_RND_wait'] 		= 50e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
 params_lt3['RND_duration']	 	= 200e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4

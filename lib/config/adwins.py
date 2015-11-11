@@ -2351,7 +2351,7 @@ config['adwin_pro_processes'] = {
                     ['CR_repump'                   ,  10],
                     ['repump_mod_DAC_channel'      ,   7],
                     ['cr_mod_DAC_channel'          ,   8],
-                    ['counter_ch_input_pattern'    ,   0]
+                    #['counter_ch_input_pattern'    ,   0]
                     ],
                 'params_long_index'  : 30,
                 'params_float' : [
