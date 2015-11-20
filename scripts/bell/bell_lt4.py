@@ -355,10 +355,10 @@ if __name__ == '__main__':
     #full_bell('TheFinal_day18_run'+name_index)
     #lt4_only('test')
     #pulse_overlap('overlap')
-    # SP_ZPL('SPCORR_lt4')
-    lt3_tail('lt3')
+    SP_ZPL('SPCORR_lt3')
+    #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
-    #measureXX('moreXX_day1_run'+name_index)
+    #measureXX('moreXX_day3_run'+name_index)
     #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
     
     qt.bell_succes = True
