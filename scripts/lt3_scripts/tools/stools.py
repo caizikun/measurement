@@ -35,16 +35,6 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def recalibrate_lt1_lasers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'], 
-        awg_names=['NewfocusAOM_lt1', 'YellowAOM_lt1']):
-    turn_off_all_lt1_lasers()
-    for n in names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1')
-    for n in awg_names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1',awg=True)
-
 def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
     turn_off_all_lt3_lasers()
     for n in names:
@@ -53,7 +43,6 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
     for n in awg_names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
-
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     #qt.instruments[adwin].set_simple_counting()
@@ -125,26 +114,6 @@ def check_fast_path_power(powermeter, servo, awg='AWG', chan='ch4_marker1',
 
     if ret:
         return pwr
-
-def check_fast_path_power_lt1(ret=False, **kw):
-    turn_off_all_lt1_lasers()
-    pwr = check_fast_path_power('powermeter_lt1', 'PMServo_lt1', ret=ret, **kw)
-    if ret:
-        return pwr
-
-def check_fast_path_power_lt3(ret=False, **kw):
-    turn_off_all_lt3_lasers()
-    pwr = check_fast_path_power('powermeter', 'PMServo', ret=ret, **kw)
-    if ret:
-        return pwr
-
-def set_lt1_optimization_powers():
-    turn_off_all_lt1_lasers()
-    qt.instruments['YellowAOM_lt1'].set_power(50e-9)
-    qt.instruments['MatisseAOM_lt1'].set_power(5e-9)
-    qt.instruments['NewfocusAOM_lt1'].set_power(10e-9)
-
-
 
 def turn_on_lt3_pulse_path():
     #qt.instruments['PMServo'].move_in()

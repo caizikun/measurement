@@ -608,7 +608,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+'\n'+ str(peaks)
         print ret
 
-        peak_loc = 889.95#890.1#  889.8
+        peak_loc = 889.6#890.1#  889.8
         if len(peaks)>1:
             peaks_width=peaks[-1]-peaks[0]
             peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
@@ -630,12 +630,15 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         return jitterDetected, ret
 
     def check_laser_lock(self, do_plot=False):
+        
+        
         if qt.instruments['signalhound'].get_frequency_center() > 136e6 or qt.instruments['signalhound'].get_frequency_center() < 134e6:
             qt.instruments['signalhound'].set_frequency_center(135e6)
             qt.instruments['signalhound'].set_frequency_span(5e6) 
             qt.instruments['signalhound'].set_rbw(25e3)
             qt.instruments['signalhound'].set_vbw(25e3)
             qt.instruments['signalhound'].ConfigSweepMode()
+        
         freq,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=650)
 
         f = common.fit_lorentz
@@ -645,17 +648,19 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         x = freq/1e6
         y = mi
 
-        args=[y[0], np.max(y), x[np.argmax(y)], 0.4]
+        args=[y[0], np.max(y), x[np.argmax(y)], 0.7]
         fitres = fit.fit1d(x, y, f, *args, fixed = [],
                            do_print = False, ret = True, maxfev=100)
 
         if not fitres['success']:
-            return False, 'loaser lock fit failed'
+            return False, 'laser lock fit failed'
 
         x0 = fitres['params_dict']['x0']
         gamma = fitres['params_dict']['gamma']
         A = fitres['params_dict']['A']
-        if gamma < 0.4 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV
+
+
+        if gamma < 0.40 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV #
             return True, 'laser lock ok,  gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)
 
         return False, 'laser lock NOT ok, gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)

@@ -9,12 +9,18 @@ import logging
 import time
 
 current_adwin = qt.instruments['adwin']
-counter=2
-int_time= 100 # in ms XXXXXXXXXX200
+counter=3
+int_time= 1000 # in ms XXXXXXXXXX200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
-        time.sleep(int_time/1000.)
+        old_val=current_adwin.get_countrates()[counter-1]
+        
+        for i in range(3):
+            new_val = current_adwin.get_countrates()[counter-1]
+            if new_val!= old_val:
+                return new_val
+            time.sleep(int_time/1000.)
         return current_adwin.get_countrates()[counter-1]
     else:
         return current_adwin.measure_counts(int_time)[counter-1]/(int_time*1e-3) 
@@ -251,7 +257,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,75): #lets sweep 75 zernike modes!
+                for i in np.arange(2,6): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True

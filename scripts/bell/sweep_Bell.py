@@ -139,9 +139,9 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=1
+    pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 10000 # 
+    m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 2
@@ -174,13 +174,13 @@ def tail_sweep(name):
         if sweep_off_voltage:
             m.params['general_sweep_name'] = 'eom_off_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
+            m.params['general_sweep_pts'] = np.linspace(-0.05,-0.0,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.5,.5,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.4,.7,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -259,7 +259,7 @@ def rnd_echo_ro(name,debug = False):
 
     pts=1
     m.params['pts']=pts
-    m.params['repetitions'] = 400000
+    m.params['repetitions'] = 40000
     
     m.joint_params['RND_during_LDE'] = 1
     m.joint_params['RO_during_LDE'] = 1
