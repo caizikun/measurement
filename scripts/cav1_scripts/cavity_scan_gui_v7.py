@@ -583,7 +583,7 @@ class ScanGUI(QtGui.QMainWindow):
         qt.msleep (0.1)
         V_calib = np.linspace (-3, 3, nr_calib_pts)
         f_calib = np.zeros(nr_calib_pts)
-        print "----- Frequency claibration routine:"
+        print "----- Frequency calibration routine:"
         for n in np.arange (nr_calib_pts):
             qt.msleep (0.3)
             self._exp_mngr._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
@@ -764,30 +764,42 @@ class XYScanGUI (QtGui.QMainWindow):
         self._x_points = np.linspace (self._x_min, self._x_max, self._nr_steps_x)
         self._y_points = np.linspace (self._y_min, self._y_max, self._nr_steps_y)
         self.X, self.Y = np.meshgrid (self._x_points, self._y_points)
+
+
         print self._x_points, self._y_points
         print "X:"
         print self.X
         print "Y:"
         print self.Y
-        self._counts = np.zeros([self._nr_steps_y, self._nr_steps_x])
+        self._counts = np.zeros(np.shape (self.X))
 
     def start_scan (self):
-        if self.settings_correct():
-            print 'Settings correct!'
-            self.initialize_arrays()
-            self._curr_row = 0
-            self._curr_col = 0
-            self._scan_step = +1
-            self._curr_task = 'scan'
-        else:
-            print 'Check settings!'
+
+        if (self._exp_mngr.room_T == None and self._exp_mngr.low_T == None):
+            msg_text = 'Set temperature before moving PiezoKnobs!'
+            ex = MsgBox(msg_text=msg_text)
+            ex.show()
+        else:            
+            if self.settings_correct():
+                print 'Settings correct!'
+                self.initialize_arrays()
+                self._curr_row = 0
+                self._curr_col = 0
+                self._scan_step = +1
+                self._curr_task = 'scan'
+            else:
+                print 'Check settings!'
 
     def acquire_new_point (self):
         #print "Curr pos: ", self._curr_row, self._curr_col
+        #
+        # ---------- TO FIX: -------------
+        #imgshow in scan_panel_gui, which plots the 2D plot, has "shifted axes"
+        #need to calculate what to feed in, instaed of self._x_points and self._y_points
         x = self.X[self._curr_row, self._curr_col]
         y = self.Y[self._curr_row, self._curr_col]
         print 'Point:', x, y
-        #self.move_pzk (x=x, y=y)
+       # self.move_pzk (x=x, y=y)
         cts = self.get_counts ()
         self._counts [self._curr_row, self._curr_col] = cts
         self._curr_col = self._curr_col + self._scan_step
@@ -795,25 +807,29 @@ class XYScanGUI (QtGui.QMainWindow):
             self._curr_col = int(self._nr_steps_x-1)
             self._curr_row = int(self._curr_row + 1)
             self._scan_step = self._scan_step*(-1)
-            self.ui.xy_plot.update_plot(x = self.X, y = self.Y, cts = self._counts)
+            self.ui.xy_plot.update_plot(x = self._x_points, y = self._y_points, cts = self._counts)
         elif (self._curr_col<0):
             self._curr_col = 0
             self._curr_row = int(self._curr_row + 1)
             self._scan_step = self._scan_step*(-1)
-            self.ui.xy_plot.update_plot(x = self.X, y = self.Y, cts = self._counts)
+            self.ui.xy_plot.update_plot(x = self._x_points, y = self._y_points, cts = self._counts)
         if (self._curr_row >= self._nr_steps_y):
-            self.ui.xy_plot.colorbar()
+            #self.ui.xy_plot.colorbar()
             self._curr_task = None
 
     def stop_scan (self):
         self._curr_task = None
-        self.ui.xy_plot.colorbar()
 
     def move_pzk (self, x, y):
-        z = self._exp_mngr._moc.pzk_Z
-        s1, s2, s3 = self._exp_mngr._moc.motion_to_spindle_steps (x=x/1000., y=y/1000., z=z/1000., update_tracker=False)
-        self._exp_mngr._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=self.pzk_X/1000., y=self.pzk_Y/1000., z=self.pzk_Z/1000.)
-        #need to add wait time?
+        #x, yt are in microns. We need to divide by 1000 because MOC works in mm.
+        curr_x, curr_y, curr_z = self._exp_mngr._moc.get_position() #here positions are in mm
+        print "JPE MOVING!"
+        print "Now we are in ", curr_x, curr_y, curr_z
+        print "we will move to ", x/1000., y/1000., curr_z
+        s1, s2, s3 = self._exp_mngr._moc.motion_to_spindle_steps (x=x/1000., y=y/1000., z=curr_z, update_tracker=False)
+        self._exp_mngr._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=x/1000., y=y/1000., z=curr_z)
+        self._exp_mngr._moc_updated = True
+        qt.msleep (1)
 
     def get_counts (self):
         #adwin_get_counts#
@@ -843,7 +859,8 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.pzk_Y = self._moc._jpe_tracker.curr_y*1000
         self.pzk_Z = self._moc._jpe_tracker.curr_z*1000
         self.use_wm = False
-        self.room_T = None
+        self._exp_mngr.room_T = None
+        self._exp_mngr.low_T = None        
         self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
         self._exp_mngr.update_coarse_piezos (x=self.pzk_X, y=self.pzk_Y, z=self.pzk_Z)
         #Set all parameters and connect all events to actions
@@ -993,28 +1010,29 @@ class ControlPanelGUI (QtGui.QMainWindow):
                 print 'Laser problem: power'
             self._exp_mngr._laser_updated = False
         if self._exp_mngr._moc_updated:
-            self.pzk_X, self.pzk_Y, self.pzk_Z = self._exp_mngr._coarse_piezos
-            self.ui.label_curr_pos_readout.setText('[ '+str(self.pzk_X)+' ,'+str(self.pzk_Y)+' ,'+str(self.pzk_Z)+'] um')
+            curr_x, curr_y, curr_z =self._moc.get_position()
+            #self.pzk_X, self.pzk_Y, self.pzk_Z = self._exp_mngr._coarse_piezos
+            self.ui.label_curr_pos_readout.setText('[ '+str(int(curr_x*1000))+' ,'+str(int(curr_y*1000))+' ,'+str(int(curr_z*1000))+'] um')
             self._exp_mngr._moc_updated = False
 
 
     def room_T_button (self):
         if self.ui.radioButton_roomT.isChecked():
-            self.room_T =  True
+            self._exp_mngr.room_T =  True
             self.ui.radioButton_lowT.setChecked(False)
             self._moc.set_temperature(300)
         else:
-            self.room_T =  False
+            self._exp_mngr.room_T =  False
             self.ui.radioButton_lowT.setChecked(True)
             self._moc.set_temperature(4)
 
     def low_T_button (self):
         if self.ui.radioButton_lowT.isChecked():
-            self.low_T =  True
+            self._exp_mngr.low_T =  True
             self.ui.radioButton_roomT.setChecked(False)
             self._moc.set_temperature(4)
         else:
-            self.room_T =  True
+            self._exp_mngr.room_T =  True
             self.ui.radioButton_roomT.setChecked(True)
             self._moc.set_temperature(300)
 

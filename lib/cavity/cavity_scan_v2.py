@@ -27,6 +27,8 @@ class CavityExpManager ():
 		self._laser_fine_tuning = None
 		self._coarse_piezos = None
 		self._fine_piezos = None
+		self.room_T = None
+		self.low_T = None
 
 	def set_laser_wavelength (self, wavelength):
 		if ((wavelength>636) and (wavelength<640)):
