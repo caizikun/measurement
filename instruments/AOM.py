@@ -389,7 +389,7 @@ class AOM(Instrument):
         else:
             voltage = xc-np.log(np.log(a/float(p)))/k
 
-        if np.isnan(voltage):
+        if np.isnan(voltage) or not(self.get_V_min() <= voltage <= self.get_V_max()):
             logging.warning(self.get_name() + ' Error: power out of calibration range')
                     
         return voltage
