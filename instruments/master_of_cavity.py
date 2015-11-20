@@ -241,6 +241,9 @@ class master_of_cavity(CyclopeanInstrument):
     	z1, z2, z3 = self._jpe_tracker.tracker_file_readout()
     	print 'Spindle positions: ', z1, z2, z3
 
+    def get_position (self):
+        return self._jpe_tracker.curr_x, self._jpe_tracker.curr_y, self._jpe_tracker.curr_z
+
     def set_fine_piezo_voltages (self, v1,v2,v3):
     	#self.ins_adwin.set_dac('jpe_fine_tuning_1', v1)
     	#self.ins_adwin.set_dac('jpe_fine_tuning_2', v2)

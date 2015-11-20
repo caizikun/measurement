@@ -108,11 +108,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         qt.msleep(1)
         self.start_keystroke_monitor('abort',timer=False)
         
+        aborted=False
         CR_counts = 0
         while self.adwin_process_running():
             self._keystroke_check('abort')
             if self.keystroke('abort') in ['q','Q']:
                 print 'aborted.'
+                aborted = True
                 self.stop_keystroke_monitor('abort')
                 break
             
@@ -135,6 +137,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['SSRO_repetitions']))
+        return not(aborted)
 
     def save(self, name='ssro'):
         reps = self.adwin_var('completed_reps')
