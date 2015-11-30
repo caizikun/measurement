@@ -143,24 +143,30 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
     def send_error_email(self, subject = 'error with Bell optimizer', text =''):
 
-        text= text +'\n Current status of {} setup \n \
+        text= text +'\n Email no. {}'\
+            '\n Current status of {} setup \n \
             tail {:.2f}, PSB tail {:.0f} \n \
             pulse {:.2f}.\n \
             SP ref LT3 {:.1f} & LT4 {:.1f} \n\
             CR counts LT4: {:.1f} \n \
             repump counts LT4: {:.1f} \n \
             strain splitting : {:.2f} \n\
-            starts {:.1f} :  '.format(self.setup_name, 
+            starts {:.1f} :  '.format(self.flood_email_counter,self.setup_name, 
                                  self.tail_counts, self.PSB_tail_counts, self.pulse_counts, self.SP_ref_LT3,
                                  self.SP_ref_LT4,self.cr_counts_avg_excl_repump, self.repump_counts, self.strain, self.start_seq)
-        print '-'*10
-        print time.strftime('%H:%M')
-        print '-'*10
-        print 'sending email:', subject, text
+        
 
         self.flood_email_counter +=1
-        if self.get_email_recipient() != '' and (self.flood_email_counter < 10 or self.status_message != subject):
-            qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
+        if self.get_email_recipient() != '':
+            if self.flood_email_counter <= 10:
+                print '-'*10
+                print time.strftime('%H:%M')
+                print '-'*10
+                print 'sending email:', subject, text
+                qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
+            else:
+                print 'Not sending email, as already 10 sent this bell_optimizser run, wihtout relax rounds. Restart to clear.'
+
         self.status_message = subject
 
     def update_values(self) :
@@ -384,12 +390,17 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)
                     else:
                         self.set_invalid_data_marker(0)
-                    self.status_message ='Bad laser rejection detected. Starting the optimizing...'
+                    self.status_message ='Bad laser rejection detected.'
                     print self.status_message
                     self.laser_rejection_counter +=1
-                    if self.laser_rejection_counter <= self.max_laser_reject_cycles :
-                        self.zoptimize_rejection()
+
+                    if qt.instruments['rejecter'].get_noof_reject_cycles() <= self.max_laser_reject_cycles:
+
+                        if not(qt.instruments['rejecter'].get_is_running()):
+                            print  'Starting the optimizing...'
+                            self.zoptimize_rejection()
                         self.wait_counter = 1
+
                     else : 
                         text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.max_laser_reject_cycles)
                         subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
@@ -527,8 +538,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         qt.instruments['waveplates_optimizer'].optimize('Quarter')
 
     def zoptimize_rejection(self):
-        qt.instruments['waveplates_optimizer'].optimize_rejection()
-
+        # qt.instruments['waveplates_optimizer'].optimize_rejection()
+        qt.instruments['rejecter'].set_step_size(self.get_rejecter_step())
+        #qt.instruments['rejecter'].set_good_rejection(self.get_max_SP_ref()-1)
+        qt.instruments['rejecter'].start()
 
     def start(self):
         if self.get_is_running():
@@ -591,6 +604,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         if 'lt3' in self.setup_name:
             self._pharp.StopMeas()
         self.set_is_running(False)
+        qt.instruments['rejecter'].stop()
         return gobject.source_remove(self._timer)
 
     def check_jitter(self):
@@ -608,7 +622,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         ret=ret+'\n'+ str(peaks)
         print ret
 
-        peak_loc = 889.6#890.1#  889.8
+        peak_loc = 889.8#890.1#  889.8
         if len(peaks)>1:
             peaks_width=peaks[-1]-peaks[0]
             peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
