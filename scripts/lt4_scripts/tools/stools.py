@@ -72,6 +72,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
 
 def check_lt4_powers(names=['MatisseAOM', 'NewfocusAOM','PulseAOM', 'YellowAOM' ],
     setpoints = [5e-9, 10e-9, 15e-9,50e-9]):
+    init_AWG()
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt4_lasers()
@@ -251,11 +252,11 @@ def aom_listener():
 
 
 def switch_green():
-    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=0)
+    qt.instruments['adwin'].start_set_dio(dio_no=14, dio_val=0)
     qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=1)
+    qt.instruments['adwin'].start_set_dio(dio_no=14, dio_val=1)
     qt.msleep(0.1)
-    qt.instruments['adwin'].start_set_dio(dio_no=15, dio_val=0)
+    qt.instruments['adwin'].start_set_dio(dio_no=14, dio_val=0)
 
 
     

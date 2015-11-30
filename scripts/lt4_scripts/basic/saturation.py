@@ -5,9 +5,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'SAM_ZPL_local_no_pol_old_fltr'
+name = 'SAM_PSB'
 steps=21
-max_power=150e-6       #[w]
+max_power=120e-6       #[w]
 counter=1 #number of counter
 PQ_count= True    # counting with the HH, assumes apd on channel 0
 bg_x=0        #delta x position of background [um]

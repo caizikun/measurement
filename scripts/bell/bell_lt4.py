@@ -261,7 +261,7 @@ def TPQI(name):
              do_upload     = True,
              )
 
-def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+def SP_PSB(name, lt3=True): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
     name='SPCORR_PSB_'+name
     m = Bell_lt4(name)
     m.params['MW_RND_amp_I']     = 0
@@ -274,7 +274,7 @@ def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot t
              th_debug      = False,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = True, 
+             measure_lt3   = lt3, 
              measure_bs    = False,
              do_upload     = True,
              )
@@ -350,15 +350,18 @@ if __name__ == '__main__':
     qt.msleep(0.5)  
         
 
-    #SP_PSB('SPCORR_PSB')
+    # SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
     #full_bell('TheFinal_day18_run'+name_index)
     #lt4_only('test')
     #pulse_overlap('overlap')
-    SP_ZPL('SPCORR_lt3')
+    # SP_ZPL('SPCORR_lt3')
     #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
-    #measureXX('moreXX_day3_run'+name_index)
-    #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
-    
+    # if int(name_index)>13:
+    #     qt.bell_succes = False
+    # else:
+    measureXX('moreXX_day9_run'+name_index)
+    #     #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+       
     qt.bell_succes = True

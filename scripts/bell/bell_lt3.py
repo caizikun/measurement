@@ -43,8 +43,9 @@ class Bell_lt3(bell.Bell):
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
-            if not self.remote_measurement_helper.get_is_running():
-                print 'Measurement helper stopped.'
+            m_h_r=self.remote_measurement_helper.get_is_running()
+            if m_h_r==False:
+                print 'Measurement helper stopped:',m_h_r
                 return False
         else:
             if not self.adwin_process_running():
