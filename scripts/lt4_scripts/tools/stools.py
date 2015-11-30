@@ -258,5 +258,7 @@ def switch_green():
     qt.msleep(0.1)
     qt.instruments['adwin'].start_set_dio(dio_no=14, dio_val=0)
 
-
+def load_regular_linescan():
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['adwin'].load_linescan()
     

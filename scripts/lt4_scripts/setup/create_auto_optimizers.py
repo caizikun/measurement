@@ -1,14 +1,12 @@
 if True:
     _getval_rej  = lambda: qt.instruments['physical_adwin'].Get_Par(53)
     _getnorm_rej = lambda: qt.instruments['physical_adwin'].Get_Par(73)
-    _setctrl_half = lambda x: qt.instruments['rejecter'].move('zpl_half', x)
-    _setctrl_quarter = lambda x: qt.instruments['rejecter'].move('zpl_quarter', x) 
-    
-    waveplates_optimizer = qt.instruments.create('waveplates_optimizer', 'waveplates_optimizer', 
-            set_half_control_f=_setctrl_half, set_quarter_control_f=_setctrl_quarter,
+    _get_count_rej = lambda: qt.instruments['physical_adwin'].Get_Par(43)
+    _get_msmt_running_rej = lambda: qt.instruments['lt4_measurement_helper'].get_is_running()
+    rejecter = qt.instruments.create('rejecter', 'laser_reject0r_v3', rotator='rotator',
+            rotation_config_name='waveplates_lt3',
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
-            msmt_helper = 'lt4_measurement_helper',plot_name='waveplates_plot')
-
+            get_count_f = _get_count_rej, get_msmt_running_f = _get_msmt_running_rej)
 
 if True:
     _setctrl_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
