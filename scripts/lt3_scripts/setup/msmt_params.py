@@ -162,7 +162,7 @@ cfg['protocols'][name]['pulses'] = {
     	'Hermite_pi_length': 		150e-9,
         'Hermite_pi_amp': 			0.902, # 2015-11-19 
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp': 			0.844, #2015-11-19 
+        'Hermite_pi2_amp': 			0.833, #2015-11-20 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
         'Square_pi_length' :		1000e-9,#2000e-9, # calib. 2014-07-25

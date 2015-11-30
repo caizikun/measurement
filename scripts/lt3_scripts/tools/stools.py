@@ -1,4 +1,5 @@
 import qt
+import os
 import numpy as np
 import msvcrt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
@@ -68,6 +69,7 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
     setpoints = [5e-9, 5e-9, 15e-9,40e-9]):
+    init_AWG()
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt3_lasers()
@@ -227,6 +229,13 @@ def get_pulse_aom_frq(do_plot=True):
     return f_offset
 
 
+def load_latest_dm_mirror_surf(folder=None):
+    from analysis.lib.tools import toolbox as tb
+    lf = tb.latest_data(contains='DM_sweep_curve',folder=folder)
+    fn=tb.get_measurement_name_from_folder(lf)
+    dn,tn=tb.get_date_time_string_from_folder(lf)
+    qt.instruments['DM'].load_mirror_surf(os.path.join(lf,tn+'_'+fn+'_msurf.npz'))
+
 def aom_listener():
     import speech
     def do_aom(phrase,listener):
@@ -279,3 +288,7 @@ def aom_listener():
     #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
     
     listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)
+
+def load_regular_linescan():
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['adwin'].load_linescan()

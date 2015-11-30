@@ -180,7 +180,7 @@ def tail_sweep(name):
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.4,.7,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.3,.5,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 

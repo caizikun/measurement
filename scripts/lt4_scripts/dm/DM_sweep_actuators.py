@@ -214,15 +214,15 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     dm.set_cur_voltages(new_voltages)
     
     dm.plot_mirror_surf(True, fp[:-3])
-    dm.save_mirror_surf(fp[:-3]+'_msurf')
+    dm.save_mirror_surf(fp[:-4]+'_msurf')
     
     
     counters.set_is_running(True)
     return max_cnts, opt_amp
 
 if __name__ == '__main__':
-    green_power = 150e-6
-    GreenAOM.set_power(green_power)
+    #green_power = 150e-6
+    #GreenAOM.set_power(green_power)
 
     name = 'PippinSil1_lt3_local_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
@@ -257,7 +257,7 @@ if __name__ == '__main__':
                     dat_tot.add_data_point(i,cnts,j)
                     plt.update()
             elif scan_mode == 'zernike':
-                for i in np.arange(2,6): #lets sweep 75 zernike modes!
+                for i in np.arange(1,6): #lets sweep 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True
@@ -294,7 +294,7 @@ if __name__ == '__main__':
             #qt.msleep(2)
             #optimiz0r.optimize(dims=['x','y','z'],cnt=counter,cycles=2,int_time=100)
             #stools.recalibrate_lt3_lasers(names=['GreenAOM'],awg_names=[])
-            GreenAOM.set_power(green_power)
+            #GreenAOM.set_power(green_power)
     finally:
         print 'before close file'
         dat_tot.close_file()
