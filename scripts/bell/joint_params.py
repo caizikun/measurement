@@ -8,6 +8,7 @@ joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
 joint_params['initial_delay']           = 10e-9 #DONT CHANGE THIS
 joint_params['opt_pulse_separation']    = 250e-9 #350e-9 changed for higher visibility of 
 joint_params['TPQI_normalisation_measurement'] = False
+joint_params['twitter_randomness'] = False
 
 joint_params['RND_during_LDE'] = 1 
 joint_params['do_echo'] = 1 

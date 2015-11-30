@@ -11,7 +11,6 @@ import time
 #reload all parameters and modules
 #execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.config import moss as moscfg
 
 import bell
 reload(bell)
@@ -109,9 +108,9 @@ class Bell_lt4(bell.Bell):
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
-Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
 Bell_lt4.lt4_helper = qt.instruments['lt4_helper']
+Bell_lt4.rnd_sender = qt.instruments['RND_bit_sender']
 
 def bell_lt4(name, 
              m,

@@ -141,4 +141,6 @@ params_lt3['prepulse_start_bin'] = 7570
 params_lt3['prepulse_stop_bin'] = 7570 + 18
 params_lt3['live_filter_queue_length'] = 10
 
+params_lt3['twitter_rnd_fp'] = r'D:\measuring\measurement\scripts\bell\twitter_rnd\Alice_current.txt'
+
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H
