@@ -13,7 +13,7 @@ def optimize():
         return False
     print 'checking for SMB errors'
     if not(check_smb_errors()):
-        print 'SMB gave errors'
+        print 'SMB gave errors!!'
         return False
     powers_ok=False
     for i in range(5):

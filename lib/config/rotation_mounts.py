@@ -14,10 +14,10 @@ config['waveplates_lt3'] = {
 	'zpl_quarter': {
 		'channel' : 1,
 		'axis'	  : 2,
-		'pos_calib_quick' :701,#steps/degree
+		'pos_calib_quick' :1170,#steps/degree
 		'pos_calib_precise': 1000,#826,
-		'neg_calib_quick' : 991,#steps/degree
-		'neg_calib_precise': 1000,#1158,
+		'neg_calib_quick' : 900,#steps/degree
+		'neg_calib_precise': 1500,#1158,
 	},
 	'cryo_half': {
 		'channel' : 2,

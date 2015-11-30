@@ -373,24 +373,33 @@ class AOM(Instrument):
             a = self.get_cal_a()
             xc = self.get_cal_xc()
             k = self.get_cal_k()
+            V_off = self.get_V_off()
+            V_min = self.get_V_min()
+            V_max = self.get_V_max()
         elif controller=='pri':
             a = self.get_pri_cal_a()
             xc = self.get_pri_cal_xc()
             k = self.get_pri_cal_k()
+            V_off = self.get_pri_V_off()
+            V_min = self.get_pri_V_min()
+            V_max = self.get_pri_V_max()
         elif controller=='sec':
             a = self.get_sec_cal_a()
             xc = self.get_sec_cal_xc()
             k = self.get_sec_cal_k()
+            V_off = self.get_sec_V_off()
+            V_min = self.get_sec_V_min()
+            V_max = self.get_sec_V_max()
         else:
             logging.warning(self.get_name() + ' Error: controller', controller, 'not registered.')
             
         if p <= 0:
-            voltage = self.get_V_off()
+            voltage = V_off
         else:
             voltage = xc-np.log(np.log(a/float(p)))/k
 
-        if np.isnan(voltage):
-            logging.warning(self.get_name() + ' Error: power out of calibration range')
+            if np.isnan(voltage) or not(V_min <= voltage <= V_max):
+                logging.warning(self.get_name() + ' Error: power out of calibration range')
                     
         return voltage
 
