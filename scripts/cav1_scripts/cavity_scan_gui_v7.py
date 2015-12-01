@@ -706,6 +706,8 @@ class XYScanGUI (QtGui.QMainWindow):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.manage_tasks)
         self.timer.start(self.refresh_time)
+        self._exp_mngr._ctr.set_is_running (True)
+
 
     def save_scan (self):
         fName = time.strftime ('%H%M%S') + '_XYScan'
@@ -713,22 +715,27 @@ class XYScanGUI (QtGui.QMainWindow):
         directory = os.path.join(f0, fName)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        
-        f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
-        scan_grp = f5.create_group('XYScan')
-        scan_grp.create_dataset('X', data = self.X)
-        scan_grp.create_dataset('Y', data = self.Y)
-        scan_grp.create_dataset('cts', data = self._counts)
-        f5.close()
+        try:
+            f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
+            scan_grp = f5.create_group('XYScan')
+            scan_grp.create_dataset('X', data = self.X)
+            scan_grp.create_dataset('Y', data = self.Y)
+            scan_grp.create_dataset('cts', data = self._counts)
+            f5.close()
+        except:
+            print("datafile not saved!")
 
-        fig = plt.figure()
-        plt.pcolor (self.X, self.Y, self._counts, cmap = 'gist_earth')
-        plt.colorbar()
-        plt.xlabel ('x [$\mu$m', fontsize = 15)
-        plt.ylabel ('y [$\mu$m', fontsize = 15)
-        plt.axis ('equal')
-        plt.savefig (os.path.join(directory, fName+'.png'))
-        plt.close(fig)
+        try:
+            fig = plt.figure()
+            plt.pcolor (self.X, self.Y, self._counts, cmap = 'gist_earth')
+            plt.colorbar()
+            plt.xlabel ('x [$\mu$m', fontsize = 15)
+            plt.ylabel ('y [$\mu$m', fontsize = 15)
+            plt.axis ('equal')
+            plt.savefig (os.path.join(directory, fName+'.png'))
+            plt.close(fig)
+        except:
+            print("figure not saved!")
 
     def manage_tasks (self):
         if (self._curr_task == 'scan'):
@@ -756,6 +763,7 @@ class XYScanGUI (QtGui.QMainWindow):
 
     def set_acq_time (self, value):
         self._acq_time = value
+        self._exp_mngr._ctr.set_integration_time (value)
 
     def settings_correct (self):
         return (self._x_max>= self._x_min) and (self._y_max>= self._y_min) and (self._nr_steps_x > 0) and (self._nr_steps_y > 0)
@@ -799,26 +807,28 @@ class XYScanGUI (QtGui.QMainWindow):
         x = self.X[self._curr_row, self._curr_col]
         y = self.Y[self._curr_row, self._curr_col]
         print 'Point:', x, y
-       # self.move_pzk (x=x, y=y)
+        self.move_pzk (x=x, y=y)
         cts = self.get_counts ()
         self._counts [self._curr_row, self._curr_col] = cts
         self._curr_col = self._curr_col + self._scan_step
         if (self._curr_col>=self._nr_steps_x):
             self._curr_col = int(self._nr_steps_x-1)
             self._curr_row = int(self._curr_row + 1)
-            self._scan_step = self._scan_step*(-1)
-            self.ui.xy_plot.update_plot(x = self._x_points, y = self._y_points, cts = self._counts)
+            self._scan_step = self._scan_step*(-1) #start scanning in the oposite direction
+            self.ui.xy_plot.update_plot(x = self.X, y = self.Y, cts = self._counts)
         elif (self._curr_col<0):
             self._curr_col = 0
             self._curr_row = int(self._curr_row + 1)
             self._scan_step = self._scan_step*(-1)
-            self.ui.xy_plot.update_plot(x = self._x_points, y = self._y_points, cts = self._counts)
+            self.ui.xy_plot.update_plot(x = self.X, y = self.Y, cts = self._counts)
         if (self._curr_row >= self._nr_steps_y):
             #self.ui.xy_plot.colorbar()
             self._curr_task = None
+            self.save_scan()
 
     def stop_scan (self):
         self._curr_task = None
+        self.save_scan()
 
     def move_pzk (self, x, y):
         #x, yt are in microns. We need to divide by 1000 because MOC works in mm.
@@ -829,13 +839,16 @@ class XYScanGUI (QtGui.QMainWindow):
         s1, s2, s3 = self._exp_mngr._moc.motion_to_spindle_steps (x=x/1000., y=y/1000., z=curr_z, update_tracker=False)
         self._exp_mngr._moc.move_spindle_steps (s1=s1, s2=s2, s3=s3, x=x/1000., y=y/1000., z=curr_z)
         self._exp_mngr._moc_updated = True
-        qt.msleep (1)
 
     def get_counts (self):
-        #adwin_get_counts#
-        cts = int(random.random()*1000)
-        print 'counts...', cts
+        #if not(self._exp_mngr._ctr.get_is_running()):
+        #    self._exp_mngr._ctr.set_is_running()
+        #cts = self._exp_mngr._ctr.get_cntr1_countrate()
+        #cts = int(random.random()*1000)
+        #print 'counts...', cts
+        cts = self._exp_mngr._adwin.read_photodiode()
         return cts
+
 
 class ControlPanelGUI (QtGui.QMainWindow):
     def __init__(self, exp_mngr, parent=None):
@@ -959,13 +972,14 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.pzk_Z = value
 
     def move_pzk(self):
-
+        """function to move the piezoknobs.
+        """
         a = self._moc.status()
-        if (self.room_T == None and self.low_T == None):
+        if (self._exp_mngr.room_T == None and self._exp_mngr.low_T == None):
             msg_text = 'Set temperature before moving PiezoKnobs!'
             ex = MsgBox(msg_text=msg_text)
             ex.show()
-        elif (a[:5]=='ERROR'):
+        elif (a[:5]=='ERROR'): #SvD: this error handling should perhaps be done in the JPE_CADM instrument itself
             msg_text = 'JPE controller is OFF or in manual mode!'
             ex = MsgBox(msg_text=msg_text)
             ex.show()
@@ -1050,9 +1064,10 @@ adwin = qt.instruments.get_instruments()['adwin']
 wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
 moc = qt.instruments.get_instruments()['master_of_cavity']
 newfocus = qt.instruments.get_instruments()['newfocus1']
+ctr = qt.instruments.get_instruments()['counters']
 
 qApp = QtGui.QApplication(sys.argv)
-expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus, moc=moc)
+expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus, moc=moc, counter = ctr)
 
 xyscan_gui = XYScanGUI (exp_mngr = expMngr)
 xyscan_gui.setWindowTitle('XY Scan')
