@@ -312,11 +312,17 @@ class bell_optimizer(mo.multiple_optimizer):
                     self.set_invalid_data_marker(1)
                 else:
                     self.set_invalid_data_marker(0)
+
+
                 self.status_message ='Bad laser rejection detected. Starting the optimizing...'
                 print self.status_message
                 self.laser_rejection_counter +=1
-                if self.laser_rejection_counter <= self.get_max_laser_reject_cycles() :
-                    self.optimize_rejection()
+                if self.laser_rejection_counter <= self.get_max_laser_reject_cycles():
+
+                    if qt.instruments['rejecter'].get_is_running():
+                        print 'Reject0r is still optimizing'
+                    else:
+                        self.optimize_rejection()
                     self.wait_counter = 1
                 else : 
                     text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_max_laser_reject_cycles())
@@ -425,8 +431,7 @@ class bell_optimizer(mo.multiple_optimizer):
         qt.instruments['waveplates_optimizer'].optimize('Quarter')
 
     def optimize_rejection(self):
-        qt.instruments['waveplates_optimizer'].optimize_rejection()
-
+        qt.instruments['rejecter'].start()
 
     def start(self):
         if self.get_is_running():

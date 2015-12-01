@@ -9,8 +9,8 @@ import logging
 import time
 
 current_adwin = qt.instruments['adwin']
-counter=2
-int_time= 500 # in ms XXXXXXXXXX200
+counter=3
+int_time= 2500 # in ms XXXXXXXXXX200
 
 class Struct:
     pass
@@ -28,7 +28,13 @@ if 1==1:
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
-        time.sleep(int_time/1000.)
+        old_val=current_adwin.get_countrates()[counter-1]
+        
+        for i in range(3):
+            new_val = current_adwin.get_countrates()[counter-1]
+            if new_val!= old_val:
+                return new_val
+            time.sleep(int_time/1000.)
         return current_adwin.get_countrates()[counter-1]
     else:
         return current_adwin.measure_counts(int_time)[counter-1]/(int_time*1e-3) 
@@ -86,7 +92,7 @@ def optimize_extremum(merit_function, x0, options, dat_tot, plt):
     for k in range(1,N):
         # compute plant output - with delay!
         y[k] = merit_function(u[k-1,:])
-        dat_tot.add_data_point(k,y[k])
+        dat_tot.add_data_point(k,y[k],0)
         plt.update()
         # high-pass filter
         y_hp[k] = y[k]-y[k-1]+h*y_hp[k-1]
@@ -121,6 +127,8 @@ def extremum_seek(dat_tot, plt):
 
     x0 = np.array(dm.get_cur_voltages())#np.random.rand(extremum_seek_opts.nact)-0.5
     res = optimize_extremum(get_countrates_at_voltages, x0, extremum_seek_opts, dat_tot, plt)
+    fp = dat_tot.get_filepath()
+    dm.save_mirror_surf(fp[:-3]+'_msurf')
     return res
 
         

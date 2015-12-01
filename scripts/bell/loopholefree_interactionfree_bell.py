@@ -13,6 +13,7 @@ def optimize():
         return False
     print 'checking for SMB errors'
     if not(check_smb_errors()):
+        print 'SMB gave errors!!'
         return False
     powers_ok=False
     for i in range(5):
@@ -75,7 +76,7 @@ def bell_check_powers():
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected =200e6 + 500e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
+    f_expected =200e6 + 470e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
     f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
@@ -89,7 +90,9 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 0
+        start_index = 21
+        
+        skip_first=False
 
         cycles=24
         DoJitterCheck = True  #not always necc as now in bell optimizer
@@ -109,17 +112,19 @@ if __name__ == '__main__':
             for i in range(start_index,start_index+cycles):
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                     break
-                qt.bell_name_index = i
-                qt.bell_succes=False
-                execfile(r'bell_lt4.py')
-                output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
-                output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
-                        not(qt.bell_succes)                     or \
-                        (output_lt4 == 'bell_optimizer_failed') or \
-                        (output_lt3 == 'bell_optimizer_failed'): 
-                    break
-                qt.msleep(20)
+                if not(skip_first):
+                    qt.bell_name_index = i
+                    qt.bell_succes=False
+                    execfile(r'bell_lt4.py')
+                    output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+                    output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
+                            not(qt.bell_succes)                     or \
+                            (output_lt4 == 'bell_optimizer_failed') or \
+                            (output_lt3 == 'bell_optimizer_failed'): 
+                        break
+                    qt.msleep(20)
+                skip_first=False
 
                 print 'starting the measurement at lt3'
                 lt3_helper = qt.instruments['lt3_helper']
