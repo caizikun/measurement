@@ -182,6 +182,7 @@ def bell_lt4(name,
 def full_bell(name):
     name='full_Bell'+name
     m = Bell_lt4(name) 
+    m.joint_params['twitter_randomness'] = True
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -351,10 +352,10 @@ if __name__ == '__main__':
 
     # SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-    #full_bell('TheFinal_day18_run'+name_index)
+    full_bell('TheSecondFinal_day1_run_'+name_index)
     #lt4_only('test')
     #pulse_overlap('overlap')
-    SP_ZPL('SPCORR_lt4')
+    #SP_ZPL('SPCORR_lt3')
     #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
     # if int(name_index)>13:

@@ -394,19 +394,17 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     print self.status_message
                     self.laser_rejection_counter +=1
 
-                    if qt.instruments['rejecter'].get_noof_reject_cycles() <= self.max_laser_reject_cycles:
+                    if not(qt.instruments['rejecter'].get_is_running()):
+                        print  'Starting the optimizing...'
+                        self.zoptimize_rejection()
+                    self.wait_counter = 1
 
-                        if not(qt.instruments['rejecter'].get_is_running()):
-                            print  'Starting the optimizing...'
-                            self.zoptimize_rejection()
-                        self.wait_counter = 1
-
-                    else : 
+                    if qt.instruments['rejecter'].get_noof_reject_cycles() > self.max_laser_reject_cycles:
                         text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.max_laser_reject_cycles)
                         subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                         self.send_error_email(subject = subject, text = text)
-                        self.set_invalid_data_marker(1)
-                        self.set_failed()
+                        #self.set_invalid_data_marker(1)
+                        #self.set_failed()
 
                 elif (self.failed_cr_fraction_avg > 0.96) and (self._run_counter % self.avg_length == 0):
                     subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
