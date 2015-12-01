@@ -148,6 +148,11 @@ class adwin_cav1(adwin):
         for i in  np.arange (20):
             self.start_set_dac(dac_no=i, dac_voltage=0)
 
+    def read_photodiode (self, adc_no = 16):
+        self.start_read_adc (adc_no = adc_no)
+        a = self.physical_adwin.Get_FPar (21)
+        return a 
+
 
 
         

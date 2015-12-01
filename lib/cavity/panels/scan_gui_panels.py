@@ -253,6 +253,9 @@ class XYCanvas(FigureCanvas):
 
     def update_plot(self, x, y, cts):
         self.im.set_data (cts)
+        xpixelsize = abs((x[-1,-1]-x[0,0])/float(len(x[0,:])-1))
+        ypixelsize = abs((y[-1,-1]-y[0,0])/float(len(y[:,0])-1))
+        self.im.set_extent((x[0,0]-xpixelsize/2.,x[-1,-1]+xpixelsize/2.,y[0,0]-ypixelsize/2.,y[-1,-1]+ypixelsize/2.))
         self.axes.set_xlabel ('x [$\mu$m]')
         self.axes.set_ylabel ('y [$\mu$m]')
         self.axes.set_aspect ('equal')
