@@ -26,8 +26,7 @@ def optimize():
     if not powers_ok:
         print 'Could not get good powers!'
         return False
-
-    
+   
     qt.msleep(3)
     optimize_ok = False
     for i in range(1):
@@ -50,9 +49,9 @@ def optimize():
     return True
     
 def bell_check_powers():
-    names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM']
-    setpoints = [5e-9, 10e-9, 15e-9,40e-9] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
-    relative_thresholds = [0.1,0.1,0.3,0.2]
+    names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM','GreenAOM']
+    setpoints = [5e-9, 10e-9, 15e-9,40e-9,5e-6] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
+    relative_thresholds = [0.1,0.1,0.3,0.2,0.1e-6]
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     qt.stools.init_AWG()
@@ -64,13 +63,22 @@ def bell_check_powers():
             break
         if n == 'PulseAOM': qt.msleep(2)
         setpoint, value = qt.stools.check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
-        deviation =np.abs(1-setpoint/value)
-        print 'deviation', np.abs(1-setpoint/value)
+        if n == 'GreenAOM':
+            deviation = value
+        else:
+            deviation =np.abs(1-setpoint/value)
+        print 'deviation', deviation
         if deviation>t:
             all_fine=False
-            qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
-            if n == 'NewfocusAOM':
-                qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+            if n == 'GreenAOM':
+                if qt.current_setup=='lt4':
+                    qt.stools.switch_green()
+                else:
+                    qt.instruments['GreenServo'].move_in()
+            else:
+                qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
+                if n == 'NewfocusAOM':
+                    qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
             break
     qt.instruments['PMServo'].move_out()
     return all_fine
