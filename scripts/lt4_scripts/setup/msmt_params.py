@@ -129,7 +129,7 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':			 	 1e-9, 
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 20e-9,
+		'A_SP_amplitude':				 10e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
@@ -158,11 +158,11 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay':		0e-9,
     	'CORPSE_pi_amp':			0.517,
     	'Hermite_pi_length':		150e-9,
-        'Hermite_pi_amp':			0.912, #2015-11-30
+        'Hermite_pi_amp':			0.889, #2015-12-07
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp':			0.842,#2015-11-30
+        'Hermite_pi2_amp':			0.815,#2015-12-07
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
-        'Hermite_Npi4_amp':			0.8696 + 0.018,#2015-11-10
+        'Hermite_Npi4_amp':			0.84 + 0.019,#2015-12-07
         'Square_pi_length' :		50e-9, # 2014-12-01
       	'Square_pi_amp' :			0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' :		0.03 , # calib. for 2 us pi pulse, 2014-07-25 

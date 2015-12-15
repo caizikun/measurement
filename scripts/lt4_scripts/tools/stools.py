@@ -141,9 +141,9 @@ def stop_bs_counter():
         print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch3_marker2_low(2.)
+    qt.instruments['AWG'].set_ch2_marker1_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch3_marker2_low(0.)
+    qt.instruments['AWG'].set_ch2_marker1_low(0.)
 
 def quantum_random_number_reset():
     qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)

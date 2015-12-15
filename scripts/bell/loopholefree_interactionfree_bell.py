@@ -36,8 +36,8 @@ def optimize():
             qt.instruments['optimiz0r'].optimize(dims=['y','x'],cnt=1, int_time=100, cycles =1)
             optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
         else:
-            qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=45, cycles =1)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=45, cycles =2)
+            qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=50, cycles =2)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
@@ -84,7 +84,7 @@ def bell_check_powers():
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected =200e6 + 470e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
+    f_expected =200e6 + 465e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
     f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
@@ -99,6 +99,7 @@ if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
         start_index = 1
+
         
         skip_first=False
 
