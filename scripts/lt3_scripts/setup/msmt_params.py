@@ -160,9 +160,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 		0e-9,
     	'CORPSE_pi_amp': 			0.517,
     	'Hermite_pi_length': 		150e-9,
-        'Hermite_pi_amp': 			0.912, # 2015-11-19 
+        'Hermite_pi_amp': 			0.908, # 2015-12-15
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp': 			0.855, #2015-11-20 
+        'Hermite_pi2_amp': 			0.859, #2015-12-15 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
         'Square_pi_length' :		1000e-9,#2000e-9, # calib. 2014-07-25
@@ -178,10 +178,10 @@ cfg['protocols'][name]['pulses'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 8e-9,
+		'A_CR_amplitude':				 4e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 3.0e-9,
+		'Ex_CR_amplitude':				 1.5e-9,
 		}
