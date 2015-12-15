@@ -34,7 +34,7 @@ def run(name, **kw):
     #print m.params['fast_pi_amp']
     m.params['MW_pulse_durations'] = np.ones(pts) * m.params['fast_pi_duration']
     m.params['MW_pulse_amps'] = np.ones(pts) * m.params['fast_pi_amp']
-    m.params['MW_pulse_mod_frqs'] = np.ones(pts) *  m.params['AWG_MBI_MW_pulse_mod_frq']
+    m.params['MW_pulse_mod_frqs'] = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
     m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
     
     m.params['init_with_second_source'] = init_with_second_source

@@ -161,7 +161,7 @@ def tail_sweep(name):
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(1.)
-        aom_power_sweep=np.linspace(0.6,1.0,pts)*max_power_aom #%power 
+        aom_power_sweep=np.linspace(0.1,1.0,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -174,13 +174,13 @@ def tail_sweep(name):
         if sweep_off_voltage:
             m.params['general_sweep_name'] = 'eom_off_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
+            m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.3,1.,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.3,0.6,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -314,7 +314,6 @@ def SP_correlations_PSB(name):
 
     run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
 
-
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
     m.generate_sequence()
@@ -341,6 +340,6 @@ if __name__ == '__main__':
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
-    #echo_sweep('Sam')
+    #echo_sweep('PippinSil1')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
     #SP_correlations_PSB('test')

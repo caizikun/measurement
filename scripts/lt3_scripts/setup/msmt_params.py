@@ -21,6 +21,7 @@ cfg['protocols']['AdwinSSRO']={
 		'AWG_event_jump_DO_channel':    8,
 		'AWG_start_DO_channel':         9,
 		'counter_channel':              1,
+		#'counter_ch_input_pattern':		0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
 		'green_repump_amplitude':       45e-6, #XXXX 50e-6
@@ -113,7 +114,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr = 2.809328e9#2.80888e9#2.75375e9# +/-   0.000018           #Electron spin ms=-1 frquency 
+f_msm1_cntr = 2.809073e9#2.809328e9#2.80888e9#2.75375e9# +/-   0.000018           #Electron spin ms=-1 frquency 
 f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -159,9 +160,9 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay': 		0e-9,
     	'CORPSE_pi_amp': 			0.517,
     	'Hermite_pi_length': 		150e-9,
-        'Hermite_pi_amp': 			0.925, # 2015-07-15 for pi pulse of 140 ns...0.7278
+        'Hermite_pi_amp': 			0.908, # 2015-12-15
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp': 			0.854, #2015-07-15 for pi/2 pulse of 60 ns
+        'Hermite_pi2_amp': 			0.859, #2015-12-15 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
         'Square_pi_length' :		1000e-9,#2000e-9, # calib. 2014-07-25
@@ -177,10 +178,10 @@ cfg['protocols'][name]['pulses'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 8e-9,
+		'A_CR_amplitude':				 4e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 3.0e-9,
+		'Ex_CR_amplitude':				 1.5e-9,
 		}

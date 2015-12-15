@@ -2,15 +2,16 @@ import qt
 import msvcrt
 import numpy as np
 
-execfile(qt.reload_current_setup)
+#execfile(qt.reload_current_setup)
 
-SAMPLE = qt.exp_params['samples']['current']
+#SAMPLE = qt.exp_params['samples']['current']
 
 ##############
 ### Inputs ###
 ##############
 
 
+### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 101       #101
 mw_power    = -20#-13      #in dBm
@@ -19,7 +20,16 @@ int_time    = 30        # in ms
 reps        = 25
 center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
 
-range_f  =  0.1 # in GHz
+#### RT 2 with Horst / params
+name = 'ESR_Horst_scan29_NV2'#name='ESR_'+ qt.exp_params['protocols']['current']
+steps       = 60       #101
+mw_power    = 18     #in dBm
+green_power = 200e-6    #10e-6
+int_time    = 200       # in ms
+reps        = 150
+center_f    = 2.840  # in GHz
+
+range_f  =  0.015 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
@@ -55,12 +65,10 @@ qt.msleep(0.2)
 #ins_counters.set_is_running(0)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
-#qt.msleep(25)
 stop_scan=False
 for cur_rep in range(reps):
 
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
-
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
         ins_smb.set_frequency(cur_f)

@@ -15,7 +15,7 @@ class adwin_rt2(adwin):
                 adwin = qt.instruments[physical_adwin], 
                 processes = adwinscfg.config['adwin_rt2_processes'],
                 default_processes = ['counter', 'set_dac', 'set_dio', 'linescan',
-                    'DIO_test'], 
+                    'DIO_test', 'read_adc'], 
                 dacs = adwinscfg.config['adwin_rt2_dacs'],
                 tags = ['virtual'],
                 process_subfolder = qt.config['adwin_rt2_subfolder'], **kw)

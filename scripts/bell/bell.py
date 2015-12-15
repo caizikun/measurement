@@ -23,7 +23,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
         self.params['sequence_wait_time'] = self.joint_params['LDE_attempts_before_CR']*self.joint_params['LDE_element_length']*1e6\
         +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_1st_revival']+ 20
-        print 'I am the sequence waiting time', self.params['sequence_wait_time']
+        #print 'I am the sequence waiting time', self.params['sequence_wait_time']
         pulsar_pq.PQPulsarMeasurement.autoconfig(self, **kw)
 
         # add values from AWG calibrations
@@ -52,8 +52,17 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s readout repetitions' % reps_completed)
 
+    def do_entanglement_actions(self):
+        #update twitter randomness
+        if self.joint_params['twitter_randomness']:
+            rnd_word='{}{}{}{}{}{}{}{}'.format(*self._rnd_dataset[0:8])
+            self.rnd_sender.set_state_bitstring(rnd_word)
+            self._rnd_dataset = self._rnd_dataset[8:]
+
     def setup(self, **kw):
-        pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)     
+        pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)
+        if self.joint_params['twitter_randomness']:
+            self._rnd_dataset=np.loadtxt(self.params['twitter_rnd_fp'],dtype=np.int)     
 
     def save(self, name='ssro'):
         reps = self.adwin_var('entanglement_events')
@@ -73,6 +82,9 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         for k in joint_params:
             h5_joint_params_group.attrs[k] = joint_params[k]
         self.h5data.flush()
+        if self.joint_params['twitter_randomness']:
+            np.savetxt(self.params['twitter_rnd_fp'],self._rnd_dataset,fmt='%d')
+
         pulsar_pq.PQPulsarMeasurement.finish(self)
 
     def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False):
@@ -232,6 +244,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
 
                         current_dset_length += newlength
                         self.h5data.flush()
+                        self.do_entanglement_actions()
  
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1

@@ -16,113 +16,96 @@ class adwin_cav1(adwin):
         adwin.__init__(self, name, 
                 adwin = qt.instruments['physical_adwin_cav1'], 
                 processes = adwinscfg.config['adwin_cav1_processes'],
-                default_processes=['counter', 'set_dac', 'set_dio', 'laserscan_photodiode', 'fine_piezo_jpe_scan', 'read_adc'], 
+                default_processes=['counter', 'set_dac', 'set_dio', 'read_adc', 'voltage_scan_sync'], 
                 dacs=adwinscfg.config['adwin_cav1_dacs'], 
-                adcs=adwinscfg.config['adwin_cav1_adcs'],                 
+                adcs=adwinscfg.config['adwin_cav1_adcs'],            
                 tags=['virtual'],
                 use_cfg  = True,
                 process_subfolder = qt.config['adwin_pro_subfolder'], **kw)
                 
         self.add_function('measure_counts')
-        self.add_function('laserscan_photodiode')
+        self.add_function('scan_photodiode')
 
 
-    def laserscan_photodiode(self, ADC_channel=1, nr_steps = 100, wait_cycles = 50, 
-            start_voltage = 0, voltage_step=0.01):
+    def scan_photodiode(self, scan_type, nr_steps = 100, nr_scans = 5, wait_cycles = 50, 
+            start_voltage = -3, end_voltage = 3, use_sync = 0, delay_ms = 0):
 
-        DAC_ch = self.dacs['laser_scan']
+        voltage_step = (end_voltage - start_voltage)/float(nr_steps)
+        montana_sync_ch = adwinscfg.config['adwin_cav1_dios']['montana_sync_ch']
         ADC_ch = self.adcs['photodiode']
+        delay_cycles = int(delay_ms/3.3e-6)
 
-        self.start_laserscan_photodiode (DAC_channel=DAC_ch, ADC_channel=ADC_ch, nr_steps=nr_steps,
-                wait_cycles=wait_cycles, start_voltage=start_voltage, voltage_step=voltage_step)
+        do_scan = True
 
-        data_idx = self.processes['laserscan_photodiode']['data_float']['photodiode_voltage']
-        return self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
+        if (scan_type == 'fine_piezos'):
+            DAC_ch_1 = self.dacs['jpe_fine_tuning_1']
+            DAC_ch_2 = self.dacs['jpe_fine_tuning_2']
+            DAC_ch_3 = self.dacs['jpe_fine_tuning_3']
+            if ((start_voltage <-2) or (end_voltage >10)):
+                do_scan = False
+                print 'Piezo voltage exceeds specifications! Scan aborted.'
+        elif (scan_type == 'laser'):
+            DAC_ch_1 = self.dacs['newfocus_freqmod']
+            DAC_ch_2 = 0
+            DAC_ch_3 = 0
+            if ((start_voltage < -4) or (end_voltage > 4)):
+                do_scan = False
+                print 'Voltage exceeds specifications! Scan aborted.'
+        else: 
+            print "Scan type unknown! Scan aborted."
+            do_scan = False
+
+        if do_scan:
+            print 'Running scan... Params:'
+            scan_params = {}
+            scan_params['DAC_ch_1'] = DAC_ch_1
+            scan_params['DAC_ch_2'] = DAC_ch_2
+            scan_params['DAC_ch_3'] = DAC_ch_3            
+            scan_params['ADC channels'] = ADC_ch
+            scan_params['use_montana_sync'] = use_sync
+            scan_params['sync_ch'] = montana_sync_ch
+            scan_params['sync_delay_ms'] = delay_ms            
+            scan_params['start_voltage'] = start_voltage
+            scan_params['end_voltage'] = end_voltage
+            scan_params['step_voltage'] = voltage_step
+            scan_params['nr_scans'] = nr_scans
+            scan_params['nr_steps'] = nr_steps
+
+            self.start_voltage_scan_sync (DAC_ch_1=DAC_ch_1, DAC_ch_2=DAC_ch_2, DAC_ch_3=DAC_ch_3, ADC_channel=ADC_ch, 
+                    nr_steps=nr_steps, nr_scans=nr_scans, wait_cycles=wait_cycles, voltage_step=voltage_step,
+                    start_voltage_1 = start_voltage, start_voltage_2 = start_voltage, start_voltage_3 = start_voltage,
+                    use_sync=use_sync, sync_ch=montana_sync_ch, delay_us=delay_cycles)
+
+            data_idx = self.processes['voltage_scan_sync']['data_float']['photodiode_voltage']
+            timestamps_idx = self.processes['voltage_scan_sync']['data_long']['timestamps']
+            
+            while (self.is_voltage_scan_sync_running()):
+                qt.msleep (0.1)
+
+            tstamps = self.physical_adwin.Get_Data_Long(timestamps_idx, 1, nr_scans)
+            tstamps_ms = tstamps [1:]*3.3*1e-6
+            success = tstamps[0]
+            raw_data = self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps*nr_scans)
+
+            data = np.reshape (raw_data, (nr_scans, nr_steps))
+            if success:
+                scan_params['scan_successfull'] = True
+            else:
+                scan_params['scan_successfull'] = False
+
+            print scan_params
+            return success, data, tstamps_ms, scan_params
 
 
     def set_laser_coarse (self, voltage):
         DAC_ch = self.dacs['laser_scan']
         self.start_set_dac (dac_no=DAC_ch, dac_voltage=voltage)
 
-    def fine_piezo_jpe_scan(self, nr_steps = 100, wait_cycles = 50, 
-            start_voltages = [0,0,0], voltage_step=0.01):
-
-        DAC_ch_1 = self.dacs['jpe_fine_tuning_1']
-        DAC_ch_2 = self.dacs['jpe_fine_tuning_2']
-        DAC_ch_3 = self.dacs['jpe_fine_tuning_3']
-        ADC_ch = self.adcs['photodiode']
-        ADC_ref_ch = self.adcs['photodiode_ref']
-
-        if ((start_voltages[0]>-2) and (start_voltages[0]>-2) and (start_voltages[0]>-2)):
-            end1 = start_voltages[0]+nr_steps*voltage_step
-            end2 = start_voltages[1]+nr_steps*voltage_step
-            end3 = start_voltages[2]+nr_steps*voltage_step
-
-            if ((end1<10) and (end2<10) and (end3<10)):
-                self.start_fine_piezo_jpe_scan (DAC_ch_fpz1=DAC_ch_1, DAC_ch_fpz2=DAC_ch_2, DAC_ch_fpz3=DAC_ch_3, ADC_channel=ADC_ch, 
-                        ADC_ref_channel = ADC_ref_ch, nr_steps=nr_steps, wait_cycles=wait_cycles, voltage_step=voltage_step,
-                        start_voltage_1 = start_voltages[0], start_voltage_2 = start_voltages[1], start_voltage_3 = start_voltages[2])
-
-                data_idx = self.processes['fine_piezo_jpe_scan']['data_float']['photodiode_voltage']
-                
-                while (self.is_fine_piezo_jpe_scan_running()):
-                    qt.msleep (0.1)
-                #qt.msleep (nr_steps*wait_cycles*1e-5) #TO BE IMPROVED!!!!!
-                #print 'Data is stored in array: ', data_idx
-                #print self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
-                return self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
-            else:
-                print 'Voltage > 10V!!'
-                print 'V = ', end1, end2, end3
-                print 'values:', start_voltages, voltage_step, nr_steps
-        else:
-            print 'Voltage <-2!!'
-
-    def fine_piezo_jpe_scan_CCD (self, nr_steps = 100, wait_cycles = 50, 
-            start_voltages = [0,0,0], voltage_step=0.01):
-
-        DAC_ch_1 = self.dacs['jpe_fine_tuning_1']
-        DAC_ch_2 = self.dacs['jpe_fine_tuning_2']
-        DAC_ch_3 = self.dacs['jpe_fine_tuning_3']
-
-        if ((start_voltages[0]>-2) and (start_voltages[0]>-2) and (start_voltages[0]>-2)):
-            end1 = start_voltages[0]+nr_steps*voltage_step
-            end2 = start_voltages[1]+nr_steps*voltage_step
-            end3 = start_voltages[2]+nr_steps*voltage_step
-
-            if ((end1<10) and (end2<10) and (end3<10)):
-                self.start_fine_piezo_jpe_scan_CCD (DAC_ch_fpz1=DAC_ch_1, DAC_ch_fpz2=DAC_ch_2, DAC_ch_fpz3=DAC_ch_3, 
-                        nr_steps=nr_steps, wait_cycles=wait_cycles, voltage_step=voltage_step,
-                        start_voltage_1 = start_voltages[0], start_voltage_2 = start_voltages[1], start_voltage_3 = start_voltages[2])
-
-                data_idx = self.processes['fine_piezo_jpe_scan_CCD']['data_float']['integrated_CCD_signal']
-                
-                while (self.is_fine_piezo_jpe_scan_running()):
-                    qt.msleep (0.1)
-                #qt.msleep (nr_steps*wait_cycles*1e-5) #TO BE IMPROVED!!!!!
-                print 'Data is stored in array: ', data_idx
-                print self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
-                return self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps)
-            else:
-                print 'Voltage > 10V!!'
-                print 'V = ', end1, end2, end3
-                print 'values:', start_voltages, voltage_step, nr_steps
-        else:
-            print 'Voltage <-2!!'
-
-
-
-
-
-
     def measure_counts(self, int_time):
         self.start_counter(set_integration_time=int_time, set_avg_periods=1, set_single_run= 1)
         while self.is_counter_running():
             time.sleep(0.01)
         return self.get_last_counts()
-
-    #def set_dac(self, ch, v):
-    #    pass
 
     def set_fine_piezos (self, voltage):
         DAC_ch_1 = self.dacs['jpe_fine_tuning_1']
@@ -165,5 +148,11 @@ class adwin_cav1(adwin):
         for i in  np.arange (20):
             self.start_set_dac(dac_no=i, dac_voltage=0)
 
+    def read_photodiode (self, adc_no = 16):
+        self.start_read_adc (adc_no = adc_no)
+        a = self.physical_adwin.Get_FPar (21)
+        return a 
 
 
+
+        
