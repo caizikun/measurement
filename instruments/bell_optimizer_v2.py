@@ -26,7 +26,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
-                    'nb_min_between_nf_optim'    :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2},
+                    'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3.5},
                     'max_strain_splitting'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     'max_cr_counts_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':36},
                     }           
@@ -69,6 +69,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
         self.max_cryo_half_rot_degrees  = 3
         self.max_laser_reject_cycles = 25
+        self.nb_min_between_nf_optim = 7
         
         self.history_length = 10
         self.avg_length = 9
@@ -236,9 +237,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.publish_values()
             else:
                 self._run_counter += 1
+                
                 self.update_values()
                 par_counts , par_laser, dt = self.calculate_difference(1)
-                par_counts_avg , _tmp, _tmp1 = self.calculate_difference(self.avg_length)
+                par_counts_avg , par_laser_avg, _tmp1 = self.calculate_difference(self.avg_length)
                 fpar_laser_array=np.array(self.deque_fpar_laser)
                
                 self.dt = dt
@@ -265,6 +267,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.pulse_counts =  np.float(par_laser[2])/self.start_seq/125.*10000.
                     self.SP_ref_LT3 = np.float(par_laser[4])/self.start_seq/125.*10000.
                     self.SP_ref_LT4 = np.float(par_laser[3])/self.start_seq/125.*10000.
+                    self.tail_counts_avg = np.float(par_laser_avg[1])/par_counts_avg[3]/125.*10000.
                 else:
                     self.PSB_tail_counts, self.tail_counts, self.pulse_counts, self.SP_ref_LT3, self.SP_ref_LT4 = (0,0,0,0,0)
                 
@@ -281,56 +284,62 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     jitterDetected, jitter_text = False, ''
                     lock_ok, lock_text = True, ''
 
+                self.status_message = ''
+
                 if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
-                    self.status_message = 'The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken'.format(self.qrng_voltage)
-                    print self.status_message
+                    text ='The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken\n'.format(self.qrng_voltage)
+                    self.status_message += text 
                     self.set_invalid_data_marker(1)
-                    text = 'Check the QRNG, something is wrong with the theshold voltage !!!'
                     subject = 'ERROR : QRNG threshold voltage too low {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
                        
-                elif jitterDetected:
-                    self.status_message = 'Jitter detected!'
-                    print self.status_message
+                if jitterDetected:
+                    self.status_message += 'Jitter detected!\n'
                     text = jitter_text
                     subject = 'ERROR :AWG jitte detected'
                     self.send_error_email(subject = subject, text = text)
+
+                if not(lock_ok):
+                    self.status_message += 'Laser Lock issue!\n'
+                    text = lock_text
+                    subject = 'ERROR : Laser Lock issue!'
+                    self.set_invalid_data_marker(1)  
+                    self.send_error_email(subject = subject, text = text)
+                    
                     #self.set_invalid_data_marker(1)
 
                 ## WM check.
-                elif len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
+                if len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text = 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
-                    print text
+                    text= 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
+                    self.status_message += text 
                     self.send_error_email(subject = subject, text = text)
-                elif len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
+                if len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
-                    text = 'The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
-                    print text
+                    text ='The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
+                    self.status_message += text 
                     self.send_error_email(subject = subject, text = text)
-                elif len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
+                if len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
                     self.set_invalid_data_marker(1)
                     subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
-                    text = 'The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
-                    print text
+                    text ='The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
+                    self.status_message += text 
                     self.send_error_email(subject = subject, text = text)
 
-                elif self.cr_checks <= 50:
+                if self.cr_checks <= 50:
                     self.waiting_for_other_setup_counter += 1
-                    self.status_message = 'Waiting for the other setup to come back'
-                    print self.status_message
+                    self.status_message += 'Waiting for the other setup to come back\n'
                     if self.waiting_for_other_setup_counter > self.max_counter_for_waiting_time:
                         self.send_error_email(subject = 'ERROR : Bell sequence waiting for other setup', text = 'waiting too long')
 
                 elif self.wait_counter > 0:
+                    self.status_message+='Waiting for another {:d} rounds'.format(int(self.wait_counter))
                     self.wait_counter -=1
-                    print 'Waiting for another {:d} rounds'.format(int(self.wait_counter))
 
                 elif self.cr_counts < self.get_min_cr_counts() :
-                    self.status_message = 'The CR counts are too low : {:.1f} instead of {:.1f}.'.format(self.cr_counts,self.get_min_cr_counts())
-                    print self.status_message
+                    self.status_message += 'The CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
                     self.set_invalid_data_marker(1)
                     self.gate_optimize_counter +=1
                     if self.gate_optimize_counter <= self.get_max_counter_optimize() :
@@ -347,9 +356,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.stop_measurement()
 
                 elif self.repump_counts < self.get_min_repump_counts():
-                    self.status_message = 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.'.format(self.repump_counts, 
+                    self.status_message += 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
                                 self.get_min_repump_counts())
-                    print self.status_message
                     self.set_invalid_data_marker(1)
                     self.yellow_optimize_counter +=1
                     if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
@@ -366,9 +374,8 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.send_error_email(subject = subject, text = text)
                         self.set_failed()
 
-                elif (self.need_to_optimize_nf or ((time.time()-self.nf_optimize_timer) > (self.get_nb_min_between_nf_optim()*60)) ):
-                    self.status_message = 'The NewFocus needs to be optimized.'
-                    print self.status_message
+                elif (self.need_to_optimize_nf or ((time.time()-self.nf_optimize_timer) > (self.nb_min_between_nf_optim*60)) ):
+                    self.status_message += 'The NewFocus needs to be optimized.\n'
                     self.set_invalid_data_marker(1)
                     self.optimize_nf()
                     self.need_to_optimize_nf = False
@@ -377,75 +384,67 @@ class bell_optimizer_v2(mo.multiple_optimizer):
 
 
                 elif self.strain > self.get_max_strain_splitting():
-                    text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.'.format(self.strain, self.get_max_strain_splitting())
+                    text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.\n'.format(self.strain, self.get_max_strain_splitting())
+                    self.status_message += text
                     subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    print text
                     self.set_invalid_data_marker(1)
                     self.wait_counter = 2
                     self.need_to_optimize_nf = True
-                    
+
                 elif self.SP_ref > self.get_max_SP_ref() and not np.isnan(self.SP_ref):
                     if self.pulse_counts > self.get_max_pulse_counts():
                         self.set_invalid_data_marker(1)
                     else:
                         self.set_invalid_data_marker(0)
-                    self.status_message ='Bad laser rejection detected.'
-                    print self.status_message
+                    self.status_message +='Bad laser rejection detected.\n'
                     self.laser_rejection_counter +=1
 
                     if not(qt.instruments['rejecter'].get_is_running()):
                         print  'Starting the optimizing...'
                         self.zoptimize_rejection()
-                    self.wait_counter = 1
+                    #self.wait_counter = 1
 
                     if qt.instruments['rejecter'].get_noof_reject_cycles() > self.max_laser_reject_cycles:
-                        text = 'Can\'t get a good laser rejection even after {} optimization cycles. The measurements will stop after this run!'.format(self.max_laser_reject_cycles)
+                        text = 'Can\'t get a good laser rejection even after {} optimization cycles.'.format(self.max_laser_reject_cycles)
                         subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
                         self.send_error_email(subject = subject, text = text)
                         #self.set_invalid_data_marker(1)
                         #self.set_failed()
-
+         
                 elif (self.failed_cr_fraction_avg > 0.96) and (self._run_counter % self.avg_length == 0):
                     subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
-                    text = 'Im passing too little cr checks. Please adjust the Cryo waveplate'
-                    print text
+                    self.status_message += 'Im passing too little cr checks. Please adjust the Cryo waveplate\n'
                     if self.nf_optimize_counter < 2:
                         self.need_to_optimize_nf = True
                         self.nf_optimize_counter +=1
 
-                    self.send_error_email(subject = subject, text = text)
+                    self.send_error_email(subject = subject, text = self.status_message)
 
                 elif self.cr_counts_avg_excl_repump > self.get_max_cr_counts_avg() :
                     if self.cryo_half_rot_degrees < self.max_cryo_half_rot_degrees :
                         qt.instruments['rejecter'].move('cryo_half', -0.5)
                         self.cryo_half_rot_degrees += 0.5
-                        print '\nThe average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
-                            So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
-        
+                        text = 'The average CR counts are {:.1f}. Rotating cryo half\
+                            Rotated {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
+                        self.status_message += text 
                         subject = 'WARNING : cryo_half rotating'.format(self.setup_name)
-                        text = 'I have passed too many cr checks.The average CR counts are {:.1f}. I am rotating the cryo half waveplate. \
-                               So far it has been rotated of {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
-                        print text
                         self.send_error_email(subject = subject, text = text)
 
                     else :
                         subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
                         text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rot_degrees)
-                        print text
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-                elif not(lock_ok):
-                    self.status_message = 'Laser Lock issue!'
-                    print self.status_message
-                    text = lock_text
-                    subject = 'ERROR : Laser Lock issue!'
-                    self.set_invalid_data_marker(1)  
+                elif 'lt4' in self.setup_name and self.tail_counts_avg < self.get_min_tail_counts():
+                    text = 'WARNING: avg tail counts too low: {:.2f} < {:.2f}'.format(self.tail_counts_avg, self.get_min_tail_counts())
+                    subject = 'Low tail counts'
+                    self.set_invalid_data_marker(1)
                     self.send_error_email(subject = subject, text = text)
 
-                
-                else:
+                if self.status_message == '':
+                    self.status_message = 'Relax Im doing my job'
                     self.script_not_running_counter = 0 
                     self.waiting_for_other_setup_counter = 0
                     self.gate_optimize_counter = 0
@@ -453,9 +452,9 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                     self.nf_optimize_counter = 0 
                     self.yellow_optimize_counter = 0
                     self.laser_rejection_counter = 0
-                    self.set_invalid_data_marker(0)
-                    self.status_message = 'Relax, Im doing my job.'
-                    print self.status_message 
+                    self.set_invalid_data_marker(0)                    
+                
+                print self.status_message 
 
             return True
 

@@ -12,12 +12,14 @@ class MW_pulse(pulse.Pulse):
         self.PM_channel = PM_channel
         self.channels = [MW_channel, PM_channel]
         self.second_MW_channel = kw.pop('second_MW_channel', None)
-        if self.second_MW_channel != None:
-            self.channels.append(self.second_MW_channel)
-
+        
         self.amplitude = kw.pop('amplitude', 0.1)
         self.length = kw.pop('length', 1e-6)
         self.PM_risetime = kw.pop('PM_risetime', 0)
+
+        if self.second_MW_channel != None:
+            self.channels.append(self.second_MW_channel)
+            self.second_channel_amp_factor = kw.pop('second_channel_amp_factor', 1.)
 
         self.pulse_length = self.length
         self.length += 2*self.PM_risetime
@@ -40,7 +42,7 @@ class MW_pulse(pulse.Pulse):
             idx0 = np.where(tvals >= tvals[0] + self.PM_risetime)[0][0]
             idx1 = np.where(tvals <= tvals[0] + self.length - self.PM_risetime)[0][-1]
             wf = np.zeros(len(tvals))
-            wf[idx0:idx1] += self.amplitude
+            wf[idx0:idx1] += self.amplitude*self.second_channel_amp_factor if chan == self.second_MW_channel else self.amplitude
             return wf
 
 

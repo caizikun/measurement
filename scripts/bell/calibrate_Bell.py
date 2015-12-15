@@ -25,7 +25,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['MW_pulse_amplitudes'] = m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] =  np.linspace(0.52, 0.59, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15  # spacing between pi pulses in us
-
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
@@ -50,7 +50,7 @@ def calibrate_pi2_pulse(name, debug=False):
     m.params['Ex_SP_amplitude']=0
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
-
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-0.1, 0.1, pts)  
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
@@ -80,7 +80,7 @@ def calibrate_pi2_pulse_2(name, multiplicity = 1, debug=False):
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
 
-
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     rng = 0.1 if multiplicity == 1 else 0.07
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
@@ -114,7 +114,7 @@ def calibrate_pi2_pulse_3(name, multiplicity = 1, debug=False):
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
 
-
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     rng = 0.1 if multiplicity == 1 else 0.09
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
@@ -146,7 +146,8 @@ def calibrate_Npi4_pulse(name,debug=False):
 
     sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.1, 0.1, pts) 
     m.params['pulse_Npi4_sweep_amps'] = sweep_axis
-
+    
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
     m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
     m.params['evolution_times'] = np.ones(pts)*500e-9
@@ -175,6 +176,7 @@ def check_pi4_pulse_poles(name, debug=False):
     sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.05, 0.05, pts) 
     m.params['pulse_Npi4_sweep_amps'] = sweep_axis
 
+    m.params['MW_Q_amp_factor'] = 0. #affects lt4 only
     m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
     m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
     m.params['evolution_times'] = np.ones(pts)*500e-9

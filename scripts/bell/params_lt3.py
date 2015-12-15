@@ -57,12 +57,8 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
+params_lt3['MW_Q_amp_factor'] = 0.925/0.9 # XXXX TO CALIBRATE ON LT3
 
-params_lt3['square_MW_pulses']    = False
-#params_lt3['MW_pi_amp']	   	= qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
-#params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
-#params_lt3['MW_pi2_amp']	    = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
-#params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
 params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
@@ -87,14 +83,14 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 # LDE Sequence in the AWG
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.0287 # calibration from 2015-05-15
+params_lt3['eom_off_amplitude']          = -0.0288 # calibration from 2015-05-15
 params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 11e-9 #
-params_lt3['aom_amplitude']				 = 0.4# on CR 31
+params_lt3['aom_amplitude']				 = 0.4 # on CR 31
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

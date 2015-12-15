@@ -352,16 +352,17 @@ if __name__ == '__main__':
 
     # SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-    full_bell('TheSecondFinal_day1_run_'+name_index)
+    
     #lt4_only('test')
-    #pulse_overlap('overlap')
-    #SP_ZPL('SPCORR_lt3')
+    # pulse_overlap('overlap')
+    # SP_ZPL('SPCORR_lt3')
     #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
-    # if int(name_index)>13:
-    #     qt.bell_succes = False
-    # else:
     #measureXX('moreXX_day9_run'+name_index)
-    #     #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
+    #if int(name_index)>12:
+    #    qt.bell_succes = False
+    #else:
+    full_bell('TheSecondFinal_day11_run_'+name_index)
+        ### 
        
     qt.bell_succes = True
