@@ -21,9 +21,9 @@ def run(name):
     m = pulsar_mbi_espin.ElectronRamsey_Dephasing(name)
     funcs.prepare(m)
 
-    pts = 31
+    pts = 51
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 200
     m.params['detuning'] = 0e6 #artificial detuning
 
     # MW pulses
@@ -39,14 +39,14 @@ def run(name):
     m.params['MW_pulse_amps']      = np.linspace(0,0,pts) 
     m.params['MW_pulse_2_phases']    = np.linspace(0,0,pts) 
 
-
+    m.params['Repump_multiplicity'] = np.ones(pts)*1 ### this parameter is used for ionization studies.
     # laser beam
     m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 700e-9 #in Watts
-    m.params['repumping_time'] = np.ones(pts)*1e-6 
+    m.params['laser_dephasing_amplitude']= 2200e-9 #in Watts
+    m.params['repumping_time'] = np.ones(pts)*0.7e-6 
     m.params['MW_repump_delay1'] =  np.ones(pts) * 500e-9
     #sweep param
-    m.params['MW_repump_delay2'] = np.linspace(-0.1e-6,0.2e-6,pts)
+    m.params['MW_repump_delay2'] = np.linspace(-0.1e-6, 0.15e-6,pts)
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW vs. repump delay'

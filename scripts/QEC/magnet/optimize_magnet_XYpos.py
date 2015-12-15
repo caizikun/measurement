@@ -33,6 +33,8 @@ f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
 N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
 ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
+qt.exp_params['protocols'][SAMPLE]['AdwinSSRO']['SP_duration'] = 50 #XXXXXXXXXXXXXXXXXX
+
 if __name__ == '__main__':
     
     ######################
@@ -44,18 +46,19 @@ if __name__ == '__main__':
     #no_of_steps      = 5               # with a total of no_of_steps measurment points.
     min_counts_before_optimize = 5e4    #optimize position if counts are below this
     # mom.set_mode(axis, 'stp')     # turn on or off the stepper
-    laser_power = 25e-6
+    laser_power = 10e-6
     save_plots = True
-    fine_only = True
+    fine_only = False
+    coarse_only = True
 
-    do_m1 =True
-    range_coarse  = 6.00
-    pts_coarse    = 81   
+    do_m1_fine = False ### circumvents fitting problems on the coarse measurement of the transition to -1
+    range_coarse  = 5.0 #7.0
+    pts_coarse    = 51   #81
     reps_coarse   = 750 #750
     numer_of_reps = 1
     range_fine  = 0.40
     pts_fine    = 51  
-    reps_fine   = 1500 # 3000 #1000
+    reps_fine   = 1000 # 3000 #1500
     
     #reps_fine = 4000
     #pts_fine = 81
@@ -142,18 +145,18 @@ if __name__ == '__main__':
         #measure both frequencies
             #ms=-1 coarse
         if fine_only == False:
-            DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', 
+            DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', ssbmod_amplitude = 0.01,
                     range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9, mw_switch = True)
             f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='right')
             #ms=-1 fine
         
-        if do_m1 == True:
+        if do_m1_fine == True or coarse_only == False or u_f0m_temp > 1e-4: ## uncertainty larger than 100 kHz triggers the fine measurement.
             DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
                     range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                    pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
-        f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
-        f0m_temp = f0m_temp# + N_hyperfine*1e-9
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.003, mw_switch = True)
+            f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
+            f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    
         print '-----------------------------------'            
         print 'press q to stop measurement cleanly'
@@ -165,15 +168,17 @@ if __name__ == '__main__':
             #ms=+1 coarse
         if fine_only == False:
             DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
-                    range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
+                    range_MHz=range_coarse, pts=pts_coarse,ssbmod_amplitude = 0.02, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
             f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
                     qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='left')
                 #ms=+1 fine
-        DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
-                range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
-                pulse_length = 8e-6, ssbmod_amplitude = 0.006, mw_switch = True)
-        f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
-        f0p_temp = f0p_temp# - N_hyperfine*1e-9
+
+        if coarse_only == False:
+            DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
+                    range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.005, mw_switch = True)
+            f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
+            f0p_temp = f0p_temp# - N_hyperfine*1e-9
 
         Bz_measured, Bx_measured = mt.get_B_field(msm1_freq=f0m_temp*1e9, msp1_freq=f0p_temp*1e9)
         

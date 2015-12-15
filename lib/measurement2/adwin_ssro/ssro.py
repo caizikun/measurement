@@ -26,6 +26,8 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     A_aom = None
     repump_aom = None
     adwin = None
+
+    
         
     def autoconfig(self):
         """
@@ -34,6 +36,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         E.g., compute AOM voltages from desired laser power, or get
         the correct AOM DAC channel from the specified AOM instrument.
         """
+        # print self.E_aom.get.name()
         self.params['Ex_laser_DAC_channel'] = self.adwin.get_dac_channels()\
                 [self.E_aom.get_pri_channel()]
         self.params['A_laser_DAC_channel'] = self.adwin.get_dac_channels()\
@@ -131,6 +134,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                                 in the measurement params dictionary!'.format(key))
 
     def run(self, autoconfig=True, setup=True):
+        
         if autoconfig:
             self.autoconfig()
             
