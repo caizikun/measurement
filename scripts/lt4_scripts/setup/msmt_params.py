@@ -33,7 +33,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      80e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      70e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -158,11 +158,11 @@ cfg['protocols'][name]['pulses'] = {
     	'CORPSE_pulse_delay':		0e-9,
     	'CORPSE_pi_amp':			0.517,
     	'Hermite_pi_length':		150e-9,
-        'Hermite_pi_amp':			0.889, #2015-12-07
+        'Hermite_pi_amp':			0.897, #2015-12-28
         'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp':			0.815,#2015-12-07
+        'Hermite_pi2_amp':			0.825,#2015-12-28
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
-        'Hermite_Npi4_amp':			0.84 + 0.019,#2015-12-07
+        'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
         'Square_pi_length' :		50e-9, # 2014-12-01
       	'Square_pi_amp' :			0.7464 , #  2014-12-01
       	'IQ_Square_pi_amp' :		0.03 , # calib. for 2 us pi pulse, 2014-07-25 
