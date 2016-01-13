@@ -111,8 +111,8 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_wait_duration_before_shelving_pulse':   100e-9,
 'nr_of_ROsequences'                     :    1, #setting this on anything except on 1 crahses the adwin?
 'MW_pulse_mod_risetime'                 :    10e-9,
-'MW2_pulse_mod_risetime'                :    200e-9,
-'MW_switch_risetime'                    :    1e-9, #500e-9  XXXX
+'MW2_pulse_mod_risetime'                :    10e-9,
+'MW_switch_risetime'                    :    500e-9, #500e-9  XXXX
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
@@ -175,19 +175,19 @@ if electron_transition == '-1':
     mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq    # Initialized frequency
     AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
     
-    Hermite_pi_duration = 160e-9    
+    Hermite_pi_length = 160e-9    
     Hermite_pi_amp = 0.487 #0.481 #for 150 ns
 
-    Hermite_pi2_duration = 65e-9#56e-9 # divsible by 2
+    Hermite_pi2_length = 65e-9#56e-9 # divsible by 2
     Hermite_pi2_amp = 0.501
 
-    Square_pi_duration = 116e-9   #250 MHz slow
+    Square_pi_length = 116e-9   #250 MHz slow
     Square_pi_amp = 0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
 
-    Square_pi2_duration = 56e-9 #should be divisible by 4, slow
+    Square_pi2_length = 56e-9 #should be divisible by 4, slow
     Square_pi2_amp =  0.242622    #0.493036,
 
-    BB1_pi_duration = 150e-9
+    BB1_pi_length = 150e-9
     BB1_pi_amplitude = 0.955
 
 # # For ms = +1
@@ -205,19 +205,19 @@ elif electron_transition == '+1':
     mw_freq_MBI         = f_msp1_cntr - mw_mod_frequency# - N_HF_frq    # Initialized frequency
     AWG_MBI_MW_pulse_amp = 0.03
 
-    Hermite_pi_duration = 220e-9
+    Hermite_pi_length = 220e-9
     Hermite_pi_amp = 0.92
 
-    Hermite_pi2_duration = 220e-9#56e-9, #should be divisible by 4, slow
+    Hermite_pi2_length = 220e-9#56e-9, #should be divisible by 4, slow
     Hermite_pi2_amp = 0.678533   
 
-    Square_pi_duration = 60e-9 #180e-9   #250 MHz slow
+    Square_pi_length = 60e-9 #180e-9   #250 MHz slow
     Square_pi_amp =  0.7 #0.694552  #0.407225 #without switch #0.469424,with switch  #250 MHz, slow
 
-    Square_pi2_duration = 92e-9 #56e-9, #should be divisible by 4, slow
+    Square_pi2_length = 92e-9 #56e-9, #should be divisible by 4, slow
     Square_pi2_amp =  0.738335 #0.493036, # slow, only calibrated with 2 pulses
 
-    BB1_pi_duration = 50e-9
+    BB1_pi_length = 50e-9
     BB1_pi_amplitude = 0.9
 
 
@@ -230,28 +230,30 @@ print '*****************************************************'
 
 
 ##   Second microwave source
+### Comment: frequency should be selected automatically depending on source 1...
+
 mw2_freq             = f_msp1_cntr   # Center frequency
 mw2_pulse_shape = 'Hermite'
 
 if mw2_freq == f_msm1_cntr:
-    mw2_Hermite_pi_duration = 90e-9    
+    mw2_Hermite_pi_length = 90e-9    
     mw2_Hermite_pi_amp = 0.414
-    mw2_Hermite_pi2_duration = 70e-9
+    mw2_Hermite_pi2_length = 70e-9
     mw2_Hermite_pi2_amp = .5  
     mw2_Square_pi2_amp =  .5
     mw2_Square_pi_amp =  .414
-    mw2_Square_pi_duration = 90e-9#180e-9   #250 MHz slow
-    mw2_Square_pi2_duration = 11e-9#180e-9   #250 MHz slow
+    mw2_Square_pi_length = 90e-9#180e-9   #250 MHz slow
+    mw2_Square_pi2_length = 11e-9#180e-9   #250 MHz slow
     mw2_electron_transition_string = '_m1'
 else:
-    mw2_Hermite_pi_duration = 160e-9    
+    mw2_Hermite_pi_length = 160e-9    
     mw2_Hermite_pi_amp = 0.616
-    mw2_Hermite_pi2_duration = 70e-9
+    mw2_Hermite_pi2_length = 70e-9
     mw2_Hermite_pi2_amp = .5  
     mw2_Square_pi2_amp =  .5
     mw2_Square_pi_amp =  .616
-    mw2_Square_pi_duration = 160e-9#180e-9   #250 MHz slow
-    mw2_Square_pi2_duration = 28e-9#180e-9   #250 MHz slow
+    mw2_Square_pi_length = 160e-9#180e-9   #250 MHz slow
+    mw2_Square_pi2_length = 28e-9#180e-9   #250 MHz slow
     mw2_electron_transition_string = '_p1'
 
 cfg['samples']['111_1_sil18'] = {
@@ -549,21 +551,21 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
 
 ## decide which parameters to use.
 if pulse_shape == 'Hermite':
-    fast_pi_duration, fast_pi_amp, fast_pi2_duration, fast_pi2_amp = Hermite_pi_duration, Hermite_pi_amp, Hermite_pi2_duration, Hermite_pi2_amp
+    fast_pi_length, fast_pi_amp, fast_pi2_length, fast_pi2_amp = Hermite_pi_length, Hermite_pi_amp, Hermite_pi2_length, Hermite_pi2_amp
     cfg['samples']['111_1_sil18']['mw_mod_frq'] = (0)*1e6
 else:
     if pulse_shape != 'Square':
         print 'no valid pulses defined, using Square pulse params'
-    fast_pi_duration, fast_pi_amp, fast_pi2_duration, fast_pi2_amp = Square_pi_duration, Square_pi_amp, Square_pi2_duration, Square_pi2_amp
+    fast_pi_length, fast_pi_amp, fast_pi2_length, fast_pi2_amp = Square_pi_length, Square_pi_amp, Square_pi2_length, Square_pi2_amp
     cfg['samples']['111_1_sil18']['mw_mod_frq'] = (0)*1e6
 
 if mw2_pulse_shape == 'Hermite':
     print 'using hermites on mw2'
-    mw2_fast_pi_duration, mw2_fast_pi_amp, mw2_fast_pi2_duration, mw2_fast_pi2_amp = mw2_Hermite_pi_duration, mw2_Hermite_pi_amp, mw2_Hermite_pi2_duration, mw2_Hermite_pi2_amp
+    mw2_fast_pi_length, mw2_fast_pi_amp, mw2_fast_pi2_length, mw2_fast_pi2_amp = mw2_Hermite_pi_length, mw2_Hermite_pi_amp, mw2_Hermite_pi2_length, mw2_Hermite_pi2_amp
 else:
     if mw2_pulse_shape != 'Square':
         print 'no valid pulses defined, using Square pulse params'
-    mw2_fast_pi_duration, mw2_fast_pi_amp, mw2_fast_pi2_duration, mw2_fast_pi2_amp = mw2_Square_pi_duration, mw2_Square_pi_amp, mw2_Square_pi2_duration, mw2_Square_pi2_amp
+    mw2_fast_pi_length, mw2_fast_pi_amp, mw2_fast_pi2_length, mw2_fast_pi2_amp = mw2_Square_pi_length, mw2_Square_pi_amp, mw2_Square_pi2_length, mw2_Square_pi2_amp
     
 
 
@@ -572,70 +574,83 @@ cfg['samples']['111_1_sil18']['mw2_frq'] = mw2_freq
 f_mod_0     = cfg['samples']['111_1_sil18']['mw_mod_freq']
 
 cfg['protocols']['111_1_sil18']['pulses'] ={
-'MW_modulation_frequency'   :   f_mod_0,
+    'MW_modulation_frequency'   :   f_mod_0,
+    'MW_switch_channel'     :   'None', ### if you want to activate the switch, put to MW_switch
 
-'X_phase'                   :   90,
-'Y_phase'                   :   0,
+    'X_phase'                   :   90,
+    'Y_phase'                   :   0,
 
-# 'C13_X_phase' :0,
-# 'C13_Y_phase' :90,
+    # 'C13_X_phase' :0,
+    # 'C13_Y_phase' :90,
 
-'C13_X_phase' :0,
-'C13_Y_phase' :270,
-############
-#Pulse type
-###########
-'pulse_shape': pulse_shape,
+    'C13_X_phase' :0,
+    'C13_Y_phase' :270,
+    ############
+    #Pulse type
+    ###########
+    'pulse_shape': pulse_shape,
 
-'MW_pulse_mod_frequency' : f_mod_0,
+    'MW_pulse_mod_frequency' : f_mod_0,
 
-'fast_pi_mod_frq'           :  f_mod_0,
-'fast_pi2_mod_frq'          :  f_mod_0,
-'Hermite_fast_pi_mod_frq'   :  f_mod_0,
-'Hermite_fast_pi2_mod_frq'  :  f_mod_0,
+    'fast_pi_mod_frq'           :  f_mod_0,
+    'fast_pi2_mod_frq'          :  f_mod_0,
+    'Hermite_fast_pi_mod_frq'   :  f_mod_0,
+    'Hermite_fast_pi2_mod_frq'  :  f_mod_0,
 
-###############
-#
-#   General pulses used
-#
-#######
+    ###############
+    #
+    #   General pulses used
+    #
+    #######
 
-# Pulses short with switch 
-# #     ### Pi pulses, fast & hard 
-'fast_pi_duration'          : fast_pi_duration, #116e-9,    #250 MHz slow
-'fast_pi_amp'               :  fast_pi_amp, #without switch #0.469424,with switch  #250 MHz, slow
-'mw2_fast_pi_duration'          :  mw2_Square_pi_duration,    
-'mw2_fast_pi_amp'               :  mw2_Square_pi_amp, 
+    # Pulses short with switch 
+    # #     ### Pi pulses, fast & hard 
+    'fast_pi_duration'              : fast_pi_length, 
+    'mw2_fast_pi_duration'          :  mw2_Square_pi_length,    
 
-### Pi/2 pulses, fast & hard 
-'fast_pi2_duration'         :  fast_pi2_duration,#56e-9,#56e-9, #should be divisible by 4, slow
-'fast_pi2_amp'              :  fast_pi2_amp,#0.493036, # slow, only calibrated with 2 pulses
-'mw2_fast_pi2_duration'     :  mw2_fast_pi2_duration,#56e-9,#56e-9, #should be divisible by 4, slow
-'mw2_fast_pi2_amp'          :  mw2_fast_pi2_amp,#0.493036, # slow, only calibrated with 2 pulses
+    ### Pi/2 pulses, fast & hard 
+    'fast_pi2_duration'         :  fast_pi2_length,
+    'mw2_fast_pi2_duration'     :  mw2_fast_pi2_length,
 
-####################
-#
-#   HERMITE
-#
-#####################
+    #####################
+    #                   #
+    #   HERMITE         #
+    #                   #
+    #####################
 
-'Hermite_fast_pi_duration'          :  Hermite_pi_duration,    
-'Hermite_fast_pi_amp'               :  Hermite_pi_amp,
-'mw2_Hermite_fast_pi_duration'      :  mw2_Hermite_pi_duration,
-'mw2_Hermite_fast_pi_amp'           :  mw2_Hermite_pi_amp,
-'BB1_fast_pi_duration'              :  BB1_pi_duration,
-'BB1_fast_pi_amp'                   :  BB1_pi_amplitude,
-'Hermite_fast_pi2_duration'         :  Hermite_pi2_duration,#56e-9, #should be divisible by 4, slow
-'Hermite_fast_pi2_amp'              :  Hermite_pi2_amp, # slow, only calibrated with 2 pulses
-'mw2_Hermite_fast_pi2_duration'     :  mw2_Hermite_pi2_duration,
-'mw2_Hermite_fast_pi2_amp'          :  mw2_Hermite_pi2_amp,
+    'Hermite_pi_length'                 :  Hermite_pi_length,    
+    'Hermite_pi_amp'                    :  Hermite_pi_amp,
+    'mw2_Hermite_pi_length'             :  mw2_Hermite_pi_length,
+    'mw2_Hermite_pi_amp'                :  mw2_Hermite_pi_amp,
+    'BB1_fast_pi_duration'              :  BB1_pi_length,
+    'BB1_fast_pi_amp'                   :  BB1_pi_amplitude,
+    'Hermite_pi2_length'                :  Hermite_pi2_length,#56e-9, #should be divisible by 4, slow
+    'Hermite_pi2_amp'                   :  Hermite_pi2_amp, # slow, only calibrated with 2 pulses
+    'mw2_Hermite_pi2_length'            :  mw2_Hermite_pi2_length,
+    'mw2_Hermite_pi2_amp'               :  mw2_Hermite_pi2_amp,
 
-### MBI pulses ###
-'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
-'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
-'AWG_MBI_MW_pulse_amp'      :   AWG_MBI_MW_pulse_amp,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
-# 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
-'AWG_MBI_MW_pulse_duration' :   3000e-9}
+
+    #####################
+    #                   #
+    #   Square pulses   #
+    #                   #
+    #####################
+
+    'Square_pi_length'                 :  Square_pi_length,    
+    'Square_pi_amp'                    :  Square_pi_amp,
+    'mw2_Square_pi_length'             :  mw2_Square_pi_length,
+    'mw2_Square_pi_amp'                :  mw2_Square_pi_amp,
+    'Square_pi2_length'                :  Square_pi2_length,#56e-9, #should be divisible by 4, slow
+    'Square_pi2_amp'                   :  Square_pi2_amp, # slow, only calibrated with 2 pulses
+    'mw2_Square_pi2_length'            :  mw2_Square_pi2_length,
+    'mw2_Square_pi2_amp'               :  mw2_Square_pi2_amp,
+
+    ### MBI pulses ###
+    'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
+    'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
+    'AWG_MBI_MW_pulse_amp'      :   AWG_MBI_MW_pulse_amp,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
+    # 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
+    'AWG_MBI_MW_pulse_duration' :   3000e-9}
 
     ###############################
     ### Nitrogen MBI parameters ###
@@ -647,7 +662,6 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 'Ex_SP_amplitude'           :           15e-9,   #15e-9,#15e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
 'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
-
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           0.65e-9,
 'MBI_duration'              :           40,
@@ -696,7 +710,6 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI_shutter'] ={
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
-
 'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
 'MBI_threshold'             :           N_MBI_threshold,
 'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
@@ -909,6 +922,8 @@ CORPSE_frq=  5.305e6
 cfg['protocols']['Hans_sil1']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
 
+'pulse_shape'   :   pulse_shape,
+
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
 
@@ -917,7 +932,6 @@ cfg['protocols']['Hans_sil1']['pulses'] ={
 
 'C13_X_phase' :0,
 'C13_Y_phase' :270,
-
 
 ### nescessary to use the new standard espin script (140729 - Julia, not checked fully yet) 
 'CORPSE_rabi_frequency' : CORPSE_frq,
@@ -1190,11 +1204,11 @@ cfg['protocols']['Hans_sil4']['Magnetometry'] ={
 'CORPSE_pi2_amp'    :           0.811,
 'CORPSE_frq'  :  CORPSE_frq,
 'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
- 'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
- 'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
- 'CORPSE_pi2_24p3_duration': 384.3/CORPSE_frq/360.,
- 'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
- 'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.}
+'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+'CORPSE_pi2_24p3_duration': 384.3/CORPSE_frq/360.,
+'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.}
 
 
 
@@ -1273,6 +1287,8 @@ f_MBI = f_mod_0 - N_hf_split
 
 cfg['protocols']['Hans_sil4']['pulses'] ={
 'MW_modulation_frequency'   :   f_mod_0,
+
+'pulse_shape'   :   pulse_shape,
 'X_phase'                   :   90,
 'Y_phase'                   :   0,
 
