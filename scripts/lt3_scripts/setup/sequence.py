@@ -21,7 +21,7 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=289e-9, active=True)
+    high=2.0, low=0, offset=0., delay=269e-9, active=True) #for SGS100. was a delay of 289 for SMB100
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=230e-9, active=True)  #230e-9
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
@@ -51,7 +51,7 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=558e-9, active=True) #617 ns for normal pulses 554
+    high=1.0, low=-1.0, offset=0.0, delay=576e-9, active=True) #617 ns for normal pulses 554
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 
 

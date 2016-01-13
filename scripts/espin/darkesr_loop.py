@@ -14,6 +14,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
+import time
 #reload(funcs)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -33,9 +34,9 @@ def darkesr(name):
 
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
-    m.params['repetitions']  = 1000
-    m.params['range']        = 6e6
-    m.params['pts'] = 121
+    m.params['repetitions']  = 2000
+    m.params['range']        = 1.e6
+    m.params['pts'] = 81
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
     m.params['mw_power'] = 20
@@ -70,7 +71,11 @@ def darkesrp1(name):
     # m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['mw_frq']         = m.params['ms+1_cntr_frq']-43e6# - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     m.params['mw_power'] = 20
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 1000
+    m.params['range']        = 5e6
+    m.params['pts'] = 81
+    m.params['pulse_length'] = m.params['DESR_pulse_duration'] #2.1e-6 changed to msmt params # NK 2015-05 27
+    m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
 
     m.params['ssbmod_frq_start'] = 43e6 - m.params['range']  
     m.params['ssbmod_frq_stop'] = 43e6 + m.params['range'] 
@@ -82,47 +87,48 @@ def darkesrp1(name):
     m.save()
     m.finish()
 
-def Generaldarkesr(name):
-    '''dark ESR on the 0 <-> -1 transition
-    '''
 
-    m = pulsar_msmt.GeneralDarkESR(name)
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(2)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
 
-    m.params['ssmod_detuning'] = m.params['desr_modulation_frequency']
-    m.params['mw_frq']       = m.params['ms-1_cntr_frq'] - m.params['ssmod_detuning'] #MW source frequency, detuned from the target
-    m.params['repetitions']  = 750
-    m.params['range']        = 2.35e6
-    m.params['pts'] = 41
-    m.params['mw_power']=m.params['desr_MW_power']
-    m.params['Ex_SP_amplitude']=0
+def optimize_NV(cycles = 1):
+    qt.msleep(2)
+    # AWG.clear_visa()
+    stools.turn_off_all_lasers()
+    qt.msleep(1)
+    GreenAOM.set_power(12e-6)
+    optimiz0r.optimize(dims=['x','y','z','x','y'], cycles = cycles)
+    stools.turn_off_all_lasers()
 
-    m.params['ssbmod_frq_start'] = m.params['ssmod_detuning'] - m.params['range']
-    m.params['ssbmod_frq_stop']  = m.params['ssmod_detuning'] + m.params['range']
-    list_swp_pts =np.linspace(m.params['ssbmod_frq_start'],m.params['ssbmod_frq_stop'], m.params['pts'])
-    m.params['sweep_pts'] = (np.array(list_swp_pts) +  m.params['mw_frq'])*1e-9
-    
-    m.params['pulse_shape']='Square'
-    m.params['pulse_type'] = m.params['pulse_shape'] 
-    desr_pi = ps.desr_pulse(m)
-    print desr_pi
-    m.params['MW_pi_duration'] = m.params['desr_pulse_duration']
-    m.autoconfig()
-    #m.params['sweep_pts']=m.params['pts']
-    #print m.params['MW_pi_duration']
-    m.generate_sequence(upload=True,pulse_pi = desr_pi)
-    m.run()
-    m.save()
-    m.finish()
-    
 
 if __name__ == '__main__':
-    darkesr(SAMPLE_CFG)
-    # darkesrp1(SAMPLE_CFG)
-    
+
+
+    breakstatement = False
+
+    start_time = time.time()
+
+
+    while abs(time.time()- start_time) < 12*60*60: ### 12 hours of measurement. HOOORAY!
+        #some info
+        print 'Time until I stop', 12*60*60 - (time.time()- start_time)
+
+        ### stop experiment? Press q.
+        breakstatement = show_stopper()
+        if breakstatement: break
+
+    ### run experiment
+        darkesr(SAMPLE_CFG)
+
+        optimize_NV()
+
+        # print 'last optimize', 0.5*60*60 - (time.time()-last_optimize)
+        # if abs(time.time()-last_optimize) > 0.5*60*60:
+        #     optimize()
+        #     last_optimize = time.time()

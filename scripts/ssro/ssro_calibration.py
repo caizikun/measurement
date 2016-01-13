@@ -20,7 +20,7 @@ def ssrocalibration(name, **additional_params):
     m.params.from_dict(additional_params)
 
     # parameters
-    e_sp = m.params['Ex_SP_amplitude'] 
+    e_sp = m.params['Ex_SP_calib_amplitude']
     a_sp =  m.params['A_SP_amplitude']
 
     # ms = 0 calibration

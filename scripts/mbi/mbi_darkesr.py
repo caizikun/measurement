@@ -40,7 +40,7 @@ def run(name, mw_switch = False):
     
 
     print m.params['MBI_threshold']
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
     print m.params['AWG_MBI_MW_pulse_mod_frq']
 

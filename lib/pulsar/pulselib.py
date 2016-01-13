@@ -59,7 +59,7 @@ class MW_IQmod_pulse(pulse.Pulse):
         # self.Sw_channel = 'MW_switch'
         # self.channels = [I_channel, Q_channel, PM_channel, 'MW_switch']
         # For implementation of MW Switch (has been implemented on lt2)
-        if 'Sw_channel' in kw:
+        if 'Sw_channel' in kw and kw['Sw_channel'] != 'None':
             self.Sw_channel = kw['Sw_channel']
             self.channels.append(self.Sw_channel)
 
@@ -722,12 +722,15 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
 
     def chan_wf(self, chan, tvals):
         if chan == self.PM_channel:
+
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
         elif hasattr(self,'Sw_channel') and chan == self.Sw_channel: # Sw channel is digital, just like PM mod channel
+
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
         else: 
+
             t=tvals-tvals[0] 
             # env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
             if self.pi2_pulse : # for  Hermite 90deg pulse

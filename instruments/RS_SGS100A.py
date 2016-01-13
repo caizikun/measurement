@@ -1,20 +1,5 @@
 # RS_SGS100A.py class, to perform the communication between the Wrapper and the device
-# Pieter de Groot <pieterdegroot@gmail.com>, 2008
-# Martijn Schaafsma <qtlab@mcschaafsma.nl>, 2008
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+# AR and NK 2015
 
 from instrument import Instrument
 import visa
@@ -86,7 +71,7 @@ class RS_SGS100A(Instrument):
         reset=<bool>)
     '''
 
-    def __init__(self, name, address, reset=False, max_cw_pwr = -5):
+    def __init__(self, name, address, reset=False,max_cw_pwr=-5):
         '''
         Initializes the RS_SGS100A, and communicates with the wrapper.
 
@@ -124,11 +109,42 @@ class RS_SGS100A(Instrument):
             'status', type=types.StringType,
             flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET)
         self.add_parameter(
-            'pulsemod_state', type=types.StringType,
+            'pulm', type=types.StringType,
             flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET)
         self.add_parameter(
-            'pulsemod_source', type=types.StringType,
+            'iq', type=types.StringType,
             flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET)
+        # self.add_parameter(
+        #     'pulsemod_source', type=types.StringType,
+        #     flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET)
+
+
+        self.add_parameter('sweep_frequency_start', type=types.FloatType,
+            flags=Instrument.FLAG_SET,
+            minval=9e3, maxval=40e9,
+            units='Hz', format='%.04e',
+            tags=['sweep'])
+        
+        self.add_parameter('sweep_frequency_stop', type=types.FloatType,
+            flags=Instrument.FLAG_SET,
+            minval=9e3, maxval=40e9,
+            units='Hz', format='%.04e',
+            tags=['sweep'])
+        
+        self.add_parameter('sweep_frequency_step', type=types.FloatType,
+            flags=Instrument.FLAG_SET,
+            minval=1, maxval=1e9,
+            units='Hz', format='%.04e',
+            tags=['sweep'])
+        
+        self.add_parameter('max_cw_pwr',
+                type=types.FloatType,
+                flags=Instrument.FLAG_GETSET,
+                minval=-30, maxval=30, units='dBm')
+
+
+        # can be different from device to device, set by argument
+        self.set_max_cw_pwr(max_cw_pwr)
         self.add_function('reset')
         self.add_function('get_all')
 
@@ -138,6 +154,27 @@ class RS_SGS100A(Instrument):
             self.get_all()
 
     # Functions
+
+    def perform_internal_adjustments(self,all_f = False,cal_IQ_mod=True):
+        status=self.get_status()
+        self.off()
+        if all_f:
+            s=self._visainstrument.ask('CAL:ALL:MEAS?')
+        else:
+            s=self._visainstrument.ask('CAL:FREQ:MEAS?')
+            print 'Frequency calibrated'
+            s=self._visainstrument.ask('CAL:LEV:MEAS?')
+            print 'Level calibrated'
+            if cal_IQ_mod:
+                self.set_iq('on')
+                s=self._visainstrument.ask('CAL:IQM:LOC?')
+                print 'IQ modulator calibrated'
+        
+        self.set_status('off')
+        self.set_pulm('off')
+        self.set_iq('off')
+        sleep(0.1)    
+        
     def reset(self):
         '''
         Resets the instrument to default values
@@ -196,7 +233,47 @@ class RS_SGS100A(Instrument):
         logging.debug(__name__ + ' : setting frequency to %s GHz' % frequency)
         self._visainstrument.write('SOUR:FREQ %s' % frequency)
 
-    def do_get_power(self):
+    def _do_set_sweep_frequency_start(self, frequency):
+        '''
+        Set start frequency of sweep
+
+        Input:
+            frequency (float) : frequency in Hz
+
+        Output:
+            None
+        '''
+        logging.debug(__name__ + ' : setting sweep frequency start to %s GHz' % frequency)
+        self._visainstrument.write('SOUR:FREQ:STAR %e' % frequency)
+
+    def _do_set_sweep_frequency_stop(self, frequency):
+        '''
+        Set stop frequency of sweep
+
+        Input:
+            frequency (float) : frequency in Hz
+
+        Output:
+            None
+        '''
+        logging.debug(__name__ + ' : setting sweep frequency stop to %s GHz' % frequency)
+        self._visainstrument.write('SOUR:FREQ:STOP %e' % frequency)
+
+    def _do_set_sweep_frequency_step(self, frequency):
+        '''
+        Set step frequency of sweep
+
+        Input:
+            frequency (float) : frequency in Hz
+
+        Output:
+            None
+        '''
+        logging.debug(__name__ + ' : setting sweep frequency step to %s GHz' % frequency)
+        self._visainstrument.write('SOUR:SWE:FREQ:STEP:LIN %e' % frequency)
+
+
+    def _do_get_power(self):
         '''
         Get output power from device
 
@@ -209,7 +286,7 @@ class RS_SGS100A(Instrument):
         logging.debug(__name__ + ' : reading power from instrument')
         return float(self._visainstrument.ask('SOUR:POW?'))
 
-    def do_set_power(self, power):
+    def _do_set_power(self,power):
         '''
         Set output power of device
 
@@ -220,7 +297,25 @@ class RS_SGS100A(Instrument):
             None
         '''
         logging.debug(__name__ + ' : setting power to %s dBm' % power)
-        self._visainstrument.write('SOUR:POW %e' % power)
+
+        if self.get_pulm() == False and power > self.get_max_cw_pwr():
+            logging.warning(__name__ + ' : power exceeds max cw power; power not set. ')
+            raise ValueError('power exceeds max cw power. The pulse modulation is off')
+            
+        else:
+            self._visainstrument.write('SOUR:POW %e' % power)
+
+    def _do_set_max_cw_pwr(self, pwr):
+        self._max_cw_pwr = pwr
+        if self.get_power() > pwr and self.get_pulm() == 'off' and self.get_status() == 'on':  
+            self.set_status('off')
+            logging.warning(__name__ + ' : power exceeds max cw power; RF off')
+            raise ValueError('power exceeds max cw power')
+
+        return
+
+    def _do_get_max_cw_pwr(self):
+        return self._max_cw_pwr
 
     def do_get_status(self):
         '''
@@ -292,7 +387,7 @@ class RS_SGS100A(Instrument):
         self._phase_offset = self._visainstrument.ask('SOUR:PHAS?')
         return self._phase_offset
 
-    def do_set_pulsemod_state(self, state):
+    def do_set_pulm(self, state):
         if (state.upper() == 'ON'):
             state_s = 'ON'
         elif (state.upper() == 'OFF'):
@@ -304,11 +399,44 @@ class RS_SGS100A(Instrument):
         self._visainstrument.write(':PULM:SOUR EXT')
         self._visainstrument.write(':SOUR:PULM:STAT %s' % state_s)
 
-    def do_get_pulsemod_state(self):
+    def do_get_pulm(self):
         return self._visainstrument.ask(':SOUR:PULM:STAT?') == '1'
 
-    def do_set_pulsemod_source(self, source):
-        self._visainstrument.write('SOUR:PULM:SOUR %s' % source)
+    def _do_get_iq(self):
+        '''
+        Get IQ modulation status from instrument
+        Input:
+            None
+        Output:
+            iq (string) : 'on' or 'off'
+        '''
+        logging.debug(__name__ + ' : reading IQ modulation status from instrument')
+        stat = self._visainstrument.ask('IQ:STAT?')
 
-    def do_get_pulsemod_source(self):
-        return self._visainstrument.ask('SOUR:PULM:SOUR?')
+        if stat == '1':
+            return 'on'
+        elif stat == '0':
+            return 'off'
+        else:
+            raise ValueError('IQ modulation status not specified : %s' % stat)
+
+    def _do_set_iq(self,iq):
+        '''
+        Switch external IQ modulation
+        Input:
+            iq (string) : 'on' or 'off'
+        Output:
+            None
+        '''
+        logging.debug(__name__ + ' : setting external IQ modulation to "%s"' % iq)
+        if iq.upper() in ('ON', 'OFF'):
+            iq = iq.upper()
+        else:
+            raise ValueError('set_iq(): can only set on or off')
+        self._visainstrument.write('IQ:SOUR ANAL')
+        self._visainstrument.write('IQ:STAT %s'%iq)
+    # def do_set_pulsemod_source(self, source):
+    #     self._visainstrument.write('SOUR:PULM:SOUR %s' % source)
+
+    # def do_get_pulsemod_source(self):
+    #     return self._visainstrument.ask('SOUR:PULM:SOUR?')

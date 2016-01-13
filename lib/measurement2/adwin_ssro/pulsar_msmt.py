@@ -1593,7 +1593,10 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             length = 15000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
-
+        if hasattr(X,'Sw_channel'):
+            print X.Sw_channel
+        else:
+            print 'no switch found'
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
 

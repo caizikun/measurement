@@ -1646,9 +1646,6 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
-
-
-
         'general_pulses_sweep' : {
                 'index' : 9,
                 'file' : 'general_pulses_sweep.TB9',
@@ -2508,7 +2505,7 @@ config['adwin_pro_processes'] = {
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
-                    ['AWG_done_DI_channel'         ,   8],
+                    ['AWG_done_DI_channel'         ,  8],
                     ['send_AWG_start'              ,   0],
                     ['wait_for_AWG_done'           ,   0],
                     ['SP_duration'                 , 100],
@@ -2539,6 +2536,106 @@ config['adwin_pro_processes'] = {
                     },
                 },
 
+        'MBI' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one MBI step and can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'MBI_lt3.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['SP_E_duration'               , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['sweep_length'                ,  10],
+                    ['cycle_duration'              , 300],
+                    ['AWG_event_jump_DO_channel'   ,   19],  
+                    ['MBI_duration'                ,   1],
+                    ['max_MBI_attempts'            ,   1],
+                    ['MBI_threshold'               ,   0],
+                    ['nr_of_ROsequences'           ,   1],
+                    ['wait_after_RO_pulse_duration',   3],
+                    ['N_randomize_duration'        ,  50],
+
+                    #Shutter
+                    ['use_shutter'                 ,   0],
+                    ['Shutter_channel'             ,   4], 
+                    ['Shutter_rise_time'           ,    3000],    
+                    ['Shutter_fall_time'           ,    3000], 
+                    ['Shutter_safety_time'          ,  50000],
+                    ],
+                    
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8],
+                    ['Ex_MBI_voltage'               , 0.8],
+                    ['Ex_N_randomize_voltage'       , 0.0],
+                    ['A_N_randomize_voltage'        , 0.0],
+                    ['repump_N_randomize_voltage'   , 0.0],
+                    ['A_SP_voltage_before_MBI'      , 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 84,
+                    'current mode': 87,
+                    'MBI start': 88,
+                    'ROseq_cntr': 90,
+                    },
+                'data_long' : {
+                    'MBI_attempts' : 24,
+                    'MBI_cycles' : 25,
+                    'ssro_results' : 27,
+                    'MBI_time' : 28,
+                    },
+                },
+
+        'bell_lt3' : {
+                'index' : 9,
+                'file' : 'bell_lt3.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_done_DI_channel'         ,   17],
+                    ['AWG_success_DI_channel'         ,  17],
+                    ['SP_duration'                 , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['remote_CR_DO_channel'        ,  15],
+                    ['SSRO_duration'               ,  50],
+                    ['wait_for_AWG_done'           ,   1],
+                    ['sequence_wait_time'          ,  10],
+                    ['wait_before_RO'              ,  10],
+                    ['invalid_data_marker_do_channel', 5],
+                    ['rnd_output_di_channel'       ,  19],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'        , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'        , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'CR_timer': 27,
+                    'CR_hist':  28,
+                    },
+                },
         'bell_lt4' : {
                 'index' : 9,
                 'file' : 'bell_lt4.TB9',
@@ -2571,47 +2668,6 @@ config['adwin_pro_processes'] = {
                 'params_float_length' : 10,
                 'par' : {
                     'remote_mode': 60,
-                    'local_mode': 61,
-                    'timeout_events': 62,
-                    'stop_flag': 63,
-                    'completed_reps' : 73,
-                    'entanglement_events': 77,
-                    },
-                'data_long' : {
-                    'SP_hist' : 24,
-                    'RO_data' : 25,
-                    'CR_timer': 27,
-                    'CR_hist':  28,
-                    },
-                },
-        'bell_lt3' : {
-                'index' : 9,
-                'file' : 'bell_lt3.TB9',
-                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
-                'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_done_DI_channel'         ,   17],
-                    ['AWG_success_DI_channel'         ,  17],
-                    ['SP_duration'                 , 100],
-                    ['wait_after_pulse_duration'   ,   1],
-                    ['remote_CR_DO_channel'        ,  15],
-                    ['SSRO_duration'               ,  50],
-                    ['wait_for_AWG_done'           ,   1],
-                    ['sequence_wait_time'          ,  10],
-                    ['wait_before_RO'              ,  10],
-                    ['invalid_data_marker_do_channel', 5],
-                    ['rnd_output_di_channel'       ,  19],
-                    ],
-                'params_long_index'  : 20,
-                'params_long_length' : 25,
-                'params_float' : [
-                    ['Ex_SP_voltage'        , 0.8],
-                    ['A_SP_voltage'        , 0.8],
-                    ['Ex_RO_voltage'        , 0.8],
-                    ['A_RO_voltage'        , 0.8],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 10,
-                'par' : {
                     'local_mode': 61,
                     'timeout_events': 62,
                     'stop_flag': 63,

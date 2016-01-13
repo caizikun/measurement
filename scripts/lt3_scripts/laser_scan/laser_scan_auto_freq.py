@@ -547,15 +547,15 @@ def single_scan(name):
     do_MW=True
     if do_MW:
         m.mw.set_power(-10)
-        m.mw.set_frequency(2.809e9)
+        m.mw.set_frequency(1.669252e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
     #m.scan_to_frequency(65)
-    m.red_scan(60, 80, voltage_step=0.01, integration_time_ms=20, power = 3e-9)  #0.6e-9
+    # m.red_scan(60, 80, voltage_step=0.01, integration_time_ms=20, power = 3e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
-    #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
+    m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     #m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     if do_MW:
