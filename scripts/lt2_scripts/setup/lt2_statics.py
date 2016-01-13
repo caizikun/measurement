@@ -14,6 +14,7 @@ else:
     ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.green_aom
 
 pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SMB100']
-pulsar_msmt.PulsarMeasurement.mwsrc2 = qt.instruments['noIQ_SMB100']
+#pulsar_msmt.PulsarMeasurement.mwsrc2 = qt.instruments['noIQ_SMB100']
+pulsar_msmt.PulsarMeasurement.mwsrc2 = qt.instruments['SGS100A']
 pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
 pulsar_msmt.PulsarMeasurement.physical_adwin = qt.instruments['physical_adwin']

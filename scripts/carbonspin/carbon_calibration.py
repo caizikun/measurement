@@ -44,7 +44,7 @@ f_ms0 = False
 f_ms1 = False
 self_phase_calibration = True
 
-cross_phase_calibration = False
+cross_phase_calibration = True
 cross_phase_steps       = 1
 
 debug = False

@@ -34,7 +34,7 @@ qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
 
 # second MW source
 qt.pulsar.define_channel(id='ch2', name='MW2', type='analog', high=0.9,
-    low=-0.9, offset=-.6, delay=spin_of+240e-9, active=True)
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='MW2_pulsemod', type='marker',
     high=2.0, low=0, offset=0., delay=spin_of+240e-9, active=True)
 

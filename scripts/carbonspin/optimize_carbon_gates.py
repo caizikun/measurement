@@ -32,6 +32,7 @@ def put_sweep_together(Ns,taus):
 	px_list = ['X_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
 	py_list = ['Y_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
 
+
 	## having fun with slices
 	com_list = px_list + py_list
 
@@ -117,7 +118,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [5]
+	carbons = [1,2,5]
 
 
 	brekast = False

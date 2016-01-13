@@ -16,7 +16,7 @@ NOTE: do adjust the MW duration & amplitudes to refer to the proper type of puls
 """
 
 
-def calibrate_pi_pulse(name, multiplicity=1, debug=False):
+def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False):
     m = pulsar_msmt.GeneralPiCalibrationSingleElement(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -34,27 +34,20 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['pts'] = pts
     # m.params['repetitions'] = 3000 if multiplicity == 1 else 5000
     m.params['repetitions'] = 600
-    rng = 0.3 if multiplicity == 1 else 0.07
+    rng = 0.3 if multiplicity == 1 else 0.04
 
-    ### Pulse settings
     m.params['multiplicity'] = np.ones(pts)*multiplicity
 
-    # For square pulses
     if m.params['pulse_shape'] == 'Square':
-        m.params['MW_duration'] = m.params['fast_pi_duration']
-        m.params['MW_pulse_amplitudes'] = m.params['fast_pi_amp'] + np.linspace(-rng, rng, pts)
+        m.params['MW_duration'] = m.params['mw2_fast_pi_duration'] if mw2 else m.params['fast_pi_duration']
+        m.params['MW_pulse_amplitudes'] = m.params['mw2_fast_pi_amp'] + np.linspace(-rng, rng, pts) if mw2 else m.params['fast_pi_amp'] + np.linspace(-rng, rng, pts)
     elif m.params['pulse_shape'] == 'Hermite':
-        m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
-        m.params['MW_pulse_amplitudes'] = m.params['Hermite_fast_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+        m.params['MW_duration'] = m.params['mw2_Hermite_fast_pi_duration'] if mw2 else m.params['Hermite_fast_pi_duration']
+        m.params['MW_pulse_amplitudes'] =m.params['mw2_Hermite_fast_pi_amp'] + np.linspace(-rng, rng, pts)  if mw2 else m.params['Hermite_fast_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     else:
-        print 'Pulse shape not well defined'
-    # For hermite pulses
-    # m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
-    # m.params['MW_pulse_amplitudes'] =  m.params['Hermite_fast_pi_amp'] + np.linspace(-0.04, 0.02, pts)  #XXXXX -0.05, 0.05 
-
+        print 'Pulse shape not defined'
+ 
     m.params['delay_reps'] = 195 ## Currently not used
-    # m.params['mw_power'] = 20 ###put in msmt_params.
-    
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
@@ -64,13 +57,13 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
 
     # Add Hermite X pulse
     # m.MW_pi = hermite_Xpi(m)
-    m.MW_pi = pulse.cp(ps.X_pulse(m),phase = 0)
+    m.MW_pi = pulse.cp(ps.pi_pulse_MW2(m), phase = 0) if mw2 else pulse.cp(ps.X_pulse(m), phase = 0)
 
     print 'duration ', m.params['MW_duration']
     print 'amp ', m.params['MW_pulse_amplitudes'][0]
-    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, mw2=True)
 
-def calibrate_pi_pulse_SecondSource(name, multiplicity=1, debug=False):
+def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):
     m = pulsar_msmt.General_mw2_PiCalibrationSingleElement(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -357,9 +350,9 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
 
 if __name__ == '__main__':
-    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False)
-    #calibrate_pi_pulse_SecondSource(SAMPLE_CFG + 'SquarePi_MW2', multiplicity =5, debug = False)
+    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
+    #calibrate_pi_pulse_NoIQSource(SAMPLE_CFG + 'SquarePi_MW2', multiplicity =5, debug = False)
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    #calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

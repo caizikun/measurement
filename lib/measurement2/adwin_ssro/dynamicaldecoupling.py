@@ -634,6 +634,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         for i,g in enumerate(Gate_sequence):
 
+
+
             ###########################################
             ### Keeping track of the electron state ###
             ###########################################
@@ -644,13 +646,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 else:
                     g.el_state_before_gate =Gate_sequence[i-1].el_state_after_gate
 
-            if i!= 0:
-                g.C_phases_before_gate = Gate_sequence[i-1].C_phases_after_gate
-                #print 'i',i
-                #print 'C_phases_before_gate',g.C_phases_before_gate
-
             if g.el_state_after_gate == None:
                 g.el_state_after_gate = g.el_state_before_gate
+
+
+            if i!= 0:
+                g.C_phases_before_gate = Gate_sequence[i-1].C_phases_after_gate
+
 
             ###########################
             ### Decoupling elements ###
@@ -3387,12 +3389,10 @@ class MBI_C13(DynamicalDecoupling):
 
     def initialize_electron_sequence(self,
         prefix                  = 'init_e',
+        el_after_c_init         ='0',
         wait_for_trigger        = True,
         elec_init_state         = 'Z',
-        pt                      = 1,
-        addressed_carbon        = 1,
-        el_after_c_init           = '0',
-        do_wait_after_pi        = False):
+        pt                      = 1,):
         '''
         By SK
         Method to apply electron gates
@@ -3417,26 +3417,25 @@ class MBI_C13(DynamicalDecoupling):
         #     phase = self.params['X_phase'],
         #     el_state_after_gate = '1')
 
-        elec_minZ = Gate(prefix+str(addressed_carbon)+'_elec_X_pt'+str(pt),'electron_Gate',
+        elec_minZ = Gate(prefix+'_elec_X_pt'+str(pt),'electron_Gate',
             Gate_operation='pi',
             phase = self.params['X_phase'],
             el_state_after_gate = '1')
         ## el_state_after_gate
 
-
-        elec_toX = Gate(prefix+str(addressed_carbon)+'_y_pt'+str(pt),'electron_Gate',
+        elec_toX = Gate(prefix+'_y_pt'+str(pt),'electron_Gate',
             Gate_operation='pi2',
             phase = self.params['Y_phase'])
 
-        elec_minX = Gate(prefix+str(addressed_carbon)+'_-y_pt'+str(pt),'electron_Gate',
+        elec_minX = Gate(prefix+'_-y_pt'+str(pt),'electron_Gate',
             Gate_operation='pi2',
             phase = self.params['Y_phase'] + 180)
 
-        elec_toY = Gate(prefix+str(addressed_carbon)+'_x_pt'+str(pt),'electron_Gate',
+        elec_toY = Gate(prefix+'_x_pt'+str(pt),'electron_Gate',
             Gate_operation='pi2',
             phase = self.params['X_phase'])
 
-        elec_minY = Gate(prefix+str(addressed_carbon)+'_-x_pt'+str(pt),'electron_Gate',
+        elec_minY = Gate(prefix+'_-x_pt'+str(pt),'electron_Gate',
             Gate_operation='pi2',
             phase = self.params['X_phase'] + 180)
 
@@ -3451,40 +3450,43 @@ class MBI_C13(DynamicalDecoupling):
         ### Apply electron gate
         electron_init_seq = []
         # check electron state
-        if elec_init_state in ['Z','-Z','X','-X','Y','-Y']:
+        if elec_init_state in ['Z','mZ','X','mX','Y','mY']:
             # electron either in 0 or 1, so rotate in one way or the opposite direction
             if el_after_c_init == '0':
-                if elec_init_state    == '-Z': ## -Z gate, i.e. rotation around X of pi
+                if elec_init_state    == 'mZ': ## -Z gate, i.e. rotation around X of pi
                     electron_init_seq.append(elec_minZ)
                 elif elec_init_state  == 'Z': ## Z is pass
                     pass
                 elif elec_init_state  == 'X': ## y pi/2 gate
                     electron_init_seq.append(elec_toX)
-                elif elec_init_state  == '-X': ## -y pi/2 gate
+                elif elec_init_state  == 'mX': ## -y pi/2 gate
                     electron_init_seq.append(elec_minX)
                 elif elec_init_state  == 'Y': ##  pi/2 around x gate
                     electron_init_seq.append(elec_toY)
-                elif elec_init_state  == '-Y': ## -pi/2 around x gate
+                elif elec_init_state  == 'mY': ## -pi/2 around x gate
                     electron_init_seq.append(elec_minY)
 
             elif el_after_c_init == '1':
                 if elec_init_state    == 'Z':  #Do nothing
                     electron_init_seq.append(elec_minZ)
-                elif elec_init_state  == '-Z': ## -Z gate, i.e. rotation around X of pi
+                elif elec_init_state  == 'mZ': ## -Z gate, i.e. rotation around X of pi
                     pass
                 elif elec_init_state  == 'X': ## y pi/2 gate
                     electron_init_seq.append(elec_minX)
-                elif elec_init_state  == '-X': ## -y pi/2 gate
+                elif elec_init_state  == 'mX': ## -y pi/2 gate
                     electron_init_seq.append(elec_toX)
                 elif elec_init_state  == 'Y': ##  pi/2 around x gate
                     electron_init_seq.append(elec_minY)
-                elif elec_init_state  == '-Y': ## -pi/2 around x gate
+                elif elec_init_state  == 'mY': ## -pi/2 around x gate
                     electron_init_seq.append(elec_toY)
             else:
                 print 'Incorrect initial electron state'
         else:
-            print 'Error, electron state (%s) not recognized, supported states are "X, -X, Y, -Y, Z, -Z"' %elec_init_state
+            print 'Error, electron state (%s) not recognized, supported states are "X, mX, Y, mY, Z, mZ"' %elec_init_state
             return False
+
+        # prints
+        print elec_init_state
 
         return electron_init_seq  
 
@@ -3518,17 +3520,17 @@ class MBI_C13(DynamicalDecoupling):
                 phase = self.params['Y_phase']+180)
 
 
-        C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_pt'+str(pt), 'Carbon_Gate',
+        C_init_Ren_y = Gate(prefix+str(addressed_carbon)+'_Ren_a_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
-                phase = self.params['C13_Y_phase'])
+                phase = self.params['C13_Y_phase']+180)
 
-        C_init_Ren_a2 = Gate(prefix+str(addressed_carbon)+'_Ren_a2_pt'+str(pt), 'Carbon_Gate',
+        C_init_Ren_x = Gate(prefix+str(addressed_carbon)+'_Ren_a2_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
 
 
     
-        carbon_swap_seq = [C_init_Ren_a2, C_init_y, C_init_Ren_a, C_init_y2]
+        carbon_swap_seq = [C_init_Ren_y, C_init_y, C_init_Ren_x, C_init_y2]
         if RO_after_swap == True:
             #### Includes repump###
             RO_electron = Gate(prefix+str(addressed_carbon)+'swap_RO_trig_pt'+str(pt),'Trigger',
@@ -3625,6 +3627,8 @@ class MBI_C13(DynamicalDecoupling):
         wait_for_trigger        put a wait for trigger in the first element of the sequence
         '''
 
+
+        # print 'el_state_in for the RO',el_state_in
         ##############################
         ### Check input parameters ###
         ##############################
@@ -3851,13 +3855,13 @@ class MBI_C13(DynamicalDecoupling):
 
                 ### Set the RO_phase
                 if RO_basis_list[kk] == 'X':
-                    RO_phase = self.params['C13_X_phase'] - phase_error[kk]
+                    RO_phase = 0 - phase_error[kk]
                 elif RO_basis_list[kk] == '-X':
-                    RO_phase = self.params['C13_X_phase']+180 - phase_error[kk]
+                    RO_phase = 180 - phase_error[kk]
                 elif RO_basis_list[kk] == 'Y':
-                    RO_phase = self.params['C13_Y_phase'] - phase_error[kk]
+                    RO_phase = 90 - phase_error[kk]
                 elif RO_basis_list[kk] == '-Y':
-                    RO_phase = self.params['C13_Y_phase']+180 - phase_error[kk]
+                    RO_phase = 270 - phase_error[kk]
                 elif RO_basis_list[kk] == '-Z':
                     RO_phase = np.mod(self.params['C13_Y_phase']+180*el_state_in,360)
                 elif RO_basis_list[kk] == 'Z':
@@ -3873,7 +3877,8 @@ class MBI_C13(DynamicalDecoupling):
                         N = self.params['N1_list'][pt],
                         tau = self.params['tau1_list'][pt], 
                         extra_phase_after_gate = phase_error[kk]))
-                
+                        
+                               
                 carbon_RO_seq.append(
                     Gate(prefix + str(carbon_nr) + '_Ren_b_' + str(pt), 'Carbon_Gate',
                         Carbon_ind      = carbon_nr,
@@ -3881,6 +3886,7 @@ class MBI_C13(DynamicalDecoupling):
                         N = self.params['N2_list'][pt],
                         tau = self.params['tau2_list'][pt],
                         extra_phase_after_gate = phase_error[kk]))
+                
 
 
 
@@ -7153,50 +7159,47 @@ class Two_QB_Swap_Sten(MBI_C13):
             #######################
 
             # It is for one carbon now. Rewrite for extenstion. Also you supply this in script. Think about it
-            kk = 0
            
             carbon_init_seq = self.initialize_carbon_sequence(
                 go_to_element         = mbi,
                 prefix                = 'init_C',
                 wait_for_trigger      = init_wait_for_trigger, 
                 pt                    = pt,
-                initialization_method = self.params['init_method_list'][kk],
-                C_init_state          = self.params['init_state_list'][kk],
-                addressed_carbon      = self.params['carbon_init_list'][kk],
-                #el_after_init         = self.params['el_after_init'],
+                initialization_method = self.params['init_method_list'][0],
+                C_init_state          = self.params['init_state_list'][0],
+                addressed_carbon      = self.params['carbon_init_list'][0],
                 do_wait_after_pi      = self.params['do_wait_after_pi'])
             gate_seq.extend(carbon_init_seq)
-
             ## CHECK THIS
-            init_wait_for_trigger = False
+            # init_wait_for_trigger = False
 
-            ###############################################################
-            # ELECTRON STATE PREPARE it is already in 0 after INIT carbon #
-            ###############################################################
+            # ###############################################################
+            # # ELECTRON STATE PREPARE it is already in 0 after INIT carbon #
+            # ###############################################################
             electron_init_seq = self.initialize_electron_sequence(
                 prefix                  = 'init_E',
                 elec_init_state         = self.params['elec_init_state'],
                 pt                      = pt,
-                addressed_carbon        = self.params['carbon_init_list'][kk],
                 el_after_c_init         = self.params['el_after_init'],
-                wait_for_trigger        = init_wait_for_trigger,
-                do_wait_after_pi        = self.params['do_wait_after_pi'])
+                wait_for_trigger        = init_wait_for_trigger)
             gate_seq.extend(electron_init_seq)
 
-            # # print "gate_seq after electron_init", gate_seq
+            # gate_seq.append(Gate('Wait_gate'+str(pt),'passive_elt',wait_time = 5e-6))
 
-            # ##########
-            # ## SWAP ##
-            # ##########
+            # # # print "gate_seq after electron_init", gate_seq
+
+            # # ##########
+            # # ## SWAP ##
+            # # ##########
             carbon_swap_seq = self.carbon_swap_gate(
                 go_to_element         = mbi,
                 prefix                = 'swap_C', 
                 pt                    = pt,
-                addressed_carbon      = self.params['carbon_init_list'][kk],
+                addressed_carbon      = self.params['carbon_init_list'][0],
                 RO_after_swap         = self.params['RO_after_swap'])
             gate_seq.extend(carbon_swap_seq)
 
-            # # print "gate_seq after swap", gate_seq
+            # # # print "gate_seq after swap", gate_seq
 
 
             ####################
@@ -10664,6 +10667,8 @@ class Zeno_OneQB(MBI_C13):
                                         el_state_after_gate = '1')])
 
 
+            print'this is the free evo time',self.params['free_evolution_time'][pt]
+
             ### waiting time without Zeno msmmts.
             if self.params['Nr_Zeno_parity_msmts']==0:
 
@@ -10817,8 +10822,8 @@ class Zeno_OneQB(MBI_C13):
                                      wait_time =10e-6)])
                     for kk in range(self.params['Nr_Zeno_parity_msmts']):
                         gate_seq.extend(self.generate_parity_msmt(pt, msmt=kk))
-                    gate_seq.extend([Gate('Last_pi_wait_'+str(pt),'passive_elt',
-                                     wait_time =10e-6)])
+                        gate_seq.extend([Gate('Last_pi_wait_'+str(pt)+str(kk),'passive_elt',
+                                         wait_time =10e-6)])
 
             if self.params['do_pi']:          
                 carbon_tomo_seq = self.readout_carbon_sequence(
@@ -13537,7 +13542,8 @@ class Sweep_Carbon_Gate_COMP(MBI_C13):
                 print self.params['init_method_list'][kk]
                 print self.params['init_state_list'][kk]
                 print self.params['carbon_init_list'][kk]
-                print 
+                print self.params['sweep_pts'][pt]
+                
 
                 carbon_init_seq = self.initialize_carbon_sequence_COMP(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',

@@ -702,13 +702,12 @@ class GaussianPulse_Envelope(MW_pulse):
             return env*wf
 
 
-
 class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', 0.1)
-        MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
-        self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.risetime)) # without MW switch: - 2 * self.PM_risetime
+        MW_IQmod_pulse.__init__(self, *arg, amplitude=1., **kw)
+        self.mu = kw.pop('mu', 0.5*self.length)
+        self.T_herm = kw.pop('T_herm', 0.1667*(self.length - 2 * self.risetime)) # without MW switch: - 2 * self.PM_risetime
         self.pi2_pulse = kw.pop('pi2_pulse', False)
 
 

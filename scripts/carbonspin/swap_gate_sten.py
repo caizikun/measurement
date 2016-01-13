@@ -49,14 +49,14 @@ def SWAP(name,
     
     ## Maybe? NEED TO VERIFY. DOES SOLVE PROBLEM OF THIS PARAMETER NOT BEING DEFINED
     'My doubts'
-    m.params['C13_MBI_threshold'] = 0
+    # m.params['C13_MBI_threshold'] = 0
 
     #Electron state after carbon initialisation
     m.params['el_after_init']               = '0'
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 10000
+    m.params['reps_per_ROsequence'] = 300
 
 
     ######################################
@@ -88,9 +88,9 @@ def SWAP(name,
     ##################################
     ### RO bases (sweep parameter) ###
     ##################################
-    m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
-    #m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
-    # m.params['Tomography Bases'] = [['X'],['Y']]
+    # m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
+    m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
+    # m.params['Tomography Bases'] = [['X'],['Z']]
     # m.params['Tomography Bases'] = [['X']]
     # m.params['Tomography Bases'] = [['Z'],['I']]
     
@@ -140,42 +140,83 @@ if __name__ == '__main__':
     print 'Starting Loop, engage!'
 
     breakst     = False
-    debug       = False
+    debug       = True
 
-    carbons     = [5]
-    init_method = 'swap'
-    el_state    = ['X']#,'-X','Y','-Y','Z','-Z']
-    RO_after_swap = [True, False]
-
-    for r in RO_after_swap:
-
-        if RO_after_swap == True:
-            c_i_t = [0, 1]
-        else:
-            c_i_t = [0]
+    ''' Non Loop'''
+    e = 'Y'
+    c = 5
+    c_i_t = [0,1]
+    RO_after_swap = True
+    RO_orientation = 'positive'
 
 
-        for e in el_state:
-            print 'Loop over electron state!'
+    print 'RO_after_swap = ' + str(RO_after_swap)
+    print 'carbon initialisation RO threshold = '+ str(c_i_t)
 
-            breakst = show_stopper()
-            if breakst:
-                break
+    print 'el_state = ' + str(e)
 
-            for c in carbons:
-                breakst = show_stopper()
-                if breakst:
-                    break
-
-                print 'Loop over carbons number!'
-
-                SWAP(SAMPLE + 'positive_'+str(c)+'_swap_elState'+str(e)+'_', el_RO= 'positive', carbon = c
-                    ,debug = debug, elec_init_state = e, RO_after_swap = RO_after_swap,
+    SWAP(SAMPLE + '_carbon' + str(c) +'_'+RO_orientation+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
+                    el_RO= RO_orientation, carbon = c
+                    ,debug = debug, elec_init_state = e,
                     carbon_init_thresholds = c_i_t)
 
+    print 'Done with non-loop part'
 
-                # SWAP(SAMPLE + 'negative_'+str(c)+'_swap_', el_RO= 'positive', carbon = c
-                #     ,debug = debug, elec_init_state = e, RO_after_swap = RO_after_swap,
-                #     carbon_init_thresholds = c_i_t)
+    # RO_orientation = 'negative'
+
+    # SWAP(SAMPLE + '_carbon' + str(c) +'_'+RO_orientation+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
+    #                 el_RO= RO_orientation, carbon = c
+    #                 ,debug = debug, elec_init_state = e,
+    #                 carbon_init_thresholds = c_i_t)
+    
+
+    # '''' NOTE REMOVE RO_after_swap from SWAP params '''
+    # breakst     = False
+    # debug       = True
+
+    # carbons     = [5]
+    # init_method = 'swap'
+    # el_state    = ['Y','mZ','Z']
+    # RO_after_swap = [True]
+
+    # for r in RO_after_swap:
+
+    #     if r == True:
+    #         c_i_t = [0, 1]
+    #     else:
+    #         c_i_t = [0]    
+
+    #     print 'RO_after_swap = ' + str(RO_after_swap)
+    #     print 'carbon initialisation RO threshold = '+ str(c_i_t)
+
+
+    #     for e in el_state:
+    #         print 'Loop over electron state!'
+    #         print 'el_state = ' + str(e)
+
+    #         breakst = show_stopper() or breakst
+    #         if breakst:
+    #             break
+
+    #         for c in carbons:
+    #             breakst = show_stopper() or breakst
+    #             if breakst:
+    #                 break
+
+    #             print 'Loop over carbons number!'
+
+    #             SWAP(SAMPLE + '_carbon' + str(c) + '_elState'+str(e)+'_swapRO_'+str(r)+'_positive', 
+    #                 el_RO= 'positive', carbon = c
+    #                 ,debug = debug, elec_init_state = e, RO_after_swap = RO_after_swap,
+    #                 carbon_init_thresholds = c_i_t)
+
+
+    #             SWAP(SAMPLE + '_carbon' + str(c) + '_elState'+str(e)+'_swapRO_'+str(r)+'_negative', 
+    #                 el_RO= 'negative', carbon = c
+    #                  ,debug = debug, elec_init_state = e, RO_after_swap = RO_after_swap,
+    #                  carbon_init_thresholds = c_i_t)
+
+    print 'Done with loop part' 
+  
 else: 
     print 'Fail'

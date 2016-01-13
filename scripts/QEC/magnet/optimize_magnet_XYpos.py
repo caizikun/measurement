@@ -49,7 +49,7 @@ if __name__ == '__main__':
     laser_power = 10e-6
     save_plots = True
     fine_only = False
-    coarse_only = True
+    coarse_only = False
 
     do_m1_fine = False ### circumvents fitting problems on the coarse measurement of the transition to -1
     range_coarse  = 5.0 #7.0
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         #measure both frequencies
             #ms=-1 coarse
         if fine_only == False:
-            DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', ssbmod_amplitude = 0.01,
+            DESR_msmt.darkesr('magnet_' + axis + 'msm1_coarse', ms = 'msm', ssbmod_amplitude = 0.004,
                     range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9, mw_switch = True)
             f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='right')
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         if do_m1_fine == True or coarse_only == False or u_f0m_temp > 1e-4: ## uncertainty larger than 100 kHz triggers the fine measurement.
             DESR_msmt.darkesr('magnet_' + axis + 'msm1', ms = 'msm', 
                     range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                    pulse_length = 8e-6, ssbmod_amplitude = 0.003, mw_switch = True)
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.0015, mw_switch = True)
             f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
             f0m_temp = f0m_temp# + N_hyperfine*1e-9
                    
@@ -168,7 +168,7 @@ if __name__ == '__main__':
             #ms=+1 coarse
         if fine_only == False:
             DESR_msmt.darkesr('magnet_' + axis + 'msp1_coarse', ms = 'msp', 
-                    range_MHz=range_coarse, pts=pts_coarse,ssbmod_amplitude = 0.02, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
+                    range_MHz=range_coarse, pts=pts_coarse,ssbmod_amplitude = 0.009, reps=reps_coarse,freq = f0p_temp*1e9, mw_switch = True)
             f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
                     qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='left')
                 #ms=+1 fine
@@ -176,7 +176,7 @@ if __name__ == '__main__':
         if coarse_only == False:
             DESR_msmt.darkesr('magnet_' + axis + 'msp1', ms = 'msp', 
                     range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
-                    pulse_length = 8e-6, ssbmod_amplitude = 0.005, mw_switch = True)
+                    pulse_length = 8e-6, ssbmod_amplitude = 0.003, mw_switch = True)
             f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
             f0p_temp = f0p_temp# - N_hyperfine*1e-9
 

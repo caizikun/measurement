@@ -137,6 +137,9 @@ class ElectronRamsey(pulsar_msmt.MBI):
 class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRamsey_Dephasing'
 
+    # def setup(self):
+    #     MBI.setup() # enable the second MW source.
+
     def generate_sequence(self, upload=True, debug = False):
 
 
@@ -188,8 +191,8 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
 
             if init_with_second_source:
                 e.append(pulse.cp(Pi_mw2, 
-                    length = self.params['MW2_duration'][i],
-                    amplitude = self.params['MW2_pulse_amplitudes'][i]))
+                    length = self.params['MW_pulse_durations'][i],
+                    amplitude = self.params['MW_pulse_amps'][i]))
             elif not init_in_zero:
                 e.append(
                 pulse.cp(X,
@@ -250,7 +253,11 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                 e.append(BB1_phase2)
                 e.append(BB1_phase1)
                 e.append(X_BB1)
-            elif self.params['MW_pulse_2_amps'][i] != 0:
+            elif self.params['MW_pulse_2_amps'][i] != 0 and self.params['readout_with_second_source']:
+                e.append(pulse.cp(Pi_mw2, 
+                    length = self.params['MW_pulse_2_durations'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i]))
+            elif self.params['MW_pulse_2_amps'][i] != 0 and self.params['readout_with_second_source'] == False:
                 e.append(pulse.cp(X,
                         frequency = self.params['MW_pulse_mod_frqs'][i],
                         amplitude = self.params['MW_pulse_2_amps'][i],

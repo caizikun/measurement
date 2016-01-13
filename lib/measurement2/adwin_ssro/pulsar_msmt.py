@@ -3,6 +3,7 @@ import numpy as np
 import qt
 import hdf5_data as h5
 import logging
+import sys
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
@@ -22,22 +23,23 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True,mw2=False **kw):
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
         ssro.IntegratedSSRO.setup(self)
 
-        if mw:
-            self.mwsrc.set_iq('on')
-            self.mwsrc.set_pulm('on')
-            self.mwsrc.set_frequency(self.params['mw_frq'])
-            self.mwsrc.set_power(self.params['mw_power'])
-            self.mwsrc.set_status('on')
+        self.mwsrc.set_iq('on')
+        self.mwsrc.set_pulm('on')
+        self.mwsrc.set_frequency(self.params['mw_frq'])
+        self.mwsrc.set_power(self.params['mw_power'])
+        self.mwsrc.set_status('on')
 
-        if mw2:
-            print 'init second source'
-            PulsarMeasurement.mwsrc2.set_pulm('on')
-            PulsarMeasurement.mwsrc2.set_frequency(self.params['mw2_frq'])
-            PulsarMeasurement.mwsrc2.set_power(self.params['mw2_power'])
-            PulsarMeasurement.mwsrc2.set_status('on')
+        try:
+            #self.mwsrc2.set_iq('on')
+            self.mwsrc2.set_pulsemod_state('on')            
+            self.mwsrc2.set_frequency(self.params['mw2_frq'])
+            self.mwsrc2.set_power(self.params['mw2_power'])
+            self.mwsrc2.set_status('on')
+        except:
+            print 'no second mw source ',  sys.exc_info()
 
         print 'AWG state before start'
         print self.awg.get_state()
@@ -106,6 +108,10 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('off')
         self.mwsrc.set_iq('off')
         self.mwsrc.set_pulm('off')
+        try:
+            self.mwsrc2.set_status('off')
+        except:
+            print 'no second source ',  sys.exc_info()
 
 # class PulsarMeasurement
 

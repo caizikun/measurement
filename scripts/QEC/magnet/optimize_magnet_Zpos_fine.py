@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     range_fine = 0.4
     pts_fine   = 51
-    reps_fine  = 4000
+    reps_fine  = 3000
 
     ###########
     ## Start ##
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
             range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=(f0m_temp)*1e9,# - N_hyperfine,
-            pulse_length = 8e-6, ssbmod_amplitude = 0.003, mw_switch = True) #0.0025
+            pulse_length = 8e-6, ssbmod_amplitude = 0.0015, mw_switch = True) #0.0025
     f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
     f0m_temp = f0m_temp# + N_hyperfine*1e-9
     delta_f0m_temp = f0m_temp*1e6-current_f_msm1*1e-3

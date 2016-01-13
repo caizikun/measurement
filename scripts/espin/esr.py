@@ -15,20 +15,20 @@ import numpy as np
 name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 101       #101
 mw_power    = -20#-13      #in dBm
-green_power = 15e-6     #10e-6
+green_power = 10e-6     #15e-6
 int_time    = 30        # in ms
 reps        = 25
 center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
-
+'''
 #### RT 2 with Horst / params
 name = 'ESR_Horst_scan29_NV2'#name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 60       #101
-mw_power    = 18     #in dBm
+mw_power    = -20     #in dBm
 green_power = 200e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
 center_f    = 2.840  # in GHz
-
+'''
 range_f  =  0.015 # in GHz
 
 #generate list of frequencies

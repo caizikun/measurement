@@ -32,7 +32,7 @@ def compsweep(tres,hwidth,Nres,Ndiff):
     tmax=tres+hwidth
     tpairs=[]
     for phases in [0,45,90,135,180,225,270,315]:
-            tpairs.append([round(Nres/4,-1)*2+Ndiff,round(tmin,10),round(Nres/4,-1)*2+Ndiff,round(tmax,10),phases])
+            tpairs.append([round(Nres/4+hwidth/(4e-9),-1)*2+Ndiff,round(tmin,10),round(Nres/4+hwidth/(4e-9),-1)*2-Ndiff,round(tmax,10),phases])
             
     return transpose(tpairs).tolist()
             
@@ -178,9 +178,9 @@ if __name__ == '__main__':
 
         optimize()
 
-        for w in [4e-9,8e-9,12e-9]:
+        for w in [0,4e-9,8e-9,12e-9,16e-9,20e-9]:
             
-            for Ndiff in [-4,-2,0,2,4]:
+            for Ndiff in [-6,-4,2,4,6]:
                 
                 for el_RO in ['positive','negative']:
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
                     if breakst: break
                         
                     print(w)
-                    SweepGates(el_RO+'_C'+str(c)+'_width_'+str(w*1000000000)+'nas_Ntot_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff)
+                    SweepGates(el_RO+'_C'+str(c)+'_width_'+str(w*1000000000)+'nas_Ndiff_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff)
                   
 
 

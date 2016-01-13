@@ -37,11 +37,11 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['mw_power'] = 20
     m.params['repetitions'] = reps
 
-    m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_start'] =43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
     m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.01 #0.01
+    m.params['ssbmod_amplitude'] = 0.005 #0.01
 
     m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
                     m.params['ssbmod_frq_stop'], m.params['pts']) 
@@ -72,14 +72,14 @@ if __name__ == '__main__':
         ### for the first coarse step
     init_range   = 10    #Common: 10 MHz
     #init_range = 20
-    init_pts     = 101   #Common: 121
+    init_pts     = 121   #Common: 121
     #init_pts     = 450
     init_reps    = 500 #Common: 500
 
         ### for the remainder of the steps
     repeat_range = 4.5
     repeat_pts   = 81
-    repeat_reps  = 300 #1000
+    repeat_reps  = 1000 #1000
 
     if only_fine == True:
         init_range   = repeat_range     #Common: 10 MHz

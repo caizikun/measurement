@@ -395,33 +395,37 @@ def pi_pulse_MW2(msmt):
 	'''
 	pi pulse on MW source No2
 	'''	
-
+	pulse_shape = check_pulse_shape(msmt)
 	#print 'doing Squares on MW2'
-	X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-		I_channel='MW2', Q_channel='MW2',
-		PM_channel='MW2_pulsemod', Sw_channel = 'MW_switch',
-		frequency = 0.,
-		PM_risetime = msmt.params['MW2_pulse_mod_risetime'],
-		Sw_risetime = msmt.params['MW_switch_risetime'],
-		length = msmt.params['MW2_duration'],
-		#phase =  msmt.params['X_phase'],
-		amplitude = msmt.params['MW2_pulse_amplitudes'])
+	if pulse_shape == 'Square':
+		X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+			I_channel='MW2', Q_channel='MW2',
+			PM_channel='MW2_pulsemod', Sw_channel = 'MW_switch',
+			frequency = 0.,
+			PM_risetime = msmt.params['MW2_pulse_mod_risetime'],
+			Sw_risetime = msmt.params['MW_switch_risetime'],
+			length = msmt.params['MW2_duration'],
+			phase =  msmt.params['X_phase'],
+			amplitude = msmt.params['MW2_pulse_amplitudes'])
    
 	# PulseShaping not possible
 	
-	# elif pulse_shape == 'Hermite':
-	# 	X = pulselib.HermitePulse_Envelope_IQ('Hermite pi-pulse',
-	# 					 'MW2',  #IMod
-	# 					 'MW2',  #QMod    There's only one channel
-	# 					 'MW2_pulsemod',
-	# 					 Sw_channel = 'MW_switch',
-	# 					 frequency = 0.,
-	# 					 amplitude = msmt.params['mw2_Hermite_fast_pi_amp'],
-	# 					 length = msmt.params['mw2_Hermite_fast_pi_duration'],
-	# 					 PM_risetime = msmt.params['MW2_pulse_mod_risetime'],
-	# 					 Sw_risetime = msmt.params['MW_switch_risetime'],
-	# 					 phase = msmt.params['X_phase'],
-	# 					 pi2_pulse = False)
+	elif pulse_shape == 'Hermite':
+		X = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
+						 MW_channel='MW2',
+						 PM_channel='MW2_pulsemod',
+						 Sw_channel = 'MW_switch',
+						 frequency = 0.,
+						 amplitude = msmt.params['mw2_Hermite_fast_pi_amp'],
+						 length = msmt.params['mw2_Hermite_fast_pi_duration'],
+						 PM_risetime = msmt.params['MW2_pulse_mod_risetime'],
+						 Sw_risetime = msmt.params['MW_switch_risetime'],
+						 phase = 0,
+						 pi2_pulse = False)
+	else:
+		print 'mw2 no valid pulse'
+
+	if msmt.params['X_phase'] != 0:
+		print 'No phase control on MW2!'
+
 	return X
-
-

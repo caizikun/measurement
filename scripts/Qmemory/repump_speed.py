@@ -25,40 +25,40 @@ def run(name, **kw):
     max_duration = kw.get('max_duration',3e-6)
     pts = 200 # even number
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
     m.params['detuning'] = 0e6 #artificial detuning
 
     # MW pulses
-        ## First pulse
-    #print 'PULSE AMP'
-    #print m.params['fast_pi_amp']
-    m.params['MW_pulse_durations'] = np.ones(pts) * m.params['fast_pi_duration']
-    m.params['MW_pulse_amps'] = np.ones(pts) * m.params['fast_pi_amp']
-    m.params['MW_pulse_mod_frqs'] = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
-    m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
+    ## First pulse
+    # m.params['MW_pulse_durations'] = np.ones(pts) * m.params['fast_pi_duration']
+    # m.params['MW_pulse_amps'] = np.ones(pts) * m.params['fast_pi_amp']
+    # m.params['MW_pulse_mod_frqs'] = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
+    # m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
     
     m.params['init_with_second_source'] = init_with_second_source
+    m.params['readout_with_second_source'] = readout_with_second_source
     m.params['init_in_zero'] = init_in_zero
 
     ## initialization microwave pulse
     if init_with_second_source:
-        m.params['MW2_duration'] = np.ones(pts) * m.params['mw2_fast_pi_duration']
-        m.params['MW2_pulse_amplitudes'] = np.ones(pts)
-        m.params['MW_pulse_durations']   = np.ones(pts) * 0
-        m.params['MW_pulse_amps']        = np.ones(pts) * 0
-        m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
+        m.params['MW_pulse_durations'] = np.ones(pts) * m.params['mw2_fast_pi_duration']
+        m.params['MW_pulse_amps'] = np.ones(pts) * m.params['mw2_fast_pi_amp']
     else:
-        m.params['MW2_duration'] = np.ones(pts) * 0
-        m.params['MW2_pulse_amplitudes'] = np.ones(pts) * 0
         m.params['MW_pulse_durations']   = np.ones(pts) * m.params['fast_pi_duration']
-        m.params['MW_pulse_amps']        = np.ones(pts) * m.params['fast_pi_amp']
+        m.params['MW_pulse_amps'] = np.ones(pts) * m.params['fast_pi_amp']
+        m.params['MW_pulse_mod_frqs'] = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
         m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
 
     ## Readout microwave pulse
     if do_pm1_readout:
-        m.params['MW_pulse_2_durations'] = np.ones(pts) * m.params['fast_pi_duration']
-        m.params['MW_pulse_2_amps']      = np.ones(pts) * m.params['fast_pi_amp'] 
-        m.params['MW_pulse_2_phases']    = np.ones(pts) * 0
+        if readout_with_second_source:
+            m.params['MW_pulse_2_durations'] = np.ones(pts) * m.params['mw2_fast_pi_duration']
+            m.params['MW_pulse_2_amps']      = np.ones(pts) * m.params['mw2_fast_pi_amp'] 
+        else:
+            m.params['MW_pulse_2_durations'] = np.ones(pts) * m.params['fast_pi_duration']
+            m.params['MW_pulse_2_amps']      = np.ones(pts) * m.params['fast_pi_amp'] 
+            m.params['MW_pulse_mod_frqs'] = np.ones(pts) * m.params['AWG_MBI_MW_pulse_mod_frq']
+            m.params['MW_pulse_2_phases']    = np.ones(pts) * 0
     else:
         m.params['MW_pulse_2_durations']    = np.ones(pts) * 0
         m.params['MW_pulse_2_amps']         = np.ones(pts) * 0 
@@ -93,29 +93,31 @@ def run(name, **kw):
 
 if __name__ == '__main__':
     print 
-    newfocus_power_list = [1000e-9]
-    repumper_power_list = [5e-9]
-    max_repump_duration = 8e-6
+    newfocus_power_list = [2500e-9]
+    repumper_power_list = [100e-9]
+    max_repump_duration = 1.5e-6
     #repump_power_list = np.arange(0.05e-6, 0.51e-6, 0.05e-6)#, 350e-9, 200e-9, 100e-9, 50e-9, 20e-9]
 
-    init_with_second_source= False
-    init_in_zero = True
+    init_with_second_source = False
+    readout_with_second_source = True
+    init_in_zero = False
     do_pm1_readout = False
 
-    pump_using_MW2 = True
-    pump_using_newfocus = False
+    pump_using_MW2 = False
+    pump_using_newfocus = True
     pump_using_repumper = True
 
     pump_MW2_delay = 150e-9
     pump_MW2_falltime = 50e-9 # makes sure that the laser is longer than the MW pulse such that pumping is complete
 
-    repump_laser_config = 'Ep_A2p1'
+    repump_laser_config = 'A1m1_A2p1'
 
     add_to_msmt_name = 'pm1RO_' if do_pm1_readout else '0RO_'
 
     for sweep_element in range(len(newfocus_power_list)):
         if True:
             add_to_msmt_name ='0RO_'
+            do_pm1_readout = False
             filename = 'ElectronRepump_'+str(newfocus_power_list[sweep_element]*1e9)+'nW_'+str(repumper_power_list[sweep_element]*1e9)+'nW_'+add_to_msmt_name+repump_laser_config
             print filename
             run(name=filename, max_duration=max_repump_duration,
@@ -123,8 +125,20 @@ if __name__ == '__main__':
                 debug=False)
 
         if True:
-            add_to_msmt_name = 'pm1RO_'
+            add_to_msmt_name = 'm1RO_'
             do_pm1_readout = True
+            readout_with_second_source = False
+            for sweep_element in range(len(newfocus_power_list)):
+                filename = 'ElectronRepump_'+str(newfocus_power_list[sweep_element]*1e9)+'nW_'+str(repumper_power_list[sweep_element]*1e9)+'nW_'+add_to_msmt_name+repump_laser_config
+                print filename
+                run(name=filename, max_duration=max_repump_duration,
+                    newfocus_power=newfocus_power_list[sweep_element], repumper_power = repumper_power_list[sweep_element],
+                    debug=False)
+
+        if True:
+            add_to_msmt_name = 'p1RO_'
+            do_pm1_readout = True
+            readout_with_second_source = True
             for sweep_element in range(len(newfocus_power_list)):
                 filename = 'ElectronRepump_'+str(newfocus_power_list[sweep_element]*1e9)+'nW_'+str(repumper_power_list[sweep_element]*1e9)+'nW_'+add_to_msmt_name+repump_laser_config
                 print filename
