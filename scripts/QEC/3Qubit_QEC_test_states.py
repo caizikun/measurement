@@ -72,7 +72,14 @@ def MBE(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-    m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error*0,phase_error*0,phase_error*0])
+
+    m.params['free_evolution_time_1'] = np.array([0])/2.
+    m.params['free_evolution_time_2'] = np.array([0])/2.
+
+    m.params['add_wait_gate']  = True
+    m.params['wait_in_msm1']  = False
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -85,7 +92,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-
+    m.params['MBE_list']            = carbon_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -166,45 +173,45 @@ if __name__ == '__main__':
         if state == 'X':
             RO_list = [6]
         elif state == 'Y':
-            RO_list = [4,5,6] 
+            RO_list = [4,5] 
         elif state == 'Z': 
-            RO_list = [0,1,2]
+            RO_list = [0]
 
         logic_state = state
-        print '-----------------------------------'            
-        print 'press q to stop measurement cleanly'
-        print '-----------------------------------'
-        qt.msleep(2)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            break
+        # print '-----------------------------------'            
+        # print 'press q to stop measurement cleanly'
+        # print '-----------------------------------'
+        # qt.msleep(2)
+        # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            # break
         for error_sign in [1]:
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(2)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                break
+            # print '-----------------------------------'            
+            # print 'press q to stop measurement cleanly'
+            # print '-----------------------------------'
+            # qt.msleep(2)
+            # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            #     break
             # GreenAOM.set_power(7e-6)
             # ins_counters.set_is_running(0)  
             # optimiz0r.optimize(dims=['x','y','z'])
 
             for RO in RO_list:#range(7):
                 
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(2)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    break
-                ssrocalibration(SAMPLE_CFG)
+                # print '-----------------------------------'            
+                # print 'press q to stop measurement cleanly'
+                # print '-----------------------------------'
+                # qt.msleep(2)
+                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                #     break
+                # ssrocalibration(SAMPLE_CFG)
                 for k in range(1):
                     e_list = error_list[str(k)]
-                    print '-----------------------------------'            
-                    print 'press q to stop measurement cleanly'
-                    print '-----------------------------------'
-                    qt.msleep(2)
-                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                        break
+                    # print '-----------------------------------'            
+                    # print 'press q to stop measurement cleanly'
+                    # print '-----------------------------------'
+                    # qt.msleep(2)
+                    # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    #     break
                     MBE(SAMPLE + '00_positive_RO'+str(RO)+'_k'+str(k)+'_sign'+ str(error_sign)+'_'+logic_state,RO_C = RO, 
                         logic_state = logic_state,el_RO = 'positive', 
                         error_sign= error_sign, 

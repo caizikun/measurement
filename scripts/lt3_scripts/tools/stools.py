@@ -153,13 +153,13 @@ def start_bs_counter(int_time=100):
         print 'ZPL APDs on'
     else:
         print 'ZPL APDs could not be turned on!'
-    qt.instruments['counters'].set_is_running(False)
+    #qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
     params={'int_time':int_time}
     qt.instruments['bs_helper'].set_measurement_params(params)
     qt.instruments['bs_helper'].execute_script()
-    qt.instruments['linescan_counts'].set_scan_value('counter_process')
+    #qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)

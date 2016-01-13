@@ -87,7 +87,6 @@ def MBE(name, carbon_list   = [1,5,2],
         MBE_threshold                 = 1,
         RO_C                          = 1,  
         MBE_list                      = [5,2,1],
-
         number_of_parity_msmnts       = 2,
         error_on_qubit                = 'all',
         el_RO                         = 'positive',
@@ -120,6 +119,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
     m.params['phase_error_array_2'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     m.params['Parity_a_RO_orientation'] = parity_orientations[0]
@@ -127,7 +127,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 750 
+    m.params['reps_per_ROsequence'] = 1000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -216,7 +216,7 @@ if __name__ == '__main__':
 
     for syn_round in [1]:
 
-        for state in ['mZ']:
+        for state in ['Z','mZ']:
             logic_state = state
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -230,10 +230,10 @@ if __name__ == '__main__':
             elif state == 'Y' or state == 'mY':
                 RO_list = [4,5,6] 
             elif state == 'Z' or state == 'mZ': 
-                RO_list = [2]
+                RO_list = [6,0,1,2]
 
 
-            GreenAOM.set_power(7e-6)
+            GreenAOM.set_power(10e-6)
             ins_counters.set_is_running(0)  
             optimiz0r.optimize(dims=['x','y','z'])
 
@@ -248,7 +248,7 @@ if __name__ == '__main__':
                 ssrocalibration(SAMPLE_CFG)
                 
                 cnt += 1
-                if cnt == 2:
+                if cnt == 3:
                     for test_state in ['X','Y','Z']:
                             if test_state == 'X':
                                 test_RO_list = [6]
@@ -299,7 +299,7 @@ if __name__ == '__main__':
                     range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
                     pulse_length = 8e-6, ssbmod_amplitude = 0.006)
                     
-                    GreenAOM.set_power(7e-6)
+                    GreenAOM.set_power(10e-6)
                     ins_counters.set_is_running(0)  
                     optimiz0r.optimize(dims=['x','y','z'])
                     

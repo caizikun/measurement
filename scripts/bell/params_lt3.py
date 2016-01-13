@@ -57,7 +57,7 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
-params_lt3['MW_Q_amp_factor'] = 0.925/0.9 # XXXX TO CALIBRATE ON LT3
+params_lt3['MW_Q_amp_factor'] = 0.920/0.907 # calibrated on lt3 on the 2015-12-15
 
 params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09

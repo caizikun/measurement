@@ -8,7 +8,8 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def prepare(m, sil_name=SAMPLE):
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE_CFG])
+    # print SA LE_CFG
+    # m.params.from_dict(qt.exp_params['samples'][SAMPLE_CFG])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -27,7 +28,9 @@ def finish(m, upload=True, debug=False):
     m.params['E_RO_amplitudes']     = [m.params['Ex_RO_amplitude']]
     m.params['send_AWG_start']      = [1]
     m.params['sequence_wait_time']  = [0]
+    print upload
     m.generate_sequence(upload=upload, debug=debug)
+
 
     if not debug:
 

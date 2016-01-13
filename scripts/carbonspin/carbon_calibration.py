@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1,2,5]
+carbons = [5]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -39,10 +39,9 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 =True
+f_ms0 = False
 
-f_ms1 = True
-
+f_ms1 = False
 self_phase_calibration = True
 
 cross_phase_calibration = True
@@ -53,7 +52,7 @@ debug = False
 ### repetitions per data point.
 freq_reps = 500
 phase_reps = 500
-crosstalk_reps = 500
+crosstalk_reps = 400
 
 
 ### this is used to determine the detuning of the ramsey measurements.
@@ -102,6 +101,8 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
+    if carbon_nr == 6:
+        m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
@@ -331,7 +332,7 @@ if f_ms1 and n == 1:
 
 			n = stop_msmt()
 	
-    GreenAOM.set_power(20e-6)
+    GreenAOM.set_power(10e-6)
     optimiz0r.optimize(dims=['x','y','z'], int_time=100)
 
 
@@ -424,7 +425,7 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
-	GreenAOM.set_power(20e-6)
+	GreenAOM.set_power(10e-6)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
 	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
 	# phase_overview = [0.0]

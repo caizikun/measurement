@@ -139,7 +139,7 @@ DIM Shutter_channel AS LONG
 DIM use_shutter AS LONG
 DIM Shutter_opening_time AS LONG
 DIM Shutter_closing_time AS LONG
-Dim Shutter_safety_time AS LONG
+DIM Shutter_safety_time AS LONG
 
 INIT:
   ' ####################
@@ -419,7 +419,7 @@ EVENT:
         IF (use_shutter > 0) THEN
           mode = 17
         ELSE
-          mode = 0
+          mode = 0 'DIRTY HACK. Should be 0 for regular sequences without shutter.!!! NK 20151028'
         ENDIF
       
       CASE 17 'Safety Waiting time for shutter

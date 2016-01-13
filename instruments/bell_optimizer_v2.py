@@ -346,6 +346,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.optimize_gate()
                         self.wait_counter = 1
                         self.need_to_optimize_nf = True
+                        if self.gate_optimize_counter > self.get_max_counter_optimize()/2:
+                            self.set_pid_e_primer_running(False)
+                            qt.instruments['physical_adwin'].Set_FPar(51,66.65)
+
                     else:
                         text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
                              self.get_max_counter_optimize())
@@ -669,9 +673,15 @@ class bell_optimizer_v2(mo.multiple_optimizer):
         x0 = fitres['params_dict']['x0']
         gamma = fitres['params_dict']['gamma']
         A = fitres['params_dict']['A']
+        if do_plot and fitres['success']:
+            plot_pts=100
+            x_p=np.linspace(np.min(x),np.max(x),plot_pts)
+            f_p = fitres['fitfunc'](x_p)
+            plt = qt.plots[qt.instruments['signalhound'].get_name()+'_Scan']
+            plt.add(x_p,f_p)
+            plt.update()
 
-
-        if gamma < 0.40 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV #
+        if gamma < 0.4 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV #
             return True, 'laser lock ok,  gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)
 
         return False, 'laser lock NOT ok, gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)

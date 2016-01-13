@@ -291,10 +291,10 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
     
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=11,Range = 0.06, mbi = True, mw_switch = False)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=1,Range = 0.03, mbi = True, mw_switch = False)
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z','y','x'])
     # stools.turn_off_all_lt2_lasers()
-    # cal_fast_pi2(SAMPLE_CFG, mult=14, Range = 0.05, mbi = True, mw_switch = True)
+    #cal_fast_pi2(SAMPLE_CFG, mult=14, Range = 0.05, mbi = True, mw_switch = True)
 
     # print '\a\a\a'

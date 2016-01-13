@@ -28,7 +28,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
     funcs.prepare(m)
 
-    if False: ### if you don't want to do MBI for this script.
+    if True: ### if you don't want to do MBI for this script.
         m.params['MBI_threshold'] = 0
         m.params['Ex_SP_amplitude'] = 0
         m.params['Ex_MBI_amplitude'] = 0
@@ -77,9 +77,7 @@ if __name__ == '__main__':
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
     # stools.turn_off_all_lt2_lasers()
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=0.52e-6,tau_max=3.0e-6,tau_step =10e-9, N=32)
-
-
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=11.274e-6,tau_max=11.350e-6,tau_step =2e-9, N=48)
 
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.0e-6,tau_max=4.2e-6,tau_step =4e-9, N=64)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.2e-6,tau_max=4.4e-6,tau_step =4e-9, N=64)

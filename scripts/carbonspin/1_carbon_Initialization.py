@@ -7,6 +7,8 @@ execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
+# import measurement.scripts.lt2_scripts.tools.stools
+
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -31,7 +33,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 500
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -79,22 +81,34 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1,2,5]
+    carbons = [5]
     debug = False
+    breakst = False
     init_method = 'swap'
 
-    if init_method == 'swap':
+    if init_method == 'both' or init_method == 'swap':
         for c in carbons:
 
+
+            breakst = stools.show_stopper()
+            if breakst:
+                break
             MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
                                                 ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
 
             MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
                                                 ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+            
+            if init_method == 'both':
+                init_method = 'MBI'
 
-    elif init_method == 'MBI':
+    if init_method == 'MBI':
         for c in carbons:
+
+            if breakst: 
+                break
+            breakst = stoolts.show_stopper()
 
             MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])

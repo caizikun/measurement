@@ -17,7 +17,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['SP_duration'] = 100
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000 if multiplicity == 1 else 5000
+    m.params['repetitions'] = 1000 if multiplicity == 1 else 500
 
     # sweep params
     rng = 0.2 if multiplicity == 1 else 0.05
@@ -186,7 +186,8 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 4.2
+    stage = 3.2
+    print 'Stage:', stage
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False
@@ -216,7 +217,7 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = False)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=7,debug = False)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)

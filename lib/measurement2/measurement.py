@@ -196,6 +196,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
+
         self.params = MeasurementParameters()
         
         if save:
@@ -336,6 +337,7 @@ class AdwinControlledMeasurement(Measurement):
     adwin_process = ''
 
     def __init__(self, name, save=True):
+        
         Measurement.__init__(self, name, save=save)
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
