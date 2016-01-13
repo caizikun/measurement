@@ -311,6 +311,7 @@ def SP_ZPL(name):
     m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
     m.joint_params['use_live_marker_filter']=True
     m.params['live_filter_queue_length'] = 2
+    m.params['measurement_time']=5*60#5 minutes
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -350,19 +351,19 @@ if __name__ == '__main__':
     qt.msleep(0.5)  
         
 
-    # SP_PSB('SPCORR_PSB',lt3=False)
+    #SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
     
     #lt4_only('test')
-    # pulse_overlap('overlap')
-    # SP_ZPL('SPCORR_lt3')
+    #pulse_overlap('overlap')
+    #SP_ZPL('SPCORR_lt4')
     #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
     #measureXX('moreXX_day9_run'+name_index)
-    #if int(name_index)>12:
+    #if int(name_index)>18:
     #    qt.bell_succes = False
     #else:
-    full_bell('TheSecondFinal_day11_run_'+name_index)
+    full_bell('TheSecondFinal_day22_run_'+name_index)
         ### 
        
     qt.bell_succes = True

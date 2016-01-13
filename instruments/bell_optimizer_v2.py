@@ -441,7 +441,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-                elif 'lt4' in self.setup_name and self.tail_counts_avg < self.get_min_tail_counts():
+                elif 'lt4' in self.setup_name and self.tail_counts_avg >0 and self.tail_counts_avg < self.get_min_tail_counts():
                     text = 'WARNING: avg tail counts too low: {:.2f} < {:.2f}'.format(self.tail_counts_avg, self.get_min_tail_counts())
                     subject = 'Low tail counts'
                     self.set_invalid_data_marker(1)

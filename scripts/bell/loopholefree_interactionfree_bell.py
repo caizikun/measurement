@@ -34,7 +34,7 @@ def optimize():
             break
         if qt.current_setup=='lt4':
             qt.instruments['optimiz0r'].optimize(dims=['y','x'],cnt=1, int_time=100, cycles =1)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =2)
         else:
             qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
             optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=50, cycles =2)
@@ -51,7 +51,7 @@ def optimize():
 def bell_check_powers():
     names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM','GreenAOM']
     setpoints = [5e-9, 10e-9, 15e-9,40e-9,5e-6] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
-    relative_thresholds = [0.1,0.1,0.3,0.2,0.1e-6]
+    relative_thresholds = [0.1,0.1,0.25,0.15,0.1e-6]
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     qt.stools.init_AWG()
@@ -84,7 +84,7 @@ def bell_check_powers():
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected =200e6 + 465e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
+    f_expected =200e6 + 475e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
     f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
@@ -99,11 +99,10 @@ if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
         start_index = 1
-
         
         skip_first=False
 
-        cycles=24
+        cycles=300
         DoJitterCheck = True  #not always necc as now in bell optimizer
 
 
