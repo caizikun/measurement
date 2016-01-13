@@ -79,11 +79,11 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1,2,5]
+    carbons = [5]
     debug = False
     init_method = 'swap'
 
-    if init_method == 'swap':
+    if init_method == 'both' or init_method == 'swap':
         for c in carbons:
 
             MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
@@ -92,8 +92,11 @@ if __name__ == '__main__':
 
             MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
                                                 ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+            
+            if init_method == 'both':
+                init_method = 'MBI'
 
-    elif init_method == 'MBI':
+    if init_method == 'MBI':
         for c in carbons:
 
             MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]

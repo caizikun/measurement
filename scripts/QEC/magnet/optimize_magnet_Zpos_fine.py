@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     range_fine = 0.4
     pts_fine   = 51
-    reps_fine  = 3000
+    reps_fine  = 4000
 
     ###########
     ## Start ##
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # start: define B-field and position by first ESR measurement
     DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
             range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=(f0m_temp)*1e9,# - N_hyperfine,
-            pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
+            pulse_length = 8e-6, ssbmod_amplitude = 0.003, mw_switch = True) #0.0025
     f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
     f0m_temp = f0m_temp# + N_hyperfine*1e-9
     delta_f0m_temp = f0m_temp*1e6-current_f_msm1*1e-3
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         if safemode == True and no_stepping_mode == False: 
             print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
-            if str(ri) == 'y':
+            if str(ri) in ['y','Y']:
                 #kick out
                 mom.set_mode('Z_axis','stp')
                 qt.msleep(2)
@@ -116,13 +116,13 @@ if __name__ == '__main__':
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
-        GreenAOM.set_power(20e-6)
+        GreenAOM.set_power(10e-6)
         optimiz0r.optimize(dims=['x','y','z'],int_time=100)
         
         
         DESR_msmt.darkesr('magnet_' + 'Z_axis_' + 'msm1', ms = 'msm', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 8e-6, ssbmod_amplitude = 0.0025, mw_switch = True)
+                pulse_length = 8e-6, ssbmod_amplitude = 0.0014, mw_switch = True)
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double()
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
         delta_f0m_temp = f0m_temp*1e6-current_f_msm1*1e-3

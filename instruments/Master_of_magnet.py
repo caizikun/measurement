@@ -94,6 +94,7 @@ class Master_of_magnet(Instrument):
 
         else:
             axis_number = self.Axis_config[axis]
+            print(axis_number)
             return self._anc_ins.GetFrequency(axis_number)
 
     def set_frequency(self, axis, frequency):

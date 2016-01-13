@@ -116,6 +116,7 @@ def GHZ(name,
     tomo_carbons = [5,1,2],
     electron_RO = False,
     composite_pi = False,
+    N_MBI_threshold = 0,
     ):
 
     m = DD.GHZ_ThreeQB_Unbranched(name)
@@ -126,6 +127,8 @@ def GHZ(name,
 
     m.params['reps_per_ROsequence'] = 3000
     m.params['pts'] = 1
+    m.params['MBI_threshold'] = N_MBI_threshold
+    print m.params['MBI_threshold']
 
     ##### Carbon initializations params
     m.params['initialize_carbons'] = initialize_carbons
@@ -264,6 +267,7 @@ def GHZ_3mmts(name,
     tomo_carbons = [5,1],
     electron_RO = False,
     composite_pi = False,
+    N_MBI_threshold = 0,
     ):
 
     m = DD.GHZ_3mmts_Unbranched(name)
@@ -272,8 +276,10 @@ def GHZ_3mmts(name,
     if debug:
         print 'DEBUG MODE'
 
-    m.params['reps_per_ROsequence'] = 3000
+    m.params['reps_per_ROsequence'] = 2400
     m.params['pts'] = 1
+    m.params['MBI_threshold'] = N_MBI_threshold
+    print m.params['MBI_threshold']
 
     ##### Carbon initializations params
     m.params['initialize_carbons'] = initialize_carbons
@@ -573,7 +579,7 @@ if __name__ == '__main__':
 
     fast_orientations_list=[
         ['positive','positive','positive','positive'],
-        ['negative','negative','negative','negative']
+        ['positive','positive','positive','negative']
         ]
 
     debug_orientations_list=[
@@ -616,17 +622,17 @@ if __name__ == '__main__':
         # ['I','X','Z'],['I','Y','Z'],['I','Z','Z'],
 
         # ['X','X','X'],
-        ['X','Y','X'],#['X','Z','X'],
-        ['Y','X','X'],#['Y','Y','X'],
+        # ['X','Y','X'],#['X','Z','X'],
+        # ['Y','X','X'],#['Y','Y','X'],
         # ['Y','Z','X'],
         # ['Z','X','X'],
         # ['Z','Y','X']
-        # ['Z','Z','X'],
+        # ['Z','Z','X'],and 
 
-         ['X','X','Y'],#['X','Y','Y'],
+        # ['X','X','Y'],#['X','Y','Y'],
         # ['X','Z','Y'],
         # ['Y','X','Y'],
-         ['Y','Y','Y'],#['Y','Z','Y'],
+        # ['Y','Y','Y'],#['Y','Z','Y'],
         # ['Z','X','Y'],['Z','Y','Y'],['Z','Z','Y'],
 
         # ['X','X','Z'],['X','Y','Z'],
@@ -673,17 +679,7 @@ if __name__ == '__main__':
                     break
 
 
-                orientations_name = ''.join([o[0] for o in orientations])
-                print tomo_name
-                print orientations_name
-
-                GHZ(SAMPLE+'GHZ_C512_unbranched_composite_pi_tomo_'+tomo_name+'_'+orientations_name,  
-                    tomo_list = tomo_list, composite_pi=True,
-                    parity_orientations = orientations, initialize_carbons = False,feedforward=False, debug=False)
-                # GHZ(SAMPLE+'GHZ_C512_unbranched_tomo_'+tomo_name+'_'+orientations_name,feedforward=False,
-                #     tomo_list = tomo_list, parity_orientations = orientations, 
-                #     initialize_carbons = False, debug=False)
-                if branched:
+                for N_MBI_threshold in [0,1]:
                     print '-----------------------------------'
                     print 'press q to stop measurement cleanly'
                     print '-----------------------------------'
@@ -691,9 +687,29 @@ if __name__ == '__main__':
                     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                         break
 
-                    GHZ_branched(SAMPLE+'GHZ_C512_branched_tomo_'+tomo_name+'_'+orientations_name,feedforward=False, 
-                        tomo_list = tomo_list, parity_orientations = orientations, 
-                        initialize_carbons = False, debug=False)
+                    threshold=str(N_MBI_threshold)    
+                    orientations_name = ''.join([o[0] for o in orientations])
+                    print tomo_name
+                    print orientations_name
+                    print 'MBI threshold = '+str(threshold)
+
+                    GHZ(SAMPLE+'GHZ_C512_unbranched_composite_pi_MBIth_'+str(threshold)+'_tomo_'+tomo_name+'_'+orientations_name,  
+                        tomo_list = tomo_list, composite_pi=True, N_MBI_threshold= N_MBI_threshold,
+                        parity_orientations = orientations, initialize_carbons = False,feedforward=False, debug=False)
+                    # GHZ(SAMPLE+'GHZ_C512_unbranched_tomo_'+tomo_name+'_'+orientations_name,feedforward=False,
+                    #     tomo_list = tomo_list, parity_orientations = orientations, 
+                    #     initialize_carbons = False, debug=False)
+                    if branched:
+                        print '-----------------------------------'
+                        print 'press q to stop measurement cleanly'
+                        print '-----------------------------------'
+                        qt.msleep(2)
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            break
+
+                        GHZ_branched(SAMPLE+'GHZ_C512_branched_tomo_'+tomo_name+'_'+orientations_name,feedforward=False, 
+                            tomo_list = tomo_list, parity_orientations = orientations, 
+                            initialize_carbons = False, debug=False)
 
     if GHZ_permute_carbons:
         carbon_lists = [[1,5,2],[5,1,2]]#
@@ -823,10 +839,21 @@ if __name__ == '__main__':
 
 
     if context3mmt_test:
-        mmt_lists = [[['I','X','I'],['X','I','I'],['I','X','I']],
-                    [['I','X','I'],['X','I','I'],['I','Y','I']],
-                    [['I','X','I'],['I','I','X'],['I','X','I']],
-                    [['I','X','I'],['I','I','X'],['I','Y','I']]
+        mmt_lists = [
+                    # [['I','X','I'],['I','I','X'],['I','X','I']],
+                    # [['I','X','I'],['I','I','X'],['I','Y','I']],
+                    # [['I','X','I'],['I','I','Y'],['I','X','I']],
+                    # [['I','X','I'],['I','I','Y'],['I','Y','I']],
+                    # [['I','X','I'],['X','I','I'],['I','X','I']],
+                    # [['I','X','I'],['X','I','I'],['I','Y','I']],
+                    [['X','I','I'],['I','X','I'],['X','I','I']],
+                    [['X','I','I'],['I','X','I'],['Y','I','I']],
+                    [['X','I','I'],['I','I','X'],['X','I','I']],
+                    [['X','I','I'],['I','I','X'],['Y','I','I']],
+                    [['I','I','X'],['I','X','I'],['I','I','X']],
+                    [['I','I','X'],['I','X','I'],['I','I','Y']],
+                    [['I','I','X'],['X','I','I'],['I','I','X']],
+                    [['I','I','X'],['X','I','I'],['I','I','Y']]
                     # [['I','Y','I'],['X','I','I'],['I','Y','I']],
                     # [['I','Y','I'],['X','I','I'],['I','X','I']],
                     # [['I','Y','I'],['I','I','X'],['I','Y','I']],

@@ -24,16 +24,23 @@ class ElectronT1_without_AWG(ssro.IntegratedSSRO):
     mprefix = 'ElectronT1'
     adwin_process = 'T1_without_AWG_SHUTTER'
 
-def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = False, wait_times = np.linspace(10e3,300e3,10)):
+def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', 
+        pump_to_1 = False, wait_times = np.linspace(1e3,200e3,15),
+        debug = False):
     print 'Hello1'
     m = pulsar_msmt.ElectronT1(name)
+    ####dirty hack to switch our lasers around
+    # E_aom = m.E_aom
+    # A_aom = m.A_aom
+    # m.E_aom = A_aom
+    # m.A_aom = E_aom
     print 'Hello2'
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    #m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     '''set experimental paramqeters'''
         #T1 experiment
@@ -48,7 +55,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     # m.params['wait_times'] =  np.r_[1000,np.linspace(1e6,5.0e6,5),60e6] 
     m.params['wait_times'] =  wait_times
     m.params['wait_time_repeat_element'] = 10 #in us, this element is repeated to create the wait times max of 6 seconds
-    m.params['repetitions'] = 100
+    m.params['repetitions'] = 150
     m.params['use_shutter'] = 0
         #Plot parameters
     m.params['sweep_name'] = 'Times (us)'
@@ -68,7 +75,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = F
     print 'readout_state: ' + m.params['T1_readout_state']
     print m.params['sweep_pts']
     '''generate sequence'''
-    m.generate_sequence(upload=True, debug=False)
+    m.generate_sequence(upload=True, debug=debug)
     print 'Hello3'
     m.run()
     m.save()
@@ -93,7 +100,7 @@ def T1_without_AWG(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', p
     adwin.set_T1_without_AWG_SHUTTER_var(T1_wait_times= wait_times_AWG.astype(int))
     m.params['repetitions'] = 3
     m.params['Shutter_opening_time']=2500
-    m.params['use_shutter'] = 1
+    m.params['use_shutter'] = 0
 
         #Plot parameters
     m.params['sweep_name'] = 'Times (s)'
@@ -148,9 +155,12 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
 if __name__ == '__main__':
 
-    # times = np.r_[1e5,1e6]
-    # ii = 999
-    # T1(SAMPLE+'_'+'init_0_RO_0_Ord_0_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.roll(times,ii))
+    times = np.linspace(1e2,600e3,15)
+    ii = 999
+    T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
+                    T1_readout_state = 'ms=-1', debug=False)
+    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
+                    T1_readout_state = 'ms=0', debug=False)
     
     # times = np.r_[1e5,1e6,3e6,10e6,30e6, 60e6]
     

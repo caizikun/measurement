@@ -11,8 +11,15 @@ import numpy as np
 ##############
 
 
+### LT2 with 111_No1_Sil18
+name='ESR_'+ qt.exp_params['protocols']['current']
+steps       = 101       #101
+mw_power    = -20#-13      #in dBm
+green_power = 15e-6     #10e-6
+int_time    = 30        # in ms
+reps        = 25
+center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
 
-name = 'ESR_Pippin_Sil3_MagnetInMontana'#name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 60       #101
 mw_power    = -10    #in dBm
 green_power = 40e-6    #10e-6

@@ -1,8 +1,8 @@
 """
 Initializes a carbon via MBi into |x>
 Repeptitively goes through an LDE element.
-Perofrms tomogrpahy on the carbon.
-We vary the power of the repumper at the end of the LDE.
+Performs tomogrpahy on the carbon.
+We vary the estimated time it takes to repump the electron. I.e. the asymmetry of the sequence.
 
 NK 2015
 """
@@ -48,11 +48,13 @@ def QMem(name, carbon_list   = [5],
         number_of_MBE_steps = 0,
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
+        logic_state         = 'X',
 
         el_RO               = 'positive',
         debug               = True,
-        tomo_list			= ['X'],
-        Repetitions         = 250):
+        tomo_list           = ['X'],
+        Repetitions         = 5000,
+        **kw):
 
 
 
@@ -61,12 +63,11 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    #############
+    ############
 
-    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
 
     ''' set experimental parameters '''
-
     m.params['reps_per_ROsequence'] = Repetitions
 
     ### Carbons to be used
@@ -74,11 +75,12 @@ def QMem(name, carbon_list   = [5],
 
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
-    m.params['init_method_list']    = carbon_init_methods    
-    m.params['init_state_list']     = carbon_init_states    
+    m.params['init_method_list']    = carbon_init_methods*len(carbon_init_list)
+    m.params['init_state_list']     = carbon_init_states*len(carbon_init_list)    
     m.params['Nr_C13_init']         = len(carbon_init_list)
 
     m.params['el_after_init']       = '0'
+
 
     ##################################
     ###         RO bases           ###
@@ -109,23 +111,23 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 11
+    pts = 31
 
     f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
     tau_larmor = round(1/f_larmor,9)
 
-    m.params['repump_wait'] =  pts*[2e-6] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(0,2e-6,pts) #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[500]
+    m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = np.linspace(-0.5e-6,2.e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[200.]
 
     m.params['do_pi'] = False ### does a regular pi pulse
     m.params['do_BB1'] = True ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
 
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
 
-    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
+    m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repump beam is applied.
 
-    m.params['fast_repump_power'] = 700e-9
+    m.params['fast_repump_power'] = kw.get('repump_power', 900e-9)
 
 
     ### For the Autoanalysis
@@ -149,6 +151,15 @@ def show_stopper():
         return True
     else: return False
 
+def optimize(breakst):
+    if not breakst:
+        GreenAOM.set_power(10e-6)
+        counters.set_is_running(1)
+        optimiz0r.optimize(dims = ['x','y','z','y','x'])
+
+
+
+
 if __name__ == '__main__':
 
     # logic_state_list=['X','mX','Y','mY','Z','mZ'] doesn't do anything at the moment
@@ -157,23 +168,77 @@ if __name__ == '__main__':
     last_check=time.time()
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
-
+    debug = False
+    repump_power_sweep = [900e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
     
-    for c in [1,2,5]:
-        if breakst:
-            break
-        for tomo in ['Z']:
+    if True: ### turn measurement on/off
+        for sweep_elem in range(len(repump_power_sweep)):
             if breakst:
                 break
-            for ro in ['positive','negative']:
-                breakst = show_stopper()
+            #stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
+            # get repump speed
+            #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
+            
+            for c in [1]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
-                QMem('Sweep_repump_time_'+ro+'_Tomo_'+tomo+'_C'+str(c),
-                                                                    debug=False,
-                                                                    tomo_list = [tomo], 
-                                                                    el_RO = ro,
-                                                                    carbon_list   = [c],               
-                                                                    carbon_init_list        = [c],
-                                                                    carbon_init_methods     = ['swap'], 
-                                                                    carbon_init_thresholds  = [0])
+                for tomo in ['X','Y']:
+                    optimize(breakst or debug)
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        QMem('Sweep_repump_time_'+ro+'_Tomo_'+tomo+'_C'+str(c)+'_repump_power'+str(repump_power_sweep[sweep_elem]),
+                                                                            debug=debug,
+                                                                            tomo_list = [tomo], 
+                                                                            el_RO = ro,
+                                                                            carbon_list   = [c],               
+                                                                            carbon_init_list        = [c],
+                                                                            carbon_init_thresholds  = [1],
+                                                                            carbon_init_methods     = ['MBI'],
+                                                                            Repetitions  = 2000,
+                                                                            repump_power = repump_power_sweep[sweep_elem])
+
+    ######################
+    ### two qubit loop ###
+    ######################
+
+    if False:
+
+        
+        logic_state_list=['mX'] ### for DFS creation.
+        tomo_list =[['X','X'],['Y','Y'],['X','Y'],['Y','X']]
+        # tomo_list = [['Z','Z']]
+        # tomo_list = [['Z','Z']]
+        # llist_of_c_lists = [[2,5],[5,6],[1,5],[1,3],[1,6],[2,3],[2,6],[3,5],[3,6],[1,2]]
+        llist_of_c_lists = [[2,5]]
+        for c_list in llist_of_c_lists:
+            for logic_state in logic_state_list:
+                if breakst:
+                    break
+                for tomo in tomo_list: 
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        msmt_name = 'Sweep_repump_time_'+ro+'_state'+logic_state+'_Tomo_'+tomo[0]+tomo[1]+'_C'+str(c_list[0])+str(c_list[1])+'_repump_power'+str(repump_power_sweep[sweep_elem])
+                        print last_check-time.time()
+                        QMem(msmt_name,
+                                debug                   = debug,
+                                tomo_list               = tomo, 
+                                el_RO                   = ro,
+                                carbon_list             = c_list,               
+                                carbon_init_list        = c_list,
+                                carbon_init_thresholds  = [0],
+                                number_of_MBE_steps     = 1,
+                                Repetitions             = 2000,
+                                carbon_init_methods     = ['swap'],
+                                logic_state             = logic_state)
+
+                        if abs(last_check-time.time()) > 30*60: ## check every 30 minutes
+                            optimize(breakst or debug)
+                            last_check = time.time()            

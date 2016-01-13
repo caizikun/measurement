@@ -1027,7 +1027,8 @@ config['adwin_lt1_processes'] = {
                     ['Shutter_channel'             ,   4], #27
                     ['Shutter_rise_time'           ,    3000], #28   
                     ['Shutter_fall_time'           ,    3000], #29
-                    ['Shutter_safety_time'           ,  50000], #30
+                    ['Shutter_safety_time'           ,  200000], #30
+                    #['wait_between_runs'           , 0], #31
                     ],
 
                 'params_long_index'  : 20,
@@ -1412,7 +1413,7 @@ config['adwin_lt2_processes'] = {
                     ['use_shutter'                 ,    0], #14
                     ['Shutter_channel'             ,    4], #15
                     ['Shutter_opening_time'        , 3000], #16
-                    ['Shutter_safety_time'         ,50000], #17
+                    ['Shutter_safety_time'         ,200000], #17
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -1506,7 +1507,7 @@ config['adwin_lt2_processes'] = {
                     ['Shutter_channel'             ,   4], 
                     ['Shutter_rise_time'           ,    3000],    
                     ['Shutter_fall_time'           ,    3000], 
-                    ['Shutter_safety_time'          ,  50000],
+                    ['Shutter_safety_time'          ,  200000],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -1564,7 +1565,7 @@ config['adwin_lt2_processes'] = {
                     ['Shutter_channel'             ,   4], 
                     ['Shutter_rise_time'           ,    3000],    
                     ['Shutter_fall_time'           ,    3000], 
-                    ['Shutter_safety_time'           ,  50000],
+                    ['Shutter_safety_time'           ,  200000],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2090,7 +2091,7 @@ config['adwin_lt2_processes'] = {
                     ['Shutter_channel'             ,   4], #27
                     ['Shutter_rise_time'           ,    3000], #28   
                     ['Shutter_fall_time'           ,    3000], #29
-                    ['Shutter_safety_time'           ,  50000], #30
+                    ['Shutter_safety_time'           ,  200000], #30
                     ],
 
                 'params_long_index'  : 20,

@@ -150,7 +150,7 @@ def show_stopper():
     else: return False
 
 def optimize():
-    GreenAOM.set_power(15e-6)
+    GreenAOM.set_power(10e-6)
     counters.set_is_running(1)
     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 

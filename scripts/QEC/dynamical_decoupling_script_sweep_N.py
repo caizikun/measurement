@@ -58,7 +58,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='x'
+    m.params['Final_Pulse'] ='-x'
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
@@ -85,21 +85,21 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 ### LT 2 parameters
-    tau = 4.63e-6 # tau_L nr 32 dip in N=16
+    tau = 4.994e-6 # tau_L nr 32 dip in N=16
     NoP1=np.arange(4,200,8)
 
-    NoP2=np.arange(4,240,12)
+    # NoP2=np.arange(4,240,12)
     # NoP2=np.arange(1154,1345,64)
     # NoP3=np.arange(200,3201,3200)
 #### LT 1 parameters
-    tau_ctr = 39.472e-6
+    # tau_ctr = 39.472e-6
     #tau_ctr = 65.836e-6
     #tau_ctr=26.75e-6
     #tau_ctr=53.154
-    NoP1=np.arange(100,160,20)
-    idx=0
-    t=tau_ctr
-    SimpleDecoupling_swp_N(SAMPLE+'sweep_N_larm_tauidx_'+str(idx)+'_',NoP=NoP1,tau =t, reps_per_ROsequence = 750)
+    # NoP1=np.arange(100,160,20)
+    # idx=0
+    # t=tau_ctr
+    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,300,16),tau =tau, reps_per_ROsequence = 750)
     '''
     tau_array = tau_ctr+np.linspace(-.048e-6,.048e-6,9)
     for idx,t in enumerate(tau_array):
