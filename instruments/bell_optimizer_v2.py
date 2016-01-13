@@ -346,6 +346,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.optimize_gate()
                         self.wait_counter = 1
                         self.need_to_optimize_nf = True
+                        if self.gate_optimize_counter > self.get_max_counter_optimize()/2:
+                            self.set_pid_e_primer_running(False)
+                            qt.instruments['physical_adwin'].Set_FPar(51,66.65)
+
                     else:
                         text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
                              self.get_max_counter_optimize())

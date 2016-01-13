@@ -12,15 +12,15 @@ import numpy as np
 
 
 
-name = 'ESR_Horst_scan29_NV2'#name='ESR_'+ qt.exp_params['protocols']['current']
+name = 'ESR_Pippin_Sil3_MagnetInMontana'#name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 60       #101
-mw_power    = 18     #in dBm
-green_power = 200e-6    #10e-6
+mw_power    = -10    #in dBm
+green_power = 40e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
-center_f    = 2.840  # in GHz
+center_f    = 1.840  # in GHz
 
-range_f  =  0.015 # in GHz
+range_f  =  0.2 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
