@@ -2073,7 +2073,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 length = self.params['optical_pi_AOM_duration'], amplitude = self.params['optical_pi_AOM_amplitude'], delay = self.params['optical_pi_AOM_delay' ])
         ### necessary length definitions if you do a regular pi pulse.
         if Gate.do_pi:
-                    length = t-self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2, amplitude = 0.)
+            T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
+                    length = t-self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2,
+                    amplitude = 0.)
             
             T_rep = pulse.SquarePulse(channel='adwin_sync',name='Wait t-trep',
                     length = (t-t_rep)-self.params['fast_pi_duration']/2, amplitude = 0.)
