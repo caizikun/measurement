@@ -25,6 +25,7 @@ def check_pulse_shape(msmt):
 			msmt.params['fast_pi_duration'] = msmt.params['Square_pi_length']
 			msmt.params['fast_pi2_duration'] = msmt.params['Square_pi2_length']
 		elif pulse_shape == 'Hermite':
+			print 'Hermite_pi_length', msmt.params['Hermite_pi_length']
 			msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
 			msmt.params['fast_pi2_duration'] = msmt.params['Hermite_pi2_length']
 	except:
