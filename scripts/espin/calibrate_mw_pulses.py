@@ -1,11 +1,11 @@
-execfile(qt.reload_current_setup)
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 # reload all parameters and modules, import classes
 from measurement.scripts.espin import espin_funcs
-# reload(espin_funcs)
+reload(espin_funcs)
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 from measurement.lib.pulsar import pulselib
 
+execfile(qt.reload_current_setup)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 

@@ -15,6 +15,34 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
+
+
+pulse_shape = 'Hermite'
+electron_transition = '-1'
+
+if electron_transition == '+1':
+	electron_transition_string = '_p1'
+	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
+	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
+
+	hermite_pi_length = 100e-9
+	hermite_pi_amp = 0.76
+
+	hermite_pi2_length = 36e-9
+	hermite_pi2_amp = 0.833
+
+else:
+	electron_transition_string = '_m1'
+	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
+	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
+
+	hermite_pi_length = 100e-9
+	hermite_pi_amp = 0.395#0.887
+
+	hermite_pi2_length = 36e-9
+	hermite_pi2_amp = 0.437
+
+
 ### General settings for AdwinSSRO
 cfg['protocols']['AdwinSSRO']={
 		'AWG_done_DI_channel':          18,
@@ -144,23 +172,47 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SSRO_duration':				 40,
 		'SSRO_repetitions':				 5000, 
 		}
-cfg['protocols'][name]['AdwinSSRO+MBI']={}
+cfg['protocols'][name]['AdwinSSRO+MBI']={
+	#Spin pump before MBI
+	'Ex_SP_amplitude'           :           0e-9,   #15e-9,#15e-9,    #18e-9
+	'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
+	'SP_E_duration'             :           10,     #Duration for both Ex and A spin pumping
+	 
+	 #MBI readout power and duration
+	'Ex_MBI_amplitude'          :           0.65e-9,
+	'MBI_duration'              :           40,
+
+	#Repump after succesfull MBI
+	'repump_after_MBI_duration' :           [150],
+	'repump_after_MBI_A_amplitude':         [25e-9],  #18e-9
+	'repump_after_MBI_E_amplitude':         [0e-9],
+
+	#MBI parameters
+	'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
+	'MBI_threshold'             :           0, 
+	'AWG_wait_for_adwin_MBI_duration':      10e-6+40e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+	'repump_after_E_RO_duration':           15,
+	'repump_after_E_RO_amplitude':          15e-9,
+
+	#Shutter
+	'use_shutter':                          0, # we don't have a shutter in the setup right now
+}
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 	'SSRO_duration' : 20}
 
-CORPSE_frq = 9e6
 cfg['protocols'][name]['pulses'] = {
 
-    	'CORPSE_rabi_frequency' : CORPSE_frq,
+    	'CORPSE_rabi_frequency' : 9e6,
     	'CORPSE_amp' :		 		0.201,
     	'CORPSE_pi2_amp':			0.543,
     	'CORPSE_pulse_delay':		0e-9,
     	'CORPSE_pi_amp':			0.517,
-    	'Hermite_pi_length':		150e-9,
-        'Hermite_pi_amp':			0.897, #2015-12-28
-        'Hermite_pi2_length':		60e-9,
-        'Hermite_pi2_amp':			0.825,#2015-12-28
+    	'Hermite_pi_length': 		hermite_pi_length,#150e-9, ## bell duration
+        'Hermite_pi_amp': 			hermite_pi_amp,#0.938,#0.901, # 2015-12-17 ## bell duration
+        'Hermite_pi2_length':		hermite_pi2_length,
+        'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
         'Square_pi_length' :		50e-9, # 2014-12-01
