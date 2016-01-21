@@ -27,11 +27,15 @@ ins_counters = qt.instruments['counters']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def compsweep(tres,hwidth,Nres,Ndiff):
+def compsweep(tres,hwidth,Nres,Ndiff,half):
+    if half = 1:
+        phasesweep = [0, 30, 60, 60, 90, 120, 150] 
+    if half = 2:
+        phasesweep = [180,210,240,270,300,330,360]
     tmin=tres-hwidth
     tmax=tres+hwidth
     tpairs=[]
-    for phases in [0,45,90,135,180,225,270,315]:
+    for phases in phasesweep:
             tpairs.append([round(Nres/4,-1)*2+Ndiff,round(tmin,10),round(Nres/4,-1)*2+Ndiff,round(tmax,10),phases])
             
     return transpose(tpairs).tolist()
@@ -72,6 +76,7 @@ def SweepGates(name,**kw):
     carbon = kw.pop('carbon',False)
     el_RO = kw.pop('el_RO','positive')
     Ndiff = kw.pop('Ndiff',0)
+    half = kw.pop('half',1)
 
 
 
@@ -85,7 +90,7 @@ def SweepGates(name,**kw):
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence']=500
+    m.params['reps_per_ROsequence']=1500
 
     ### Carbons to be used
     m.params['carbon_list']         =[carbon]
@@ -116,7 +121,7 @@ def SweepGates(name,**kw):
     ##################################
 
 
-    com_list,m.params['N1_list'],m.params['tau1_list'],m.params['N2_list'],m.params['tau2_list'],m.params['extra_phase_list'],m.params['Tomography Bases'] = put_sweep_together(compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[0],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[1],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[2],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[3],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[4])
+    com_list,m.params['N1_list'],m.params['tau1_list'],m.params['N2_list'],m.params['tau2_list'],m.params['extra_phase_list'],m.params['Tomography Bases'] = put_sweep_together(compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[0],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[1],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[2],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[3],compsweep(m.params['C'+str(carbon)+'_tres'],m.params['hwidth'],m.params['C'+str(carbon)+'_Nres'],Ndiff)[4],half)
 
 
     ###################
@@ -167,7 +172,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-    carbons = [1,2,5]
+    carbons = [1]
 
 
     brekast = False
@@ -178,17 +183,19 @@ if __name__ == '__main__':
 
         optimize()
 
-        for w in [4e-9,8e-9,12e-9]:
+        for w in [20e-9]:
             
             for Ndiff in [-4,-2,0,2,4]:
                 
                 for el_RO in ['positive','negative']:
+                    
+                    for half in [1,2]:
 
                     breakst = show_stopper()
                     if breakst: break
                         
                     print(w)
-                    SweepGates(el_RO+'_C'+str(c)+'_width_'+str(w*1000000000)+'nas_Ntot_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff)
+                    SweepGates(el_RO+'_C'+str(c)+'_width_'+str(w*1000000000)+'nas_Ntot_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff, half = half)
                   
 
 

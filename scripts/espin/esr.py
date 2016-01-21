@@ -2,7 +2,7 @@ import qt
 import msvcrt
 import numpy as np
 
-#execfile(qt.reload_current_setup)
+execfile(qt.reload_current_setup)
 
 #SAMPLE = qt.exp_params['samples']['current']
 
@@ -13,12 +13,12 @@ import numpy as np
 
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 101       #101
-mw_power    = -20#-13      #in dBm
-green_power = 10e-6     #15e-6
-int_time    = 30        # in ms
+steps       = 151      #101
+mw_power    = -18#-13      #in dBm
+green_power = 20e-6     #15e-6
+int_time    = 15        # in ms
 reps        = 25
-center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
+center_f    = 1.7466 #1.76#3.95#1.74666#2.828#2.861
 '''
 steps       = 60       #101
 mw_power    = -10    #in dBm
@@ -33,7 +33,7 @@ range_f  =  0.2 # in GHz
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100A']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
