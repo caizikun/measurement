@@ -20,7 +20,6 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def __init__(self, name):
         ssro.IntegratedSSRO.__init__(self, name)
-
         self.params['measurement_type'] = self.mprefix
 
     def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
@@ -33,7 +32,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('on')
 
         try:
-            #self.mwsrc2.set_iq('on')
+            self.mwsrc2.set_iq('on')
             self.mwsrc2.set_pulsemod_state('on')            
             self.mwsrc2.set_frequency(self.params['mw2_frq'])
             self.mwsrc2.set_power(self.params['mw2_power'])
