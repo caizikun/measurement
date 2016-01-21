@@ -14,11 +14,12 @@ import numpy as np
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 101       #101
-mw_power    = -20#-13      #in dBm
-green_power = 10e-6     #15e-6
+mw_power    = -15#-13      #in dBm
+green_power = 15e-6     #15e-6
 int_time    = 30        # in ms
 reps        = 25
-center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
+center_f    = 4.055#1.76#3.95#1.74666#2.828#2.861
+#center_f    = 1.705#3.95#1.74666#2.828#2.861
 '''
 steps       = 60       #101
 mw_power    = -10    #in dBm
@@ -27,7 +28,7 @@ int_time    = 200       # in ms
 reps        = 150
 center_f    = 1.840  # in GHz
 '''
-range_f  =  0.2 # in GHz
+range_f  =  0.015 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
@@ -64,8 +65,12 @@ qt.msleep(0.2)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
 stop_scan=False
+optimizer_counter = 0
 for cur_rep in range(reps):
-
+    if optimizer_counter ==5:
+        optimiz0r.optimize(dims=['z','x','y'],int_time=50)
+        optimizer_counter = 0
+    optimizer_counter +=1
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True

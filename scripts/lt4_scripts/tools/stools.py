@@ -13,7 +13,7 @@ def turn_off_lasers(names):
 
 def turn_off_all_lasers():
     #set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM'])#,'YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
 
 def turn_off_all_lt4_lasers():
     turn_off_all_lasers()
@@ -26,12 +26,13 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.msleep(0.1)
     print 'Calibrate', name
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg: 
+        qt.instruments[name].set_cur_controller('AWG')
+        qt.instruments[name].turn_off()
     qt.instruments[name].calibrate(31)
-    qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    if awg: # set controller back to adwin
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.msleep(1)
-
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
@@ -45,7 +46,7 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
     for n in awg_names:
         init_AWG()
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+        recalibrate_laser(n, 'PMServo', 'adwin', awg=True)
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     if move_pm_servo:
