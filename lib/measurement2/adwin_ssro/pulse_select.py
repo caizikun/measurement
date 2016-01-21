@@ -25,7 +25,6 @@ def check_pulse_shape(msmt):
 			msmt.params['fast_pi_duration'] = msmt.params['Square_pi_length']
 			msmt.params['fast_pi2_duration'] = msmt.params['Square_pi2_length']
 		elif pulse_shape == 'Hermite':
-			print 'Hermite_pi_length', msmt.params['Hermite_pi_length']
 			msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
 			msmt.params['fast_pi2_duration'] = msmt.params['Hermite_pi2_length']
 	except:
@@ -410,7 +409,7 @@ def pi_pulse_MW2(msmt):
 	if pulse_shape == 'Square':
 		X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
 			I_channel='MW2', Q_channel='MW2',
-			PM_channel='MW2_pulsemod', Sw_channel = 'MW_switch',
+			PM_channel='MW2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
 			frequency = 0.,
 			PM_risetime = msmt.params['MW2_pulse_mod_risetime'],
 			Sw_risetime = msmt.params['MW_switch_risetime'],
@@ -424,7 +423,7 @@ def pi_pulse_MW2(msmt):
 		X = pulselib.HermitePulse_Envelope('Hermite pi-pulse',
 						 MW_channel='MW2',
 						 PM_channel='MW2_pulsemod',
-						 Sw_channel = 'MW_switch',
+						 Sw_channel = msmt.params['MW_switch_channel'],
 						 frequency = 0.,
 						 amplitude = msmt.params['mw2_Hermite_fast_pi_amp'],
 						 length = msmt.params['mw2_Hermite_fast_pi_duration'],

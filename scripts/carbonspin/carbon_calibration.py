@@ -22,7 +22,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 electron_transition_string = qt.exp_params['samples'][SAMPLE]['electron_transition']
 
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 n = 1
 
@@ -42,9 +42,10 @@ use_queue = False
 f_ms0 = False
 
 f_ms1 = False
+
 self_phase_calibration = True
 
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 debug = False
@@ -56,15 +57,30 @@ crosstalk_reps = 400
 
 
 ### this is used to determine the detuning of the ramsey measurements.
-detuning_basic = 0.44e3
-detuning_dict = {
-	'1' : detuning_basic,
-	'2' : detuning_basic*2,
-	'3' : detuning_basic*3.,
-	'5' : detuning_basic,
-	'6' : detuning_basic*4.}
+if SETUP == 'lt2':
+    detuning_basic = 0.44e3
+    detuning_dict = {
+    	'1' : detuning_basic,
+    	'2' : detuning_basic*2,
+    	'3' : detuning_basic*3.,
+    	'5' : detuning_basic,
+    	'6' : detuning_basic*4.}
 
+elif SETUP == 'lt3':
+    detuning_basic = 1e3
+    detuning_dict = {
+        '5' : detuning_basic,
+        '6' : 2*detuning_basic,
+        '7' : 2*detuning_basic,
+        '8' : 10*detuning_basic}
 ######
+
+
+def optimize():
+	GreenAOM.set_power(10e-6)
+	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
+	GreenAOM.set_power(0e-6)
+
 
 def stop_msmt():
 	print '--------------------------------'
@@ -81,17 +97,17 @@ def NuclearRamseyWithInitialization_cal(name,
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         detuning            = 0.5e3,
-        el_state            = 1,
+        el_state            = 0,
         debug               = False):
     
-    m = DD.NuclearRamseyWithInitialization_v2(name)
+    m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
 
     '''Set parameters'''
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = freq_reps
-    m.params['C13_MBI_RO_state'] = el_state
+    m.params['C13_MBI_RO_state'] = 0
     ### overwritten from msmnt params
            
     ####################################
@@ -119,7 +135,7 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = carbon_init_state  
-    # m.params['electron_after_init'] = str(el_state)
+    m.params['electron_after_init'] = str(el_state)
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
@@ -133,14 +149,14 @@ def NuclearRamseyWithInitialization_phase(name,
         el_state            = 0,
         debug               = False):
 
-    m = DD.NuclearRamseyWithInitialization_v2(name)
+    m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
 
     '''Set parameters'''
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = phase_reps
-    m.params['C13_MBI_RO_state'] = el_state
+    m.params['C13_MBI_RO_state'] =0
     m.params['pts'] = 25
     if carbon_nr == 6:
     	m.params['pts'] = 21
@@ -157,7 +173,7 @@ def NuclearRamseyWithInitialization_phase(name,
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = carbon_init_state  
-    # m.params['electron_after_init'] = str(el_state)
+    m.params['electron_after_init'] = str(el_state)
 
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0
@@ -169,7 +185,7 @@ def NuclearRamseyWithInitialization_phase(name,
 
 def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_init_method = 'MBI', 
 					N_list = np.arange(4,300,24), debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1,smart_sweep_pts=False,estimate_phase=0):
-    m = DD.Nuclear_Crosstalk_vs2(name)
+    m = DD.Nuclear_Crosstalk(name)
     funcs.prepare(m)
 
     '''set experimental parameters'''
@@ -268,9 +284,9 @@ def write_to_file_subroutine(data,search_string):
 
     	### check if we write params to the correct sample.
 
-    	if 'samples' in x and SAMPLE in x:
+    	if 'samples' in x and (SAMPLE in x or 'name' in x): ## 'name added for the msmt params of lt3'
     		correct_pos = True
-    	elif 'samples' in x and not SAMPLE in x:
+    	elif 'samples' in x and (not SAMPLE in x or not 'name' in x): ## 'name added for the msmt params of lt3'
     		corrrect_pos = False
 
     	### write params to sample
@@ -290,10 +306,15 @@ def write_to_file_subroutine(data,search_string):
             else:
                 array_string = str(round(params,2))+',\n'
 
-            fill_in = x[:len(search_string)+2] + ' : ' + array_string
+
+            ## search for the colon in the dictionary and append the numpy array to the string.
+            fill_in = x[:x.index(':')+1] + ' '+ array_string
 
             # print fill_in
             data[ii] = fill_in
+
+            # print 'this is the string I am looking for', search_string
+            # print 'this is what i write', data[ii]
 
     ### return the contents of msmt_params.py
     return data
@@ -305,20 +326,17 @@ def write_to_file_subroutine(data,search_string):
 ###### 				Calibrate ms=-1 frequencies 	      ######
 ################################################################
 
-qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
-qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
-qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
-
 
 # measure
 if f_ms1 and n == 1:
-    print 'Calibrate ms=-1 frequencies'
-    
-    for c in carbons:
+	print 'Calibrate ms=-1 frequencies'
+
+
+	for c in carbons:
 		detuning = detuning_dict[str(c)]
 		if n == 1:
 
-			NuclearRamseyWithInitialization_cal(SAMPLE+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 1)
+			NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 1)
 			# fit
 			f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
 			              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
@@ -331,9 +349,10 @@ if f_ms1 and n == 1:
 			qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_freq_1'+electron_transition_string] += -f0 + detuning
 
 			n = stop_msmt()
+
+			optimize()
 	
-    GreenAOM.set_power(10e-6)
-    optimiz0r.optimize(dims=['x','y','z'], int_time=100)
+	
 
 
 
@@ -341,9 +360,6 @@ if f_ms1 and n == 1:
 ###### 				Calibrate ms=0 frequencies 	 		 ######
 ###############################################################
 if n == 1 and f_ms0:
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	print 'Calibrate ms=0 frequencies'
 	# measure
 	for c in carbons:
@@ -370,10 +386,7 @@ if n == 1 and f_ms0:
 ##################################################################
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols'][SAMPLE]['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
-	
+
 	print 'Calibrate extra phase for gate for all 3 carbon spins'
 
 	#set all to zero to start with
@@ -425,18 +438,16 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
-	GreenAOM.set_power(10e-6)
-	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z'], int_time=100)
-	# phase_overview = [0.0]
+
+	optimize()
+
 	for c in carbons:
 		# remove that specific carbon from the list
 		carbons_cross = copy.deepcopy(carbons)
 		carbons_cross.remove(c)
 		for cross_c in carbons_cross:
 			#measure
-			# phase_list = [0]*cross_phase_steps
-			# phase_u_list = [0]*cross_phase_steps
+
 			Crosstalk_vs2(SAMPLE+ '_phase_cal_gateC'+str(cross_c)+'_measC'+str(c), C_measured = c, C_gate =cross_c ,
                 debug = debug, nr_of_gates=1,smart_sweep_pts=True,estimate_phase=estimate_phase[cross_c,c])
 
@@ -533,8 +544,7 @@ if cross_phase_calibration and len(carbons)>1:
 
 # write to msmt_params.py if the calibration was finished succesfully.
 if n== 1:
-	print 'Parameters have been written to msmt_params.py'
-	write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase_calibration,cross_phase_calibration,debug)
+    write_to_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,debug)
 else:
 	print 'Sequence was aborted: I did not save the calibration results'
 

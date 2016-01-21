@@ -3,10 +3,10 @@ import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
 name='ESR_SAM_SIL5_LT4'
-start_f = 2.79#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.83#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+start_f = 4.#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 4.2#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
 steps   = 50
-mw_power = -12. #in dBm
+mw_power = -5. #in dBm
 green_power = 10e-6
 int_time = 30       #in ms
 reps = 250
@@ -36,10 +36,14 @@ qt.msleep(0.2)
 total_cnts = zeros(steps)
 qt.instruments['GreenAOM'].set_power(green_power)
 stop_scan=False
+count =0 
 for cur_rep in range(reps):
     
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
-    
+    if count == 5:
+    	optimiz0r.optimize(dims=['z','x','y'],int_time=50)
+    	count = 0
+    count+=1
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
         ins_smb.set_frequency(cur_f)

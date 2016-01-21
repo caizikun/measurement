@@ -158,6 +158,7 @@ INIT:
 
   P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
+  P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation high.
   
   tmp = P2_Digin_Edge(DIO_MODULE,0)
   mode = 0
@@ -206,6 +207,7 @@ EVENT:
       CASE 1    ' E spin pumping
         
         IF (timer = 0) THEN
+          P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
@@ -218,6 +220,7 @@ EVENT:
                     
           IF (timer >= SP_E_duration) THEN
             P2_CNT_ENABLE(CTR_MODULE,0)
+            P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             
@@ -328,6 +331,7 @@ EVENT:
        
         ' turn on A laser; we don't need to count here for the moment
         IF (timer = 0) THEN
+          P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage_after_MBI+32768) ' turn on A laser, for spin pumping after MBI
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage_after_MBI+32768) ' turn on E laser, for spin pumping after MBI
         ELSE 
@@ -336,6 +340,7 @@ EVENT:
           IF (timer = SP_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+ 32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.
             IF (use_shutter > 0) THEN
               P2_DIGOUT(DIO_Module,Shutter_channel, 1)
               'INC(PAR_60)
@@ -480,11 +485,13 @@ EVENT:
       case 7 ' turn on the lasers to (hopefully) randomize the N-spin state before re-trying MBI
         
         if (timer = 0) then
+          P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_N_randomize_voltage+32768)
           P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_N_randomize_voltage+32768)
           P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_N_randomize_voltage+32768)
         else
           if (timer = N_randomize_duration) then
+            P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768)
             P2_DAC(DAC_MODULE,A_laser_DAC_channel,3277*A_off_voltage+32768)
             P2_DAC(DAC_MODULE,repump_laser_DAC_channel,3277*repump_off_voltage+32768)

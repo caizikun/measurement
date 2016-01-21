@@ -12,28 +12,15 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
+from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 import time
 import msvcrt
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-
-#### Parameters and imports for DESR ####
-from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
-from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
-
-nm_per_step = qt.exp_params['magnet']['nm_per_step']
-f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
-f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
-N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
-ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
-
-range_fine  = 0.40
-pts_fine    = 51
-reps_fine   = 1500 #1000
 ###############
 
 
@@ -58,7 +45,7 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
 
 
@@ -113,19 +100,21 @@ def QMem(name, carbon_list   = [5],
     ### determine sweep parameters
     pts = 31
 
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    f_larmor = m.params['C5_freq_0']#(m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
     tau_larmor = round(1/f_larmor,9)
 
     m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
     m.params['average_repump_time'] = np.linspace(-0.5e-6,2.e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[200.]
+    m.params['fast_repump_repetitions'] = pts*[10.]
 
-    m.params['do_pi'] = False ### does a regular pi pulse
-    m.params['do_BB1'] = True ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
+    m.params['do_pi'] = True ### does a regular pi pulse
+    m.params['do_BB1'] = False ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
+    m.params['do_optical_pi']=kw.get('do_optical_pi', False)
 
-    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    
+    m.params['pi_amps'] = pts*[ps.X_pulse(m).amplitude]
 
-    m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repump beam is applied.
+    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the repump beam is applied.
 
     m.params['fast_repump_power'] = kw.get('repump_power', 900e-9)
 
@@ -156,6 +145,7 @@ def optimize(breakst):
         GreenAOM.set_power(10e-6)
         counters.set_is_running(1)
         optimiz0r.optimize(dims = ['x','y','z','y','x'])
+        GreenAOM.set_power(0e-6)
 
 
 
@@ -169,7 +159,7 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
     debug = False
-    repump_power_sweep = [900e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
+    repump_power_sweep = [20e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
     
     if True: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
@@ -179,11 +169,11 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [1]:#,2,3,5,6]:#[1,3,5,6,2]:
+            for c in [5]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
                 for tomo in ['X','Y']:
-                    optimize(breakst or debug)
+                    # optimize(breakst or debug)
                     if breakst:
                         break
                     for ro in ['positive','negative']:

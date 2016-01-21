@@ -4,7 +4,7 @@ import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -23,7 +23,7 @@ def MBE(name, carbon_list            =   1,
         el_RO               = 'positive',
         debug               = False):
 
-    m = DD.Two_QB_Probabilistic_MBE_v3(name)
+    m = DD.Two_QB_Probabilistic_MBE(name)
     funcs.prepare(m)
 
 

@@ -4,7 +4,7 @@ import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 # import measurement.scripts.lt2_scripts.tools.stools
@@ -22,7 +22,7 @@ def MBE(name, carbon            =   1,
         el_RO               = 'positive',
         debug               = False):
 
-    m = DD.Two_QB_Probabilistic_MBE_v3(name)
+    m = DD.Two_QB_Probabilistic_MBE(name)
     funcs.prepare(m)
 
 
@@ -33,7 +33,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     carbons = [5]
     debug = False
     breakst = False
-    init_method = 'swap'
+    init_method = 'MBI'
 
     if init_method == 'both' or init_method == 'swap':
         for c in carbons:
@@ -108,11 +108,11 @@ if __name__ == '__main__':
 
             if breakst: 
                 break
-            breakst = stoolts.show_stopper()
+            breakst = stools.show_stopper()
 
-            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]
+            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 
-            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c]
+            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 

@@ -112,8 +112,8 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### NV and field parameters ###
 ###############################
 
-f_msm1_cntr =  2.807324e9#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 2.810e9 #not calib       #Electron spin ms=+1 frequency
+f_msm1_cntr =  1.70536e9#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.0533e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -127,19 +127,19 @@ cfg['samples'][sample_name] = {
 	'C_split'		:		C_split}
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 1e-9, 
+		'A_CR_amplitude':			 	 10e-9, #1e-9
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 10e-9,
+		'A_SP_amplitude':				 25e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1e-9, 
-		'Ex_RO_amplitude':				 1.5e-9,
-		'Ex_SP_amplitude':				 10e-9,
+		'Ex_CR_amplitude':				 3e-9, #1e-9
+		'Ex_RO_amplitude':				 3e-9,
+		'Ex_SP_amplitude':				 0e-9,
 		'SP_duration':					 100,
-		'SP_duration_ms0':				 50,
-		'SP_duration_ms1':				 200,
+		'SP_duration_ms0':				 100,
+		'SP_duration_ms1':				 500,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
 		'SSRO_repetitions':				 5000, 

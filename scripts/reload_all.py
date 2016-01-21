@@ -36,6 +36,8 @@ reload(pulsar_pq)
 from measurement.lib.measurement2.adwin_ssro import dynamicaldecoupling
 reload(dynamicaldecoupling)
 
+from measurement.lib.measurement2.adwin_ssro import DD_2; reload(DD_2)
+
 #from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 #reload(pulsar_pq)
 #from measurement.lib.measurement2.adwin_ssro import pulsar_qutau

@@ -292,3 +292,13 @@ def aom_listener():
 def load_regular_linescan():
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['adwin'].load_linescan()
+
+def show_stopper():
+    ### can be used to break a measurement
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
