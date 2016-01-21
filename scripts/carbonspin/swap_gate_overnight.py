@@ -13,7 +13,7 @@ import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 from measurement.scripts.carbonspin.1_carbon_Initialization import MBE
 from measurement.scripts.carbonspin.swap_gate_sten import SWAP

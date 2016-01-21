@@ -16,7 +16,7 @@ import qt
 import msvcrt
 
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
@@ -118,7 +118,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [1,2,5]
+	carbons = [5]
 
 
 	brekast = False

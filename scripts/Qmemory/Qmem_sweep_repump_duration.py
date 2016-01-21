@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -57,7 +57,7 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
 
 
