@@ -271,8 +271,8 @@ if __name__ == '__main__':
 
     # # Measure a single point for a single state.
     teststate='X'
-    EvoTime_arr=[1e-3]
-    msmts=0
+    EvoTime_arr=[10e-3]
+    msmts=5
     for RO in ['positive']:
         Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
                         el_RO= RO,
@@ -280,7 +280,7 @@ if __name__ == '__main__':
                         Tomo_bases = RO_bases_dict[teststate],
                         free_evolution_time=EvoTime_arr,
                         number_of_zeno_msmnts =msmts,
-                        debug=False,Repetitions=800)
+                        debug=True,Repetitions=800)
 
     # EvoTime_arr=[0e-3]
     # msmts=0
