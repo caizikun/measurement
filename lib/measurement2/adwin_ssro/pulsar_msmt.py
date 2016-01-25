@@ -33,8 +33,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('on')
 
         try:
-            #self.mwsrc2.set_iq('on')
-            self.mwsrc2.set_pulsemod_state('on')            
+            self.mwsrc2.set_iq('on')
+            self.mwsrc2.set_pulm('on')            
             self.mwsrc2.set_frequency(self.params['mw2_frq'])
             self.mwsrc2.set_power(self.params['mw2_power'])
             self.mwsrc2.set_status('on')

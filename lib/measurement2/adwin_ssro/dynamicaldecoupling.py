@@ -7034,10 +7034,10 @@ class Sweep_Carbon_Gate(MBI_C13):
             init_wait_for_trigger = True
             
             for kk in range(self.params['Nr_C13_init']):
-                print self.params['init_method_list'][kk]
-                print self.params['init_state_list'][kk]
-                print self.params['carbon_init_list'][kk]
-                print 
+                # print self.params['init_method_list'][kk]
+                # print self.params['init_state_list'][kk]
+                # print self.params['carbon_init_list'][kk]
+                # print 
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
@@ -7080,10 +7080,11 @@ class Sweep_Carbon_Gate(MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if not debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
+            # I don't want to see gate_seq every time SK
+            # if not debug:
+            #     print '*'*10
+            #     for g in gate_seq:
+            #         print g.name
 
             # if debug:
                 # for g in gate_seq:

@@ -26,12 +26,13 @@ def run(name, **kw):
     funcs.prepare(m)
 
     max_duration = kw.get('max_duration',3e-6)
+    more_data_until = kw.pop('more_data_until', 0)
     m.params['RO_pm1'] = kw.pop('do_MW_RO', False)
 
-    pts = 50 # even number
+    pts = 100 # even number
 
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 500
     m.params['detuning'] = 0e6 #artificial detuning
 
     ## not in use
@@ -42,7 +43,11 @@ def run(name, **kw):
 
     m.params['laser_repump_amplitude'] = kw.get('newfocus_power',5e-9)
     # m.params['repumper_amplitude'] = kw.get('repumper_power',5e-9)
-    m.params['repumping_time'] = np.linspace(0.0e-6,max_duration,pts)
+    if more_data_until == 0 or more_data_until>max_duration:
+        m.params['repumping_time'] = np.linspace(0.0e-6,max_duration,pts)
+    else:
+        m.params['repumping_time'] = np.append(
+            np.linspace(0.0e-6,more_data_until,pts/2),np.linspace(more_data_until,max_duration,pts/2))
 
     m.params['MW_repump_delay1'] = np.ones(pts) * 1000e-9
     m.params['MW_repump_delay2'] = np.ones(pts) * 2500e-9
@@ -56,42 +61,43 @@ def run(name, **kw):
 
 if __name__ == '__main__':
     print 
-    newfocus_power_list = [120e-9]
-    max_repump_duration = 2e-6
+    newfocus_power_list = [500e-9]
+    max_repump_duration = 1.5e-6
+    more_data_until = 200e-9
     #repump_power_list = np.arange(0.05e-6, 0.51e-6, 0.05e-6)#, 350e-9, 200e-9, 100e-9, 50e-9, 20e-9]
 
-    repump_laser_config = 'A_linear_modulated'
+    repump_laser_config = 'Eprime'
 
     for sweep_element in range(len(newfocus_power_list)):
         if False: #do a mw pi pulse after repumping
-            add_to_msmt_name ='1RO_'
+            add_to_msmt_name ='_pm1RO'
 
             do_MW_RO = True
 
             filename = SAMPLE_CFG + '_ElectronRepump_'+ \
                         str(newfocus_power_list[sweep_element]*1e9)+'nW_' \
-                        +repump_laser_config
-            
+                        +repump_laser_config+add_to_msmt_name
             print filename
             
             run(name=filename,  
                                 max_duration    = max_repump_duration,
                                 newfocus_power  = newfocus_power_list[sweep_element], do_MW_RO = do_MW_RO,
-                                debug           = False)
+                                debug           = False,
+                                more_data_until = more_data_until)
 
         if True:# no mw pulses after repumping
-            add_to_msmt_name ='0RO_'
+            add_to_msmt_name ='_0RO'
 
             do_MW_RO = False
 
             filename = SAMPLE_CFG + '_ElectronRepump_'+ \
                         str(newfocus_power_list[sweep_element]*1e9)+'nW_' \
-                        +repump_laser_config
-            
+                        +repump_laser_config+add_to_msmt_name            
             print filename
             
             run(name=filename,  
                                 max_duration    = max_repump_duration,
                                 newfocus_power  = newfocus_power_list[sweep_element], do_MW_RO = do_MW_RO,
-                                debug           = False)
+                                debug           = False,
+                                more_data_until = more_data_until)
 

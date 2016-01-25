@@ -33,7 +33,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
