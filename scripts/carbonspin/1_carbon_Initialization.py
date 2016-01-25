@@ -1,3 +1,4 @@
+
 import numpy as np
 import qt 
 import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
@@ -81,8 +82,8 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [5]
-    debug = False
+    carbons = [1]
+    debug = True
     breakst = False
     init_method = 'MBI'
 
@@ -97,8 +98,8 @@ if __name__ == '__main__':
                                                 ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
 
-            MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
-                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+            # MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
+            #                                     ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
             
             if init_method == 'both':
                 init_method = 'MBI'
@@ -113,6 +114,6 @@ if __name__ == '__main__':
             MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 
-            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
-                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+            # MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
+            #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 

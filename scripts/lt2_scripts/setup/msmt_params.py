@@ -147,8 +147,8 @@ cfg['protocols']['Magnetometry']={
 
 mw_power  = 20
 mw2_power = 20
-f_msm1_cntr =   1.746668e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
-f_msp1_cntr =   4.008622e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
+f_msm1_cntr =   1.746994e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
+f_msp1_cntr =   4.008301e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
                 
 zero_field_splitting = 2.877623e9   # not calibrated #contains + 2*N_hf
                                  
@@ -176,7 +176,7 @@ if electron_transition == '-1':
     AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
     
     Hermite_pi_length = 160e-9    
-    Hermite_pi_amp = 0.487 #0.481 #for 150 ns
+    Hermite_pi_amp = 0.445 #0.481 #for 150 ns
 
     Hermite_pi2_length = 65e-9#56e-9 # divsible by 2
     Hermite_pi2_amp = 0.501
@@ -304,8 +304,8 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau_m1'    :   [4.996e-6],
-'C1_Ren_N_m1'      :   [36],
+'C1_Ren_tau_m1'    :  [4.996e-6],
+'C1_Ren_N_m1'      :  [36],
 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [32.1] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
 
     ################
@@ -577,6 +577,9 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
     'MW_modulation_frequency'   :   f_mod_0,
     'MW_switch_channel'     :   'None', ### if you want to activate the switch, put to MW_switch
 
+
+    'DESR_pulse_duration'   : 3e-6,
+    'DESR_pulse_amplitude'        : 0.01,
     'X_phase'                   :   90,
     'Y_phase'                   :   0,
 

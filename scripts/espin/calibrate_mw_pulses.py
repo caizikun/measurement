@@ -1,10 +1,12 @@
-execfile(qt.reload_current_setup)
+
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+reload(pulsar_msmt)
 # reload all parameters and modules, import classes
 from measurement.scripts.espin import espin_funcs
-# reload(espin_funcs)
+reload(espin_funcs)
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 from measurement.lib.pulsar import pulselib
+execfile(qt.reload_current_setup)
 
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -63,7 +65,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False):
 
     print 'duration ', m.params['MW_duration']
     print 'amp ', m.params['MW_pulse_amplitudes'][0]
-    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi, mw2=True)
+    espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
 def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):
     m = pulsar_msmt.General_mw2_PiCalibrationSingleElement(name)
@@ -325,8 +327,8 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
-    #calibrate_pi_pulse_NoIQSource(SAMPLE_CFG + 'SquarePi_MW2', multiplicity =5, debug = False)
+    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
+    calibrate_pi_pulse(SAMPLE_CFG + 'SquarePi_MW2', multiplicity =5, debug = False)
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
     #calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)

@@ -4,6 +4,7 @@ import numpy as np
 
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+reload(pulsar_msmt)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 
 

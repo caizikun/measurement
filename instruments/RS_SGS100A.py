@@ -165,7 +165,7 @@ class RS_SGS100A(Instrument):
             print 'Frequency calibrated'
             s=self._visainstrument.ask('CAL:LEV:MEAS?')
             print 'Level calibrated'
-            if cal_IQ_mod:
+            if cal_IQ_mod
                 self.set_iq('on')
                 s=self._visainstrument.ask('CAL:IQM:LOC?')
                 print 'IQ modulator calibrated'
