@@ -2852,11 +2852,10 @@ config['adwin_cav1_dacs'] = {
         'jpe_fine_tuning_2': 2,
         'jpe_fine_tuning_3': 3,
         'green_aom' : 4,
-        'yellow_aom' : 9,
-        'matisse_aom' : 6,
-        'newfocus_aom': 7,
+        'newfocus_freqmod': 5,
+        'scan_mirror_x' : 6,
+        'scan_mirror_y': 7,
         'laser_coarse_wav_imput': 8,
-        'newfocus_freqmod': 5
         }
 
 config['adwin_cav1_dios'] = {
@@ -2889,6 +2888,32 @@ config['adwin_cav1_processes'] = {
                 },
             'data_long' : {
                 'get_last_counts' : 45,
+                },
+            },
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'linescan.TB2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
                 },
             },
 
@@ -2927,6 +2952,9 @@ config['adwin_cav1_processes'] = {
             'index' : 5,
             'file' : 'init_data.TB5',
             },
+
+
+
 
         'timeseries_photodiode' : {
             'doc' : '',
