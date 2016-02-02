@@ -39,7 +39,7 @@ reload (measurement.lib.cavity.panels.XYscan_panel)
 from measurement.lib.cavity.cavity_scan_v2 import CavityExpManager, CavityScan
 from measurement.lib.cavity.panels.scan_gui_panels import MsgBox, ScanPlotCanvas
 from measurement.lib.cavity.panels.control_panel_2 import Ui_Dialog as Ui_Form
-from measurement.lib.cavity.panels.scan_panel_v8 import Ui_Form as Ui_Scan
+from measurement.lib.cavity.panels.scan_panel_v9 import Ui_Form as Ui_Scan
 from measurement.lib.cavity.panels.slow_piezo_scan_panel import Ui_Form as Ui_SlowScan
 from measurement.lib.cavity.panels.XYscan_panel import Ui_Form as Ui_XYScan
 
@@ -150,15 +150,20 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.sb_nr_calib_pts.setRange(1,99)
         self.ui.sb_wait_cycles.setRange(1,9999)
         self.ui.sb_delay_msync.setRange(0, 9999)
-
-
+        self.ui.sb_mindelay_msync.setRange(0, 9999)
+        self.ui.sb_mindelay_msync.setSingleStep(1)
+        self.ui.sb_maxdelay_msync.setRange(0, 9999)
+        self.ui.sb_maxdelay_msync.setSingleStep(1)
+        self.ui.sb_nr_steps_msyncdelay.setRange(1,99)
+        self.ui.sb_nr_scans_msync.setRange(1,999)
+        self.ui.sb_nr_repetitions.setRange(1,999)
         #CONNECT SIGNALS TO EVENTS
         #general:
         self.ui.cb_autosave.stateChanged.connect (self.autosave)
         self.ui.cb_autostop.stateChanged.connect (self.autostop)
         self.ui.sb_avg.valueChanged.connect(self.set_avg)
-        self.ui.button_save.clicked.connect(self.save)
-        #Piezo-Scan:
+        self.ui.button_save.clicked.connect(self.save_single)
+        #JPE piezo-Scan:
         self.ui.dsb_minV_pzscan.valueChanged.connect(self.set_minV_pzscan)
         self.ui.dsb_maxV_pzscan.valueChanged.connect(self.set_maxV_pzscan)
         self.ui.sb_nr_steps_pzscan.valueChanged.connect(self.set_nr_steps_pzscan)
@@ -180,6 +185,14 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.button_stop_long_scan.clicked.connect(self.stop_lr_scan)
         self.ui.sb_nr_calib_pts.valueChanged.connect(self.set_nr_calib_pts)
         self.ui.sb_fine_tuning_steps_LRscan.valueChanged.connect(self.set_steps_lr_scan)
+        #Sweep sync montana delays:
+        self.ui.sb_mindelay_msync.valueChanged.connect(self.set_min_msyncdelay)
+        self.ui.sb_maxdelay_msync.valueChanged.connect(self.set_max_msyncdelay)
+        self.ui.button_start_sweepdelay.clicked.connect(self.start_sweep_msyncdelay)
+        self.ui.button_stop_sweepdelay.clicked.connect(self.stop_sweep_msyncdelay)
+        self.ui.sb_nr_steps_msyncdelay.valueChanged.connect(self.set_nr_steps_msyncdelay)
+
+
         #Other buttons
         self.ui.lineEdit_fileName.textChanged.connect(self.set_file_tag)
         #self.ui.button_timeseries.clicked.connect (self.activate_timeseries)
@@ -189,16 +202,23 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.cb_montana_sync.stateChanged.connect (self.montana_sync)
         self.ui.sb_delay_msync.valueChanged.connect(self.set_delay_msync)
         self.ui.sb_nr_scans_msync.valueChanged.connect(self.set_nr_scans_msync)
+        self.ui.sb_nr_repetitions.valueChanged.connect(self.set_nr_repetitions)
 
         #INITIALIZATIONS:
+        #JPE piezo-scan
         self.ui.dsb_minV_pzscan.setValue(1.00)
+        self.set_minV_pzscan(1.00)
         self.ui.dsb_maxV_pzscan.setValue(2.00)
-        self.ui.sb_nr_steps_pzscan.setValue(4)
+        self.set_maxV_pzscan(2.00)
+        self.ui.sb_nr_steps_pzscan.setValue(999)
+        self.set_nr_steps_pzscan(999)
+        #general
         self._running_task = None
         self._scan_mngr.averaging_samples = 1
         self.ui.sb_avg.setValue(1)
         self._scan_mngr.autosave = False
         self._scan_mngr.autostop = False
+        #fine laser scan
         self.ui.dsb_minV_finelaser.setValue(-3)
         self._scan_mngr.minV_finelaser = -3
         self.ui.dsb_maxV_finelaser.setValue(3)
@@ -206,7 +226,8 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.sb_nr_steps_finelaser.setValue(100)
         self._scan_mngr.nr_steps_finelaser = 100
         self.ui.sb_wait_cycles.setValue(1)
-        self._scan_mngr.wait_cycles_finelaser = 1
+        self.set_wait_cycles(1)
+        #long range laser scan
         self.ui.sb_fine_tuning_steps_LRscan.setValue(100)
         self._scan_mngr.nr_steps_lr_scan = 100
         self.ui.dsb_min_lambda.setValue (637.0)
@@ -216,11 +237,24 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.sb_nr_calib_pts.setValue(1)
         self.set_nr_calib_pts(1)
         self.coarse_wavelength_step = 0.1 
+        #sweep montana sync delays
+        self.ui.sb_mindelay_msync.setValue(0)
+        self.set_min_msyncdelay (0)
+        self.ui.sb_maxdelay_msync.setValue(1000)
+        self.set_max_msyncdelay (1000)
+        self.ui.sb_nr_steps_msyncdelay.setValue(11)
+        self.set_nr_steps_msyncdelay(11)
+
+        #others
         self._scan_mngr.file_tag = ''
         self._2D_scan_is_active = False
         self._use_sync = False
+        self.ui.sb_nr_scans_msync.setValue(1)
         self.set_nr_scans_msync(1)
-        self.set_delay_msync(1)
+        self.ui.sb_delay_msync.setValue(0)
+        self.set_delay_msync(0)
+        self.ui.sb_nr_repetitions.setValue(1)
+        self.set_nr_repetitions(1)
 
         #TIMER:
         self.refresh_time = 100
@@ -242,6 +276,8 @@ class ScanGUI(QtGui.QMainWindow):
             self.run_new_timeseries()
         elif (self._running_task == 'update_2D_scan'):
             self.run_update_2D_scan()            
+        elif (self._running_task == 'sweep_msyncdelay'):
+            self.run_new_sweep_msyncdelay()            
         else:
             idle = True
 
@@ -268,46 +304,69 @@ class ScanGUI(QtGui.QMainWindow):
 
     def set_file_tag (self, text):
         self._scan_mngr.file_tag = str(text)
-        print "file tag changed: ", self._scan_mngr.file_tag
 
-    def save(self):
+    def initialize_msmt_params(self):
+        #TODO: add wavelength to the params!!
+        self.msmt_params = {}
+        self.msmt_params['nr_scans_per_sync'] = self._scan_mngr.nr_avg_scans
+        return self.msmt_params
 
-        if (self._scan_mngr.curr_task == 'lr_scan'):
-            minL = str(int(10*self._scan_mngr.min_lambda))
-            maxL = str(int(10*self._scan_mngr.max_lambda))
-            fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
-        else:
-            fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task
-        if self._scan_mngr.file_tag:
-            fName = fName + '_' + self._scan_mngr.file_tag
-        print fName  
+    def save_single(self):
+        self.save(data_index = '_single')
+
+    def save(self, **kw):
+        data_index = kw.pop('data_index', '')
+        fName = kw.pop('fname', None)
+        if fName == None:
+            if (self._scan_mngr.curr_task == 'lr_scan'):
+                minL = str(int(10*self._scan_mngr.min_lambda))
+                maxL = str(int(10*self._scan_mngr.max_lambda))
+                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
+            else:
+                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task
+            if self._scan_mngr.file_tag:
+                fName = fName + '_' + self._scan_mngr.file_tag
+        
         f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
         directory = os.path.join(f0, fName)
         if not os.path.exists(directory):
             os.makedirs(directory)
         
         f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
-        print f5.keys()
-        scan_grp = f5.create_group(self._scan_mngr.curr_task)
+
+        if (self._scan_mngr.curr_task+'_processed_data_'+data_index) not in f5.keys():
+            scan_grp = f5.create_group(self._scan_mngr.curr_task+'_processed_data_'+data_index)
+        else:
+            scan_grp = f5[self._scan_mngr.curr_task+'_processed_data_'+data_index]
         scan_grp.create_dataset(self._scan_mngr.saveX_label, data = self._scan_mngr.saveX_values)
         scan_grp.create_dataset(self._scan_mngr.saveY_label, data = self._scan_mngr.saveY_values)
 
         try:
-            data_grp = f5.create_group('DataSets')
+            if 'raw_data_'+data_index not in f5.keys():
+                data_grp = f5.create_group('raw_data_'+data_index)
+            else:
+                data_grp = f5['raw_data_'+data_index]
             for j in np.arange (self._scan_mngr.nr_avg_scans):
-                data_grp.create_dataset('dataset_'+str(j+1), data = self._scan_mngr.data [j,:])
+                data_grp.create_dataset('scannr_'+str(j+1), data = self._scan_mngr.data [j,:])
         except:
             print 'Unable to save data'
         
         try:
-            time_grp = f5.create_group('TimeStamps')
+            if 'TimeStamps'+data_index not in f5.keys():
+                time_grp = f5.create_group('TimeStamps'+data_index)
+            else:
+                time_grp = f5['TimeStamps'+data_index]
             time_grp.create_dataset('timestamps [ms]', data = self._scan_mngr.tstamps_ms)
         except:
             print 'Unable to save timestamps'
 
+        #The below could be in a function save_msmt_params or so
         try:
             for k in self._scan_mngr.scan_params:
                 f5.attrs [k] = self._scan_mngr.scan_params[k]
+            for l in self.msmt_params: #ideally msmt_params should replace scan_params.
+                f5.attrs [l] = self.msmt_params[l]
+
         except:
             print 'Unable to save scan params'
 
@@ -331,6 +390,8 @@ class ScanGUI(QtGui.QMainWindow):
             plt.ylabel (self._scan_mngr.saveY_label, fontsize = 15)
             plt.savefig (os.path.join(directory, fName+'.png'))
             plt.close(fig)     
+
+        return fName
 
     def save_2D_scan(self):
 
@@ -378,7 +439,7 @@ class ScanGUI(QtGui.QMainWindow):
         self._scan_mngr.nr_steps_finelaser = value
 
     def set_wait_cycles (self, value):
-        self._scan_mngr.wait_cycles_finelaser = value        
+        self._scan_mngr.wait_cycles = value        
 
     def start_finelaser(self):
         if (self._running_task==None):
@@ -404,11 +465,31 @@ class ScanGUI(QtGui.QMainWindow):
     def set_steps_lr_scan (self, value):
         self._scan_mngr.nr_steps_lr_scan = value
 
+    def set_min_msyncdelay(self,value):
+        self._scan_mngr.min_msyncdelay = value
+
+    def set_max_msyncdelay(self, value):
+        self._scan_mngr.max_msyncdelay = value
+
+    def set_nr_steps_msyncdelay(self,value):
+        self._scan_mngr.nr_steps_msyncdelay = value
+
+    def start_sweep_msyncdelay(self):
+        if (self._running_task==None):
+            self._running_task = 'sweep_msyncdelay'
+
+    def stop_sweep_msyncdelay(self):
+        if (self._running_task=='sweep_msyncdelay'):
+            self._running_task = None
+
     def set_nr_scans_msync (self, value):
         self._scan_mngr.nr_avg_scans = value
 
     def set_delay_msync (self, value):
         self._scan_mngr.sync_delay_ms = value
+
+    def set_nr_repetitions (self,value):
+        self._scan_mngr.nr_repetitions = value
 
     def start_lr_scan(self):
         if (self._running_task==None):
@@ -481,17 +562,19 @@ class ScanGUI(QtGui.QMainWindow):
             self._running_task = None
             self._2D_scan_is_active = False
 
-    def run_new_pzscan(self):
-
+    def run_new_pzscan(self, **kw):
+        enable_autosave = kw.pop('enable_autosave',True)
         self.reinitialize()
         self.ui.label_status_display.setText("<font style='color: red;'>SCANNING PIEZOs</font>")
         self._scan_mngr.set_scan_params (v_min=self._scan_mngr.minV_pzscan, v_max=self._scan_mngr.maxV_pzscan, nr_points=self._scan_mngr.nr_steps_pzscan)
         self._scan_mngr.initialize_piezos(wait_time=1)
 
+        #self._scan_mngr.sync_delays_ms = np.ones(self._scan_mngr.nr_avg_scans)*sync_delay_ms
+
         self._scan_mngr.piezo_scan ()
         self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
         if self._scan_mngr.success:
-            self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'piezo voltage [V]', 
+            self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.data[0], x_axis = 'piezo voltage [V]', 
                         y_axis = 'photodiode signal (a.u.)', color = 'RoyalBlue')
             self._scan_mngr.saveX_values = self._scan_mngr.v_vals
             self._scan_mngr.saveY_values = self._scan_mngr.PD_signal
@@ -506,11 +589,13 @@ class ScanGUI(QtGui.QMainWindow):
             ex.show()
             self._scan_mngr.curr_task = None
       
-        if self._scan_mngr.autosave:
+        if self._scan_mngr.autosave and enable_autosave:
             self.save()
         if self._scan_mngr.autostop:
             self._running_task = None
             self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)
+
+        return self._scan_mngr.success
 
     def run_new_fine_laser_scan(self):
 
@@ -518,7 +603,7 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.label_status_display.setText("<font style='color: red;'>FINE LASER SCAN</font>")
         self._scan_mngr.set_scan_params (v_min=self._scan_mngr.minV_finelaser, v_max=self._scan_mngr.maxV_finelaser, nr_points=self._scan_mngr.nr_steps_finelaser)
         self._scan_mngr.laser_scan(use_wavemeter = False)
-        self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.PD_signal, x_axis = 'laser-tuning voltage [V]', 
+        self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.data[0], x_axis = 'laser-tuning voltage [V]', 
                     y_axis = 'photodiode signal (a.u.)', color = 'b')
         self._scan_mngr.saveX_values = self._scan_mngr.v_vals
         self._scan_mngr.saveY_values = self._scan_mngr.PD_signal  
@@ -532,6 +617,61 @@ class ScanGUI(QtGui.QMainWindow):
         if self._scan_mngr.autostop:
             self._running_task = None
 
+    def run_new_sweep_msyncdelay(self):
+        print "starting a new sweep of the montana sync delay"
+        self.initialize_msmt_params()
+        #calculate nr of sync pulses in which nr_scans = nr_scans, and remainder nr_scans in last sync pulse
+        nr_syncs_per_pt,nr_remainder = divmod(self._scan_mngr.nr_repetitions, self._scan_mngr.nr_avg_scans)
+        #create the array with the sync_delay values to sweep
+        sync_delays = np.linspace(self._scan_mngr.min_msyncdelay,self._scan_mngr.max_msyncdelay,self._scan_mngr.nr_steps_msyncdelay)
+        print sync_delays
+
+        self.msmt_params['sync_delays'] = sync_delays
+        self.msmt_params['sweep_pts'] = sync_delays
+        self.msmt_params['sweep_name'] = 'sync delay (ms)'
+        self.msmt_params['sweep_length'] = len(sync_delays)
+        self.msmt_params['nr_repetitions'] = self._scan_mngr.nr_repetitions
+        if nr_remainder > 0: #then you need one more sync to finish all repetitions
+            nr_syncs_per_pt = nr_syncs_per_pt+1
+        self.msmt_params['nr_syncs_per_pt'] = nr_syncs_per_pt
+        self.msmt_params['nr_remainder'] = nr_remainder
+
+        #create a local variable of nr_avg_scans and sync_delay_ms to remember the setting
+        nr_avg_scans = self._scan_mngr.nr_avg_scans
+        sync_delay_ms = self._scan_mngr.sync_delay_ms
+        print 'syncs per pt',nr_syncs_per_pt
+        print 'remaining',nr_remainder
+        print 'scans per sync',nr_avg_scans
+
+        fname = None
+
+        for i in np.arange(nr_syncs_per_pt):
+            if self._running_task == None:
+                print 'measurement stopping'
+                break
+            if (i == nr_syncs_per_pt-1): #the last one
+                if nr_remainder>0:
+                    #set the nr_avg_scans to the remainder number of scans
+                    self._scan_mngr.nr_avg_scans = nr_remainder
+            print "sync nr ",i+1," of ", nr_syncs_per_pt
+
+
+            for j,sync_delay_j in enumerate(sync_delays):
+                self._scan_mngr.sync_delay_ms = sync_delay_j
+                print 'sync delay value ', j+1 ,' of ', len(sync_delays), ': ',sync_delay_j
+                first_rep = str(int(i*nr_avg_scans+1))
+                last_rep = str(int(i*nr_avg_scans+self._scan_mngr.nr_avg_scans))
+                data_index_name = 'sweep_pt_'+str(j)+'_reps_'+first_rep+'-'+last_rep
+                self.run_new_pzscan(enable_autosave=False)
+                fname = self.save(fname=fname, 
+                    data_index = data_index_name)
+        
+        #reset the nr_avg_scans in the scan_manager
+        self._scan_mngr.nr_avg_scans = nr_avg_scans
+        self._scan_mngr.sync_delay_ms = sync_delay_ms
+
+        #always stop after the mmt
+        self._running_task = None
 
 
     def fit_calibration(self, V, freq, fixed):
