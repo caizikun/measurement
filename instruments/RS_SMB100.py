@@ -313,12 +313,12 @@ class RS_SMB100(Instrument):
         '''
         logging.debug(__name__ + ' : setting power to %s dBm' % power)
         
-        if self.get_status() == 'on' and self.get_pulm() == 'off' and power > self.get_max_cw_pwr():
+        if self.get_pulm() == 'off' and power > self.get_max_cw_pwr():
             logging.warning(__name__ + ' : power exceeds max cw power; power not set.')
-            raise ValueError('power exceeds max cw power')
+            raise ValueError('power exceeds max cw power. The pulse modulation is off')
             
-
-        self._visainstrument.write('SOUR:POW %e' % power)
+        else:
+            self._visainstrument.write('SOUR:POW %e' % power)
 
     def _do_set_max_cw_pwr(self, pwr):
         self._max_cw_pwr = pwr
@@ -405,7 +405,7 @@ class RS_SMB100(Instrument):
             iq (string) : 'on' or 'off'
         '''
         logging.debug(__name__ + ' : reading IQ modulation status from instrument')
-	stat = self._visainstrument.ask('IQ:STAT?')
+        stat = self._visainstrument.ask('IQ:STAT?')
 
         if stat == '1':
             return 'on'

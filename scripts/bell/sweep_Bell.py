@@ -174,13 +174,13 @@ def tail_sweep(name):
         if sweep_off_voltage:
             m.params['general_sweep_name'] = 'eom_off_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.25,-0.35,pts)
+            m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.3,0.7,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.4,0.9,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 

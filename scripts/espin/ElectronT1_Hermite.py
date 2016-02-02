@@ -14,12 +14,13 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
+from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 # from measurement.scripts.lt1_scripts.quantum_memory import calibrate_quantum_memory as cqm
 
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = None, end_time = None, pts = None):
+def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = None, end_time = None, pts = None,debug=False):
     '''Electron T1 measurement using Hermite pulses
     '''
 
@@ -65,26 +66,13 @@ def electronT1hermite(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0'
     # Run measurement
     m.autoconfig()
     m.generate_sequence(upload = True)
-    m.run()
-    m.save()
-    m.finish()
+
+    if not debug:
+        m.run()
+        m.save()
+        m.finish()
 
 
-def hermite_Xpi(msmt):
-    
-    MW_pi = pulselib.HermitePulse_Envelope_IQ('Hermite pi-pulse',
-                         'MW_Imod',
-                         'MW_Qmod',
-                         'MW_pulsemod',
-                         Sw_channel = 'MW_switch',
-                         frequency = msmt.params['Hermite_fast_pi_mod_frq'],
-                         amplitude = msmt.params['Hermite_fast_pi_amp'],
-                         length = msmt.params['Hermite_fast_pi_duration'],
-                         PM_risetime = msmt.params['MW_pulse_mod_risetime'],
-                         Sw_risetime = msmt.params['MW_switch_risetime'],
-                         pi2_pulse = False)
-
-    return MW_pi 
 
 class ElectronT1Hermite(pulsar_msmt.ElectronT1):
 
@@ -92,14 +80,14 @@ class ElectronT1Hermite(pulsar_msmt.ElectronT1):
 
         ### define basic pulses/times ###
         # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
-        X = hermite_Xpi(self)
+        X = ps.X_pulse(self)
         # Wait-times
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
         T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 100e-9, amplitude = 0.) #the unit waittime is 10e-6 s
         T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
-            length = (1000. - self.params['Hermite_fast_pi_duration'] * 1e9)*1e-9, amplitude = 0.) # waiting time chosen s.t. T_before_p + X + T_after_p = 1 us
+            length = (1000. - self.params['Hermite_pi_length'] * 1e9)*1e-9, amplitude = 0.) # waiting time chosen s.t. T_before_p + X + T_after_p = 1 us
         # Trigger pulse
         Trig = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2)
@@ -166,7 +154,7 @@ if __name__ == '__main__':
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0, end_time = 1.5e6, pts = 4)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0.0e6, end_time = 4.0e5, pts = 5)
-    # electronT1hermite(SAMPLE_CFG+'0to0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 1000e3, pts = 8)
+    # electronT1hermite(SAMPLE_CFG+'0to0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 200e3, pts = 8)
     #electronT1hermite(SAMPLE_CFG+'0top1', T1_initial_state = 'ms=0', T1_readout_state = 'ms=1', start_time = 1e3, end_time = 1000e3, pts = 8)
-    electronT1hermite(SAMPLE_CFG+'m1to0', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 1000e3, pts = 8)
-    electronT1hermite(SAMPLE_CFG+'m1top1', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=1', start_time = 1e3, end_time = 1000e3, pts = 8)
+    electronT1hermite(SAMPLE_CFG+'m1to0', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0', start_time = 1e3, end_time = 200e3, pts = 8)
+    # electronT1hermite(SAMPLE_CFG+'m1top1', T1_initial_state = 'ms=-1', T1_readout_state = 'ms=1', start_time = 1e3, end_time = 20e3, pts = 8)

@@ -1,11 +1,14 @@
+
 import numpy as np
 import qt 
 import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
+
+# import measurement.scripts.lt2_scripts.tools.stools
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -20,7 +23,7 @@ def MBE(name, carbon            =   1,
         el_RO               = 'positive',
         debug               = False):
 
-    m = DD.Two_QB_Probabilistic_MBE_v3(name)
+    m = DD.Two_QB_Probabilistic_MBE(name)
     funcs.prepare(m)
 
 
@@ -31,7 +34,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 500
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -79,26 +82,38 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1,2,5]
-    debug = False
-    init_method = 'swap'
+    carbons = [1]
+    debug = True
+    breakst = False
+    init_method = 'MBI'
 
-    if init_method == 'swap':
+    if init_method == 'both' or init_method == 'swap':
         for c in carbons:
 
+
+            breakst = stools.show_stopper()
+            if breakst:
+                break
             MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
                                                 ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
 
-            MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
-                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+            # MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
+            #                                     ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+            
+            if init_method == 'both':
+                init_method = 'MBI'
 
-    elif init_method == 'MBI':
+    if init_method == 'MBI':
         for c in carbons:
 
-            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]
+            if breakst: 
+                break
+            breakst = stools.show_stopper()
+
+            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 
-            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c]
-                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+            # MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
+            #                                     ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 

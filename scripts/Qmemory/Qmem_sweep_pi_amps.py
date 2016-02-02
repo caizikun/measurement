@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -150,7 +150,7 @@ def show_stopper():
     else: return False
 
 def optimize():
-    GreenAOM.set_power(15e-6)
+    GreenAOM.set_power(10e-6)
     counters.set_is_running(1)
     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 

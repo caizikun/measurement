@@ -6,7 +6,7 @@ import qt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)

@@ -25,8 +25,12 @@ def recalibrate_laser(name, servo, adwin, awg=False):
 
     qt.msleep(0.1)
     print 'Calibrate', name
+    if not awg:
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg:
+        qt.instruments[name].set_cur_controller('AWG')
+        stools.init_AWG()
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
     if awg: qt.instruments[name].set_cur_controller('ADWIN')
@@ -153,13 +157,13 @@ def start_bs_counter(int_time=100):
         print 'ZPL APDs on'
     else:
         print 'ZPL APDs could not be turned on!'
-    qt.instruments['counters'].set_is_running(False)
+    #qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
     params={'int_time':int_time}
     qt.instruments['bs_helper'].set_measurement_params(params)
     qt.instruments['bs_helper'].execute_script()
-    qt.instruments['linescan_counts'].set_scan_value('counter_process')
+    #qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
@@ -292,3 +296,13 @@ def aom_listener():
 def load_regular_linescan():
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['adwin'].load_linescan()
+
+def show_stopper():
+    ### can be used to break a measurement
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False

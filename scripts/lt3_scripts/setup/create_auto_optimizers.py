@@ -8,7 +8,7 @@ if True:
             rotation_config_name='waveplates_lt3',
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
             get_count_f = _get_count_rej, get_msmt_running_f = _get_msmt_running_rej)
-if False:
+if True:
     _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
     _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -18,7 +18,7 @@ if False:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
-if False:
+if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
@@ -28,7 +28,7 @@ if False:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')
 
-if False:
+if True:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     _getctrl_nf = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
@@ -38,5 +38,5 @@ if False:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
 
-if False:
+if True:
     bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name = 'lt3')

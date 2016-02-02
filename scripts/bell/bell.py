@@ -82,8 +82,8 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         for k in joint_params:
             h5_joint_params_group.attrs[k] = joint_params[k]
         self.h5data.flush()
-
-        np.savetxt(self.params['twitter_rnd_fp'],self._rnd_dataset,fmt='%d')
+        if self.joint_params['twitter_randomness']:
+            np.savetxt(self.params['twitter_rnd_fp'],self._rnd_dataset,fmt='%d')
 
         pulsar_pq.PQPulsarMeasurement.finish(self)
 

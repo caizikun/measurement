@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -48,22 +48,24 @@ def QMem(name, carbon_list   = [5],
         number_of_MBE_steps = 0,
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
+        logic_state         = 'X',
 
         el_RO               = 'positive',
         debug               = True,
-        tomo_list			= ['X'],
-        Repetitions         = 250):
+        tomo_list           = ['X'],
+        Repetitions         = 300):
 
 
 
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
+
 
 
 
     #############
 
-    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
 
     ''' set experimental parameters '''
 
@@ -74,8 +76,8 @@ def QMem(name, carbon_list   = [5],
 
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
-    m.params['init_method_list']    = carbon_init_methods    
-    m.params['init_state_list']     = carbon_init_states    
+    m.params['init_method_list']    = carbon_init_methods*len(carbon_init_list)
+    m.params['init_state_list']     = carbon_init_states*len(carbon_init_list)    
     m.params['Nr_C13_init']         = len(carbon_init_list)
 
     m.params['el_after_init']       = '0'
@@ -86,16 +88,16 @@ def QMem(name, carbon_list   = [5],
 
     ## not necessary
     
+    
     ####################
     ### MBE settings ###
     ####################
-    """these parameters will be used later on"""
 
     m.params['Nr_MBE']              = number_of_MBE_steps 
-    m.params['MBE_bases']           = []# should be mbe_bases as soon as mbe is implemented
+    m.params['MBE_bases']           = mbe_bases
     m.params['MBE_threshold']       = MBE_threshold
-    # m.params['2qb_logical_state']   = logic_state
-    # m.params['2C_RO_trigger_duration'] = 150e-6
+    m.params['2qb_logical_state']   = logic_state
+    m.params['2C_RO_trigger_duration'] = 150e-6
     
     ###################################
     ### Parity measurement settings ###
@@ -113,14 +115,14 @@ def QMem(name, carbon_list   = [5],
     tau_larmor = round(1/f_larmor,9)
     ### calculate the carbon revival:
     f0 = m.params['C1_freq_0']
-    f1 = m.params['C1_freq_1']
+    f1 = m.params['C1_freq_1_m1']
     df = abs(f1-f0)
     tau_c2 = 1/df-mod(1/df,tau_larmor)
     print tau_c2,tau_larmor,mod(1/df,tau_larmor)
     print 1/df
     rng = tau_larmor*pts/2
-    m.params['repump_wait'] =  np.linspace(tau_larmor-500e-9,tau_larmor+500e-9,pts)#np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[200e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['repump_wait'] =  np.linspace(tau_larmor-400e-9,tau_larmor+400e-9,pts)#np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[500e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
     m.params['fast_repump_repetitions'] = [500]*pts
 
     m.params['do_pi'] = False ### does a regular pi pulse
@@ -131,14 +133,14 @@ def QMem(name, carbon_list   = [5],
     print m.params['repump_wait']
     print np.mod(m.params['repump_wait'],tau_larmor)
 
-    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
+    m.params['fast_repump_duration'] = pts*[2.e-6] #how long the repumper beam is shined in.
 
-    m.params['fast_repump_power'] = 700e-9
+    m.params['fast_repump_power'] = 2.000e-9
 
 
     ### For the Autoanalysis
     m.params['pts']                 = pts
-    m.params['sweep_name']          = 'repump repetitions' 
+    m.params['sweep_name']          = 'Wait time (us)' 
     m.params['sweep_pts']           =  m.params['repump_wait']*1e6
     
     ### RO params
@@ -157,10 +159,11 @@ def show_stopper():
         return True
     else: return False
 
-def optimize():
-    GreenAOM.set_power(15e-6)
-    counters.set_is_running(1)
-    optimiz0r.optimize(dims = ['x','y','z','y','x'])
+def optimize(breakst):
+    if not breakst:
+        GreenAOM.set_power(10e-6)
+        counters.set_is_running(1)
+        optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
 
@@ -168,17 +171,16 @@ if __name__ == '__main__':
 
     breakst=False    
     last_check=time.time()
-
+    debug = False
     # QMem('C5_positive_tomo_Y',debug=True,tomo_list = ['Y'])
 
 
-    n = 1
-    if n ==1:
-        for c in [2,5]:
+    if True:   #turn measurement on or off
+        for c in [5]:
             if breakst:
                 break
             for tomo in ['Z']:
-                optimize()
+                optimize(breakst or debug)
                 if breakst:
                     break
                 for ro in ['positive','negative']:
@@ -193,3 +195,40 @@ if __name__ == '__main__':
                                                                         carbon_init_list        = [c],
                                                                         carbon_init_methods     = ['swap'], 
                                                                         carbon_init_thresholds  = [0])
+
+
+
+    if False: #turn measurement on or off
+        logic_state_list=['mX'] ### for DFS creation.
+        tomo_list =[['X','X'],['Y','Y'],['X','Y'],['Y','X']]
+        # tomo_list = [['Z','Z']]
+        # tomo_list = [['Z','Z']]
+        # llist_of_c_lists = [[2,5],[5,6],[1,5],[1,3],[1,6],[2,3],[2,6],[3,5],[3,6],[1,2]]
+        llist_of_c_lists = [[2,5]]
+        for c_list in llist_of_c_lists:
+            for logic_state in logic_state_list:
+                if breakst:
+                    break
+                for tomo in tomo_list: 
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        msmt_name = 'sweep_timing_'+ro+'_state'+logic_state+'_Tomo_'+tomo[0]+tomo[1]+'_C'+str(c_list[0])+str(c_list[1])
+                        print last_check-time.time()
+                        QMem(msmt_name,
+                                debug                   = debug,
+                                tomo_list               = tomo, 
+                                el_RO                   = ro,
+                                carbon_list             = c_list,               
+                                carbon_init_list        = c_list,
+                                carbon_init_thresholds  = [0],
+                                number_of_MBE_steps     = 1,
+                                carbon_init_methods     = ['swap'],
+                                logic_state             = logic_state)
+
+                        if abs(last_check-time.time()) > 30*60: ## check every 30 minutes
+                            optimize(breakst or debug)
+                            last_check = time.time()

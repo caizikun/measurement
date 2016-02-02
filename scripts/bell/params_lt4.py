@@ -58,18 +58,15 @@ params_lt4['Ex_SP_amplitude'] = 0e-9
 params_lt4['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
 params_lt4['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
+params_lt4['MW_Q_amp_factor'] = 0.925/0.9
 
-params_lt4['square_MW_pulses']    = False
-#params_lt4['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
-#params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
-#params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
-#params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
 params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt4['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']#90e-9 # 2014-07-09
 params_lt4['MW_Npi4_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_amp'] 
 params_lt4['MW_Npi4_duration'] = qt.exp_params['protocols'][name]['pulses']['Hermite_Npi4_length']#90e-9 # 2014-07-09
+
 
 params_lt4['MW_RND_amp_I']	   = params_lt4['MW_Npi4_amp']#TODO Calibrate  and add offset
 params_lt4['MW_RND_duration_I']= params_lt4['MW_Npi4_duration'] #TODO Calibrate 50e-9
@@ -91,13 +88,13 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 params_lt4['eom_pulse_amplitude']		= 1.9 
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 50e-9
-params_lt4['eom_off_amplitude']         = -0.285 # calibration 2015-11-04
+params_lt4['eom_off_amplitude']         = -0.293 # calibration 2015-11-04
 params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
 params_lt4['aom_risetime']              = 17e-9
-params_lt4['aom_amplitude']             = 0.567#CR 31  
+params_lt4['aom_amplitude']             = 0.57#CR 31  
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

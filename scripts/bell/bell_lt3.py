@@ -158,6 +158,7 @@ def bell_lt3(name):
         elif 'full_Bell' in remote_name:
             mw=True
             th_debug=False
+            m.joint_params['twitter_randomness'] = True
         elif 'MeasXX_' in remote_name:
             mw=True
             th_debug = False 

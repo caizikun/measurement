@@ -13,7 +13,7 @@ def turn_off_lasers(names):
 
 def turn_off_all_lasers():
     #set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM'])#,'YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
 
 def turn_off_all_lt4_lasers():
     turn_off_all_lasers()
@@ -26,12 +26,13 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.msleep(0.1)
     print 'Calibrate', name
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg: 
+        qt.instruments[name].set_cur_controller('AWG')
+        qt.instruments[name].turn_off()
     qt.instruments[name].calibrate(31)
-    qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    if awg: # set controller back to adwin
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.msleep(1)
-
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
@@ -45,7 +46,7 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
     for n in awg_names:
         init_AWG()
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+        recalibrate_laser(n, 'PMServo', 'adwin', awg=True)
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     if move_pm_servo:
@@ -116,7 +117,7 @@ def turn_on_lt4_pulse_path():
 def init_AWG():
     qt.instruments['AWG'].initialize_dc_waveforms()
 
-def start_bs_counter():
+def start_bs_counter(int_time=100):
     if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
         print 'ZPL APDs on'
@@ -125,6 +126,8 @@ def start_bs_counter():
     qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
+    params={'int_time':int_time}
+    qt.instruments['bs_helper'].set_measurement_params(params)
     qt.instruments['bs_helper'].execute_script()
     qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
@@ -139,9 +142,9 @@ def stop_bs_counter():
         print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch3_marker2_low(2.)
+    qt.instruments['AWG'].set_ch2_marker1_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch3_marker2_low(0.)
+    qt.instruments['AWG'].set_ch2_marker1_low(0.)
 
 def quantum_random_number_reset():
     qt.instruments['adwin'].start_set_dio(dio_no=7, dio_val=0)
