@@ -19,8 +19,8 @@ class JPE_CADM(Instrument):
         self.T = 300
         self.type = 'PK1801'
         self.TRQFR = 1
-        self.freq = 150
-        self.rel_step = 100
+        self.freq = 100
+        self.rel_step = 30
 
         self.pzknb_command = 'D:\measuring\measurement\hardware\jpe\pzknb_CMD\pzknb'
 

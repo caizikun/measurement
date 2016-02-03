@@ -147,6 +147,7 @@ class ADwin_Pro_II(Instrument): #1
         success = self._adwin32.e_Set_Data(d.ctypes.data,5,index,start,count,
                 self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
+            print 'Set_Data_Float: index:',index, 'data:', data, ', type:', type(data) ,', start:', start, ', count:', count
             logging.warning(self.get_name() + \
                     ' : error in ADwin.Set_Data_Float: %s'%ErrorMsg.value)
 

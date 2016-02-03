@@ -136,10 +136,10 @@ if __name__ == '__main__':
 
 		#put sweep together for carbon 5
 
-		C5tau = 7.112e-6
+		C5tau = 7.108e-6
 		C5tau_rng = 10e-9 #stepsize is 2 ns.
-		C5N = 28
-		C5N_steps = 4 #on step corresponds to two pulses
+		C5N = 24
+		C5N_steps = 10 #on step corresponds to two pulses
 
 
 		## make this a function that returns a custom msmt dict for each carbon
@@ -185,9 +185,9 @@ if __name__ == '__main__':
 		if breakst: break
 
 		#optimize()
-		No_of_msmts = msmt_dict['C'+str(c)][2]
-		tau_list = msmt_dict['C'+str(c)][0]
-		N_list = msmt_dict['C'+str(c)][1]
+		No_of_msmts = msmt_dict['C5'][2]
+		tau_list = msmt_dict['C5'][0]
+		N_list = msmt_dict['C5'][1]
 		#gate_configs_per_msmt = msmt_dict['C'+str(c)][3] ## to be added for efficient AWG loading.
 
 		# print 'len tau', len(tau_list)

@@ -201,7 +201,7 @@ if __name__ == '__main__':
     debug = False
 
     #### this needs to be filled out in order to make the loops/optimization work
-    repump_power = 40e-9
+    repump_power = 500e-9
 
     # QMem('RO_electron',debug=False,tomo_list = ['Z'])
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])

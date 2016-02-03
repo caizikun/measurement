@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [5]
+carbons = [6]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -158,7 +158,7 @@ def NuclearRamseyWithInitialization_phase(name,
     m.params['reps_per_ROsequence'] = phase_reps
     m.params['C13_MBI_RO_state'] =0
     m.params['pts'] = 25
-    if carbon_nr == 6:
+    if carbon_nr == 6 and SETUP == 'lt2':
     	m.params['pts'] = 21
 
     m.params['add_wait_gate'] = False

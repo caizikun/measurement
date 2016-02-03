@@ -41,7 +41,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0',
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     '''set experimental paramqeters'''
         #T1 experiment
 
@@ -155,10 +155,10 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
 if __name__ == '__main__':
 
-    times = np.linspace(1e2,600e3,15)
+    times = np.linspace(1e2,50e3,15)
     ii = 999
-    T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
-                    T1_readout_state = 'ms=-1', debug=False)
+    # T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
+    #                 T1_readout_state = 'ms=-1', debug=True)
     T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
                     T1_readout_state = 'ms=0', debug=False)
     

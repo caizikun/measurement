@@ -18,18 +18,20 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705293e9 #1.669252e9#1.713316e9 #1.7#2.809073e9#2.809328e9#2.80888e9#2.75375e9# +/-   0.000018           #Electron spin ms=-1 frquency 
+f_msm1_cntr = 1.705293e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.051020e9 #Electron spin ms=+1 frequency
 
-f_msp1_cntr = 4.051020e9#4.087882e9#2.810e9 #not calib       #Electron spin ms=+1 frequency
 mw_mod_frequency = 0
 mw_power = 20
+mw2_mod_frequency = 0
+mw2_power = 20
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.198e6        #calibrated 2014-03-20/181319
 C_split  = 0.847e6 
 
 pulse_shape = 'Hermite'
-electron_transition = '-1'
+electron_transition = '+1'
 
 if electron_transition == '+1':
 	electron_transition_string = '_p1'
@@ -48,10 +50,20 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9
-	hermite_pi_amp = 0.397#0.887
+	hermite_pi_amp = 0.39
 
 	hermite_pi2_length = 36e-9
 	hermite_pi2_amp = 0.437
+
+# Second MW source, currently only up to 3.2GHz, i.e. onl;y -1 transition
+	mw2_frq     = f_msm1_cntr - mw2_mod_frequency                # Center frequency
+	mw2_frq_MBI = f_msm1_cntr - mw2_mod_frequency # - N_HF_frq    # Initialized frequency
+
+	hermite_pi_length_mw2 = 100e-9
+	hermite_pi_amp_mw2  = 0.397#0.887
+
+	hermite_pi2_length_mw2  = 36e-9
+	hermite_pi2_amp_mw2  = 0.437
 
 
 ### General settings for AdwinSSRO
@@ -112,10 +124,14 @@ else:
 # mw_frq = 2.78e9
 cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_frq':                                  mw_frq, 
-		'mw_power':                                20,#-20,
+		'mw_power':                                mw_power,
 		'MW_pulse_mod_risetime':                   20e-9,
-		'send_AWG_start':                          1,
 		'MW_pulse_mod_frequency' : 				   0e6,
+		'mw2_frq':                                 mw2_frq, 
+		'mw2_power':                               mw2_power,
+		'mw2_pulse_mod_risetime':                  20e-9,
+		'mw2_pulse_mod_frequency' : 			   0e6,
+		'send_AWG_start':                          1
 	}
 
 
@@ -135,6 +151,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 		'AWG_wait_duration_before_shelving_pulse':  100e-9,
 		'nr_of_ROsequences'						:   1,  #setting this on anything except on 1 crahses the adwin?
 		'MW_pulse_mod_risetime'					:   20e-9,
+		'mw2_pulse_mod_risetime'					:   20e-9,
 		'MW_switch_risetime'                    :   500.0e-9, #This was 100e-9, seemed not long enough NK 20150319
 		'AWG_to_adwin_ttl_trigger_duration'		:   2e-6,
 		'repump_after_MBI_duration'				:   150, 
@@ -178,6 +195,9 @@ cfg['samples'][sample_name] = {
 	'mw_mod_freq'   :       mw_mod_frequency,
 	'mw_frq'        :       mw_frq_MBI, # this is automatically changed to mw_freq if hermites are selected.
 	'mw_power'      :       mw_power,
+	'mw2_mod_freq'   :      mw2_mod_frequency,
+	'mw2_frq'        :      mw2_frq, # this is automatically changed to mw_freq if hermites are selected.
+	'mw2_power'      :      mw2_power,
 	'ms-1_cntr_frq' :       f_msm1_cntr,
 	'ms+1_cntr_frq' :       f_msp1_cntr,
 	'N_0-1_splitting_ms-1': N_frq,
@@ -190,6 +210,7 @@ cfg['samples'][sample_name] = {
 ###############
 
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
 
 	#### C5 ###
 	'C5_gate_optimize_tau_list_m1' : [7.110e-6]*3+[7.112e-6]*3+[7.114e-6]*3,
@@ -208,14 +229,26 @@ cfg['samples'][sample_name] = {
 	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
+	'C5_freq_p1'        : 456810.32,
+	'C5_freq_0' 		: 447947.23,
+	'C5_freq_1_p1' 		: 447947.23-18e3,
+
+	'C5_Ren_tau_p1'    :   [7.108e-6],
+	'C5_Ren_N_p1'      :   [28],
+	'C5_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
 	### C6 ###
 	'C6_freq_m1'        :  (447947.23 + 454068.94)/2,
 	'C6_freq_0' 		: 447917.23,
 	'C6_freq_1_m1' 		: 454068.94,
 
-	'C6_Ren_tau_m1'    :   [13.855e-6],
+	'C6_Ren_tau_m1'    :   [16.065e-6],
 	'C6_Ren_N_m1'      :   [24],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [0.0] + [0.0] + [0.0] + [7.83] + [31.46] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [0.0] + [0.0] + [0.0] + [7.83] + [-32.34] + [0.0] + [0.0] + [0.0]),
+
+	'C6_gate_optimize_tau_list_m1' : [16.063e-6]*3+[16.065e-6]*3+[16.067e-6]*3,
+	'C6_gate_optimize_N_list_m1': [22,24,26]*3,
 
 
 	### C7 ###
@@ -297,6 +330,7 @@ cfg['protocols'][name]['pulses'] = {
 
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
+		'mw2_modulation_frequency'   :  0,
 		'MW_switch_risetime'	:	500e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' : 9e6,
@@ -310,6 +344,9 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
+
+      	'IQ_Square_pi_amp' :		0.068,#632 , # calib. for 1 us pi pulse, 2015-05-12 
+      	'IQ_Square_pi2_amp'  :		0.6967, # 
         'Square_pi_length' :		100e-9,#2000e-9, # calib. 2014-07-25
       	'Square_pi_amp' :			0.731, 
       	'Square_pi2_length' :		25e-9, # XXXXXXX not calibrated
@@ -320,8 +357,15 @@ cfg['protocols'][name]['pulses'] = {
     	'DESR_pulse_duration' :		4e-6,
     	'DESR_pulse_amplitude' :	0.15,#0.194,
 
-
-    	### parameters for a potential second source go here
+    	# Second mw source
+    	'Hermite_pi_length_mw2': 	hermite_pi_length_mw2,
+        'Hermite_pi_amp_mw2': 		hermite_pi_amp_mw2,
+        'Hermite_pi2_length_mw2':	hermite_pi2_length_mw2,
+        'Hermite_pi2_amp_mw2': 		hermite_pi2_amp_mw2, 
+        'Square_pi_length_mw2' :	1e-9,
+      	'Square_pi_amp_mw2' :		0.01, 
+      	'Square_pi2_length_mw2' :   1e-9,
+    	'Square_pi2_amp_mw2' :		0.01,
 }
 
 
@@ -331,7 +375,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
-		'C13_MBI_RO_duration':                  50,  
+		'C13_MBI_RO_duration':                  25,  
 		'E_C13_MBI_RO_amplitude':               0.05e-9, 
 		'SP_duration_after_C13':                10, #use long repumping in case of swap init
 		'A_SP_amplitude_after_C13_MBI':         12e-9,
