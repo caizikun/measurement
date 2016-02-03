@@ -109,12 +109,12 @@ def erabi_hermite(name):
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 4*m.params['fast_pi_duration'], pts) #* 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) *m.params['fast_pi_amp'] # * 0.05 #*0.49
+        m.params['MW_pulse_durations'] =  np.linspace(0, 4*m.params['Hermite_pi_length'], pts) #* 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) *m.params['Hermite_pi_amp'] # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
-        print m.params['fast_pi_amp']
+        print m.params['Hermite_pi_amp']
         print m.params['MW_pulse_durations']
     elif sweep_param == 'amplitude':    
         m.params['MW_pulse_durations'] =  np.ones(pts)*490e-9 
@@ -138,4 +138,4 @@ def erabi_hermite(name):
         m.finish()
 
 if __name__ == '__main__':
-    erabi_hermite(SAMPLE+'_'+'msp1')
+    erabi_hermite(SAMPLE+'_'+'msm1')
