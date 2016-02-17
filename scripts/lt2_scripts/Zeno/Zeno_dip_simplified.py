@@ -11,7 +11,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -60,7 +60,7 @@ def Zeno(name, carbon_list   = [1,5],
         Repetitions         = 1000,
         c1ms0                = 431.991e3):
 
-    m = DD.Zeno_simplified(name)
+    m = Zen.Zeno_simplified(name)
     funcs.prepare(m)
 
     ### Overwrite msmt_params. Set parameters to the values of the 'dip'

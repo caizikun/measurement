@@ -66,6 +66,7 @@ class ScanPlotCanvas (FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def update_plot (self, x, y, x_axis, y_axis, color, autoscale=False):
+        print 'Updating plot'
         self.axes.plot(x, y, '.', color=color, linewidth =2)
         self.axes.set_xlabel(x_axis)
         self.axes.set_ylabel(y_axis)
@@ -77,12 +78,12 @@ class ScanPlotCanvas (FigureCanvas):
         rows, cols = np.shape (y)
         colori = cm.gist_earth(np.linspace(0,0.75, rows))
         for j in np.arange(rows):
-            
-            self.axes.plot(x, y[j,:], linewidth =2)
+            self.axes.plot(x, y[j,:], 'RoyalBlue')            
+            self.axes.plot(x, y[j,:], 'o', color = colori[j])
             self.axes.set_xlabel(x_axis)
             self.axes.set_ylabel(y_axis)
-            self.draw()
-            time.sleep (0.01)
+        self.draw()
+        time.sleep (0.01)
 
 
 class MyCanvas(FigureCanvas):
@@ -232,6 +233,34 @@ class ScanCanvas(MyCanvas):
             self.calibrate_laser_frequency()
         else:
             self._status_label.setText("<font style='color: red;'>IDLE</font>")
+
+class XYCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+
+        # Clear axes every time plot() is called
+        self.axes.hold(False)
+
+        FigureCanvas.__init__(self, self.fig)
+        self.setParent(parent)
+
+        #FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def update_plot(self, x, y, cts):
+        self.im = self.axes.pcolor (x, y, cts, cmap = 'gist_earth')
+        self.axes.set_xlabel ('x [$\mu$m]')
+        self.axes.set_ylabel ('y [$\mu$m]')
+        self.axes.set_aspect ('equal')
+        self.draw()
+
+    def colorbar (self):
+        self.fig.colorbar(self.im)
+
+
+
 
 
 

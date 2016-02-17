@@ -99,7 +99,7 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
         plt.plot (self.temperature, self.power_readout*1e6, 'ok')
         plt.title(fig_title)
         plt.xlabel ('temperature [deg]', fontsize = 15)
-        plt.ylabel ('power [uW]', fontsize = 15)
+        plt.ylabel ('power [$\mu$W]', fontsize = 15)
         plt.savefig (os.path.join(directory, fName+'.png'))
         plt.close(fig)
 
@@ -189,7 +189,7 @@ class TempCtrlPanelGUI (QtGui.QMainWindow):
             plt.plot (self.temperature, self.power_readout*1e6, 'r--')
             plt.plot (self.temperature, self.power_readout*1e6, 'ok')
             plt.xlabel ('temperature [deg]', fontsize = 15)
-            plt.ylabel ('power [uW]', fontsize = 15)
+            plt.ylabel ('power [$\mu$W]', fontsize = 15)
             plt.show()
             self.curr_task = 'idle'
 

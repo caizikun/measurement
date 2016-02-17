@@ -1,5 +1,6 @@
 import qt
 import os
+import logging
 from instrument import Instrument
 import numpy as np
 import gobject
@@ -76,9 +77,15 @@ class E_primer(Instrument):
             levels=nvlevels.get_E_prime_Ex(strain_splitting_0 = self._strain_split_0,
                 F_Ex_0=self._F_E_0,F_Y_0=self._F_Y_0,F_Ex = F_E,F_Y =F_Y,a=self.get_yellow_z_factor(),b=self.get_yellow_x_factor())
         E_prime_freq = levels[0]
-        self._strain_splitting = levels[3]-levels[2] 
+        self._strain_splitting = levels[3]-levels[2]      
         self._set_strain_splitting_func(self._strain_splitting)
-        self._set_eprime_func(E_prime_freq-self.get_offset())
+        
+        min_eprime_freq=-10 #GHz
+        max_eprime_freq=200 #GHz
+        if E_prime_freq > min_eprime_freq and E_prime_freq < max_eprime_freq:
+            self._set_eprime_func(E_prime_freq-self.get_offset())
+        else:
+            logging.warning('E_primer: E_prime frequency outside boundaries')
         
 
         return True

@@ -13,6 +13,7 @@ def optimize():
         return False
     print 'checking for SMB errors'
     if not(check_smb_errors()):
+        print 'SMB gave errors!!'
         return False
     powers_ok=False
     for i in range(5):
@@ -25,8 +26,7 @@ def optimize():
     if not powers_ok:
         print 'Could not get good powers!'
         return False
-
-    
+   
     qt.msleep(3)
     optimize_ok = False
     for i in range(1):
@@ -34,10 +34,10 @@ def optimize():
             break
         if qt.current_setup=='lt4':
             qt.instruments['optimiz0r'].optimize(dims=['y','x'],cnt=1, int_time=100, cycles =1)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=100, cycles =2)
         else:
-            qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=45, cycles =1)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=45, cycles =2)
+            qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
+            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=50, cycles =2)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
@@ -49,9 +49,9 @@ def optimize():
     return True
     
 def bell_check_powers():
-    names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM']
-    setpoints = [5e-9, 10e-9, 15e-9,40e-9] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
-    relative_thresholds = [0.1,0.1,0.3,0.2]
+    names=['MatisseAOM', 'NewfocusAOM','PulseAOM','YellowAOM','GreenAOM']
+    setpoints = [5e-9, 10e-9, 15e-9,40e-9,5e-6] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
+    relative_thresholds = [0.1,0.1,0.25,0.15,0.1e-6]
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     qt.stools.init_AWG()
@@ -63,19 +63,28 @@ def bell_check_powers():
             break
         if n == 'PulseAOM': qt.msleep(2)
         setpoint, value = qt.stools.check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
-        deviation =np.abs(1-setpoint/value)
-        print 'deviation', np.abs(1-setpoint/value)
+        if n == 'GreenAOM':
+            deviation = value
+        else:
+            deviation =np.abs(1-setpoint/value)
+        print 'deviation', deviation
         if deviation>t:
             all_fine=False
-            qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
-            if n == 'NewfocusAOM':
-                qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+            if n == 'GreenAOM':
+                if qt.current_setup=='lt4':
+                    qt.stools.switch_green()
+                else:
+                    qt.instruments['GreenServo'].move_in()
+            else:
+                qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
+                if n == 'NewfocusAOM':
+                    qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
             break
     qt.instruments['PMServo'].move_out()
     return all_fine
 
 def check_pulse_aom_frq():
-    f_expected =200e6 + 500e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
+    f_expected =200e6 + 475e3 #chagned due to frq drift 01-07-15 NK. #200e6 + 523e3 #200MHz + x Hz #XXXXXXXXXX
     f_offset = qt.stools.get_pulse_aom_frq()
     if np.abs(f_offset - f_expected) > 20e3: 
         print 'PulseAOM frequency too far off expected value!'
@@ -89,9 +98,11 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
     	#stools.start_bs_counter()
-        start_index = 15
+        start_index = 1
+        
+        skip_first=False
 
-        cycles=24
+        cycles=300
         DoJitterCheck = True  #not always necc as now in bell optimizer
 
 
@@ -109,17 +120,19 @@ if __name__ == '__main__':
             for i in range(start_index,start_index+cycles):
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                     break
-                qt.bell_name_index = i
-                qt.bell_succes=False
-                execfile(r'bell_lt4.py')
-                output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
-                output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
-                        not(qt.bell_succes)                     or \
-                        (output_lt4 == 'bell_optimizer_failed') or \
-                        (output_lt3 == 'bell_optimizer_failed'): 
-                    break
-                qt.msleep(20)
+                if not(skip_first):
+                    qt.bell_name_index = i
+                    qt.bell_succes=False
+                    execfile(r'bell_lt4.py')
+                    output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+                    output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
+                            not(qt.bell_succes)                     or \
+                            (output_lt4 == 'bell_optimizer_failed') or \
+                            (output_lt3 == 'bell_optimizer_failed'): 
+                        break
+                    qt.msleep(20)
+                skip_first=False
 
                 print 'starting the measurement at lt3'
                 lt3_helper = qt.instruments['lt3_helper']

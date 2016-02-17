@@ -126,7 +126,7 @@ def MBE(name, carbon_list   = [1,5,2],
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
-    m.params['MBE_list']            = MBE_list
+    m.params['MBE_list']            = carbon_list
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods    
@@ -190,6 +190,7 @@ def QEC_test(name, carbon_list   = [1,5,2],
         el_RO                         = 'positive',
         debug                         = False,
         error_sign                    = 1,
+        evolution_time_list           = [0],
         error_probability_list        = np.linspace(0,1,3),
         parity_orientations           = ['positive','negative']):
 
@@ -197,6 +198,13 @@ def QEC_test(name, carbon_list   = [1,5,2],
     funcs.prepare(m)
 
     phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
+    m.params['add_wait_gate'] = True
+    m.params['wait_in_msm1']  = False
+    m.params['free_evolution_time_1'] = np.array(evolution_time_list)/2.
+    m.params['free_evolution_time_2'] = np.array(evolution_time_list)/2.
+
+    phase_error                       = np.zeros(len(evolution_time_list))
+    # phase_error                   = error_sign * 2*np.arcsin(np.sqrt(error_probability_list))*180./np.pi
     if error_on_qubit ==1:
         Qe                            = [1,0,0]
     elif error_on_qubit ==2:
@@ -206,7 +214,11 @@ def QEC_test(name, carbon_list   = [1,5,2],
     elif error_on_qubit =='all':
         Qe                            = [1,1,1]
 
-    m.params['phase_error_array'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+
+
+    m.params['phase_error_array_1'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    m.params['phase_error_array_2'] = np.transpose([phase_error*Qe[0],phase_error*Qe[1],phase_error*Qe[2]])
+    
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -225,7 +237,7 @@ def QEC_test(name, carbon_list   = [1,5,2],
     m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
     m.params['Nr_C13_init']         = len(carbon_init_list)
-
+    m.params['MBE_list']            = carbon_list
     ##################################
     ### RO bases (sweep parameter) ###
     ##################################
@@ -300,7 +312,7 @@ if __name__ == '__main__':
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-        cnt = 2
+        cnt = 0
 
         evo_list_total = linspace(0,30e-3,16)
 
@@ -317,8 +329,10 @@ if __name__ == '__main__':
                 RO_list = [6,6,6]
             elif state == 'Y' or state == 'mY':
                 RO_list = [5,6,4]
-            elif state == 'Z' or state == 'mZ': 
-                RO_list = [0,1,2,6]
+            elif state == 'Z': 
+                RO_list = [1,2,6]
+            elif state == 'mZ': 
+                RO_list = [0,1,2,6]                
 
             for ii,RO in enumerate(RO_list):
 

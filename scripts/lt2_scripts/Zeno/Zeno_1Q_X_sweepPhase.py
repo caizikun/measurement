@@ -15,7 +15,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -64,7 +64,7 @@ def Zeno(name, carbon_list   = [2],
         Repetitions         = 300,
         do_pi=True):
 
-    m = DD.Zeno_OneQB(name)
+    m = Zen.Zeno_OneQB(name)
     funcs.prepare(m)
 
 

@@ -17,12 +17,12 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m.params['SP_duration'] = 100
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000 if multiplicity == 1 else 5000
+    m.params['repetitions'] = 1000 if multiplicity == 1 else 500
 
     # sweep params
     rng = 0.2 if multiplicity == 1 else 0.05
     # rng = 0.05
-    m.params['MW_pulse_amplitudes'] =  m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    m.params['MW_pulse_amplitudes'] = m.params['MW_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
     #m.params['MW_pulse_amplitudes'] =  np.linspace(0.52, 0.59, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15  # spacing between pi pulses in us
 
@@ -50,7 +50,6 @@ def calibrate_pi2_pulse(name, debug=False):
     m.params['Ex_SP_amplitude']=0
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
-
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-0.1, 0.1, pts)  
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
@@ -79,7 +78,6 @@ def calibrate_pi2_pulse_2(name, multiplicity = 1, debug=False):
     m.params['Ex_SP_amplitude']=0
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
-
 
     rng = 0.1 if multiplicity == 1 else 0.07
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
@@ -114,7 +112,6 @@ def calibrate_pi2_pulse_3(name, multiplicity = 1, debug=False):
     m.params['SP_duration'] = 50
     m.params['wait_for_AWG_done'] = 1
 
-
     rng = 0.1 if multiplicity == 1 else 0.09
     sweep_axis =  m.params['MW_pi2_amp'] + np.linspace(-rng, rng, pts)
     m.params['pulse_pi2_sweep_amps'] = sweep_axis
@@ -146,7 +143,7 @@ def calibrate_Npi4_pulse(name,debug=False):
 
     sweep_axis = m.params['MW_Npi4_amp'] + np.linspace(-0.1, 0.1, pts) 
     m.params['pulse_Npi4_sweep_amps'] = sweep_axis
-
+    
     m.params['pulse_Npi4_sweep_durations']=np.ones(pts)*m.params['MW_Npi4_duration']
     m.params['pulse_Npi4_sweep_phases'] = np.zeros(pts)
     m.params['evolution_times'] = np.ones(pts)*500e-9
@@ -189,7 +186,8 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 3.3
+    stage = 3.2
+    print 'Stage:', stage
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
     debug = False
@@ -219,7 +217,7 @@ if __name__ == '__main__':
         calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi', multiplicity=1)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.3:
-        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=15,debug = False)
+        calibrate_pi_pulse(SAMPLE_CFG+'_Bell_Pi_15_rep', multiplicity=7,debug = False)
         print 'set msmt_params Hermite_pi_amp'
     elif stage == 3.4:
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)

@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -60,7 +60,7 @@ def Zeno(name, carbon_list   = [1,2],
         Tomo_bases          = [],
         Repetitions         = 300):
 
-    m = DD.Zeno_TwoQB(name)
+    m = Zen.Zeno_TwoQB(name)
     funcs.prepare(m)
 
 
@@ -281,15 +281,15 @@ if __name__ == '__main__':
 
 
     # Measure a single point for a single state.
-    teststate='mX'
+    teststate='X'
 
-    EvoTime_arr=[10e-3]
-    msmts=1
-    for RO in ['positive']:
-        Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_ZZ', 
+    EvoTime_arr=[30e-3]
+    msmts=4
+    for RO in ['positive','negative']:
+        Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_XX', 
                         el_RO= RO,
                         logic_state=teststate,
-                        Tomo_bases = ['Z','Z'],
+                        Tomo_bases = ['X','X'],
                         free_evolution_time=EvoTime_arr,
                         number_of_zeno_msmnts =msmts,
                         debug=True,Repetitions=1000)

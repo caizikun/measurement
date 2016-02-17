@@ -22,14 +22,14 @@ current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 
 def darkesr(name, range_MHz, pts, reps):
 
-    m = pulsar_msmt.DarkESR_Switch(name)
+    m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6#-43e6 #MW source frequency
 
 
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
@@ -37,11 +37,11 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['mw_power'] = 20
     m.params['repetitions'] = reps
 
-    m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
-    m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
+    m.params['ssbmod_frq_start'] = +43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
+    m.params['ssbmod_frq_stop'] = +43e6 + range_MHz*1e6
     m.params['pts'] = pts
-    m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.01
+    m.params['pulse_length'] = 10e-6
+    m.params['ssbmod_amplitude'] = 0.01 #0.01
 
     m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
                     m.params['ssbmod_frq_stop'], m.params['pts']) 
@@ -70,16 +70,16 @@ if __name__ == '__main__':
     only_fine =  False
 
         ### for the first coarse step
-    init_range   = 8     #Common: 10 MHz
-    # init_range = 20
-    init_pts     = 121    #Common: 121
-    # init_pts     = 300
-    init_reps    = 500   #Common: 500
+    init_range   = 15 #Common: 10 MHz
+    #init_range = 20
+    init_pts     = 101   #Common: 121
+    #init_pts     = 450
+    init_reps    =500 #Common: 500
 
         ### for the remainder of the steps
-    repeat_range = 4.5
-    repeat_pts   = 81
-    repeat_reps  = 1000
+    repeat_range = 6.5
+    repeat_pts   = 101
+    repeat_reps  = 1000 #1000
 
     if only_fine == True:
         init_range   = repeat_range     #Common: 10 MHz
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     print current_f_msm1
     print qt.exp_params['samples'][SAMPLE]['N_HF_frq']
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
-        qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+    qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
     # start to list all the measured values
@@ -134,17 +134,17 @@ if __name__ == '__main__':
             ri = raw_input ('move magnet? (y/n)')
             if str(ri) == 'y': 
                 mom.set_mode('Z_axis','stp')
-                qt.msleep(10)
+                qt.msleep(3)
                 mom.step('Z_axis',d_steps[iterations])
-                qt.msleep(10)
+                qt.msleep(3)
                 mom.set_mode('Z_axis','gnd')
             else :
                 break 
         else: 
             mom.set_mode('Z_axis','stp')
-            qt.msleep(10)
+            qt.msleep(3)
             mom.step('Z_axis',d_steps[iterations])
-            qt.msleep(10)
+            qt.msleep(3)
             mom.set_mode('Z_axis','gnd')
 
         # To cleanly exit the optimization

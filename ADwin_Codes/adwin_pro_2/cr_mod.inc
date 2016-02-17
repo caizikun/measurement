@@ -17,7 +17,6 @@
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
-DIM DATA_32[4] AS LONG                 ' counter readout values
 
 DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
 DIM DATA_19[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine
@@ -35,7 +34,7 @@ DIM CR_probe, CR_preselect, CR_repump, current_CR_threshold AS LONG
 DIM repumps, CR_failed, total_repump_counts AS LONG
 DIM repump_duration, CR_duration AS LONG
 DIM cr_wait_after_pulse, cr_wait_after_pulse_duration AS LONG
-DIM counter_channel, counter_pattern, counter_ch_input_pattern AS LONG
+DIM counter_channel, counter_pattern AS LONG
 DIM E_laser_DAC_channel, A_laser_DAC_channel, repump_laser_DAC_channel AS LONG
 
 DIM repump_mod_DAC_channel, cr_mod_DAC_channel AS LONG
@@ -60,7 +59,6 @@ SUB init_CR()
   CR_repump                    = DATA_30[10]
   repump_mod_DAC_channel       = DATA_30[11] '4
   cr_mod_DAC_channel           = DATA_30[12] '5
-  counter_ch_input_pattern     = DATA_30[13]
 
   repump_voltage               = DATA_31[1]
   repump_off_voltage           = DATA_31[2]
@@ -78,9 +76,6 @@ SUB init_CR()
     DATA_22[cr_i] = 0
     DATA_23[cr_i] = 0
   NEXT cr_i
-  FOR cr_i = 1 TO 4
-    DATA_32[cr_i] = 0
-  NEXT cr_i
   FOR cr_i = 1 TO max_stat
     DATA_26[cr_i] = 0
   NEXT cr_i
@@ -93,12 +88,8 @@ SUB init_CR()
     DATA_19[cr_i] = Sin(-3.14+2*3.14*cr_i/CR_duration)
   NEXT cr_i
   'fill data_17 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
-  
-  IF (counter_ch_input_pattern = 0) THEN 'keep for compatibility with old protocols that use only one counter
-    counter_pattern     = 2 ^ (counter_channel-1)
-  ELSE
-    counter_pattern = counter_ch_input_pattern
-  ENDIF 
+   
+  counter_pattern     = 2 ^ (counter_channel-1)
   total_repump_counts = 0
   total_CR_counts = 0
   CR_failed           = 0
@@ -170,17 +161,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           IF (cr_timer = repump_duration) THEN
             
             P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
-            IF (counter_ch_input_pattern = 0) THEN
-              cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-            ELSE
-              cr_r_counts = 0
-              P2_CNT_READ4(CTR_MODULE,DATA_32,1)
-              FOR i = 1 TO 4
-                cr_r_counts = cr_r_counts + DATA_32[i]
-              NEXT i
-              PAR_77=100
-              PAR_80 = cr_r_counts
-            ENDIF 
+            cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
             P2_CNT_ENABLE(CTR_MODULE,0)
             P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
             
@@ -201,18 +182,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
                 repump_mod_control=DATA_18[cr_timer]
                 P2_DAC_2(repump_mod_DAC_channel, 3277*(repump_mod_control_amp*repump_mod_control+repump_mod_control_offset)+32768) ' put current voltage on freq mod aom
               ELSE
-                IF (counter_ch_input_pattern = 0) THEN
-                  cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-                ELSE 
-                  cr_r_counts = 0
-                  cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-                  'P2_CNT_READ4(CTR_MODULE,DATA_32,1)   XXXXXXXXX
-                  'FOR i = 1 TO 4
-                  '  cr_r_counts = cr_r_counts + DATA_32[i]
-                  'NEXT i
-                  'PAR_77=10
-                  'PAR_80 = cr_r_counts
-                ENDIF
+                cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
                 FPar_78=FPar_78*0.9999+repump_mod_control*repump_mod_control_amp*(cr_r_counts-cr_r_old_counts)
                 cr_r_old_counts=cr_r_counts
               ENDIF
@@ -226,6 +196,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           CR_preselect                 = PAR_75
           CR_probe                     = PAR_68
           cr_mod_activated             = PAR_67
+          P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
@@ -241,8 +212,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           IF (cr_timer = CR_duration) THEN
             cr_mode = 2 '---goto normal CR check
             cr_timer = 0
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter - we do not take the counts during the modulation phase into account
-            ' maybe we could make this a setting: for SSRO it is fine to take the counts during the modulation into account, for TPQI we need to clear here
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter - we do not take the counts during the modulation fase into account
+            ' maybe we could make this a setting: for SSRO it is fine to take the counts uring the modulation into account, for TPQI we need to clear here
           ELSE  
             '------------cr modulation control
             IF (cr_i = 0) THEN
@@ -250,15 +221,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               cr_mod_control=DATA_19[cr_timer]
               P2_DAC_2(cr_mod_DAC_channel, 3277*(cr_mod_control_amp*cr_mod_control+cr_mod_control_offset)+32768) ' put current voltage on gate
             ELSE
-              IF (counter_ch_input_pattern = 0) THEN
-                cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-              ELSE
-                cr_counts = 0
-                P2_CNT_READ4(CTR_MODULE,DATA_32,1)
-                FOR i = 1 TO 4
-                  cr_counts = cr_counts + DATA_32[i]
-                NEXT i
-              ENDIF
+              cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
               FPar_79 = FPar_79*cr_mod_control_avg_part+cr_mod_control*(cr_counts-cr_old_counts)
               cr_old_counts=cr_counts
             ENDIF
@@ -269,19 +232,10 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
       CASE 2    ' E/A laser CR check
                  
         IF (cr_timer = CR_duration) THEN
+          P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          IF (counter_ch_input_pattern = 0) THEN
-            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-          ELSE
-            cr_counts = 0
-            P2_CNT_READ4(CTR_MODULE,DATA_32,1)
-            FOR i = 1 TO 4
-              cr_counts = cr_counts + DATA_32[i]
-            NEXT i
-            PAR_77=12
-            PAR_80 = cr_counts
-          ENDIF
+          cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
           P2_CNT_ENABLE(CTR_MODULE,0)
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
           total_CR_counts = total_CR_counts + cr_counts

@@ -1,9 +1,15 @@
+"""
+This script initializes several carbons in a joint state
+The state is determined by the plugged in logical state. X e.g. gives a singlet/GHZ
+Works for an arbitrary number of carbons.
+"""
+
 import numpy as np
 import qt 
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -18,7 +24,7 @@ def MBE(name, carbon_list   = [1,2],
         carbon_init_thresholds  = 2*[0],  
 
         number_of_MBE_steps = 1,
-        mbe_bases           = ['X','X'],
+        mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
         number_of_parity_msmnts = 0,
         parity_msmnts_threshold = 1, 
@@ -26,14 +32,14 @@ def MBE(name, carbon_list   = [1,2],
         el_RO               = 'positive',
         debug               = False):
 
-    m = DD.Two_QB_Probabilistic_MBE_v3(name)
+    m = DD.Two_QB_Probabilistic_MBE(name)
     funcs.prepare(m)
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 2000 
+    m.params['reps_per_ROsequence'] = 1000 
 
     ### Carbons to be used
     m.params['carbon_list']         = carbon_list
@@ -66,6 +72,10 @@ def MBE(name, carbon_list   = [1,2],
     #         ['Z','X'],['Z','Y'],['Z','Z']])
     
     # m.params['Tomography Bases'] = ([
+    #         ['X','X'],['Y','Y'],['Z','Z']])
+
+
+    # m.params['Tomography Bases'] = ([
     #         ['X','I'],['Y','I'],['Z','I']])
 
     # m.params['Tomography Bases'] = ([
@@ -80,9 +90,10 @@ def MBE(name, carbon_list   = [1,2],
     ### MBE settings ###
     ####################
 
-    m.params['Nr_MBE']              = number_of_MBE_steps 
+    m.params['Nr_MBE']              = number_of_MBE_steps
     m.params['MBE_bases']           = mbe_bases
     m.params['MBE_threshold']       = MBE_threshold
+    m.params['logical_state'] = 'X'
     
     ###################################
     ### Parity measurement settings ###
@@ -110,7 +121,7 @@ def MBE(name, carbon_list   = [1,2],
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive')
+    MBE(SAMPLE + 'positive', el_RO= 'positive',carbon_list = [5,7],carbon_init_list = [5,7],debug=True)
     # MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 

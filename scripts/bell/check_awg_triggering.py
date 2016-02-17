@@ -83,7 +83,7 @@ def check_triggering():
     peaks=np.where(hist>0)[0]*pharp.get_Resolution()/1000.
     ret=ret+'\n'+ str(peaks)
     print ret
-    peak_loc = 489.95
+    peak_loc = 489.85 #489.45#BH28-12-2015 removed 5 cm piece eom lt3
     if len(peaks)>1:
         peaks_width=peaks[-1]-peaks[0]
         peak_max=np.argmax(hist)*pharp.get_Resolution()/1000.

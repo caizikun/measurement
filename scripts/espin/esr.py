@@ -18,7 +18,9 @@ mw_power    = -5     #in dBm
 green_power = 200e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
-center_f    = 2.840  # in GHz
+center_f    = 1.840  # in GHz
+'''
+range_f  =  0.3 # in GHz
 
 range_f  =  0.05 # in GHz
 
@@ -26,7 +28,8 @@ range_f  =  0.05 # in GHz
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100A']
+#ins_smb = qt.instruments['SMB100']
 IQ_modulation = False #Does this source have IQ modulation?
 
 # Set other instruments
@@ -57,8 +60,12 @@ qt.msleep(0.2)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
 stop_scan=False
+optimizer_counter = 0
 for cur_rep in range(reps):
-
+    if optimizer_counter ==5:
+        optimiz0r.optimize(dims=['z','x','y'],int_time=50)
+        optimizer_counter = 0
+    optimizer_counter +=1
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True

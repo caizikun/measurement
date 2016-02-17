@@ -58,10 +58,9 @@ class Element:
         delay.
         """
         t0s = []
-        for p in self.pulses:
+        for ii,p in enumerate(self.pulses):
             for c in self.pulses[p].channels:
-                t0s.append(self.pulses[p].t0() - self._channels[c]['delay'])
-                
+                t0s.append(self.pulses[p].t0() - self._channels[c]['delay'])       
         return min(t0s)
 
     def ideal_length(self):
@@ -151,6 +150,7 @@ class Element:
             if refpoint_new == 'start':
                 t0 += self.pulses[refpulse].effective_stop()
 
+
                 if refpoint == 'start':
                     t0 -= self.pulses[refpulse].effective_length()
                 elif refpoint == 'center':
@@ -171,9 +171,7 @@ class Element:
                     t0 -= self.pulses[refpulse].effective_length()
                 elif refpoint == 'center':
                     t0 -= self.pulses[refpulse].effective_length()/2.                   
-
-
-
+       
         pulse._t0 = t0
         self.pulses[name] = pulse
         self._last_added_pulse = name
@@ -215,6 +213,7 @@ class Element:
         return t0 + self.time_offset - self.offset()
 
     def pulse_start_time(self, pname, cname):
+
         return self.pulses[pname].t0() - self._channels[cname]['delay'] - \
             self.offset()
 
@@ -258,7 +257,8 @@ class Element:
 
         # we first compute the ideal function values
         for p in self.pulses:
-            psamples = self.pulse_samples(p)            
+
+            psamples = self.pulse_samples(p)
 
             if not self.global_time:                
                 pulse_tvals = tvals.copy()[:psamples]
@@ -267,12 +267,13 @@ class Element:
                 chan_tvals = {}
                 
                 for c in self.pulses[p].channels:
+                   
                     idx0 = self.pulse_start_sample(p,c)
                     idx1 = self.pulse_end_sample(p,c) + 1
                     c_tvals = np.round(tvals.copy()[idx0:idx1] + \
                         self.channel_delay(c) + self.time_offset, pulsar.SIGNIFICANT_DIGITS)
                     chan_tvals[c] = c_tvals
-                
+
                 pulsewfs = self.pulses[p].get_wfs(chan_tvals)
 
             for c in self.pulses[p].channels:

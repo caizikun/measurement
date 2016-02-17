@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -97,9 +97,9 @@ LOWINIT:
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
   P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
 
-  P2_Digprog(DIO_MODULE,13)      'configure DIO 08:15 as input, all other ports as output
+  P2_Digprog(DIO_MODULE,11)      'XXXX in is now 16:23,configure DIO 08:15 as input, all other ports as output. NK and AR: did input and output get swapped?
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
+  P2_DIGOUT(DIO_MODULE,11,1) 'turn on modulation for repumping with a single laser
   mode = 0
   timer = 0
   processdelay = cycle_duration
@@ -131,16 +131,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
           old_counts = 0
         ELSE 
-          IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
-            counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-          ELSE 
-            counts = 0
-            P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
-            FOR i = 1 TO 4
-              counts = counts + DATA_32[i]
-            NEXT i
-          ENDIF 
-          
+          counts = P2_CNT_READ(CTR_MODULE, counter_channel)
           DATA_24[timer] = DATA_24[timer] + counts - old_counts
 
           old_counts = counts
@@ -170,15 +161,7 @@ EVENT:
           IF (timer = SP_filter_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
-              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-            ELSE 
-              counts = 0
-              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
-              FOR i = 1 TO 4
-                counts = counts + DATA_32[i]
-              NEXT i
-            ENDIF 
+            counts = P2_CNT_READ(CTR_MODULE, counter_channel)
             P2_CNT_ENABLE(CTR_MODULE, 0)
             IF (counts > 0) THEN
               mode = 1
@@ -247,16 +230,7 @@ EVENT:
           IF (timer = SSRO_duration) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
             P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
-              counts = P2_CNT_READ(CTR_MODULE, counter_channel) - old_counts
-            ELSE 
-              counts = 0
-              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
-              FOR i = 1 TO 4
-                counts = counts + DATA_32[i]
-              NEXT i
-              counts = counts - old_counts
-            ENDIF 
+            counts = P2_CNT_READ(CTR_MODULE,counter_channel) - old_counts
             old_counts = counts
             PAR_74 = PAR_74 + counts
             i = timer + repetition_counter * SSRO_duration
@@ -276,15 +250,8 @@ EVENT:
             first = 1
           
           ELSE
-            IF (counter_ch_input_pattern = 0) THEN   'get counts from one counter
-              counts = P2_CNT_READ(CTR_MODULE, counter_channel)
-            ELSE 
-              counts = 0
-              P2_CNT_READ4(CTR_MODULE,DATA_32,1) 'get counts from all active counters
-              FOR i = 1 TO 4
-                counts = counts + DATA_32[i]
-              NEXT i
-            ENDIF
+            
+            counts = P2_CNT_READ(CTR_MODULE,counter_channel)
             i = timer + repetition_counter * SSRO_duration
             
             IF ((SSRO_stop_after_first_photon > 0 ) and (counts > 0)) THEN
