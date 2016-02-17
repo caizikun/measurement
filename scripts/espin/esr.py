@@ -12,22 +12,22 @@ import numpy as np
 
 
 
-name = 'ESR_Horst_scan29_NV2'#name='ESR_'+ qt.exp_params['protocols']['current']
+name = 'ESR_Horst_scantest'#name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 60       #101
-mw_power    = 18     #in dBm
+mw_power    = -5     #in dBm
 green_power = 200e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
 center_f    = 2.840  # in GHz
 
-range_f  =  0.015 # in GHz
+range_f  =  0.05 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
 ins_smb = qt.instruments['SMB100']
-IQ_modulation = True #Does this source have IQ modulation?
+IQ_modulation = False #Does this source have IQ modulation?
 
 # Set other instruments
 ins_adwin = qt.instruments['adwin']
@@ -88,4 +88,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-ins_aom.set_power(30e-6)
+#ins_aom.set_power(30e-6)
