@@ -90,6 +90,7 @@ class CavityScan ():
         self.nr_V_points = None
         self.nr_avg_scans = 1
         self.nr_repetitions = 1
+        self.wait_cycles = 2
 
         self.use_sync = False
         self.sync_delay_ms = None
@@ -139,7 +140,8 @@ class CavityScan ():
             self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'laser',
                      nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self._exp_mngr.wait_cycles, 
                     start_voltage = self.V_min, end_voltage = self.V_max, 
-                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
+                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms,
+                    scan_to_start = True)
 
             for j in np.arange (self.nr_avg_scans):
                 if (j==0):
@@ -164,7 +166,8 @@ class CavityScan ():
         self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'fine_piezos',
                 nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                 start_voltage = self.V_min, end_voltage = self.V_max, 
-                use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
+                use_sync = self.use_sync, delay_ms = self.sync_delay_ms, 
+                scan_to_start = True)
 
         #output PD_signal as the average over nr_avg_scans
         for j in np.arange (self.nr_avg_scans):
