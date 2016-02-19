@@ -15,7 +15,7 @@ import pulse_select as ps; reload(ps)
 class PulsarMeasurement(ssro.IntegratedSSRO):
     mprefix = 'PulsarMeasurement'
     awg = None
-    mwsrc = None
+    mwsrc = None 
     mwsrc2 = None
 
     def __init__(self, name):

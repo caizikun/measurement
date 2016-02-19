@@ -58,7 +58,7 @@ def SweepGates(name,**kw):
 
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 500
+	m.params['reps_per_ROsequence'] = 1000
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]

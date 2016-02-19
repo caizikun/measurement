@@ -147,8 +147,8 @@ cfg['protocols']['Magnetometry']={
 
 mw_power  = 20
 mw2_power = 20
-f_msm1_cntr =   1.746994e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
-f_msp1_cntr =   4.008301e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
+f_msm1_cntr =   1.744193e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
+f_msp1_cntr =   4.00111e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
                 
 zero_field_splitting = 2.877623e9   # not calibrated #contains + 2*N_hf
                                  
@@ -176,10 +176,10 @@ if electron_transition == '-1':
     AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
     
     Hermite_pi_length = 160e-9    
-    Hermite_pi_amp = 0.445 #0.481 #for 150 ns
+    Hermite_pi_amp = 0.423 #0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length = 65e-9#56e-9 # divsible by 2
-    Hermite_pi2_amp = 0.501
+    Hermite_pi2_amp = 0.427 #0.501
 
     Square_pi_length = 116e-9   #250 MHz slow
     Square_pi_amp = 0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
