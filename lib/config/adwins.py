@@ -3241,8 +3241,8 @@ config['adwin_cav1_processes'] = {
             'info' : {
                 'counters' : 4,
                 },
-            'index' : 2,
-            'file' : 'voltage_scan_sync.TB2',
+            'index' : 5,
+            'file' : 'voltage_scan_sync.TB5',
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],

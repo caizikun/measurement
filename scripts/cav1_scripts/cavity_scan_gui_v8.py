@@ -303,6 +303,7 @@ class ScanGUI(QtGui.QMainWindow):
         #TODO: add wavelength to the params!!
         self.msmt_params = {}
         self.msmt_params['nr_scans_per_sync'] = self._scan_mngr.nr_avg_scans
+        self.msmt_params['wait_cycles'] = self._scan_mngr.wait_cycles
         return self.msmt_params
 
     def save_single(self):
@@ -315,9 +316,9 @@ class ScanGUI(QtGui.QMainWindow):
             if (self._scan_mngr.curr_task == 'lr_scan'):
                 minL = str(int(10*self._scan_mngr.min_lambda))
                 maxL = str(int(10*self._scan_mngr.max_lambda))
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
+                fName =  datetime.now().strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
             else:
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task
+                fName =  datetime.now().strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task
             if self._scan_mngr.file_tag:
                 fName = fName + '_' + self._scan_mngr.file_tag
         
