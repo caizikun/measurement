@@ -19,6 +19,7 @@ class counters_via_adwin(CyclopeanInstrument):
         self.add_parameter('countrate',
                            flags=Instrument.FLAG_GET,
                            units='Hz',
+                           type=types.FloatType,
                            tags=['measure'],
                            channels=('cntr1', 'cntr2'),
                            channel_prefix='%s_',
