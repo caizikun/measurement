@@ -28,9 +28,23 @@ class JPE_CADM(Instrument):
         #T = raw_input ('Please set the temperature of operation [K]...')
         self.T = 300
         print 'Temperature set to '+str(self.T)+' K!'
-        self.add_function('set_temperature')
-        self.add_function('set_freq')
-        self.add_function('set_relative_piezo_step')
+
+        self.add_parameter('temperature',
+                            flags= Instrument.FLAG_GETSET,
+                            units = 'K',
+                            type = types.IntType,
+                            minval =0, maxval = 300)
+
+        self.add_parameter('freq',
+                            units = 'Hz',
+                            type = types.IntType,
+                            minval =0, maxval = 600)
+
+        self.add_parameter('relative_piezo_step',
+                            units = '%',
+                            type =types.IntType,
+                            minval =0, maxval = 100)
+
         self.add_function('get_params')
         self.add_function('status')
         self.add_function('info')
@@ -38,27 +52,21 @@ class JPE_CADM(Instrument):
         self.add_function('move')
         self.add_function('stop')
         
-    def set_temperature (self, T):
-        if ((T>=0)&(T<=300)):
-            self.T = int(T)
-            #self._set_piezo_step()
-        else:
-            print 'Value outside permitted range [0-300K]'
+    def do_set_temperature (self, T):
+        self.T = int(T)
+    def do_get_temperature (self):
+        return self.T
 
-    def set_freq (self, f):
+    def do_set_freq (self, f):
+        self.freq = int(f)
+    def do_get_freq(self):
+        return self.freq
 
-        if ((f>0)&(f<=600)):
-            self.freq = int(f)
-        else:
-            print 'Value outside permitted range [1-600 Hz]'
+    def do_set_relative_piezo_step (self, p):
+        self.rel = int(p)
+    def do_get_relative_piezo_step (self):
+        return self.rel
 
-    def set_relative_piezo_step (self, p):
-
-        if ((p>=1)&(p<=100)):
-            self.rel = int(p)
-        else:
-            print 'Value outside permitted range [1-100%]'
-            
     def get_params(self):
         print '-------JPE controller: '+self.type
         print '- temperature: '+str(self.T)+'K'

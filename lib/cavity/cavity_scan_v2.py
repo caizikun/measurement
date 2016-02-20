@@ -34,7 +34,7 @@ class CavityExpManager ():
 
     def set_laser_wavelength (self, wavelength):
         if ((wavelength>636) and (wavelength<640)):
-            self._laser.set_wavelength (wavelength=wavelength)
+            self._laser.set_wavelength (wavelength)
             self.update_coarse_wavelength (wavelength)
             return 0
         else:

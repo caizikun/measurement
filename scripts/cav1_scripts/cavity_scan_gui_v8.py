@@ -1224,11 +1224,12 @@ class ControlPanelGUI (QtGui.QMainWindow):
 adwin = qt.instruments.get_instruments()['adwin']
 wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
 moc = qt.instruments.get_instruments()['master_of_cavity']
-newfocus = qt.instruments.get_instruments()['newfocus1']
+newfocus1 = qt.instruments.get_instruments()['newfocus1']
 ctr = qt.instruments.get_instruments()['counters']
 
+
 qApp = QtGui.QApplication(sys.argv)
-expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus, moc=moc, counter = ctr)
+expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus1, moc=moc, counter = ctr)
 
 xyscan_gui = XYScanGUI (exp_mngr = expMngr)
 xyscan_gui.setWindowTitle('XY Scan')

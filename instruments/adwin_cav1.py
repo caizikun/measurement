@@ -20,7 +20,7 @@ class adwin_cav1(adwin):
                 dacs=adwinscfg.config['adwin_cav1_dacs'], 
                 adcs=adwinscfg.config['adwin_cav1_adcs'],            
                 tags=['virtual'],
-                use_cfg  = True,
+                use_cfg  = kw.pop('use_cfg',True),
                 process_subfolder = qt.config['adwin_pro_subfolder'], **kw)
                 
         self.add_function('measure_counts')
@@ -90,6 +90,7 @@ class adwin_cav1(adwin):
             # stabilize a bit, better for attocubes
             time.sleep(0.05)
 
+        p = self.processes['linescan']
         dacs = [ self.dacs[n] for n in dac_names ]
 
         # set all the required input params for the adwin process
@@ -100,6 +101,7 @@ class adwin_cav1(adwin):
         
         self.physical_adwin.Set_Data_Long(np.array(dacs), p['data_long']\
                 ['set_dac_numbers'],1,len(dac_names))
+
         self.physical_adwin.Set_Data_Float(start_voltages, 
                 p['data_float']['set_start_voltages'], 1, len(dac_names))
         self.physical_adwin.Set_Data_Float(stop_voltages, 
@@ -115,7 +117,7 @@ class adwin_cav1(adwin):
 
         self.physical_adwin.Set_Par(p['par']['set_px_action'],px_actions[value])
         self.start_linescan()#since it set all the pars above, it should start it now, with the right pars etc.
-        # self.physical_adwin.Start_Process(p['index'])
+        #self.physical_adwin.Start_Process(p['index'])
         
         if blocking:
             while self.is_linescan_running():
