@@ -33,8 +33,9 @@ from measurement.lib.cavity.cavity_scan_v2 import CavityExpManager, CavityScan
 from measurement.lib.cavity.panels.scan_gui_panels import MsgBox, ScanPlotCanvas
 from measurement.lib.cavity.panels.control_panel_2 import Ui_Dialog as Ui_Form
 
-class ControlPanelGUI (QtGui.QMainWindow):
-    def __init__(self, exp_mngr, parent=None):
+class ControlPanelGUI (Panel):
+    def __init__(self, parent=None):
+        Panel.init
 
         self._moc = exp_mngr._moc
         self._wm = exp_mngr._wm_adwin
