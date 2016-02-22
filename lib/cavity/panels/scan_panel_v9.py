@@ -27,7 +27,7 @@ import measurement.lib.cavity.panels.ui_scan_panel_v9
 import measurement.lib.cavity.panels.XYscan_panel 
 
 from measurement.lib.cavity.panels.scan_gui_panels import MsgBox, ScanPlotCanvas
-from measurement.lib.cavity.panels.scan_panel_v9 import Ui_Form as Ui_Scan
+from measurement.lib.cavity.panels.ui_scan_panel_v9 import Ui_Form as Ui_Scan
 
 
 class ScanGUI(Panel):

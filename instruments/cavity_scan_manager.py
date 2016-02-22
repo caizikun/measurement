@@ -20,6 +20,8 @@ class cavity_scan_manager(CyclopeanInstrument):
         CyclopeanInstrument.__init__(self,name, tags=[])
 
         # self._exp_mngr = exp_mngr
+        self._adwin = qt.instruments[adwin]
+        self._physical_adwin = qt.instruments[physical_adwin]
 
         self._scan_initialized = False
         self.V_min = None
@@ -166,7 +168,6 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.add_function('stop_lengthscan')
         self.add_function('laser_scan')
         self.add_function('length_scan')
-        self.add_function('initialize_piezos')
         self.add_function('save')
         self.add_function('save_2D_scan')
 
@@ -256,9 +257,9 @@ class cavity_scan_manager(CyclopeanInstrument):
         '''
         if (self._running_task==None):
             self.curr_pz_volt = self.minV_lengthscan
-            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.curr_pz_volt)
-            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.curr_pz_volt)
-            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.curr_pz_volt)
+            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.curr_pz_volt)
+            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.curr_pz_volt)
+            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.curr_pz_volt)
 
             # self._exp_mngr.set_piezo_voltage (self.curr_pz_volt) 
 
@@ -296,25 +297,28 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.msmt_params['nr_scans_per_sync'] = self._scan_mngr.nr_avg_scans
         return self.msmt_params
 
+    def run(self,**kw):
+        self.nr_avg_scans = kw.pop('nr_avg_scans', self.nr_avg_scans)
+        self.nr_repetitions = kw.pop('nr_repetitions', self.nr_repetitions)
+        get_nr_avg_scans()
+        get_nr_repetitions()
+
     def run_new_lengthscan(self, **kw):
+        self.run(**kw)
+        self.minV_lengthscan=kw.pop('minV_lengthscan', self.minV_lengthscan)
+        self.maxV_lengthscan=kw.pop('maxV_lengthscan', self.maxV_lengthscan)
+        self.nr_steps_lengthscan = kw.pop('nr_steps_lengthscan',self.nr_steps_lengthscan)
         enable_autosave = kw.pop('enable_autosave',True)
+
         self.reset_data('PD_signal', (self.nr_steps_lengthscan))
         self.reset_data('v_vals',  (self.nr_steps_lengthscan))
 
-        self.status_label = "<font style='color: red;'>SCANNING PIEZOs</font>"
-        self.set_scan_params (v_min=self.minV_lengthscan, v_max=self.maxV_lengthscan, nr_points=self.nr_steps_lengthscan)
-        self.initialize_piezos(wait_time=1)
-
-        #self.sync_delays_ms = np.ones(self.nr_avg_scans)*sync_delay_ms
-        
         # the core of the lengtscan function
+        self.status_label = "<font style='color: red;'>SCANNING PIEZOs</font>"
         self.length_scan ()
 
         #set data in order for the UI to connect to it.       
         self.status_label = "<font style='color: red;'>idle</font>"
-
-        self.reset_data('PD_signal', (self.nr_steps_lengthscan))
-        self.reset_data('v_vals',  (self.nr_steps_lengthscan))
         # self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
         if self.success:
             self.set_data('PD_signal', self.data[0])
@@ -359,7 +363,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.saveX_label = 'laser_tuning_voltage'
         self.saveY_label = 'PD_signal'        
         self.curr_task = 'fine_laser_scan'
-        self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
+        self.status_label = "<font style='color: red;'>idle</font>"
 
         if self.autosave:
             self.save()
@@ -389,7 +393,7 @@ class cavity_scan_manager(CyclopeanInstrument):
             self.status_label = "<font style='color: red;'>LASER SCAN: "+str(self.curr_l)+"nm</font>"
 
         #acquire calibration points
-        dac_no = self._exp_mngr._adwin.dacs['newfocus_freqmod']
+        dac_no = self._adwin.dacs['newfocus_freqmod']
         print "DAC no ", dac_no
         self._adwin.start_set_dac(dac_no=dac_no, dac_voltage=-3)
         qt.msleep (0.1)
@@ -398,10 +402,10 @@ class cavity_scan_manager(CyclopeanInstrument):
         print "----- Frequency calibration routine:"
         for n in np.arange (nr_calib_pts):
             qt.msleep (0.3)
-            self._exp_mngr._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
+            self._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
             print "Point nr. ", n, " ---- voltage: ", V_calib[n]
             qt.msleep (0.5)
-            f_calib[n] = self._exp_mngr._wm_adwin.Get_FPar (self._exp_mngr._wm_port)
+            f_calib[n] = self._physical_adwin.Get_FPar (self._exp_mngr._wm_port)
             qt.msleep (0.2)
             print "        ", n, " ---- frq: ", f_calib[n]
 
@@ -441,8 +445,11 @@ class cavity_scan_manager(CyclopeanInstrument):
             self.lr_scan_frq = (np.array(self.lr_scan_frq_list)).flatten()
             self.lr_scan_sgnl = (np.array(self.lr_scan_sgnl_list)).flatten()
 
-        self.ui.plot_canvas.update_multiple_plots (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency (GHz)', 
-                y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'none')
+        self.set_data('v_vals', lr_scan_frq)
+        self.set_data('PD_signal', lr_scan_sgnl)
+
+        # self.ui.plot_canvas.update_multiple_plots (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency (GHz)', 
+        #         y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'none')
 
         self.saveX_values = self.lr_scan_frq
         self.saveY_values = self.lr_scan_sgnl  
@@ -692,44 +699,36 @@ class cavity_scan_manager(CyclopeanInstrument):
             d_fit = fit_result['params_dict']['d']
             return a_fit, b_fit, c_fit, d_fit
 
-
-    def set_scan_params (self, v_min, v_max, nr_points):
-        #can probably remove this function, since I will make a dictionary with this.
-        self.V_min = v_min
-        self.V_max = v_max
-        self.nr_V_steps = nr_points
-        self._scan_initialized = True
-
     def laser_scan (self, use_wavemeter = False, force_single_scan = True):
 
-        v_step = float(self.V_max-self.V_min)/float(self.nr_V_steps)
-        self.v_vals = np.linspace(self.V_min, self.V_max, self.nr_V_steps)
+        v_step = float(self.maxV_finelaser-self.minV_finelaser)/float(self.nr_V_steps)
+        self.v_vals = np.linspace(self.minV_finelaser, self.maxV_finelaser, self.nr_V_steps)
         
-        self.frequencies = np.zeros (self.nr_V_steps)
-        self.PD_signal = np.zeros (self.nr_V_steps)
+        self.frequencies = np.zeros (self.nr_steps_finelaser)
+        self.PD_signal = np.zeros (self.nr_steps_finelaser)
 
         if use_wavemeter:
             avg_nr_samples = self.nr_avg_scans
             if force_single_scan:
                 avg_nr_samples = 1
-            dac_no = self.adwin.dacs['newfocus_freqmod']
-            self.adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.V_min)
+            dac_no = self._adwin.dacs['newfocus_freqmod']
+            self._adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.minV_finelaser)
             qt.msleep (0.1)
             for n in np.arange (self.nr_V_steps):
-                self.adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.v_vals[n])
+                self._adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.v_vals[n])
                 value = 0
                 for j in np.arange (avg_nr_samples):
-                    self.adwin.start_read_adc (adc_no = self.adwin.adcs['photodiode'])
-                    value = value + self.adwin.get_read_adc_var ('fpar')[0][1]
+                    self._adwin.start_read_adc (adc_no = self._adwin.adcs['photodiode'])
+                    value = value + self._adwin.get_read_adc_var ('fpar')[0][1]
                 value = value/avg_nr_samples
                 self.PD_signal[n] = value
                 qt.msleep (0.01)
-                self.frequencies[n] = self.physical_adwin.Get_FPar (self._wm_port) 
+                self.frequencies[n] = self._physical_adwin.Get_FPar (self._wm_port) 
                 qt.msleep (0.05)
         else:
-            self.success, self.data, self.tstamps_ms, self.scan_params = self.adwin.scan_photodiode (scan_type = 'laser',
-                     nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
-                    start_voltage = self.V_min, end_voltage = self.V_max, 
+            self.success, self.data, self.tstamps_ms, self.scan_params = self._adwin.scan_photodiode (scan_type = 'laser',
+                     nr_steps = self.nr_steps_finelaser, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
+                    start_voltage = self.minV_finelaser, end_voltage = self.maxV_finelaser, 
                     use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
             for j in np.arange (self.nr_avg_scans):
@@ -739,22 +738,15 @@ class cavity_scan_manager(CyclopeanInstrument):
                     values = values + self.data[j]
             self.PD_signal = values/float(self.nr_avg_scans)
 
-
-    def initialize_piezos (self, wait_time=0.2):
-        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.V_min)
-        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.V_min)
-        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.V_min)
-        qt.msleep(wait_time)
-
     def length_scan (self):
 
-        v_step = float(self.V_max-self.V_min)/float(self.nr_V_steps)
-        self.v_vals = np.linspace(self.V_min, self.V_max, self.nr_V_steps)  
-        self.PD_signal = np.zeros (self.nr_V_steps)
+        v_step = float(self.maxV_lengthscan-self.minV_lengthscan)/float(self.nr_steps_lengthscan)
+        self.v_vals = np.linspace(self.minV_lengthscan, self.maxV_lengthscan, self.nr_steps_lengthscan)  
+        self.PD_signal = np.zeros (self.nr_steps_lengthscan)
 
-        self.success, self.data, self.tstamps_ms, self.scan_params = self.adwin.scan_photodiode (scan_type = 'fine_piezos',
-                nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
-                start_voltage = self.V_min, end_voltage = self.V_max, 
+        self.success, self.data, self.tstamps_ms, self.scan_params = self._adwin.scan_photodiode (scan_type = 'fine_piezos',
+                nr_steps = self.nr_steps_lengthscan, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
+                start_voltage = self.minV_lengthscan, end_voltage = self.maxV_lengthscan, 
                 use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
         #output PD_signal as the average over nr_avg_scans

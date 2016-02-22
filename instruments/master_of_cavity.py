@@ -30,8 +30,14 @@ from measurement.lib.config import moc_cfg
                     
 class master_of_cavity(CyclopeanInstrument):
 
-    def __init__(self, name, jpe, adwin, use_cfg = False, **kw):
+    def __init__(self, name, jpe, adwin, laser, use_cfg = False, **kw):
         Instrument.__init__(self, name)
+
+        _laser = qt.instruments[laser]
+        _adwin = qt.instruments[adwin]
+        _jpe = qt.instruments[jpe]
+
+        self._laser_updated = False
 
         print 'Initializing master_of_cavity... '
 
@@ -47,12 +53,12 @@ class master_of_cavity(CyclopeanInstrument):
                 minval = 0, maxval = 300)
         self.temperature = 300
 
-        self.add_parameter('freq',
+        self.add_parameter('JPE_freq',
                 flags = Instrument.FLAG_GETSET,
                 units = 'Hz',
                 type = types.IntType, 
                 minval = 0, maxval = 600)
-        self.freq = 100
+        self.JPE_freq = 100
 
         self.add_parameter('rel_step_size',
                 flags = Instrument.FLAG_GETSET,
@@ -144,8 +150,8 @@ class master_of_cavity(CyclopeanInstrument):
         if 'temperature' in params:
             self.set_temperature(params['temperature'])
             print 'JPE temperature set to ', params['temperature']
-        if 'freq' in params:
-            self.set_freq(params['freq'])
+        if 'JPE_freq' in params:
+            self.set_JPE_freq(params['JPE_freq'])
         if 'rel_step_size' in params:
             self.set_rel_step_size(params['rel_step_size'])
         # if 'z1' in params:
@@ -163,7 +169,7 @@ class master_of_cavity(CyclopeanInstrument):
 
     def save_cfg(self):
         self.ins_cfg['temperature'] = self.temperature
-        self.ins_cfg['freq'] = self.freq
+        self.ins_cfg['JPE_freq'] = self.JPE_freq
         self.ins_cfg['rel_step_size'] = self.rel_step_size
         self.ins_cfg['z1'] = self.track_z1
         self.ins_cfg['z2'] = self.track_z2
@@ -308,33 +314,32 @@ class master_of_cavity(CyclopeanInstrument):
 
     def do_get_temperature (self):
         return self.temperature
-
     def do_set_temperature (self, value):
         self.temperature = value
         self.ins_cfg['temperature'] = self.temperature
         if (self.temperature>280):
             self._step_size = 15e-6 #in mm #SvD: what is this based on??
-        
+            self.room_T = True
+            self.low_T = False
         if (self.temperature<15):
             self._step_size = 3e-6 #in mm
+            self.room_T = False
+            self.low_T = True
 
     def do_set_address (self, addr):
         self.addr = addr
     def do_get_address (self):
-        return self.addr
-    
-    def do_get_freq(self):
-        return self.freq
-    def do_set_freq (self, value):
-        self.freq = value
-        self.ins_cfg['freq'] = self.freq
-
+        return self.addr  
+    def do_get_JPE_freq(self):
+        return self.JPE_freq
+    def do_set_JPE_freq (self, value):
+        self.JPE_freq = value
+        self.ins_cfg['JPE_freq'] = self.JPE_freq
     def do_get_rel_step_size(self):
         return self.rel_step_size
     def do_set_rel_step_size(self, value):
         self.rel_step_size = value
         self.ins_cfg['rel_step_size'] = self.rel_step_size
-
 
     def do_get_track_curr_x(self):
         return self.track_curr_x
@@ -345,6 +350,18 @@ class master_of_cavity(CyclopeanInstrument):
     def get_track_z(self):
         return self.track_z1, self.track_z2, self.track_z3
 
+    def set_laser_wavelength(self, value):
+        self._laser.set_wavelength()
+    def get_laser_wavelength(self, value):
+        return self._laser.get_wavelength()
+
+    def set_laser_power(self, value):
+        self._laser.set_power()
+    def get_laser_power(self, value):
+        return self._laser.get_power()
+
+    def get_laser_wm_frequency(self, value):
+        return self._physical_adwin.Get_FPar(46) #should not hardcode this par maybe
 
     def get_params (self):
         params = self.ins_cfg.get_all()
@@ -359,26 +376,26 @@ class master_of_cavity(CyclopeanInstrument):
             
     def step (self, ch, steps):
         self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps, 
-            T=self.temperature, freq=self.freq, reL_step=self.rel_step_size)
+            T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
         
     def set_as_origin (self):
         self._jpe_tracker.set_as_origin()
 
     def reset_spindle_tracker(self):
         self._jpe_tracker.reset_spindle_tracker()
-        print 'S1, S2, S3 ', self._jpe_tracker.z1, self._jpe_tracker.z2, self._jpe_tracker.z3
+        print 'S1, S2, S3 ', self.track_z1, self.track_z2, self.track_z3
 
     def print_current_position(self):
-        print 'x = ', self._jpe_tracker.curr_x
-        print 'y = ', self._jpe_tracker.curr_y
-        print 'z = ', self._jpe_tracker.curr_z
+        print 'x = ', self.track_curr_x
+        print 'y = ', self.track_curr_y
+        print 'z = ', self.track_curr_z
 
     def print_tracker_params(self):
         z1, z2, z3 = self._jpe_tracker.tracker_file_readout()
         print 'Spindle positions: ', z1, z2, z3
 
     def get_position (self):
-        return self._jpe_tracker.curr_x, self._jpe_tracker.curr_y, self._jpe_tracker.curr_z
+        return self.track_curr_x, self.track_curr_y, self.track_curr_z
 
     def set_fine_piezo_voltages (self, v1,v2,v3):
         #self.ins_adwin.set_dac('jpe_fine_tuning_1', v1)
@@ -421,9 +438,12 @@ class master_of_cavity(CyclopeanInstrument):
             print 'a=', a
             if (a=='y'):
                 print 'moving'
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
+                self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1,
+                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
+                self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2,
+                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
+                self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3,
+                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
                 self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
         def remove(self):
             self.save_cfg()

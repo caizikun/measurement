@@ -36,10 +36,9 @@ from measurement.lib.cavity.panels.scan_panel_v9 import Ui_Form as Ui_Scan
 from measurement.lib.cavity.panels.XYscan_panel import Ui_Form as Ui_XYScan
 
 
-class XYScanGUI (QtGui.QMainWindow):
-    def __init__(self, exp_mngr):
+class XYScanGUI (Panel):
+    def __init__(self, parent, *arg, **kw):
 
-        QtGui.QWidget.__init__(self)
         self.ui = Ui_XYScan()
         self.ui.setupUi(self)
         self._exp_mngr = exp_mngr
