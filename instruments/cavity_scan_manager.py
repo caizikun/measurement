@@ -1,6 +1,7 @@
 ###############
 ### original created by Cristian Bonato - 2015
 ### edited by Suzanne van Dam - 2016
+### SvD: I am removing the experiment mangaer from it.... I don't see why we need it.
 ################
 
 import os
@@ -15,10 +16,10 @@ from lib import config
 
 
 class cavity_scan_manager(CyclopeanInstrument):
-    def __init__ (self, name, exp_mngr):
-        CyclopeanInstrument.__init__(self,name)
+    def __init__ (self, name, adwin, physical_adwin):
+        CyclopeanInstrument.__init__(self,name, tags=[])
 
-        self._exp_mngr = exp_mngr
+        # self._exp_mngr = exp_mngr
 
         self._scan_initialized = False
         self.V_min = None
@@ -29,113 +30,131 @@ class cavity_scan_manager(CyclopeanInstrument):
 
         #maybe this type of parameters can better be part of a dictionary..?
         self.add_parameter('nr_avg_scans',
-                types.IntType, 
-                flags= Instrument.FLAG_GETSET)
+                type= types.IntType, 
+                flags= Instrument.FLAG_GETSET,)
+        self.nr_avg_scans=1
 
         self.add_parameter('nr_repetitions',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
+        self.nr_repetitions=1
 
         self.add_parameter('minV_lengthscan',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'V',
                 minval = -2, maxval = 10)
-        
+        self.minV_lengthscan=-2
+
         self.add_parameter('maxV_lengthscan',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'V',
                 minval = -2, maxval = 10)
+        self.maxV_lengthscan=10
 
         self.add_parameter('nr_steps_lengthscan',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
-       
+        self.nr_steps_lengthscan=121
+
         self.add_parameter('minV_finelaser',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'V',
                 minval = -3, maxval = 3)
+        self.minV_finelaser=-3
 
         self.add_parameter('maxV_finelaser',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'V',
                 minval = -3, maxval = 3)
+        self.maxV_finelaser=3
 
         self.add_parameter('nr_steps_finelaser',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
+        self.nr_steps_finelaser=121
 
         self.add_parameter('minlambda_lrlaser',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'nm',
                 minval = 636, maxval = 640)
+        self.minlambda_lrlaser=636.8
 
         self.add_parameter('maxlambda_lrlaser',
-                types.FloatType, 
+                type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'nm',
                 minval = 636, maxval = 640)
+        self.maxlambda_lrlaser=637.2
 
         self.add_parameter('nr_steps_lrlaser',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
+        self.nr_steps_lrlaser=101
 
         self.add_parameter('nr_calib_pts_lrlaser',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
+        self.nr_calib_pts_lrlaser=2
 
         self.add_parameter('sync_delay_ms',
-                types.IntType,
+                type= types.IntType,
                 flags=Instrument.FLAG_GETSET,
-                units = ms
+                units = 'ms',
                 minval = 0, maxval = 2000)
+        self.sync_delay_ms=0
 
         self.add_parameter('min_msyncdelay',
-                types.IntType,
+                type= types.IntType,
                 flags=Instrument.FLAG_GETSET,
-                units = ms
+                units = 'ms',
                 minval = 0, maxval = 2000)
+        self.min_msyncdelay=0
 
         self.add_parameter('max_msyncdelay',
-                types.IntType,
+                type= types.IntType,
                 flags=Instrument.FLAG_GETSET,
-                units = ms
+                units = 'ms',
                 minval = 0, maxval = 2000)
+        self.max_msyncdelay=1000
 
         self.add_parameter('nr_steps_msyncdelay',
-                types.IntType,
+                type= types.IntType,
                 flags=Instrument.FLAG_GETSET)
+        self.nr_steps_msyncdelay=6
 
         self.add_parameter('wait_cycles',
-                types.IntType, 
+                type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
+        self.wait_cycles = 1
 
         self.add_parameter('use_sync',
-                types.BooleanType, 
+                type= types.BooleanType, 
                 flags = Instrument.FLAG_GETSET)
-
-        # self.use_sync = False
-        self.sync_delay_ms = None
-
-        # self.autostop = None
-        # self.autosave = None
-        # self.file_Tag = None
+        self.use_sync = False
 
         self.add_parameter('autosave', 
-                types.BooleanType,
+                type= types.BooleanType,
                 flags=Instrument.FLAG_GETSET)
+        self.autosave=False
 
-        self.add_parameter('autosave', 
-                types.BooleanType,
+        self.add_parameter('autostop', 
+                type= types.BooleanType,
                 flags=Instrument.FLAG_GETSET)
+        self.autostop=False
 
         self.add_parameter('file_tag', 
-                types.StringType,
+                type= types.StringType,
                 flags=Instrument.FLAG_GETSET)
+        self.file_tag=''
+        self.add_parameter('status_label', 
+                type= types.StringType,
+                flags=Instrument.FLAG_GETSET)
+        self.status_label='idle'
 
         self.data = None
         self.PD_signal = None
@@ -146,11 +165,10 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.add_function('start_lengthscan')
         self.add_function('stop_lengthscan')
         self.add_function('laser_scan')
-        self.add_function('piezo_scan')
+        self.add_function('length_scan')
         self.add_function('initialize_piezos')
         self.add_function('save')
         self.add_function('save_2D_scan')
-        self.add_function('status_label')
 
 
     ###########
@@ -197,14 +215,15 @@ class cavity_scan_manager(CyclopeanInstrument):
             self._running_task = None
             self._2D_scan_is_active = False
 
-   def start_finelaser(self):
+    def start_finelaser(self):
         if (self._running_task==None):
             self._running_task = 'fine_laser_scan'
 
     def stop_finelaser(self):
         if (self._running_task == 'fine_laser_scan'):
             self._running_task = None
-            # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)###SvD:this is a weird statement.
+            # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)###SvD: I do not see why we need to do this. 
+            #maybe I need to do this later again, but somewhat differently?
 
     def start_lr_scan(self):
         if (self._running_task==None):
@@ -237,7 +256,12 @@ class cavity_scan_manager(CyclopeanInstrument):
         '''
         if (self._running_task==None):
             self.curr_pz_volt = self.minV_lengthscan
-            self._exp_mngr.set_piezo_voltage (self.curr_pz_volt) 
+            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.curr_pz_volt)
+            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.curr_pz_volt)
+            self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.curr_pz_volt)
+
+            # self._exp_mngr.set_piezo_voltage (self.curr_pz_volt) 
+
             self.pzV_step = (self.maxV_lengthscan-self.minV_lengthscan)/float(self.nr_steps_lengthscan)
             self.dict_2D_scan = {}
             self.dict_pzvolt = {}
@@ -277,7 +301,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.reset_data('PD_signal', (self.nr_steps_lengthscan))
         self.reset_data('v_vals',  (self.nr_steps_lengthscan))
 
-        self.ui.label_status_display.setText("<font style='color: red;'>SCANNING PIEZOs</font>")
+        self.status_label = "<font style='color: red;'>SCANNING PIEZOs</font>"
         self.set_scan_params (v_min=self.minV_lengthscan, v_max=self.maxV_lengthscan, nr_points=self.nr_steps_lengthscan)
         self.initialize_piezos(wait_time=1)
 
@@ -287,7 +311,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.length_scan ()
 
         #set data in order for the UI to connect to it.       
-        self.status_label = "<font style='color: red;'>idle</font>")
+        self.status_label = "<font style='color: red;'>idle</font>"
 
         self.reset_data('PD_signal', (self.nr_steps_lengthscan))
         self.reset_data('v_vals',  (self.nr_steps_lengthscan))
@@ -314,7 +338,7 @@ class cavity_scan_manager(CyclopeanInstrument):
             self.save()
         if self.autostop:
             self._running_task = None
-            self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)
+            # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)#SvD: this seems unnecessary
 
         return self.success
 
@@ -621,8 +645,8 @@ class cavity_scan_manager(CyclopeanInstrument):
         Function that saves a 2 dimensional scan into an HDF5 file.
         '''
         fName = time.strftime ('%H%M%S') + '_2Dscan'
-        if self._scan_mngr.file_tag:
-            fName = fName + '_' + self._scan_mngr.file_tag
+        if self.file_tag:
+            fName = fName + '_' + self.file_tag
         f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
         directory = os.path.join(f0, fName)
         if not os.path.exists(directory):
@@ -688,23 +712,23 @@ class cavity_scan_manager(CyclopeanInstrument):
             avg_nr_samples = self.nr_avg_scans
             if force_single_scan:
                 avg_nr_samples = 1
-            dac_no = self._exp_mngr._adwin.dacs['newfocus_freqmod']
-            self._exp_mngr._adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.V_min)
+            dac_no = self.adwin.dacs['newfocus_freqmod']
+            self.adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.V_min)
             qt.msleep (0.1)
             for n in np.arange (self.nr_V_steps):
-                self._exp_mngr._adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.v_vals[n])
+                self.adwin.start_set_dac(dac_no=dac_no, dac_voltage=self.v_vals[n])
                 value = 0
                 for j in np.arange (avg_nr_samples):
-                    self._exp_mngr._adwin.start_read_adc (adc_no = self._adwin.adcs['photodiode'])
-                    value = value + self._exp_mngr._adwin.get_read_adc_var ('fpar')[0][1]
+                    self.adwin.start_read_adc (adc_no = self.adwin.adcs['photodiode'])
+                    value = value + self.adwin.get_read_adc_var ('fpar')[0][1]
                 value = value/avg_nr_samples
                 self.PD_signal[n] = value
                 qt.msleep (0.01)
-                self.frequencies[n] = self._exp_mngr._wm_adwin.Get_FPar (self._wm_port)
+                self.frequencies[n] = self.physical_adwin.Get_FPar (self._wm_port) 
                 qt.msleep (0.05)
         else:
-            self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'laser',
-                     nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self._exp_mngr.wait_cycles, 
+            self.success, self.data, self.tstamps_ms, self.scan_params = self.adwin.scan_photodiode (scan_type = 'laser',
+                     nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                     start_voltage = self.V_min, end_voltage = self.V_max, 
                     use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
@@ -717,9 +741,9 @@ class cavity_scan_manager(CyclopeanInstrument):
 
 
     def initialize_piezos (self, wait_time=0.2):
-        self._exp_mngr._adwin.start_set_dac(dac_no=self._exp_mngr._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.V_min)
-        self._exp_mngr._adwin.start_set_dac(dac_no=self._exp_mngr._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.V_min)
-        self._exp_mngr._adwin.start_set_dac(dac_no=self._exp_mngr._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.V_min)
+        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.V_min)
+        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.V_min)
+        self.adwin.start_set_dac(dac_no=self.adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.V_min)
         qt.msleep(wait_time)
 
     def length_scan (self):
@@ -728,7 +752,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.v_vals = np.linspace(self.V_min, self.V_max, self.nr_V_steps)  
         self.PD_signal = np.zeros (self.nr_V_steps)
 
-        self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'fine_piezos',
+        self.success, self.data, self.tstamps_ms, self.scan_params = self.adwin.scan_photodiode (scan_type = 'fine_piezos',
                 nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                 start_voltage = self.V_min, end_voltage = self.V_max, 
                 use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
@@ -763,6 +787,12 @@ class cavity_scan_manager(CyclopeanInstrument):
 
     def do_set_file_tag(self,string):
         self.file_tag = string
+
+    def do_get_status_label(self):
+        return self.status_label
+
+    def do_set_status_label(self,string):
+        self.status_label = string
 
     def do_get_nr_avg_scans(self):
         return self.nr_avg_scans
