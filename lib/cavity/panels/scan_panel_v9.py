@@ -182,12 +182,30 @@ class ScanGUI(QtGui.QMainWindow):
         self.timer.timeout.connect(self.manage_tasks)
         self.timer.start(self.refresh_time)
 
-    #I think I need to keep this for the refreshing.
     def _instrument_changed(self,changes):
+        Panel._instrument_changed(self, changes)
+        print changes
+        if changes.has_key('status_label'):
+            self.ui.label_status_display.setText(str(changes['status_label']))
         
+        if 'data_update' in changes:
+            d = changes['data_update']
+            if 'v_vals' in d:
+            self.ui.plot_canvas.set_x(self._data['v_vals'])
+            #self.ui.plot_canvas.set_x_axis('piezo voltage (V)')
+            try: 
+                self.ui.plot_canvas.plot.delplot('PD_signal')
+            except:
+                pass
 
-        pass
+            if 'PD_signal' in d:
+                self.ui.plot_canvas.set_y(self._data['PD_signal'])
+                #self.ui.plot_canvas.set_y_axis('photodiode signal (a.u.)')
+
+        
         #changes = self._scan_mngr.get_data_update()
+
+    #I think I need to keep this for the refreshing.
 
     def manage_tasks(self):
         self._scan_mngr.manage_tasks()

@@ -137,9 +137,6 @@ class cavity_scan_manager(CyclopeanInstrument):
                 types.StringType,
                 flags=Instrument.FLAG_GETSET)
 
-
-
-
         self.data = None
         self.PD_signal = None
         self.tstamps_ms = None
@@ -153,6 +150,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.add_function('initialize_piezos')
         self.add_function('save')
         self.add_function('save_2D_scan')
+        self.add_function('status_label')
 
 
     ###########
@@ -287,14 +285,14 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.length_scan ()
 
         #set data in order for the UI to connect to it.       
-        self.set_data('text', "<font style='color: red;'>idle</font>")
+        self._status_label = "<font style='color: red;'>idle</font>")
 
-        self.reset_data('photodiode_signal', (self.nr_steps_lengthscan))
-        self.reset_data('voltage',  (self.nr_steps_lengthscan))
+        self.reset_data('PD_signal', (self.nr_steps_lengthscan))
+        self.reset_data('v_vals',  (self.nr_steps_lengthscan))
         # self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
         if self._scan_mngr.success:
-            self.set_data('photodiode_signal', self.data[0])
-            self.set_data('voltage', self.v_vals)
+            self.set_data('PD_signal', self.data[0])
+            self.set_data('v_vals', self.v_vals)
             # self.ui.plot_canvas.update_plot (x = self._scan_mngr.v_vals, y=self._scan_mngr.data[0], x_axis = 'piezo voltage [V]', 
             #             y_axis = 'photodiode signal (a.u.)', color = 'RoyalBlue')
             self._scan_mngr.saveX_values = self._scan_mngr.v_vals
