@@ -16,62 +16,21 @@ class JPE_CADM(Instrument):
     
     def __init__(self, name):
         Instrument.__init__(self, name)
-        self.T = 300
+        print '--- Initializing JPE PiezoKnob high mechanical resonance stage ---- '
         self.type = 'PK1801'
         self.TRQFR = 1
-        self.freq = 100
-        self.rel_step = 30
 
         self.pzknb_command = 'D:\measuring\measurement\hardware\jpe\pzknb_CMD\pzknb'
 
-        print '--- Initializing JPE PiezoKnob high mechanical resonance stage ---- '
-        #T = raw_input ('Please set the temperature of operation [K]...')
-        self.T = 300
-        print 'Temperature set to '+str(self.T)+' K!'
-
-        self.add_parameter('temperature',
-                            flags= Instrument.FLAG_GETSET,
-                            units = 'K',
-                            type = types.IntType,
-                            minval =0, maxval = 300)
-
-        self.add_parameter('freq',
-                            units = 'Hz',
-                            type = types.IntType,
-                            minval =0, maxval = 600)
-
-        self.add_parameter('relative_piezo_step',
-                            units = '%',
-                            type =types.IntType,
-                            minval =0, maxval = 100)
-
-        self.add_function('get_params')
+        self.add_function('get_type')
         self.add_function('status')
         self.add_function('info')
-        self.add_function('move_cnt')
+        # self.add_function('move_cnt')
         self.add_function('move')
         self.add_function('stop')
-        
-    def do_set_temperature (self, T):
-        self.T = int(T)
-    def do_get_temperature (self):
-        return self.T
 
-    def do_set_freq (self, f):
-        self.freq = int(f)
-    def do_get_freq(self):
-        return self.freq
-
-    def do_set_relative_piezo_step (self, p):
-        self.rel = int(p)
-    def do_get_relative_piezo_step (self):
-        return self.rel
-
-    def get_params(self):
+    def get_type(self):
         print '-------JPE controller: '+self.type
-        print '- temperature: '+str(self.T)+'K'
-        print '- frequency: '+str(self.freq)+'Hz'
-        print '- relative piezo step: '+str(self.rel_step)+'%'
 
     def status(self, addr = 0):
         out = sp.check_output ([self.pzknb_command, 'S', str(addr)])
@@ -92,16 +51,16 @@ class JPE_CADM(Instrument):
         output = sp.check_output ([self.pzknb_command, 'i', str(addr), str(ch)])
         print output
         
-    def move_cnt (self, cw = 0):
-        """function that invokes continuous movement of the JPE
-        SvD: I don't think this function would work, as no addr and ch are specified.
-        """
-        if (cw == 0):
-            print 'Specify direction (clockwise: > 0, counter-clockwise: <0)'
-        else:
-            cw = int((np.sign(cw)+1)/2)
-            out = sp.check_output [self.pzknb_command, 'M', str(addr), str(ch), self.type, str(self.T), 
-                                            str(cw), str(self.freq), str(self.rel_step), str(0)]
+    # def move_cnt (self, cw = 0):
+    #     """function that invokes continuous movement of the JPE
+    #     SvD: I don't think this function would work, as no addr and ch are specified.
+    #     """
+    #     if (cw == 0):
+    #         print 'Specify direction (clockwise: > 0, counter-clockwise: <0)'
+    #     else:
+    #         cw = int((np.sign(cw)+1)/2)
+    #         out = sp.check_output [self.pzknb_command, 'M', str(addr), str(ch), self.type, str(self.T), 
+    #                                         str(cw), str(self.freq), str(self.rel_step), str(0)]
 
     def stop (self, addr):
         if ((addr>0)&(addr<4)):
@@ -110,7 +69,7 @@ class JPE_CADM(Instrument):
         else:
             print 'Specified address not available!'
             
-    def move (self, addr, ch, steps):
+    def move (self, addr, ch, steps, T, freq, reL_step):
 
         cw = int((np.sign(steps)+1)/2)
         steps = abs(steps)
@@ -118,7 +77,7 @@ class JPE_CADM(Instrument):
         steps_cent = int(steps*100)-100*int(steps)
 
         if not(steps==0):
-            out = sp.check_output ([self.pzknb_command, 'M', str(addr), str(ch), self.type, str(self.T), str(cw), str(self.freq), str(self.rel_step), str(steps_int)])
+            out = sp.check_output ([self.pzknb_command, 'M', str(addr), str(ch), self.type, str(T), str(cw), str(freq), str(rel_step), str(steps_int)])
             #start = time.time()
             # while(self.is_busy(addr)):  #### wait until the JPE tells you it stopped moving. CANNOT DO THIS SINCE IT REVEALS ERROR
             #     time.sleep(0.005)
@@ -133,7 +92,7 @@ class JPE_CADM(Instrument):
             #print "finished moving large steps. time it took in s: ",(stop-start)
 
             if not (steps_cent==0):
-                out = sp.check_output( [self.pzknb_command, 'M', str(addr), str(ch), self.type, str(self.T), str(cw), str(self.freq), str(1), str(steps_cent)])
+                out = sp.check_output( [self.pzknb_command, 'M', str(addr), str(ch), self.type, str(T), str(cw), str(freq), str(1), str(steps_cent)])
                 #start = time.time()
                 # while(self.is_busy(addr)):  #### wait until the JPE tells you it stopped moving
                 #     time.sleep(0.005)

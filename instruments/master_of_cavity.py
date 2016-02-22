@@ -27,114 +27,59 @@ import numpy as np
 from lib import config
 from measurement.lib.config import moc_cfg
 
-
-# class JPE_pos_tracker ():
-
-    # def __init__(self, reinit_spindles=False):
-        # #all coordinates are in mm, angles in radians
-        # # the number of spindle rotations
-        # self.z1 = None
-        # self.z2 = None
-        # self.z3 = None
-
-        # #design properties in mm (see JPE datasheet)
-        # self.cfg_pars = moc_cfg.config['general_stage_dims']
-        # self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
-        # self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
-        # self.R = self.cfg_pars['R_mm']#14.5
-
-        # self.max_spindle_steps = self.cfg_pars['max_spindle_steps']
-        
-        # #Cartesian coordinates in the lab-frame (mm)
-        # self.curr_x = None
-        # self.curr_y = None
-        # self.curr_z = None
-        # self.v_piezo_1 = None
-        # self.v_piezo_2 = None
-        # self.v_piezo_3 = None       
-        # self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.npz'
-
-        # if reinit_spindles:         
-        #     self.reset_spindle_tracker()
-        # else:
-        #     print 'Tracker initialized from file...'
-        #     self.tracker_file_readout()
-
-
-    # def tracker_file_update(self):
-    #     try:
-    #         np.savez (self.tracker_file_name, z1= self.z1, z2=self.z2, z3=self.z3, x=self.curr_x, y=self.curr_y, z=self.curr_z)
-    #     except:
-    #         print 'Tracker file update failed!'
-
-    # def tracker_file_readout(self):
-    #     tr_file = np.load(self.tracker_file_name)
-    #     self.track_z1 = tr_file['z1']
-    #     self.track_z2 = tr_file['z2']
-    #     self.track_z3 = tr_file['z3']
-    #     self.track_curr_x = tr_file['x']
-    #     self.track_curr_y = tr_file['y']
-    #     self.track_curr_z = tr_file['z']
-    #     #print self.curr_x, self.curr_y, self.curr_z
-    #     return self.track_z1, self.track_z2, self.track_z3
-
-    # def check_spindle_limit (self, move):
-    #     n1 = self.track_z1+move[0]
-    #     n2 = self.track_z2+move[1]
-    #     n3 = self.track_z3+move[2]
-    #     return ((n1<0)or(n2<0)or(n3<0)or(n1>self.max_spindle_steps)or(n2>self.max_spindle_steps)or(n3>self.max_spindle_steps))
-
-    # def set_as_origin (self):
-    #     self.track_curr_x = 0
-    #     self.track_curr_y = 0
-    #     self.track_curr_z = 0
-    #     self.tracker_update (spindle_incr = [0,0,0], pos_values = [0.,0.,0.])
-        
-    # def reset_spindle_tracker(self):
-    #     self.track_z1 = 0
-    #     self.track_z2 = 0
-    #     self.track_z3 = 0
-    #     self.tracker_file_update()
-    #     print 'Tracker reset to zero'
-
-    # def tracker_update (self, spindle_incr, pos_values):
-    #     self.track_z1 = self.track_z1+spindle_incr[0]
-    #     self.track_z2 = self.track_z2+spindle_incr[1]
-    #     self.track_z3 = self.track_z3+spindle_incr[2]
-    #     self.track_curr_x = pos_values[0]
-    #     self.track_curr_y = pos_values[1]
-    #     self.track_curr_z = pos_values[2]     
-    #     self.tracker_file_update ()
-
-    # def position_to_spindle_steps (self, x, y, z, update_tracker=False):
-    #     Dx = x-self.track_curr_x
-    #     Dy = y-self.track_curr_y
-    #     Dz = z-self.track_curr_z
-            
-    #     DZ1 = -(self.R/self.h)*Dy+Dz
-    #     DZ2 = (3.**0.5/2.)*(self.R/self.h)*Dx+(0.5*self.R/self.h)*Dy+Dz
-    #     DZ3 = -(3.**0.5/2.)*(self.R/self.h)*Dx+(0.5*self.R/self.h)*Dy+Dz
-        
-    #     if update_tracker:
-    #         self.track_curr_x = x
-    #         self.track_curr_y = y
-    #         self.track_curr_z = z
-        
-    #     return DZ1, DZ2, DZ3
-        
                     
 class master_of_cavity(CyclopeanInstrument):
 
-    def __init__(self, name, jpe, adwin, use_cfg = True, **kw):
+    def __init__(self, name, jpe, adwin, use_cfg = False, **kw):
+        Instrument.__init__(self, name)
+
         print 'Initializing master_of_cavity... '
+
+        self.add_parameter('address',
+                flags = Instrument.FLAG_GETSET,
+                type = types.IntType)
+        self.address= 1
+
+        self.add_parameter('temperature',
+                flags = Instrument.FLAG_GETSET,
+                units = 'K',
+                type = types.IntType, 
+                minval = 0, maxval = 300)
+        self.temperature = 300
+
+        self.add_parameter('freq',
+                flags = Instrument.FLAG_GETSET,
+                units = 'Hz',
+                type = types.IntType, 
+                minval = 0, maxval = 600)
+        self.freq = 100
+
+        self.add_parameter('rel_step_size',
+                flags = Instrument.FLAG_GETSET,
+                units = '%',
+                type = types.IntType, 
+                minval = 0, maxval = 100)
+        self.rel_step_size = 30
+
+        self.add_parameter('track_curr_x',
+                type = types.FloatType,
+                flags = Instrument.FLAG_GET, 
+                units = 'nm')
+        self.add_parameter('track_curr_y',
+                type = types.FloatType,
+                flags = Instrument.FLAG_GET, 
+                units = 'nm')
+        self.add_parameter('track_curr_z',
+                type = types.FloatType,
+                flags = Instrument.FLAG_GET, 
+                units = 'nm')
+
         self.addr = 1
         self.ch_x = 1
         self.ch_y = 2
         self.ch_z = 3
-        Instrument.__init__(self, name)
         self._jpe_cadm = qt.instruments[jpe]
         # self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
-        self.temperature = None
         self._step_size = None
         self.ins_adwin = qt.instruments[adwin]
         self._fine_piezo_V = None
@@ -143,9 +88,32 @@ class master_of_cavity(CyclopeanInstrument):
         # Init that was originally in the JPE_pos_tracker.
         # all coordinates are in mm, angles in radians
         # the number of spindle rotations for z1,z2,z3
-        self.track_z1 = None
-        self.track_z2 = None
-        self.track_z3 = None
+        self.track_z1 = 0
+        self.track_z2 = 0
+        self.track_z3 = 0
+
+        #design properties in mm (see JPE datasheet).
+        self.cfg_pars = moc_cfg.config['moc_cav1']
+        self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
+        self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
+        self.R = self.cfg_pars['R_mm']#14.5
+        self.max_spindle_steps = self.cfg_pars['max_spindle_steps']
+
+        #Cartesian coordinates in the lab-frame (mm)
+        self.track_curr_x = 0
+        self.track_curr_y = 0
+        self.track_curr_z = 0
+        self.track_v_piezo_1 = None
+        self.track_v_piezo_2 = None
+        self.track_v_piezo_3 = None       
+        self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.npz'
+
+        reinit_spindles = kw.pop('reinit_spindles', False)
+        if reinit_spindles:         
+            self.reset_spindle_tracker()
+        else:
+            print 'Tracker initialized from file...'
+            self.tracker_file_readout()
 
         #variable properties are saved in the cfg file 
         if use_cfg:
@@ -159,82 +127,39 @@ class master_of_cavity(CyclopeanInstrument):
             self.load_cfg()
             self.save_cfg()
 
-        self.freq = self.cfg_pars['freq']
-        self.rel_step_size = self.cfg_pars['rel_step_size']      
-
-        #design properties in mm (see JPE datasheet).
-        self.cfg_pars = moc_cfg.config['moc_cav1']
-        self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
-        self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
-        self.R = self.cfg_pars['R_mm']#14.5
-        self.max_spindle_steps = self.cfg_pars['max_spindle_steps']
-  
-
-        #Cartesian coordinates in the lab-frame (mm)
-        self.track_curr_x = None
-        self.track_curr_y = None
-        self.track_curr_z = None
-        self.track_v_piezo_1 = None
-        self.track_v_piezo_2 = None
-        self.track_v_piezo_3 = None       
-        self.tracker_file_name = 'D:\measuring\measurement\config\jpe_tracker.npz'
-
-        reinit_spindles = kw.pop('reinit_spindles', False)
-        if reinit_spindles:         
-            self.reset_spindle_tracker()
-        else:
-            print 'Tracker initialized from file...'
-            self.tracker_file_readout()
-
-
-        self.add_parameter('address',
-                flags = Instrument.FLAG_GETSET,
-                type = types.IntType)
-
-        self.add_parameter('temperature',
-                flags = Instrument.FLAG_GETSET,
-                units = 'K'
-                type = types.IntType)
-
-        self.add_parameter('freq',
-                flags = Instrument.FLAG_GETSET,
-                units = 'Hz'
-                type = types.IntType)
-
-        self.add_parameter('rel_step_size',
-                flags = Instrument.FLAG_GETSET,
-                units = '%',
-                type = types.IntType)
-
         # remote access functions:
         self.add_function('get_params')
+        self.add_function('get_track_z')
         self.add_function('status')
         #position control function
         self.add_function('step')
         self.add_function('set_as_origin')
         self.add_function('move_to_xyz')    
+        self.add_function('set_fine_piezo_voltages')
+        self.add_function('move_spindle_steps')
 
     ### config management
     def load_cfg(self):
         params = self.ins_cfg.get_all()
         if 'temperature' in params:
             self.set_temperature(params['temperature'])
+            print 'JPE temperature set to ', params['temperature']
         if 'freq' in params:
             self.set_freq(params['freq'])
         if 'rel_step_size' in params:
             self.set_rel_step_size(params['rel_step_size'])
-        if 'z1' in params:
-            self.track_z1 = z1
-        if 'z2' in params:
-            self.track_z2 = z2
-        if 'z3' in params:
-            self.track_z3 = z3
-        if 'curr_x' in params:
-            self.track_curr_x = curr_x
-        if 'curr_y' in params:
-            self.track_curr_x = curr_y        
-        if 'curr_z' in params:
-            self.track_curr_x = curr_z
+        # if 'z1' in params:
+        #     self.track_z1 = z1
+        # if 'z2' in params:
+        #     self.track_z2 = z2
+        # if 'z3' in params:
+        #     self.track_z3 = z3
+        # if 'curr_x' in params:
+        #     self.track_curr_x = curr_x
+        # if 'curr_y' in params:
+        #     self.track_curr_x = curr_y        
+        # if 'curr_z' in params:
+        #     self.track_curr_x = curr_z
 
     def save_cfg(self):
         self.ins_cfg['temperature'] = self.temperature
@@ -251,6 +176,12 @@ class master_of_cavity(CyclopeanInstrument):
         '''
         Function that updates the tracker file. Originally in JPE_tracker
         '''
+        # self.ins_cfg['z1'] = self.track_z1
+        # self.ins_cfg['z2'] = self.track_z2
+        # self.ins_cfg['z3'] = self.track_z3
+        # self.ins_cfg['curr_x'] = self.track_curr_x
+        # self.ins_cfg['curr_y'] = self.track_curr_y
+        # self.ins_cfg['curr_z'] = self.track_curr_z
         try:
             np.savez (self.tracker_file_name, z1= self.track_z1, z2=self.track_z2, z3=self.track_z3, x=self.track_curr_x, y=self.track_curr_y, z=self.track_curr_z)
         except:
@@ -265,13 +196,13 @@ class master_of_cavity(CyclopeanInstrument):
             self.track z3 - "" spindle3
         '''
         tr_file = np.load(self.tracker_file_name)
-        self.track_z1 = tr_file['z1']
-        self.track_z2 = tr_file['z2']
-        self.track_z3 = tr_file['z3']
-        self.track_curr_x = tr_file['x']
-        self.track_curr_y = tr_file['y']
-        self.track_curr_z = tr_file['z']
-        #print self.curr_x, self.curr_y, self.curr_z
+        self.track_z1 = float(tr_file['z1'])
+        self.track_z2 = float(tr_file['z2'])
+        self.track_z3 = float(tr_file['z3'])
+        self.track_curr_x = float(tr_file['x'])
+        self.track_curr_y = float(tr_file['y'])
+        self.track_curr_z = float(tr_file['z'])
+
         return self.track_z1, self.track_z2, self.track_z3
 
     def check_spindle_limit (self, move):
@@ -323,7 +254,7 @@ class master_of_cavity(CyclopeanInstrument):
         self.track_z3 = self.track_z3+spindle_incr[2]
         self.track_curr_x = pos_values[0]
         self.track_curr_y = pos_values[1]
-        self.track_curr_z = pos_values[2]     
+        self.track_curr_z = pos_values[2] 
         self.tracker_file_update ()
 
     def position_to_spindle_steps (self, x, y, z, update_tracker=False):
@@ -352,7 +283,7 @@ class master_of_cavity(CyclopeanInstrument):
             self.track_curr_x = x
             self.track_curr_y = y
             self.track_curr_z = z
-        
+
         return DZ1, DZ2, DZ3
 
     def motion_to_spindle_steps (self, x, y, z, update_tracker = False):
@@ -380,7 +311,7 @@ class master_of_cavity(CyclopeanInstrument):
 
     def do_set_temperature (self, value):
         self.temperature = value
-        self._jpe_cadm.set_temperature (value)
+        self.ins_cfg['temperature'] = self.temperature
         if (self.temperature>280):
             self._step_size = 15e-6 #in mm #SvD: what is this based on??
         
@@ -396,26 +327,39 @@ class master_of_cavity(CyclopeanInstrument):
         return self.freq
     def do_set_freq (self, value):
         self.freq = value
-        self._jpe_cadm.set_freq (value)
+        self.ins_cfg['freq'] = self.freq
 
     def do_get_rel_step_size(self):
         return self.rel_step_size
-
     def do_set_rel_step_size(self, value):
         self.rel_step_size = value
-        self._jpe_cadm.set_rel_step_size (value)
+        self.ins_cfg['rel_step_size'] = self.rel_step_size
+
+
+    def do_get_track_curr_x(self):
+        return self.track_curr_x
+    def do_get_track_curr_y(self):
+        return self.track_curr_y
+    def do_get_track_curr_z(self):
+        return self.track_curr_z
+    def get_track_z(self):
+        return self.track_z1, self.track_z2, self.track_z3
+
 
     def get_params (self):
-        self._jpe_cadm.info()
-        print 'Selected CADM controller: '+str(self.addr)
-        self._jpe_cadm.get_params()
+        params = self.ins_cfg.get_all()
+        for p in params:
+            print params[p]
+        print self._jpe_cadm.get_type()
+        print self._jpe_cadm.info()
         
     def status (self):
         output = self._jpe_cadm.status (addr= self.addr)
         return output
             
     def step (self, ch, steps):
-        self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps)
+        self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps, 
+            T=self.temperature, freq=self.freq, reL_step=self.rel_step_size)
         
     def set_as_origin (self):
         self._jpe_tracker.set_as_origin()
@@ -481,6 +425,9 @@ class master_of_cavity(CyclopeanInstrument):
                 self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
                 self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
                 self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
+        def remove(self):
+            self.save_cfg()
+            Instrument.remove()
 
     # def close(self):
     #     '''
