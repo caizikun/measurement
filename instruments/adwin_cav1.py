@@ -98,7 +98,7 @@ class adwin_cav1(adwin):
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
         self.physical_adwin.Set_Par(p['par']['set_steps'], steps)
         self.physical_adwin.Set_FPar(p['fpar']['set_px_time'], px_time)
-        
+
         self.physical_adwin.Set_Data_Long(np.array(dacs), p['data_long']\
                 ['set_dac_numbers'],1,len(dac_names))
 
@@ -117,7 +117,7 @@ class adwin_cav1(adwin):
 
         self.physical_adwin.Set_Par(p['par']['set_px_action'],px_actions[value])
         self.start_linescan()#since it set all the pars above, it should start it now, with the right pars etc.
-        #self.physical_adwin.Start_Process(p['index'])
+        # self.physical_adwin.Start_Process(p['index'])
         
         if blocking:
             while self.is_linescan_running():
