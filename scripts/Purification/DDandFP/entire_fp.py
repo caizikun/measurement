@@ -25,6 +25,8 @@ import msvcrt
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
+EL_TRANS = qt.exp_params['samples'][SAMPLE]['electron_transition']
+print EL_TRANS
 
 def interrupt_script(wait = 5):
     print 'press q now to exit measurement script'
@@ -147,7 +149,7 @@ if __name__ == '__main__':
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
         print 'N = ' + str(N)
-        SimpleDecoupling('Hermite_Fingerprint_msp1_' + SAMPLE + '_' + str(N),
+        SimpleDecoupling('Hermite_Fingerprint_msm1_' + SAMPLE + '_' + str(N),
             N = N, step_size = 4e-9, start_point= 0, tot = single_tau_blocks, 
             final_pulse = '-x', optimize=True, reps_per_RO = 500)
 

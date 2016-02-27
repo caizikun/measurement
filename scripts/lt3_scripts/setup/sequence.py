@@ -20,12 +20,14 @@ qt.pulsar.clock = 1e9
 #     low=-1.0, offset=0., delay=242e-9, active=True)
 
 # MW calibrated delays 21-5-2014
-qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=269e-9, active=True) #for SGS100. was a delay of 289 for SMB100
+qt.pulsar.define_channel(id='ch2_marker2', name='MW_pulsemod', type='marker', 
+    high=2.0, low=0, offset=0., delay=302e-9, active=True) #269 or SGS100. was a delay of 289 for SMB100
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=230e-9, active=True)  #230e-9
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
     low=-1.0, offset=0., delay=230e-9, active=True)
+qt.pulsar.define_channel(id='ch1_marker2', name='mw2_pulsemod', type='marker', 
+    high=2.7, low=0, offset=0., delay=247e-9, active=True)
 
 #TH
 qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', 
@@ -34,8 +36,8 @@ qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker',
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
-qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
-    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+# qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
+#     high=2.7, low=0, offset=0., delay=269e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='RND_halt', type='marker', 
     high=2.0, low=0, offset=0, delay=100e-9, active=True)
 qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 

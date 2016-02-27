@@ -144,7 +144,7 @@ def tail_sweep(name):
     m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
-    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
@@ -154,7 +154,7 @@ def tail_sweep(name):
     m.joint_params['wait_for_1st_revival'] = 0
 
     m.params['MIN_SYNC_BIN'] =       5000
-    m.params['MAX_SYNC_BIN'] =       8300 
+    m.params['MAX_SYNC_BIN'] =       9000 
 
     do_sweep_aom_power = False
     if do_sweep_aom_power:
@@ -180,7 +180,7 @@ def tail_sweep(name):
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.4,0.9,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.1,0.9,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 

@@ -61,6 +61,7 @@ class ADwin_Pro_II(Instrument): #1
     def _load_dll(self): #3
         print self.get_name() +' : Loading adwin32.dll'
         WINDIR=os.environ['WINDIR']
+
         self._adwin32 = windll.LoadLibrary(WINDIR+'\\adwin32')
         ErrorMsg=c_int32(0)
         ProcType = self._adwin32.e_ADProzessorTyp(self._address,ctypes.byref(ErrorMsg))

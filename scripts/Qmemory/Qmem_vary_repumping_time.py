@@ -104,17 +104,17 @@ def QMem(name, carbon_list   = [5],
     tau_larmor = round(1/f_larmor,9)
 
     m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(-0.5e-6,2.e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[10.]
+    m.params['average_repump_time'] = np.linspace(-0.5e-6,1.5e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[80.]
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
     m.params['do_optical_pi']=kw.get('do_optical_pi', False)
 
-    
-    m.params['pi_amps'] = pts*[ps.X_pulse(m).amplitude]
-
-    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the repump beam is applied.
+    ps.X_pulse(m)
+    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    # print 'this is the pi pulse amplitude',ps.X_pulse(m).env_amplitude,ps.X_pulse(m).Sw_risetime
+    m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repump beam is applied.
 
     m.params['fast_repump_power'] = kw.get('repump_power', 900e-9)
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
     debug = False
-    repump_power_sweep = [20e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
+    repump_power_sweep = [850e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
     
     if True: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
@@ -173,7 +173,8 @@ if __name__ == '__main__':
                 if breakst:
                     break
                 for tomo in ['X','Y']:
-                    # optimize(breakst or debug)
+                    optimize(breakst or debug)
+
                     if breakst:
                         break
                     for ro in ['positive','negative']:
@@ -188,7 +189,7 @@ if __name__ == '__main__':
                                                                             carbon_init_list        = [c],
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
-                                                                            Repetitions  = 2000,
+                                                                            Repetitions  = 1500,
                                                                             repump_power = repump_power_sweep[sweep_elem])
 
     ######################
