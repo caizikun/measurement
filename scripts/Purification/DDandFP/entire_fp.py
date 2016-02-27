@@ -85,7 +85,7 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2, mbi = False, final
             ### Optimize position
         if optimize:
             qt.msleep(2)
-            if mod(kk,10)==0:
+            if mod(kk,5)==0:
                 optimize_NV()
 
             ### Define and print parameters
@@ -141,14 +141,14 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2, mbi = False, final
 if __name__ == '__main__':
     print 'Looping over N'
 
-    # over 10 us with block of 100 ns
-    single_tau_blocks = 120
+    # over 12 us with block of 100 ns
+    single_tau_blocks = 100
     pulse_list = [8, 16, 32, 64]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
         print 'N = ' + str(N)
         SimpleDecoupling('Hermite_Fingerprint_msp1_' + SAMPLE + '_' + str(N),
-            N = N, step_size = 2e-9, start_point= 0, tot = single_tau_blocks, 
+            N = N, step_size = 4e-9, start_point= 0, tot = single_tau_blocks, 
             final_pulse = '-x', optimize=True, reps_per_RO = 500)
 
 

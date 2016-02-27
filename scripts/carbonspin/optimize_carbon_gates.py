@@ -58,7 +58,7 @@ def SweepGates(name,**kw):
 
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 500
+	m.params['reps_per_ROsequence'] = 1000
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]
@@ -118,7 +118,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [1,2,5]
+	carbons = [2]
 
 
 	brekast = False

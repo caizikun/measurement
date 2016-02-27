@@ -25,8 +25,12 @@ def recalibrate_laser(name, servo, adwin, awg=False):
 
     qt.msleep(0.1)
     print 'Calibrate', name
+    if not awg:
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg:
+        qt.instruments[name].set_cur_controller('AWG')
+        stools.init_AWG()
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
     if awg: qt.instruments[name].set_cur_controller('ADWIN')
@@ -292,3 +296,13 @@ def aom_listener():
 def load_regular_linescan():
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['adwin'].load_linescan()
+
+def show_stopper():
+    ### can be used to break a measurement
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False

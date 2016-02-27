@@ -5,13 +5,6 @@ import numpy as np
 import qt
 
 
-
-"""
-Script for a simple Decoupling sequence
-"""
-import numpy as np
-import qt
-
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
@@ -30,12 +23,12 @@ def interrupt_script(wait = 5):
 
 def optimize_NV(cycles = 1):
     qt.msleep(2)
-    # AWG.clear_visa()
     stools.turn_off_all_lasers()
     qt.msleep(1)
-    # GreenAOM.set_power(12e-6)
-    execfile(r'testing/load_cr_linescan.py')
+    GreenAOM.set_power(10e-6)
+    # execfile(r'testing/load_cr_linescan.py')
     optimiz0r.optimize(dims=['x','y','z','x','y'], cycles = cycles)
+    stools.turn_off_all_lasers()
 
 def SimpleDecoupling(name, N, step_size,tot, start_point = 2, 
                         mbi = False, final_pulse = '-x', optimize = True, 
@@ -59,15 +52,15 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2,
         m.params['reps_per_ROsequence'] = reps_per_RO
         m.params['Initial_Pulse'] ='x'
         m.params['Final_Pulse'] = final_pulse
-        # m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt' 
-        m.params['Decoupling_sequence_scheme'] = 'single_block'
+        m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt' 
+        # m.params['Decoupling_sequence_scheme'] = 'single_block'
 
         Number_of_pulses = N 
-        pts = 151
+        pts = 51
         if N == 128:
             pts = 21
-        start    = 200e-9  + (kk+start_point)     * (pts-1)*step_size 
-        end      = 200e-9  + (kk+1+start_point) * (pts-1)*step_size
+        start    = 15.5e-6  + (kk+start_point)     * (pts-1)*step_size 
+        end      = 15.5e-6  + (kk+1+start_point) * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
 
         ### Start measurement ###
@@ -134,16 +127,17 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2,
     m.finish()
 
 if __name__ == '__main__':
-    
-    N = 16
-    SimpleDecoupling('Hermite_Fingerprint_msm1_' + SAMPLE + '_' + str(N),
-        N = N, step_size = 16e-9, 
-        start_point= 0, 
-        tot =1,
-        final_pulse = '-x', 
-        optimize=False, 
-        debug = False,
-        reps_per_RO = 500)
+    Nlist = [16,32]
+
+    for N in Nlist:
+        SimpleDecoupling('Hermite_Fingerprint_msm1_largetau_' + SAMPLE + '_' + str(N),
+            N = N, step_size = 4e-9, 
+            start_point= 0, 
+            tot =50,
+            final_pulse = '-x', 
+            optimize=True, 
+            debug = False,
+            reps_per_RO = 500)
 
 
     n = 0

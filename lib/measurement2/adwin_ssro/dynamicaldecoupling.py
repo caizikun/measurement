@@ -2069,8 +2069,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             t = t - self.params['optical_pi_AOM_delay'] - self.params['optical_pi_AOM_duration']
 
         
-        optical_pi = pulse.SquarePulse(channel = 'AOM_Matisse', name = 'optical_pi',
-                length = self.params['optical_pi_AOM_duration'], amplitude = self.params['optical_pi_AOM_amplitude'], delay = self.params['optical_pi_AOM_delay' ])
         ### necessary length definitions if you do a regular pi pulse.
         if Gate.do_pi:
             T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
@@ -2107,13 +2105,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         rep_LDE_elt.append(T_init)
         if self.params['initial_MW_pulse'] == 'pi2':
-            print 'Doing pi2 pulses'
+            print 'Repumping: Initial pulse is pi2'
             rep_LDE_elt.append(pi2)
         elif self.params['initial_MW_pulse'] == 'pi':
-            print 'Doing pi pulses'
+            print 'Repumping: Initial pulse is pi'
             rep_LDE_elt.append(RepumpX)
         
         if do_optical_pi_pulses:
+
+            optical_pi = pulse.SquarePulse(channel = 'AOM_Matisse', 
+                    name = 'optical_pi',
+                    length = self.params['optical_pi_AOM_duration'], 
+                    amplitude = self.params['optical_pi_AOM_amplitude'], 
+                    delay = self.params['optical_pi_AOM_delay' ])
             rep_LDE_elt.append(T_before_optical)
             rep_LDE_elt.append(optical_pi)
 
@@ -4682,9 +4686,11 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
                 initialization_method = 'MBI',#self.params['C13_init_method'],
                 C_init_state          = self.params['init_state'],
                 addressed_carbon      = self.params['carbon_nr'],
-                el_RO_result          = str(self.params['C13_MBI_RO_state']))
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init       = self.params['electron_after_init'])
             gate_seq.extend(carbon_init_seq)
-            print 'EL PI AFTER MBI HAS BEEN COMMENTED OUT, NK 150825'
+            
+            # print 'EL PI AFTER MBI HAS BEEN COMMENTED OUT, NK 150825'
             #XXXXXXXXXXXXXXXXXXXXXXXXXXXX
             # if self.params['el_pi_after_mbi'] == True:
             #     El_Pi = Gate('El_Pi_'+str(pt),'electron_Gate',Gate_operation='pi')
@@ -4724,10 +4730,10 @@ class NuclearRamseyWithInitialization_v2(MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if not debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
+            # if not debug:
+            #     print '*'*10
+            #     for g in gate_seq:
+            #         print g.name
 
             if debug:
                 for g in gate_seq:
@@ -7028,10 +7034,10 @@ class Sweep_Carbon_Gate(MBI_C13):
             init_wait_for_trigger = True
             
             for kk in range(self.params['Nr_C13_init']):
-                print self.params['init_method_list'][kk]
-                print self.params['init_state_list'][kk]
-                print self.params['carbon_init_list'][kk]
-                print 
+                # print self.params['init_method_list'][kk]
+                # print self.params['init_state_list'][kk]
+                # print self.params['carbon_init_list'][kk]
+                # print 
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
@@ -7074,10 +7080,11 @@ class Sweep_Carbon_Gate(MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if not debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
+            # I don't want to see gate_seq every time SK
+            # if not debug:
+            #     print '*'*10
+            #     for g in gate_seq:
+            #         print g.name
 
             # if debug:
                 # for g in gate_seq:
@@ -7253,7 +7260,9 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Two Qubit MBE')
 
-        for pt in range(pts): ### Sweep over RO basis
+        for pt in range(pts): ### Sweep over RO basis OR the MBI RO power!
+
+
             gate_seq = []
 
             ### Nitrogen MBI

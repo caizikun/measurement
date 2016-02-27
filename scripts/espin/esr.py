@@ -13,13 +13,13 @@ import numpy as np
 
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 101       #101
-mw_power    = 20 #-13      #in dBm
-green_power = 15e-6     #15e-6
-int_time    = 30        # in ms
-reps        = 25
-center_f    = 2.88 # 2.91 in GHz
-
+steps       = 501      #101
+mw_power    = -16#-13      #in dBm
+green_power = 25e-6     #15e-6
+int_time    = 30     # in ms
+reps        = 50
+center_f    = 1.7#4.055#3.95#1.74666#2.828#2.861
+#center_f    = 1.705#3.95#1.74666#2.828#2.861
 '''
 steps       = 60       #101
 mw_power    = -10    #in dBm
@@ -28,13 +28,15 @@ int_time    = 200       # in ms
 reps        = 150
 center_f    = 1.840  # in GHz
 '''
-range_f  =  0.2 # in GHz
+range_f  =  0.3 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
-#print f_list
+
 # Set source to use
-ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100A']
+#ins_smb = qt.instruments['SMB100']
+IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
 ins_adwin = qt.instruments['adwin']
@@ -52,10 +54,9 @@ ins_counters.set_is_running(0)
 # create data object
 qt.mstart()
 
-try:
+if IQ_modulation:
     ins_smb.set_iq('off')
-except:
-    print 'source has no IQ modulation'
+
 ins_smb.set_pulm('off')
 ins_smb.set_power(MW_power)
 ins_smb.set_status('on')
@@ -100,4 +101,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-ins_aom.set_power(0e-6)
+ins_aom.set_power(30e-6)

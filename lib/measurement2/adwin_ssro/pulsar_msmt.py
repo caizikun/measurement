@@ -15,12 +15,11 @@ import pulse_select as ps; reload(ps)
 class PulsarMeasurement(ssro.IntegratedSSRO):
     mprefix = 'PulsarMeasurement'
     awg = None
-    mwsrc = None
+    mwsrc = None 
     mwsrc2 = None
 
     def __init__(self, name):
         ssro.IntegratedSSRO.__init__(self, name)
-
         self.params['measurement_type'] = self.mprefix
 
     def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
@@ -33,8 +32,8 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('on')
 
         try:
-            #self.mwsrc2.set_iq('on')
-            self.mwsrc2.set_pulsemod_state('on')            
+            self.mwsrc2.set_iq('on')
+            self.mwsrc2.set_pulm('on')            
             self.mwsrc2.set_frequency(self.params['mw2_frq'])
             self.mwsrc2.set_power(self.params['mw2_power'])
             self.mwsrc2.set_status('on')
@@ -302,7 +301,7 @@ class DarkESR_Switch(DarkESR):
         # define the necessary pulses
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
             amplitude = self.params['ssbmod_amplitude'],
             length = self.params['pulse_length'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
@@ -1107,7 +1106,7 @@ class MBI(PulsarMeasurement):
         if 'MW_switch_risetime' in self.params.to_dict().keys():
             X = pulselib.MW_IQmod_pulse('MBI MW pulse',
                 I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
-                PM_channel = 'MW_pulsemod',Sw_channel='MW_switch',
+                PM_channel = 'MW_pulsemod',Sw_channel=self.params['MW_switch_channel'],
                 frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
                 amplitude = self.params['AWG_MBI_MW_pulse_amp'],
                 length = self.params['AWG_MBI_MW_pulse_duration'],
