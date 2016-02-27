@@ -8,76 +8,6 @@ import numpy as np
 from lib import config
 
 
-class CavityExpManager ():
-
-    def __init__ (self, adwin, wm_adwin, laser, moc, counter):
-        self._adwin = adwin
-        self._wm_adwin = wm_adwin
-        self._laser = laser
-        self._moc = moc
-        self._ctr = counter
-        self._wm_port = 45
-
-        #trigger signals to update Control Panel, for changes induced by other panels
-        self._laser_updated = False
-        self._moc_updated = False
-        self._piezo_updated = False
-
-        self._laser_wavelength = None
-        self._laser_power = None
-        self._laser_fine_tuning = None
-        self._coarse_piezos = None
-        self._fine_piezos = None
-        self.room_T = None
-        self.low_T = None
-        self.wait_cycles = 1
-
-    def set_laser_wavelength (self, wavelength):
-        if ((wavelength>636) and (wavelength<640)):
-            self._laser.set_wavelength (wavelength)
-            self.update_coarse_wavelength (wavelength)
-            return 0
-        else:
-            return 1
-    def get_laser_wavelength (self):
-        try:
-            l = self._laser.get_wavelength()
-            self.update_coarse_wavelength (l)
-            return l
-        except:
-            return 'error'
-
-    def get_laser_power (self):
-        try:
-            l = self._laser.get_power_level()
-            self.update_laser_power (l)
-            return l
-        except:
-            return 'error'
-
-    def set_piezo_voltage (self, V, wait_time = 0.01):
-        self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=V)
-        self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=V)
-        self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=V)
-        self.update_fine_piezos (V)
-        qt.msleep(wait_time)
-
-    def update_coarse_wavelength (self, value):
-        self._laser_wavelength = value
-        self._system_updated = True
-
-    def update_laser_power (self, value):
-        self._laser_power = value
-        self._system_updated = True
-
-    def update_coarse_piezos (self, x, y, z):
-        self._coarse_piezos = np.array([x, y, z])
-        self._system_updated = True
-
-    def update_fine_piezos (self, value):
-        self._fine_piezos = value
-        self._system_updated = True
-
 class CavityScan ():
 
     def __init__ (self, exp_mngr):
@@ -90,7 +20,6 @@ class CavityScan ():
         self.nr_V_points = None
         self.nr_avg_scans = 1
         self.nr_repetitions = 1
-        self.wait_cycles = 2
 
         self.use_sync = False
         self.sync_delay_ms = None
@@ -140,8 +69,7 @@ class CavityScan ():
             self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'laser',
                      nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self._exp_mngr.wait_cycles, 
                     start_voltage = self.V_min, end_voltage = self.V_max, 
-                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms,
-                    scan_to_start = True)
+                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
             for j in np.arange (self.nr_avg_scans):
                 if (j==0):
@@ -166,8 +94,7 @@ class CavityScan ():
         self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'fine_piezos',
                 nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                 start_voltage = self.V_min, end_voltage = self.V_max, 
-                use_sync = self.use_sync, delay_ms = self.sync_delay_ms, 
-                scan_to_start = True)
+                use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
         #output PD_signal as the average over nr_avg_scans
         for j in np.arange (self.nr_avg_scans):

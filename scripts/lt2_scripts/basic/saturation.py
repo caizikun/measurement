@@ -7,7 +7,7 @@ import msvcrt
 #measurement parameters
 name = 'Sil12'
 steps=21
-max_power=300e-6       #[w]
+max_power=30e-6       #[w]
 counter=1 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=2.0          #delta x position of background [um]

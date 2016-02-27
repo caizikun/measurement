@@ -9,6 +9,7 @@ from measurement.lib.pulsar import pulselib
 reload(pulselib)
 execfile(qt.reload_current_setup)
 
+execfile(qt.reload_current_setup)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 

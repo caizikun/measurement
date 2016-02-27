@@ -22,7 +22,7 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
-
+    previous_controller = qt.instruments[name].get_cur_controller()
     qt.msleep(0.1)
     print 'Calibrate', name
     qt.instruments[name].turn_off()
@@ -30,8 +30,8 @@ def recalibrate_laser(name, servo, adwin, awg=False):
         qt.instruments[name].set_cur_controller('AWG')
         qt.instruments[name].turn_off()
     qt.instruments[name].calibrate(31)
-    if awg: # set controller back to adwin
-        qt.instruments[name].set_cur_controller('ADWIN')
+    qt.instruments[name].turn_off()
+    qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
