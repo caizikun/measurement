@@ -144,7 +144,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 		'send_AWG_start'                        :   1,
 		'AWG_wait_duration_before_MBI_MW_pulse'	:   1e-6,
 		'AWG_wait_for_adwin_MBI_duration'		:   15e-6,
-		'AWG_MBI_MW_pulse_duration'				:   0.02e-6,
+		'AWG_MBI_MW_pulse_duration'				:   2e-6,
 		'AWG_MBI_MW_pulse_amp'      			:   0.00,#0.0165,
 		'AWG_MBI_MW_pulse_mod_frq'  			:   0,
 		'AWG_MBI_MW_pulse_ssbmod_frq'			:  	0,

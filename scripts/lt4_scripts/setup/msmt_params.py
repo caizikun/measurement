@@ -118,16 +118,33 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 ##########################################
 
 cfg['protocols']['AdwinSSRO+MBI'] = {
+		'send_AWG_start'                        :   1,
 		'AWG_wait_duration_before_MBI_MW_pulse':    1e-6,
 		'AWG_wait_for_adwin_MBI_duration':          15e-6,
 		'AWG_MBI_MW_pulse_duration':                2e-6,
+		'AWG_MBI_MW_pulse_amp'      			:   0.00,#0.0165,
+		'AWG_MBI_MW_pulse_mod_frq'  			:   0,
+		'AWG_MBI_MW_pulse_ssbmod_frq'			:  	0,
 		'AWG_wait_duration_before_shelving_pulse':  100e-9,
 		'nr_of_ROsequences':                        1,
 		'MW_pulse_mod_risetime':                    20e-9,
 		'AWG_to_adwin_ttl_trigger_duration':        2e-6,
-		'repump_after_MBI_duration':                100, 
+		'repump_after_MBI_duration':                150, 
 		'repump_after_MBI_amp':                     15e-9,
+		'max_MBI_attempts'                      :   1,
+		'N_randomize_duration'                  :   50,
+		'Ex_N_randomize_amplitude'				:	3e-9,
+		'A_N_randomize_amplitude'               :   10e-9,
+		'repump_N_randomize_amplitude'          :   0e-9,
+		#Shutter
+		'use_shutter':                          0, 
+		'Shutter_channel':                      4, 
+		'Shutter_rise_time':                    2500,    
+		'Shutter_fall_time':                    2500,
+		'Shutter_safety_time':                  50000
 		}
+
+
 cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MAX_DATA_LEN':                             int(100e6),
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
@@ -197,13 +214,61 @@ cfg['protocols'][name]['AdwinSSRO+MBI']={
 	#MBI parameters
 	'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
 	'MBI_threshold'             :           0, 
-	'AWG_wait_for_adwin_MBI_duration':      10e-6+40e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+	'AWG_wait_for_adwin_MBI_duration':      10e-6+65e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 	'repump_after_E_RO_duration':           15,
 	'repump_after_E_RO_amplitude':          15e-9,
 
 	#Shutter
 	'use_shutter':                          0, # we don't have a shutter in the setup right now
+}
+
+cfg['protocols'][name]['AdwinSSRO+C13']={
+	### Comment NK 2016-02-27 these parameters have been directly ported to LT4 from LT3 and still need testing!
+	#'wait_between_runs':                    0, ### bool operator, set to one to wait for the 'Shutter_safety_time'
+
+		#C13-MBI  
+		'C13_MBI_threshold_list':               [1],
+		'C13_MBI_RO_duration':                  25,  
+		'E_C13_MBI_RO_amplitude':               0.05e-9, 
+		'SP_duration_after_C13':                10, #use long repumping in case of swap init
+		'A_SP_amplitude_after_C13_MBI':         12e-9,
+		'E_SP_amplitude_after_C13_MBI':         0e-9,
+		'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+		                
+		#C13-MBE  
+		'MBE_threshold':                        1,
+		'MBE_RO_duration':                      40, # was 40 20150329
+		'E_MBE_RO_amplitude':                   0.05e-9, 
+		'SP_duration_after_MBE':                30,
+		'A_SP_amplitude_after_MBE':             12e-9,
+		'E_SP_amplitude_after_MBE':             0e-9 ,
+
+		#C13-parity msmnts
+		'Parity_threshold':                     1,
+		'Parity_RO_duration':                   108,
+		'E_Parity_RO_amplitude':                0.05e-9,
+
+		#Shutter
+		'use_shutter':                          0, 
+		'Shutter_channel':                      4, 
+		'Shutter_rise_time':                    2500,    
+		'Shutter_fall_time':                    2500,
+		'Shutter_safety_time':                  200000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
+
+		# phase correction
+		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
+		'min_dec_tau'         :     2.1e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
+		'max_dec_tau'         :     2.4e-6,#0.2e-6,#2.5e-6
+		'dec_pulse_multiple'  :     4,      #4.
+
+		# Memory entanglement sequence parameters
+		'optical_pi_AOM_amplitude' :     0.5,
+		'optical_pi_AOM_duration' :      200e-9,
+		'optical_pi_AOM_delay' :         300e-9,
+		'do_optical_pi' :                False,
+		'initial_MW_pulse':           'pi2' #'pi', 'no_pulse'
+
 }
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
