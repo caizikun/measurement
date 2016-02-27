@@ -56,7 +56,7 @@ else:
 cfg['protocols']['AdwinSSRO']={
 		'AWG_done_DI_channel':          17,
 		'AWG_start_DO_channel':         9,
-		'AWG_event_jump_DO_channel'				:   10,
+		'AWG_event_jump_DO_channel'	:   10,
 		'counter_channel':              1,
 		#'counter_ch_input_pattern':		0,
 		'cycle_duration':               300,

@@ -7,7 +7,7 @@ import sys
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
-# reload(ssro)
+reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 import pulse_select as ps; reload(ps)
 
@@ -99,7 +99,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.h5data.flush()
 
     def finish(self,**kw):
-
+        print kw
         ssro.IntegratedSSRO.finish(self,**kw)
 
         self.awg.stop()
@@ -1594,7 +1594,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 
         X=kw.get('pulse_pi', None)
         if hasattr(X,'Sw_channel'):
-            print X.Sw_channel
+            print 'this is the MW switch channel: ', X.Sw_channel
         else:
             print 'no switch found'
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)

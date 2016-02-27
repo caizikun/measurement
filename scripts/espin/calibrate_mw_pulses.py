@@ -325,9 +325,9 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =5, debug = False, mw2=False)
     #calibrate_pi_pulse_NoIQSource(SAMPLE_CFG + 'SquarePi_MW2', multiplicity =5, debug = False)
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    #calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

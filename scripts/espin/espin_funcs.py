@@ -25,8 +25,7 @@ def prepare(m, params=None):
 def finish(m, upload=True, debug=False, **kw):
     m.autoconfig()
     m.generate_sequence(upload=upload, **kw)
-
     if not debug:
         m.run(autoconfig=False)
         m.save()
-        m.finish(kw)
+        m.finish()
