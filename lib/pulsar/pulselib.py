@@ -50,8 +50,6 @@ class MW_IQmod_pulse(pulse.Pulse):
     # Updated 14-3-15 by MAB to implement MW Switch on lt2
     def __init__(self, name, I_channel, Q_channel, PM_channel, **kw):
         pulse.Pulse.__init__(self, name)
-
-
         self.I_channel = I_channel
         self.Q_channel = Q_channel
         self.PM_channel = PM_channel

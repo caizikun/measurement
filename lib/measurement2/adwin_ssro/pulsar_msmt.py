@@ -32,6 +32,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('on')
 
         try:
+            print 'switching second mw source on'
             self.mwsrc2.set_iq('on')
             self.mwsrc2.set_pulm('on')            
             self.mwsrc2.set_frequency(self.params['mw2_frq'])
@@ -1592,6 +1593,8 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             length = 15000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
+        if X==None:
+            print 'WARNING: No valid X Pulse'
         if hasattr(X,'Sw_channel'):
             print X.Sw_channel
         else:
@@ -1680,8 +1683,8 @@ class General_mw2_PiCalibrationSingleElement(GeneralPiCalibration):
             for j in range(int(self.params['multiplicity'][i])):
                 e.append(T,
                     pulse.cp(X,
-                        amplitude=self.params['MW2_pulse_amplitudes'],
-                        length = self.params['MW2_duration'][i]
+                        amplitude=self.params['mw2_pulse_amplitudes'][i],
+                        length = self.params['mw2_duration']
                         ))
             e.append(T)
             elements.append(e)
@@ -2657,6 +2660,66 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
             # seq.append(name = 'wait-{}-{}'.format(i,j), 
             #     wfname = wait_1us.name, 
             #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+class Sweep_pm_risetime(GeneralPiCalibration):
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        mw2 = kw.get('mw2', False)
+        elements = []
+        for i in range(self.params['pts']):
+            if not mw2:
+                X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    PM_channel='MW_pulsemod', Sw_channel = self.params['MW_switch_channel'],
+                    frequency = self.params['MW_modulation_frequency'],
+                    PM_risetime = self.params['PM_risetime_sweep'][i],
+                    Sw_risetime = self.params['MW_switch_risetime'],
+                    length = self.params['Square_pi_length'],
+                    amplitude = self.params['Square_pi_amp'],
+                    phase =  self.params['X_phase'])
+            else:
+                X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    PM_channel='mw2_pulsemod', Sw_channel = self.params['MW_switch_channel'],
+                    frequency = 0.,
+                    PM_risetime = self.params['PM_risetime_sweep'][i],
+                    Sw_risetime = self.params['MW_switch_risetime'],
+                    length = self.params['mw2_Square_pi_length'],
+                    phase =  self.params['X_phase'],
+                    amplitude = self.params['mw2_Square_pi_amp'])
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            e.append(T, X)
+            e.append(T)
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            seq.append(name = e.name+'-{}', 
+                wfname = e.name,
+                trigger_wait = True)
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         # elements.append(wait_1us)

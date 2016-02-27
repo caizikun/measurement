@@ -103,7 +103,7 @@ def QMem(name, carbon_list   = [5],
     # if 'Z' in tomo_list[0]:
     #     maxReps = kw.get('maxReps',1000)
     # else:
-    maxReps = 41e3/abs(abs(coupling_difference)-m.params['C5_freq_0'])*100.
+    maxReps = 41e3/abs(abs(coupling_difference)-m.params['C5_freq_0'])*200.
     print 'maxReps: ', maxReps
     
     ### this DFS combination decays much more rapidly than anticipated (T2* and Z decay)
@@ -146,12 +146,14 @@ def QMem(name, carbon_list   = [5],
     m.params['fast_repump_repetitions'] = 8*np.array(range(pts))#np.arange(minReps,maxReps,step)
 
     m.params['fast_repump_power'] = kw.get('repump_power', 20e-9)
-    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',10.e-6)] #how long the beam is irradiated
-    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',1500e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',2.5e-6)] #how long the beam is irradiated
+    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',240e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False # ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
-    m.params['pi_amps'] = pts*[ps.X_pulse(m).amplitude]
+
+    ps.X_pulse(m) #this updated fast_pi_amp
+    m.params['pi_amps'] =  pts*[m.params['fast_pi_amp']]
 
     ### For the Autoanalysis
     m.params['pts']                 = pts
@@ -201,7 +203,7 @@ if __name__ == '__main__':
     debug = False
 
     #### this needs to be filled out in order to make the loops/optimization work
-    repump_power = 500e-9
+    repump_power = 850e-9
 
     # QMem('RO_electron',debug=False,tomo_list = ['Z'])
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
@@ -233,6 +235,8 @@ if __name__ == '__main__':
                                                                         carbon_init_thresholds  = [1],  #1 XXX
                                                                         carbon_init_methods     = ['MBI'], # MBI/swap XXX
                                                                         repump_power = repump_power,
+                                                                        repetitions = 1000,
+                                                                        pts = 31,
                                                                         do_optical_pi = False) 
                 ### optimize position and calibrate powers
                 # last_check = optimisation_routine(last_check,repump_power,debug,breakst)

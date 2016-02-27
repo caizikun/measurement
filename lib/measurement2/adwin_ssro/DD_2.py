@@ -2746,6 +2746,7 @@ class NuclearRamsey_no_elDD(DynamicalDecoupling):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+
 class SimpleDecoupling(DynamicalDecoupling):
     '''
     The most simple version of a decoupling sequence
@@ -4580,6 +4581,97 @@ class ElectronRamseyWithNuclearInit(MBI_C13):
             print 'upload = false, no sequence uploaded to AWG'
 
 
+class NuclearRamseyWithInitializationModified(MBI_C13):
+    '''
+    update description still
+    This class is to test multiple carbon initialization and Tomography.
+    Sequence: |N-MBI| -|CinitA|-|CinitB|-|Tomography|
+    '''
+    mprefix = 'CarbonRamseyInitialised'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initializations
+            init_wait_for_trigger = True
+
+            for ii in range(self.params['Nr_C13_init']):
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_' + str(self.params['C13_init_method'][ii]) + '_',
+                    wait_for_trigger      = init_wait_for_trigger, 
+                    pt =pt,
+                    initialization_method = self.params['C13_init_method'][ii],
+                    C_init_state          = self.params['init_state'][ii],
+                    addressed_carbon      = self.params['carbon_list'][ii],
+                    el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                    el_after_init       = str(self.params['el_after_init'][ii]))
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+            
+            # print 'EL PI AFTER MBI HAS BEEN COMMENTED OUT, NK 150825'
+            #XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            # if self.params['el_pi_after_mbi'] == True:
+            #     El_Pi = Gate('El_Pi_'+str(pt),'electron_Gate',Gate_operation='pi')
+                
+            #     gate_seq.extend([El_Pi])
+            ### Free evolution_time
+
+                ### Check if free evolution time is larger than the RO time (it can't be shorter)
+            if self.params['add_wait_gate'] == True:
+                if self.params['free_evolution_time'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
+                    print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                            %(self.params['free_evolution_time'][pt],self.params['Carbon_init_RO_wait']))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_init_RO_wait'])
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['C13_MBI_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    self.print_carbon_phases(g,[self.params['carbon_list']])
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 class NuclearRamseyWithInitialization(MBI_C13):
     '''
     update description still
@@ -5916,7 +6008,7 @@ class Two_QB_Probabilistic_MBE(MBI_C13):
                     self.params['do_wait_after_pi']            = False
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
                     initialization_method = self.params['init_method_list'][kk],
                     C_init_state          = self.params['init_state_list'][kk],

@@ -23,7 +23,7 @@ def NuclearRamseyWithInitialization_cal(name,
         debug               = False,
         free_evolution_time  = 400e-6 + np.linspace(0., 6.0e-3,44)):
     
-    m = DD.NuclearRamseyWithInitialization_v2(name)
+    m = DD.NuclearRamseyWithInitialization(name)
     funcs.prepare(m)
 
 
@@ -38,7 +38,7 @@ def NuclearRamseyWithInitialization_cal(name,
     ### Option 1; Sweep waiting time ###
     ####################################
 
-    ### '''1A - Rotating frame with detuning'''
+    ## '''1A - Rotating frame with detuning'''
     m.params['add_wait_gate'] = True
     m.params['pts'] = len(free_evolution_time)
     m.params['free_evolution_time'] = free_evolution_time
@@ -98,15 +98,15 @@ if __name__ == '__main__':
 
     stopper = False
 
-    detuning = 20e3
-    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(8)+'_ms' + str(0) + '_' + 'positive', 
-                        carbon_nr           = 8,               
+    detuning = 5e3
+    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(5)+'_ms' + str(0) + '_' + 'positive', 
+                        carbon_nr           = 3,               
                         carbon_init_state   = 'up', 
                         el_RO               = 'positive',
                         detuning            = detuning,
-                        el_state            = 1,
+                        el_state            = 0,
                         debug               = False,
-                        free_evolution_time = 100e-6 + np.linspace(0.,6.0*1./detuning,66))
+                        free_evolution_time = 100e-6 + np.linspace(0.,6.0*1./detuning,36))
     
 
 
