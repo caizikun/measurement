@@ -2786,6 +2786,12 @@ config['adwin_rt2_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
         'atto_z' : 3,
+        'telecom_delta_temperature': 8
+        }
+
+
+config['adwin_rt2_adcs'] = {
+        'telecom_temperature': 2
         }
 
 config['adwin_rt2_dios'] = {
@@ -3031,6 +3037,24 @@ config['adwin_cav1_processes'] = {
                 },
             'index' : 1,
             'file' : 'simple_counting.TB1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'photodiode_readout' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'photodiode_readout.TB1',
             'par' : {
                 'set_integration_time' : 23,
                 'set_avg_periods' : 24,

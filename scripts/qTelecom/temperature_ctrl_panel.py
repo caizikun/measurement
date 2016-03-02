@@ -5,7 +5,7 @@
 # Created: Wed Sep 23 15:30:33 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
-# WARNING! All changes made in this file will be lost!   ## So far, I haven't noticed that.-- Anais_20160120
+# Modified by Anais _21-01-2016. QtDesigner is not installed on this computer. 
 
 from PyQt4 import QtCore, QtGui
 

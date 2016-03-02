@@ -29,6 +29,7 @@ class adwin(Instrument):
             self._dac_voltages[d] = 0.
        
         # the accessible functions
+        
         # initialization
         self.add_function('boot')
         self.add_function('load_programs')
