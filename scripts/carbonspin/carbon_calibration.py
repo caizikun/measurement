@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [5,6,7,8]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -41,7 +41,7 @@ use_queue = False
 
 f_ms0 = True
 
-f_ms1 = True
+f_ms1 = False
 
 self_phase_calibration = False
 
@@ -67,12 +67,18 @@ if SETUP == 'lt2':
     	'6' : detuning_basic*4.}
 
 elif SETUP == 'lt3':
-    detuning_basic = 1e3
+    detuning_basic = 20e3
     detuning_dict = {
         '5' : detuning_basic,
         '6' : 2*detuning_basic,
         '7' : 2*detuning_basic,
         '8' : 10*detuning_basic}
+
+elif SETUP == 'lt4':
+    detuning_basic = 1e3
+    detuning_dict = {
+        '1' : detuning_basic,
+        }
 ######
 
 

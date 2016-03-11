@@ -30,11 +30,11 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
     if True: ### if you don't want to do MBI for this script.
         m.params['MBI_threshold'] = 0
-        m.params['Ex_SP_amplitude'] = 0
-        m.params['Ex_MBI_amplitude'] = 0
-        m.params['SP_E_duration'] = 20 #2000
+        m.params['Ex_SP_amplitude'] = 0.
+        m.params['Ex_MBI_amplitude'] = 0.
+        m.params['SP_E_duration'] = 20 
         
-        m.params['repump_after_MBI_A_amplitude'] = [20e-9]
+        m.params['repump_after_MBI_A_amplitude'] = [18e-9] #20e-9
         m.params['repump_after_MBI_duration'] = [50] # 50  
 
 
@@ -59,13 +59,13 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 
 
-
     m.autoconfig()
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload = True, debug=False)
 
 if __name__ == '__main__':
 
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=5.8e-6,
-        tau_max=6e-6,
-        tau_step =8e-9,
-        N=4)
+    SimpleDecoupling_swp_tau(SAMPLE, 
+        tau_min=7e-6,
+        tau_max=8e-6,
+        tau_step = 10e-9,
+        N=32)

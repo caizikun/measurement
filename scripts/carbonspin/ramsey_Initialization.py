@@ -98,9 +98,9 @@ if __name__ == '__main__':
 
     stopper = False
 
-    detuning = 5e3
+    detuning = 30e3
     NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(5)+'_ms' + str(0) + '_' + 'positive', 
-                        carbon_nr           = 3,               
+                        carbon_nr           = 1,               
                         carbon_init_state   = 'up', 
                         el_RO               = 'positive',
                         detuning            = detuning,

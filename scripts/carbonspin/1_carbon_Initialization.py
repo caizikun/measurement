@@ -13,6 +13,16 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
+
+
 def MBE(name, carbon            =   1,               
         
         carbon_init_list        =   [1],
@@ -82,7 +92,7 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [2,3,5,6,7,8]
+    carbons = [1]#[2,3,5,6,7,8]
     debug = False
     breakst = False
     init_method = 'MBI'
@@ -91,7 +101,7 @@ if __name__ == '__main__':
         for c in carbons:
 
 
-            breakst = stools.show_stopper()
+            breakst = show_stopper()
             if breakst:
                 break
             MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
@@ -107,9 +117,10 @@ if __name__ == '__main__':
     if init_method == 'MBI':
         for c in carbons:
 
+            breakst = show_stopper()
             if breakst: 
                 break
-            breakst = stools.show_stopper()
+            
 
             MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
