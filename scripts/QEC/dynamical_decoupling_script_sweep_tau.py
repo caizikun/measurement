@@ -13,7 +13,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16):
 
-    m = DD.SimpleDecoupling(name)
+    m = DD.SimpleDecoupling(name+'_tau_'+str(tau_min*1e9))
 
     # print 'threshold =' + str(m.params['MBI_threshold'])
     # print 'pulse_shape = ' +str(m.params['pulse_shape'])
@@ -28,7 +28,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
     funcs.prepare(m)
 
-    if False: ### if you don't want to do MBI for this script.
+    if True: ### if you don't want to do MBI for this script.
         m.params['MBI_threshold'] = 0
         m.params['Ex_SP_amplitude'] = 0
         m.params['Ex_MBI_amplitude'] = 0
@@ -77,7 +77,21 @@ if __name__ == '__main__':
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
     # stools.turn_off_all_lt2_lasers()
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.3e-6,tau_max=4.8e-6,tau_step =10e-9, N=64)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=13.550e-6,tau_max=13.650e-6,tau_step =2e-9, N=32)
+
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.0e-6,tau_max=4.2e-6,tau_step =4e-9, N=64)
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.2e-6,tau_max=4.4e-6,tau_step =4e-9, N=64)
+
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=10.7e-6,tau_max=10.9e-6,tau_step =4e-9, N=64)
+
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=11.0e-6,tau_max=11.2e-6,tau_step =4e-9, N=32)
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=11.2e-6,tau_max=11.4e-6,tau_step =4e-9, N=32)
+
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=13.3e-6,tau_max=13.5e-6,tau_step =4e-9, N=32)
+    # SimpleDecoupling_swp_tau(SAMPLE, tau_min=13.5e-6,tau_max=13.6e-6,tau_step =4e-9, N=32)
+
+
+
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.5e-6,tau_max=4.7e-6,tau_step =10e-9, N=128)
     # stools.turn_off_all_lt2_lasers()
     # GreenAOM.set_power(20e-6)

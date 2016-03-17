@@ -378,8 +378,8 @@ def rabi(name, IQmod=True, Imod_channel = True, pulse_type = 'Square', debug = F
         m.params['sweep_pts'] = m.params['pulse_sweep_durations']*1e9
     else:
 
-        m.params['pulse_sweep_durations'] =  np.ones(pts)*1000e-9 #np.linspace(0, 10, pts) * 1e-6
-        m.params['pulse_sweep_amps'] = np.linspace(0.,0.1,pts)#0.55*np.ones(pts)
+        m.params['pulse_sweep_durations'] =  np.ones(pts)*4000e-9 #np.linspace(0, 10, pts) * 1e-6
+        m.params['pulse_sweep_amps'] = np.linspace(0.,0.04,pts)#0.55*np.ones(pts)
 
         # for autoanalysis
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
@@ -443,10 +443,10 @@ def calibrate_pi_pulse(name,IQmod=True, Imod_channel = True, pulse_type = 'Squar
     m.params['Ex_SP_amplitude']=0
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 10000
 
     # sweep params
-    m.params['MW_pulse_amplitudes'] = np.linspace(0.92,1.0,pts) # m.params['pulse_pi_amp']+np.linspace(-0.1,0.1,pts) 
+    m.params['MW_pulse_amplitudes'] = np.linspace(0.88,0.96,pts) # m.params['pulse_pi_amp']+np.linspace(-0.1,0.1,pts) 
     #m.params['MW_pulse_amplitudes'] = m.params['pulse_pi_amp']+  np.linspace(-0.05, 0.05, pts) #0.872982*np.ones(pts)#
     m.params['delay_reps'] = 15
 

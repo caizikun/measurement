@@ -252,3 +252,13 @@ class HugeDisplay(QtGui.QLabel):
         QtGui.QLabel.__init__(self, parent)
 
         self.setAlignment(QtCore.Qt.AlignCenter)
+
+class MsgBox(QtGui.QDialog):
+    def __init__(self, msg_text = 'Be careful. What should I do?', parent=None):
+        super(MsgBox, self).__init__(parent)
+
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText(msg_text)
+        msgBox.addButton(QtGui.QPushButton('Accept'), QtGui.QMessageBox.YesRole)
+        msgBox.addButton(QtGui.QPushButton('Reject'), QtGui.QMessageBox.NoRole)
+        self.ret = msgBox.exec_();

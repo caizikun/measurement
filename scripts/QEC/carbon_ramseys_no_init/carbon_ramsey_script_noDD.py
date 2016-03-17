@@ -53,11 +53,11 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 1
+    m.params['addressed_carbon'] = 3
     m.name += '_carbon%s' % m.params['addressed_carbon']
     ### Sweep parameter ###
     if t_start != None and t_end != None and pts != None:
-        m.params['free_evolution_times'] = np.linspace(t_start,t_end,pts).astype(int)*1e-6
+        m.params['free_evolution_times'] = np.linspace(t_start*1e3,t_end*1e3,pts).astype(int)*1e-9
     else:
         # m.params['free_evolution_times'] = np.linspace(554,650,21).astype(int)*1e-6
         m.params['free_evolution_times'] = np.concatenate( (np.array([4]), np.linspace(700, 8400, 12))) * 1e-6
@@ -92,7 +92,7 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE, t_start = 4, t_end = 50, pts = 31)
+    Carbon_Ramsey(SAMPLE, t_start = 3.2, t_end = 35.0, pts = 121)
     # interrupt_script()
     # optimize_NV()
     # Carbon_Ramsey(SAMPLE, t_start = None, t_end = None, pts = None)

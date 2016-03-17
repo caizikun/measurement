@@ -28,7 +28,6 @@ class pid_controller_v5(Instrument):
         self._get_ctrl = get_ctrl_func #neccecary for the Matisse pid
         self._get_stabilizor = get_stabilizor_func #neccecary for the HeNe true wavelength stabilisation
         self._set_ctrl_coarse = set_ctrl_func_coarse
-        self._get_ctrl_coarse = get_ctrl_func_coarse
 
         if not(self._get_stabilizor == None): self._stabilizor_value = self._get_stabilizor()
 

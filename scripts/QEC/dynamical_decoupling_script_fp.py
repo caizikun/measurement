@@ -61,11 +61,11 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, pts=21,mbi = True, fi
         # m.params['Decoupling_sequence_scheme'] = 'single_block'
 
         Number_of_pulses = N 
-        pts = pts
-        # start    = 200e-9   + (kk+start_point)     * (pts-1)*step_size 
-        # end      = 200e-9  + (kk+1+start_point) * (pts-1)*step_size
-        start    = 2.50e-6 + m.params['fast_pi_duration']  + (kk+start_point)     * (pts-1)*step_size 
-        end      = 2.50e-6 + m.params['fast_pi_duration']  + (kk+1+start_point) * (pts-1)*step_size
+        pts = 51
+        if N == 128:
+            pts = 21
+        start    = 0.54e-6  + (kk+start_point)     * (pts-1)*step_size 
+        end      = 0.54e-6  + (kk+1+start_point) * (pts-1)*step_size
         tau_list = np.linspace(start, end, pts)
 
         ### Start measurement ###
@@ -130,31 +130,40 @@ def SimpleDecoupling(name, N, step_size, start_point, tot, pts=21,mbi = True, fi
     m.finish()
 
 if __name__ == '__main__':
-    tau_start=39.5e-6
-    pts=16
-    step_size=12e-9
-    start=(tau_start-2.64e-6)/step_size/float(pts-1)
-
-    start=int(start)-5
-    N=128
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-    # N=64
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-    # N=200
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-
-    tau_start=66.15e-6
-    pts=16
-    step_size=12e-9
-    start=(tau_start-2.64e-6)/step_size/float(pts-1)
-
-    start=int(start)-5
-    # N=128
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-    # N=64
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-    # N=200
-    # SimpleDecoupling('Fingerprint_msm1_x' + SAMPLE + '_' + str(N) + 'pulses_' + str(start), N = N, step_size = step_size, start_point= start, tot = 10, pts=16,final_pulse = '-x', mbi = False,optimize=True, reps_per_RO = 1000)
-
     
-    
+    N = 32
+    SimpleDecoupling('Hermite_Fingerprint_msp1_' + SAMPLE + '_' + str(N),
+        N = N, step_size = 4e-9, start_point= 0, tot = 5, final_pulse = '-x', optimize=True, reps_per_RO = 500)
+
+
+    n = 0
+
+    # for start_point in [0,45,90,135]:
+        
+    #     for N in [64,128]:
+    #         if N in [128, 64]:
+    #             step_size = 4e-9
+    #         else:
+    #             step_size = 10e-9
+
+    #         if N == 64 and start_point ==0:
+    #             pulses = ['x']
+    #         if N == 64 and start_point ==45:
+    #             pulses = []
+    #         else:
+    #             pulses = ['-x','x']
+
+    #         for final_pulse in pulses:
+
+
+    #             print 'press q now to cleanly exit measurement loop'
+    #             qt.msleep(3)
+    #             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #                 n = 0
+
+        
+
+    #             if n == 1:
+    #                 SimpleDecoupling('Hermite_Fingerprint_msm1_' + SAMPLE + '_' + str(N) + final_pulse+str(start_point),
+    #                         N = N, step_size = step_size, start_point= start_point, tot = 50, final_pulse = final_pulse, optimize=True, reps_per_RO = 500)
+

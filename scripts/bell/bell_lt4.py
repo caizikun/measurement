@@ -11,7 +11,6 @@ import time
 #reload all parameters and modules
 #execfile(qt.reload_current_setup)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.config import moss as moscfg
 
 import bell
 reload(bell)
@@ -109,9 +108,9 @@ class Bell_lt4(bell.Bell):
 
 Bell_lt4.bs_helper = qt.instruments['bs_helper']
 Bell_lt4.lt3_helper = qt.instruments['lt3_helper']
-Bell_lt4.mos = qt.instruments['master_of_space']
 Bell_lt4.AWG_RO_AOM = qt.instruments['PulseAOM']
 Bell_lt4.lt4_helper = qt.instruments['lt4_helper']
+Bell_lt4.rnd_sender = qt.instruments['RND_bit_sender']
 
 def bell_lt4(name, 
              m,
@@ -183,6 +182,7 @@ def bell_lt4(name,
 def full_bell(name):
     name='full_Bell'+name
     m = Bell_lt4(name) 
+    m.joint_params['twitter_randomness'] = True
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -261,7 +261,7 @@ def TPQI(name):
              do_upload     = True,
              )
 
-def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
+def SP_PSB(name, lt3=True): #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
     name='SPCORR_PSB_'+name
     m = Bell_lt4(name)
     m.params['MW_RND_amp_I']     = 0
@@ -274,7 +274,7 @@ def SP_PSB(name): #we now need to do the RO in the AWG, because the PLU cannot t
              th_debug      = False,
              sequence_only = False,
              mw            = True,
-             measure_lt3   = True, 
+             measure_lt3   = lt3, 
              measure_bs    = False,
              do_upload     = True,
              )
@@ -311,6 +311,7 @@ def SP_ZPL(name):
     m.params['MW_RND_duration_Q']= m.params['MW_Npi4_duration']
     m.joint_params['use_live_marker_filter']=True
     m.params['live_filter_queue_length'] = 2
+    m.params['measurement_time']=5*60#5 minutes
     bell_lt4(name, 
              m,
              th_debug      = False,
@@ -350,15 +351,19 @@ if __name__ == '__main__':
     qt.msleep(0.5)  
         
 
-    #SP_PSB('SPCORR_PSB')
+    #SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
-    full_bell('TheFinal_day15_run'+name_index)
+    
     #lt4_only('test')
     #pulse_overlap('overlap')
-    # SP_ZPL('SPCORR_lt4')
-    #lt3_tail('')
+    #SP_ZPL('SPCORR_lt4')
+    #lt3_tail('lt3')
     #measureZZ('BackToZZ_day5_run'+name_index)
-    #measureXX('finallyXX_day13_run'+name_index)
-    #stools.stop_bs_counter() ### i am going to bed, leave the last run running, turn off the apd's afterwards...
-    
+    #measureXX('moreXX_day9_run'+name_index)
+    #if int(name_index)>18:
+    #    qt.bell_succes = False
+    #else:
+    full_bell('TheSecondFinal_day22_run_'+name_index)
+        ### 
+       
     qt.bell_succes = True

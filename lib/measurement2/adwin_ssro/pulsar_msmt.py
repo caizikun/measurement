@@ -3,31 +3,43 @@ import numpy as np
 import qt
 import hdf5_data as h5
 import logging
+import sys
 
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
-# reload(ssro)
+reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
+import pulse_select as ps; reload(ps)
+
 
 class PulsarMeasurement(ssro.IntegratedSSRO):
     mprefix = 'PulsarMeasurement'
     awg = None
-    mwsrc = None
+    mwsrc = None 
+    mwsrc2 = None
 
     def __init__(self, name):
         ssro.IntegratedSSRO.__init__(self, name)
-
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True, **kw):
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
         ssro.IntegratedSSRO.setup(self)
 
-        if mw:
-            self.mwsrc.set_iq('on')
-            self.mwsrc.set_pulm('on')
-            self.mwsrc.set_frequency(self.params['mw_frq'])
-            self.mwsrc.set_power(self.params['mw_power'])
-            self.mwsrc.set_status('on')
+        self.mwsrc.set_iq('on')
+        self.mwsrc.set_pulm('on')
+        self.mwsrc.set_frequency(self.params['mw_frq'])
+        self.mwsrc.set_power(self.params['mw_power'])
+        self.mwsrc.set_status('on')
+
+        try:
+            print 'switching second mw source on'
+            self.mwsrc2.set_iq('on')
+            self.mwsrc2.set_pulm('on')            
+            self.mwsrc2.set_frequency(self.params['mw2_frq'])
+            self.mwsrc2.set_power(self.params['mw2_power'])
+            self.mwsrc2.set_status('on')
+        except:
+            print 'no second mw source ',  sys.exc_info()
 
         print 'AWG state before start'
         print self.awg.get_state()
@@ -87,7 +99,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.h5data.flush()
 
     def finish(self,**kw):
-
+        print kw
         ssro.IntegratedSSRO.finish(self,**kw)
 
         self.awg.stop()
@@ -96,6 +108,10 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_status('off')
         self.mwsrc.set_iq('off')
         self.mwsrc.set_pulm('off')
+        try:
+            self.mwsrc2.set_status('off')
+        except:
+            print 'no second source ',  sys.exc_info()
 
 # class PulsarMeasurement
 
@@ -105,17 +121,24 @@ class SSRO_calibration_msp1(PulsarMeasurement):
     def autoconfig(self):
         PulsarMeasurement.autoconfig(self)
 
-    def generate_sequence(self, upload=True):
+    def generate_sequence(self, upload=True,**kw):
 
+        
+        # commented out. current script runs with pulse_select.py now. 20150901 NK
         # define the necessary pulses
-        X = pulselib.MW_IQmod_pulse('pi-pulse-on-p1',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            amplitude = self.params['MW_pi_msp1_amp'],
-            length = self.params['MW_pi_msp1_dur'],
-            frequency = self.params['ms+1_mod_frq'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'])
-        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 5e-6, amplitude = 2)
+        # X = pulselib.MW_IQmod_pulse('pi-pulse-on-p1',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     amplitude = self.params['MW_pi_msp1_amp'],
+        #     length = self.params['MW_pi_msp1_dur'],
+        #     frequency = self.params['ms+1_mod_frq'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'])
+        
+
+        X = kw.get('Pi_pulse', None)
+
+
+        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 10e-6, amplitude = 2)
 
         T = pulse.SquarePulse(channel='MW_Imod', name='delay')
         T.amplitude = 0.
@@ -130,9 +153,9 @@ class SSRO_calibration_msp1(PulsarMeasurement):
         n.append(pulse.cp(T,length=1e-6))
         n.append(Trig)
         elements.append(n)
-        #Dark esr element
-        e = element.Element('pi_pulse_msp1', pulsar=qt.pulsar)
-        e.append(T, length = 1e-6)
+        #Spin RO element.
+        e = element.Element('pi_pulse_msm1', pulsar=qt.pulsar)
+        e.append(T, length = 2e-6)
         e.append(X)
         e.append(Trig)
         elements.append(e)
@@ -279,7 +302,7 @@ class DarkESR_Switch(DarkESR):
         # define the necessary pulses
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod', Sw_channel='MW_switch',
+            PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
             amplitude = self.params['ssbmod_amplitude'],
             length = self.params['pulse_length'],
             PM_risetime = self.params['MW_pulse_mod_risetime'],
@@ -742,14 +765,18 @@ class ElectronT1(PulsarMeasurement):
     def generate_sequence(self, upload=True, debug = False):
 
         ### define basic pulses/times ###
+
         # pi-pulse, needs different pulses for ms=-1 and ms=+1 transitions in the future.
-        X = pulselib.MW_IQmod_pulse('Pi-pulse',
-            I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
-            frequency = self.params['MW_modulation_frequency'],
-            PM_risetime = self.params['MW_pulse_mod_risetime'],
-            length = self.params['fast_pi_duration'],
-            amplitude = self.params['fast_pi_amp'])
+        #commented out and replaced by pulse_select.py NK 20151004
+        # X = pulselib.MW_IQmod_pulse('Pi-pulse',
+        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
+        #     PM_channel='MW_pulsemod',
+        #     frequency = self.params['MW_modulation_frequency'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
+        #     length = self.params['fast_pi_duration'],
+        #     amplitude = self.params['fast_pi_amp'])
+
+        X = ps.X_pulse(self)
         # Wait-times
         T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = self.params['wait_time_repeat_element']*1e-6, amplitude = 0.)
@@ -1080,7 +1107,7 @@ class MBI(PulsarMeasurement):
         if 'MW_switch_risetime' in self.params.to_dict().keys():
             X = pulselib.MW_IQmod_pulse('MBI MW pulse',
                 I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
-                PM_channel = 'MW_pulsemod',Sw_channel='MW_switch',
+                PM_channel = 'MW_pulsemod',Sw_channel=self.params['MW_switch_channel'],
                 frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
                 amplitude = self.params['AWG_MBI_MW_pulse_amp'],
                 length = self.params['AWG_MBI_MW_pulse_duration'],
@@ -1559,13 +1586,19 @@ class GeneralPiCalibration(PulsarMeasurement):
                 qt.pulsar.program_awg(seq,*elements)
 
 class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
+
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
             length = 15000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
-
+        if X==None:
+            print 'WARNING: No valid X Pulse'
+        if hasattr(X,'Sw_channel'):
+            print 'this is the MW switch channel: ', X.Sw_channel
+        else:
+            print 'no switch found'
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
 
@@ -1608,6 +1641,126 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
+
+
+class General_mw2_PiCalibrationSingleElement(GeneralPiCalibration):
+    ###
+    #  This calibrates the second MW source.
+    ###
+
+    def __init__(self, name):
+        GeneralPiCalibration.__init__(self, name)
+
+        # print 'init second source'
+        # PulsarMeasurement.mwsrc2.set_pulm('on')
+        # PulsarMeasurement.mwsrc2.set_frequency(self.params['mw2_frq'])
+        # PulsarMeasurement.mwsrc2.set_power(self.params['mw2_power'])
+        # PulsarMeasurement.mwsrc2.set_status('on')
+
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+
+
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude=self.params['mw2_pulse_amplitudes'][i],
+                        length = self.params['mw2_duration']
+                        ))
+            e.append(T)
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+class CompositePiCalibrationSingleElement(GeneralPiCalibration):
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        X=kw.get('pulse_pi', None)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        if type(self.params['multiplicity']) ==int:
+            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+        elements = []
+        for i in range(self.params['pts']):
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude_p2=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            # for j in range(self.params['multiplicity']):
+            seq.append(name = e.name+'-{}'.format(j), 
+                wfname = e.name,
+                trigger_wait = True)
+            # seq.append(name = 'wait-{}-{}'.format(i,j), 
+            #     wfname = wait_1us.name, 
+            #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
 
 class PiCalibration_SweepDelay(PulsarMeasurement):
     """
@@ -2467,8 +2620,7 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
         T = pulse.SquarePulse(channel='MW_Imod',
             length = 15000e-9, amplitude = 0)
 
-        Phi60 = kw.get('Phi60', None)
-        Phi300 = kw.get('Phi300',None)
+        pulse_dict = kw.get('pulse_dict',None) ### pulses are given in this dict
 
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
@@ -2486,27 +2638,15 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
             for j in range(int(self.params['multiplicity'][i])):
                 e.append(T)
 
-                ### select which pulse amplitude are swept and choose the pulses accordingly
-                if '1' in self.params['swept_pulses']:
-                    e.append( pulse.cp(Phi60,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi60))
-                if '2' in self.params['swept_pulses']:
-                    e.append(pulse.cp(Phi300,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi300))
-
-                if '3' in self.params['swept_pulses']:
-                    e.append( pulse.cp(Phi60,
-                        amplitude=self.params['MW_pulse_amplitudes'][i]
-                        ))
-                else:
-                    e.append(pulse.cp(Phi60))
-
+                ### pulse_keys gives the order of pulses for the composite pulse.
+                for ii,key in enumerate(self.params['composite_pulse_keys']):
+                    ### select which pulse amplitudes are swept and choose the pulses accordingly
+                    if str(ii+1) in self.params['swept_pulses']:
+                        e.append( pulse.cp(pulse_dict[key],
+                            amplitude=self.params['MW_pulse_amplitudes'][i]
+                            ))
+                    else:
+                        e.append(pulse.cp(pulse_dict[key]))
                     
             elements.append(e)
 
@@ -2520,6 +2660,66 @@ class ScrofulousPiCalibrationSingleElement(GeneralPiCalibration):
             # seq.append(name = 'wait-{}-{}'.format(i,j), 
             #     wfname = wait_1us.name, 
             #     repetitions = self.params['delay_reps'])
+            seq.append(name='sync-{}'.format(i),
+                 wfname = sync_elt.name)
+        # elements.append(wait_1us)
+        elements.append(sync_elt)
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+class Sweep_pm_risetime(GeneralPiCalibration):
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_Imod',
+            length = 15000e-9, amplitude = 0)
+
+        wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+        wait_1us.append(pulse.cp(T, length=1e-6))
+
+        sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6, amplitude = 2)
+        sync_elt.append(adwin_sync)
+        mw2 = kw.get('mw2', False)
+        elements = []
+        for i in range(self.params['pts']):
+            if not mw2:
+                X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    PM_channel='MW_pulsemod', Sw_channel = self.params['MW_switch_channel'],
+                    frequency = self.params['MW_modulation_frequency'],
+                    PM_risetime = self.params['PM_risetime_sweep'][i],
+                    Sw_risetime = self.params['MW_switch_risetime'],
+                    length = self.params['Square_pi_length'],
+                    amplitude = self.params['Square_pi_amp'],
+                    phase =  self.params['X_phase'])
+            else:
+                X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
+                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    PM_channel='mw2_pulsemod', Sw_channel = self.params['MW_switch_channel'],
+                    frequency = 0.,
+                    PM_risetime = self.params['PM_risetime_sweep'][i],
+                    Sw_risetime = self.params['MW_switch_risetime'],
+                    length = self.params['mw2_Square_pi_length'],
+                    phase =  self.params['X_phase'],
+                    amplitude = self.params['mw2_Square_pi_amp'])
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            e.append(T, X)
+            e.append(T)
+            elements.append(e)
+
+        # sequence
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        for i,e in enumerate(elements):           
+            seq.append(name = e.name+'-{}', 
+                wfname = e.name,
+                trigger_wait = True)
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         # elements.append(wait_1us)

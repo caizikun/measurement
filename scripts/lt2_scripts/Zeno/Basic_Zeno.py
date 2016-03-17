@@ -3,7 +3,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -30,7 +30,7 @@ def Zeno(name, carbon_list   = [1,5],
         debug               = False,
         Tomo_bases          = []):
 
-    m = DD.Zeno_TwoQB(name)
+    m = Zen.Zeno_TwoQB(name)
     funcs.prepare(m)
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds

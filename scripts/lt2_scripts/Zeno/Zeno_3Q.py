@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -60,7 +60,7 @@ def Zeno(name, carbon_list   = [1,2,5],
         Tomo_bases          = [],
         Repetitions         = 400):
 
-    m = DD.Zeno_ThreeQB(name)
+    m = Zen.Zeno_ThreeQB(name)
     funcs.prepare(m)
 
 
@@ -304,17 +304,17 @@ if __name__ == '__main__':
 
 
     # Measure a single point for a single state.
-    # teststate='00p11'
-    # msmts = 1
-    # EvoTime_arr = [10e-3]
-    # for RO in ['positive','negative']:
-    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_XXX', 
-    #                                     el_RO= RO,
-    #                                     logic_state=teststate,
-    #                                     Tomo_bases = ['X','X','X'],
-    #                                     free_evolution_time=EvoTime_arr,
-    #                                     number_of_zeno_msmnts =msmts,
-    #                                     debug=False,Repetitions=700)
+    teststate='00p11'
+    msmts = 0
+    EvoTime_arr = [0e-3]
+    for RO in ['positive','negative']:
+        Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_TESTSTATE_XXX', 
+                                        el_RO= RO,
+                                        logic_state=teststate,
+                                        Tomo_bases = ['X','X','X'],
+                                        free_evolution_time=EvoTime_arr,
+                                        number_of_zeno_msmnts =msmts,
+                                        debug=False,Repetitions=700)
     # EvoTime_arr=[0e-3]
     # msmts=1
     # for state in logic_state_list:
@@ -361,32 +361,32 @@ if __name__ == '__main__':
     #########################
     # 4 measurements        #
     ######################### Minimum evo time 22.5 ms and 2 data points per run
-    EvoTime_arr=np.r_[0,np.linspace(22.9e-3,45e-3,9),50e-3,60e-3,70e-3,80e-3,90e-3]
+    # EvoTime_arr=np.r_[0,np.linspace(22.9e-3,45e-3,9),50e-3,60e-3,70e-3,80e-3,90e-3]
     
     ### testing purposes
     # RO_bases_dict={'00p10':[['I','Z','Z'],['I','Y','Y']]}
     # EvoTime_arr = [0,22.9e-3]
 
 
-    breakst,last_check=takeZenocurve(2,EvoTime_arr,4,
-                                       logic_state_list,
-                                       RO_bases_dict,
-                                       debug=False,
-                                       breakstatement=breakst,
-                                       last_check=last_check)
+    # breakst,last_check=takeZenocurve(2,EvoTime_arr,4,
+    #                                    logic_state_list,
+    #                                    RO_bases_dict,
+    #                                    debug=False,
+    #                                    breakstatement=breakst,
+    #                                    last_check=last_check)
 
     #########################
     # 2 measurement         #
     ######################### Minimum evo time 12.5 and 3 data points per run
 
 
-    EvoTime_arr=np.r_[0,np.linspace(12.9e-3,35e-3,9),40e-3,50e-3,60e-3,70e-3,80e-3]
-    breakst,last_check=takeZenocurve(3,EvoTime_arr,2,
-                                        logic_state_list,
-                                        RO_bases_dict,
-                                        debug=False,
-                                        breakstatement=breakst,
-                                        last_check=last_check)
+    # EvoTime_arr=np.r_[0,np.linspace(12.9e-3,35e-3,9),40e-3,50e-3,60e-3,70e-3,80e-3]
+    # breakst,last_check=takeZenocurve(3,EvoTime_arr,2,
+    #                                     logic_state_list,
+    #                                     RO_bases_dict,
+    #                                     debug=False,
+    #                                     breakstatement=breakst,
+    #                                     last_check=last_check)
 
 
 
@@ -395,13 +395,13 @@ if __name__ == '__main__':
     # 0 measurements        #
     ######################### Minimum evo time 0 ms and 7 data points per run (logical X)
     
-    EvoTime_arr=np.r_[np.linspace(0e-3,30e-3,14),40e-3,50e-3,60e-3,70e-3]
-    breakst, last_check=takeZenocurve(7,EvoTime_arr,0,
-                                            logic_state_list,
-                                            RO_bases_dict,
-                                            debug=False,
-                                            breakstatement=breakst,
-                                            last_check=last_check)
+    # EvoTime_arr=np.r_[np.linspace(0e-3,30e-3,14),40e-3,50e-3,60e-3,70e-3]
+    # breakst, last_check=takeZenocurve(7,EvoTime_arr,0,
+    #                                         logic_state_list,
+    #                                         RO_bases_dict,
+    #                                         debug=False,
+    #                                         breakstatement=breakst,
+    #                                         last_check=last_check)
 
 
 

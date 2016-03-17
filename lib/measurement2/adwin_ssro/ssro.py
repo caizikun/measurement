@@ -26,6 +26,8 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     A_aom = None
     repump_aom = None
     adwin = None
+
+    
         
     def autoconfig(self):
         """
@@ -34,6 +36,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         E.g., compute AOM voltages from desired laser power, or get
         the correct AOM DAC channel from the specified AOM instrument.
         """
+        # print self.E_aom.get.name()
         self.params['Ex_laser_DAC_channel'] = self.adwin.get_dac_channels()\
                 [self.E_aom.get_pri_channel()]
         self.params['A_laser_DAC_channel'] = self.adwin.get_dac_channels()\
@@ -46,61 +49,29 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             self.params['repump_mod_control_offset'] = self.adwin.get_dac_voltage(self.params['repump_mod_control_dac'])
             self.params['cr_mod_DAC_channel']     = self.adwin.get_dac_channels()[self.params['cr_mod_control_dac']]#ssro.AdwinSSRO.adwin.get_dac_channels()['gate']
 
-        self.params['Ex_CR_voltage'] = \
-                self.E_aom.power_to_voltage(
-                        self.params['Ex_CR_amplitude'])
-        
-        self.params['A_CR_voltage'] = \
-                self.A_aom.power_to_voltage(
-                        self.params['A_CR_amplitude'])
+        self.params['Ex_CR_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_CR_amplitude'])
+        self.params['A_CR_voltage'] = self.A_aom.power_to_voltage(self.params['A_CR_amplitude'])
+        self.params['Ex_SP_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_SP_amplitude'])
+        self.params['A_SP_voltage'] = self.A_aom.power_to_voltage(self.params['A_SP_amplitude'])
+        self.params['Ex_RO_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_RO_amplitude'])
+        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])              
+        self.params['repump_voltage'] = self.repump_aom.power_to_voltage(self.params['repump_amplitude'])
+        self.params['repump_off_voltage'] = self.repump_aom.get_pri_V_off()
+        self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()
+        self.params['Ex_off_voltage'] = self.E_aom.get_pri_V_off()
 
-        self.params['Ex_SP_voltage'] = \
-                self.E_aom.power_to_voltage(
-                        self.params['Ex_SP_amplitude'])
-
-        self.params['A_SP_voltage'] = \
-                self.A_aom.power_to_voltage(
-                        self.params['A_SP_amplitude'])
-
-        self.params['Ex_RO_voltage'] = \
-                self.E_aom.power_to_voltage(
-                        self.params['Ex_RO_amplitude'])
-
-        self.params['A_RO_voltage'] = \
-                self.A_aom.power_to_voltage(
-                        self.params['A_RO_amplitude'])
-                       
-        self.params['repump_voltage'] = \
-                self.repump_aom.power_to_voltage(
-                        self.params['repump_amplitude'])
-
-        self.params['repump_off_voltage'] = \
-                self.repump_aom.get_pri_V_off()
-        self.params['A_off_voltage'] = \
-                self.A_aom.get_pri_V_off()
-        self.params['Ex_off_voltage'] = \
-                self.E_aom.get_pri_V_off()
-
-        for key,_val in self.adwin_dict[self.adwin_processes_key]\
-                [self.adwin_process]['params_long']:              
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
             self.set_adwin_process_variable_from_params(key)
 
-        for key,_val in self.adwin_dict[self.adwin_processes_key]\
-                [self.adwin_process]['params_float']:              
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:              
             self.set_adwin_process_variable_from_params(key)
 
-        if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key]\
-                [self.adwin_process]:
-            for key,_val in self.adwin_dict[self.adwin_processes_key]\
-                    [self.adwin_dict[self.adwin_processes_key]\
-                [self.adwin_process]['include_cr_process']]['params_long']:              
+        if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key][self.adwin_process]:
+            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_long']:              
                 self.set_adwin_process_variable_from_params(key)
-            for key,_val in self.adwin_dict[self.adwin_processes_key]\
-                    [self.adwin_dict[self.adwin_processes_key]\
-                [self.adwin_process]['include_cr_process']]['params_float']:              
+            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_float']:              
                 self.set_adwin_process_variable_from_params(key)
 
-        
 
     def setup(self):
         """
@@ -131,9 +102,9 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                                 in the measurement params dictionary!'.format(key))
 
     def run(self, autoconfig=True, setup=True):
+        
         if autoconfig:
-            self.autoconfig()
-            
+            self.autoconfig()         
         if setup:
             self.setup()
         print self.adwin_process
@@ -141,11 +112,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         qt.msleep(1)
         self.start_keystroke_monitor('abort',timer=False)
         
+        aborted=False
         CR_counts = 0
         while self.adwin_process_running():
             self._keystroke_check('abort')
             if self.keystroke('abort') in ['q','Q']:
                 print 'aborted.'
+                aborted = True
                 self.stop_keystroke_monitor('abort')
                 break
             
@@ -168,6 +141,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['SSRO_repetitions']))
+        return not(aborted)
 
     def save(self, name='ssro'):
         reps = self.adwin_var('completed_reps')

@@ -54,7 +54,7 @@ def NuclearRamseyWithInitialization(name, state = 'up',
     if detuning_ms0 != None:
         m.params['C3_freq_0']   = m.params['C3_freq_0'] - detuning_ms0   
     if detuning_ms1 != None:
-        m.params['C3_freq_1']   = m.params['C3_freq_1'] - detuning_ms1
+        m.params['C3_freq_1'+m.params['electron_transition']]   = m.params['C3_freq_1'+m.params['electron_transition']] - detuning_ms1
     
     #### Overwrite certain params for quick tests ###
     m.params['C13_MBI_RO_duration']     = 20 

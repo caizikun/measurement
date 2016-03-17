@@ -20,6 +20,13 @@ from measurement.scripts.lt3_scripts.setup import msmt_params as mcfg
 reload(mcfg)
 qt.exp_params=mcfg.cfg
 
+for carbon in qt.instruments.get_instruments_by_type('carbon'):
+
+	### transfer noted parameters from the msmt parameters to the carbon instruments
+	carbon.set_carbon_params_from_msmt_params(qt.exp_params,verbose=False)
+	### values that were stored in the carbon are now written into exp_params
+	carbon.write_attributes_to_msmt_params(qt.exp_params)
+
 ####
 print 'configure the setup-specific hardware...'
 # set all the static variables for lt3

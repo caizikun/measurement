@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -25,11 +25,11 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 
-nm_per_step = qt.exp_params['magnet']['nm_per_step']
+# nm_per_step = qt.exp_params['magnet']['nm_per_step']
 f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
 f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
 N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
-ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
+# ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
 range_fine  = 0.40
 pts_fine    = 51
@@ -53,11 +53,11 @@ def QMem(name, carbon_list   = [5],
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
-        Repetitions         = 125):
+        Repetitions         = 300):
 
 
 
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
 
 
@@ -113,27 +113,29 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/f_larmor,9)
+    # f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    # tau_larmor = round(1/f_larmor,9)
 
     # tau_larmor = 500e-9
-    m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[290e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[80]
-    m.params['do_pi'] = True
+    m.params['repump_wait'] =  pts*[2e-6] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[180e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[200]
+    m.params['do_pi'] = False
+    m.params['do_BB1'] = True
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    cntr = 4.087e-6
+    rng = 500e-9
+    m.params['fast_repump_duration'] = np.round(np.linspace(cntr-rng,cntr+rng,pts),9) #how long the 'Zeno' beam is shined in.
 
-    m.params['fast_repump_duration'] = np.round(np.linspace(500e-9,10e-6,pts),9) #how long the 'Zeno' beam is shined in.
-
-    m.params['fast_repump_power'] = 700e-9
+    m.params['fast_repump_power'] = 900e-9
 
 
 
 
     ### For the Autoanalysis
     m.params['pts']                 = pts
-    m.params['sweep_name']          = 'repump duration' 
-    m.params['sweep_pts']           =  m.params['fast_repump_duration']
+    m.params['sweep_name']          = 'repump duration (us)' 
+    m.params['sweep_pts']           =  m.params['fast_repump_duration']*1e6
     
     ### RO params
     m.params['electron_readout_orientation'] = el_RO
@@ -153,7 +155,7 @@ def show_stopper():
 
 def optimize(breakst):
     if not breakst:
-        GreenAOM.set_power(15e-6)
+        GreenAOM.set_power(10e-6)
         counters.set_is_running(1)
         optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
@@ -183,9 +185,50 @@ if __name__ == '__main__':
                     breakst = show_stopper()
                     if breakst:
                         break
-                    QMem('Sweep_repump_duration'+ro+'_Tomo_'+tomo+'_C'+str(c),
+                    QMem('Sweep_repump_duration_'+ro+'_Tomo_'+tomo+'_C'+str(c),
                                                                         debug=False,
                                                                         tomo_list = [tomo], 
                                                                         el_RO = ro,
                                                                         carbon_list   = [c],               
                                                                         carbon_init_list        = [c])
+    #############################
+    ### two carbon qubit loop ###
+    #############################
+    
+    n=0
+    if n == 1:
+
+        
+        logic_state_list=['mX'] ### for DFS creation.
+        tomo_list =[['X','X'],['Y','Y'],['X','Y'],['Y','X']]
+        # tomo_list = [['Z','Z']]
+        # tomo_list = [['Z','Z']]
+        # llist_of_c_lists = [[2,5],[5,6],[1,5],[1,3],[1,6],[2,3],[2,6],[3,5],[3,6],[1,2]]
+        llist_of_c_lists = [[2,5]]
+        for c_list in llist_of_c_lists:
+            for logic_state in logic_state_list:
+                if breakst:
+                    break
+                for tomo in tomo_list: 
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        msmt_name = 'Sweep_repump_duration_'+ro+'_state'+logic_state+'_Tomo_'+tomo[0]+tomo[1]+'_C'+str(c_list[0])+str(c_list[1])
+                        print last_check-time.time()
+                        QMem(msmt_name,
+                                debug                   = debug,
+                                tomo_list               = tomo, 
+                                el_RO                   = ro,
+                                carbon_list             = c_list,               
+                                carbon_init_list        = c_list,
+                                carbon_init_thresholds  = [0],
+                                number_of_MBE_steps     = 1,
+                                carbon_init_methods     = ['swap'],
+                                logic_state             = logic_state)
+
+                        if abs(last_check-time.time()) > 30*60: ## check every 30 minutes
+                            optimize(breakst or debug)
+                            last_check = time.time()        

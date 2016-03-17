@@ -18,7 +18,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.lt2_scripts.Zeno.Zeno as Zen; reload(Zen)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -67,7 +67,7 @@ def Zeno(name, carbon_list   = [2],
         Repetitions         = 300,
         do_pi=False):
 
-    m = DD.Zeno_OneQB_Zmeasurement(name)
+    m = Zen.Zeno_OneQB_Zmeasurement(name)
     funcs.prepare(m)
 
 
@@ -264,17 +264,17 @@ if __name__ == '__main__':
     last_check=time.time()
 
     # # Measure a single point for a single state.
-    # teststate='Z'
-    # EvoTime_arr=[0e-3]
-    # msmts=0
-    # for RO in ['positive','negative']:
-    #     Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
-    #                     el_RO= RO,
-    #                     logic_state=teststate,
-    #                     Tomo_bases = RO_bases_dict[teststate],
-    #                     free_evolution_time=EvoTime_arr,
-    #                     number_of_zeno_msmnts =msmts,
-    #                     debug=True,Repetitions=800)
+    teststate='Z'
+    EvoTime_arr=[0e-3]
+    msmts=0
+    for RO in ['positive']:
+        Zeno(SAMPLE +RO+'_'+str(msmts)+'msmts_Tomo_'+RO_bases_dict[teststate][0], 
+                        el_RO= RO,
+                        logic_state=teststate,
+                        Tomo_bases = RO_bases_dict[teststate],
+                        free_evolution_time=EvoTime_arr,
+                        number_of_zeno_msmnts =msmts,
+                        debug=True,Repetitions=800)
 
 
     #########################
@@ -282,16 +282,16 @@ if __name__ == '__main__':
     ######################### Minimum evo time 0 ms and 14 data points per run 
     
 
-    EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,5),60e-3,80e-3,100e-3,150e-3,200e-3]
-    for carbon in [1]:
-        breakst, last_check=takeZenocurve(14,EvoTime_arr,0,
-                                                logic_state_list,
-                                                RO_bases_dict,
-                                                debug=False,
-                                                breakstatement=breakst,
-                                                last_check=last_check,
-                                                carbon = carbon,
-                                                do_pi = False)
+    # EvoTime_arr=np.r_[np.linspace(0e-3,50e-3,5),60e-3,80e-3,100e-3,150e-3,200e-3]
+    # for carbon in [1]:
+    #     breakst, last_check=takeZenocurve(14,EvoTime_arr,0,
+    #                                             logic_state_list,
+    #                                             RO_bases_dict,
+    #                                             debug=False,
+    #                                             breakstatement=breakst,
+    #                                             last_check=last_check,
+    #                                             carbon = carbon,
+    #                                             do_pi = False)
 
     # for carbon in [1,2,3,5]:
     #     breakst, last_check=takeZenocurve(9,EvoTime_arr,0,

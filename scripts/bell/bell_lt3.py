@@ -43,8 +43,9 @@ class Bell_lt3(bell.Bell):
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
-            if not self.remote_measurement_helper.get_is_running():
-                print 'Measurement helper stopped.'
+            m_h_r=self.remote_measurement_helper.get_is_running()
+            if m_h_r==False:
+                print 'Measurement helper stopped:',m_h_r
                 return False
         else:
             if not self.adwin_process_running():
@@ -114,6 +115,7 @@ class Bell_lt3(bell.Bell):
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom
+Bell_lt3.rnd_sender = qt.instruments['RND_bit_sender']
 
 
 def bell_lt3(name):
@@ -156,6 +158,7 @@ def bell_lt3(name):
         elif 'full_Bell' in remote_name:
             mw=True
             th_debug=False
+            m.joint_params['twitter_randomness'] = True
         elif 'MeasXX_' in remote_name:
             mw=True
             th_debug = False 

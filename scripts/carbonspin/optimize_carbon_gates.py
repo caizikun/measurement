@@ -29,12 +29,14 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def put_sweep_together(Ns,taus):
 	### put together into one sweep parameter
-	x_list = ['X_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
-	y_list = ['Y_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
-	## having fun with slices
-	com_list = x_list + y_list
+	px_list = ['X_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
+	py_list = ['Y_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
 
-	tomos = len(x_list)*[['X'],['Y']]
+
+	## having fun with slices
+	com_list = px_list + py_list
+
+	tomos = len(px_list)*[['X'],['Y']]
 
 	return com_list,2*Ns,2*taus,tomos
 
@@ -56,7 +58,7 @@ def SweepGates(name,**kw):
 
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 2000
+	m.params['reps_per_ROsequence'] = 1000
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]
@@ -71,9 +73,8 @@ def SweepGates(name,**kw):
 	### RO bases,timing and number of pulses (sweep parameters) ###
 	##################################
 
-	# m.params['Tomography Bases'] = [['X'],['Y']]
-
-	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'],m.params['C'+str(carbon)+'_gate_optimize_tau_list'])
+	print m.params['electron_transition']
+	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'+m.params['electron_transition']],m.params['C'+str(carbon)+'_gate_optimize_tau_list'+m.params['electron_transition']])
  
 	####################
 	### MBE settings ###
@@ -89,7 +90,8 @@ def SweepGates(name,**kw):
 
 	m.params['Nr_parity_msmts']     = 0
 	m.params['Parity_threshold']    = 1
-	
+
+	print com_list
 	### Derive other parameters
 	m.params['pts']                 = len(com_list)
 	m.params['sweep_name']          = 'Tomo N and tau' 
@@ -110,13 +112,13 @@ def show_stopper():
     else: return False
 
 def optimize():
-    GreenAOM.set_power(15e-6)
+    GreenAOM.set_power(10e-6)
     counters.set_is_running(1)
     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 
 if __name__ == '__main__':
-	carbons = [1,2,5]
+	carbons = [2]
 
 
 	brekast = False
@@ -125,7 +127,7 @@ if __name__ == '__main__':
 		breakst = show_stopper()
 		if breakst: break
 
-		optimize()
+		#optimize()
 
 		for el_RO in ['positive','negative']:
 

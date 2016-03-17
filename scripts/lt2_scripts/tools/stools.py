@@ -28,16 +28,19 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
-    qt.msleep(0.1)
     print 'Calibrate', name
+    if awg:
+        qt.instruments[name].set_cur_controller('AWG')
+        print 'Setting controller to AWG'
+    else:
+        qt.instruments[name].set_cur_controller('ADWIN')
+        print 'Setting controller to ADWIN'
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    if awg: #set back to adwin because most scripts do not initialize this
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.msleep(1)
-
-    qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
@@ -49,16 +52,19 @@ def recalibrate_lt1_lasers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM
         recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1')
     for n in awg_names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1',awg=True)
+        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1',awg = True)
 
-def recalibrate_lt2_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
+def recalibrate_lt2_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM', 'RepumpAOM']):
     turn_off_all_lt2_lasers()
     for n in names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo', 'adwin')
-    for n in awg_names:
+        recalibrate_laser(n, 'PMServo', 'adwin', awg = False)
+    if awg_names != []:
+        qt.instruments['AWG'].initialize_dc_waveforms()
+        print 'initializing AWG DC waveforms'
+    for n in awg_names: 
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+        recalibrate_laser(n, 'PMServo', 'adwin', awg=True)
 
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_out=True):
@@ -161,12 +167,23 @@ def set_GreenAOM_power_lt1(power):
 
 
 def init_AWG():
-    qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
-    qt.pulsar.setup_channels()
-    qt.instruments['AWG'].set_ch1_status('on')
-    qt.instruments['AWG'].set_ch2_status('on')
-    qt.instruments['AWG'].set_ch3_status('on')
-    qt.instruments['AWG'].set_ch4_status('on')
+    ### above part commented out since it does not work at the moment. NK 25-08-2015
+    # qt.instruments['AWG'].load_awg_file('DEFAULT.AWG')
+    # qt.pulsar.setup_channels()
+    # qt.instruments['AWG'].set_ch1_status('on')
+    # qt.instruments['AWG'].set_ch2_status('on')
+    # qt.instruments['AWG'].set_ch3_status('on')
+    # qt.instruments['AWG'].set_ch4_status('on')
+    qt.instruments['AWG'].initialize_dc_waveforms()
 
+
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
 
 
