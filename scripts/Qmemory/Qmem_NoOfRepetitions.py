@@ -25,24 +25,18 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 
-nm_per_step = qt.exp_params['magnet']['nm_per_step']
-f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
-f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
-N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
-ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
 range_fine  = 0.40
 pts_fine    = 51
-reps_fine   = 1500 #1000
 ###############
 
 
 
-def QMem(name, carbon_list   = [5],               
+def QMem(name, carbon_list   = [1],               
         
-        carbon_init_list        = [5],
+        carbon_init_list        = [1],
         carbon_init_states      = ['up'], 
-        carbon_init_methods     = ['MBI'], 
+        carbon_init_methods     = ['swap'], 
         carbon_init_thresholds  = [1],  
 
         number_of_MBE_steps = 0,
@@ -53,7 +47,14 @@ def QMem(name, carbon_list   = [5],
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
-        Repetitions         = 125):
+        Repetitions         = 500,
+
+        repump_power        = 500, 
+        tau                 = 200, 
+
+        minReps             = 1,
+        maxReps             = 120,
+        ):
 
 
 
@@ -109,27 +110,29 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 11
-    minReps = 1 # minimum number of LDE reps
-    maxReps = 501 # max number of LDe reps. this number is going to be rounded
-    step = int((maxReps-minReps)/pts)
-    maxReps = minReps + step*pts
+    m.params['dephasing_AOM'] = 'NewfocusAOM' 
+    pts = 7
+    minReps = minReps # minimum number of LDE reps
+    maxReps = maxReps # max number of LDe reps. this number is going to be rounded
+    reps_linear_incr=np.linspace(minReps**(1/3.),maxReps**(1/3.),pts) # do the increment linear on a log scale for better precission (info of decay curve is easier to measure in beginning)
 
 
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+
+    f_larmor = m.params['C1_freq_0']#(m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
     tau_larmor = round(1/f_larmor,9)
 
-    # tau_larmor = 500e-9
-    m.params['repump_wait'] =  pts*[26.95e-6]#pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[290e-9] #this parameter has to be estimated from calibration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = np.arange(minReps,maxReps,step)
-
-
-    m.params['fast_repump_duration'] = pts*[3.5e-6] #how long the 'Zeno' beam is shined in.
-
-    m.params['fast_repump_power'] = 700e-9
-    m.params['do_pi'] = False
-    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    tau_larmor = tau*1e-9
+    m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[1e-9] #this parameter has to be estimated from calibration curves, goes into phase calculation
+    
+    m.params['fast_repump_repetitions'] =np.rint(reps_linear_incr**3)#[1,56,112,167,223]#np.rint(np.linspace(1,500,pts))##np.rint(np.linspace(1,500,pts))##np.array([1913,3174,4895,7146,1e4])#np.array([1,35,172,483,1040])# np.rint(reps_linear_incr**3)#pts*[50]
+    print m.params['fast_repump_repetitions']
+    m.params['fast_repump_power'] = repump_power*1e-9
+    m.params['fast_repump_duration'] = pts*[20e-6] #how long the 'Zeno' beam is shined in.
+    m.params['wait_after_repump']=2e-6 # wait for singlet and avoid laser overlap with subsequent MW pulses
+    m.params['do_pi'] = True
+    m.params['do_pi2'] = True
+    m.params['pi_amps'] = pts*[m.params['Hermite_fast_Xpi_amp']]
 
 
     ### For the Autoanalysis
@@ -155,9 +158,9 @@ def show_stopper():
 
 def optimize(breakst):
     if not breakst:
-        GreenAOM.set_power(15e-6)
+        GreenAOM.set_power(7e-6)
         counters.set_is_running(1)
-        optimiz0r.optimize(dims = ['x','y','z','y','x'])
+        optimiz0r.optimize(dims = ['x','y','z','y','x']*2)
 
 if __name__ == '__main__':
 
@@ -171,26 +174,38 @@ if __name__ == '__main__':
     #########################
     ### single qubit loop ###
     #########################
-
+    reps=[[1,500],[500,3000]]
+    #[120,240],[240,360],[360,480],[480,500],[500,620],[620,740],[740,860],[860,920],[920,1040]
+    repump_powers=[10,50,90]   #in nW
+    tau = 200#1e9/24.342e3 # in ns
     n = 1 ### turn measurement on/off
     if n == 1:
         for c in [1]:
             if breakst:
                 break
-            for tomo in ['X','Y']:
-                optimize(breakst)
-                if breakst:
-                    break
-                for ro in ['positive','negative']:
-                    breakst = show_stopper()
-                    if breakst:
-                        break
-                    QMem('NoOf_Repetitions_'+ro+'_Tomo_'+tomo+'_C'+str(c),
-                                                                        debug=False,
-                                                                        tomo_list = [tomo], 
-                                                                        el_RO = ro,
-                                                                        carbon_list   = [c],               
-                                                                        carbon_init_list        = [c])
+            for rp in repump_powers:
+                stools.recalibrate_lasers(names=['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
+                for rep in reps:
+                    print rp
+                    for tomo in ['X','Y']:
+                        if breakst:
+                            break
+                        for ro in ['positive','negative']:
+                            optimize(breakst)
+                            breakst = show_stopper()
+                            if breakst:
+                                break
+                            msmnt_name='NoOf_Repetitions_'+ro+'_Tomo_'+tomo+'_C'+str(c)+'pi_'+str(tau)+'_'+str(rp)+'nW'   
+                            QMem(msmnt_name,debug=False,
+                                            tomo_list = [tomo], 
+                                            el_RO = ro,
+                                            carbon_list   = [c],               
+                                            carbon_init_list        = [c],
+                                            repump_power = rp,
+                                            tau=tau,
+                                            minReps=rep[0],
+                                            maxReps = rep[1])
+
 
     ######################
     ### two qubit loop ###
@@ -222,4 +237,5 @@ if __name__ == '__main__':
                                 carbon_init_thresholds  = [0],
                                 number_of_MBE_steps     = 1,
                                 carbon_init_methods     = ['swap'],
-                                logic_state             = logic_state)
+                                logic_state             = logic_state,
+                                Repetitions = 500 )

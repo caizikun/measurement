@@ -14,7 +14,6 @@ reload(funcs)
 
 SAMPLE = qt.cfgman['samples']['current']
 SAMPLE_CFG = qt.cfgman['protocols']['current']
-Name='111_No1_Sil18_'
 
 
 def run(name):
@@ -28,8 +27,8 @@ def run(name):
 
     # MW pulses
         ## First pulse
-    m.params['MW_pulse_2_durations'] = np.ones(pts) * m.params['fast_pi_duration']
-    m.params['MW_pulse_2_amps'] = np.ones(pts) * m.params['fast_pi_amp']
+    m.params['MW_pulse_2_durations'] = np.ones(pts) * m.params['Hermite_fast_pi_duration']
+    m.params['MW_pulse_2_amps'] = np.ones(pts) * m.params['Hermite_fast_Xpi_amp']
     m.params['MW_pulse_mod_frqs'] = np.ones(pts) * \
         m.params['AWG_MBI_MW_pulse_mod_frq']
     m.params['MW_pulse_1_phases'] = np.ones(pts) * 0
@@ -42,21 +41,21 @@ def run(name):
 
     # laser beam
     m.params['dephasing_AOM'] = 'NewfocusAOM' 
-    m.params['laser_dephasing_amplitude']= 600e-9 #in Watts
+    m.params['laser_dephasing_amplitude']= 100e-9 #in Watts
     m.params['repumping_time'] = np.ones(pts)*1e-6 
     m.params['MW_repump_delay1'] =  np.ones(pts) * 500e-9
     #sweep param
     m.params['MW_repump_delay2'] = np.linspace(-0.1e-6,0.2e-6,pts)
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'MW vs. repump delay'
+    m.params['sweep_name'] = 'MW vs. repump delay (us)'
     m.params['sweep_pts'] = m.params['MW_repump_delay2']/(1e-6)
 
     
     funcs.finish(m, debug=False)
 
 if __name__ == '__main__':
-    run(Name+'AOM_delay')
+    run(SAMPLE_CFG+'AOM_delay')
 
 
 
