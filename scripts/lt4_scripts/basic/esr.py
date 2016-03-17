@@ -2,11 +2,11 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_111no2_SIL1_LT4'
-start_f = 1.7#78 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 1.78#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+name='ESR_111no2_SIL5_LT4'
+start_f = 3.98#78 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 4.08#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
 steps   = 101
-mw_power = -16. #in dBm
+mw_power = -10. #in dBm
 green_power = 20e-6
 int_time = 30       #in ms
 reps = 20
@@ -22,7 +22,7 @@ MW_power = mw_power
 
 ins_counters.set_is_running(0)
 
-# create data object
+# create data object 
 qt.mstart()
 
 ins_smb.set_power(MW_power)

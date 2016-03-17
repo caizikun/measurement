@@ -1,6 +1,8 @@
+import numpy as np
+
 cfg={}
 sample_name = '111no2'
-sil_name = 'SIL1'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -18,8 +20,8 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr =  1.731035e9#1.70536e9#+60e6#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 4.027390e9#4.0533e9 #not calib       #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.729690e9 ##1.731035e9#<- SIL1#1.70536e9#+60e6#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.028247e9 #4.029174e9#4.0533e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -32,22 +34,22 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	# hermite_pi_length = 100e-9
-	# hermite_pi_amp = 0.76
+	hermite_pi_length = 200e-9#100e-9
+	hermite_pi_amp = 0.744
 
-	# hermite_pi2_length = 76e-9
-	# hermite_pi2_amp = 0.833
+	hermite_pi2_length = 76e-9
+	hermite_pi2_amp = 0.840
 
 else:
 	electron_transition_string = '_m1'
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 200e-9
-	hermite_pi_amp = 0.19#0.887
+	hermite_pi_length = 250e-9
+	hermite_pi_amp = 0.193#old = .212 changed 29-02 #0.887
 
 	hermite_pi2_length = 80e-9
-	hermite_pi2_amp = 0.2009
+	hermite_pi2_amp = 0.263#0.2009
 
 
 ### General settings for AdwinSSRO
@@ -87,7 +89,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow=False
+yellow=True
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -118,16 +120,35 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 ##########################################
 
 cfg['protocols']['AdwinSSRO+MBI'] = {
+		'send_AWG_start'                        :   1,
 		'AWG_wait_duration_before_MBI_MW_pulse':    1e-6,
 		'AWG_wait_for_adwin_MBI_duration':          15e-6,
 		'AWG_MBI_MW_pulse_duration':                2e-6,
+		'AWG_MBI_MW_pulse_amp'      			:   0.00,#0.0165,
+		'AWG_MBI_MW_pulse_mod_frq'  			:   0,
+		'AWG_MBI_MW_pulse_ssbmod_frq'			:  	0,
 		'AWG_wait_duration_before_shelving_pulse':  100e-9,
 		'nr_of_ROsequences':                        1,
 		'MW_pulse_mod_risetime':                    20e-9,
+		'mw2_pulse_mod_risetime':					20e-9,
+		'MW_switch_risetime':						100e-9,
 		'AWG_to_adwin_ttl_trigger_duration':        2e-6,
-		'repump_after_MBI_duration':                100, 
+		'repump_after_MBI_duration':                150, 
 		'repump_after_MBI_amp':                     15e-9,
+		'max_MBI_attempts'                      :   1,
+		'N_randomize_duration'                  :   50,
+		'Ex_N_randomize_amplitude'				:	3e-9,
+		'A_N_randomize_amplitude'               :   10e-9,
+		'repump_N_randomize_amplitude'          :   0e-9,
+		#Shutter
+		'use_shutter':                          0, 
+		'Shutter_channel':                      4, 
+		'Shutter_rise_time':                    2500,    
+		'Shutter_fall_time':                    2500,
+		'Shutter_safety_time':                  50000
 		}
+
+
 cfg['protocols']['AdwinSSRO+PQ'] = {
 		'MAX_DATA_LEN':                             int(100e6),
 		'BINSIZE':                                  0, #2**BINSIZE*BASERESOLUTION
@@ -152,24 +173,60 @@ cfg['samples'][sample_name] = {
 	'mw_mod_freq'   :       mw_mod_frequency,
 	'mw_frq'        :       mw_frq_MBI, # this is automatically changed to mw_freq if hermites are selected.
 	'mw_power'      :       mw_power,
+	'mw2_mod_freq'   :      0,
+	'mw2_frq'        :      0, 
+	'mw2_power'      :      0,
 	'ms-1_cntr_frq' :       f_msm1_cntr,
 	'ms+1_cntr_frq' :       f_msp1_cntr,
 	'N_0-1_splitting_ms-1': N_frq,
 	'N_HF_frq'      :       N_HF_frq,
-	'C_split'		:		C_split}
+	'C_split'		:		C_split,
+
+###############
+### Carbons ###
+###############
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
+
+###############
+### SIL2    ###
+###############
+
+	###########
+	#### C1 ###
+	###########
+	'C1_freq_m1'        : (446138.+462154.03)/2.,
+	'C1_freq_0' 		: 441045.84,
+	'C1_freq_1_m1' 		: 467681,
+
+	'C1_Ren_tau_m1'    :   [5.97e-6],
+	'C1_Ren_N_m1'      :   [28],
+	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
+
+
+
+
+
+
+
+
+
+	}
 
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 2e-9, #1e-9
+		'A_CR_amplitude':			 	 8e-9, #4e-9
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 10e-9,
+		'A_SP_amplitude':				 18e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9, #3e-9 
-		'Ex_RO_amplitude':				 8e-9,
-		'Ex_SP_amplitude':				 0e-9,
+		'Ex_CR_amplitude':				 2e-9, #2e-9 
+		'Ex_RO_amplitude':				 2.5e-9, #used to 8e-9
+		'Ex_SP_amplitude':				 0, #was 0
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 500,
@@ -178,32 +235,85 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SSRO_repetitions':				 5000, 
 		}
 
+###
+
+
+###
+
 
 cfg['protocols'][name]['AdwinSSRO+MBI']={
 	#Spin pump before MBI
 	'Ex_SP_amplitude'           :           0e-9,   #15e-9,#15e-9,    #18e-9
 	'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
-	'SP_E_duration'             :           10,     #Duration for both Ex and A spin pumping
+	'SP_E_duration'             :           5,     #Duration for both Ex and A spin pumping
 	 
 	 #MBI readout power and duration
-	'Ex_MBI_amplitude'          :           0.65e-9,
-	'MBI_duration'              :           40,
+	'Ex_MBI_amplitude'          :           0.0e-9,
+	'MBI_duration'              :           10,
 
 	#Repump after succesfull MBI
-	'repump_after_MBI_duration' :           [150],
-	'repump_after_MBI_A_amplitude':         [25e-9],  #18e-9
+	'repump_after_MBI_duration' :           [50],
+	'repump_after_MBI_A_amplitude':         [18e-9],  #18e-9
 	'repump_after_MBI_E_amplitude':         [0e-9],
 
 	#MBI parameters
 	'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
 	'MBI_threshold'             :           0, 
-	'AWG_wait_for_adwin_MBI_duration':      10e-6+40e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+	'AWG_wait_for_adwin_MBI_duration':      10e-6+15e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
 
 	'repump_after_E_RO_duration':           15,
 	'repump_after_E_RO_amplitude':          15e-9,
 
 	#Shutter
 	'use_shutter':                          0, # we don't have a shutter in the setup right now
+}
+
+cfg['protocols'][name]['AdwinSSRO+C13']={
+	### Comment NK 2016-02-27 these parameters have been directly ported to LT4 from LT3 and still need testing!
+	#'wait_between_runs':                    0, ### bool operator, set to one to wait for the 'Shutter_safety_time'
+
+		#C13-MBI  
+		'C13_MBI_threshold_list':               [1],
+		'C13_MBI_RO_duration':                  25,  
+		'E_C13_MBI_RO_amplitude':               0.05e-9, 
+		'SP_duration_after_C13':                20, #use long repumping in case of swap init
+		'A_SP_amplitude_after_C13_MBI':         12e-9,
+		'E_SP_amplitude_after_C13_MBI':         0e-9,
+		'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+		                
+		#C13-MBE  
+		'MBE_threshold':                        1,
+		'MBE_RO_duration':                      40, # was 40 20150329
+		'E_MBE_RO_amplitude':                   0.05e-9, 
+		'SP_duration_after_MBE':                30,
+		'A_SP_amplitude_after_MBE':             12e-9,
+		'E_SP_amplitude_after_MBE':             0e-9 ,
+
+		#C13-parity msmnts
+		'Parity_threshold':                     1,
+		'Parity_RO_duration':                   108,
+		'E_Parity_RO_amplitude':                0.05e-9,
+
+		#Shutter
+		'use_shutter':                          0, 
+		'Shutter_channel':                      4, 
+		'Shutter_rise_time':                    2500,    
+		'Shutter_fall_time':                    2500,
+		'Shutter_safety_time':                  200000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
+
+		# phase correction
+		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
+		'min_dec_tau'         :     2.1e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
+		'max_dec_tau'         :     2.4e-6,#0.2e-6,#2.5e-6
+		'dec_pulse_multiple'  :     4,      #4.
+
+		# Memory entanglement sequence parameters
+		'optical_pi_AOM_amplitude' :     0.5,
+		'optical_pi_AOM_duration' :      200e-9,
+		'optical_pi_AOM_delay' :         300e-9,
+		'do_optical_pi' :                False,
+		'initial_MW_pulse':           'pi2' #'pi', 'no_pulse'
+
 }
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
@@ -220,6 +330,7 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_switch_risetime'	:	500e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
+		'mw2_modulation_frequency'   :  0,
 
     	'CORPSE_rabi_frequency' : 9e6,
     	'CORPSE_amp' :		 		0.201,
@@ -240,7 +351,17 @@ cfg['protocols'][name]['pulses'] = {
     	'IQ_Square_pi2_amp'  :		0.015, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' :	-30e-9,
     	'DESR_pulse_duration' :		4e-6,# XXXX4e-6,
-    	'DESR_pulse_amplitude' :	0.01,#XXXX0.045,
+    	'DESR_pulse_amplitude' :	0.004,#XXXX0.045,
+
+    	# Second mw source
+    	'mw2_Hermite_pi_length': 	0,
+        'mw2_Hermite_pi_amp': 		0,
+        'mw2_Hermite_pi2_length':	0,
+        'mw2_Hermite_pi2_amp': 		0,
+        'mw2_Square_pi_length' :	0,
+      	'mw2_Square_pi_amp' :		0,
+      	'mw2_Square_pi2_length' :   0,
+    	'mw2_Square_pi2_amp' :		0,
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
