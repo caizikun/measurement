@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     # over 12 us with block of 100 ns
     single_tau_blocks = 100
-    pulse_list = [8, 16, 32, 64]
+    pulse_list = [8,16]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
         print 'N = ' + str(N)

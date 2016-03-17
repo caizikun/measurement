@@ -13,6 +13,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+''' Variation of 1_carbon_initialization
+to initialize multiple carbons followed by Tomo '''
+
 def MBE(name, carbon            =   1,               
         
         carbon_init_list        =   [1],
@@ -37,7 +40,7 @@ def MBE(name, carbon            =   1,
     m.params['reps_per_ROsequence'] = 500
 
     ### Carbons to be used
-    m.params['carbon_list']         = [carbon]
+    m.params['carbon_list']         = [carbon_init_list[-1]]
 
     ### Carbon Initialization settings 
     m.params['carbon_init_list']    = carbon_init_list
@@ -82,38 +85,35 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [2]
+    
+    
+    carbons = [8,3]
     debug = False
     breakst = False
-    init_method = 'both'
+    init_methods = (len(carbons)-1)*['swap'] + ['MBI']
+    carbon_init_states = ['up']*len(carbons)
+    RO_posneg = ['positive','negative']
+    
+    for r in RO_posneg:
+        breakst = stools.show_stopper()
+        if breakst: 
+            break
+        
+        MBE(SAMPLE + r + '_multiC'+'_MBI_'+str(carbons[-1]), 
+            el_RO                   = r, 
+            carbon                  = carbons[-1], 
+            carbon_init_list        = carbons,
+            debug                   = debug,
+            carbon_init_methods     =   init_methods, 
+            carbon_init_thresholds  =   [1],
+            carbon_init_states      =   carbon_init_states)
 
-    if init_method == 'both' or init_method == 'swap':
-        for c in carbons:
-
-
-            breakst = stools.show_stopper()
-            if breakst:
-                break
-            MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
-                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
-
-
-            MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
-                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
-            
-            if init_method == 'both':
-                init_method = 'MBI'
-
-    if init_method == 'MBI':
-        for c in carbons:
-
-            if breakst: 
-                break
-            breakst = stools.show_stopper()
-
-            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
-                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
-
-            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
-                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+        # MBE(SAMPLE + 'negative_multiC'+'_MBI_'+str(carbons[-1]), 
+        #     el_RO                   = 'negative',
+        #     carbon                  = carbons[-1], 
+        #     carbon_init_list        = [c],
+        #     debug                   = debug,
+        #     carbon_init_methods     =   init_methods, 
+        #     carbon_init_thresholds  =   [1],
+        #     carbon_init_states      =   carbon_init_states)
 

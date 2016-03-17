@@ -127,7 +127,7 @@ def optimize():
 if __name__ == '__main__':
 
 	### choose your carbon.
-	carbons = [5]
+	carbons = [3]
 
 
 
@@ -136,9 +136,9 @@ if __name__ == '__main__':
 
 		#put sweep together for carbon 5
 
-		C5tau = 7.108e-6
+		C5tau = 13.734e-6
 		C5tau_rng = 10e-9 #stepsize is 2 ns.
-		C5N = 24
+		C5N = 38
 		C5N_steps = 10 #on step corresponds to two pulses
 
 

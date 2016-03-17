@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [5,6,7,8]
+carbons = [2]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -39,11 +39,11 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = False
+self_phase_calibration = True
 
 cross_phase_calibration = False
 cross_phase_steps       = 1
@@ -69,6 +69,7 @@ if SETUP == 'lt2':
 elif SETUP == 'lt3':
     detuning_basic = 1e3
     detuning_dict = {
+        '3' : detuning_basic,
         '5' : detuning_basic,
         '6' : 2*detuning_basic,
         '7' : 2*detuning_basic,

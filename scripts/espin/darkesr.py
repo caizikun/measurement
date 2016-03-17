@@ -34,7 +34,7 @@ def darkesr(name):
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
     m.params['repetitions']  = 500
-    m.params['range']        = 8e6 #5e6
+    m.params['range']        = 5e6 #5e6
     m.params['pts'] = 151
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27

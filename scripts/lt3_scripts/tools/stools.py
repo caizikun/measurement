@@ -40,7 +40,7 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
+def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['PulseAOM','NewfocusAOM']):
     turn_off_all_lt3_lasers()
     for n in names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
