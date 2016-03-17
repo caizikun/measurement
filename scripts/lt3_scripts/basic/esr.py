@@ -3,9 +3,9 @@ import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
 name='ESR_Pippin_SIL1_LT_HighField'
-start_f = 4.02#4.02#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 4.12#4.07#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
-steps   = 51
+start_f = 4.0#4.02#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 4.1#4.07#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+steps   = 101
 mw_power = -14 #in dBm, never above -10
 green_power = 5e-6 #20e-6
 int_time = 50       #in ms

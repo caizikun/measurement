@@ -121,7 +121,10 @@ def MBE(name, carbon_list   = [1,2],
     
 if __name__ == '__main__':
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive',carbon_list = [5,7],carbon_init_list = [5,7],debug=True)
+    MBE(SAMPLE + 'positive', el_RO= 'positive',carbon_list = [1,2],
+                        carbon_init_list = [1,2],number_of_MBE_steps=0,
+                        carbon_init_methods=['swap','MBI'],
+                        carbon_init_thresholds = [0,1],debug=False)
     # MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 

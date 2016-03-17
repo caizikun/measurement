@@ -210,6 +210,7 @@ class Tektronix_AWG5014(Instrument):
         self.add_function('set_sqel_event_jump_target_index')
         self.add_function('start')
         self.add_function('stop')
+        self.add_function('force_trigger')
         self.add_function('set_runmode')
         self.add_function('set_sq_length')
         self.add_function('get_state')
@@ -267,6 +268,9 @@ class Tektronix_AWG5014(Instrument):
 
     def start(self):
         self._visainstrument.write('AWGC:RUN')
+
+    def force_trigger(self):
+        self._visainstrument.write('*TRG')
 
     def stop(self):
         self._visainstrument.write('AWGC:STOP')

@@ -149,7 +149,7 @@ if __name__ == '__main__':
             breakq
     # every single_tau_block is pts*step_size = 200 us. 100 blocks is thus from 3.5 to 23.5
     single_tau_blocks = 100
-    pulse_list = [8, 16, 32, 64]
+    pulse_list = [8,16]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
         print 'N = ' + str(N)

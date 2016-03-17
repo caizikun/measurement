@@ -216,9 +216,9 @@ if __name__ == '__main__':
 										'C_N_steps' : 8} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C3'] = {'C_taus' 	: [4.535e-6], 
+		multi_tau_carbon_dict['C3'] = {'C_taus' 	: [7.144e-6],#,8.244e-6,9.34e-6,12.638e-6,21.428e-6], 
 										'C_tau_rng'  :10e-9, # steps of 2e-9
-										'C_N' 		: [48],
+										'C_N' 		: [38],
 										'C_N_steps' : 8} # steps of 2 	
 
 		#sweep parameters C4
@@ -292,7 +292,7 @@ if __name__ == '__main__':
 										'C_N_steps' : 10} 
 
 	### choose your carbons.
-	carbons = [5,8]
+	carbons = [3]
 
 	### msmt loop begins here.
 	breakst = False

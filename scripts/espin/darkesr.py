@@ -15,15 +15,14 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 #reload(funcs)
-
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def darkesr(name):
     '''dark ESR on the 0 <-> -1 transition
     '''
+
     m = pulsar_msmt.DarkESR(name)
-    print 'adwin3 ' + str(m.adwin)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -34,7 +33,7 @@ def darkesr(name):
 
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
-    m.params['repetitions']  = 1000
+    m.params['repetitions']  = 500
     m.params['range']        = 5e6 #5e6
     m.params['pts'] = 151
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
@@ -46,7 +45,6 @@ def darkesr(name):
     m.params['ssbmod_frq_stop'] = 43e6 + m.params['range'] 
     list_swp_pts =np.linspace(m.params['ssbmod_frq_start'],m.params['ssbmod_frq_stop'], m.params['pts'])
     m.params['sweep_pts'] = (np.array(list_swp_pts) +  m.params['mw_frq'])*1e-9
-    
     m.autoconfig()
     #m.params['sweep_pts']=m.params['pts']
     m.generate_sequence(upload=True)
@@ -74,7 +72,7 @@ def darkesrp1(name):
     m.params['Ex_SP_amplitude']=0
     m.params['range']        = 5e6
     m.params['pts'] = 151
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 500
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
 
@@ -129,6 +127,6 @@ def Generaldarkesr(name):
     
 
 if __name__ == '__main__':
-    # darkesr(SAMPLE_CFG)
-    darkesrp1(SAMPLE_CFG)
+    darkesr(SAMPLE_CFG)
+    # darkesrp1(SAMPLE_CFG)
     

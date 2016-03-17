@@ -98,8 +98,8 @@ if __name__ == '__main__':
 
     stopper = False
 
-    detuning = 30e3
-    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(5)+'_ms' + str(0) + '_' + 'positive', 
+    detuning = 1e3
+    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(1)+'_ms' + str(0) + '_' + 'positive', 
                         carbon_nr           = 1,               
                         carbon_init_state   = 'up', 
                         el_RO               = 'positive',
