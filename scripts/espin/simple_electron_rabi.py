@@ -16,7 +16,9 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
-
+###############
+## Note: this does not work with MW switch!!
+############
 def erabi(name):
     m = pulsar_msmt.ElectronRabi(name)
 
@@ -36,14 +38,16 @@ def erabi(name):
 
     sweep_param = 'length'
 
-    m.params['mw_power']=20 
-    #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
+    m.params['mw_power']=5
+    m.params['MW_pulse_frequency'] = m.params['desr_modulation_frequency']#m.params['MW_modulation_frequency']
+
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_pulse_frequency']  
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 200, pts) * 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.5# * 0.05 #*0.49
+        m.params['MW_pulse_durations'] =  np.linspace(0, 4000, pts) * 1e-9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.0165# * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
@@ -54,7 +58,6 @@ def erabi(name):
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
-    m.params['MW_pulse_frequency'] = m.params['MW_modulation_frequency']
 
     # for autoanalysis
     #m.params['sweep_name'] = 'Pulse duration (ns)' #'Pulse amps (V)'
