@@ -2,6 +2,7 @@
 import numpy as np
 import qt 
 import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
+import msvcrt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -44,7 +45,7 @@ def MBE(name, carbon            =   1,
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -92,10 +93,10 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1]#[2,3,5,6,7,8]
+    carbons = [8]
     debug = False
     breakst = False
-    init_method = 'MBI'
+    init_method = 'both'
 
     if init_method == 'both' or init_method == 'swap':
         for c in carbons:
