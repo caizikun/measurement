@@ -20,7 +20,7 @@ class adwin_cav1(adwin):
                 dacs=adwinscfg.config['adwin_cav1_dacs'], 
                 adcs=adwinscfg.config['adwin_cav1_adcs'],            
                 tags=['virtual'],
-                use_cfg  = True,
+                use_cfg  = kw.pop('use_cfg',True),
                 process_subfolder = qt.config['adwin_pro_subfolder'], **kw)
                 
         self.add_function('measure_counts')
@@ -98,14 +98,15 @@ class adwin_cav1(adwin):
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
         self.physical_adwin.Set_Par(p['par']['set_steps'], steps)
         self.physical_adwin.Set_FPar(p['fpar']['set_px_time'], px_time)
-        
+
         self.physical_adwin.Set_Data_Long(np.array(dacs), p['data_long']\
                 ['set_dac_numbers'],1,len(dac_names))
+
         self.physical_adwin.Set_Data_Float(start_voltages, 
                 p['data_float']['set_start_voltages'], 1, len(dac_names))
         self.physical_adwin.Set_Data_Float(stop_voltages, 
                 p['data_float']['set_stop_voltages'], 1, len(dac_names))
-        
+
         # what the adwin does on each px is int-encoded
         px_actions = {
                 'none' : 0,
@@ -113,8 +114,10 @@ class adwin_cav1(adwin):
                 'counts+suppl' : 2,
                 'counter_process' : 3,
                 }
+
         self.physical_adwin.Set_Par(p['par']['set_px_action'],px_actions[value])
-        self.physical_adwin.Start_Process(p['index'])
+        self.start_linescan()#since it set all the pars above, it should start it now, with the right pars etc.
+        # self.physical_adwin.Start_Process(p['index'])
         
         if blocking:
             while self.is_linescan_running():
@@ -196,7 +199,7 @@ class adwin_cav1(adwin):
 
 
     def scan_photodiode(self, scan_type, nr_steps = 100, nr_scans = 5, wait_cycles = 50, 
-            start_voltage = -3, end_voltage = 3, use_sync = 0, delay_ms = 0):
+            start_voltage = -3, end_voltage = 3, use_sync = 0, delay_ms = 0, scan_to_start=False):
 
         voltage_step = (end_voltage - start_voltage)/float(nr_steps)
         montana_sync_ch = adwinscfg.config['adwin_cav1_dios']['montana_sync_ch']
@@ -244,9 +247,12 @@ class adwin_cav1(adwin):
             scan_params['nr_steps'] = nr_steps
 
             _steps,_pxtime = self.speed2px(dac_names, start_voltages)
-            self.linescan(dac_names, self.get_dac_voltages(dac_names),
-                    start_voltages, _steps, _pxtime, value='none', 
-                    scan_to_start=False)
+            if scan_to_start:
+                print 'scanning to start'
+                self.linescan(dac_names, self.get_dac_voltages(dac_names),
+                        start_voltages, _steps, _pxtime, value='none', 
+                        scan_to_start=False, blocking = True)
+            qt.msleep(0.1)
 
             self.start_voltage_scan_sync (DAC_ch_1=DAC_ch_1, DAC_ch_2=DAC_ch_2, DAC_ch_3=DAC_ch_3, ADC_channel=ADC_ch, 
                     nr_steps=nr_steps, nr_scans=nr_scans, wait_cycles=wait_cycles, voltage_step=voltage_step,

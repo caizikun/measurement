@@ -24,24 +24,18 @@ from matplotlib import cm
 from analysis.lib.fitting import fit
 import measurement.lib.cavity.cavity_scan_v2
 import measurement.lib.cavity.panels.scan_gui_panels 
-import measurement.lib.cavity.panels.control_panel_2
-import measurement.lib.cavity.panels.scan_panel_v8
+import measurement.lib.cavity.panels.ui_control_panel_2
+import measurement.lib.cavity.panels.ui_scan_panel_v9
 import measurement.lib.cavity.panels.slow_piezo_scan_panel
-import measurement.lib.cavity.panels.XYscan_panel 
+import measurement.lib.cavity.panels.ui_XYscan_panel 
 
-reload (measurement.lib.cavity.cavity_scan_v2)
-reload (measurement.lib.cavity.panels.scan_gui_panels)
-reload (measurement.lib.cavity.panels.control_panel_2)
-reload (measurement.lib.cavity.panels.scan_panel_v8)
-reload (measurement.lib.cavity.panels.slow_piezo_scan_panel)
-reload (measurement.lib.cavity.panels.XYscan_panel)
 
 from measurement.lib.cavity.cavity_scan_v2 import CavityExpManager, CavityScan
 from measurement.lib.cavity.panels.scan_gui_panels import MsgBox, ScanPlotCanvas
-from measurement.lib.cavity.panels.control_panel_2 import Ui_Dialog as Ui_Form
-from measurement.lib.cavity.panels.scan_panel_v9 import Ui_Form as Ui_Scan
+from measurement.lib.cavity.panels.ui_control_panel_2 import Ui_Dialog as Ui_Form
+from measurement.lib.cavity.panels.ui_scan_panel_v9 import Ui_Form as Ui_Scan
 from measurement.lib.cavity.panels.slow_piezo_scan_panel import Ui_Form as Ui_SlowScan
-from measurement.lib.cavity.panels.XYscan_panel import Ui_Form as Ui_XYScan
+from measurement.lib.cavity.panels.ui_XYscan_panel import Ui_Form as Ui_XYScan
 
 class SlowPiezoScanGUI (QtGui.QMainWindow):
     def __init__(self, exp_mngr):
@@ -309,6 +303,7 @@ class ScanGUI(QtGui.QMainWindow):
         #TODO: add wavelength to the params!!
         self.msmt_params = {}
         self.msmt_params['nr_scans_per_sync'] = self._scan_mngr.nr_avg_scans
+        self.msmt_params['wait_cycles'] = self._scan_mngr.wait_cycles
         return self.msmt_params
 
     def save_single(self):
@@ -321,9 +316,9 @@ class ScanGUI(QtGui.QMainWindow):
             if (self._scan_mngr.curr_task == 'lr_scan'):
                 minL = str(int(10*self._scan_mngr.min_lambda))
                 maxL = str(int(10*self._scan_mngr.max_lambda))
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
+                fName =  datetime.now().strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
             else:
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task
+                fName =  datetime.now().strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task
             if self._scan_mngr.file_tag:
                 fName = fName + '_' + self._scan_mngr.file_tag
         
@@ -1028,9 +1023,9 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.p3_V = 0
         self._exp_mngr.update_fine_piezos (0)
         self.piezo_locked = False
-        self.pzk_X = self._moc._jpe_tracker.curr_x*1000
-        self.pzk_Y = self._moc._jpe_tracker.curr_y*1000
-        self.pzk_Z = self._moc._jpe_tracker.curr_z*1000
+        self.pzk_X = self._moc.get_track_curr_x()*1000
+        self.pzk_Y = self._moc.get_track_curr_y()*1000
+        self.pzk_Z = self._moc.get_track_curr_z()*1000
         self.use_wm = False
         self._exp_mngr.room_T = None
         self._exp_mngr.low_T = None        
@@ -1223,11 +1218,12 @@ class ControlPanelGUI (QtGui.QMainWindow):
 adwin = qt.instruments.get_instruments()['adwin']
 wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
 moc = qt.instruments.get_instruments()['master_of_cavity']
-newfocus = qt.instruments.get_instruments()['newfocus1']
+newfocus1 = qt.instruments.get_instruments()['newfocus1']
 ctr = qt.instruments.get_instruments()['counters']
 
+
 qApp = QtGui.QApplication(sys.argv)
-expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus, moc=moc, counter = ctr)
+expMngr = CavityExpManager (adwin=adwin, wm_adwin=wm_adwin, laser=newfocus1, moc=moc, counter = ctr)
 
 xyscan_gui = XYScanGUI (exp_mngr = expMngr)
 xyscan_gui.setWindowTitle('XY Scan')

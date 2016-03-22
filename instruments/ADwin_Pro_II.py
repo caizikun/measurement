@@ -43,16 +43,25 @@ class ADwin_Pro_II(Instrument): #1
         sleep(0.01)
         self._adwin32.e_Get_ADBFPar.restype = c_float
 #        self.add_function('Set_DAC_Voltage')
+        self.add_function('Get_Par')
+        self.add_function('Get_FPar')
         self.add_function('Set_Par')
         self.add_function('Set_FPar')
         self.add_function('Start_Process')
         self.add_function('Stop_Process')
-
+        self.add_function('Process_Status')
+        self.add_function('Get_Data_Long')
+        self.add_function('Set_Data_Long')
+        self.add_function('Get_Data_Float')
+        self.add_function('Set_Data_Float')
+        self.add_function('Boot')
+        self.add_function('Load')
 
 
     def _load_dll(self): #3
         print self.get_name() +' : Loading adwin32.dll'
         WINDIR=os.environ['WINDIR']
+
         self._adwin32 = windll.LoadLibrary(WINDIR+'\\adwin32')
         ErrorMsg=c_int32(0)
         ProcType = self._adwin32.e_ADProzessorTyp(self._address,ctypes.byref(ErrorMsg))
@@ -100,7 +109,7 @@ class ADwin_Pro_II(Instrument): #1
         return ret
 
     def Load(self, filename):
-        #print 'filename', filename
+        # print 'filename', filename
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADBload(filename,self._address,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:

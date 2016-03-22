@@ -22,7 +22,7 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
-
+    previous_controller = qt.instruments[name].get_cur_controller()
     qt.msleep(0.1)
     print 'Calibrate', name
     if not awg:
@@ -30,17 +30,17 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[name].turn_off()
     if awg:
         qt.instruments[name].set_cur_controller('AWG')
-        stools.init_AWG()
+        init_AWG()
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
 
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
+def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['PulseAOM','NewfocusAOM']):
     turn_off_all_lt3_lasers()
     for n in names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break

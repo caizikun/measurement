@@ -10,9 +10,9 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-
 def ssrocalibration(name, **additional_params):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
+
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     
@@ -29,7 +29,7 @@ def ssrocalibration(name, **additional_params):
         # ms = 1 calibration
         m.params['SP_duration'] = m.params['SP_duration_ms1']
         m.params['A_SP_amplitude'] = 0.
-        m.params['Ex_SP_amplitude'] = 7.e-9
+        m.params['Ex_SP_amplitude'] = 10e-9
         m.run()
         m.save('ms1')
 
