@@ -55,7 +55,7 @@ qt.pulsar.define_channel(id='ch3_marker1', name='AOM_Green', type='marker',
     high=0.4, low=0, offset=0., delay=0., active=True)
 
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Newfocus', type='marker', 
-    high=0.4, low=0, offset=0., delay=700e-9, active=True)
+    high=0.4, low=0, offset=0., delay=700e-9-20e-9, active=True)
 
 # qt.pulsar.define_channel(id='ch1_marker2', name='AOM_Yellow', type='marker', 
 #     high=0.4, low=0, offset=0., delay=500e-9, active=True)

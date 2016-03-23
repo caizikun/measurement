@@ -29,12 +29,28 @@ class LaserFrequencyScan:
         qt.msleep(stabilizing_time)
     
     def scan_to_voltage(self, target_voltage, get_voltage_method, set_voltage_method, 
-            voltage_step=0.01, dwell_time=0.01):
-        steps = np.append(np.arange(get_voltage_method(), target_voltage, voltage_step), target_voltage)
+            voltage_step=0.05, dwell_time=0.01):
+        cur_v = get_voltage_method()
+
+        if ((target_voltage > self.max_v - 0.3) or (target_voltage < self.min_v + 0.3)):
+            print 'WARNING: target voltage ', target_voltage ,' is out of range. Need: ', self.min_v + 0.3, '< target voltage < ' , self.max_v-0.3
+            print 'setting to min or max instead'
+            if target_voltage < self.min_v+0.3:
+                target_voltage = self.min_v+0.3
+            elif target_voltage > self.max_v - 0.3:
+                target_voltage = self.max_v - 0.3
+            print 'new target voltage', target_voltage
+
+        print 'scanning from ', cur_v, ' to ', target_voltage
+        steps = np.arange(get_voltage_method(), target_voltage, voltage_step)
+        steps = np.append(steps,target_voltage)
         for s in steps:
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                break
             set_voltage_method(s)
             qt.msleep(dwell_time)
-    
+        print 'reached voltage ', get_voltage_method()
+
     def prepare_scan(self):
         pass
 
@@ -133,7 +149,7 @@ class LaserFrequencyScan:
             qt.msleep(stabilizing_time)
 
             cur_f = self.get_frequency(wm_channel)
-            if cur_f < -100:
+            if cur_f < -300: #######SvD: I changed this -100 -> -300. 
                 continue
 
             if (stop_f > start_f) and (cur_f > stop_f):
@@ -162,6 +178,91 @@ class LaserFrequencyScan:
         if save and not data_obj_supplied:
             plt_cts.save_png()
             plt_frq.save_png()
+
+    def single_line_scan_v(self, start_v, stop_v, 
+        voltage_step, integration_time_ms, power, **kw):
+
+        stabilizing_time = kw.pop('stabilizing_time', 0.01)
+        save = kw.pop('save', True)
+        data = kw.pop('data', None)
+
+        suffix = kw.pop('suffix', None)
+
+        set_voltage = kw.get('set_voltage', self.set_red_laser_voltage)
+        get_voltage = kw.get('get_voltage', self.get_red_laser_voltage)
+        wm_channel = kw.get('wm_channel', self.red_wm_channel)
+        voltage_frequency_relation_sign = kw.get('voltage_frequency_relation_sign', 
+            self.red_voltage_frequency_relation_sign)
+        set_power = kw.get('set_power', self.set_red_power)
+
+        data_args = kw.get('data_args', [])
+
+        data_obj_supplied = False
+        if save:
+            if data == None:
+                data_obj_supplied = False
+
+                data = qt.Data(name = self.mprefix + '_' + self.name + ('_{}'.format(suffix) if suffix != None else ''))
+                data.add_coordinate('Voltage (V)')
+                data.add_coordinate('Frequency (GHz)')
+                data.add_coordinate('Counts [Hz]')
+
+                plt_cts = qt.Plot2D(data, ('b-' if suffix=='yellow' else 'r-'),
+                    name='Laserscan_Counts' + ('_{}'.format(suffix) if suffix != None else ''), 
+                    clear=True, coorddim=1, valdim=2, maxtraces=1)
+
+                plt_frq = qt.Plot2D(data, ('bO' if suffix=='yellow' else 'rO'),
+                    name='Laserscan_Frequency' + ('_{}'.format(suffix) if suffix != None else ''), 
+                    clear=True, coorddim=0, valdim=1, maxtraces=1)
+            else:
+                data_obj_supplied = True
+
+        print 'scan to voltage'
+        self.scan_to_voltage(start_v, get_voltage, set_voltage)
+        qt.msleep(0.1)
+        #print 'get_voltage'
+        v = get_voltage()
+        #print 'set_power'
+        set_power(power)
+        print 'starting laser scan ...' 
+        while ((v < self.max_v - 0.3) and (v > self.min_v + 0.3)):
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                break
+            set_voltage(v)
+            qt.msleep(stabilizing_time)
+
+            cur_f = self.get_frequency(wm_channel)
+            cur_v = get_voltage()
+            if cur_f < -300: #######SvD: I changed this -100 -> -300. 
+                continue
+
+            if (stop_v > start_v) and (cur_v > stop_v):
+                break
+            elif (stop_v <= start_v) and (cur_v < stop_v):
+                break  
+
+            cts = float(self.get_counts(integration_time_ms)[self.counter_channel]) #/ \
+                #(integration_time_ms*1e-3)
+
+            v = v + voltage_step * np.sign(stop_v - cur_v) 
+
+            if save:
+                if not data_obj_supplied:
+                    data.add_data_point(v, cur_f, cts)
+                else:
+                    data.add_data_point(v, cur_f, cts, *data_args)
+
+                if not data_obj_supplied:
+                    plt_cts.update()
+                    plt_frq.update()
+
+
+        set_power(0)
+
+        if save and not data_obj_supplied:
+            plt_cts.save_png()
+            plt_frq.save_png()
+
 
 
 class Scan(LaserFrequencyScan):
@@ -195,8 +296,8 @@ class Scan(LaserFrequencyScan):
         self.yellow_voltage_frequency_relation_sign = 1
         self.yellow_wm_channel = yellow_wm_channel
 
-        self.max_v = 9.
-        self.min_v = -9.
+        self.max_v = 9.5
+        self.min_v = -9.5
 
         self.set_gate_voltage = lambda x: qt.get_setup_instrument('ivvi').set_dac3(x)
 
@@ -229,8 +330,14 @@ class Scan(LaserFrequencyScan):
     def red_scan(self, start_f, stop_f, power=0.5e-9, **kw):
         voltage_step = kw.pop('voltage_step', 0.005)
         integration_time_ms = kw.pop('integration_time_ms', 50)
-        
+        print 'scanning from ', start_f,' GHz to ', stop_f,' GHz'
         self.single_line_scan(start_f, stop_f, voltage_step, integration_time_ms, power, **kw)
+
+    def red_scan_v(self, start_v, stop_v, power=0.5e-9, **kw):
+        voltage_step = kw.pop('voltage_step', 0.005)
+        integration_time_ms = kw.pop('integration_time_ms', 50)
+        print 'scanning from ', start_v,' V to ', stop_v,' V'
+        self.single_line_scan_v(start_v, stop_v, voltage_step, integration_time_ms, power, **kw)
 
     def red_ionization_scan(self, start_f, stop_f, power=30e-9, **kw):
         voltage_step = kw.pop('voltage_step', 0.04)
@@ -519,7 +626,10 @@ def repeated_red_scans_hannes(**kw):
     m = Scan()
 
 
-    pts = kw.pop('pts', 250)
+    pts = kw.pop('pts', 5)
+    green_powers = kw.pop('green_powers', [0.0e-6])
+    red_powers = kw.pop('red_powers', [2.e-9]*pts)
+    pts_tot = len(green_powers)*len(red_powers)
 
     m.mw.set_power(-20)
     m.mw.set_frequency(2.817e9)
@@ -527,11 +637,13 @@ def repeated_red_scans_hannes(**kw):
     m.mw.set_pulm('off')
     m.mw.set_status('on')
 
-    red_data = qt.Data(name = 'LaserScansGreenRepump_Gretel_SIL2_LT1_Red_Green')
+    red_data = qt.Data(name = 'LaserScansGreenRepump_membrane')
     red_data.add_coordinate('Voltage (V)')
     red_data.add_coordinate('Frequency (GHz)')
     red_data.add_coordinate('Counts (Hz)')
     red_data.add_coordinate('index')
+    red_data.add_coordinate('green power (W)')
+    red_data.add_coordinate('red power (W)')
     red_data.add_coordinate('start time')
     red_data.create_file()
 
@@ -546,41 +658,58 @@ def repeated_red_scans_hannes(**kw):
     plot3d_red = qt.Plot3D(red_data, name='Laserscan_Counts_Reps', 
         clear=True, coorddims=(1,3), valdim=2)
 
+    print 'starting a scan with ', pts_tot ,'points'
+    print 'red', red_powers
+    print 'green', green_powers
 
+    k = 0 
     ret=True
     t0 = time.time()
-    for i in range(pts):
-        qt.msleep(2)
-        if (msvcrt.kbhit() and msvcrt.getch()=='x'): 
-            ret=False
-            break
+    for i,g_p in enumerate(green_powers):
 
-        ix=i
+        for j,r_p in enumerate(red_powers):
+            qt.msleep(2)
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                ret=False
+                break
 
-        #YellowAOM.set_power(250e-9)
-        GreenAOM.set_power(50e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
-        qt.msleep(1)
-        #YellowAOM.set_power(00.0e-9)
-        GreenAOM.turn_off()
-        m.red_scan(27, 57, voltage_step=0.01, integration_time_ms=10, power = 2e-9,
-            data = red_data,
-            data_args=[ix, time.time()-t0]
-            )
-            
-        red_data.new_block()
-        plt_red_cts.update()
-        plt_red_frq.update()
-        plot3d_red.update()
+            k+=1
 
-        qt.msleep(1)
-        if (msvcrt.kbhit() and msvcrt.getch()=='x'): 
-            ret=False
-            break
+            print ' i ', i, ' j ',j
+            print ' green ', g_p, ' red ', r_p
+            #YellowAOM.set_power(250e-9)
+            GreenAOM.set_power(200e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+            optimiz0r.optimize(dims = ['z','y','x'], cycles = 1, int_time = 50) 
+            qt.msleep(1)
+            #YellowAOM.set_power(00.0e-9)
+            GreenAOM.set_power(g_p)
 
-        GreenAOM.set_power(50e-6)
-        qt.msleep(5)
-        # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=1)
-        GreenAOM.set_power(0.0e-6)
+            if np.mod(k,2)==1:
+                start_f = -10
+                stop_f = 45
+            else:
+                start_f = 45
+                stop_f = -10
+
+            m.red_scan(start_f, stop_f, voltage_step=0.01, integration_time_ms=10, power = r_p,
+                data = red_data,
+                data_args=[k, g_p, r_p, time.time()-t0]
+                )
+            print 'done red scan nr ', k, ' out of ', pts_tot
+            red_data.new_block()
+            plt_red_cts.update()
+            plt_red_frq.update()
+            plot3d_red.update()
+
+            qt.msleep(1)
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                ret=False
+                break
+
+            GreenAOM.set_power(200e-6)
+            qt.msleep(5)
+            # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=1)
+            GreenAOM.set_power(0.0e-6)
 
 
     m.mw.set_status('off')
@@ -629,7 +758,12 @@ def gate_scan_with_c_optimize():
 def single_scan(name):
     m = Scan(name)
 
-    MW = True
+    MW = False
+
+    GreenAOM.set_power(100e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+    optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
+    qt.msleep(0.5)
+    GreenAOM.set_power(2.6e-6)
 
     if MW:
         m.mw.set_power(-15)
@@ -637,7 +771,7 @@ def single_scan(name):
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(30,40, voltage_step=0.01, integration_time_ms=10, power = 2e-9)
+    m.red_scan(5,80, voltage_step=0.001, integration_time_ms=10, power = 47.e-9)
     # m.red_scan(48,80, voltage_step=0.02, integration_time_ms=10, power = 2e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(5, 20, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.03)
@@ -645,21 +779,81 @@ def single_scan(name):
 
     m.mw.set_status('off')
 
+def single_scan_v(name):
+    m = Scan(name)
+
+    MW = False
+
+    GreenAOM.set_power(100e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+    optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
+    qt.msleep(0.5)
+    GreenAOM.set_power(2.5e-6)
+
+    if MW:
+        m.mw.set_power(-15)
+        m.mw.set_frequency(2.817e9) # 2.838e9 for SIL3
+        m.mw.set_iq('off')
+        m.mw.set_pulm('off')
+        m.mw.set_status('on')
+    m.red_scan_v(-9,9, voltage_step=0.01, integration_time_ms=10, power = 47.e-9)
+
+    # m.red_scan(48,80, voltage_step=0.02, integration_time_ms=10, power = 2e-9)
+    #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
+    #m.yellow_scan(5, 20, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.03)
+    # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
+
+    m.mw.set_status('off')
+
+
 def debug_scan(name):
 
     m = Scan(name)
     m.yellow_scan(4, 6, 50e-9, voltage_step=0.03)
 
+def long_scan(name):
+    wls = np.linspace(637.26,636.62,9)
+    #wls = np.linspace(637.26,637.22,2)
+    print wls
+    fs_centre = np.linspace(-230,250,9)
+    #fs_centre = np.linspace(-230,-200,2)
+    print fs_centre
+
+    for ii,wl in enumerate(wls):
+        NewfocusLaser.set_wavelength(wl)
+
+        m = Scan(name+str(int(fs_centre[ii])))
+
+        MW = False 
+
+        GreenAOM.set_power(100e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+        #optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
+        qt.msleep(0.5)
+        GreenAOM.set_power(2.5e-6)
+
+        if MW:
+            m.mw.set_power(-15)
+            m.mw.set_frequency(2.817e9) # 2.838e9 for SIL3
+            m.mw.set_iq('off')
+            m.mw.set_pulm('off')
+            m.mw.set_status('on')
+
+
+        m.red_scan_v(9,-9, voltage_step=0.005, integration_time_ms=10, power = 47.e-9)
+       
+        m.mw.set_status('off')
+
+
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.0e-6)
-    repeated_red_scans_hannes()
-    # single_scan('Gretel_Sil2_noGreen')
+    #qt.get_setup_instrument('GreenAOM').set_power(.0e-6)
+    # repeated_red_scans_hannes()
+    #single_scan('membrane_on_saphire_g_3p5uW_r_40nW')
     #fast_gate_scan('The111no1_Sil8_dac3_on22',2000)
     #qt.get_setup_instrument('GreenAOM').set_power(10e-6)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     #qt.get_setup_instrument('GreenAOM').set_power(0e-6)
     #fast_gate_scan('The111no1_Sil8_dac3_on24',2000)
-
+    
+    #repeated_red_scans_hannes(pts = 3, green_powers = [5.e-6], red_powers = np.linspace(50e-9,150.e-9,3))
 
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
@@ -668,3 +862,5 @@ if __name__ == '__main__':
     #repeated_red_scans(gate_scan=True, gate_range=(0,50),pts=2)
     #gate_scan_with_c_optimize()
 
+    long_scan('membrane_long_v_scan_test_approx_cfrq_')
+    #single_scan_v('membrane_scanv_test_g_2p5uW_r_49nW')

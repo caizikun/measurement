@@ -88,7 +88,7 @@ class AdwinLaserScan(LaserFrequencyScan):
         self.adwin = qt.instruments['adwin']
         self.mw = qt.instruments['SMB100']
 
-        self.set_laser_power = qt.instruments['Velocity1AOM'].set_power
+        self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
         self.set_repump_power = qt.instruments['GreenAOM'].set_power
         self.set_laser_voltage = lambda x: self.adwin.set_dac_voltage(
                 ('velocity1_frq', x))
@@ -130,7 +130,7 @@ class LabjackLaserScan(LaserFrequencyScan):
         self.adwin = qt.instruments['adwin']
         self.mw = qt.instruments['SMB100']
 
-        self.set_laser_power = qt.instruments['Velocity2AOM'].set_power
+        self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
         self.set_repump_power = qt.instruments['GreenAOM'].set_power
         self.set_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(labjack_dac_nr)](x)
         self.get_laser_voltage = lambda : self.labjack.__dict__['get_bipolar_dac'+str(labjack_dac_nr)]()
@@ -172,7 +172,7 @@ def adwin_laser_scan(name):
     m.frq_factor = 1
 
     # HW setup
-    m.use_mw = True
+    m.use_mw = False
     m.mw_frq = 2.863e9
     m.mw_power = -8
     m.repump_power = 100e-6
@@ -186,12 +186,14 @@ def adwin_laser_scan(name):
     # sweep
     m.start_voltage = 1
     m.stop_voltage = -0.3
-    m.pts = 1001
+    m.pts = 51#1001
     m.integration_time = 20 # ms
 
     m.prepare_scan()
     m.run_scan()
     m.finish_scan()
+
+
 
 def labjack_laser_scan(name):
     labjack_dac_channel=6 #6 is coarse, 7 is fine for NF1 LT1
@@ -210,13 +212,13 @@ def labjack_laser_scan(name):
     m.counter_channel = 0
     m.wm_channel = 2
     m.use_repump_during = False # True
-    m.repump_power_during = 0.1e-6
+    m.repump_power_during = 2.5e-6
     
     # sweep
-    m.start_voltage = -1
-    m.stop_voltage = 1
-    m.pts = 501
-    m.integration_time = 50 # ms
+    m.start_voltage = -0.3
+    m.stop_voltage = 0.1
+    m.pts = 51
+    m.integration_time = 10 # ms
 
     m.prepare_scan()
     m.run_scan()
@@ -225,6 +227,5 @@ def labjack_laser_scan(name):
 
               
 if __name__=='__main__':
-    labjack_laser_scan('red_scan_no_MW')
-
+    labjack_laser_scan('membrane_test_red_scan_no_MW')
         

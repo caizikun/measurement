@@ -3909,6 +3909,7 @@ class MBI_C13(DynamicalDecoupling):
                         Gate(prefix+'_pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = Final_pi2_pulse_phase))
+                
 
             elif (readout_orientation == 'negative' and el_state_in == 0) or (readout_orientation == 'positive' and el_state_in == 1):
                 print 'RO negative or el state in =1!'
@@ -3916,6 +3917,7 @@ class MBI_C13(DynamicalDecoupling):
                         Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = Final_pi2_pulse_phase_negative))
+                
         else:
             carbon_RO_seq.append(Gate(prefix+'Wait_gate_'+str(pt),'passive_elt',
                 wait_time = 20e-6))      
@@ -3938,7 +3940,7 @@ class MBI_C13(DynamicalDecoupling):
                 Gate(prefix+'_Trigger_'+str(pt),'Trigger',
                 wait_time = RO_trigger_duration,
                 go_to = go_to_element, event_jump = event_jump_element,
-                el_state_before_gate = el_RO_result))
+                el_state_before_gate = el_RO_result)) 
 
         return carbon_RO_seq
 

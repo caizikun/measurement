@@ -13,12 +13,12 @@ import numpy as np
 
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 501      #101
-mw_power    = -16#-13      #in dBm
+steps       = 301      #101
+mw_power    = -18#-13      #in dBm
 green_power = 25e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
-center_f    = 1.7#4.055#3.95#1.74666#2.828#2.861
+center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
 #center_f    = 1.705#3.95#1.74666#2.828#2.861
 '''
 steps       = 60       #101
@@ -28,7 +28,7 @@ int_time    = 200       # in ms
 reps        = 150
 center_f    = 1.840  # in GHz
 '''
-range_f  =  0.3 # in GHz
+range_f  =  0.03 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)

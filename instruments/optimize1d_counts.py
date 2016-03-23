@@ -15,6 +15,7 @@ import logging
 import numpy as np
 
 from analysis.lib.fitting import fit,common
+reload(common)
 import qt
 
 #class OptimizeProcess(threading.Thread):
@@ -264,7 +265,7 @@ class optimize1d_counts(CyclopeanInstrument):
         if self._gaussian_fit:
             fitargs= (np.min(cr), np.max(cr), self._opt_pos, sigma)
             #print fitargs, len(p)
-            gaussian_fit = fit.fit1d(p, cr,common.fit_gauss, *fitargs, do_print=False,ret=True)
+            gaussian_fit = fit.fit1d(p, cr,common.fit_gauss_pos, *fitargs, do_print=False,ret=True)
            
             if type(gaussian_fit) != dict:
                 self.set_data('fit', np.zeros(len(p)))
