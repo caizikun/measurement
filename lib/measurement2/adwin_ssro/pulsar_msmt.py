@@ -24,7 +24,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
         ssro.IntegratedSSRO.setup(self)
-
+        # print 'this is the mw frequency!', self.params['mw_frq']
         self.mwsrc.set_iq('on')
         self.mwsrc.set_pulm('on')
         self.mwsrc.set_frequency(self.params['mw_frq'])

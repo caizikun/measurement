@@ -74,6 +74,7 @@ def _setup_params(msmt, setup):
     msmt.params['setup']=setup
     msmt.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     msmt.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    msmt.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
     
     if not(hasattr(msmt,'joint_params')):
@@ -299,7 +300,7 @@ def SP_correlations_PSB(name):
     _setup_params(m, setup = qt.current_setup)
     pts = 1
     m.params['do_general_sweep']=0
-    m.params['repetitions'] = 15000
+    m.params['repetitions'] = 10000
     m.params['MW_during_LDE'] = 1 
     m.params['MW_RND_amp_I']     = 0
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
@@ -313,7 +314,7 @@ def SP_correlations_PSB(name):
     th_debug = False
     mw=True
 
-    run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = True)
+    run_sweep(m, th_debug=th_debug, measure_bs=False, upload_only = False)
 
 def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     m.autoconfig()
@@ -337,10 +338,10 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    # tail_swee p('tail') 
+    # tail_sweep('tail') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('PippinSil1')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
-    SP_correlations_PSB('lt3_PSBandZPL_local')
+    SP_correlations_PSB('lt3_PSB_msm1')

@@ -324,6 +324,7 @@ class Simple_Electron_repumping(pulsar_msmt.MBI):
         repumping_AOM_voltage=qt.instruments[self.params['repump_AOM']].power_to_voltage(self.params['laser_repump_amplitude'],controller='sec')
         if repumping_AOM_voltage > (qt.instruments[self.params['repump_AOM']]).get_sec_V_max():
             print 'Suggested power level would exceed V_max of the AOM driver.'
+            return
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
             channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
