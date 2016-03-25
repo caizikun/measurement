@@ -4,11 +4,6 @@ Initializes carbons via COMP and measures the Bloch vector length
 Gate parameters are being swept.
 Should result in less overhead from reprogramming and a faster calibration routine.
 
-NK 2015
-
-TODO:
-Positive and negative RO into the AWG in one go.
-This method would fit for carbons with less than 52 electron pulses per gate.
 """
 
 import numpy as np
@@ -27,15 +22,31 @@ ins_counters = qt.instruments['counters']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
+#def compsweep(tres,hwidth,Nres,Ndiff):
+#    tmin=tres-hwidth
+#    tmax=tres+hwidth
+#    tpairs=[]
+#    for phases in [0,45,90,135,180,225,270,315]:
+#            tpairs.append([round(Nres/4+hwidth/(4e-9),-1)*2+Ndiff,round(tmin,10),round(Nres/4+hwidth/(4e-9),-1)*2-Ndiff,round(tmax,10),phases])
+#            
+#    return transpose(tpairs).tolist()
+#def compsweep(tres,hwidth,Nres,Ndiff):
+#    tmin=tres-hwidth
+#    tmax=tres+hwidth
+#    tpairs=[]
+#    for phases in [225,270,315,0,45,90,135]:
+#            tpairs.append([Nres+Ndiff,round(tmin,10),Nres-Ndiff,round(tmax,10),phases])
+#            
+#    return transpose(tpairs).tolist() 
+
 def compsweep(tres,hwidth,Nres,Ndiff):
     tmin=tres-hwidth
-    tmax=tres+hwidth
+    tmax=tres-hwidth
     tpairs=[]
-    for phases in [0,45,90,135,180,225,270,315]:
-            tpairs.append([round(Nres/4+hwidth/(4e-9),-1)*2+Ndiff,round(tmin,10),round(Nres/4+hwidth/(4e-9),-1)*2-Ndiff,round(tmax,10),phases])
+    for phases in [225,270,315,0,45,90,135]:
+            tpairs.append([Nres+Ndiff,round(tmin,10),Nres-Ndiff,round(tmax,10),phases])
             
-    return transpose(tpairs).tolist()
-            
+    return transpose(tpairs).tolist()           
 
 def put_sweep_together(N1s,tau1s,N2s,tau2s,phases):
     ### put together into one sweep parameter
@@ -85,7 +96,7 @@ def SweepGates(name,**kw):
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence']=500
+    m.params['reps_per_ROsequence']=1500
 
     ### Carbons to be used
     m.params['carbon_list']         =[carbon]
@@ -96,10 +107,10 @@ def SweepGates(name,**kw):
     m.params['init_state_list']     = ['up']
     m.params['Nr_C13_init']         = 1
     
-    m.params['hwidth']=kw.pop('width',0)/2
+    m.params['hwidth']=kw.pop('width',0)
    
     m.params['C1_tres']=[7.214e-6][0]
-    m.params['C1_Nres']=[42][0]   
+    m.params['C1_Nres']=[18][0]   
 
 
     m.params['C2_tres']=[13.602e-6][0]
@@ -167,7 +178,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-    carbons = [1,2,5]
+    carbons = [1]
 
 
     brekast = False
@@ -178,9 +189,9 @@ if __name__ == '__main__':
 
         optimize()
 
-        for w in [0,4e-9,8e-9,12e-9,16e-9,20e-9]:
+        for w in [4e-9,6e-9,8e-9]:
             
-            for Ndiff in [-6,-4,2,4,6]:
+            for Ndiff in [-8,-6,-4,-2,0,2,4,6,8]:
                 
                 for el_RO in ['positive','negative']:
 
@@ -188,7 +199,7 @@ if __name__ == '__main__':
                     if breakst: break
                         
                     print(w)
-                    SweepGates(el_RO+'_C'+str(c)+'_width_'+str(w*1000000000)+'nas_Ndiff_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff)
+                    SweepGates(el_RO+'_C'+str(c)+'_det_'+str(w*1000000000)+'nas_Ndiff_'+str(Ndiff),carbon=c, el_RO = el_RO, debug = False, width = w, Ndiff = Ndiff)
                   
 
 

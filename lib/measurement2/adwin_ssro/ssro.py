@@ -60,6 +60,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()
         self.params['Ex_off_voltage'] = self.E_aom.get_pri_V_off()
 
+       
         for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
             self.set_adwin_process_variable_from_params(key)
 

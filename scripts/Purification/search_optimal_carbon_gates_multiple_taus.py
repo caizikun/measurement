@@ -308,7 +308,7 @@ if __name__ == '__main__':
 										'C_N_steps' : 10} 
 
 	### choose your carbons.
-	carbons = [2]
+	carbons = [4,5,8]
 
 	### msmt loop begins here.
 	breakst = False

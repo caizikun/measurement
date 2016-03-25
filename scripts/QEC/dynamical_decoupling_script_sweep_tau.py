@@ -77,7 +77,7 @@ if __name__ == '__main__':
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z'])
     # stools.turn_off_all_lt2_lasers()
-    SimpleDecoupling_swp_tau(SAMPLE, tau_min=13.550e-6,tau_max=13.650e-6,tau_step =2e-9, N=32)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=8.7e-6,tau_max=8.9e-6,tau_step =4e-9, N=32)
 
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.0e-6,tau_max=4.2e-6,tau_step =4e-9, N=64)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=4.2e-6,tau_max=4.4e-6,tau_step =4e-9, N=64)

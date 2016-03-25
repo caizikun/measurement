@@ -54,7 +54,7 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 ### pulses and MW stuff lt3
 #####################
 ## general
-params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
+params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['mw_frq']
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 params_lt3['MW_Q_amp_factor'] = 0.#0.920/0.907 # calibrated on lt3 on the 2015-12-15
@@ -90,12 +90,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 40e-9#10e-9 #
-params_lt3['aom_amplitude']				 = 0.65 # on CR 31
+params_lt3['aom_amplitude']				 = 0.5 # on CR 31
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 9e-9#15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
+params_lt3['AWG_RO_power']            = 15e-9#15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence

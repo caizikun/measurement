@@ -29,7 +29,7 @@ def ssrocalibration(name, **additional_params):
         # ms = 1 calibration
         m.params['SP_duration'] = m.params['SP_duration_ms1']
         m.params['A_SP_amplitude'] = 0.
-        m.params['Ex_SP_amplitude'] = 10e-9
+        m.params['Ex_SP_amplitude'] = 18e-9
         m.run()
         m.save('ms1')
 
@@ -38,4 +38,4 @@ def ssrocalibration(name, **additional_params):
 if __name__ == '__main__':
     stools.turn_off_all_lasers()
     ssrocalibration(SAMPLE_CFG)
-    #ssrocalibration(SAMPLE_CFG)
+    

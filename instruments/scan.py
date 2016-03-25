@@ -12,7 +12,7 @@ import qt
 class scan(CyclopeanInstrument):
     def __init__(self, name, linescan, mos):
         CyclopeanInstrument.__init__(self, name, tags=['measure'])
-
+     
         self._mos = qt.instruments[mos]
         self._linescan = qt.instruments[linescan]
 
@@ -116,7 +116,7 @@ class scan(CyclopeanInstrument):
         # line index of course without the dimensions in which we scan
         self._current_line = ndx[:-1]
 
-        # print self._current_line
+        print self._current_line
         
         for i in dim_lines_flat:
             i = linspace(self._linescan_starts[ndx],

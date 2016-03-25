@@ -14,7 +14,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
-reload(funcs)
+
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -32,19 +32,19 @@ def erabi(name):
     
     m.params['pts'] = 16
     pts = m.params['pts']
-    m.params['repetitions'] = 2500
+    m.params['repetitions'] = 1000
     m.params['Ex_SP_amplitude']=0
 
     sweep_param = 'length'
 
-    m.params['mw_power']=11-6-6
+    m.params['mw_power']=5
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
     #m.params['mw_frq'] = 3.45e9      #for ms=+1
 
     if sweep_param == 'length':
-        m.params['pulse_sweep_durations'] =  np.linspace(0, 10000, pts) * 1e-9
-        pulse_amp=0.016/2.
+        m.params['pulse_sweep_durations'] =  np.linspace(0, 4000, pts) * 1e-9
+        pulse_amp=3*0.016
         m.params['pulse_sweep_amps'] = np.ones(pts) * pulse_amp # * 0.05 #*0.49
         m.params['fast_pi_amp'] = pulse_amp
         m.params['sweep_name'] = 'Pulse durations (ns)'
