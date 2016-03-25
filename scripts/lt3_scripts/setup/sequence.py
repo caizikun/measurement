@@ -21,7 +21,7 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=302e-9, active=True) #269 or SGS100. was a delay of 289 for SMB100
+    high=2.0, low=0, offset=0., delay=269e-9, active=True) #269 or SGS100. was a delay of 302 for SMB100
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=230e-9, active=True)  #230e-9
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'

@@ -46,9 +46,10 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['pts'] = pts
     m.params['repetitions'] = 600 if multiplicity == 1 else 1000
-    rng = 0.2 if multiplicity == 1 else 0.02 if multiplicity <= 5 else 0.03
+    rng = 0.15 if multiplicity == 1 else 0.03
 
     m.params['multiplicity'] = np.ones(pts)*multiplicity
+
     if mw2:
         if m.params['pulse_shape'] == 'Hermite':
             m.params['mw2_duration'] = m.params['mw2_Hermite_pi_length']
@@ -61,8 +62,8 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
             m.params['MW_pulse_amplitudes'] = m.params['mw2_Square_pi_amp'] + np.linspace(-rng, rng, pts) 
     else:
         if m.params['pulse_shape'] == 'Hermite':
-            m.params['MW_duration'] = m.params['Hermite_pi_length']
-            m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+    m.params['MW_duration'] = m.params['Hermite_pi_length']
+    m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
         else:
             print 'calibrating square pulses'
             m.params['MW_duration'] =  m.params['Square_pi_length']
