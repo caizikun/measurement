@@ -2598,7 +2598,7 @@ config['adwin_pro_processes'] = {
         'MBI_multiple_C13' : {
                 'info' : """
                     Conditional repumping, and resonant readout at the end.
-                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
+                    Has one Nitrogen-MBI step and multiple Carbon-MBI step, can read out multiple times (e.g., on different lines).
                     """,
                 'index' : 9,
                 'file' : 'C13_multiple.TB9',

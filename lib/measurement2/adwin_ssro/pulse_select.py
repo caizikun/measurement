@@ -7,8 +7,6 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-# from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
-# import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
 
 '''
 General idea: for every basic pulse type, check the corresponding parameter in msmt_params
@@ -21,24 +19,25 @@ Edited by NK and SK 20160128
 
 def check_pulse_shape(msmt):
 
-	try:
-		pulse_shape = msmt.params['pulse_shape']
-	# if 'pulse_shape' not in msmt.params.parameters:
-		if pulse_shape == 'Square':
-			#print 'pulse select selected square pulses'
-			msmt.params['fast_pi_duration'] = msmt.params['Square_pi_length']
-			msmt.params['fast_pi2_duration'] = msmt.params['Square_pi2_length']
-			msmt.params['fast_pi_amp'] = msmt.params['Square_pi_amp']
-			msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Square_pi_length']
-			msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Square_pi2_length']
-		elif pulse_shape == 'Hermite':
-			#print 'pulse select selected hermite pulses'
-			msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
-			msmt.params['fast_pi2_duration'] = msmt.params['Hermite_pi2_length']
-			msmt.params['fast_pi_amp'] = msmt.params['Hermite_pi_amp']
-			msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Hermite_pi_length']
-			msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Hermite_pi2_length']
-	except:
+	# try:
+	# 	pulse_shape = msmt.params['pulse_shape']
+
+	pulse_shape = msmt.params['pulse_shape']
+	if pulse_shape == 'Square':
+		#print 'pulse select selected square pulses'
+		msmt.params['fast_pi_duration'] = msmt.params['Square_pi_length']
+		msmt.params['fast_pi2_duration'] = msmt.params['Square_pi2_length']
+		msmt.params['fast_pi_amp'] = msmt.params['Square_pi_amp']
+		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Square_pi_length']
+		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Square_pi2_length']
+	elif pulse_shape == 'Hermite':
+		#print 'pulse select selected hermite pulses'
+		msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
+		msmt.params['fast_pi2_duration'] = msmt.params['Hermite_pi2_length']
+		msmt.params['fast_pi_amp'] = msmt.params['Hermite_pi_amp']
+		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Hermite_pi_length']
+		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Hermite_pi2_length']
+	else:
 		raise Exception('Error in pulse select: '), sys.exc_info()[0]
 
 	return pulse_shape
