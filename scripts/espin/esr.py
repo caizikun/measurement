@@ -2,29 +2,40 @@ import qt
 import msvcrt
 import numpy as np
 
-execfile(qt.reload_current_setup)
+#execfile(qt.reload_current_setup)
 
-SAMPLE = qt.exp_params['samples']['current']
+#SAMPLE = qt.exp_params['samples']['current']
 
 ##############
 ### Inputs ###
 ##############
 
-name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 51       #101
-mw_power    = -10       #in dBm
-green_power = 10e-6     #10e-6
-int_time    = 50        # in ms
-reps        = 10
-center_f    = 2.82 #qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9 # in GHz
 
-range_f  =  0.04 # in GHz
+### LT2 with 111_No1_Sil18
+name='ESR_'+ qt.exp_params['protocols']['current']
+steps       = 301      #101
+mw_power    = -18#-13      #in dBm
+green_power = 25e-6     #15e-6
+int_time    = 30     # in ms
+reps        = 50
+center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
+#center_f    = 1.705#3.95#1.74666#2.828#2.861
+'''
+steps       = 60       #101
+mw_power    = -10    #in dBm
+green_power = 40e-6    #10e-6
+int_time    = 200       # in ms
+reps        = 150
+center_f    = 1.840  # in GHz
+'''
+range_f  =  0.03 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100A']
+#ins_smb = qt.instruments['SMB100']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
@@ -55,10 +66,13 @@ qt.msleep(0.2)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
 stop_scan=False
+optimizer_counter = 0
 for cur_rep in range(reps):
-
+    if optimizer_counter ==5:
+        optimiz0r.optimize(dims=['z','x','y'],int_time=50)
+        optimizer_counter = 0
+    optimizer_counter +=1
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
-
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
         ins_smb.set_frequency(cur_f)

@@ -21,25 +21,28 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=297e-9, active=True) # previous:289; measured 242e-9 on the scope made an error??2014-10-13
+    high=2.0, low=0, offset=0., delay=220e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
-    low=-1.0, offset=0., delay=230e-9, active=True)
+    low=-1.0, offset=0., delay=200e-9, active=True) #DD
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
-    low=-1.0, offset=0., delay=230e-9, active=True)# note measured delay on fast scope 2014-10-13: 59 ns
+    low=-1.0, offset=0., delay=200e-9, active=True) #DD # note measured delay on fast scope 2014-10-13: 59 ns
 
 #TH
-qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=0., active=True)   
+#qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', 
+#    high=2.0, low=0, offset=0., delay=0., active=True)   #Not connected for now. THink we don't need it.
 
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=0., active=True)
+    high=2.0, low=0, offset=0., delay=0., active=True) #XX
+qt.pulsar.define_channel(id='ch4_marker2', name='adwin_success_trigger', type='marker', 
+    high=2.0, low=0, offset=0., delay=0e-9, active=True) #DX
+
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
-    high=2.0, low=0, offset=0., delay=0e-9, active=True)
-qt.pulsar.define_channel(id='ch3_marker2', name='RND_halt', type='marker', 
-    high=2.0, low=0, offset=0, delay=100e-9, active=True)
-qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=125e-9, active=True)
+    high=2.0, low=0, offset=0., delay=0e-9, active=True) #DD
+#qt.pulsar.define_channel(id='ch2_marker1', name='RND_halt', type='marker', 
+#    high=2.0, low=0, offset=0, delay=100e-9, active=True)
+#qt.pulsar.define_channel(id='ch3_marker2', name='plu_sync', type='marker', 
+#    high=2.0, low=0, offset=0., delay=182e-9, active=True)
 
 #qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker', 
 #    high=2.0, low=0, offset=0., delay=0., active=True)
@@ -48,15 +51,16 @@ qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker',
 #    low=0., offset=0., delay=335e-9, active=True) 
 #EOM
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
-    low=-2.0, offset=0., delay=200e-9, active=True) #measured delay on apd's (tail) 2014-10-13: 40 ns
+    low=-2.0, offset=0., delay=(194e-9 + 5e-6), active=True) #DD #measured delay on apd's (tail) 2014-10-13: 40 ns
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=458e-9, active=True) #617 ns for normal pulses
+    high=1.0, low=-1.0, offset=0., delay=(510e-9+ 5e-6), active=True) #DD #617 ns for normal pulses 458e-9
+qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 #qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True)
+    high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True) #DD
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 
@@ -65,9 +69,8 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].g
 #qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
 #qt.pulsar.set_channel_opt('AOM_Yellow','low', qt.instruments['YellowAOM'].get_sec_V_off())
 
-#PLU
-#qt.pulsar.define_channel(id='ch2_marker2', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0., delay=14e-9, active=True)
+
+
 
 ### TMP HH debug channel -- normally there's RF on this output.
 #qt.pulsar.define_channel(id='ch2', name='HH_test', type='analog', high=2.0,
@@ -82,7 +85,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_THRESHOLD'   :   1.0,  # V
         'EVENT_INPUT_IMPEDANCE'     :   1,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
-        'EVENT_INPUT_THRESHOLD'     :   1.0,  #V
+        'EVENT_INPUT_THRESHOLD'     :   0.8,  #V
         'JUMP_TIMING'               :   1,    # Sync | Async
         'RUN_MODE'                  :   4,    # Continuous | Triggered | Gated | Sequence
         'RUN_STATE'                 :   0,    # On | Off

@@ -4,6 +4,7 @@ Coarse optimization starts with a large range scan and then zooms in
 Important: choose the right domain for the range of positions in get_magnet_position in magnet tools!
 """
 import numpy as np
+
 import qt
 import msvcrt
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
@@ -61,13 +62,13 @@ if __name__ == '__main__':
     laser_power = 20e-6
     
         ### for the first coarse step
-    init_range   = 20     #Common: 10 MHz
-    init_pts     = 221    #Common: 121
-    init_reps    = 750   #Common: 500
+    init_range   = 10     #Common: 10 MHz
+    init_pts     = 121    #Common: 121
+    init_reps    = 1000   #Common: 500
         ### for the remainder of the steps
     repeat_range = 4.5
     repeat_pts   = 81
-    repeat_reps  = 1000
+    repeat_reps  = 3000
 
     ###########
     ## Start ##
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     d_steps = []; f0 = []; u_f0 = []; delta_f0 =[];iterations_list =[]
   
      #turn on magnet stepping in Z
-    mom.set_mode('Z_axis', 'stp')
+    # mom.set_mode('Z_axis', 'gnd')
 
     # start: define B-field and position by first ESR measurement
     darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
@@ -101,17 +102,28 @@ if __name__ == '__main__':
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
             print 'd_steps>+/-00, step only 250 steps!'
             if d_steps[iterations] > 0:
+                mom.set_mode('Z_axis','stp')
+                qt.msleep(10)
                 mom.step('Z_axis',maximum_magnet_step_size)
+                qt.msleep(10)
+                mom.set_mode('Z_axis','gnd')
                 d_steps[iterations] = maximum_magnet_step_size
             if d_steps[iterations] < 0:
+                mom.set_mode('Z_axis','stp')
+                qt.msleep(10)
                 mom.step('Z_axis',-1*maximum_magnet_step_size)
+                qt.msleep(10)
+                mom.set_mode('Z_axis','gnd')
                 d_steps[iterations] = -1*maximum_magnet_step_size
         elif d_steps[iterations]==0:
             print 'Steps = 0 optimization converted'
             break
         else:
+            mom.set_mode('Z_axis','stp')
+            qt.msleep(10)
             mom.step('Z_axis',d_steps[iterations])
-
+            qt.msleep(10)
+            mom.set_mode('Z_axis','gnd')
 
         # To cleanly exit the optimization
         print '--------------------------------'
@@ -138,6 +150,9 @@ if __name__ == '__main__':
         delta_f0.append(delta_f0_temp)
         iterations_list.append(iterations)
         
+
+
+
         print 'Measured frequency = ' + str(f0_temp) + ' GHz +/- ' + str(u_f0_temp*1e6) + ' kHz'
         print 'Difference = ' + str(abs(f0_temp*1e6-current_f_msp1*1e-3)) + ' kHz'
     

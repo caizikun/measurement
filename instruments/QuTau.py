@@ -40,6 +40,7 @@ class QuTau(Instrument):
         self.add_function('freeze_buffers')
         self.add_function('start_write_timestamps')
         self.add_function('stop_write_timestamps')
+        self.add_function('get_countrate')
 
         self.add_function('close')
 
@@ -166,6 +167,9 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         return self.err_dict[ans]
 
+    def get_countrate():
+        #self.initialize
+        return 0
 
     def switch_termination(self, on): #OK!
         """
@@ -738,6 +742,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         if ans != 0:
             return self.err_dict[ans]
         else:
+
             return timestamps, channels, valid.value
             #return np.ctypeslib.as_array(timestamps), np.ctypeslib.as_array(channels), valid.value
     

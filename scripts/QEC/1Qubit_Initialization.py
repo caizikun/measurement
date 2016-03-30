@@ -1,5 +1,6 @@
 import numpy as np
 import qt 
+import analysis.lib.QEC.Tomo_dict as TD; reload(TD)
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -11,10 +12,10 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def MBE(name, carbon            =   1,               
         
-        carbon_init_list        = [1],
-        carbon_init_states      = ['up'], 
-        carbon_init_methods     = ['swap'], 
-        carbon_init_thresholds  = [0],  
+        carbon_init_list        =   [1],
+        carbon_init_states      =   ['up'], 
+        carbon_init_methods     =   ['swap'], 
+        carbon_init_thresholds  =   [0],  
 
         el_RO               = 'positive',
         debug               = False):
@@ -22,11 +23,15 @@ def MBE(name, carbon            =   1,
     m = DD.Two_QB_Probabilistic_MBE_v3(name)
     funcs.prepare(m)
 
+
+    m.params['el_after_init']                = '0'
+
+
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 500 
+    m.params['reps_per_ROsequence'] = 400
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -40,7 +45,11 @@ def MBE(name, carbon            =   1,
     ##################################
     ### RO bases (sweep parameter) ###
     ##################################
-    m.params['Tomography Bases'] = m.get_tomography_bases(nr_of_carbons = len(m.params['carbon_list']))
+
+    m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
+    # m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
+    # m.params['Tomography Bases'] = [['X'],['Y']]
+    m.params['Tomography Bases'] = [['Z']]
         
     ####################
     ### MBE settings ###
@@ -57,7 +66,6 @@ def MBE(name, carbon            =   1,
     m.params['Nr_parity_msmts']     = 0
     m.params['Parity_threshold']    = 1
     
-
     ### Derive other parameters
     m.params['pts']                 = len(m.params['Tomography Bases'])
     m.params['sweep_name']          = 'Tomography Bases' 
@@ -71,9 +79,26 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
+    carbons = [2]
+    debug = True
+    init_method = 'swap'
 
-    MBE(SAMPLE + 'positive', el_RO= 'positive')
-    MBE(SAMPLE + 'negative', el_RO= 'negative')
+    if init_method == 'swap':
+        for c in carbons:
+
+            MBE(SAMPLE + 'positive_'+str(c)+'_swap', el_RO= 'positive', carbon = c, carbon_init_list = [c]
+                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
 
+            MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
+                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+
+    elif init_method == 'MBI':
+        for c in carbons:
+
+            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]
+                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c]
+                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 

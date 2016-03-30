@@ -6,7 +6,7 @@ Important: choose the right domain for the range of positions in get_magnet_posi
 import numpy as np
 import qt
 import msvcrt
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt; reload(pulsar_msmt)
 
 # import the dESR fit, magnet tools and master of magnet
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
@@ -20,7 +20,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 nm_per_step = qt.exp_params['magnet']['nm_per_step']
 current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 
-def darkesr(name, range_MHz, pts, reps):
+def darkesr(name, range_MHz, pts, reps, power, pulse_length):
 
     m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -29,7 +29,9 @@ def darkesr(name, range_MHz, pts, reps):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
 
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6#-43e6 #MW source frequency
+
+
     #m.params['mw_frq'] = 2*m.params['zero_field_splitting'] - m.params['ms-1_cntr_frq'] -43e6
 
     m.params['mw_power'] = 20
@@ -38,8 +40,13 @@ def darkesr(name, range_MHz, pts, reps):
     m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 ## first time we choose a quite large domain to find the three dips (15)
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
-    m.params['pulse_length'] = 2e-6
-    m.params['ssbmod_amplitude'] = 0.01
+    m.params['pulse_length'] = pulse_length
+    m.params['ssbmod_amplitude'] = power #0.01
+
+    m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
+                    m.params['ssbmod_frq_stop'], m.params['pts']) 
+                    + m.params['mw_frq'])*1e-9
+
 
     m.autoconfig()
     m.generate_sequence(upload=True)
@@ -57,20 +64,26 @@ if __name__ == '__main__':
     ## Input parameters ##
     ######################
     safemode=True
-    maximum_magnet_step_size = 250
+    maximum_magnet_step_size = 400
     opimization_target = 5     # target difference in kHz (or when 0 magnet steps are required)
 
-    only_fine = False
+    only_fine =  False
 
         ### for the first coarse step
-    init_range   = 12     #Common: 10 MHz
-    init_pts     = 121    #Common: 121
-    init_reps    = 500   #Common: 500
+    init_range   = 10#Common: 10 MHz
+    #init_range = 20
+    init_pts     = 101   #Common: 121
+    #init_pts     = 450
+    init_reps    =500 #Common: 500
+    init_power = 0.01
+    init_pulse_length = 10e-6 
 
         ### for the remainder of the steps
-    repeat_range = 4.5
-    repeat_pts   = 81
-    repeat_reps  = 1000
+    repeat_range = 0.4
+    repeat_pts   = 61
+    repeat_reps  = 3000 #1000
+    repeat_power = 0.0015# 
+    repeat_pulse_length = 8e-6
 
     if only_fine == True:
         init_range   = repeat_range     #Common: 10 MHz
@@ -85,13 +98,16 @@ if __name__ == '__main__':
     d_steps = []; f0 = []; u_f0 = []; delta_f0 =[];iterations_list =[]
   
      #turn on magnet stepping in Z
-    mom.set_mode('Z_axis', 'stp')
+    # mom.set_mode('Z_axis', 'stp')
 
     # start: define B-field and position by first ESR measurement
-    darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps)
+    darkesr('magnet_Zpos_optimize_coarse', range_MHz=init_range, pts=init_pts, reps=init_reps, power= init_power, pulse_length=init_pulse_length)
+
     # do the fitting, returns in MHz, input in GHz
+    print current_f_msm1
+    print qt.exp_params['samples'][SAMPLE]['N_HF_frq']
     f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9, 
-            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+    qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
     # start to list all the measured values
@@ -109,7 +125,7 @@ if __name__ == '__main__':
         print 'move magnet in Z with '+ str(d_steps[iterations]) + ' steps'
 
         if abs(d_steps[iterations]) > maximum_magnet_step_size:
-            print 'd_steps>+/-00, step only 250 steps!'
+            print 'd_steps>+/-00, step only 400 steps!'
             if d_steps[iterations] > 0:
                 d_steps[iterations] = maximum_magnet_step_size
             if d_steps[iterations] < 0:
@@ -118,31 +134,39 @@ if __name__ == '__main__':
             print 'Steps = 0 optimization converted'
             break
         if safemode == True: 
+            print '\a\a\a' 
             ri = raw_input ('move magnet? (y/n)')
             if str(ri) == 'y': 
+                mom.set_mode('Z_axis','stp')
+                qt.msleep(3)
                 mom.step('Z_axis',d_steps[iterations])
+                qt.msleep(3)
+                mom.set_mode('Z_axis','gnd')
             else :
                 break 
         else: 
+            mom.set_mode('Z_axis','stp')
+            qt.msleep(3)
             mom.step('Z_axis',d_steps[iterations])
-
+            qt.msleep(3)
+            mom.set_mode('Z_axis','gnd')
 
         # To cleanly exit the optimization
         print '--------------------------------'
         print 'press q to stop measurement loop'
         print '--------------------------------'
         qt.msleep(2)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or d_steps[iterations]==abs(1):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or abs(d_steps[iterations])==1:
             break
 
         qt.msleep(1)
         stools.turn_off_all_lt2_lasers()
-        GreenAOM.set_power(5e-6)
+        GreenAOM.set_power(20e-6)
         optimiz0r.optimize(dims=['x','y','z'])
         
         
-        darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps)
-        
+        darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps, power = fine_power, pulse_length=repeat_pulse_length)
+
         #Determine frequency and B-field --> this fit programme returns in MHz, needs input GHz
         f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9,
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
@@ -160,6 +184,7 @@ if __name__ == '__main__':
         print '--------------------------------'
         print 'press q to stop measurement loop'
         print '--------------------------------'
+
         qt.msleep(2)
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or d_steps[iterations]==abs(1):
             break
@@ -181,5 +206,4 @@ if __name__ == '__main__':
     d.close_file()
 
     print 'Z position coarse optimization finished, stepped the magnet '+ str(total_d_steps) + ' in '+str(iterations+1) +' iterations'
-
 

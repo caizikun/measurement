@@ -12,10 +12,10 @@ from cyclopean_instrument import CyclopeanInstrument
 import types
 from time import sleep
 import logging
-from numpy import array
-from numpy import zeros
+import numpy as np
 
 from analysis.lib.fitting import fit,common
+reload(common)
 import qt
 
 #class OptimizeProcess(threading.Thread):
@@ -177,7 +177,7 @@ class optimize1d_counts(CyclopeanInstrument):
             qt.msleep(0.1)
         
         self._linescan.set_is_running(True)
-        qt.msleep(0.1)
+        qt.msleep(0.5)
         
         while self._linescan.get_is_running():
             qt.msleep(0.1)
@@ -225,7 +225,7 @@ class optimize1d_counts(CyclopeanInstrument):
         self._opt_pos = getattr(self._mos, 'get_'+self._dimension)()
         self._opt_pos_prev = getattr(self._mos, 'get_'+self._dimension)()
         l = self._scan_length
-        self._x0, self._x1 = self._opt_pos - l/2, self._opt_pos + l/2
+        self._x0, self._x1 = self._opt_pos - l/2., self._opt_pos + l/2.
         self._linescan.set_dimensions([self._dimension])
         self._linescan.set_starts([self._x0])
         self._linescan.set_stops([self._x1])
@@ -250,12 +250,11 @@ class optimize1d_counts(CyclopeanInstrument):
         self.reset_data('fit', (self._nr_of_points))
 
         # first get the optimal position in the first dimension and go there
-        cr = self._data['countrates']
-        p = self._data['points']
+        cr = np.array(self._data['countrates'])
+        p = np.array(self._data['points'])
 
         # starting point for the optimization is the maximum of the signal
-        i = cr.tolist().index(max(cr))
-        self._opt_pos = p[i]
+        self._opt_pos = p[np.argmax(cr)]
         ret = True
         
         if self._dimension=='z':
@@ -264,16 +263,16 @@ class optimize1d_counts(CyclopeanInstrument):
             sigma=0.1
 
         if self._gaussian_fit:
-            gaussian_fit = fit.fit1d(p, cr,common.fit_gauss, array(cr).min(), 
-                    array(cr).max(), p[i], sigma, do_print=False,ret=True)
+            fitargs= (np.min(cr), np.max(cr), self._opt_pos, sigma)
+            #print fitargs, len(p)
+            gaussian_fit = fit.fit1d(p, cr,common.fit_gauss_pos, *fitargs, do_print=False,ret=True)
            
             if type(gaussian_fit) != dict:
-                self.set_data('fit', zeros(len(p)))
+                self.set_data('fit', np.zeros(len(p)))
                 self._fit_result = False
                 self._fit_error = False
                 ret = False
                 print '(%s) fit failed! Set to maximum.' % self.get_name()
-                self._opt_pos = p[cr.tolist().index(max(cr))]
 
             else:
             
@@ -293,20 +292,19 @@ class optimize1d_counts(CyclopeanInstrument):
 
                 
                 else:
-                    self.set_data('fit', zeros(len(p)))
+                    #self.set_data('fit', np.zeros(len(p)))
+                    self.set_data('fit', gaussian_fit['fitfunc'](p))
                     self._fit_result = False
                     self._fit_error = False
                     ret = False
                     print '(%s) optimize failed!' % self.get_name()
-                    if array(cr).max() == 0.:
-                        print 'no counts in linescan'
+                    if np.max(cr) < 10.:
+                        print '<10 counts in linescan, setting previous position'
                         self._opt_pos = self._opt_pos_prev
-                    else:
-                        self._opt_pos = p[cr.tolist().index(max(cr))]
             
             self.get_fit_result()
 
-        if array(p).min() < self._opt_pos < array(p).max():
+        if np.min(p) < self._opt_pos < np.max(p):
             self._mos.set(self._dimension, value=self._opt_pos)
         else:
             self._mos.set(self._dimension, value=p[cr.tolist().index(max(cr))])

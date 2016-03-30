@@ -14,21 +14,27 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
     m = ssro.AdwinSSRO('SSROCalibration_'+name)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    
+    # ####dirty hack to switch our lasers around
+    # E_aom = m.E_aom
+    # A_aom = m.A_aom
+    # m.E_aom = A_aom
+    # m.A_aom = E_aom
     if RO_power != None: 
         m.params['Ex_RO_amplitude'] = RO_power
     if SSRO_duration != None: 
         m.params['SSRO_duration'] = SSRO_duration
 
     # ms = 0 calibration
-    m.params['Ex_SP_amplitude'] = 0
+    #m.params['SP_duration']     = 500
+    m.params['Ex_SP_amplitude'] = 0.
     m.run()
     m.save('ms0')
     
     # ms = 1 calibration
     m.params['SP_duration']     = 500
     m.params['A_SP_amplitude']  = 0.
-    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
+    m.params['Ex_SP_amplitude'] = 15e-9 #15e-9
+
     m.run()
     m.save('ms1')
 
@@ -36,7 +42,7 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
 if __name__ == '__main__':
     ssrocalibration(SAMPLE_CFG)
-    #ssrocalibration(SAMPLE_CFG, RO_power = 0.5e-9,SSRO_duration = 100)
+    # ssrocalibration(SAMPLE_CFG, RO_power = 0.55e-9,SSRO_duration = 160)
 
     # RO_powers = [0.2e-9,0.5e-9,1e-9,2e-9,5e-9]
     # for RO_power in RO_powers: 

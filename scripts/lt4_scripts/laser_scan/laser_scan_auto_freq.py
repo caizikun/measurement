@@ -162,18 +162,18 @@ class LaserFrequencyScan:
 
 class Scan(LaserFrequencyScan):
 
-    def __init__(self, name='LT4', red_labjack_dac_nr=0, yellow_labjack_dac_nr = 2, red_wm_channel = 1, yellow_wm_channel = 2):
+    def __init__(self, name='LT4', red_labjack_dac_nr=4, yellow_labjack_dac_nr = 2, red_wm_channel = 8, yellow_wm_channel = 2):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
-        self.physical_adwin=qt.get_setup_instrument('physical_adwin')
+        self.physical_adwin=qt.get_setup_instrument('physical_adwin_lt3')
         self.mw = qt.get_setup_instrument('SMB100')
         self.labjack= qt.get_setup_instrument('labjack')
         self.wavemeter=qt.instruments['wavemeter']
 
         self.set_red_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(red_labjack_dac_nr)](x)
         self.get_red_laser_voltage = lambda : self.labjack.__dict__['get_bipolar_dac'+str(red_labjack_dac_nr)]()
-        self.set_red_power = qt.get_setup_instrument('NewfocusAOM').set_power
+        self.set_red_power = qt.get_setup_instrument('MatisseAOM').set_power
 
 
         self.set_yellow_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(yellow_labjack_dac_nr)](x)
@@ -232,7 +232,7 @@ class Scan(LaserFrequencyScan):
         voltage_step = kw.pop('voltage_step', 0.005)
         integration_time_ms = kw.pop('integration_time_ms', 50)
         
-        self.single_line_scan(start_f, stop_f, voltage_step, integration_time_ms, power, **kw)\
+        self.single_line_scan(start_f, stop_f, voltage_step, integration_time_ms, power, **kw)
 
     def red_ionization_scan(self, start_f, stop_f, power=30e-9, **kw):
         #self.get_frequency = lambda x : self.physical_adwin.Get_FPar(43) # (self.wavemeter.Get_Frequency(x)-470.4)*1000.
@@ -544,15 +544,15 @@ def fast_gate_scan(name):
 def single_scan(name):
     m = Scan()
     m.name=name
-    do_MW=True
+    do_MW=False
     if do_MW:
         m.mw.set_power(-7)
-        m.mw.set_frequency(2.807e9)
+        m.mw.set_frequency(2.806465e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(44, 65, voltage_step=0.005, integration_time_ms=20, power = 1e-9)  #0.6e-9
+    m.red_scan(70, 80, voltage_step=0.01, integration_time_ms=20, power = 5.0e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
     #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
@@ -568,9 +568,9 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(.0e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(0.5e-6)
 
-    single_scan('Hans_Sil1_LT4_C3_33V_')
+    single_scan('SAM_Sil5')
     #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)

@@ -25,7 +25,7 @@ class CR_linescan(ssro.AdwinSSRO):
         self.adwin.set_cr_linescan_var(set_steps=0)
         self.start_adwin_process(stop_processes=['counter'])
 
-def load_cr_linsescan(name):
+def load_cr_linsescan_now(name):
     m = CR_linescan(name)
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
@@ -40,5 +40,5 @@ def unload_cr_linescan():
 if __name__ == '__main__':
     stools.turn_off_all_lasers()
     qt.instruments['counters'].set_is_running(False)
-    load_cr_linsescan(SAMPLE_CFG)
+    load_cr_linsescan_now('CR_optimize')
     #unload_cr_linescan()

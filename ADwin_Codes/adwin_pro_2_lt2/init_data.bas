@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  TUD277459\localadmin
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 '#INCLUDE ADwinPro_All.inc
 '#INCLUDE .\configuration.inc
@@ -49,7 +49,7 @@ DIM DATA_31[100] AS FLOAT
 'DIM DATA_23[10000] AS LONG AT EM_LOCAL  
 'DIM DATA_24[500] AS LONG AT EM_LOCAL      
 'DIM DATA_25[500000] AS LONG AT DRAM_EXTERN 
-'DIM DATA_26[10] AS LONG AT EM_LOCAL     
+DIM DATA_28[100] AS LONG 
 
 INIT:
 

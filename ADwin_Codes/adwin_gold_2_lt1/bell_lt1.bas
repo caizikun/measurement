@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -192,7 +192,8 @@ EVENT:
           INC(succes_event_counter)
           INC(Par_77)
           mode = 5
-          timer = -1         
+          timer = -1  
+                 
           DATA_27[succes_event_counter] = remote_CR_wait_timer   ' save CR timer just after LDE sequence 
           first = 1 
           first_local = 1

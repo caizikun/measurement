@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -56,6 +56,9 @@ dim timer, wait_time AS LONG
 dim counter1 AS LONG
 LOWINIT:
   init_CR()
+  
+  P2_Digprog(DIO_MODULE,11)
+  P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
   CurrentStep = 1
   
   ' set the pixel clock, but start from zero
@@ -76,7 +79,7 @@ LOWINIT:
     scan_average = 2*ROUND((PAR_64+1)/2)-1 'number of avg should be uneven!
   ENDIF
   
-  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),1)
+  wait_time=MAX_LONG(ROUND(PxTime*1000/(2*CR_duration+repump_duration)),10)
     
   FOR i = 1 TO NoOfDACs
     DACVoltage = DATA_199[i]
@@ -158,5 +161,6 @@ EVENT:
    
     
 FINISH:
-  finish_CR()  
+  finish_CR() 
+  P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low. 
   Par_49 = 0  'tell resonant counting process to stop summing its data into par 45-48  

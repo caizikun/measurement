@@ -47,8 +47,8 @@ if __name__ == '__main__':
     DESR_msmt.darkesr('magnet_Zpos_optimize_fine', ms = 'msp', 
             range_MHz=DESR_range, pts=pts, reps=reps)
     # do the fitting, returns in MHz, input in GHz
-    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr()#current_f_msp1*1e-9, 
-            #qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
+    f0_temp, u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msp1*1e-9, 
+            qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9)
     delta_f0_temp = f0_temp*1e6-current_f_msp1*1e-3
 
     # start to list all the measured values

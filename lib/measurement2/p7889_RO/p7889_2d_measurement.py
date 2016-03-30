@@ -15,6 +15,7 @@ DP = qt.instruments['p7889']
 ADWIN =  qt.instruments['adwin']
 AWG = qt.instruments['AWG']
 SMB = qt.instruments['SMB100']
+Green = qt.instruments['GreenAOM']
 
 class P7889Measurement2D(m2.Measurement):
 
@@ -36,13 +37,14 @@ class P7889Measurement2D(m2.Measurement):
     def autoconfig(self):
         self._init_p7889()
 
-        """
+        
         SMB.set_power(self.params['MW_power'])
         SMB.set_frequency(self.params['mw_frq'])
         SMB.set_pulm('on')
         SMB.set_status('on')
         SMB.set_iq('on')
-        """
+        
+
 
     def _init_p7889(self):
         DP.set_binwidth(self.params['p7889_binwidth'])
@@ -167,12 +169,7 @@ class DarkESR_p7889(P7889Measurement2D):
         P7889Measurement2D.autoconfig(self)
         
 
-        """
-        GreenAOM.set_cur_controller('ADWIN')
-        GreenAOM.set_power(0.0)
-        GreenAOM.set_cur_controller('AWG') #switch to AWG control
-        """
-
+        qt.pulsar.set_channel_opt('AOM_Green','high', qt.instruments['GreenAOM'].power_to_voltage(self.params['GreenAOM_power'],controller='sec'))
 
     def generate_sequence(self):
 
@@ -180,6 +177,8 @@ class DarkESR_p7889(P7889Measurement2D):
         sq_p7889=pulse.SquarePulse(channel='p7889_start',name='p7889_square',amplitude=1) 
         sq_p7889.length=1e-6 #that is pretty long, can be reduced in the future.
 
+        
+        
         sq_AOMpulse=pulse.SquarePulse(channel='AOM_Green',name='Green_square')
         sq_AOMpulse.amplitude=1 #just set the marker high
         sq_AOMpulse.length=self.params['GreenAOM_pulse_length']
@@ -241,12 +240,8 @@ class Rabi_p7889(P7889Measurement2D):
         self.params['p7889_number_of_sequences'] = self.params['repetitions']
         P7889Measurement2D.autoconfig(self)
         
+        qt.pulsar.set_channel_opt('AOM_Green','high', qt.instruments['GreenAOM'].power_to_voltage(self.params['GreenAOM_power'],controller='sec'))
 
-        """
-        GreenAOM.set_cur_controller('ADWIN')
-        GreenAOM.set_power(0.0)
-        GreenAOM.set_cur_controller('AWG') #switch to AWG control
-        """
     def generate_sequence(self):
 
         #define the pulses

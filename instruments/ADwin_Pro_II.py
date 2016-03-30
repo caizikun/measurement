@@ -43,23 +43,32 @@ class ADwin_Pro_II(Instrument): #1
         sleep(0.01)
         self._adwin32.e_Get_ADBFPar.restype = c_float
 #        self.add_function('Set_DAC_Voltage')
+        self.add_function('Get_Par')
+        self.add_function('Get_FPar')
         self.add_function('Set_Par')
         self.add_function('Set_FPar')
         self.add_function('Start_Process')
         self.add_function('Stop_Process')
-
+        self.add_function('Process_Status')
+        self.add_function('Get_Data_Long')
+        self.add_function('Set_Data_Long')
+        self.add_function('Get_Data_Float')
+        self.add_function('Set_Data_Float')
+        self.add_function('Boot')
+        self.add_function('Load')
 
 
     def _load_dll(self): #3
-        print __name__ +' : Loading adwin32.dll'
+        print self.get_name() +' : Loading adwin32.dll'
         WINDIR=os.environ['WINDIR']
+
         self._adwin32 = windll.LoadLibrary(WINDIR+'\\adwin32')
         ErrorMsg=c_int32(0)
         ProcType = self._adwin32.e_ADProzessorTyp(self._address,ctypes.byref(ErrorMsg))
         if ProcType != 1011:
-            logging.warning(__name__ + ' WARNING: ADwin Pro II with T11 processor expected. Processor type %s found'%ProcType)
+            logging.warning(self.get_name() + ' WARNING: ADwin Pro II with T11 processor expected. Processor type %s found'%ProcType)
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.ProcType: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.ProcType: %s'%ErrorMsg.value)
 
         sleep(0.02)
 
@@ -68,59 +77,57 @@ class ADwin_Pro_II(Instrument): #1
         filename = adwin_path+'\\ADwin11.btl'
         self._adwin32.e_ADboot(filename,self._address,100000,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Boot: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Boot: %s'%ErrorMsg.value)
 
     def Test_Version(self):
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADTest_Version.restype = ctypes.c_short
         ret = self._adwin32.e_ADTest_Version(self._address, 0, ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.TestVersion: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.TestVersion: %s'%ErrorMsg.value)
         return ret
 
     def ProcessorType(self):
         ErrorMsg=c_int32(0)
         ret = self._adwin32.e_ADProzessorTyp(self._address, ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.ProzessorType: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.ProzessorType: %s'%ErrorMsg.value)
         return ret
 
     def Workload(self):
         ErrorMsg=c_int32(0)
         ret = self._adwin32.e_AD_Workload(0, self._address, ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Workload: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Workload: %s'%ErrorMsg.value)
         return ret
 
     def Free_Mem(self, Mem_Spec):
         ErrorMsg=c_int32(0)
         ret = self._adwin32.e_AD_Memory_all_byte(Mem_Spec, self._address, ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Free_Mem: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Free_Mem: %s'%ErrorMsg.value)
         return ret
 
     def Load(self, filename):
-        #print 'filename', filename
+        # print 'filename', filename
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADBload(filename,self._address,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Load: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Load: %s'%ErrorMsg.value)
 
     def Get_Data_Length(self,index):
         ErrorMsg=c_int32(0)
         data = self._adwin32.e_GetDataLength(index,self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Get_Data_Length: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Get_Data_Length: %s'%ErrorMsg.value)
         return data
 
     def Get_Data_Long(self, index, start, count):
-        
         ErrorMsg=c_int32(0)
         data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
         success = self._adwin32.e_Get_Data(data.ctypes.data,2,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            print 'Get_Data_Long:idx, start, ct', index, start, count
-            logging.warning(__name__ + ' : error in ADwin.Get_Data_Long: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Get_Data_Long: %s'%ErrorMsg.value)
         return data
 
     def Set_Data_Long(self, data=numpy.array, index=numpy.int32, 
@@ -131,75 +138,91 @@ class ADwin_Pro_II(Instrument): #1
                 count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
             print 'Set_Data_Long: index:',index, 'data', data, 'type', type(data) ,'start', start, 'count', count
-            logging.warning(__name__ + ' : error in ADwin.Set_Data_Long: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Set_Data_Long: %s'%ErrorMsg.value)
 
     def Get_Data_Float(self, index, start, count):
         ErrorMsg=c_int32(0)
         data = numpy.array(numpy.zeros(count), dtype = numpy.single)
         success = self._adwin32.e_Get_Data(data.ctypes.data,5,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Get_Data_Float: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Get_Data_Float: %s'%ErrorMsg.value)
         return data
 
     def Set_Data_Float(self, data=numpy.array, index=numpy.int32, 
             start=numpy.int32, count=numpy.int32):
-        #print 'Set_Data_Float: index:',index, 'data', data,'start', start, 'count', count
         ErrorMsg=c_int32(0)        
         # Auto type conversion
         d=numpy.array(data,numpy.single)
         success = self._adwin32.e_Set_Data(d.ctypes.data,5,index,start,count,
                 self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + \
+            print 'Set_Data_Float: index:',index, 'data:', data, ', type:', type(data) ,', start:', start, ', count:', count
+            logging.warning(self.get_name() + \
                     ' : error in ADwin.Set_Data_Float: %s'%ErrorMsg.value)
 
     def Get_Par(self,index):
         ErrorMsg=c_int32(0)
         data = self._adwin32.e_Get_ADBPar(index,self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Get_Par: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Get_Par: %s'%ErrorMsg.value)
       
+        return data
+
+    def Get_Par_Block(self,start=numpy.int16, count=numpy.int16):
+        ErrorMsg=c_int32(0)
+        data = numpy.array(numpy.zeros(count), dtype = numpy.int32)
+        success = self._adwin32.e_Get_ADBPar_All(start,count,data.ctypes.data, self._address,ctypes.byref(ErrorMsg))
+        if ErrorMsg.value != 0:
+            logging.warning(self.get_name() + ' : error in ADwin.e_Get_ADBPar_All: %s'%ErrorMsg.value)
         return data
 
     def Set_Par(self,index,value):
         ErrorMsg=c_int32(0)
         self._adwin32.e_Set_ADBPar(index,value,self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Set_Par: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Set_Par: %s'%ErrorMsg.value)
 
     def Get_FPar(self,index):
         ErrorMsg=c_int32(0)
         data = single(self._adwin32.e_Get_ADBFPar(index,self._address,ctypes.byref(ErrorMsg)))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Get_FPar: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Get_FPar: %s'%ErrorMsg.value)
       
+        return data
+
+    def Get_FPar_Block(self,start=numpy.int16, count=numpy.int16):
+        ErrorMsg=c_int32(0)
+        data = numpy.array(numpy.zeros(count), dtype = numpy.single)
+        success = self._adwin32.e_Get_ADBFPar_All(start,count,data.ctypes.data, self._address,ctypes.byref(ErrorMsg))
+        if ErrorMsg.value != 0:
+            logging.warning(self.get_name() + ' : error in ADwin.e_Get_ADBPar_All: %s'%ErrorMsg.value)
         return data
 
     def Set_FPar(self,index,value):
         ErrorMsg=c_int32(0)
         self._adwin32.e_Set_ADBFPar(index,c_float(value),self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Set_FPar: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Set_FPar: %s'%ErrorMsg.value)
 
     def Start_Process(self,index):
         ErrorMsg=c_int32(0)
         result = self._adwin32.e_ADB_Start(index,self._address,ctypes.byref(ErrorMsg))
         if result == 255:
-            logging.warning(__name__ + ' : error in ADwin.Start_Process: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Start_Process: %s'%ErrorMsg.value)
 
     def Stop_Process(self,index):
         #print 'Process stop called for index:', index
         ErrorMsg=c_int32(0)
         result = self._adwin32.e_ADB_Stop(index,self._address,ctypes.byref(ErrorMsg))
         if result == 255:
-            logging.warning(__name__ + ' : error in ADwin.Stop_Process: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Stop_Process: %s'%ErrorMsg.value)
 
     def Process_Status(self,index):
         ErrorMsg=c_int32(0)
         par = c_int16(index-100)
         data = self._adwin32.e_Get_ADBPar(par,self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
-            logging.warning(__name__ + ' : error in ADwin.Process_Status: %s'%ErrorMsg.value)
+            logging.warning(self.get_name() + ' : error in ADwin.Process_Status: %s'%ErrorMsg.value)
 
         return data
 

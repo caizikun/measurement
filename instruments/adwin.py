@@ -19,20 +19,26 @@ class adwin(Instrument):
                 process_subfolder)
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
+
+        # self.add_parameter('dacs',
+        #     type = types.IntType)
+        # self.add_parameter('adcs',
+        #     type = types.IntType)
+
         self.dacs = kw.get('dacs', {})
+        self.adcs = kw.get('adcs', {})
+
         self.use_cfg = use_cfg
 
         self._dac_voltages = {}
         for d in self.dacs:
             self._dac_voltages[d] = 0.
        
-        if kw.get('init', False):
-            self._load_programs()
-
         # the accessible functions
         # initialization
         self.add_function('boot')
         self.add_function('load_programs')
+        self.add_function('init_data')
 
         # tools
         self.add_function('get_process_status')
@@ -49,17 +55,22 @@ class adwin(Instrument):
         self.add_function('get_countrates')
         self.add_function('set_simple_counting')
 
-        # set up config file
-        if self.use_cfg:
-            cfg_fn = os.path.abspath(os.path.join(qt.config['ins_cfg_path'], name+'.cfg'))
-            if not os.path.exists(cfg_fn):
-                _f = open(cfg_fn, 'w')
-                _f.write('')
-                _f.close()
+        if not 'remote' in self.get_tags():
 
-            self.ins_cfg = config.Config(cfg_fn)     
-            self.load_cfg()
-            self.save_cfg()
+            # set up config file
+            if self.use_cfg:
+                cfg_fn = os.path.abspath(os.path.join(qt.config['ins_cfg_path'], name+'.cfg'))
+                if not os.path.exists(cfg_fn):
+                    _f = open(cfg_fn, 'w')
+                    _f.write('')
+                    _f.close()
+
+                self.ins_cfg = config.Config(cfg_fn)     
+                self.load_cfg()
+                self.save_cfg()
+
+            if kw.get('init', False):
+                self.load_programs()
 
     ### config management
     def load_cfg(self, set_voltages=False):
@@ -79,8 +90,11 @@ class adwin(Instrument):
     ### end config management
     def boot(self):
         self.physical_adwin.Boot()
-        self.load_programs()  
+        self.load_programs()
+        self.init_data()  
         
+    
+    def init_data(self):
         if 'init_data' in self.processes:
             self.start_init_data(load=True)
     

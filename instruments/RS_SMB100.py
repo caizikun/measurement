@@ -109,6 +109,8 @@ class RS_SMB100(Instrument):
         self.add_function('reset')
         self.add_function('reset_sweep')
         self.add_function('get_all')
+        self.add_function('get_errors')
+        self.add_function('get_error_queue_length')
 
         if reset:
             self.reset()
@@ -202,12 +204,6 @@ class RS_SMB100(Instrument):
         #self._visainstrument.write('')
 
     def perform_internal_adjustments(self,all_f = False,cal_IQ_mod=True):
-        tmp_pulm = self.get_pulm()
-        try:
-            tmp_iq = self.get_iq()
-        except:
-            tmp_iq = False
-
         status=self.get_status()
         self.off()
         if all_f:
@@ -218,18 +214,14 @@ class RS_SMB100(Instrument):
             s=self._visainstrument.ask('CAL:LEV:MEAS?')
             print 'Level calibrated'
             if cal_IQ_mod:
+                self.set_iq('on')
                 s=self._visainstrument.ask('CAL:IQM:LOC?')
                 print 'IQ modulator calibrated'
         
         self.set_status('off')
         self.set_pulm('off')
-        sleep(0.1)
-        # self.set_pulm(tmp_pulm) 
-
-        if tmp_iq:
-            self.set_iq('off')
-            sleep(0.1)
-            # self.set_iq(tmp_iq)        
+        self.set_iq('off')
+        sleep(0.1)    
         
     def _do_get_frequency(self):
         '''
@@ -321,12 +313,12 @@ class RS_SMB100(Instrument):
         '''
         logging.debug(__name__ + ' : setting power to %s dBm' % power)
         
-        if self.get_status() == 'on' and self.get_pulm() == 'off' and power > self.get_max_cw_pwr():
+        if self.get_pulm() == 'off' and power > self.get_max_cw_pwr():
             logging.warning(__name__ + ' : power exceeds max cw power; power not set.')
-            raise ValueError('power exceeds max cw power')
+            raise ValueError('power exceeds max cw power. The pulse modulation is off')
             
-
-        self._visainstrument.write('SOUR:POW %e' % power)
+        else:
+            self._visainstrument.write('SOUR:POW %e' % power)
 
     def _do_set_max_cw_pwr(self, pwr):
         self._max_cw_pwr = pwr
@@ -413,7 +405,7 @@ class RS_SMB100(Instrument):
             iq (string) : 'on' or 'off'
         '''
         logging.debug(__name__ + ' : reading IQ modulation status from instrument')
-	stat = self._visainstrument.ask('IQ:STAT?')
+        stat = self._visainstrument.ask('IQ:STAT?')
 
         if stat == '1':
             return 'on'
@@ -487,3 +479,36 @@ class RS_SMB100(Instrument):
             None
         '''
         self.set_status('on')
+
+
+    def get_errors(self):
+        '''
+        Get all entries in the error queue and then delete them.
+
+        Input:
+            None
+
+        Output:
+            errors (string) : 0 No error, i.e the error queue is empty.
+                              Positive error numbers denote device-specific errors.
+                              Negative error numbers denote error messages defined by SCPI
+        '''
+        logging.debug(__name__ + ' : reading errors from instrument')
+        stat = self._visainstrument.ask('SYSTem:ERRor:ALL?')
+        return stat
+
+    def get_error_queue_length(self):
+        '''
+        Get all entries in the error queue and then delete them.
+
+        Input:
+            None
+
+        Output:
+            errors (string) : 0 No error, i.e the error queue is empty.
+                              Positive error numbers denote device-specific errors.
+                              Negative error numbers denote error messages defined by SCPI
+        '''
+        logging.debug(__name__ + ' : reading errors from instrument')
+        count = self._visainstrument.ask('SYSTem:ERRor:COUNt?')
+        return int(count)
