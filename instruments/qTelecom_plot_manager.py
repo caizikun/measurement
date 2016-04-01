@@ -17,6 +17,7 @@ import numpy as np
 # import pylab as pltexit
 from lib import config
 import timeit
+from qTelecom_manager import qTelecom_manager
 
 
 
@@ -152,19 +153,21 @@ class qTelecom_plot_manager (CyclopeanInstrument):
     def _sampling_event(self):
         # start = timeit.timeit()
         # print "hello"
-        self.end = time.time()
-        # print end - start
-        while (self.end - self.start) < self.get_dwell_time()*0.001:
-            self.end = time.time()
-            print self.end, self.start, self.get_dwell_time()
-            pass
-        else:
-            print "hit"
-            self.start = self.end
-            meas_T = self.get_Tmin() + self.i*(self.get_Tmax() - self.get_Tmin())/self.get_nsteps() - self.get_knob_temperature()
-            self.set_set_temperature(meas_T)
-            voltage = meas_T/20.
-            self._adwin.start_set_dac(dac_no=self.dac_no, dac_voltage=voltage)
+        # self.end = time.time()
+        # # print end - start
+        # while (self.end - self.start) < self.get_dwell_time()*0.001:
+        #     # self.end = time.time()
+        #     # print self.end, self.start, self.get_dwell_time()
+        #     pass
+        # else:
+        # self.start = self.end
+        meas_T = self.get_Tmin() + self.i*(self.get_Tmax() - self.get_Tmin())/self.get_nsteps() - self.get_knob_temperature()
+        self.set_set_temperature(meas_T)
+        voltage = meas_T/20.
+        self._adwin.start_set_dac(dac_no=self.dac_no, dac_voltage=voltage)
+        self.end = time.clock()
+        # print meas_T, self.end, self.start, (self.end-self.start), (self.i+1)*0.001*self.get_dwell_time()
+        if (self.end > self.start + self.i*0.001*self.get_dwell_time()):
             self.read_temperature() 
             self.read_DFG_power()
             self._plot_DFG_values = {'temperature_channel': self.get_curr_temperature(), 'dfg_channel': self.get_DFG_power(), }
@@ -172,11 +175,11 @@ class qTelecom_plot_manager (CyclopeanInstrument):
             self.get_dfg_channel_plot_DFG_values()
             # self.addtocounter()
             self.i = self.i + 1
-            print self.i
-            if self.i == self.get_nsteps():
-                return False
-            else:
-                return True
+            print self.i,  "hit"
+        if self.i == self.get_nsteps():
+            return False
+        else:
+            return True
 
 
     # def addtocounter(self):
@@ -188,9 +191,23 @@ class qTelecom_plot_manager (CyclopeanInstrument):
     #     return True
 
     def start_running (self):
-        # self.check_knob_temperature()
-        self.start = time.time()
-        self.set_is_running(True)
+        self.check_knob_temperature()
+        setT = self.get_Tmin() - self.get_knob_temperature()
+        print "set temperature is ", setT, self.get_Tmin()
+        # self.set_set_temperature(self.get_target_temperature())
+        voltage = setT/20.
+        self._adwin.start_set_dac(dac_no=self.dac_no, dac_voltage=voltage)
+        print "voltage: ", voltage
+        while abs(self.get_Tmin() - self.get_curr_temperature()) > 0.05:
+            self.read_temperature()
+            pass
+            print "pass"
+        else:
+            print "starting run"
+            self.start = time.clock()
+            self.i = 0
+            self.set_is_running(True)
+
 
     def read_temperature (self):
     	self._adwin.start_read_adc (adc_no = self.adc_no)
