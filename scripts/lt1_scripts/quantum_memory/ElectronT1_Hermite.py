@@ -169,14 +169,16 @@ if __name__ == '__main__':
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0, end_time = 1.5e6, pts = 4)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
     # electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 0.0e6, end_time = 4.0e5, pts = 5)
-    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 505, end_time = 500e3, pts = 6)
-    GreenAOM.set_power(20e-6)
-    qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 505, end_time = 300e3, pts = 6)
+    #GreenAOM.set_power(20e-6)
+    #qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
     
-    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=+1', T1_readout_state = 'ms=0', start_time = 505, end_time = 500e3, pts = 6)
+    #electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0', start_time = 505, end_time = 500e3, pts = 6)
+    '''
     GreenAOM.set_power(20e-6)
     qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
     electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', start_time = 505, end_time = 1000e6, pts = 6)
     GreenAOM.set_power(20e-6)
     qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=2)
-    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=+1', T1_readout_state = 'ms=0', start_time = 505, end_time = 1000e6, pts = 6)
+    electronT1hermite(SAMPLE_CFG, T1_initial_state = 'ms=-1', T1_readout_state = 'ms=0', start_time = 505, end_time = 1000e6, pts = 6)
+    '''

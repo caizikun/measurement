@@ -2598,7 +2598,7 @@ config['adwin_pro_processes'] = {
         'MBI_multiple_C13' : {
                 'info' : """
                     Conditional repumping, and resonant readout at the end.
-                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
+                    Has one Nitrogen-MBI step and multiple Carbon-MBI step, can read out multiple times (e.g., on different lines).
                     """,
                 'index' : 9,
                 'file' : 'C13_multiple.TB9',
@@ -2735,8 +2735,8 @@ config['adwin_pro_processes'] = {
                 'file' : 'bell_lt4.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['AWG_start_DO_channel'        ,  16],
-                    ['AWG_done_DI_channel'         ,   8],
+                    ['AWG_start_DO_channel'        ,  16], #DX
+                    ['AWG_done_DI_channel'         ,   8], #DX
                     ['SP_duration'                 , 100],
                     ['wait_after_pulse_duration'   ,   1],
                     ['remote_CR_DI_channel'        ,   8],
@@ -2895,17 +2895,17 @@ config['adwin_rt2_processes'] = {
     }
 
 config['adwin_lt4_dacs'] = { #TODO describe
-        'atto_x' : 1,
-        'atto_y' : 2,
-        'atto_z' : 3,
-        'green_aom' : 4,
-        'yellow_aom' : 5,
-        'matisse_aom' : 6,
-        'newfocus_aom': 7,
-        'gate' : 8,
-        'gate_2' : 9,
-        'gate_mod': 10,
-        'yellow_aom_frq':11,
+        'atto_x' : 1, #D
+        'atto_y' : 2, #D
+        'atto_z' : 3, #D
+        'green_aom' : 4, #D
+        'yellow_aom' : 5, #D
+        'matisse_aom' : 6, #D
+        'newfocus_aom': 7, #D
+        'gate' : 8, #D
+        'gate_2' : 9, #D
+        'gate_mod': 10, #D
+        'yellow_aom_frq':11, #D
         }
 
 
@@ -3265,8 +3265,8 @@ config['adwin_cav1_processes'] = {
             'info' : {
                 'counters' : 4,
                 },
-            'index' : 2,
-            'file' : 'voltage_scan_sync.TB2',
+            'index' : 5,
+            'file' : 'voltage_scan_sync.TB5',
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],

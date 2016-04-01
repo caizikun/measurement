@@ -25,8 +25,8 @@ print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 
 ### Assumes a cylindrical magnet
 cfg['magnet']={
-'nm_per_step'       :   22.68, ## Z-movement, for 18 V and 200 Hz 
-'radius'            :   5.,     ## millimeters
+'nm_per_step'       :   38.85, ## Z-movement, for 18 V and 200 Hz 
+'radius'            :   5.,     ## millimetersy
 'thickness'         :   4.,     ## millimeters
 'strength_constant' :   1.3}    ## Tesla
 
@@ -147,8 +147,8 @@ cfg['protocols']['Magnetometry']={
 
 mw_power  = 20
 mw2_power = 20
-f_msm1_cntr =   1.744193e9#2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
-f_msp1_cntr =   4.00111e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
+f_msm1_cntr =   1.746666e9 #2.01579e9#1.755020e9            #Electron spin ms=-1 frquency 
+f_msp1_cntr =   4.008621e9#3.73636e9#4.002669e9 #3.676464e9             #Electron spin ms=+1 frequency 
                 
 zero_field_splitting = 2.877623e9   # not calibrated #contains + 2*N_hf
                                  
@@ -176,10 +176,10 @@ if electron_transition == '-1':
     AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
     
     Hermite_pi_length = 160e-9    
-    Hermite_pi_amp = 0.423 #0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_amp = 0.442 #0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length = 65e-9#56e-9 # divsible by 2
-    Hermite_pi2_amp = 0.427 #0.501
+    Hermite_pi2_amp = 0.447 #0.501
 
     Square_pi_length = 116e-9   #250 MHz slow
     Square_pi_amp = 0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
@@ -236,7 +236,7 @@ mw2_freq             = f_msp1_cntr   # Center frequency
 mw2_pulse_shape = 'Hermite'
 
 if mw2_freq == f_msm1_cntr:
-    mw2_Hermite_pi_length = 90e-9    
+    mw2_Hermite_pi_duration = 90e-9    
     mw2_Hermite_pi_amp = 0.414
     mw2_Hermite_pi2_length = 70e-9
     mw2_Hermite_pi2_amp = .5  
@@ -304,8 +304,8 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau_m1'    :  [4.996e-6],
-'C1_Ren_N_m1'      :  [36],
+'C1_Ren_tau_m1'    :  [7.220e-6],
+'C1_Ren_N_m1'      :  [44],
 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [32.1] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
 
     ################
@@ -388,8 +388,8 @@ cfg['samples']['111_1_sil18'] = {
 'C5_geo_uncond_N_m1':  [28],
 'C5_uncond_tau_m1' :   [(9.52)*1e-6],
 'C5_uncond_pi_N_m1':   [94],
-'C5_Ren_tau_m1'    :   [11.308e-6],
-'C5_Ren_N_m1'      :   [48],
+'C5_Ren_tau_m1'    :   [6.544e-6],
+'C5_Ren_N_m1'      :   [28],
 'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [155.13] + [4.19] + [30.87] + [0.0] + [159.52] + [-13.79] + [0.0] + [0.0] + [0.0]),
 
 'C6_gate_optimize_tau_list_m1' :  [4.93e-6,4.93e-6,4.93e-6,4.932e-6,4.932e-6,4.932e-6],
@@ -401,7 +401,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C6_Ren_tau_m1'    :   [4.932e-6],
 'C6_Ren_N_m1'      :   [92],
-'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [91.03] + [251.57] + [3.75] + [0.0] + [1.96] + [36.92] + [0.0] + [0.0] + [0.0]),
+'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [91.03] + [251.57] + [3.75] + [0.0] + [1.96] + [25.65] + [0.0] + [0.0] + [0.0]),
 
 ########## dummy carbon 7
 'C7_freq_m1'       :   456e3,         #Only roughly calibrated
@@ -623,7 +623,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 
     'Hermite_pi_length'                 :  Hermite_pi_length,    
     'Hermite_pi_amp'                    :  Hermite_pi_amp,
-    'mw2_Hermite_pi_length'             :  mw2_Hermite_pi_length,
+    'mw2_Hermite_pi_duration'           :  mw2_Hermite_pi_length,
     'mw2_Hermite_pi_amp'                :  mw2_Hermite_pi_amp,
     'BB1_fast_pi_duration'              :  BB1_pi_length,
     'BB1_fast_pi_amp'                   :  BB1_pi_amplitude,

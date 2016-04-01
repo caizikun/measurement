@@ -1,17 +1,30 @@
+"""
+Script for e-spin ramsey, can be used to measure electron T2. Uses pulsar sequencer
+"""
 import qt
 import numpy as np
+
+#reload all parameters and modules
 execfile(qt.reload_current_setup)
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 from measurement.scripts.espin import espin_funcs as funcs
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 reload(funcs)
 
+# from darkesr, use of some of these is hidden. Not relevant
+import measurement.lib.config.adwins as adwins_cfg
+import measurement.lib.measurement2.measurement as m2
+from measurement.lib.measurement2.adwin_ssro import ssro
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
+#reload(funcs)
 
 #name = 'HANS_sil4'
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 name=SAMPLE_CFG
+
 def electronramseyCORPSE(name):
     m = pulsar_msmt.ElectronRamseyCORPSE(name)
     funcs.prepare(m)
@@ -85,8 +98,8 @@ def electronramsey(name):
 
 def electronramseyHermite(name, debug = False):
     m = pulsar_msmt.GeneralElectronRamsey(name)
-
-    #funcs.prepare(m)
+    print m.adwin
+    # funcs.prepare(m)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -116,7 +129,7 @@ def electronramseyHermite(name, debug = False):
 
     # for the autoanalysis
     m.params['sweep_name'] = 'evolution time (ns)'
-    m.params['sweep_pts'] = (m.params['evolution_times'] + m.params['Hermite_fast_pi2_duration'] )* 1e9
+    m.params['sweep_pts'] = (m.params['evolution_times'] + m.params['Hermite_pi2_length'] )* 1e9
 
     # Start measurement
     m.autoconfig()

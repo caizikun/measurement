@@ -181,10 +181,10 @@ if __name__ == '__main__':
         Nmax = 100
         larmor_nr = 5
         reps = 800
-
+        tau_larmor = 1/447968.42
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))
-        Total_time += reps*sum(np.linspace(2*Number_of_pulses*2.315e-6*larmor_min,2*Number_of_pulses*2.315e-6*larmor_max,nr_of_runs)) /3600.
+        Total_time += reps*sum(np.linspace(2*Number_of_pulses*tau_larmor*larmor_min,2*Number_of_pulses*tau_larmor*larmor_max,nr_of_runs)) /3600.
 
         print Total_time
 
