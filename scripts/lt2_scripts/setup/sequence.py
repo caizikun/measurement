@@ -22,22 +22,34 @@ spin_of = -104e-9-27e-9
 
 # MW
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker',
-    high=2.0, low=0, offset=0., delay=spin_of+260e-9, active=True)
-qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
+    high=2.0, low=0, offset=0., delay=spin_of+255e-9, active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='MW_switch', type='marker',
+    high=2.7, low=0, offset=0., delay=spin_of+255e-9, active=True)
+# qt.pulsar.define_channel(id='ch4_marker2', name='MW_invswitch', type='marker',
+#     high=2.7, low=0, offset=0., delay=spin_of+260e-9, active=True)
+qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9, #MAB: was 0.9, lowered to protect MW switch
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+
+# second MW source
+qt.pulsar.define_channel(id='ch2', name='MW2', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+qt.pulsar.define_channel(id='ch3_marker1', name='MW2_pulsemod', type='marker',
+    high=2.0, low=0, offset=0., delay=spin_of+240e-9, active=True)
 
 #RF
 qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
+
 # sync ADwin
 qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
 
+
 # #HH
-# qt.pulsar.define_channel(id='ch2_marker2', name='HH_sync', type='marker',
+#qt.pulsar.define_channel(id='ch4_marker1', name='sync', type='marker',
 #     high=2.0, low=0, offset=0., delay=0., active=True)
 # qt.pulsar.define_channel(id='ch3_marker1', name='HH_MA1', type='marker',
 #     high=2.0, low=0, offset=0., delay=0., active=True)
@@ -47,10 +59,10 @@ qt.pulsar.define_channel(id='ch1_marker2', name='adwin_sync', type='marker',
 #    low=-1.5, offset=0., delay=112e-9, active=True)
 
 
-qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
-        high=4.0, low=0, offset=0., delay=148e-9, active=True)
-qt.pulsar.define_channel(id='ch4_marker1', name='fpga_clock', type='marker', 
-        high=1.0, low=0, offset=0., delay=0., active=True)
+# qt.pulsar.define_channel(id='ch2', name='fpga_gate', type='analog', 
+#         high=4.0, low=0, offset=0., delay=148e-9, active=True)
+# qt.pulsar.define_channel(id='ch4_marker1', name='fpga_clock', type='marker', 
+#         high=1.0, low=0, offset=0., delay=0., active=True)
  
 
 '''
@@ -63,18 +75,18 @@ qt.pulsar.define_channel(id='ch3_marker2', name='EOM_trigger', type='marker',
 '''
 
 #AOMs
-#qt.pulsar.define_channel(id='ch4_marker1', name='EOM_AOM_Matisse', type='marker',
-#    high=1.0, low=0.02, offset=0., delay=416e-9, active=True)
+qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Matisse', type='marker',
+    high=1.0, low=0.02, offset=0., delay=416e-9, active=True)
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0., delay=466e-9, active=True)
+    high=0.4, low=0.0, offset=0., delay=+109e-9+200e-9+30e-9, active=True) #delay was with switch 416e-9. #2015-07-17
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 
-qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Matisse', type='marker',
-    high=0.4, low=0.0, offset=0., delay=466e-9, active=True)
-qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())
+qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Repumper', type='marker',
+     high=1., low=0.0, offset=0., delay=300e-9, active=True)
+qt.pulsar.set_channel_opt('AOM_Repumper','high', qt.instruments['RepumperAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Repumper','low',  qt.instruments['RepumperAOM'].get_sec_V_off())
 
 #qt.pulsar.define_channel(id='ch3_marker2', name='AOM_Yellow', type='marker',
 #     high=0.4, low=0.0, offset=0., delay=466e-9, active=True)

@@ -21,25 +21,28 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=289e-9, active=True)
+    high=2.0, low=0, offset=0., delay=269e-9, active=True) #269 or SGS100. was a delay of 302 for SMB100
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=230e-9, active=True)  #230e-9
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
     low=-1.0, offset=0., delay=230e-9, active=True)
+qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
+    high=2.7, low=0, offset=0., delay=247e-9, active=True)
 
 #TH
 qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)   
-
+# qt.pulsar.define_channel(id='ch3_marker1', name='MW_switch', type='marker',
+#     high=2.7, low=0, offset=0., delay=255e-9, active=True)
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
-qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Yellow', type='marker', 
-    high=2.0, low=0, offset=0., delay=0e-9, active=True)
+# qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
+#     high=2.7, low=0, offset=0., delay=269e-9, active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='RND_halt', type='marker', 
     high=2.0, low=0, offset=0, delay=100e-9, active=True)
 qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 
-    high=2.0, low=0, offset=0., delay=85e-9, active=True)
+    high=2.0, low=0, offset=0., delay=102e-9, active=True)
 
 qt.pulsar.define_channel(id='ch4_marker1', name='adwin_success_trigger', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
@@ -51,8 +54,8 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 #AOMs
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=554e-9, active=True) #617 ns for normal pulses
-qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset',  qt.instruments['PulseAOM'].get_sec_V_off())
+    high=1.0, low=-1.0, offset=0.0, delay=546e-9, active=True) #was delay=576e-9 #617 ns for normal pulses 554
+qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 
 
 #qt.pulsar.define_channel(id='ch4_marker2', name='EOM_trigger', type='marker',
@@ -87,7 +90,7 @@ qt.pulsar.AWG_sequence_cfg={
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
         'TRIGGER_INPUT_THRESHOLD'   :   1.0,  # V
-        'EVENT_INPUT_IMPEDANCE'     :   2,    # 50 ohm | 1 kohm
+        'EVENT_INPUT_IMPEDANCE'     :   1,    # 50 ohm | 1 kohm
         'EVENT_INPUT_POLARITY'      :   1,    # Positive | Negative
         'EVENT_INPUT_THRESHOLD'     :   1.0,  #V
         'JUMP_TIMING'               :   1,    # Sync | Async

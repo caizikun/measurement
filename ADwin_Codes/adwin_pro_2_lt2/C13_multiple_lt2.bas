@@ -134,6 +134,13 @@ DIM MBE_threshold AS LONG
 DIM MBE_RO_duration AS LONG
 DIM run_case_selector AS LONG
 
+'Added for Shutter
+DIM Shutter_channel AS LONG
+DIM use_shutter AS LONG
+DIM Shutter_opening_time AS LONG
+DIM Shutter_closing_time AS LONG
+DIM Shutter_safety_time AS LONG
+
 INIT:
   ' ####################
   ' Initializing variables from Data
@@ -171,8 +178,13 @@ INIT:
 
   Parity_RO_duration           = DATA_20[24]
   C13_MBI_RO_state             = DATA_20[25]
-
-
+  
+  use_shutter                  = DATA_20[26]
+  Shutter_channel              = DATA_20[27]
+  Shutter_opening_time         = DATA_20[28]
+  Shutter_closing_time         = DATA_20[29]
+  Shutter_safety_time          = DATA_20[30]
+  
   ' floats
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]
@@ -246,7 +258,8 @@ INIT:
 
   P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
+  P2_DIGOUT(DIO_Module,Shutter_channel, 0)
+  
   tmp = P2_Digin_Edge(DIO_MODULE,0)
   mode = 0
   timer = 0
@@ -383,7 +396,7 @@ EVENT:
         ENDIF
 
       CASE 11 'Start parity msmnt seq and wait for trigger // go to Parity msmt RO
-        mode = 12
+        mode = 12 
 
       CASE 12 'Parity RO // go to more Parity msmnt or final RO
         inc(Parity_msmnt_counter)
@@ -392,13 +405,26 @@ EVENT:
         ELSE
           mode = 11 'to more  Parity msmt
         ENDIF
-
-      CASE 13 'start Final RO
+        
+      CASE 13 'Close Shutter
         mode = 14
+        
+      CASE 14 'start Final RO
+        mode = 15
 
-      CASE 14 ' Final RO
+      CASE 15 ' Final RO
+        mode = 16
+        
+      CASE 16 ' Final RO
+        IF (use_shutter > 0) THEN
+          mode = 17
+        ELSE
+          mode = 0 'DIRTY HACK. Should be 0 for regular sequences without shutter.!!! NK 20151028'
+        ENDIF
+      
+      CASE 17 'Safety Waiting time for shutter
         mode = 0
-
+        
       CASE 22' If reset N retry MBI (goto spin pump E)
         mode = 1
 
@@ -430,6 +456,7 @@ EVENT:
           C13_MBI_threshold = DATA_40[Current_C_init] 'Also go back to first init threshold
           MBE_counter = 0
           Parity_msmnt_counter =0
+
         ENDIF
 
       CASE 1 'SP-E // go to MBI
@@ -459,13 +486,13 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
           CPU_SLEEP(9)                                  ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
         ELSE
           awg_in_was_hi = awg_in_is_hi
           awg_in_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
-
+          
           if ((awg_in_was_hi = 0) and (awg_in_is_hi > 0)) then
             awg_in_switched_to_hi = 1
+           
           else
             awg_in_switched_to_hi = 0
           endif
@@ -554,41 +581,41 @@ EVENT:
       CASE 6 'C13 MBI readout // go to SP-A OR CR-Check
 
         IF(timer=0) THEN 'Start the laser
-
+    
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_C13_MBI_RO_voltage+32768) ' turn on Ex laser
           ' Needs Carbon Voltage
-
+    
         ELSE 'Check if we got a count or if we are the end of the RO
           counts = P2_CNT_READ(CTR_MODULE, counter_channel)
           IF (counts >= C13_MBI_threshold) THEN
             P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
             P2_CNT_ENABLE(CTR_MODULE,0)
-
+    
             IF (C13_MBI_RO_state = 1) THEN
               case_success = 0
             ENDIF
             IF (C13_MBI_RO_state = 0) THEN
               case_success = 1
             ENDIF
-
+    
             wait_time = next_MBI_stop-timer
             run_case_selector = 1
-
+    
           ELSE
             IF (timer = C13_MBI_RO_duration ) THEN
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,0)
-
+    
               IF (C13_MBI_RO_state = 1) THEN
                 case_success = 1
               ENDIF
-
+    
               IF (C13_MBI_RO_state = 0) THEN
                 case_success = 0
               ENDIF
-
+    
               run_case_selector = 1
             ENDIF
           ENDIF
@@ -732,32 +759,52 @@ EVENT:
           ENDIF
         ENDIF
 
-      CASE 13 'start Final RO
-
+      CASE 13 'Closing Shutter
+        IF (use_shutter > 0) THEN
+          P2_DIGOUT(DIO_Module,Shutter_channel, 1)
+          INC(PAR_60)
+          'wait_time = Shutter_closing_time
+        ELSE
+          'wait_time = 0
+        ENDIF
+        wait_time = 0
+        run_case_selector = 1
+        
+      CASE 14 'Opening shutter and get Trigger for RO
         awg_in_was_hi = awg_in_is_hi
         awg_in_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
-
+  
         IF ((awg_in_was_hi = 0) AND (awg_in_is_hi > 0)) THEN
           awg_in_switched_to_hi = 1
         ELSE
           awg_in_switched_to_hi = 0
         ENDIF
-
+      
         IF (awg_in_switched_to_hi > 0) THEN
+          IF (use_shutter > 0) THEN
+            P2_DIGOUT(DIO_Module,Shutter_channel, 0)
+            INC(PAR_60)
+            wait_time = Shutter_opening_time
+          ELSE
+            wait_time = 0
+          ENDIF  
           run_case_selector = 1
-          wait_time = 0
-
-          'start laser for RO
-          RO_duration = DATA_34[ROseq_cntr]
-          E_RO_Voltage = DATA_36[ROseq_cntr]
-
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277 * E_RO_voltage + 32768) ' turn on Ex laser
-
         ENDIF
+                
+      CASE 15 'Start Final RO by turning on lasers       
+        run_case_selector = 1
+        wait_time = 0
 
-      CASE 14    'Final RO // go to CR check
+        'start laser for RO
+        RO_duration = DATA_34[ROseq_cntr]
+        E_RO_Voltage = DATA_36[ROseq_cntr]
+
+        P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
+        P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
+        P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277 * E_RO_voltage + 32768) ' turn on Ex laser
+
+
+      CASE 16    'Final RO // go to CR check
 
         counts = P2_CNT_READ(CTR_MODULE, counter_channel)
         IF ((timer = RO_duration-1) OR (counts > 0)) THEN
@@ -785,6 +832,11 @@ EVENT:
 
           ENDIF
         ENDIF
+        
+      CASE 17 'Case to implement safety waiting time for shutter
+        wait_time = Shutter_safety_time
+        INC(PAR_60)
+        run_case_selector = 1
 
       CASE 22 'If reset N retry MBI (goto spin pump E)
         IF (timer = 0) THEN
@@ -805,6 +857,7 @@ EVENT:
 
     ENDSELECT
     INC(timer)
+    
   ENDIF
 
 

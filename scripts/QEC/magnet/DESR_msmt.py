@@ -1,4 +1,5 @@
 # import the msmt class
+import numpy as np
 import qt
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
@@ -7,10 +8,12 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 
 def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0, 
-        pulse_length = 2e-6, ssbmod_amplitude = None):
+        pulse_length = 2e-6, ssbmod_amplitude = None, mw_switch=False):
+    if mw_switch:
+        m = pulsar_msmt.DarkESR_Switch(name)
+    else:
+        m = pulsar_msmt.DarkESR(name)
 
-    
-    m = pulsar_msmt.DarkESR(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -43,6 +46,10 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0,
     m.params['ssbmod_frq_start'] = 43e6 - range_MHz*1e6 
     m.params['ssbmod_frq_stop'] = 43e6 + range_MHz*1e6
     m.params['pts'] = pts
+
+    m.params['sweep_pts'] = (np.linspace(m.params['ssbmod_frq_start'],
+                    m.params['ssbmod_frq_stop'], m.params['pts']) 
+                    + m.params['mw_frq'])*1e-9
 
     m.autoconfig()
     m.generate_sequence(upload=True)

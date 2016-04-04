@@ -162,7 +162,7 @@ class LaserFrequencyScan:
 
 class Scan(LaserFrequencyScan):
 
-    def __init__(self, name='LT3', red_labjack_dac_nr=0, yellow_labjack_dac_nr = 4, red_wm_channel = 4, yellow_wm_channel = 2):
+    def __init__(self, name='LT3', red_labjack_dac_nr=2, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
@@ -173,7 +173,7 @@ class Scan(LaserFrequencyScan):
 
         self.set_red_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(red_labjack_dac_nr)](x)
         self.get_red_laser_voltage = lambda : self.labjack.__dict__['get_bipolar_dac'+str(red_labjack_dac_nr)]()
-        self.set_red_power = qt.get_setup_instrument('MatisseAOM').set_power
+        self.set_red_power = qt.get_setup_instrument('NewfocusAOM').set_power
 
 
         self.set_yellow_laser_voltage = lambda x: self.labjack.__dict__['set_bipolar_dac'+str(yellow_labjack_dac_nr)](x)
@@ -186,7 +186,7 @@ class Scan(LaserFrequencyScan):
         self.get_counts = self.adwin.measure_counts
         self.counter_channel = 0
         self.red_wm_channel = red_wm_channel
-        self.red_voltage_frequency_relation_sign = 1
+        self.red_voltage_frequency_relation_sign = -1
 
 
         self.yellow_voltage_frequency_relation_sign = 1
@@ -544,18 +544,18 @@ def fast_gate_scan(name):
 def single_scan(name):
     m = Scan()
     m.name=name
-    do_MW=False
+    do_MW=True
     if do_MW:
-        m.mw.set_power(-7)
-        m.mw.set_frequency(2.809e9)
+        m.mw.set_power(-10)
+        m.mw.set_frequency(1.669252e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
     #m.scan_to_frequency(65)
-    m.red_scan(73, 85, voltage_step=0.001, integration_time_ms=20, power = 3e-9)  #0.6e-9
+    # m.red_scan(60, 80, voltage_step=0.01, integration_time_ms=20, power = 3e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
-    #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
+    m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
     #m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     if do_MW:
@@ -569,9 +569,9 @@ def set_gate_voltage(v):
 
 
 if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.001e-6)
+    qt.get_setup_instrument('GreenAOM').set_power(0.000e-6)
 
-    single_scan('SAM_SIL5')
+    single_scan('Pippin_SIL1')
     #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)

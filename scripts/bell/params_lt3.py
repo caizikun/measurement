@@ -39,6 +39,7 @@ params_lt3['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integr
 params_lt3['wait_for_AWG_done'] = 1
 params_lt3['sequence_wait_time'] = 10 #NOTE gets set in Bell.autoconfig
 params_lt3['invalid_data_marker_do_channel']=5
+params_lt3['rnd_output_di_channel'] = 19
 
 #adwin powers
 params_lt3['Ex_CR_amplitude'] = qt.exp_params['protocols'][name]['AdwinSSRO']['Ex_CR_amplitude'] 
@@ -53,15 +54,11 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 ### pulses and MW stuff lt3
 #####################
 ## general
-params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
+params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['mw_frq']
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
+params_lt3['MW_Q_amp_factor'] = 0.#0.920/0.907 # calibrated on lt3 on the 2015-12-15
 
-params_lt3['square_MW_pulses']    = False
-#params_lt3['MW_pi_amp']	   	= qt.exp_params['protocols'][name]['pulses']['Square_pi_amp'] #0.895 # 2014-07-09
-#params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Square_pi_length']# 180e-9 # 2014-07-09
-#params_lt3['MW_pi2_amp']	    = qt.exp_params['protocols'][name]['pulses']['Square_pi2_amp']
-#params_lt3['MW_pi2_duration']  = qt.exp_params['protocols'][name]['pulses']['Square_pi2_length']#90e-9 # 2014-07-09
 params_lt3['MW_pi_amp']	   	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt3['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
 params_lt3['MW_pi2_amp']	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
@@ -71,10 +68,12 @@ params_lt3['MW_RND_amp_I']	   = params_lt3['MW_pi2_amp']#TODO Calibrate  -0.487
 params_lt3['MW_RND_duration_I']= params_lt3['MW_pi2_duration'] #TODO Calibrate 50e-9
 params_lt3['MW_RND_amp_Q']	   = 0# 0.487 
 params_lt3['MW_RND_duration_Q']= params_lt3['MW_pi2_duration'] #50e-9
+params_lt3['MW_RND_I_ispi2'] = True
+params_lt3['MW_RND_Q_ispi2'] = True
 
 params_lt3['MW_BellStateOffset'] = 0 # Both NVs are rotated by 0.5 pi  AR 2015-03-04
 
-params_lt3['echo_offset'] = -70e-9
+params_lt3['echo_offset'] = -100e-9 #2015-06-01
 params_lt3['free_precession_time_1st_revival'] = 73.2e-6  #TO CALIBRATE IF WE USE IT
 params_lt3['free_precession_offset'] = 0.e-9
 #adwin wait time after PLU signal:
@@ -82,33 +81,37 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
-params_lt3['eom_pulse_amplitude']        = 2.0 #(for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
+params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
 params_lt3['eom_pulse_duration']         = 2e-9
-params_lt3['eom_off_amplitude']          = -0.049 # calibration from 2015-02-12 
-params_lt3['eom_off_duration']           = 70e-9 #XXXX
+params_lt3['eom_off_amplitude']          = -0.02 # calibration from 2015-12-30
+params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
 params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014# 
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
-params_lt3['aom_risetime']				 = 15e-9
-params_lt3['aom_amplitude']				 = .48 # 2015-03-28 with 29 CR
+params_lt3['aom_risetime']				 = 40e-9#10e-9 #
+params_lt3['aom_amplitude']				 = 0.5 # on CR 31
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
+params_lt3['AWG_RO_power']            = 15e-9#15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt3['MW_opt_puls1_separation'] = 25e-9 #distance between the end of the MW and the start of opt puls1
+params_lt3['MW_opt_puls1_separation'] = 22e-9 # had 25e-9 on 20150601 #distance between the end of the MW and the start of opt puls1
 params_lt3['MW_1_separation'] 	= joint_params.joint_params['opt_pulse_separation']
-params_lt3['MW_RND_wait'] 		= -50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse#XXXXXX was 160
+params_lt3['MW_RND_wait'] 		= 50e-9#-50e-9#160e-9 #-90e-9 #wait start RND MW after end of RND halt pulse #positive --> shift towards mw sequence
 params_lt3['RND_duration']	 	= 200e-9
 params_lt3['RO_wait'] 			= 75e-9 #wait start RO after end of RND MW pulse
 params_lt3['sync_during_LDE'] 	= 1#sync is only for lt4
 params_lt3['plu_during_LDE'] 	= 1 
-params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 #SP duration + 500 ns - some diff in optical pathlength --> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
+
+params_lt3['opt_pulse_start']	= 5.5e-6 + 2215e-9 - 46e-9 + 4e-9 +1e-9 #additional 1 ns delay should be there when jitter measurement
+														   # shows peak at 489.3 ns, and be commented if it is 490.3  BH 26-05-2015
+														   #This time corresponds to SP duration + 500 ns - some diff in optical pathlength 
+														   #--> 1.5e-6 = dt(f,BC)-dt(f,AC) #46ns added from PulseOverlap
 
 params_lt3['PLU_gate_duration']       = 200e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
@@ -130,6 +133,10 @@ params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_da
 params_lt3['entanglement_marker_number'] = 4
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
+params_lt3['prepulse_start_bin'] = 7570
+params_lt3['prepulse_stop_bin'] = 7570 + 18
 params_lt3['live_filter_queue_length'] = 10
+
+params_lt3['twitter_rnd_fp'] = r'D:\twitter_rnd\Alice_current.txt'
 
 params_lt3['measurement_time'] =   24*60*60 #sec = 24 H

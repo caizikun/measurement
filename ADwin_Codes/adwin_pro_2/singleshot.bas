@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\tud277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -97,9 +97,9 @@ LOWINIT:
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
   P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
 
-  P2_Digprog(DIO_MODULE,13)      'configure DIO 08:15 as input, all other ports as output
+  P2_Digprog(DIO_MODULE,11)      'XXXX in is now 16:23,configure DIO 08:15 as input, all other ports as output. NK and AR: did input and output get swapped?
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-
+  P2_DIGOUT(DIO_MODULE,11,1) 'turn on modulation for repumping with a single laser
   mode = 0
   timer = 0
   processdelay = cycle_duration

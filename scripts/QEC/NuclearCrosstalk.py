@@ -3,6 +3,7 @@ Script for a carbon Rabi sequence
 """
 import numpy as np
 import qt 
+import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -25,7 +26,7 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
     m.params['Carbon_A'] = carbon_A    ### Carbon spin that the Ramsey is performed on
     m.params['Carbon_B'] = carbon_B    ### Carbon spin that the Rabi/Gate is performed on
     
-    m.params['reps_per_ROsequence'] = 3000 
+    m.params['reps_per_ROsequence'] = 500
     m.params['C13_init_state']      = 'up' 
     m.params['C13_init_method']     = C13_init_method
     m.params['sweep_name']          = 'Number of pulses'
@@ -36,9 +37,9 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
     m.params['Rabi_N_Sweep']= [0] + N
     
     if tau_list == None:
-        tau_list = m.params['C'+str(carbon_B)+'_Ren_tau']*len(N)
+        tau_list = m.params['C'+str(carbon_B)+'_Ren_tau'+m.params['electron_transition']]*len(N)
     
-    m.params['Rabi_tau_Sweep']= m.params['C'+str(carbon_B)+'_Ren_tau'] +  tau_list
+    m.params['Rabi_tau_Sweep']= m.params['C'+str(carbon_B)+'_Ren_tau'+m.params['electron_transition']] +  tau_list
 
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
 
@@ -46,7 +47,9 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
     for i in range(len(tau_list)):
         x_tick_labels = x_tick_labels + [str(tau_list[i]*1e6) + ', ' + str(N_list[i])]
 
-    m.params['sweep_pts'] = x_tick_labels
+    # m.params['sweep_pts'] = x_tick_labels
+    m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
+
 
     m.params['Nr_C13_init']     = 1
     m.params['Nr_MBE']          = 0
@@ -64,7 +67,7 @@ def Optimizor():
     else:
         n=1
     GreenAOM.set_power(5e-6)
-    ins_counters.set_is_running(0)  
+    counters.set_is_running(0)  
     optimiz0r.optimize(dims=['x','y','z'])
 
     # ssrocalibration(SAMPLE_CFG)
@@ -75,88 +78,123 @@ if __name__ == '__main__':
 
     n = 1
     n = Optimizor()
-  
+    tau_list2 = [9.676e-6,11.946e-6,16.496e-6]  
+    for tau in tau_list2:
 
-    ### 5 to 2
-    if n==1:
+        if n==1:
+                  
+            N_list   = np.arange(4,100,8)
+            tau_list = [tau]*len(N_list)
 
-        tau_list = [qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list'][i] for i in [4,6,7]]
-        N_list   = [qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list'][i] for i in [4,6,7]]
+            Crosstalk(SAMPLE + '_3to2_RO_Z_'+str(tau),RO_phase = 0, RO_Z = True, carbon_A = 2, carbon_B = 3, tau_list=tau_list, N = N_list)
+                      
+            n = Optimizor()
 
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N']
+        if n==1:
 
-        # tau_list = [11.310e-6]        
-        # N_list   = [48]
+                  
+            N_list   = np.arange(4,100,8)
+            tau_list = [tau]*len(N_list)
 
-        Crosstalk(SAMPLE + '_5to2_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_5to2_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_5to2_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
+            Crosstalk(SAMPLE + '_3to5_RO_Z_'+str(tau),RO_phase = 0, RO_Z = True, carbon_A = 5, carbon_B = 3, tau_list=tau_list, N = N_list)
+                      
+            n = Optimizor()
+
+        if n==1:
+
+                  
+            N_list   = np.arange(4,100,8)
+            tau_list = [tau]*len(N_list)
+
+            Crosstalk(SAMPLE + '_3to1_RO_Z_'+str(tau),RO_phase = 0, RO_Z = True, carbon_A = 1, carbon_B = 3, tau_list=tau_list, N = N_list)
+                      
+            n = Optimizor()
+    for carbon in [1,2,5]:
+        if n == 1:
+            Crosstalk(SAMPLE + '_'+str(carbon)+'to3_RO_Z_',RO_phase = 0, RO_Z = True, carbon_A = 3, carbon_B = carbon)
+            n = Optimizor()
+
+
+    # ### 5 to 2
+    # if n==1:
+
+    #     tau_list = [qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_tau_list'][i] for i in [4,6,7]]
+    #     N_list   = [qt.exp_params['samples']['111_1_sil18']['C5_gate_optimize_N_list'][i] for i in [4,6,7]]
+
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N']
+
+    #     # tau_list = [11.310e-6]        
+    #     # N_list   = [48]
+
+    #     Crosstalk(SAMPLE + '_5to2_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_5to2_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_5to2_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 2, carbon_B = 5, tau_list=tau_list, N = N_list)
       
-        n = Optimizor()
+    #     n = Optimizor()
 
-    ### 5 to 1
-    if n==1:
+    # ### 5 to 1
+    # if n==1:
 
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N']
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C5_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N']
 
-        Crosstalk(SAMPLE + '_5to1_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_5to1_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_5to1_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_5to1_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_5to1_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_5to1_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 1, carbon_B = 5, tau_list=tau_list, N = N_list)
       
-        n = Optimizor()
+    #     n = Optimizor()
 
     
-    ### 2 to 5
-    if n==1:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
+    # ### 2 to 5
+    # if n==1:
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
 
-        # tau_list = [qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list'][i] for i in [1,3,4]]
-        # N_list   = [qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list'][i] for i in [1,3,4]]
-
-
-        Crosstalk(SAMPLE + '_2to5_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_2to5_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_2to5_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
-
-        # n = Optimizor()
-
-        ## 2 to 1
-    if n==1:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
-
-        Crosstalk(SAMPLE + '_2to1_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_2to1_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_2to1_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
-
-        n = Optimizor()
+    #     # tau_list = [qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_tau_list'][i] for i in [1,3,4]]
+    #     # N_list   = [qt.exp_params['samples']['111_1_sil18']['C2_gate_optimize_N_list'][i] for i in [1,3,4]]
 
 
+    #     Crosstalk(SAMPLE + '_2to5_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_2to5_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_2to5_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 5, carbon_B = 2, tau_list = tau_list, N = N_list)
 
-    ### 1 to 2
-    if n==1:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
-        # tau_list = [qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list'][i] for i in [1,5,7]]
-        # N_list   = [qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list'][i] for i in [1,5,7]]
+    #     # n = Optimizor()
 
-        Crosstalk(SAMPLE + '_1to2_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_1to2_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_1to2_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     ## 2 to 1
+    # if n==1:
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C2_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C2_Ren_N']
+
+    #     Crosstalk(SAMPLE + '_2to1_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_2to1_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_2to1_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 1, carbon_B = 2, tau_list = tau_list, N = N_list)
+
+    #     n = Optimizor()
+
+
+
+    # ### 1 to 2
+    # if n==1:
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
+    #     # tau_list = [qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_tau_list'][i] for i in [1,5,7]]
+    #     # N_list   = [qt.exp_params['samples']['111_1_sil18']['C1_gate_optimize_N_list'][i] for i in [1,5,7]]
+
+    #     Crosstalk(SAMPLE + '_1to2_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_1to2_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_1to2_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 2, carbon_B = 1, tau_list=tau_list, N = N_list)
         
-        n = Optimizor()
+    #     n = Optimizor()
 
-    ### 1 to 5
-    if n==1:
-        tau_list = qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']
-        N_list   = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
+    # ### 1 to 5
+    # if n==1:
+    #     tau_list = qt.exp_params['samples']['111_1_sil18']['C1_Ren_tau']
+    #     N_list   = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N']
         
-        Crosstalk(SAMPLE + '_1to5_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
-        Crosstalk(SAMPLE + '_1to5_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
-        # Crosstalk(SAMPLE + '_1to5_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_1to5_RO_X',RO_phase = 0, RO_Z = False, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     Crosstalk(SAMPLE + '_1to5_RO_Y',RO_phase = 90, RO_Z = False, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
+    #     # Crosstalk(SAMPLE + '_1to5_RO_Z',RO_phase = 90, RO_Z = True, carbon_A = 5, carbon_B = 1, tau_list=tau_list, N = N_list)
 
     ''' Full set'''
     '''

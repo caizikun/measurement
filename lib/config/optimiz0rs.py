@@ -51,7 +51,7 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 1.7,
+                    'scan_length' : 3.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
@@ -98,5 +98,20 @@ dimension_sets = {
                 'zyx' : ['z','y','x'],
                 'xyonly':['y','x'],
                 },
+
+            'cav1' : {
+                'x' : {
+                    'scan_length' : 1.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'y' : {
+                    'scan_length' : 1.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'xyonly':['y','x'],
+                },
+
 
             }

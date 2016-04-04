@@ -6,9 +6,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111No2_enlarged_SIL1_with_band_pass_SM_DM_path_opt'
-steps=31
-max_power=400e-6       #[w]
+name = 'Horst_SIL6_MM_detection'#'The111No2_enlarged_SIL2_DM_off'
+steps=15
+max_power=300e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
 bg_x=-1.0          #delta x position of background [um]
@@ -90,3 +90,5 @@ dat.close_file()
 current_mos.set_x(current_x)
 current_mos.set_y(current_y)
 
+AOM.set_power(1e-9)
+print 'Done with saturation scan!'

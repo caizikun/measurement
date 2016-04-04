@@ -94,6 +94,7 @@ class Master_of_magnet(Instrument):
 
         else:
             axis_number = self.Axis_config[axis]
+            print(axis_number)
             return self._anc_ins.GetFrequency(axis_number)
 
     def set_frequency(self, axis, frequency):
@@ -124,11 +125,12 @@ class Master_of_magnet(Instrument):
     # Stepping and stopping.
     def step(self, axis, steps):  #TODO add a timer to stop the continious movement
         ''' Performs #steps along the given axis.
-        axis    the axis to step.
+        axis    the axis to step.levelmon
         steps   integer, positive values for positive steps, negative values for
                 negative steps. Valid inputs: +/- 1,2,3,4,5... and 'c','-c' for continious
         '''
         axis_number = self.Axis_config[axis]
+        print (self.get_frequency(axis)[12:15])
         freq = int(self.get_frequency(axis)[12:15])
         if steps == 'c':
             self._anc_ins.StepUp(axis_number, steps)
@@ -148,3 +150,6 @@ class Master_of_magnet(Instrument):
     def stop(self, axis):
         axis_number = self.Axis_config[axis]
         self._anc_ins.Stop(axis_number)
+
+    def Read(self):
+        return self._anc_ins.Read()

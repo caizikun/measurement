@@ -1,4 +1,5 @@
 import qt
+import os
 import numpy as np
 import msvcrt
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
@@ -21,31 +22,25 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
-
+    previous_controller = qt.instruments[name].get_cur_controller()
     qt.msleep(0.1)
     print 'Calibrate', name
+    if not awg:
+        qt.instruments[name].set_cur_controller('ADWIN')
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg:
+        qt.instruments[name].set_cur_controller('AWG')
+        init_AWG()
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
 
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
 
-def recalibrate_lt1_lasers(names=['GreenAOM_lt1', 'MatisseAOM_lt1', 'NewfocusAOM_lt1', 'YellowAOM_lt1'], 
-        awg_names=['NewfocusAOM_lt1', 'YellowAOM_lt1']):
-    turn_off_all_lt1_lasers()
-    for n in names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1')
-    for n in awg_names:
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo_lt1', 'adwin_lt1',awg=True)
-
-def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['NewfocusAOM']):
+def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'YellowAOM'], awg_names=['PulseAOM','NewfocusAOM']):
     turn_off_all_lt3_lasers()
     for n in names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
@@ -53,7 +48,6 @@ def recalibrate_lt3_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
     for n in awg_names:
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
-
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     #qt.instruments[adwin].set_simple_counting()
@@ -78,7 +72,8 @@ def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     return setpoint, value
 
 def check_lt3_powers(names=['MatisseAOM', 'NewfocusAOM', 'PulseAOM','YellowAOM'],
-    setpoints = [5e-9, 5e-9, 25e-9,40e-9]):
+    setpoints = [5e-9, 5e-9, 15e-9,40e-9]):
+    init_AWG()
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     turn_off_all_lt3_lasers()
@@ -126,26 +121,6 @@ def check_fast_path_power(powermeter, servo, awg='AWG', chan='ch4_marker1',
     if ret:
         return pwr
 
-def check_fast_path_power_lt1(ret=False, **kw):
-    turn_off_all_lt1_lasers()
-    pwr = check_fast_path_power('powermeter_lt1', 'PMServo_lt1', ret=ret, **kw)
-    if ret:
-        return pwr
-
-def check_fast_path_power_lt3(ret=False, **kw):
-    turn_off_all_lt3_lasers()
-    pwr = check_fast_path_power('powermeter', 'PMServo', ret=ret, **kw)
-    if ret:
-        return pwr
-
-def set_lt1_optimization_powers():
-    turn_off_all_lt1_lasers()
-    qt.instruments['YellowAOM_lt1'].set_power(50e-9)
-    qt.instruments['MatisseAOM_lt1'].set_power(5e-9)
-    qt.instruments['NewfocusAOM_lt1'].set_power(10e-9)
-
-
-
 def turn_on_lt3_pulse_path():
     #qt.instruments['PMServo'].move_in()
     p=pulse.SinePulse(channel='EOM_Matisse', name='pp', length=100e-6, frequency=1/(100e-6), amplitude = 1.8)
@@ -176,22 +151,24 @@ def turn_on_lt3_pulse_path():
 def init_AWG():
     qt.instruments['AWG'].initialize_dc_waveforms()
 
-def start_bs_counter():
+def start_bs_counter(int_time=100):
     if qt.instruments['bs_relay_switch'].Turn_On_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_On_Relay(2): 
         print 'ZPL APDs on'
     else:
         print 'ZPL APDs could not be turned on!'
-    qt.instruments['counters'].set_is_running(False)
+    #qt.instruments['counters'].set_is_running(False)
     qt.instruments['bs_helper'].set_script_path(r'D:/measuring/measurement/scripts/bs_scripts/HH_counter_fast.py')
     qt.instruments['bs_helper'].set_is_running(True)
+    params={'int_time':int_time}
+    qt.instruments['bs_helper'].set_measurement_params(params)
     qt.instruments['bs_helper'].execute_script()
-    qt.instruments['linescan_counts'].set_scan_value('counter_process')
+    #qt.instruments['linescan_counts'].set_scan_value('counter_process')
 
 def stop_bs_counter():
     qt.instruments['bs_helper'].set_is_running(False)
     qt.instruments['linescan_counts'].set_scan_value('counts')
-    qt.instruments['counters'].set_is_running(True)
+    #qt.instruments['counters'].set_is_running(True)
     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(1) and \
         qt.instruments['bs_relay_switch'].Turn_Off_Relay(2): 
         print 'ZPL APDs off'
@@ -199,9 +176,9 @@ def stop_bs_counter():
         print 'ZPL APDs could not be turned off!'
 
 def generate_quantum_random_number():
-    qt.instruments['AWG'].set_ch1_marker2_low(2.)
+    qt.instruments['AWG'].set_ch3_marker1_low(2.)
     qt.msleep(0.1)
-    qt.instruments['AWG'].set_ch1_marker2_low(0.)
+    qt.instruments['AWG'].set_ch3_marker1_low(0.)
 
 def quantum_random_number_status():
     qt.instruments['adwin'].start_get_dio(dio_no=20)
@@ -227,7 +204,7 @@ def calibrate_aom_frq_max(name='YellowAOM', pts=21):
     for v in np.linspace(cur_v-0.5, cur_v+0.5, pts):
         vs.append(v)
         adwin.set_dac_voltage(('yellow_aom_frq',v))
-        qt.msleep(0.1)
+        qt.msleep(0.5)
         p=qt.instruments['powermeter'].get_power()
         ps.append(p)
         print 'V: {:.2f}, P: {:.3g}'.format(v,p)
@@ -243,6 +220,25 @@ def rf_switch_local():
 
 def rf_switch_non_local():
     qt.instruments['RF_Multiplexer'].set_state_bitstring('00000000')
+
+def get_pulse_aom_frq(do_plot=True):
+    qt.instruments['signalhound'].set_frequency_center(200.5e6)
+    qt.instruments['signalhound'].set_frequency_span(0.5e6) 
+    qt.instruments['signalhound'].set_rbw(5e3)
+    qt.instruments['signalhound'].set_vbw(5e3)
+    qt.instruments['signalhound'].ConfigSweepMode()
+    f,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=1030)
+    f_offset = f[np.argmax(mi)]
+    print 'PulseAOM frequency: 200 MHz {:+.0f} kHz'.format((f_offset-200e6)*1e-3)
+    return f_offset
+
+
+def load_latest_dm_mirror_surf(folder=None):
+    from analysis.lib.tools import toolbox as tb
+    lf = tb.latest_data(contains='DM_sweep_curve',folder=folder)
+    fn=tb.get_measurement_name_from_folder(lf)
+    dn,tn=tb.get_date_time_string_from_folder(lf)
+    qt.instruments['DM'].load_mirror_surf(os.path.join(lf,tn+'_'+fn+'_msurf.npz'))
 
 def aom_listener():
     import speech
@@ -296,3 +292,17 @@ def aom_listener():
     #This should prevent the windows commands from running while also not showing the widget which comes up. Good luck!
     
     listener = speech.listenfor(['red','yellow','green','pulse','stop', 'power', 'servo'],do_aom)
+
+def load_regular_linescan():
+    qt.instruments['linescan_counts'].set_scan_value('counts')
+    qt.instruments['adwin'].load_linescan()
+
+def show_stopper():
+    ### can be used to break a measurement
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False

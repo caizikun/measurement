@@ -31,7 +31,6 @@ class Bell_lt3(bell.Bell):
             self.joint_params[k] = joint_params.joint_params[k]
         for k in params_lt3.params_lt3:
             self.params[k] = params_lt3.params_lt3[k]
-        bseq.pulse_defs_lt3(self)
 
     def autoconfig(self, **kw):
         bell.Bell.autoconfig(self, **kw)
@@ -44,12 +43,25 @@ class Bell_lt3(bell.Bell):
 
     def measurement_process_running(self):
         if self.params['remote_measurement']:
-            return self.remote_measurement_helper.get_is_running()
+            m_h_r=self.remote_measurement_helper.get_is_running()
+            if m_h_r==False:
+                print 'Measurement helper stopped:',m_h_r
+                return False
         else:
-            return self.adwin_process_running()
+            if not self.adwin_process_running():
+                print 'Adwin stopped'
+                return False
+        return True
+
+    def stop_measurement_process(self):
+        bell.Bell.stop_measurement_process(self)
+        dio_cr = self.params['remote_CR_DO_channel']
+        self.adwin.start_set_dio(dio_no=dio_cr, dio_val=0)
 
     def generate_sequence(self):
         seq = pulsar.Sequence('Belllt3')
+
+        bseq.pulse_defs_lt3(self)
 
         elements = [] 
 
@@ -96,9 +108,14 @@ class Bell_lt3(bell.Bell):
         qt.pulsar.upload(*elements)
         qt.pulsar.program_sequence(seq)
 
+    def finish(self):
+        bell.Bell.finish(self)
+        self.add_file(r'D:/measuring/measurement/scripts/lt3_scripts/setup/msmt_params.py')
+
 
 Bell_lt3.remote_measurement_helper = qt.instruments['remote_measurement_helper']
 Bell_lt3.AWG_RO_AOM = qt.instruments['PulseAOM']#Bell_lt3.E_aom
+Bell_lt3.rnd_sender = qt.instruments['RND_bit_sender']
 
 
 def bell_lt3(name):
@@ -117,9 +134,15 @@ def bell_lt3(name):
     do_upload = True
     if remote_meas:
         if 'SPCORR' in remote_name: #we now need to do the RO in the AWG, because the PLU cannot tell the adwin to do ssro anymore.
-            m.joint_params['do_echo'] = 0
-            m.joint_params['do_final_MW_rotation'] = 0
-            m.joint_params['use_live_marker_filter']=False
+            m.params['MW_RND_amp_I']     = 0
+            m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+            m.params['MW_RND_amp_Q']     = 0
+            m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+            #m.joint_params['do_echo'] = 0
+            #m.joint_params['do_final_MW_rotation'] = 1
+            m.params['live_filter_queue_length'] = 2
+            if 'PSB' in remote_name:
+                m.joint_params['use_live_marker_filter']=False
             th_debug = False
             mw=True
         elif 'TPQI' in remote_name:
@@ -135,9 +158,26 @@ def bell_lt3(name):
         elif 'full_Bell' in remote_name:
             mw=True
             th_debug=False
+            m.joint_params['twitter_randomness'] = True
         elif 'MeasXX_' in remote_name:
-            th_debug = False 
             mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
+            m.params['MW_RND_amp_Q']     = -m.params['MW_pi2_amp'] 
+            m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
+        elif 'MeasZZ_' in remote_name:
+            mw=True
+            th_debug = False 
+            m.params['MW_RND_amp_I']     = m.params['MW_pi_amp'] 
+            m.params['MW_RND_duration_I']= m.params['MW_pi_duration'] 
+            m.params['MW_RND_amp_Q']     = 0
+            m.params['MW_RND_duration_Q']= m.params['MW_pi_duration']
+            m.params['MW_RND_I_ispi2'] = False
+            m.params['MW_RND_Q_ispi2'] = False
+        elif 'tail' in remote_name:
+            th_debug = False
+            mw=False
         else:
             print 'using standard local settings'
             #raise Exception('Unknown remote measurement: '+ remote_name)

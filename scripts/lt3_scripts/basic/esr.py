@@ -2,19 +2,19 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_Pippin_SIL3'
-start_f = 2.78#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.84#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
-steps   = 50
-mw_power = -7. #in dBm
-green_power = 3e-6
-int_time = 30       #in ms
-reps = 250
+name='ESR_Pippin_SIL2_LT_HighField'
+start_f = 1.68#4.02#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 1.72#4.07#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+steps   = 51
+mw_power = -16 #in dBm, never above -10
+green_power = 10e-6 #20e-6
+int_time = 50       #in ms
+reps = 25
 
 #generate list of frequencies
 f_list = linspace(start_f*1e9, stop_f*1e9, steps)
 
-ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100A']
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
 counter = 1
@@ -39,7 +39,7 @@ stop_scan=False
 for cur_rep in range(reps):
     
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
-    
+    # optimiz0r.optimize(dims=['x','y','z','x','y'],int_time=50)
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
         ins_smb.set_frequency(cur_f)
@@ -50,6 +50,7 @@ for cur_rep in range(reps):
         # qt.msleep(0.01)
 
     p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
+
     if stop_scan: break
    
     
@@ -70,3 +71,5 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
+##turn green off
+qt.instruments['GreenAOM'].set_power(0)

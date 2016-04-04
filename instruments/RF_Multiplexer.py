@@ -9,22 +9,27 @@ import os
 
 class RF_Multiplexer(Instrument):
 
-    def __init__(self, name, address='UM245R', reset=False):
+    def __init__(self, name, serial='UM245R', reset=False):
         """
         Creates an interface to Raymond's RF Multiplexer, allowing each RF relais to be switched
         on or off. The manual overide switch should be in the down position, thereby turining the 
         LED off. The LED then indicates if any of the relais are switched on. 
         Note that 8 bits can be set, but currently only relays 1-5 are connected.
 
-        Requires pyusb package (http://bleyer.org/pyusb/)
+        Requires pyusb package (http://bleyer.org/pyusb/), and the FTDI usb drivers (http://www.ftdichip.com/Drivers/D2XX.htm) installed.
 
         Arguments:
-        - address corresponds to the Device description.
+        - serial: FTDI serial id. To see available devices, run:
+        
+        import d2xx
+        for i in d2xx.createDeviceInfoList():
+            print d2xx.getDeviceInfoDetail(i)
+        
         """
         Instrument.__init__(self, name)
 
 
-        self._address = address
+        self._serial = serial
 
         self.add_parameter('state', 
                            type=types.IntType,
@@ -38,14 +43,17 @@ class RF_Multiplexer(Instrument):
         self.add_function('toggle_relay')
         self.add_function('get_dev')
 
-        dev_str_list = list(d2xx.listDevices(d2xx.OPEN_BY_DESCRIPTION))
-
-        try:
-            dev_id = dev_str_list.index(self._address)
-        except ValueError as e:
-            print dev_str_list
-            logging.error('Device address {} not found in device list'.format(self._address))
-            raise e
+        dev_list_len = d2xx.createDeviceInfoList()
+        dev_id=-1
+        for i in range(dev_list_len):
+            dev_info = d2xx.getDeviceInfoDetail(i)
+            if dev_info['serial']==self._serial:
+                dev_id = i
+                break
+        if dev_id == -1:
+            error_str = 'Device address serial {} not found in device list'.format(self._serial)
+            logging.error(error_str)
+            raise Exception(error_str)
 
         self._dev = d2xx.open(dev_id)
         self._dev.setBitMode(0xFF,1) #BitBangMode!

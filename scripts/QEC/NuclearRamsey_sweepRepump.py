@@ -19,7 +19,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def NuclearRamseyWithInitialization(name, 
-        carbon_nr             = 1,               
+        carbon_nr             = 3,               
         carbon_init_state     = 'up', 
         el_RO                 = 'positive',
         debug                 = False,
@@ -32,7 +32,7 @@ def NuclearRamseyWithInitialization(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 1500
+    m.params['reps_per_ROsequence'] = 300
     m.params['C13_MBI_RO_state'] = 1
 
     ### overwritten from msmnt params
@@ -91,6 +91,7 @@ def NuclearRamseyWithInitialization(name,
 
     m.params['SP_duration_after_C13']=C13_sp_duration 
     m.params['C13_MBI_RO_duration']=100
+    m.params['electron_after_init']='0'
 
     if C13_sp_duration==0:
         m.params['A_SP_amplitude_after_C13_MBI']=0
@@ -99,6 +100,6 @@ def NuclearRamseyWithInitialization(name,
 
 if __name__ == '__main__':
 
-    for length in [0,2,5,7,10,15,20,25,30,35,40,50,70,85,100,125,150]:
+    for length in [20]:#[0,2,5,7,10,15,20,25,30,35,40,50,70,85,100,125,150]:
         NuclearRamseyWithInitialization(SAMPLE+'_SP_length_'+str(length),C13_sp_duration=length)
 

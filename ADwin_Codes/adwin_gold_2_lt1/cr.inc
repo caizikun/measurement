@@ -1,5 +1,4 @@
 '<ADbasic Header, Headerversion 001.001>
-' Foldings                       = 172
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -11,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_repetitions 1000000
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
@@ -83,8 +82,8 @@ ENDSUB
 
 FUNCTION CR_check(first_cr, repetition_index) As LONG
 
-  CR_check = 0
-  
+  CR_check = 1
+  PAR_1=1
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE

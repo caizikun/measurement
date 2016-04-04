@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'The111no1_enlarged_SIL8_ZPL'
+name = 'Membrane_on_saphire_ZPL'
 steps=21
-max_power=100e-6       #[w]
-counter=3  #number of counter
+max_power=450e-6       #[w]
+counter=1  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=-2.          #delta x position of background [um]
-bg_y=-2.            #delta y position of background [um]
+bg_x=-2          #delta x position of background [um]
+bg_y=+2            #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -75,7 +75,7 @@ dat.add_value('Counts fitted [Hz]')
 plt = qt.Plot2D(dat, 'rO', name='Saturation curve', coorddim=0, valdim=1, clear=True)
 plt.add_data(dat, coorddim=0, valdim=2)
 fd = zeros(len(x_axis))    
-if type(fitres) != type(False):
+if fitres['success'] != False:
     fd = fitres['fitfunc'](x_axis)
     plt.set_plottitle(dat.get_time_name()+', Sat. cts: {:d}, sat. pwr: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
 else:
