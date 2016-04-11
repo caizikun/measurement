@@ -82,7 +82,7 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 # LDE Sequence in the AWG
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
-params_lt3['eom_pulse_duration']         = 2e-9
+params_lt3['eom_pulse_duration']         = 1e-9 #2e9
 params_lt3['eom_off_amplitude']          = -0.02 # calibration from 2015-12-30
 params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
@@ -90,7 +90,7 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 40e-9#10e-9 #
-params_lt3['aom_amplitude']				 = 0.5 # on CR 31
+params_lt3['aom_amplitude']				 = 0.6 # on CR 25
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 

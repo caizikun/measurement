@@ -140,7 +140,7 @@ def tail_sweep(name):
     m=SweepBell('tail_sweep_'+name)
     _setup_params(m, setup = qt.current_setup)
 
-    pts=7
+    pts=11
     m.params['pts']=pts
     m.params['repetitions'] = 1000 # 
 
@@ -157,12 +157,12 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       9000 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
         max_power_aom=p_aom.voltage_to_power(1.)
-        aom_power_sweep=np.linspace(0.1,1.0,pts)*max_power_aom #%power 
+        aom_power_sweep=np.linspace(0.01,.61,pts)*max_power_aom #%power 
         for i,p in enumerate(aom_power_sweep):
             aom_voltage_sweep[i]= p_aom.power_to_voltage(p)
 
@@ -300,7 +300,7 @@ def SP_correlations_PSB(name):
     _setup_params(m, setup = qt.current_setup)
     pts = 1
     m.params['do_general_sweep']=0
-    m.params['repetitions'] = 10000
+    m.params['repetitions'] = 500000
     m.params['MW_during_LDE'] = 1 
     m.params['MW_RND_amp_I']     = 0
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
@@ -338,10 +338,10 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    # tail_sweep('tail') 
+    #tail_sweep('tail') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('PippinSil1')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
-    SP_correlations_PSB('lt3_PSB_msm1')
+    SP_correlations_PSB('lt3_PSB_1ns_short_pulses')

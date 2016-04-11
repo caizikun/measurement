@@ -39,9 +39,9 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = False
+f_ms0 = True
 
-f_ms1 = False
+f_ms1 = True
 
 self_phase_calibration = True
 
@@ -67,13 +67,14 @@ if SETUP == 'lt2':
     	'6' : detuning_basic*4.}
 
 elif SETUP == 'lt3':
-    detuning_basic = 1e3
+    detuning_basic = 2e3
     detuning_dict = {
-        '1' : detuning_basic,
+        '1' : 5*detuning_basic,
         '2' : detuning_basic,
+        '3' : detuning_basic,
+        '4' : detuning_basic,
         '5' : detuning_basic,
-        '6' : 2*detuning_basic,
-        '7' : 2*detuning_basic,
+        '6' : detuning_basic,
         '8' : 10*detuning_basic}
 
 elif SETUP == 'lt4':
@@ -130,8 +131,7 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 21
-    if carbon_nr == 6:
-        m.params['pts'] = 18
+
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     

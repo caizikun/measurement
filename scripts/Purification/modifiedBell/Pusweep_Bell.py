@@ -157,7 +157,7 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       9000 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)

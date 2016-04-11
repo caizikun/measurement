@@ -127,6 +127,6 @@ def Generaldarkesr(name):
     
 
 if __name__ == '__main__':
-    darkesr(SAMPLE_CFG)
-    # darkesrp1(SAMPLE_CFG)
+    # darkesr(SAMPLE_CFG)
+    darkesrp1(SAMPLE_CFG)
     
