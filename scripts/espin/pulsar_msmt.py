@@ -117,7 +117,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
 class SSRO_calibration_msp1(PulsarMeasurement):
     mprefix = 'SSRO_calib_msp1'
-    # adwin_process = 'IntegratedSSRO_calibration'
+
     def autoconfig(self):
         PulsarMeasurement.autoconfig(self)
 
@@ -133,7 +133,7 @@ class SSRO_calibration_msp1(PulsarMeasurement):
         #     length = self.params['MW_pi_msp1_dur'],
         #     frequency = self.params['ms+1_mod_frq'],
         #     PM_risetime = self.params['MW_pulse_mod_risetime'])
-        
+        print 'Sten'   
 
         X = kw.get('Pi_pulse', None)
 
@@ -165,101 +165,6 @@ class SSRO_calibration_msp1(PulsarMeasurement):
          # upload the waveforms to the AWG
         qt.pulsar.program_awg(seq,*elements)
 
-class SSRO_MWInit(PulsarMeasurement):
-    mprefix = 'SSRO_calib_MWInit'
-    adwin_process = 'singleshot'
-
-    def save(self, name='ssro'):
-        reps = self.adwin_var('completed_reps')
-        self.save_adwin_data(name,
-            [   ('CR_before', reps),
-                ('CR_after', reps),
-                ('SP_hist', self.params['SP_duration']),
-                ('RO_data', reps * self.params['SSRO_duration']),
-                ('statistics', 10),
-                'completed_reps',
-                'total_CR_counts'])
-
-
-    def autoconfig(self):
-        PulsarMeasurement.autoconfig(self)    
-
-
-    def generate_sequence(self, upload=True, **kw):
-        # electron manipulation pulses
-        print self.params['pts']
-
-        #pulses
-        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 10e-6, amplitude = 2)
-        T = pulse.SquarePulse(channel='MW_Imod', length = 2e-6, amplitude = 0)
-        X = kw.get('pulse_pi', None)
-
-        if X==None:
-            print 'WARNING: No valid X Pulse'
-        else:
-            if hasattr(X,'Sw_channel'):
-                print 'this is the MW switch channel: ', X.Sw_channel
-            else:
-                print 'no switch found'
-
-        # legacy from pi pulse calibration. Necessary?
-        # wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
-        # wait_1us.append(pulse.cp(T, length=1e-6))
-
-        # sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
-        # adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-        #     length = 10e-6, amplitude = 2)
-        # sync_elt.append(adwin_sync)
-        
-        #Parts and their alternatives from MW calibration
-        elements = []
-        seq = pulsar.Sequence('SSRO calibration + MW Init, RO) sequence')
-        e = element.Element('pi_pulse', pulsar=qt.pulsar)
-
-        if self.params['multiplicity'] != 0:
-            # SPIN RO ELEMENT
-            for j in range(int(self.params['multiplicity'])):
-                e.append(T)
-                e.append(X)
-                e.append(Trig)
-            
-
-            #seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
-        else:
-            e.append(T)
-            e.append(Trig)
-        elements.append(e)
-        for e in elements:
-            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
-
-        qt.pulsar.program_awg(seq,*elements) 
-        # # This is only useful if you want to initialize via multiple pulses
-        # elements = []
-        # for i in range(self.params['pts']):
-        #     e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
-        #     for j in range(int(self.params['multiplicity'][i])):
-        #         e.append(T,
-        #             pulse.cp(X,
-        #                 amplitude=self.params['MW_pulse_amplitudes'][i]
-        #                 ))
-        #     e.append(T)
-        #     elements.append(e)
-
-        # # sequence
-        # seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
-        # for i,e in enumerate(elements):           
-        #     # for j in range(self.params['multiplicity']):
-        #     seq.append(name = e.name+'-{}'.format(j), 
-        #         wfname = e.name,
-        #         trigger_wait = True)
-        #     # seq.append(name = 'wait-{}-{}'.format(i,j), 
-        #     #     wfname = wait_1us.name, 
-        #     #     repetitions = self.params['delay_reps'])
-        #     seq.append(name='sync-{}'.format(i),
-        #          wfname = sync_elt.name)
-
-        # elements.append(sync_elt)
-       
 
 class Multiple_SP_SSRO(PulsarMeasurement):
     mprefix = 'Multiple_SP_SSRO'
@@ -1679,6 +1584,68 @@ class GeneralPiCalibration(PulsarMeasurement):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
+
+
+class SSRO_MWInit(GeneralPiCalibration):
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        for SSRO_duration in self.params(['SSRO_duration_list']):
+
+            self.params['SSRO_duration'] = SSRO_duration
+
+            T = pulse.SquarePulse(channel='MW_Imod',
+                length = 15000e-9, amplitude = 0)
+
+            X=kw.get('pulse_pi', None)
+            if X==None:
+                print 'WARNING: No valid X Pulse'
+            if hasattr(X,'Sw_channel'):
+                print 'this is the MW switch channel: ', X.Sw_channel
+            else:
+                print 'no switch found'
+            wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+            wait_1us.append(pulse.cp(T, length=1e-6))
+
+            sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+            adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+                length = 10e-6, amplitude = 2)
+            sync_elt.append(adwin_sync)
+            if type(self.params['multiplicity']) ==int:
+                self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            #redundant
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            e.append(T)
+            elements.append(e)
+
+            # sequence
+            seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+            for i,e in enumerate(elements):           
+                # for j in range(self.params['multiplicity']):
+                seq.append(name = e.name+'-{}'.format(j), 
+                    wfname = e.name,
+                    trigger_wait = True)
+                # seq.append(name = 'wait-{}-{}'.format(i,j), 
+                #     wfname = wait_1us.name, 
+                #     repetitions = self.params['delay_reps'])
+                seq.append(name='sync-{}'.format(i),
+                     wfname = sync_elt.name)
+            # elements.append(wait_1us)
+            elements.append(sync_elt)
+            # upload the waveforms to the AWG
+            if upload:
+                if upload=='old_method':
+                    qt.pulsar.upload(*elements)
+                    qt.pulsar.program_sequence(seq)
+                else:
+                    qt.pulsar.program_awg(seq,*elements)
+
 
 class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 

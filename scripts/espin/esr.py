@@ -11,6 +11,10 @@ import numpy as np
 ##############
 
 
+<<<<<<< HEAD
+
+name = 'ESR_Horst_scantest'#name='ESR_'+ qt.exp_params['protocols']['current']
+=======
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
 steps       = 301      #101
@@ -21,14 +25,17 @@ reps        = 50
 center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
 #center_f    = 1.705#3.95#1.74666#2.828#2.861
 '''
+>>>>>>> cfa7ccf48aa80b80ca2f7fe7d9c055528df1534f
 steps       = 60       #101
-mw_power    = -10    #in dBm
-green_power = 40e-6    #10e-6
+mw_power    = -5     #in dBm
+green_power = 200e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
 center_f    = 1.840  # in GHz
 '''
 range_f  =  0.03 # in GHz
+
+range_f  =  0.05 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
@@ -36,7 +43,7 @@ f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 # Set source to use
 ins_smb = qt.instruments['SGS100A']
 #ins_smb = qt.instruments['SMB100']
-IQ_modulation = True #Does this source have IQ modulation?
+IQ_modulation = False #Does this source have IQ modulation?
 
 # Set other instruments
 ins_adwin = qt.instruments['adwin']
@@ -101,4 +108,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-ins_aom.set_power(30e-6)
+#ins_aom.set_power(30e-6)

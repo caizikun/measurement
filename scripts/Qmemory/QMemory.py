@@ -51,12 +51,9 @@ class QMemory_repumping(DD.MBI_C13):
             # gate_seq.append(Gate('Wait_gate_'+str(pt),'passive_elt',
             #             wait_time = 0.2,wait_for_trigger = True))
             
-
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
-
-
 
             #
             # gate_seq.append(Gate('Wait_gate_'+str(pt),'passive_elt',

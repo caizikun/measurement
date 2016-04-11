@@ -8,7 +8,7 @@ import numpy as np
 from scipy.special import erfinv
 import qt
 import copy
-from measurement.lib.pulsar import pulse, pulselib, element, pulsar
+from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 reload(pulsar)
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 import pulse_select as ps; reload(ps)
@@ -2075,7 +2075,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
     def generate_LDE_element(self,Gate):
         '''
         Generates the primitive of an LDE element.
-        Optical pi pulses are implemented as dirty hack AR 12-15
+        Optical pi pulses are implemented AR 2016 04
         NK
         '''
 
@@ -2113,7 +2113,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         #### gives the possiblity to sweep the amplitude of this specific pi pulse.
         RepumpX = pulse.cp(X, amplitude = Gate.pi_amp)
 
-
         ### delay of the MW channel
         Gate.MW_delay = qt.pulsar.channels['MW_Imod']['delay']
 
@@ -2130,20 +2129,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         do_optical_pi_pulses=self.params['do_optical_pi']
 
-        T_init =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
+        T_init =  pulse.SquarePulse(channel='adwin_sync', name='init_pi2',
                     length = duration_initial - self.params['fast_pi2_duration']/2, amplitude = 0.)
         T_final =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
                     length = duration_final, amplitude = 0.)
-        T_before_optical =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
-                length = self.params['optical_pi_AOM_delay'], amplitude = 0.)
-
-        if do_optical_pi_pulses:
-            t = t - self.params['optical_pi_AOM_delay'] - self.params['optical_pi_AOM_duration']
-
         
         ### necessary length definitions if you do a regular pi pulse.
         if Gate.do_pi:
-            T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
+            T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t', refpulse='init_pi2', refpoint ='end',
                     length = t-self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2, amplitude = 0.)
             
             T_rep = pulse.SquarePulse(channel='adwin_sync',name='Wait t-trep',
@@ -2151,7 +2144,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         
         ### necessary definitions if you do BB1
         elif Gate.do_BB1:
-            T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t',
+            T =  pulse.SquarePulse(channel='adwin_sync', name='Wait t', refpulse=T_init, refpoint ='end',
                     length = t-5*self.params['fast_pi_duration']/2-self.params['fast_pi2_duration']/2, amplitude = 0.)
             T_rep = pulse.SquarePulse(channel='adwin_sync',name='Wait t-trep',
                     length = t-t_rep-5*self.params['fast_pi_duration']/2, amplitude = 0.)
@@ -2182,16 +2175,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         elif self.params['initial_MW_pulse'] == 'pi':
             print 'Repumping: Initial pulse is pi'
             rep_LDE_elt.append(RepumpX)
-        
-        if do_optical_pi_pulses:
-
-            optical_pi = pulse.SquarePulse(channel = 'AOM_Matisse', 
-                    name = 'optical_pi',
-                    length = self.params['optical_pi_AOM_duration'], 
-                    amplitude = self.params['optical_pi_AOM_amplitude'], 
-                    delay = self.params['optical_pi_AOM_delay' ])
-            rep_LDE_elt.append(T_before_optical)
-            rep_LDE_elt.append(optical_pi)
 
         if Gate.do_pi:
             rep_LDE_elt.append(T)
@@ -2204,10 +2187,33 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             rep_LDE_elt.append(BB1_phase2)
             rep_LDE_elt.append(BB1_phase1)
             rep_LDE_elt.append(RepumpX)
-
+        
         if do_optical_pi_pulses:
-            rep_LDE_elt.append(T_before_optical)
-            rep_LDE_elt.append(optical_pi)
+
+            optical_pi_pulse = eom_pulses.OriginalEOMAOMPulse('Eom Aom Pulse', 
+                eom_channel = 'EOM_Matisse',
+                aom_channel = 'EOM_AOM_Matisse',
+                eom_pulse_duration      = self.params['eom_pulse_duration'],
+                eom_off_duration        = self.params['eom_off_duration'],
+                eom_off_amplitude       = self.params['eom_off_amplitude'],
+                eom_pulse_amplitude     = self.params['eom_pulse_amplitude'],
+                eom_overshoot_duration1 = self.params['eom_overshoot_duration1'],
+                eom_overshoot1          = self.params['eom_overshoot1'],
+                eom_overshoot_duration2 = self.params['eom_overshoot_duration2'],
+                eom_overshoot2          = self.params['eom_overshoot2'],
+                aom_risetime            = self.params['aom_risetime'],
+                aom_amplitude           = self.params['aom_amplitude'])
+            
+            T_back_to_optical =  pulse.SquarePulse(channel='adwin_sync', name='T_before_optical',
+                length = -self.params['optical_pi_pulse_sep']/2, amplitude = 0.) #Go back in time
+            T_optical_pulse_sep =  pulse.SquarePulse(channel='adwin_sync', name='T_optical_pulse_sep',
+                length = self.params['optical_pi_pulse_sep'], amplitude = 0.) #Go back in time
+
+            rep_LDE_elt.append(T_back_to_optical)
+            rep_LDE_elt.append(optical_pi_pulse)
+            rep_LDE_elt.append(T_optical_pulse_sep)
+            rep_LDE_elt.append(optical_pi_pulse)
+            rep_LDE_elt.append(T_back_to_optical)
 
         rep_LDE_elt.append(T_rep)
         rep_LDE_elt.append(AWG_repump)
@@ -4713,7 +4719,7 @@ class NuclearRamseyWithInitializationModified(MBI_C13):
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
-            ### Convert elements to AWG sequence and add to combined list
+            ###  elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
             combined_list_of_elements.extend(list_of_elements)
 
@@ -4818,7 +4824,208 @@ class NuclearRamseyWithInitialization(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class NuclearInitializationWithRemoteInitialization(MBI_C13):
+    '''
+    update description still
+    This class is to test multiple carbon initialization and Tomography.
+    Sequence: |C1 MBI| - |wait time: beating freq*2 = pi| - |M C1 X|(require X) - |C1 MBI| - |Tomography|
+    '''
+    mprefix = 'CarbonRamseyInitialised'
+    adwin_process = 'MBI_multiple_C13'
 
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### MBI1
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI1_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = 'MBI',#self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init       = self.params['electron_after_init'])
+            gate_seq.extend(carbon_init_seq)
+            
+            if self.params['add_wait_gate'] == True:
+                ### Check if free evolution time is larger than the RO time (it can't be shorter)
+                if self.params['beating_wait_time']< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
+                    print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                            %(self.params['beating_wait_time'],self.params['Carbon_init_RO_wait']))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_max_ent_carbons_' + str(pt),'passive_elt',
+                         wait_time = self.params['beating_wait_time'])
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+
+            ### MBI2 to initalize the guy
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI2_',
+                wait_for_trigger      = False, pt =pt,
+                initialization_method = 'MBI',#self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init       = self.params['electron_after_init'])
+            gate_seq.extend(carbon_init_seq)
+
+
+            # Should add to rotational frequency here
+
+            ### Carbon Initialisation, finish with SWAP or MBI          
+            ### SOOOOO DIRTY!
+            if False:
+                C_init_Ren_b = Gate('Cx_C'+str(self.params['carbon_nr'])+'_Ren_b_pt'+str(pt), 'Carbon_Gate',
+                    Carbon_ind = self.params['carbon_nr'],
+                    phase = self.params['C13_Y_phase']+180)
+                gate_seq.extend([C_init_Ren_b])
+                print 'second +-x is on'
+
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo_C',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    self.print_carbon_phases(g,[self.params['carbon_nr']])
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
+class NuclearRamseyWithRemoteInitialization(MBI_C13):
+    '''
+    update description still
+    This class is to test multiple carbon initialization and Tomography.
+    Sequence: |C1 MBI| - |wait time: beating freq*2 = pi| - |M C1 X|(require X) - |C1 MBI| - |Tomography|
+    '''
+    mprefix = 'CarbonRamseyInitialised'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Initialized Nuclear Ramsey Sequence')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### MBI1
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI1_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = 'MBI',#self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init       = self.params['electron_after_init'])
+            gate_seq.extend(carbon_init_seq)
+            
+            if self.params['add_wait_gate'] == True:
+                ### Check if free evolution time is larger than the RO time (it can't be shorter)
+                if self.params['beating_wait_time']< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
+                    print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                            %(self.params['beating_wait_time'],self.params['Carbon_init_RO_wait']))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_max_ent_carbons_' + str(pt),'passive_elt',
+                         wait_time = self.params['beating_wait_time'])
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+
+            ### MBI2
+            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                prefix = 'C_MBI2_',
+                wait_for_trigger      = False, pt =pt,
+                initialization_method = 'MBI',#self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']),
+                el_after_init       = self.params['electron_after_init'])
+            gate_seq.extend(carbon_init_seq)
+
+            if self.params['add_wait_gate'] == True:
+                if self.params['free_evolution_time'][pt]< (self.params['Carbon_init_RO_wait']+3e-6): # because min length is 3e-6
+                    print ('Error: carbon evolution time (%s) is shorter than Initialisation RO duration (%s)'
+                            %(self.params['free_evolution_time'][pt],self.params['Carbon_init_RO_wait']))
+                    qt.msleep(5)
+                    ### Add waiting time
+                wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+                         wait_time = self.params['free_evolution_time'][pt]-self.params['Carbon_init_RO_wait'])
+                wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            ### Readout
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = [self.params['carbon_nr']],
+                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    self.print_carbon_phases(g,[self.params['carbon_nr']])
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
 
 class NuclearRabiWithInitialization(MBI_C13):
     '''
