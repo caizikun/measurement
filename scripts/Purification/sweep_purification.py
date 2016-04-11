@@ -13,6 +13,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     loads all necessary msmt parameters
     '''
     m.params['setup']=setup
+    sample_name = qt.exp_params['samples']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
@@ -20,7 +21,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][name]['pulses'])
-    m.params.from_dict(qt.exp_params['samples'][name])
+    m.params.from_dict(qt.exp_params['samples'][sample_name])
 
 
     if not(hasattr(m,'joint_params')):
@@ -38,14 +39,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
             m.params[k] = params_lt1.params_lt1[k]
 
         ### below: copied from bell and commented out for later
-    # elif setup == 'lt4' :
-    #     import params_lt4
-    #     reload(params_lt4)
-    #     msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
-    #     for k in params_lt4.params_lt4:
-    #         msmt.params[k] = params_lt4.params_lt4[k]
-    #     msmt.params['MW_BellStateOffset'] = 0.0
-    #     bseq.pulse_defs_lt4(msmt)
+    elif setup == 'lt4' :
+        import params_lt4
+        reload(params_lt4)
+        m.AWG_RO_AOM = qt.instruments['PulseAOM']
+        for k in params_lt4.params_lt4:
+            m.params[k] = params_lt4.params_lt4[k]
+        # msmt.params['MW_BellStateOffset'] = 0.0
+        # bseq.pulse_defs_lt4(msmt)
     # elif setup == 'lt3' :
     #     import params_lt3
     #     reload(params_lt3)
@@ -95,18 +96,16 @@ def generate_AWG_seq(name):
     m.params['non_local']           = 1
     m.params['do_N_MBI']            = 0
     m.params['init_carbon']         = 1
-    m.params['do_LDE_1']            = 1 # TODO finish the LDE elements for non local operation
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 0 # TODO finish the LDE element for non local operation
-    m.params['phase_correct']       = 0 
-    m.params['purify']              = 0
-    m.params['C13_RO']              = 0 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO
+    m.params['do_LDE_1']            = 1 # TODO finish jumping and event triggering for LDE
+    m.params['swap_onto_carbon']    = 1
+    m.params['do_LDE_2']            = 1 # TODO finish jumping and event triggering for LDE
+    m.params['phase_correct']       = 1 
+    m.params['purify']              = 1
+    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
+    m.params['final_RO_in_adwin']   = 1 # this gets rid of the final RO since it is done in the adwin
 
     ### upload
-
-
-    run_sweep(m)
+    run_sweep(m,debug = True,upload_only = True)
 
 if __name__ == '__main__':
     generate_AWG_seq('testing')

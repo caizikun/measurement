@@ -65,7 +65,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 if __name__ == '__main__':
 
     SimpleDecoupling_swp_tau(SAMPLE, 
-        tau_min=11.2e-6,
-        tau_max=11.4e-6,
-        tau_step = 4e-9,
-        N=32)
+        tau_min=7.63e-6,
+        tau_max=7.65e-6,
+        tau_step = 2e-9,
+        N=64)

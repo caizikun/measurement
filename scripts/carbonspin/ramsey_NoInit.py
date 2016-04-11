@@ -23,18 +23,18 @@ def Carbon_Ramsey(name,tau = None,N=None):
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] =   250 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] =   500 #Repetitions of each data point
     m.params['Initial_Pulse']       =   'x'
     m.params['Final_Pulse']         =   '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 2
+    m.params['addressed_carbon'] = 1
 
     ### Sweep paramater
     # m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
     #                                                        np.linspace(15e3,22e3,25).astype(int)*1e-9]))
 
-    m.params['free_evolution_times']    = np.linspace(15e3,60e3,70).astype(int)*1e-9
+    m.params['free_evolution_times']    = np.linspace(10e3,30e3,90).astype(int)*1e-9
 
     m.params['pts']                     = len(m.params['free_evolution_times'])
     m.params['sweep_pts']               = m.params['free_evolution_times']
@@ -57,4 +57,4 @@ def Carbon_Ramsey(name,tau = None,N=None):
 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE_CFG,tau=10.786e-6,N=24)
+    Carbon_Ramsey(SAMPLE_CFG,tau=8.58e-6,N=10)
