@@ -345,6 +345,10 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'C13_Y_phase' :270,
 
 'MW_pulse_mod_frequency' : f_mod_0,
+'mw_mod_freq' : f_mod_0,
+
+'MW_switch_risetime'    :   500e-9,
+'MW_switch_channel'     :   'None', ### if you want to activate the switch, put to MW_switch
 
 ############
 #Pulse type
@@ -352,13 +356,13 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'pulse_shape': 'Hermite',
 # 'pulse_shape': 'Square',
 
-'Hermite_fast_pi_duration'          :  Hermite_fast_pi_duration,#140e-9 # @ 100 MHz,    #250 MHz slow
-'Hermite_fast_pi_amp'               :  Hermite_fast_pi_amp, 
+'Hermite_pi_length'          :  Hermite_fast_pi_duration,#140e-9 # @ 100 MHz,    #250 MHz slow
+'Hermite_pi_amp'               :  Hermite_fast_pi_amp, 
 'Hermite_fast_Xpi_amp'               :  Hermite_fast_Xpi_amp, 
 'Hermite_fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
 
-'Hermite_fast_pi2_duration'         :  Hermite_fast_pi2_duration, 
-'Hermite_fast_pi2_amp'              :  Hermite_fast_pi2_amp,
+'Hermite_pi2_length'         :  Hermite_fast_pi2_duration, 
+'Hermite_pi2_amp'              :  Hermite_fast_pi2_amp,
 'Hermite_fast_pi2_mod_frq'          :  Hermite_fast_pi2_mod_frq, 
 
 
@@ -383,12 +387,30 @@ cfg['protocols']['Gretel_sil2']['pulses'] ={
 'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
 'AWG_MBI_MW_pulse_amp'      :   0.017,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
 # 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
-'AWG_MBI_MW_pulse_duration' :   2500e-9}
+'AWG_MBI_MW_pulse_duration' :   2500e-9,
+
+
+### dummy params for second MW source
+'mw2_Hermite_pi_length' : 10e-9,
+'mw2_Hermite_pi2_length' : 10e-9,
+}
 
 ###########################################
 ### Gretel SIL2: nuclear spin params ###
 ###########################################
 cfg['samples']['Gretel_sil2'] ={
+
+
+#XXXXX
+### dummy parameters for purification testing. delete when done.
+# 'electron_transition' : '_m1',
+# 'C1_freq_m1'       :   440e3,#24.618e3,
+# 'C1_freq_1_m1' : 460e3,#24.543e3, 
+# 'C1_Ren_tau_m1'    :   [10e-6],#[30.652e-6],#[30.632e-6],#39.424e-6
+# 'C1_Ren_N_m1'      :   [4],#[164],#[184],#132
+# 'Carbon_LDE_phase_correction_list' : np.array([0]*10),
+# 'C1_Ren_extra_phase_correction_list_m1' : np.array([-75] * 10),
+
 #C13-params
 
 'C1_freq'       :   24.618e3, 
@@ -403,8 +425,8 @@ cfg['samples']['Gretel_sil2'] ={
 'C2_freq'       :   0*450.301e3, # not yet measured
 'C2_freq_0' : 0*431932.22,# not yet measured
 'C2_freq_1' : 0*469009.46,# not yet measured
-'C2_Ren_tau'    :   [31.440e-6],# NOTE: course calibration 2015-08-05
-'C2_Ren_N'      :   [300], # NOTE: course calibration 2015-08-05
+'C2_Ren_tau'    :   [31.440e-6],# NOTE: coarse calibration 2015-08-05
+'C2_Ren_N'      :   [300], # NOTE: coarse calibration 2015-08-05
 'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
 
 ########

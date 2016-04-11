@@ -34,6 +34,7 @@ qt.pulsar.define_channel(id='ch4', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+166)*1e-9, active=True) #spin_of+240e-9
 qt.pulsar.define_channel(id='ch1', name='FM', type='analog', 
         high=0.541, low=-0.541, offset=0., delay=211e-9, active=True)
+
 # NOTE (26-5-2015): MW switch delay uncalibrated! Current value = LT2 delay + 4 ns
 # because AWG-to-switch cable in LT1 is ~190 cm instead of ~60 cm (LT2) 
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_switch', type='marker', 
@@ -74,12 +75,13 @@ qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker',
 
 ## EOM - short pulse
 #Disconnected 2014-08-28 - Machiel
-#qt.pulsar.define_channel(id='ch2', name='EOM_Matisse', type='analog', high=2.0,
+# qt.pulsar.define_channel(id='ch3', name='EOM_Matisse', type='analog', high=2.0,
 #    low=-2.0, offset=0., delay=162e-9, active=True, skew=0)#112
 
-#qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
+# qt.pulsar.define_channel(id='ch1', name='EOM_AOM_Matisse', type='analog',
 #    high=1.0, low=-1.0, offset=0.0, delay=469e-9, active=True)#416
-
+# qt.pulsar.define_channel(id='ch3_marker1', name='plu_sync', type='marker', 
+#     high=2.5, low=0, offset=0, delay=0., active=True)
 #RND
 #qt.pulsar.define_channel(id='ch2_marker1', name='RND_halt', type='marker', 
 #    high=2.0, low=0, offset=0.0, delay=100e-9, active=True, skew=0.)

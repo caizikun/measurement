@@ -20,7 +20,7 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.729690e9 ##1.731035e9#<- SIL1#1.70536e9#+60e6#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr = 1.72957e9 ##1.731035e9#<- SIL1#1.70536e9#+60e6#-0.1e9 #  +/-   0.000005            #Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 4.028247e9 #4.029174e9#4.0533e9 #not calib       #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -37,6 +37,9 @@ if electron_transition == '+1':
 	hermite_pi_length = 200e-9#100e-9
 	hermite_pi_amp = 0.744
 
+	square_pi_length = 20e-9 #Not calibrated
+	square_pi_amp = 0.6 #Not calibrated
+
 	hermite_pi2_length = 76e-9
 	hermite_pi2_amp = 0.840
 
@@ -46,7 +49,10 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 250e-9
-	hermite_pi_amp = 0.178#old = .212 changed 29-02 #0.887
+	hermite_pi_amp = 0.568
+	
+	square_pi_length = 50e-9
+	square_pi_amp = 0.248
 
 	hermite_pi2_length = 80e-9
 	hermite_pi2_amp = 0.247#0.2009
@@ -89,7 +95,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -109,7 +115,7 @@ else:
 # mw_frq = 2.78e9
 cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_frq':                                  mw_frq, 
-		'mw_power':                                20,#-20,
+		'mw_power':                                mw_power,
 		'MW_pulse_mod_risetime':                   10e-9,
 		'send_AWG_start':                          1,
 		'MW_pulse_mod_frequency' : 				   43e6,
@@ -420,15 +426,15 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
-        'Square_pi_length' :		20e-9, # 2014-12-01
-      	'Square_pi_amp' :			0.38 , #  2014-12-01
+        'Square_pi_length' :		square_pi_length, # 2014-12-01
+      	'Square_pi_amp' :			square_pi_amp , #  2014-12-01
       	'IQ_Square_pi_amp' :		0.03 , # calib. for 2 us pi pulse, 2014-07-25 
       	'Square_pi2_length' :		25e-9, # XXXXXXX not calibrated
     	'Square_pi2_amp'  :			0.735,#0.71104, # XXXXXXX not calibrated
     	'IQ_Square_pi2_amp'  :		0.015, # XXXXXXX not calibrated
     	'extra_wait_final_pi2' :	-30e-9,
-    	'DESR_pulse_duration' :		4e-6,# XXXX4e-6,
-    	'DESR_pulse_amplitude' :	0.004,#XXXX0.045,
+    	'DESR_pulse_duration' :		5e-6,# XXXX4e-6,
+    	'DESR_pulse_amplitude' :	0.0045,#XXXX0.045,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	0,

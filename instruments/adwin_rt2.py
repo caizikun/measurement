@@ -17,11 +17,17 @@ class adwin_rt2(adwin):
                 default_processes = ['counter', 'set_dac', 'set_dio', 'linescan',
                     'DIO_test', 'read_adc'], 
                 dacs = adwinscfg.config['adwin_rt2_dacs'],
+                adcs = adwinscfg.config['adwin_rt2_adcs'],
                 tags = ['virtual'],
                 process_subfolder = qt.config['adwin_rt2_subfolder'], **kw)
 
-
+        # print self.adcs['telecom_temperature']
         # linescanning
+        self.add_parameter('dacs',
+            type = types.TupleType)
+        self.add_parameter('adcs',
+            type = types.TupleType)
+
         self.add_function('linescan')
         self.add_function('get_linescan_counts')
         self.add_function('get_linescan_px_clock')
