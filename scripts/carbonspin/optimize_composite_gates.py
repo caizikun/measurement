@@ -5,10 +5,6 @@ Gate parameters are being swept.
 Should result in less overhead from reprogramming and a faster calibration routine.
 
 NK 2015
-
-TODO:
-Positive and negative RO into the AWG in one go.
-This method would fit for carbons with less than 52 electron pulses per gate.
 """
 
 import numpy as np

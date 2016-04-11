@@ -137,6 +137,9 @@ class ElectronRamsey(pulsar_msmt.MBI):
 class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRamsey_Dephasing'
 
+    # def setup(self):
+    #     MBI.setup() # enable the second MW source.
+
     def generate_sequence(self, upload=True, debug = False):
 
 
@@ -164,9 +167,10 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             length = 1000e-9, amplitude = dephasing_AOM_voltage)
 
         X = ps.X_pulse(self)
-
-        Pi_mw2 = ps.pi_pulse_MW2(self)
-
+        try:
+            Pi_mw2 = ps.pi_pulse_MW2(self)
+        except:
+            print 'No parameters for second MW source found'
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
@@ -188,8 +192,8 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
 
             if init_with_second_source:
                 e.append(pulse.cp(Pi_mw2, 
-                    length = self.params['MW2_duration'][i],
-                    amplitude = self.params['MW2_pulse_amplitudes'][i]))
+                    length = self.params['MW_pulse_durations'][i],
+                    amplitude = self.params['MW_pulse_amps'][i]))
             elif not init_in_zero:
                 e.append(
                 pulse.cp(X,
@@ -250,7 +254,11 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
                 e.append(BB1_phase2)
                 e.append(BB1_phase1)
                 e.append(X_BB1)
-            elif self.params['MW_pulse_2_amps'][i] != 0:
+            elif self.params['MW_pulse_2_amps'][i] != 0 and self.params['readout_with_second_source']:
+                e.append(pulse.cp(Pi_mw2, 
+                    length = self.params['MW_pulse_2_durations'][i],
+                    amplitude = self.params['MW_pulse_2_amps'][i]))
+            elif self.params['MW_pulse_2_amps'][i] != 0 and self.params['readout_with_second_source'] == False:
                 e.append(pulse.cp(X,
                         frequency = self.params['MW_pulse_mod_frqs'][i],
                         amplitude = self.params['MW_pulse_2_amps'][i],
@@ -297,6 +305,118 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             qt.pulsar.program_awg(seq, mbi_elt,adwin_elt, *elts , debug=debug)
         # if upload:
         #     qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+        
+class Simple_Electron_repumping(pulsar_msmt.MBI):
+    """
+    Simple measurement for repumping of the electron spin.
+    All you need is a repump laser on an AWG marker channel and
+    the ability to do MW pi pulses. 
+    """
+    mprefix = 'PulsarMBIElectronRamsey_Dephasing'
+
+    # def setup(self):
+    #     MBI.setup() # enable the second MW source.
+
+    def generate_sequence(self, upload=True, debug = False):
+
+        #configure the repumping beam. power and AWG channel
+        
+        repumping_AOM_voltage=qt.instruments[self.params['repump_AOM']].power_to_voltage(self.params['laser_repump_amplitude'],controller='sec')
+        if repumping_AOM_voltage > (qt.instruments[self.params['repump_AOM']]).get_sec_V_max():
+            print 'Suggested power level would exceed V_max of the AOM driver.'
+            return
+        else:
+            #not sure if the secondary channel of an AOM can be obtained in this way?
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
+            print 'AOM voltage', repumping_AOM_voltage
+            self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['repump_AOM']].get_sec_channel()])
+            qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',repumping_AOM_voltage)
+            print self.params['Channel_alias']
+
+        # MBI element
+        mbi_elt = self._MBI_element()
+
+        # electron manipulation pulses
+        T = pulse.SquarePulse(name='syncpulse', channel='MW_pulsemod',
+            length = 1000e-9, amplitude = 0)
+
+        #Called dephasing, but does repump...
+        Dephasing = pulse.SquarePulse(channel=self.params['Channel_alias'],
+            length = 1000e-9, amplitude = repumping_AOM_voltage) 
+
+        X = ps.X_pulse(self)
+        X_mw2 = ps.pi_pulse_MW2(self)
+        if False: #optical pumping using p1 transition
+            squareX = ps.mw2_squareX(self)
+        else: #optical pumping using m1 transition
+            squareX = ps.squareX(self)
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude = 2)
+
+        # electron manipulation elements
+        elts = []
+        for i in range(self.params['pts']):
+            e = element.Element('ERamsey_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+
+            e.append(T)
+            
+            #initialize the electron after pumping to 0
+            if self.params['init_state'] == 'm1':
+                e.append(pulse.cp(X)) 
+            elif self.params['init_state'] == 'p1':
+                e.append(pulse.cp(X_mw2))
+            else: # init in zero
+                pass
+
+            e.append(pulse.cp(T, length=self.params['MW_repump_delay1'][i]))
+
+            pump_cycle_no = 0
+            while pump_cycle_no < self.params['pumping_cycles']:
+                pump_cycle_no += 1
+                if self.params['repumping_time'][i] != 0:
+                    if pump_cycle_no>1:
+                        e.append(pulse.cp(T, length=self.params['delay_before_MW'][i]))
+                        e.append(pulse.cp(squareX))
+                        e.append(pulse.cp(T, length=self.params['delay_after_MW'][i]))
+                    e.append(pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
+
+
+            e.append(
+                pulse.cp(T, length=self.params['MW_repump_delay2'][i]))
+
+            #initialize the electron after pumping to 0
+            if self.params['ro_state'] == 'm1':
+                e.append(pulse.cp(X)) 
+            elif self.params['ro_state'] == 'p1':
+                e.append(pulse.cp(X_mw2))
+            else: # ro zero
+                pass
+
+            e.append(pulse.cp(T, length=2e-6))
+
+            elts.append(e)
+
+        adwin_elt = element.Element('Adwin_sync', pulsar=qt.pulsar,
+                        global_time = True)
+        adwin_elt.append(adwin_sync)
+
+        seq = pulsar.Sequence('MBI Electron Ramsey sequence')
+        for i,e in enumerate(elts):
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
+                jump_target = e.name)
+            seq.append(name = e.name, wfname = e.name,
+                trigger_wait = True, repetitions = self.params['Repump_multiplicity'][i])
+            seq.append(name = 'Adwin-sync-%d' % i, wfname = adwin_elt.name,
+                trigger_wait = False)
+
+
+        # program AWG
+        if upload:
+            qt.pulsar.program_awg(seq, mbi_elt,adwin_elt, *elts , debug=debug)
 
 class ElectronRabiSplitMultElements(pulsar_msmt.MBI):
     mprefix = 'PulsarMBIElectronRabi'
@@ -372,7 +492,7 @@ class ElectronRabi_Switch(pulsar_msmt.MBI):
 
         X = pulselib.MW_IQmod_pulse('MBI MW pulse',
             I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
-            PM_channel = 'MW_pulsemod', Sw_channel='MW_switch',
+            PM_channel = 'MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
             frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
             amplitude = self.params['AWG_MBI_MW_pulse_amp'],
             length = self.params['AWG_MBI_MW_pulse_duration'],

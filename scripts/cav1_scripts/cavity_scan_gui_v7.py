@@ -5,6 +5,7 @@
 
 from __future__ import unicode_literals
 import os, sys, time
+from datetime import datetime
 from PySide.QtCore import *
 from PySide.QtGui import *
 import random
@@ -192,7 +193,7 @@ class ScanGUI(QtGui.QMainWindow):
         #INITIALIZATIONS:
         self.ui.dsb_minV_pzscan.setValue(1.00)
         self.ui.dsb_maxV_pzscan.setValue(2.00)
-        self.ui.sb_nr_steps_pzscan.setValue(9999)
+        self.ui.sb_nr_steps_pzscan.setValue(4)
         self._running_task = None
         self._scan_mngr.averaging_samples = 1
         self.ui.sb_avg.setValue(1)
@@ -210,8 +211,8 @@ class ScanGUI(QtGui.QMainWindow):
         self._scan_mngr.nr_steps_lr_scan = 100
         self.ui.dsb_min_lambda.setValue (637.0)
         self.set_min_lambda(637.0)
-        self.ui.dsb_max_lambda.setValue (637.5)
-        self.set_max_lambda(637.5)
+        self.ui.dsb_max_lambda.setValue (637.1)
+        self.set_max_lambda(637.1)
         self.ui.sb_nr_calib_pts.setValue(1)
         self.set_nr_calib_pts(1)
         self.coarse_wavelength_step = 0.1 
@@ -274,9 +275,9 @@ class ScanGUI(QtGui.QMainWindow):
         if (self._scan_mngr.curr_task == 'lr_scan'):
             minL = str(int(10*self._scan_mngr.min_lambda))
             maxL = str(int(10*self._scan_mngr.max_lambda))
-            fName = time.strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
+            fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task+'_'+minL+'_'+maxL
         else:
-            fName = time.strftime ('%H%M%S') + '_' + self._scan_mngr.curr_task
+            fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self._scan_mngr.curr_task
         if self._scan_mngr.file_tag:
             fName = fName + '_' + self._scan_mngr.file_tag
         print fName  
@@ -286,6 +287,7 @@ class ScanGUI(QtGui.QMainWindow):
             os.makedirs(directory)
         
         f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
+        print f5.keys()
         scan_grp = f5.create_group(self._scan_mngr.curr_task)
         scan_grp.create_dataset(self._scan_mngr.saveX_label, data = self._scan_mngr.saveX_values)
         scan_grp.create_dataset(self._scan_mngr.saveY_label, data = self._scan_mngr.saveY_values)
@@ -444,9 +446,14 @@ class ScanGUI(QtGui.QMainWindow):
             self.dict_2D_scan = {}
             self.dict_pzvolt = {}
             self._2D_scan_is_active = True
-            self.curr_l = self._scan_mngr.min_lambda
-            self.lr_scan_frq = []
-            self.lr_scan_sgnl = []
+            if (self._scan_mngr.min_lambda>self._scan_mngr.max_lambda):
+                self.curr_l = self._scan_mngr.min_lambda
+                self._scan_direction = -1
+            else:
+                self.curr_l = self._scan_mngr.min_lambda
+                self._scan_direction = +1            
+            self.lr_scan_frq_list = np.array([])
+            self.lr_scan_sgnl_list = np.array([])
             self._running_task = 'lr_laser_scan'
             self.idx_2D_scan = 0
 
@@ -462,11 +469,11 @@ class ScanGUI(QtGui.QMainWindow):
         self.curr_pz_volt = self.curr_pz_volt + self.pzV_step
 
         if (self.curr_pz_volt<self._scan_mngr.maxV_pzscan):
-            self._scan_mngr.set_piezo_voltage (self.curr_pz_volt)
+            self._exp_mngr.set_piezo_voltage (self.curr_pz_volt)
             print 'New pzV = ', self.curr_pz_volt
             self.curr_l = self._scan_mngr.min_lambda
-            self.lr_scan_frq = []
-            self.lr_scan_sgnl = []
+            self.lr_scan_frq_list = np.array([])
+            self.lr_scan_sgnl_list = np.array([])
             self._running_task = 'lr_laser_scan'
         else:
             self.curr_pz_volt = self.curr_pz_volt - self.pzV_step
@@ -505,7 +512,6 @@ class ScanGUI(QtGui.QMainWindow):
             self._running_task = None
             self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)
 
-
     def run_new_fine_laser_scan(self):
 
         self.reinitialize()
@@ -525,6 +531,8 @@ class ScanGUI(QtGui.QMainWindow):
             self.save()
         if self._scan_mngr.autostop:
             self._running_task = None
+
+
 
     def fit_calibration(self, V, freq, fixed):
         guess_b = -21.3
@@ -613,13 +621,25 @@ class ScanGUI(QtGui.QMainWindow):
             a, b, c, d = self.fit_calibration(V = V_calib, freq = f_calib, fixed=[])
         freq = a + b*V + c*V**2 + d*V**3
 
-        self.lr_scan_frq_list.append(freq)
-        self.lr_scan_sgnl_list.append(self._scan_mngr.PD_signal)
-        self.lr_scan_frq = (np.array(self.lr_scan_frq_list)).flatten()
-        self.lr_scan_sgnl = (np.array(self.lr_scan_sgnl_list)).flatten()
+        self.lr_scan_frq_list =  np.append(self.lr_scan_frq_list,freq)
+        self.lr_scan_sgnl_list  = np.append(self.lr_scan_sgnl_list, self._scan_mngr.PD_signal)
 
-        self.ui.plot_canvas.update_plot (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency [GHz]', 
-                y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'RoyalBlue')
+        if self._2D_scan_is_active and (self.idx_2D_scan != 0):
+            if self.lr_scan_sgnl.ndim == 1:
+                self.lr_scan_sgnl = np.array([self.lr_scan_sgnl])
+            self.lr_scan_sgnl_list = np.array([self.lr_scan_sgnl_list])
+
+            print 'appending ',np.shape(self.lr_scan_sgnl),' to ',np.shape(self.lr_scan_sgnl_list)
+
+            self.lr_scan_sgnl = np.append(self.lr_scan_sgnl,self.lr_scan_sgnl_list,axis=0)
+            print 'results in: ',np.shape(self.lr_scan_sgnl)
+        else:
+            self.lr_scan_frq = (np.array(self.lr_scan_frq_list)).flatten()
+            self.lr_scan_sgnl = (np.array(self.lr_scan_sgnl_list)).flatten()
+
+        self.ui.plot_canvas.update_multiple_plots (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency (GHz)', 
+                y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'none')
+
         self._scan_mngr.saveX_values = self.lr_scan_frq
         self._scan_mngr.saveY_values = self.lr_scan_sgnl  
         self._scan_mngr.saveX_label = 'frequency_GHz'
@@ -631,10 +651,10 @@ class ScanGUI(QtGui.QMainWindow):
         print 'New wavelength: ', self.curr_l
         if (self._scan_direction > 0):
             print 'Scan cond: l>max_l'
-            stop_condition = (self.curr_l>self._scan_mngr.max_lambda)
+            stop_condition = (self.curr_l>=self._scan_mngr.max_lambda)
         else:
             print 'Scan cond: l<min_l'
-            stop_condition = (self.curr_l<self._scan_mngr.max_lambda)
+            stop_condition = (self.curr_l<=self._scan_mngr.max_lambda)
 
         if stop_condition:
             if self._2D_scan_is_active:

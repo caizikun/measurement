@@ -65,7 +65,7 @@ class ScanPlotCanvas (FigureCanvas):
         FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def update_plot (self, x, y, x_axis, y_axis, color, autoscale=False):
+    def update_plot (self, x, y, x_axis, y_axis, color='RoyalBlue', autoscale=False):
         self.axes.plot(x, y, color=color, linewidth =2)
         self.axes.set_xlabel(x_axis)
         self.axes.set_ylabel(y_axis)
@@ -73,15 +73,27 @@ class ScanPlotCanvas (FigureCanvas):
             self.axes.set_ylim ([min(y), max(y)])
         self.draw()
 
-    def update_multiple_plots (self, x, y, x_axis, y_axis, autoscale=False):
-        rows, cols = np.shape (y)
-        colori = cm.gist_earth(np.linspace(0,0.75, rows))
-        for j in np.arange(rows):
-            self.axes.plot(x, y[j,:], 'RoyalBlue')            
-            self.axes.plot(x, y[j,:], 'o', color = colori[j])
-            self.axes.set_xlabel(x_axis)
-            self.axes.set_ylabel(y_axis)
+    def update_multiple_plots (self, x, y, x_axis, y_axis, color='none', autoscale=False):       
+        if y.ndim == 1:
+            self.axes.plot(x, y, color=color, linewidth =2)
+
+        else:
+            rows, cols = np.shape (y)
+            print rows,cols
+            if (color == 'none') or (len(color) != rows):
+                colori = cm.gist_earth(np.linspace(0,0.75, rows))
+            else: 
+                colori = color
+            for j in np.arange(rows):
+                self.axes.hold(True)
+                print j,'color',colori[j]
+                self.axes.plot(x, y[j,:]+0.01, color = colori[j])            
+                # self.axes.plot(x, y[j,:], 'o', color = colori[j])
+        self.axes.set_xlabel(x_axis)
+        self.axes.set_ylabel(y_axis)
         self.draw()
+        self.axes.hold(False)
+
         time.sleep (0.01)
 
 

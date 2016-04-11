@@ -8,7 +8,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def prepare(m, sil_name=SAMPLE):
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE_CFG])
+    # m.params.from_dict(qt.exp_params['samples'][SAMPLE_CFG]) ## NK: this seems to be redundant
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -19,7 +19,7 @@ def prepare(m, sil_name=SAMPLE):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     #m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
-
+    print m.params['C13_MBI_threshold_list']
 def finish(m, upload=True, debug=False):
     m.autoconfig()
     print 'finished autoconfig'

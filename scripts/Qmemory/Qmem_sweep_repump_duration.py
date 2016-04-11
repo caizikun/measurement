@@ -12,7 +12,7 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
@@ -25,11 +25,11 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
 from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
 
-nm_per_step = qt.exp_params['magnet']['nm_per_step']
+# nm_per_step = qt.exp_params['magnet']['nm_per_step']
 f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
 f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
 N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
-ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
+# ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
 range_fine  = 0.40
 pts_fine    = 51
@@ -57,7 +57,7 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
 
 
@@ -113,8 +113,8 @@ def QMem(name, carbon_list   = [5],
 
 
 
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/f_larmor,9)
+    # f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    # tau_larmor = round(1/f_larmor,9)
 
     # tau_larmor = 500e-9
     m.params['repump_wait'] =  pts*[2e-6] # time between pi pulse and beginning of the repumper
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     ### single qubit loop ###
     #########################
 
-    n = 0 ### turn measurement on/off
+    n = 1 ### turn measurement on/off
     if n == 1:
         for c in [5]:
             if breakst:
@@ -191,7 +191,11 @@ if __name__ == '__main__':
                                                                         el_RO = ro,
                                                                         carbon_list   = [c],               
                                                                         carbon_init_list        = [c])
-    n=1
+    #############################
+    ### two carbon qubit loop ###
+    #############################
+    
+    n=0
     if n == 1:
 
         

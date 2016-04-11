@@ -11,32 +11,39 @@ import numpy as np
 ##############
 
 
+<<<<<<< HEAD
+
+name = 'ESR_Horst_scantest'#name='ESR_'+ qt.exp_params['protocols']['current']
+=======
 ### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 101       #101
-mw_power    = -20#-13      #in dBm
-green_power = 15e-6     #10e-6
-int_time    = 30        # in ms
-reps        = 25
-center_f    = 1.74666#1.76#3.95#1.74666#2.828#2.861
-
-#### RT 2 with Horst / params
-name = 'ESR_Horst_scan29_NV2'#name='ESR_'+ qt.exp_params['protocols']['current']
+steps       = 301      #101
+mw_power    = -18#-13      #in dBm
+green_power = 25e-6     #15e-6
+int_time    = 30     # in ms
+reps        = 50
+center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
+#center_f    = 1.705#3.95#1.74666#2.828#2.861
+'''
+>>>>>>> cfa7ccf48aa80b80ca2f7fe7d9c055528df1534f
 steps       = 60       #101
-mw_power    = 18     #in dBm
+mw_power    = -5     #in dBm
 green_power = 200e-6    #10e-6
 int_time    = 200       # in ms
 reps        = 150
-center_f    = 2.840  # in GHz
+center_f    = 1.840  # in GHz
+'''
+range_f  =  0.03 # in GHz
 
-range_f  =  0.015 # in GHz
+range_f  =  0.05 # in GHz
 
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SMB100']
-IQ_modulation = True #Does this source have IQ modulation?
+ins_smb = qt.instruments['SGS100A']
+#ins_smb = qt.instruments['SMB100']
+IQ_modulation = False #Does this source have IQ modulation?
 
 # Set other instruments
 ins_adwin = qt.instruments['adwin']
@@ -66,8 +73,12 @@ qt.msleep(0.2)
 total_cnts = np.zeros(steps)
 ins_aom.set_power(green_power)
 stop_scan=False
+optimizer_counter = 0
 for cur_rep in range(reps):
-
+    if optimizer_counter ==5:
+        optimiz0r.optimize(dims=['z','x','y'],int_time=50)
+        optimizer_counter = 0
+    optimizer_counter +=1
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
     for i,cur_f in enumerate(f_list):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
@@ -97,4 +108,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-ins_aom.set_power(30e-6)
+#ins_aom.set_power(30e-6)

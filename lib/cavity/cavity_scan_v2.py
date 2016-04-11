@@ -30,10 +30,11 @@ class CavityExpManager ():
         self._fine_piezos = None
         self.room_T = None
         self.low_T = None
+        self.wait_cycles = 1
 
     def set_laser_wavelength (self, wavelength):
         if ((wavelength>636) and (wavelength<640)):
-            self._laser.set_wavelength (wavelength=wavelength)
+            self._laser.set_wavelength (wavelength)
             self.update_coarse_wavelength (wavelength)
             return 0
         else:
@@ -88,6 +89,8 @@ class CavityScan ():
         self.V_max = None
         self.nr_V_points = None
         self.nr_avg_scans = 1
+        self.nr_repetitions = 1
+        self.wait_cycles = 2
 
         self.use_sync = False
         self.sync_delay_ms = None
@@ -135,9 +138,10 @@ class CavityScan ():
                 qt.msleep (0.05)
         else:
             self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'laser',
-                     nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = 10, 
+                     nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self._exp_mngr.wait_cycles, 
                     start_voltage = self.V_min, end_voltage = self.V_max, 
-                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
+                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms,
+                    scan_to_start = True)
 
             for j in np.arange (self.nr_avg_scans):
                 if (j==0):
@@ -160,10 +164,12 @@ class CavityScan ():
         self.PD_signal = np.zeros (self.nr_V_steps)
 
         self.success, self.data, self.tstamps_ms, self.scan_params = self._exp_mngr._adwin.scan_photodiode (scan_type = 'fine_piezos',
-                nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = 10, 
+                nr_steps = self.nr_V_steps, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                 start_voltage = self.V_min, end_voltage = self.V_max, 
-                use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
+                use_sync = self.use_sync, delay_ms = self.sync_delay_ms, 
+                scan_to_start = True)
 
+        #output PD_signal as the average over nr_avg_scans
         for j in np.arange (self.nr_avg_scans):
             if (j==0):
                 values = self.data[0]

@@ -32,10 +32,12 @@ def put_sweep_together(Ns,taus):
 	px_list = ['X_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
 	py_list = ['Y_'+str(Ns[i])+'_'+str(taus[i]) for i in range(len(Ns))]
 
+
 	## having fun with slices
 	com_list = px_list + py_list
 
-	tomos = len(px_list)*[['X'],['Y']]
+	tomos = len(px_list)*['X']+len(px_list)*['Y']
+	print com_list,tomos
 
 	return com_list,2*Ns,2*taus,tomos
 
@@ -53,11 +55,9 @@ def SweepGates(name,**kw):
 	m.params['C13_MBI_threshold_list'] = [1]
 	m.params['el_after_init'] = '0'
 
-
-
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 500
+	m.params['reps_per_ROsequence'] = 1500
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]
@@ -67,6 +67,13 @@ def SweepGates(name,**kw):
 	m.params['init_method_list']    = ['MBI']    
 	m.params['init_state_list']     = ['up']
 	m.params['Nr_C13_init']         = 1
+
+	m.params['C1_gate_sym_N_list']= [36,30,44,36,42,34,38,56]
+	m.params['C1_gate_optimize_tau_list']=[3.892,1.658,6.112,2.784,6.100,1.674,2.786,8.322]
+
+   
+
+
 
 	##################################
 	### RO bases,timing and number of pulses (sweep parameters) ###
@@ -117,7 +124,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [5]
+	carbons = [3]
 
 
 	brekast = False
@@ -126,7 +133,7 @@ if __name__ == '__main__':
 		breakst = show_stopper()
 		if breakst: break
 
-		#optimize()
+		optimize()
 
 		for el_RO in ['positive','negative']:
 

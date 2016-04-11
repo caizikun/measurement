@@ -21,7 +21,7 @@ def run(name, mw_switch = False):
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
     pts = 61
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 300
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
 
@@ -40,7 +40,7 @@ def run(name, mw_switch = False):
     
 
     print m.params['MBI_threshold']
-    funcs.finish(m, debug=False)
+    funcs.finish(m, debug=True)
 
     print m.params['AWG_MBI_MW_pulse_mod_frq']
 

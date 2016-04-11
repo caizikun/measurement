@@ -105,7 +105,7 @@ class laser_reject0r_v3(Instrument):
         wp_channel = self._rotation_cfg[waveplate]['channel']
         wp_axis = self._rotation_cfg[waveplate]['axis']
         #print 'boo1', wp_channel
-        if self._prev_wp_channel!=wp_channel:
+        if self._rotator.get_current_channel()!=wp_channel:
             #print 'boo2', wp_channel
             self._prev_wp_channel = wp_channel
             self._rotator.set_current_channel(wp_channel)

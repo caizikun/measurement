@@ -177,3 +177,13 @@ def init_AWG():
     qt.instruments['AWG'].initialize_dc_waveforms()
 
 
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
+
+

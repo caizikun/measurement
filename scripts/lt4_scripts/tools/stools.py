@@ -22,16 +22,17 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)
-
+    previous_controller = qt.instruments[name].get_cur_controller()
     qt.msleep(0.1)
     print 'Calibrate', name
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('AWG')
+    if awg: 
+        qt.instruments[name].set_cur_controller('AWG')
+        qt.instruments[name].turn_off()
     qt.instruments[name].calibrate(31)
     qt.instruments[name].turn_off()
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
-
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)
@@ -45,7 +46,7 @@ def recalibrate_lt4_lasers(names=['MatisseAOM', 'NewfocusAOM', 'GreenAOM', 'Yell
     for n in awg_names:
         init_AWG()
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
-        recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+        recalibrate_laser(n, 'PMServo', 'adwin', awg=True)
 
 def check_power(name, setpoint, adwin, powermeter, servo,move_pm_servo=True):
     if move_pm_servo:

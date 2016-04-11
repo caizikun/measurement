@@ -346,6 +346,10 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.optimize_gate()
                         self.wait_counter = 1
                         self.need_to_optimize_nf = True
+                        if self.gate_optimize_counter > self.get_max_counter_optimize()/2:
+                            self.set_pid_e_primer_running(False)
+                            qt.instruments['physical_adwin'].Set_FPar(51,66.65)
+
                     else:
                         text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
                              self.get_max_counter_optimize())
@@ -437,7 +441,7 @@ class bell_optimizer_v2(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)  
                         self.send_error_email(subject = subject, text = text)
 
-                elif 'lt4' in self.setup_name and self.tail_counts_avg < self.get_min_tail_counts():
+                elif 'lt4' in self.setup_name and self.tail_counts_avg >0 and self.tail_counts_avg < self.get_min_tail_counts():
                     text = 'WARNING: avg tail counts too low: {:.2f} < {:.2f}'.format(self.tail_counts_avg, self.get_min_tail_counts())
                     subject = 'Low tail counts'
                     self.set_invalid_data_marker(1)

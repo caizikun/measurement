@@ -48,7 +48,7 @@ def cal_fast_rabi(name):
 
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 20e-9
 
@@ -78,15 +78,15 @@ def cal_fast_pi(name, mult=1,Range = 0.04, mbi = True, mw_switch = False):
     # measurement settings
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500 #0
+    m.params['reps_per_ROsequence'] = 200 #0
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int) * mult
     m.params['MW_pulse_delays'] = np.ones(pts) * 15e-6
 
     # hard pi pulses
     # m.params['MW_pulse_durations'] = m.params['fast_pi_duration']*(np.ones(pts))
-    m.params['MW_pulse_durations'] =  m.params['fast_pi_duration']*(np.ones(pts))
+    m.params['MW_pulse_durations'] =  (np.ones(pts))*100e-9#m.params['fast_pi_duration']*(np.ones(pts))
     # print     m.params['MW_pulse_durations'] 
-    m.params['MW_pulse_amps'] = np.linspace(m.params['fast_pi_amp']-Range/2.,m.params['fast_pi_amp']+Range/2.,pts)
+    m.params['MW_pulse_amps'] = np.linspace(0.1-Range,0.1+Range,pts)#np.linspace(m.params['fast_pi_amp']-Range/2.,m.params['fast_pi_amp']+Range/2.,pts)
     print m.params['electron_transition']
     # if m.params['electron_transition'] == '_p1':
     #     m.params['MW_pulse_amps'] = np.linspace(0.69-Range/2.,0.69+Range/2.,pts)
@@ -98,7 +98,7 @@ def cal_fast_pi(name, mult=1,Range = 0.04, mbi = True, mw_switch = False):
     m.params['sweep_name'] = 'MW pulse amplitude (V)'
     m.params['sweep_pts'] = m.params['MW_pulse_amps']
 
-    print m.params['fast_pi_duration']
+    # print m.params['fast_pi_duration']
     
     if mbi == False:
         m.params['MBI_threshold'] = 0
@@ -291,7 +291,7 @@ def run_calibrations(stage):
 
 if __name__ == '__main__':
     
-    cal_fast_pi(SAMPLE_CFG+'msm1',mult=1,Range = 0.03, mbi = True, mw_switch = False)
+    cal_fast_pi(SAMPLE_CFG+'msm1',mult=1,Range = 0.1, mbi = False, mw_switch = False)
     # GreenAOM.set_power(20e-6)
     # optimiz0r.optimize(dims=['x','y','z','y','x'])
     # stools.turn_off_all_lt2_lasers()

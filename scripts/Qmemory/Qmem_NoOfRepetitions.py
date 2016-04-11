@@ -12,62 +12,41 @@ import qt
 
 ### reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.scripts.Qmemory.QMemory as QM; reload(QM) ## get the measurement class
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 import time
 import msvcrt
 from measurement.scripts.Qmemory.repump_speed import run as repump_speed;
+from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-
-#### Parameters and imports for DESR ####
-from measurement.scripts.QEC.magnet import DESR_msmt; reload(DESR_msmt)
-from analysis.lib.fitting import dark_esr_auto_analysis; reload(dark_esr_auto_analysis)
-
-nm_per_step = qt.exp_params['magnet']['nm_per_step']
-f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
-f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
-N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
-ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
-
-range_fine  = 0.40
-pts_fine    = 51
-reps_fine   = 1500 #1000
 ###############
 
 
 
-def QMem(name, carbon_list   = [5],               
-        
+def QMem(name,
+        carbon_list   = [5],               
         carbon_init_list        = [5],
         carbon_init_states      = ['up'], 
         carbon_init_methods     = ['MBI'], 
         carbon_init_thresholds  = [1],  
-
         number_of_MBE_steps = 0,
         mbe_bases           = ['Y','Y'],
         MBE_threshold       = 1,
         logic_state         = 'X',
-
         el_RO               = 'positive',
         debug               = True,
         tomo_list			= ['X'],
         Repetitions         = 300,
         **kw):
 
-
-
-
-
-    m = DD.QMemory_repumping(name)
+    m = QM.QMemory_repumping(name)
     funcs.prepare(m)
 
-    do_optical_pi = kw.get('do_optical_pi', False)
-    if do_optical_pi:
-        m.params['do_optical_pi']=do_optical_pi
-    #m.params['wait_between_runs'] = 1
+    m.params['do_optical_pi']=kw.get('do_optical_pi', False)
+    m.params['initial_MW_pulse'] = kw.get('initial_MW_pulse','pi2')
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
     m.params['reps_per_ROsequence'] = Repetitions
@@ -114,23 +93,7 @@ def QMem(name, carbon_list   = [5],
                 coupling_difference +=  - m.params['C'+str(c)+'_freq_1_m1']-m.params['C'+str(c)+'_freq_0']
             # print c
             # print coupling_difference
-    
-    # if 'Z' in tomo_list[0]:
-    #     maxReps = kw.get('maxReps',1000)
-    # else:
-    maxReps = 41e3/abs(abs(coupling_difference)-m.params['C1_freq_0'])*250.*1.2
-    print 'maxReps: ', maxReps
-    
-    ### this DFS combination decays much more rapidly than anticipated (T2* and Z decay)
-    if 2 in carbon_list and 3 in carbon_list and maxReps > 1000:
-        maxReps = 1200
-
-    print carbon_list, abs(abs(coupling_difference)-m.params['C1_freq_0'])
-    # if maxReps > 1000:
-    #     maxReps = 1000
-    ### determine sweep parameters
     pts = kw.get('pts',None)
-
     if pts == None:
         if len(carbon_list) != 2:
             if 6 in carbon_list and not 5 in carbon_list:
@@ -140,33 +103,30 @@ def QMem(name, carbon_list   = [5],
             else:
                 pts = 11
         else:
-            if 6 in carbon_list and not 5 in carbon_list:
-                pts = 7
-            elif 6 in carbon_list and 5 in carbon_list:
-                pts = 6
-            else:
                 pts = 11
 
     minReps = kw.get('minReps',0) # minimum number of LDE reps
-
+    maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C5_freq_0']))
     step = int((maxReps-minReps)/pts)
-    maxReps = minReps + step*pts
+    m.params['fast_repump_repetitions'] = np.arange(minReps,minReps+pts*step,step)
 
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    print 'min Reps: ', minReps, ' Max reps: ', maxReps
+    print 'carbons ', carbon_list, ' couplings: ', abs(abs(coupling_difference)-m.params['C1_freq_0'])
+
+    f_larmor = m.params['C1_freq_0']
     tau_larmor = round(1/f_larmor,9)
-
     print 'Calculated tau_larmor', tau_larmor
 
     m.params['repump_wait'] = pts*[tau_larmor]#tau_larmor] #pts*[2e-6] # time between pi pulse and beginning of the repumper
-    m.params['fast_repump_repetitions'] = np.arange(minReps,maxReps,step)
+    m.params['fast_repump_power'] = kw.get('repump_power', 20e-9)
+    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',2.5e-6)] #how long the beam is irradiated
+    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',110e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
 
-    m.params['fast_repump_power'] = kw.get('repump_power', 900e-9)
-    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',3.5e-6)] #how long the beam is irradiated
-    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',310e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['do_pi'] = True ### does a regular pi pulse
+    m.params['do_BB1'] = False # ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
 
-    m.params['do_pi'] = False ### does a regular pi pulse
-    m.params['do_BB1'] = True # ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
-    m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
+    ps.X_pulse(m) #this updated fast_pi_amp
+    m.params['pi_amps'] =  pts*[m.params['fast_pi_amp']]
 
     ### For the Autoanalysis
     m.params['pts']                 = pts
@@ -194,6 +154,7 @@ def optimize(breakst):
         GreenAOM.set_power(10e-6)
         counters.set_is_running(1)
         optimiz0r.optimize(dims = ['x','y','z','y','x'])
+        GreenAOM.set_power(0e-6)
 
 def optimisation_routine(last_check,repump_power,debug,breakst):
     if abs(last_check-time.time()) > 30*60 and not (breakst or debug): ## check every 30 minutes
@@ -210,15 +171,10 @@ def optimisation_routine(last_check,repump_power,debug,breakst):
 if __name__ == '__main__':
 
     last_check = time.time() ### time reference for long measurement loops
-
     breakst = False    
     debug = False
+    repump_power = 1000e-9
 
-    #### this needs to be filled out in order to make the loops/optimization work
-    repump_power = 500e-9
-
-    # QMem('RO_electron',debug=False,tomo_list = ['Z'])
-    # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
 
     #########################
     ### single qubit X loop ###
@@ -231,52 +187,29 @@ if __name__ == '__main__':
             if breakst:
                 break
             for tomo in ['X','Y']:
-                optimize(breakst or debug)
+                # optimize(breakst or debug)
                 if breakst:
                     break
                 for ro in ['positive','negative']:
                     breakst = show_stopper()
                     if breakst:
                         break
-                    QMem('NoOfRepetitions_initPi_'+ro+'_Tomo_'+tomo+'_C'+str(c),
-                                                                        debug=debug,
-                                                                        tomo_list = [tomo], 
-                                                                        el_RO = ro,
-                                                                        carbon_list   = [c],               
-                                                                        carbon_init_list        = [c],
-                                                                        carbon_init_thresholds  = [1],  #1 XXX
-                                                                        carbon_init_methods     = ['MBI'], # MBI/swap XXX
-                                                                        repump_power = repump_power,
-                                                                        do_optical_pi = True) 
+                    QMem('NoOfReps_'+ro+'_Tomo_'+tomo+'_C'+str(c),
+                                debug=debug,
+                                average_repump_time = 111e-9,
+                                tomo_list = [tomo], 
+                                el_RO = ro,
+                                carbon_list   = [c],               
+                                carbon_init_list        = [c],
+                                carbon_init_thresholds  = [1],  #1 XXX
+                                carbon_init_methods     = ['MBI'], # MBI/swap XXX
+                                repump_power = repump_power,
+                                repetitions = 1000,
+                                pts = 31,
+                                do_optical_pi = False,
+                                ) 
                 ### optimize position and calibrate powers
-                last_check = optimisation_routine(last_check,repump_power,debug,breakst)
-
-    if True: ### turn measurement on/off
-        # stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
-        # get repump speed
-        for c in [1]:#,2,3,5,6]:
-            if breakst:
-                break
-            for tomo in ['X','Y']:
-                optimize(breakst or debug)
-                if breakst:
-                    break
-                for ro in ['positive','negative']:
-                    breakst = show_stopper()
-                    if breakst:
-                        break
-                    QMem('NoOfRepetitions_NoOpt_initPi_'+ro+'_Tomo_'+tomo+'_C'+str(c),
-                                                                        debug=debug,
-                                                                        tomo_list = [tomo], 
-                                                                        el_RO = ro,
-                                                                        carbon_list   = [c],               
-                                                                        carbon_init_list        = [c],
-                                                                        carbon_init_thresholds  = [1],  #1 XXX
-                                                                        carbon_init_methods     = ['MBI'], # MBI/swap XXX
-                                                                        repump_power = repump_power,
-                                                                        do_optical_pi = False) 
-                ### optimize position and calibrate powers
-                last_check = optimisation_routine(last_check,repump_power,debug,breakst)
+                # last_check = optimisation_routine(last_check,repump_power,debug,breakst)
 
     ######################
     ### two qubit XX loop ###
@@ -289,7 +222,7 @@ if __name__ == '__main__':
         logic_state_list=['X','mX'] ### for DFS creation.
         tomo_list =[['X','X'],['Y','Y'],['X','Y'],['Y','X']]
         ### DFS configs ordered by coupling strength.
-        llist_of_c_lists = [[1,5],[1,2],[1,3],[2,6],[3,6],[5,6]]# [[2,3],[2,5],[3,5],[1,6],[1,5],[1,2],[1,3],[2,6],[3,6],[5,6]]
+        llist_of_c_lists = [[1,5],[1,2],[1,3],[2,6],[3,6],[5,6]]
         # llist_of_c_lists = [[2,5]]
 
         for c_list in llist_of_c_lists:
@@ -327,7 +260,7 @@ if __name__ == '__main__':
 
     if False: ### turn measurement on/off
         # stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
-        for c in [1,2,3,5,6]:
+        for c in [1]:
             if breakst:
                 break
 
@@ -336,23 +269,21 @@ if __name__ == '__main__':
                 if breakst:
                     break
                 for ro in ['positive','negative']:
-                    # if c == 2 or c==3:
-                    maxReps=2000
-                    # else:
-                    #     maxReps=5000
+                    maxReps=5000
                     breakst = show_stopper()
                     if breakst:
                         break
                     QMem('NoOfRepetitions_'+ro+'_Tomo_'+tomo+'_C'+str(c),
                                                                         debug=debug,
-                                                                        tomo_list = [tomo], 
+                                                                        tomo_list = [tomo],
+                                                                        average_repump_time = 111e-9,
                                                                         el_RO = ro,
                                                                         carbon_list   = [c],               
                                                                         carbon_init_list        = [c],
                                                                         maxReps                 = maxReps,
                                                                         carbon_init_thresholds  = [0],  #1 XXX
                                                                         carbon_init_methods     = ['swap'],
-                                                                        pts                     = 10,
+                                                                        pts                     = 15,
                                                                         repump_power            = repump_power) # MBI/swap XXX
                 ### optimize position and calibrate powers
                 last_check = optimisation_routine(last_check,repump_power,debug,breakst)

@@ -363,7 +363,14 @@ class master_of_space(CyclopeanInstrument):
     def move_to_xyz_pos(self, dim_names, vals, speed=2000, blocking=False):
         
         target_voltages = []
-        for d in ['x','y','z']:
+
+        if 'z' not in self.dimensions: 
+            # print 'Cannot move to xyz position. There is no z in the master of space dimensions. moving to xy position instead'
+            dims = ['x','y']
+        else:
+            dims = ['x','y','z']
+
+        for d in dims:
             dim = self.dimensions[d]     
             try:
                 tvalt = self.get(d)/dim['micron_per_volt']

@@ -50,8 +50,6 @@ class MW_IQmod_pulse(pulse.Pulse):
     # Updated 14-3-15 by MAB to implement MW Switch on lt2
     def __init__(self, name, I_channel, Q_channel, PM_channel, **kw):
         pulse.Pulse.__init__(self, name)
-
-
         self.I_channel = I_channel
         self.Q_channel = Q_channel
         self.PM_channel = PM_channel
@@ -59,7 +57,7 @@ class MW_IQmod_pulse(pulse.Pulse):
         # self.Sw_channel = 'MW_switch'
         # self.channels = [I_channel, Q_channel, PM_channel, 'MW_switch']
         # For implementation of MW Switch (has been implemented on lt2)
-        if 'Sw_channel' in kw:
+        if 'Sw_channel' in kw and kw['Sw_channel'] != 'None':
             self.Sw_channel = kw['Sw_channel']
             self.channels.append(self.Sw_channel)
 
@@ -702,13 +700,12 @@ class GaussianPulse_Envelope(MW_pulse):
             return env*wf
 
 
-
 class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
     def __init__(self, *arg, **kw):
         self.env_amplitude = kw.pop('amplitude', 0.1)
-        MW_IQmod_pulse.__init__(self, *arg,amplitude=1., **kw)
-        self.mu = kw.pop('mu',0.5*self.length)
-        self.T_herm = kw.pop('T_herm',0.1667*(self.length - 2 * self.risetime)) # without MW switch: - 2 * self.PM_risetime
+        MW_IQmod_pulse.__init__(self, *arg, amplitude=1., **kw)
+        self.mu = kw.pop('mu', 0.5*self.length)
+        self.T_herm = kw.pop('T_herm', 0.1667*(self.length - 2 * self.risetime)) # without MW switch: - 2 * self.PM_risetime
         self.pi2_pulse = kw.pop('pi2_pulse', False)
 
 
@@ -723,12 +720,15 @@ class HermitePulse_Envelope_IQ(MW_IQmod_pulse):
 
     def chan_wf(self, chan, tvals):
         if chan == self.PM_channel:
+
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
         elif hasattr(self,'Sw_channel') and chan == self.Sw_channel: # Sw channel is digital, just like PM mod channel
+
             return MW_IQmod_pulse.chan_wf(self,chan,tvals)
 
         else: 
+
             t=tvals-tvals[0] 
             # env = self.env_amplitude*(1-0.956*((t-self.mu)/self.T_herm)**2)*np.exp(-((t-self.mu)/self.T_herm)**2)
             if self.pi2_pulse : # for  Hermite 90deg pulse
