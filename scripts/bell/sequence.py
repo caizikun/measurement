@@ -373,6 +373,7 @@ def _LDE_element(msmt, **kw):
 
 
     # 14 RND generator HOLD OFF
+    
     if  msmt.joint_params['RND_during_LDE'] ==1  or ( msmt.joint_params['do_final_MW_rotation'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0 ):
         e.add(pulse.cp(msmt.RND_sample_hold_pulse,
                        amplitude = msmt.joint_params['RND_during_LDE']),
@@ -411,7 +412,7 @@ def _LDE_element(msmt, **kw):
 
     #15 RO
     if msmt.joint_params['RO_during_LDE'] == 1 and msmt.joint_params['wait_for_1st_revival'] == 0:
-        refpulse = 'MW_RND_0' if (msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_final_MW_rotation'] == 1) else 'RND'
+        refpulse = 'MW_RND_0' if (msmt.params['MW_during_LDE'] == 1 and msmt.joint_params['do_final_MW_rotation'] == 1) else 'RND' 
         e.add(pulse.cp(msmt.RO_pulse,
                 amplitude = msmt.params['RO_voltage_AWG'],
                 length = msmt.joint_params['LDE_RO_duration']),

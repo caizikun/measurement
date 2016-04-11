@@ -3629,8 +3629,8 @@ class MBI_C13(DynamicalDecoupling):
             print 'Warning: No Carbons selected for readout'
             return []
 
-        elif len(carbon_list) == 0 and do_RO_electron==True:
-            print 'No Carbons selected for readout; reading out electron'
+        # elif len(carbon_list) == 0 and do_RO_electron==True:
+        #     print 'No Carbons selected for readout; reading out electron'
 
         number_of_carbons_to_RO = 0
         for jj, basis in enumerate(RO_basis_list):
@@ -3716,7 +3716,7 @@ class MBI_C13(DynamicalDecoupling):
                         phase = Final_pi2_pulse_phase_negative))
         else:
             #NK: why would you wait here?
-            #just pass seems fine, right?
+            #just pass seems fine, right? You append a trigger anyways. That element has tau_cut
             # commented out.
             # carbon_RO_seq.append(Gate(prefix+'Wait_gate_'+str(pt),'passive_elt',
             #     wait_time = 20e-6))      

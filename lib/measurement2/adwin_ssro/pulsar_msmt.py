@@ -117,7 +117,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
 class SSRO_calibration_msp1(PulsarMeasurement):
     mprefix = 'SSRO_calib_msp1'
-
+    # adwin_process = 'IntegratedSSRO_calibration'
     def autoconfig(self):
         PulsarMeasurement.autoconfig(self)
 

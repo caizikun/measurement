@@ -46,7 +46,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['pts'] = pts
     m.params['repetitions'] = 600 if multiplicity == 1 else 1000
-    rng = 0.2 if multiplicity == 1 else 0.05 if multiplicity <= 5 else 0.05
+    rng = 0.3 if multiplicity == 1 else 0.05 if multiplicity <= 5 else 0.05
 
     m.params['multiplicity'] = np.ones(pts)*multiplicity
 
@@ -62,8 +62,8 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
             m.params['MW_pulse_amplitudes'] = m.params['mw2_Square_pi_amp'] + np.linspace(-rng, rng, pts) 
     else:
         if m.params['pulse_shape'] == 'Hermite':
-    m.params['MW_duration'] = m.params['Hermite_pi_length']
-    m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
+            m.params['MW_duration'] = m.params['Hermite_pi_length']
+            m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05 
         else:
             print 'calibrating square pulses'
             m.params['MW_duration'] =  m.params['Square_pi_length']
@@ -372,9 +372,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False, pulse_shape='Hermite')
+    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False, pulse_shape='Hermite')
     # sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    #calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

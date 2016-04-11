@@ -70,7 +70,7 @@ def darkesrp1(name):
     m.params['mw_frq']         = m.params['ms+1_cntr_frq']-43e6# - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
     m.params['mw_power'] = 20
     m.params['Ex_SP_amplitude']=0
-    m.params['range']        = 5e6
+    m.params['range']        = 1e6
     m.params['pts'] = 151
     m.params['repetitions'] = 500
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
@@ -128,5 +128,5 @@ def Generaldarkesr(name):
 
 if __name__ == '__main__':
     darkesr(SAMPLE_CFG)
-    # darkesrp1(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)
     

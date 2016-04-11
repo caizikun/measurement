@@ -22,7 +22,7 @@ class Toptica_DLpro(Instrument):
     def __init__(self,name,address):
 
         '''
-        Initializes the Keithley_2100, and communicates with the wrapper.
+        Initializes the Toptica_DLpro, and communicates with the wrapper.
 
         Input:
             name (string)           : name of the instrument
