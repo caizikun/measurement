@@ -23,3 +23,19 @@ joint_params['opt_pulse_separation']    = 250e-9 #350e-9 changed for higher visi
 joint_params['TPQI_normalisation_measurement'] = False
 
 joint_params['LDE_element_length'] = 5e-6 #needs to be set accordingly.
+
+
+### joint carbon parameters. Need to be updated by hand atm.
+joint_params['slave_carbon_N'] = 10
+joint_params['slave_carbon_tau'] = 3.75e-6
+joint_params['slave_carbon_eigen_phase'] = 0.0
+joint_params['slave_freq_0'] = 447968.42
+joint_params['slave_freq_1'] = 483714
+joint_params['slave_freq'] = (447024.+ 483714)/2.
+
+joint_params['master_carbon_N'] = 28
+joint_params['master_carbon_tau'] = 8.81e-6
+joint_params['master_carbon_eigen_phase'] = -19.64
+joint_params['master_freq_0'] = 438757.84
+joint_params['master_freq_1'] = 413107.0
+joint_params['master_freq'] = (438753.54 + 413107.0)/2.,

@@ -94,7 +94,7 @@ def generate_AWG_seq(name):
     m.params['do_general_sweep']    = False
     m.params['non_local']           = 1
     m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 0
+    m.params['init_carbon']         = 1
     m.params['do_LDE_1']            = 1 # TODO finish the LDE elements for non local operation
     m.params['swap_onto_carbon']    = 0
     m.params['do_LDE_2']            = 0 # TODO finish the LDE element for non local operation
