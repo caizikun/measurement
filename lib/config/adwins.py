@@ -2752,6 +2752,96 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'yellow_aom_frq':11,
         }
 
+config['adwin_m1_dacs'] = {
+        'atto_x' : 1,
+        'atto_y' : 2,
+        'atto_z' : 3,
+        'green_aom' : 4,
+        'yellow_aom' : 5,
+        'matisse_aom' : 6,
+        'DLpro_frq': 7,
+        'newfocus_frq': 8,
+        }
+config['adwin_m1_processes'] = {
+
+        'linescan' : {
+
+            'index' : 2,
+            'file' : 'linescan.TC2',
+            'par' : {
+                'set_cnt_dacs' : 1,
+                'set_steps' : 2,
+                'set_px_action' : 3,
+                'get_px_clock' : 4,
+                },
+            'fpar' : {
+                'set_px_time' : 1,
+                'supplemental_data_input' : 2,
+                'simple_counting' : 3,  # 1 for simple, 0 for resonant counting
+                },
+            'data_long' : {
+                'set_dac_numbers' : 200,
+                'get_counts' : [11,12,13],
+                },
+            'data_float' : {
+                'set_start_voltages' : 199,
+                'set_stop_voltages' : 198,
+                'get_supplemental_data' : 15,
+                },
+            },
+
+        'counter' : {
+            'doc' : '',
+            'info' : {
+                'counters' : 4,
+                },
+            'index' : 1,
+            'file' : 'simple_counting.TC1',
+            'par' : {
+                'set_integration_time' : 23,
+                'set_avg_periods' : 24,
+                'set_single_run' : 25,
+                'get_countrates' : [41, 42, 43, 44],
+                },
+            'data_long' : {
+                'get_last_counts' : 45,
+                },
+            },
+
+        'set_dac' :  {
+            'index' : 3,
+            'file' : 'SetDac.TC3',
+            'par' : {
+                'dac_no' : 20,
+                },
+            'fpar' : {
+                'dac_voltage' : 20,
+                },
+            },
+
+        'set_dio' :  {
+            'index' : 4,
+            'file' : 'Set_TTL_Outputs.TC4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
+        'get_dio' :  {
+            'index' : 4,
+            'file' : 'Get_TTL_states.TC4',
+            'par' : {
+                'dio_no' : 61, #configured DIO 08:15 as input, all other ports as output
+                'dio_val' : 62,
+                },
+            },
+
+        'init_data' :  {
+            'index' : 5,
+            'file' : 'init_data.TC5',
+            },
+}
 
 config['adwin_rt1_dacs'] = {
         'atto_x' : 1,
