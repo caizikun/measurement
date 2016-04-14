@@ -21,8 +21,8 @@ initialisation is done into ms = 0 followed by MW pulses.
 
 Order of SSRO calibraiton
     1) ms = 0
-    2) ms = +1
-    3) ms = -1
+    2) ms = +1 (MW1)
+    3) ms = -1 (MW2 no reach)
 
 Have MW1_frequency on ms = +1 freq (Make sure that you 
     put electron transition to +1 in msmt_params so that the MW1 freq is correct)
@@ -52,38 +52,12 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
     # m.params['SSRO_duration_list'] = np.arange(0,51,10)
     # m.params['SSRO_duration_list'] = np.linspace(0,0,10)
     
-
     # MW settings
     pulse_shape = kw.get('pulse_shape', None)
     if pulse_shape == None:
         pulse_shape == m.params['pulse_shape']
     else:
         m.params['pulse_shape'] = pulse_shape
-
-    
-
-    ### need to selectr the correct frequency
-    if mw2:
-        if m.params['pulse_shape'] == 'Hermite':
-            print 'Using Hermite pulses'
-            m.params['mw2_duration']            = m.params['mw2_Hermite_pi_length']
-            m.params['mw2_pulse_amplitudes']    = m.params['mw2_Hermite_pi_amp'] 
-            m.params['MW_pulse_amplitudes']     = m.params['mw2_Hermite_pi_amp'] 
-        else:
-            print 'Using square pulses'
-            m.params['mw2_duration']            =  m.params['mw2_Square_pi_length']
-            m.params['mw2_pulse_amplitudes']    = m.params['mw2_Square_pi_amp'] 
-            m.params['MW_pulse_amplitudes']     = m.params['mw2_Square_pi_amp'] 
-    else:
-        if m.params['pulse_shape'] == 'Hermite':
-            print 'Using Hermite pulses'
-            m.params['MW_duration'] = m.params['Hermite_pi_length']
-            m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp']
-        else:
-            print 'Using square pulses'
-            m.params['MW_duration'] =  m.params['Square_pi_length']
-            m.params['MW_pulse_amplitudes'] = m.params['Square_pi_amp']
-
 
     # Sweep params
     # m.params['sweep_name'] = 'SSRO_MWInit duration'
@@ -99,20 +73,43 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
     #pick one?
     # X = ps.X_pulse(m)
     # m.generate_sequence(upload=True, pulse_pi = X)
-    
+
+    # # NOPE!! is this even necessary? ps.pi_pulse_MW2 takes directly mw2_Hermite_pi_length and mw2_Hermite_pi_amp
+    #     if mw2:
+    #     if m.params['pulse_shape'] == 'Hermite':
+    #         print 'Using Hermite pulses'
+    #         m.params['mw2_duration']            = m.params['mw2_Hermite_pi_length']
+    #         m.params['mw2_pulse_amplitudes']    = m.params['mw2_Hermite_pi_amp'] 
+
+    #     else:
+    #         print 'Using square pulses'
+    #         m.params['mw2_duration']            =  m.params['mw2_Square_pi_length']
+    #         m.params['mw2_pulse_amplitudes']    = m.params['mw2_Square_pi_amp'] 
+
+    # else:
+    #     if m.params['pulse_shape'] == 'Hermite':
+    #         print 'Using Hermite pulses'
+    #         m.params['MW_duration'] = m.params['Hermite_pi_length']
+    #         m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp']
+    #     else:
+    #         print 'Using square pulses'
+    #         m.params['MW_duration'] =  m.params['Square_pi_length']
+    #         m.params['MW_pulse_amplitudes'] = m.params['Square_pi_amp']
 
     for mult, mw2, s in zip(multiplicity, mw2, el_states):
+        #selecting correct parameters
         m.params['multiplicity'] = mult
+        ### need to select the correct frequency
+
+
         m.MW_pi = pulse.cp(ps.pi_pulse_MW2(m), phase = 0) if mw2 else pulse.cp(ps.X_pulse(m), phase = 0)
-        m.autoconfig() #Already done
+        m.autoconfig() 
         m.generate_sequence(upload=True, pulse_pi = m.MW_pi)
 
         if not debug:
+            print 'electron state: ' + str(s)
             m.run(autoconfig=False)
-            print 'crash @ save'
-            print s
             m.save(s)
-            print 'crash @ finish'
     m.finish()
 
     # used to be

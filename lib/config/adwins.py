@@ -326,7 +326,7 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ],
                 'params_long_index'  : 20,
                 'params_float' : [
@@ -357,7 +357,7 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ],
                 'params_long_index'  : 20,
@@ -410,7 +410,7 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ],
                 'params_long_index'  : 20,
@@ -448,7 +448,7 @@ config['adwin_lt1_processes'] = {
                     ['repetitions'                 ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['do_adaptive'                 ,   0],
                     ['adptv_steps'                 ,   5],
@@ -502,7 +502,7 @@ config['adwin_lt1_processes'] = {
                     ['repetitions'                 ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['do_adaptive'                 ,   0],
                     ['adptv_steps'                 ,   5],
@@ -570,7 +570,7 @@ config['adwin_lt1_processes'] = {
                     ['repetitions'                 ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['do_adaptive'                 ,   0],
                     ['adptv_steps'                 ,   5],
@@ -639,7 +639,7 @@ config['adwin_lt1_processes'] = {
                     ['repetitions'                 ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['do_adaptive'                 ,   0],
                     ['adptv_steps'                 ,   5],
@@ -754,7 +754,7 @@ config['adwin_lt1_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['SP_repump_duration'          ,   1],
                     ['wait_time_between_msmnts'    ,   1],
 		            ['repump_E'    		           ,   0],
@@ -797,7 +797,7 @@ config['adwin_lt1_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -939,7 +939,7 @@ config['adwin_lt1_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -997,7 +997,7 @@ config['adwin_lt1_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],  #4
                     ['repetitions'                 ,1000],  #5
                     ['sweep_length'                ,  10],  #6
-                    ['cycle_duration'              , 300],  #7
+                    ['cycle_duration'              , 300],  #7 #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],  #8
                     ['MBI_duration'                ,   1],  #9
                     ['max_MBI_attempts'            ,   1],  #10
@@ -1269,7 +1269,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['Shutter_channel'             ,   4],
                     ],
                 'params_long_index'  : 20,
@@ -1311,7 +1311,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['CR_probe'                    ,  10],
                     ['repump_after_repetitions'    ,  1],
                     ['CR_repump'                   ,  0],
@@ -1368,7 +1368,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['wait_after_RO_pulse_duration',1],
                     ['use_shutter'                 ,   0],
@@ -1408,7 +1408,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            , 1000], #9
                     ['SSRO_duration'               ,   50], #10
                     ['SSRO_stop_after_first_photon',    0], #11
-                    ['cycle_duration'              ,  300], #12
+                    ['cycle_duration'              ,  300], #12  #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,    1], #13
                     ['use_shutter'                 ,    0], #14
                     ['Shutter_channel'             ,    4], #15
@@ -1450,7 +1450,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['SP_repump_duration'          ,   1],
                     ['wait_time_between_msmnts'    ,   1],
 		    ['repump_E'    		   ,   0],
@@ -1493,7 +1493,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -1552,7 +1552,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -1608,7 +1608,7 @@ config['adwin_lt2_processes'] = {
                     ['repetitions'                 ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ['do_adaptive'                 ,   0],
                     ['adptv_steps'                 ,   5],
@@ -1655,7 +1655,7 @@ config['adwin_lt2_processes'] = {
                     ['dac2_channel'                ,   6],
                     ['dac3_channel'                ,   8],
                     ['max_element'                 ,   4],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['wait_after_pulse_duration'   ,   1],
                     ['max_sweep'                   ,  10],
                     ['sweep_channel'               ,   7],
@@ -1693,7 +1693,7 @@ config['adwin_lt2_processes'] = {
                     ['dac2_channel'                ,   6],
                     ['dac3_channel'                ,   8],
                     ['max_element'                 ,   4],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['wait_after_pulse_duration'   ,   1],
                     ['max_repetitions'             ,10000],
                     ['timed_element'               ,   1],
@@ -1740,7 +1740,7 @@ config['adwin_lt2_processes'] = {
                     ['RO_repetitions'              ,1000],
                     ['RO_duration'                 ,  50],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['CR_probe'                    ,  10],
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
@@ -1796,7 +1796,7 @@ config['adwin_lt2_processes'] = {
                     ['RO_repetitions'              ,1000],
                     ['RO_duration'                 ,  50],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['CR_probe'                    ,  10],
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
@@ -1865,7 +1865,7 @@ config['adwin_lt2_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['CR_probe'                    ,  10],
                     ['repump_after_repetitions'    ,  1],
                     ['CR_repump'                   ,  0],
@@ -2003,7 +2003,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -2061,7 +2061,7 @@ config['adwin_lt2_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],  #4
                     ['repetitions'                 ,1000],  #5
                     ['sweep_length'                ,  10],  #6
-                    ['cycle_duration'              , 300],  #7
+                    ['cycle_duration'              , 300],  #7  #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],  #8
                     ['MBI_duration'                ,   1],  #9
                     ['max_MBI_attempts'            ,   1],  #10
@@ -2483,7 +2483,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ],
                 'params_long_index'  : 20,
                 'params_float' : [
@@ -2514,7 +2514,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_repetitions'            ,1000],
                     ['SSRO_duration'               ,  50],
                     ['SSRO_stop_after_first_photon',   0],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
                     ],
                 'params_long_index'  : 20,
@@ -2551,7 +2551,7 @@ config['adwin_pro_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],
                     ['repetitions'                 ,1000],
                     ['sweep_length'                ,  10],
-                    ['cycle_duration'              , 300],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   19],  
                     ['MBI_duration'                ,   1],
                     ['max_MBI_attempts'            ,   1],
@@ -2610,7 +2610,7 @@ config['adwin_pro_processes'] = {
                     ['wait_after_pulse_duration'   ,   1],  #4
                     ['repetitions'                 ,1000],  #5
                     ['sweep_length'                ,  10],  #6
-                    ['cycle_duration'              , 300],  #7
+                    ['cycle_duration'              , 300],  #7   #on T11 processor 300 corresponds to 1us
                     ['AWG_event_jump_DO_channel'   ,   6],  #8
                     ['MBI_duration'                ,   1],  #9
                     ['max_MBI_attempts'            ,   1],  #10

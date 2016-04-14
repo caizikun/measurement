@@ -103,5 +103,4 @@ if __name__ == '__main__':
                     el_RO= 'negative', carbon = c
                      ,debug = debug, elec_init_state = e, RO_after_swap = RO_after_swap,
                      carbon_init_thresholds = c_i_t)
-else: 
-    print 'Fail'
+
