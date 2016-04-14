@@ -65,6 +65,9 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2, mbi = False, final
 
     for kk in range(tot):
 
+        breakst = show_stopper()
+        if breakst: break
+                      
         ### Set experimental parameters ###
         # m.params['reps_per_ROsequence'] = 1000
         m.params['reps_per_ROsequence'] = reps_per_RO

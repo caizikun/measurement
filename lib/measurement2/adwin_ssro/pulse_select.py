@@ -219,8 +219,8 @@ def pi_pulse_MW2(msmt):
 	pi pulse on MW source No2
 	'''	
 	pulse_shape = check_pulse_shape(msmt)
-	print 'doing Squares on MW2'
 	if pulse_shape == 'Square':
+		print 'doing Squares on MW2'
 		X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
 			I_channel='MW_Imod', Q_channel='MW_Qmod',
 			PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],

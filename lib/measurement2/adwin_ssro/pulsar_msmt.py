@@ -202,14 +202,6 @@ class SSRO_MWInit(PulsarMeasurement):
             else:
                 print 'no switch found'
 
-        # legacy from pi pulse calibration. Necessary?
-        # wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
-        # wait_1us.append(pulse.cp(T, length=1e-6))
-
-        # sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
-        # adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-        #     length = 10e-6, amplitude = 2)
-        # sync_elt.append(adwin_sync)
         
         #Parts and their alternatives from MW calibration
         elements = []
