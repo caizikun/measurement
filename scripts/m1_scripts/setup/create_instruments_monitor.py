@@ -6,14 +6,15 @@ physical_adwin = qt.instruments.create('physical_adwin','ADwin_Pro_II',
 adwin = qt.instruments.create('adwin', 'adwin', 
                 adwin = qt.instruments['physical_adwin'], 
                 processes = adwinscfg.config['adwin_m1_processes'],
-                default_processes=['counter', 'set_dac', 'set_dio', 'linescan'], 
+                default_processes=['set_dac', 'set_dio'], 
                 dacs=adwinscfg.config['adwin_m1_dacs'], 
                 tags=['virtual'],
-                process_subfolder = 'adwin_pro_2_m1')
+                process_subfolder = 'adwin_pro_2_m1'
+                use_cfg=False)
 
 wavemeter = qt.instruments.create('wavemeter','WSU_WaveMeter')
 
-repump_laser = qt.instruments.create('repump_laser','Toptica_DLpro',
+repump_laser = qt.instruments.create('repump_laser','toptica_DLpro',
     address = '192.168.0.113')
 
 wm_channel_nf = 1
@@ -22,7 +23,6 @@ _getfrq_nf = lambda: adwin.get_dac_voltage('newfocus_frq')
 #_setfrq_coarse_nf = lambda x: labjack.set_bipolar_dac2(x)
 #_getfrq_coarse_nf = lambda: labjack.get_bipolar_dac2()
 _getval_nf = lambda: wavemeter.Get_Frequency(wm_channel_nf)
-print _getval_nf()
 pidnewfocus = qt.instruments.create('pidnewfocus', 'pid_controller_v4', \
         set_ctrl_func=_setfrq_nf, get_ctrl_func=_getfrq_nf, \
         ctrl_minval=-9,ctrl_maxval=9 ,
@@ -34,10 +34,7 @@ pidnewfocus = qt.instruments.create('pidnewfocus', 'pid_controller_v4', \
 # wm_channel_DLpro = 2
 # _setfrq_DLpro = lambda x: adwin.set_dac_voltage(('DLpro_frq',x))
 # _getfrq_DLpro = lambda: adwin.get_dac_voltage('DLpro_frq')
-# #_setfrq_coarse_nf = lambda x: labjack.set_bipolar_dac2(x)
-# #_getfrq_coarse_nf = lambda: labjack.get_bipolar_dac2()
 # _getval_DLpro = lambda: wavemeter.Get_Frequency(wm_channel_DLpro)
-# print _getval_DLpro()
 # pidDLpro = qt.instruments.create('pidDLpro', 'pid_controller_v4', \
 #         set_ctrl_func=_setfrq_DLpro, get_ctrl_func=_getfrq_DLpro, \
 #         ctrl_minval=-4,ctrl_maxval=4,
@@ -45,16 +42,15 @@ pidnewfocus = qt.instruments.create('pidnewfocus', 'pid_controller_v4', \
 
 ### 2. directly from the computer
 wm_channel_DLpro = 2
-conversion_factor = 1. # factor inserted to match the discrepancy between pid range 10V and V range 150V. Maximum at 10V
+conversion_factor = 14. # factor inserted to match the discrepancy between pid range 10V and V range 150V. Maximum at 10V
 _setfrq_DLpro = lambda x: repump_laser.set_piezo_voltage(conversion_factor*x)
 _getfrq_DLpro = lambda: repump_laser.get_piezo_voltage()/conversion_factor
 #_getval_DLpro = lambda: physical_adwin.Get_FPar(43)
 _getval_DLpro = lambda: wavemeter.Get_Frequency(wm_channel_DLpro)
-
 pidDLpro = qt.instruments.create('pidDLpro', 'pid_controller_v4', \
         set_ctrl_func=_setfrq_DLpro, get_ctrl_func=_getfrq_DLpro, \
         set_ctrl_func_coarse=None, get_ctrl_func_coarse=None,
-        ctrl_minval=-10,ctrl_maxval=10, \
+        ctrl_minval=0,ctrl_maxval=10, \
         get_val_func=_getval_DLpro)
 
 

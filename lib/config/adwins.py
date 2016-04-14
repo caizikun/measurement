@@ -2913,9 +2913,9 @@ config['adwin_m1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 3,
         'green_aom' : 4,
-        'yellow_aom' : 5,
-        'matisse_aom' : 6,
-        'DLpro_frq': 7,
+        'newfocus_aom' : 5,
+        'DLPro_aom' : 6,      
+        'DLpro_frq': 7,        #not currently used
         'newfocus_frq': 8,
         }
 config['adwin_m1_processes'] = {
