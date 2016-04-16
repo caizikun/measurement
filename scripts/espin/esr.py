@@ -2,47 +2,34 @@ import qt
 import msvcrt
 import numpy as np
 
-#execfile(qt.reload_current_setup)
-
-#SAMPLE = qt.exp_params['samples']['current']
+SAMPLE = qt.exp_params['samples']['current']
 
 ##############
 ### Inputs ###
 ##############
 
-
-<<<<<<< HEAD
-
-name = 'ESR_Horst_scantest'#name='ESR_'+ qt.exp_params['protocols']['current']
-=======
-### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 301      #101
-mw_power    = -18#-13      #in dBm
+
 green_power = 25e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
-center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
-#center_f    = 1.705#3.95#1.74666#2.828#2.861
-'''
->>>>>>> cfa7ccf48aa80b80ca2f7fe7d9c055528df1534f
-steps       = 60       #101
-mw_power    = -5     #in dBm
-green_power = 200e-6    #10e-6
-int_time    = 200       # in ms
-reps        = 150
-center_f    = 1.840  # in GHz
-'''
-range_f  =  0.03 # in GHz
 
-range_f  =  0.05 # in GHz
-
+if True: #m1 transition
+    range_f     =  0.03 # 0.03 in GHz
+    steps       = 101      #101
+    mw_power    = -13#-13      #in dBm
+    center_f    = 1.74792#4.055#3.95#1.74666#2.828#2.861
+else: #p1 transition
+    range_f     =  0.03 # 0.03 in GHz
+    steps       = 101      #101
+    mw_power    = -8      #in dBm
+    center_f    = 4.013
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SGS100A']
-#ins_smb = qt.instruments['SMB100']
+#ins_smb = qt.instruments['SGS100A']
+ins_smb = qt.instruments['SMB100']
 IQ_modulation = False #Does this source have IQ modulation?
 
 # Set other instruments

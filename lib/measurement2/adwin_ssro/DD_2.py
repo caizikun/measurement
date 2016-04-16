@@ -2107,11 +2107,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         pi2 = self._pi2_elt()
         X = self._X_elt()
         mX = self._mX_elt()
-        # Y = self._Y_elt()
+        Y = self._Y_elt()
         # pi2 = pulse.cp(pi2,phase = self.params['Y_phase'])
 
         #### gives the possiblity to sweep the amplitude of this specific pi pulse.
-        RepumpX = pulse.cp(X, amplitude = Gate.pi_amp)
+        RepumpX = pulse.cp(X)#, amplitude = Gate.pi_amp)
+        RepumpY = pulse.cp(Y, amplitude = Gate.pi_amp)
 
         ### delay of the MW channel
         Gate.MW_delay = qt.pulsar.channels['MW_Imod']['delay']
@@ -2119,7 +2120,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         #wait times
         # print 'X risetime {}'.format(X.risetime*1e9)
-        duration_initial = X.risetime + self.params['fast_pi2_duration']/2 + 300e-9 + Gate.MW_delay ## because MW switch and MW delay and AOM delay. Used to be 35ns
+        duration_initial = X.risetime + self.params['fast_pi2_duration']/2 + 400e-9 + Gate.MW_delay ## because MW switch and MW delay and AOM delay. Used to be 35ns
         Gate.duration_initial = duration_initial -  Gate.MW_delay
 
 
@@ -2178,7 +2179,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         if Gate.do_pi:
             rep_LDE_elt.append(T)
-            rep_LDE_elt.append(RepumpX)
+            rep_LDE_elt.append(RepumpY)
 
         elif Gate.do_BB1:
             rep_LDE_elt.append(T)

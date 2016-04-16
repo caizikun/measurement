@@ -63,7 +63,7 @@ def SweepGates(name,**kw):
 
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 1000
+	m.params['reps_per_ROsequence'] = 1500
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]
@@ -284,15 +284,15 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [36,28,28,28], 
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.52e-6, 7.7e-6, 8.88e-6], 
+										'C_tau_rng'  :14e-9, # steps of 2e-9
+										'C_N' 		: [28,30,30], 
 										'C_N_steps' : 10} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [5.22e-6],#[6.4e-6, 8.73e-6]
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [34],#[36,44], # 34,
+		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [5.29e-6,6.47e-6,7.62e-6,8.826e-6],#[6.4e-6, 8.73e-6]
+										'C_tau_rng'  :14e-9, # steps of 2e-9
+										'C_N' 		: [34,34,16,36],#[36,44], # 34,
 										'C_N_steps' : 10} # steps of 2 	
 
 
@@ -302,9 +302,9 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} 
 
 
-		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
-		 								'C_tau_rng' : 12e-9,
-										'C_N' 		: [34 ,36, 38, 42],  #34, 42,
+		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [3.87e-6, 4.98e-6, 6.09e-6], # 3.83e-6, 6.04e-6,
+		 								'C_tau_rng' : 14e-9,
+										'C_N' 		: [36 ,36, 42],  #34, 42,
 										'C_N_steps' : 10} 
 
 	### choose your carbons.
