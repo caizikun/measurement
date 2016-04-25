@@ -98,14 +98,14 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 12
+    pts = 21
 
-    tau_larmor = kw.get('tau_larmor', round(1./m.params['C5_freq_0'],9))
+    tau_larmor = kw.get('tau_larmor', round(1./m.params['C4_freq_0'],9))
     print 'Tau larmor is ', tau_larmor
-    tau_larmor = 2.298e-6
+
 
     m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(-0.5e-6,1.e-6,pts)#np.linspace(-0.2e-6,1.5e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['average_repump_time'] = np.linspace(-0.5e-6,1.5e-6,pts)#np.linspace(-0.2e-6,1.5e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
     m.params['fast_repump_repetitions'] = pts*[kw.get('seq_reps',250.)]
 
     m.params['do_pi'] = True ### does a regular pi pulse
@@ -113,7 +113,7 @@ def QMem(name, carbon_list   = [5],
     m.params['do_optical_pi']=kw.get('do_optical_pi', False)
 
     ps.X_pulse(m)
-    print m.params['fast_pi_amp'],m.params['Hermite_pi_amp']
+    print 'pi pulse amps',m.params['fast_pi_amp'],m.params['Hermite_pi_amp']
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
     # print 'this is the pi pulse amplitude',ps.X_pulse(m).env_amplitude,ps.X_pulse(m).Sw_risetime
     m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repump beam is applied.
@@ -171,7 +171,7 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [5]:#,2,3,5,6]:#[1,3,5,6,2]:
+            for c in [4,5,8]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
                 for tomo in ['X','Y']:
@@ -191,11 +191,11 @@ if __name__ == '__main__':
                                                                             carbon_init_list        = [c],
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
-                                                                            Repetitions  = 250,
-                                                                            seq_reps = 100,
+                                                                            Repetitions  = 500,
+                                                                            seq_reps = 200,
                                                                             repump_power = repump_power_sweep[sweep_elem],
                                                                             do_optical_pi = False )
-    if True: ### turn measurement on/off
+    if False: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
             if breakst:
                 break
@@ -203,7 +203,7 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [5]:
+            for c in [4,5]:
                 if breakst:
                     break
                 for tomo in ['Z']:
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     #### Tau Larmor sweep ######3
     #############################
 
-    tau_Larmor_sweep_elements = np.arange( 1.9e-6, 2.6e-6, 0.1e-6)
+    tau_Larmor_sweep_elements = np.arange( 2.1e-6, 2.6e-6, 0.1e-6)
 
     if False: ### turn measurement on/off
         for sweep_elem in range(len(tau_Larmor_sweep_elements)):
@@ -286,7 +286,7 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [1,2]:#,2,3,5,6]:#[1,3,5,6,2]:
+            for c in [4,5,8]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
                 for tomo in ['X','Y','Z']:
@@ -307,11 +307,11 @@ if __name__ == '__main__':
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
                                                                             Repetitions  = 1000,
-                                                                            seq_reps = 250,
+                                                                            seq_reps = 200,
                                                                             repump_power = 1000e-9,
                                                                             tau_larmor =  tau_Larmor_sweep_elements[sweep_elem]
                                                                             )
-    if False: ### turn measurement on/off
+    if True: ### turn measurement on/off
         for sweep_elem in range(len(tau_Larmor_sweep_elements)):
             if breakst:
                 break
@@ -319,10 +319,10 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [1,2]:
+            for c in [4,5,8]:
                 if breakst:
                     break
-                for tomo in ['X','Y','Z']:
+                for tomo in ['Z']:
                     optimize(breakst or debug)
 
                     if breakst:

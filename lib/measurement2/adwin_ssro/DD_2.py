@@ -2111,8 +2111,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # pi2 = pulse.cp(pi2,phase = self.params['Y_phase'])
 
         #### gives the possiblity to sweep the amplitude of this specific pi pulse.
-        RepumpX = pulse.cp(X)#, amplitude = Gate.pi_amp)
-        RepumpY = pulse.cp(Y, amplitude = Gate.pi_amp)
+        RepumpX = pulse.cp(X, amplitude = Gate.pi_amp)
+
 
         ### delay of the MW channel
         Gate.MW_delay = qt.pulsar.channels['MW_Imod']['delay']
@@ -2179,7 +2179,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         if Gate.do_pi:
             rep_LDE_elt.append(T)
-            rep_LDE_elt.append(RepumpY)
+            rep_LDE_elt.append(RepumpX)
 
         elif Gate.do_BB1:
             rep_LDE_elt.append(T)

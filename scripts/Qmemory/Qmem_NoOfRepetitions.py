@@ -107,7 +107,7 @@ def QMem(name,
 
     minReps = kw.get('minReps',0) # minimum number of LDE reps
     maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C5_freq_0']))
-    maxReps = 350
+    maxReps = 250
     step = int((maxReps-minReps)/pts)
 
     
@@ -125,7 +125,7 @@ def QMem(name,
     m.params['repump_wait'] = pts*[tau_larmor]#tau_larmor] #pts*[2e-6] # time between pi pulse and beginning of the repumper
     m.params['fast_repump_power'] = kw.get('repump_power', 20e-9)
     m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',2.5e-6)] #how long the beam is irradiated
-    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',160e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['average_repump_time'] = pts*[kw.get('average_repump_time',190e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False # ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     if True: ### turn measurement on/off
         # stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
         # get repump speed
-        for c in [5]:#,2,3,5,6]:
+        for c in [4,5,8]:#,2,3,5,6]:
             if breakst:
                 break
             for tomo in ['X','Y']:
@@ -201,7 +201,7 @@ if __name__ == '__main__':
                         break
                     QMem('NoOfReps_'+ro+'_Tomo_'+tomo+'_C'+str(c),
                                 debug=debug,
-                                average_repump_time = 160e-9,
+                                average_repump_time = 400e-9,
                                 tomo_list = [tomo], 
                                 el_RO = ro,
                                 carbon_list   = [c],               

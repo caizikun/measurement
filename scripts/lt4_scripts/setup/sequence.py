@@ -21,7 +21,7 @@ qt.pulsar.clock = 1e9
 
 # MW calibrated delays 21-5-2014
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=220e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
+    high=2.0, low=0, offset=0., delay=268e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
     low=-1.0, offset=0., delay=200e-9, active=True) #DD
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
@@ -68,7 +68,7 @@ qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM']
 #     high=0.0, low=-1.0, offset=-1.0, delay=172e-9, active=True)
 
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #DD
+    high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True) #DD
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 

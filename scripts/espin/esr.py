@@ -14,23 +14,23 @@ green_power = 25e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
 
-if True: #m1 transition
-    range_f     =  0.03 # 0.03 in GHz
+if False: #m1 transition
+    range_f     =  0.09 # 0.03 in GHz
     steps       = 101      #101
     mw_power    = -13#-13      #in dBm
     center_f    = 1.74792#4.055#3.95#1.74666#2.828#2.861
 else: #p1 transition
-    range_f     =  0.03 # 0.03 in GHz
+    range_f     =  0.09 # 0.03 in GHz
     steps       = 101      #101
     mw_power    = -8      #in dBm
-    center_f    = 4.013
+    center_f    = 4.033
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-#ins_smb = qt.instruments['SGS100A']
-ins_smb = qt.instruments['SMB100']
-IQ_modulation = False #Does this source have IQ modulation?
+ins_smb = qt.instruments['SGS100']
+# ins_smb = qt.instruments['SMB100']
+IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
 ins_adwin = qt.instruments['adwin']

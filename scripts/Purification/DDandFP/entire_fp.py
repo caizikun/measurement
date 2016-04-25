@@ -151,8 +151,8 @@ if __name__ == '__main__':
     # if breakst: break
 
     # every single_tau_block is pts*step_size = 200 us. 100 blocks is thus from 3.5 to 23.5
-    single_tau_blocks = 120
-    pulse_list = [8 ,16, 32, 64]
+    single_tau_blocks = 100
+    pulse_list = [8, 16, 32, 64]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         
         SimpleDecoupling('Hermite_Fingerprint_ms'+ EL_TRANS[-2:] + '_' + SAMPLE + '_' + str(N),
             N = N, step_size = 4e-9, start_point= 0, tot = single_tau_blocks, 
-            final_pulse = '-x', optimize=True, reps_per_RO = 2000)
+            final_pulse = '-x', optimize=True, reps_per_RO = 500)
 
 
     n = 0
