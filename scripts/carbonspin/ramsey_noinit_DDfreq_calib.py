@@ -47,21 +47,21 @@ def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
         m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
     m.autoconfig()
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
 
-    # evolution_times1 = np.linspace(2e3,5e3,20).astype(int)*1e-9
-    # evolution_times2 = np.linspace(10e3,13e3,20).astype(int)*1e-9
-    # evolution_times3 = np.linspace(18e3,21e3,20).astype(int)*1e-9
+    evolution_times1 = np.linspace(2e3,5e3,20).astype(int)*1e-9
+    evolution_times2 = np.linspace(10e3,13e3,20).astype(int)*1e-9
+    evolution_times3 = np.linspace(18e3,21e3,20).astype(int)*1e-9
 
     # for decoupling on the larmor revival
-    evolution_times1 = np.linspace(50e3,58e3,20).astype(int)*1e-9
-    evolution_times2 = np.linspace(72e3,75e3,20).astype(int)*1e-9
-    evolution_times3 = np.linspace(82e3,85e3,20).astype(int)*1e-9
+    # evolution_times1 = np.linspace(15e3,20e3,20).astype(int)*1e-9
+    # evolution_times2 = np.linspace(30e3,33e3,20).astype(int)*1e-9
+    # evolution_times3 = np.linspace(38e3,41e3,20).astype(int)*1e-9
 
-    for carbon in [4,5,8]:
+    for carbon in [1]:
         Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
-        Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
-        Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)
+        # Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
+        # Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)

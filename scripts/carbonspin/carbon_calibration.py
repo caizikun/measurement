@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4,5,8]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -77,14 +77,14 @@ elif SETUP == 'lt3':
         '8' : detuning_basic}
 
 elif SETUP == 'lt4':
-    detuning_basic = 1e3
+    detuning_basic = 3e3
     detuning_dict = {
         '1' : detuning_basic,
         '3' : detuning_basic,
-        '4' : 0.5*detuning_basic,
-        '5' : 1*detuning_basic,
-        '6' : 1*detuning_basic,
-        '8' : 0.5*detuning_basic
+        '4' : detuning_basic,
+        '5' : detuning_basic,
+        '6' : 5*detuning_basic,
+        '8' : detuning_basic
         }
 ######
 
@@ -132,7 +132,7 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['pts'] = 21
     if carbon_nr == 6:
         m.params['pts'] = 18
-    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 6*1./detuning,m.params['pts'])
+    m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
@@ -352,7 +352,7 @@ if f_ms1 and n == 1:
 			NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_msm1_freq_C'+str(c), carbon_nr= c, detuning = detuning, el_state = 1)
 			# fit
 			f0, uf0 = cr.Carbon_Ramsey(timestamp=None, 
-			              offset = 0.5, amplitude = 0.4, x0=0, decay_constant = 1e5, exponent = 2, 
+			              offset = 0.5, amplitude = 0.3, x0=0, decay_constant = 1e5, exponent = 2, 
 			              frequency = detuning, phase =0, 
 			              plot_fit = True, show_guess = False,fixed = [2,3,4],            
 			              return_freq = True,
