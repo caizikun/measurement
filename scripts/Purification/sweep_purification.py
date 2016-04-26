@@ -60,6 +60,11 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     for k in joint_params.joint_params:
         m.joint_params[k] = joint_params.joint_params[k]
 
+    if setup == m.joint_params['master_setup']:
+        m.params['is_master'] = 1
+    else:
+        m.params['is_master'] = 0
+
     m.params['send_AWG_start'] = 1
     m.params['sync_during_LDE'] = 1
     m.params['wait_for_AWG_done'] = 0

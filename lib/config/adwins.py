@@ -2818,7 +2818,7 @@ config['adwin_pro_processes'] = {
                 'params_long_length' : 50,
                 'params_float' : [
                     ['Ex_SP_voltage'        , 0.8],
-                    ['E_MBI_voltage'        , 0.8],
+                    ['E_C13_MBI_RO_voltage' , 0.8],
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
