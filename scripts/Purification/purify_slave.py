@@ -1,7 +1,5 @@
 """
-Contains two different types of classes
- - the single-setup experiments of the purification project.
- - a class with altered adwin process for the slave setup during remote measurements
+Contains the single-setup experiments of the purification project.
 
 NK 2016
 """
@@ -305,4 +303,4 @@ class purify_slave(purify_single_setup):
     mprefix = 'purifcation slave'
     ### XXX
     ### insert remote slave_adwin process here
-    """ adwin_process = purification_slave"""
+    adwin_process = purification

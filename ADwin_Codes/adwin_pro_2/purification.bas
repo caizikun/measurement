@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,16,62,142,283,487,523,525,569,571,629,631,654,675
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -115,7 +115,7 @@ DIM success_mode_after_SSRO, fail_mode_after_SSRO as long
 DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins should wait to guarantee bidirectional communication is successful
 DIM adwin_comm_timeout_cycles as long ' if one side fails completely, the other can go on
 DIM adwin_comm_done, adwin_timeout_requested as long
-DIM n_of_comm_timeouts, is_single_setup_experiment as long
+DIM n_of_comm_timeouts, is_two_setup_experiment as long
 DIM is_master, is_barrett_kok, has_phase_compensation as long
 
 DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
@@ -144,7 +144,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Dynamical_stop_ssro_threshold= DATA_20[6]
   Dynamical_stop_ssro_duration = DATA_20[7]
   
-  is_single_setup_experiment   = Data_20[8]
+  is_two_setup_experiment   = Data_20[8]
   is_master                    = DATA_20[9]
   is_barrett_kok               = DATA_20[10]
   
@@ -429,7 +429,7 @@ EVENT:
         if ( CR_check(first_CR,succes_event_counter+1) > 0 ) then ' do CR check. if First_CR is high, the result will be saved. 
           ' In case the result is zero, the CR check will be repeated
           timer = -1          
-          IF (is_single_setup_experiment = 1) THEN 'only one setup involved. Skip communication step
+          IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
             mode = 1 'go to spin pumping directly
           ELSE ' two setups involved
             local_success = 1 ' remember for communication step
@@ -481,7 +481,7 @@ EVENT:
           endif
           INC(data_25[repetition_counter])
           ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
-          if (is_single_setup_experiment > 0) then   
+          if (is_two_setup_experiment = 0) then   
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
@@ -523,7 +523,7 @@ EVENT:
           DATA_28[repetition_counter] = DATA_28[repetition_counter] + mbi_timer ' save the time MBI has taken
           DATA_27[repetition_counter] = SSRO_result
           current_MBI_attempt = 1 ' reset counter
-          if (is_single_setup_experiment = 1) then 'only one setup involved. Skip communication step
+          if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
             mode = 4 ' entanglement sequence
           else
             mode = 100 ' adwin communication
@@ -540,7 +540,7 @@ EVENT:
           
           IF (current_MBI_attempt = MBI_attempts_before_CR) then ' failed too often -> communicate failure (if in remote mode) and then go to CR
             current_MBI_attempt = 1 'reset counter
-            if (is_single_setup_experiment = 0) then 'two setups involved
+            if (is_two_setup_experiment > 0) then 'two setups involved
               fail_mode_after_adwin_comm = 0 ' CR check. Don't have to specify fail_mode because I didn't succeed
               mode = 100
             else
@@ -576,7 +576,7 @@ EVENT:
         IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence.
           DATA_35[repetition_counter] = AWG_sequence_repetitions_first_attempt 'save the result
           timer = -1
-          if (is_single_setup_experiment > 0 ) then ' this is a single-setup phase calibration measurement. Go on to next mode:
+          if (is_two_setup_experiment = 0 ) then ' this is a single-setup phase calibration measurement. Go on to next mode:
             mode = 7 'is single setup experiment: correct for acquired phase, do purification gate and carbon readout.
           else ' two setups involved: Done means failure of the sequence
             mode = 0 'go to cr check

@@ -93,14 +93,21 @@ def generate_AWG_seq(name):
 
     ###parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['non_local']           = 1
+    m.params['non_local']           = 1 # in adwin: 'is_two_setup_experiment'
     m.params['do_N_MBI']            = 0 # Not necessary (only for C13 MBI)
-    m.params['init_and_ro_carbon']  = 1 # XXXX C_init_SWAP_wo_SSRO threshold?
-    m.params['do_LDE_1']            = 1 # TODO finish jumping and event triggering for LDE / INIT ELEMENT
-    m.params['swap_onto_carbon']    = 1 # do_SSRO_after_electron_carbon_SWAP
-    m.params['do_LDE_2']            = 1 # TODO finish jumping and event triggering for LDE
-    m.params['phase_correct']       = 1 # do_phase_correction
-    m.params['purify']              = 0 # do_purifying_gate
+    #m.params['electron_ro_after_first_seq'] = 0 # for Barret-Kok- SPCORR...
+    # electron_ro_after_first_seq not required.
+    m.params['do_carbon_init']  = 1 
+    m.params['do_C_init_SWAP_wo_SSRO'] = 0
+    
+    # TODO finish jumping and event triggering for LDE / INIT ELEMENT
+    # we always do LDE1
+    m.params['do_swap_onto_carbon']    = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+    m.params['do_LDE_2']            = 1
+    m.params['do_phase_correction'] = 1 # previously: phase_correct
+    m.params['do_purifying_gate']   = 0 # previously: purify
+    m.params['do_carbon_readout']  = 1 
 
     ### upload
     run_sweep(m,debug = True,upload_only = True)

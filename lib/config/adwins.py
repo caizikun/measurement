@@ -2789,9 +2789,16 @@ config['adwin_pro_processes'] = {
                     ['C_init_SWAP_wo_SSRO'             ,   1], 
                     ['Dynamical_stop_ssro_threshold'   ,   1], 
                     ['Dynamical_stop_ssro_duration'    ,  20], 
-                    ['is_single_setup_experiment'      ,   1], 
                     ['is_master'                       ,   1], 
-                    ['is_barrett_kok'                  ,   0], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['do_carbon_init'                  ,   1], # goes to mbi sequence, ends with tomography
+                    ['do_C_init_SWAP_wo_SSRO'          ,   1],
+                    ['do_swap_onto_carbon'             ,   1],
+                    ['do_SSRO_after_electron_carbon_SWAP', 0],
+                    ['do_LDE_2'                        ,   1],
+                    ['do_phase_correction'             ,   1],
+                    ['do_purifying_gate'               ,   1],
+                    ['do_carbon_readout'               ,   1],
                     ['PLU_event_di_channel'            ,   0], 
                     ['PLU_which_di_channel'            ,   0], 
                     ['AWG_start_DO_channel'            ,   0], 
@@ -2804,10 +2811,8 @@ config['adwin_pro_processes'] = {
                     ['remote_adwin_do_fail_channel'    ,   1], 
                     ['adwin_comm_safety_cycles'        ,   1], 
                     ['adwin_comm_timeout_cycles'       ,   1], 
-                    ['do_SSRO_after_electron_carbon_SWAP',  1],
-                    ['communicate_SSRO_after_electron_carbon_SWAP',  1],
-                    ['remote_awg_trigger_channel'      ,  1],
-                    ['invalid_data_marker_do_channel'  ,  1],              
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],              
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 50,
@@ -2845,8 +2850,8 @@ config['adwin_pro_processes'] = {
                     'attempts_first'            : 35,  # number of repetitions until the first succesful entanglement attempt
                     'attempts_second'           : 36, # number of repetitions after swapping until the second succesful entanglement attempt
                     'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
-                    'purification_result'       : 38,  # electron readout after purification step
-                    'ssro_result'               : 39, # SSRO counts final spin readout after tomography
+                    'electron_readout_result'   : 38,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 39, # SSRO counts final spin readout after tomography
                     },
                 },
         }
