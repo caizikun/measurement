@@ -8,48 +8,34 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
-' Purification sequence, as sketched in the purification/planning folder
-' AR2016
+' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
+' recognition, and SSRO at the end. 
 '
-' We use two setups. Each adwin is connected to its own awg start trigger. One adwin (lt4) is connected to the AWG jump trigger
-' Two channels are used for communication between adwins, one to signal success and one to signal failure
+' protocol:
 ' 
 ' modes:
 '   0 : CR check
-'   1 : wait for other adwin
 '   2 : E spin pumping into ms=+/-1
-'   3 : MBI of one carbon spin: Trigger AWG and wait for done
-'   4 : MBI SSRO
-'   5 : communicate MBI success to other adwin
-'   6 : count repetitions of the entanglement sequence while waiting for PLU success signal
-'   7 : wait for AWG (SWAP gate)
-'   8 : spin-readout
-'   9 : communicate success to other adwin
-'  10 : count repetitions of the entanglement sequence while waiting for PLU success signal
-'  11 : calculate phase compensation and signal to AWGs
-'  12 : wait for AWG (purification gate)
-'  13 : SSRO
-'  14 : give AWG start and wait for done (Tomo Gate)
-'  15 : SSRO
+'   3 : MBI
+'   4 : A-pumping
+'   5 : wait for AWG
+'   6 : spin-readout
+'   7 : nuclear spin randomize
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
 
+#DEFINE max_SP_bins       500 ' not used anymore? Machiel 23-12-'13
 #DEFINE max_sequences     100
 #DEFINE max_time        10000
 #DEFINE max_mbi_steps     100
-#DEFINE max_events_dim  50000
-#DEFINE max_SP_bins      2000
-#DEFINE max_CR_counts     200
-#DEFINE remote_communication_timeout 2000   'no signal from remote adwin for 2000 cycles=2ms: communication timeout           
 
 'init
 DIM DATA_20[100] AS LONG                           ' integer parameters
 DIM DATA_21[100] AS FLOAT                          ' float parameters
-
 DIM DATA_33[max_sequences] AS LONG                ' A SP after MBI durations
 DIM DATA_34[max_sequences] AS LONG                ' E RO durations
 DIM DATA_35[max_sequences] AS FLOAT               ' A SP after MBI voltages
@@ -58,17 +44,11 @@ DIM DATA_37[max_sequences] AS LONG                ' send AWG start
 DIM DATA_38[max_sequences] AS LONG                ' sequence wait times
 DIM DATA_39[max_sequences] AS FLOAT               ' E SP after MBI voltages
 
-'return from mbi (unchanged)
+'return
 DIM DATA_24[max_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle
 DIM DATA_25[max_repetitions] AS LONG ' number of cycles before success
-DIM DATA_27[max_repetitions] AS LONG ' SSRO counts mbi
+DIM DATA_27[max_repetitions] AS LONG ' SSRO counts
 DIM DATA_28[max_repetitions] AS LONG ' time needed until mbi success (in process cycles)
-DIM DATA_29[max_SP_bins] AS LONG AT EM_LOCAL      ' SP counts
-'return from Bell (data_nr changed)
-DIM DATA_40[max_events_dim] AS LONG  ' SSRO counts spin readout
-DIM DATA_41[max_events_dim] AS LONG  'time spent waiting for remote adwin
-DIM DATA_42[max_CR_counts] AS LONG  'CR hist after sequence
-DIM DATA_43[max_repetitions] AS LONG ' Information whether same or opposite detector has clicked (provided by the PLU)
 
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern AS LONG
 DIM send_AWG_start, wait_for_AWG_done AS LONG
@@ -76,10 +56,11 @@ DIM SP_duration, SP_E_duration, SP_filter_duration, MBI_duration AS LONG
 DIM sequence_wait_time, wait_after_pulse_duration AS LONG
 DIM RO_repetitions, RO_duration AS LONG
 DIM cycle_duration AS LONG
+DIM sweep_length AS LONG
 DIM wait_for_MBI_pulse AS LONG
 DIM MBI_threshold AS LONG
 DIM nr_of_ROsequences AS LONG
-DIM adwin_communication_safety_microseconds as long
+DIM wait_after_RO_pulse_duration AS LONG
 
 DIM E_SP_voltage, A_SP_voltage, A_SP_voltage_after_MBI, E_SP_voltage_after_MBI, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM E_MBI_voltage AS FLOAT
@@ -107,94 +88,56 @@ dim N_randomize_duration as long
 dim awg_in_is_hi, awg_in_was_hi, awg_in_switched_to_hi as long
 dim t1, t2 as long
 
-'Added for communication with other Adwin and PLU
-DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
-DIM remote_adwin_do_success_channel, remote_adwin_do_fail_channel as long
-DIM local_success, remote_success, local_fail, remote_fail as long '0 means no result obtained, 1 means successful, 2 means failure
-DIM n_of_communication_timeouts, is_single_setup_experiment as long
+'Added for Shutter
+DIM Shutter_channel AS LONG
+DIM use_shutter AS LONG
+DIM Shutter_opening_time AS LONG
+DIM Shutter_closing_time AS LONG
+Dim Shutter_safety_time AS LONG
 
-DIM PLU_count_di_channel, PLU_count_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
-DIM PLU_count_is_high, PLU_count_was_high, PLU_which_is_high, PLU_which_was_high AS LONG
-
-DIM invalid_data_marker_do_channel AS LONG
-DIM wait_for_AWG_done, sequence_wait_time AS LONG
-DIM succes_event_counter AS LONG
-DIM CR_result, first_local AS LONG
-
-LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
-  'read int params from python script
-  
+INIT:
   init_CR()
   AWG_start_DO_channel         = DATA_20[1]
   AWG_done_DI_channel          = DATA_20[2]
-  AWG_event_jump_DO_channel    = DATA_20[3]
-  SP_E_duration                = DATA_20[4] 'E spin pumping duration before MBI
-  wait_after_pulse_duration    = DATA_20[5] 'Time to wait after turning off a laser pulse to ensure it is really off
-  RO_repetitions               = DATA_20[6]
+  SP_E_duration                = DATA_20[3] 'E spin pumping duration before MBI
+  wait_after_pulse_duration    = DATA_20[4] 'Time to wait after turning off a lser pulse
+  RO_repetitions               = DATA_20[5]
+  sweep_length                 = DATA_20[6] ' not used? -machiel 23-12-'13
   cycle_duration               = DATA_20[7]
-  MBI_duration                 = DATA_20[8]
-  MBI_attempts_before_CR       = DATA_20[9]
-  MBI_threshold                = DATA_20[10]
-  nr_of_ROsequences            = DATA_20[11]
-  N_randomize_duration         = DATA_20[12]
+  AWG_event_jump_DO_channel    = DATA_20[8]
+  MBI_duration                 = DATA_20[9]
+  MBI_attempts_before_CR       = DATA_20[10]
+  MBI_threshold                = DATA_20[11]
+  nr_of_ROsequences            = DATA_20[12]
+  wait_after_RO_pulse_duration = DATA_20[13]
+  N_randomize_duration         = DATA_20[14]
+  use_shutter                  = DATA_20[15]
+  Shutter_channel              = DATA_20[16]
+  Shutter_opening_time         = DATA_20[17]
+  Shutter_closing_time         = DATA_20[18]
+  Shutter_safety_time          = DATA_20[19]
   
-  remote_adwin_di_success_channel = DATA_20[13]
-  remote_adwin_di_fail_channel= DATA_20[14]
-  remote_adwin_do_success_channel= DATA_20[15]
-  remote_adwin_do_fail_channel= DATA_20[16]
-  adwin_communication_safety_microseconds = DATA_20[17]
   
-  is_single_setup_experiment = Data_20[18]
-
-
-  SSRO_duration                = DATA_20[22]
-  wait_for_AWG_done            = DATA_20[23]
-  sequence_wait_time           = DATA_20[24]
-  PLU_count_di_channel           = DATA_20[25]
-  PLU_which_di_channel           = DATA_20[26]
-  invalid_data_marker_do_channel= DATA_20[29]
-  
-  ' read float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
   E_N_randomize_voltage        = DATA_21[3]
   A_N_randomize_voltage        = DATA_21[4]
   repump_N_randomize_voltage   = DATA_21[5]
   A_SP_voltage                 = DATA_21[6]
-  E_RO_voltage                 = DATA_21[7]
-  A_RO_voltage                 = DATA_21[8]
   
   ' initialize the data arrays
   FOR i = 1 TO max_repetitions
     DATA_24[i] = 0
     DATA_25[i] = 0
-    DATA_27[i] = 0
     DATA_28[i] = 0
-    DATA_43[i] = 0
+    DATA_27[i] = 0
   NEXT i
-  
-  FOR i = 1 TO max_SP_bins
-    DATA_29[i] = 0
-  NEXT i
-  
-  FOR i = 1 TO max_events_dim
-    DATA_40[i] = 0
-    DATA_41[i] = 0
-  NEXT i
-  
-  FOR i = 1 TO max_CR_counts
-    DATA_42[i] = 0
-  NEXT i
-  
-  n_of_communication_timeouts = 0 ' used for debugging, goes to a par   
+        
   MBI_failed          = 0
   MBI_starts          = 0
   repetition_counter  = 1
   first               = 0
-  first_local        = 0
   wait_time           = 0
-  local_wait_time    = 0
-  remote_CR_wait_timer = 0
   stop_MBI            = -2 ' wait_for_MBI_pulse + MBI_duration
   ROseq_cntr          = 1
   seq_cntr            = 1
@@ -205,18 +148,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   next_MBI_laser_stop = -2
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
-  PLU_count_di_pattern = 2 ^ PLU_count_di_channel
-  PLU_which_di_pattern = 2 ^ PLU_which_di_channel
-  remote_adwin_di_success_pattern = 2^ remote_adwin_di_success_channel
-  remote_adwin_di_fail_pattern = 2^ remote_adwin_di_fail_channel
-  
-  local_sucess = 0
-  remote_success = 0
-  remote_fail = 0
-  local_fail = 0
-  check_remote = 1
-      
-  succes_event_counter = 0
       
   P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
   P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
@@ -234,7 +165,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   timer = 0
   mbi_timer = 0
   trying_mbi = 0
-  processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
+  processdelay = cycle_duration
   
   awg_in_is_hi = 0      
   awg_in_was_hi = 0
@@ -243,123 +174,37 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   ' init parameters
   ' Y after the comment means I (wolfgang) checked whether they're actually used
   ' during the modifications of 2013/01/11
-  Par_60 = -1                      'remote mode
-  Par_61 = -1                      'local mode
-  Par_62 = 0                       'AWG signal timeouts (no ent. events)
-  PAR_63 = 0                       'stop flag
   PAR_73 = 0                      ' repetition counter
   PAR_74 = 0                      ' MBI failed Y
-  PAR_77 = succes_event_counter   ' number of entanglement events
+  PAR_77 = 0                      ' current mode (case) Y
   PAR_78 = 0                      ' MBI starts Y
   PAR_80 = 0                      ' ROseq_cntr Y 
-  PAR_76 = 0                      ' n_of_communication_timeouts for debugging
-  
-
-
+  PAR_63 = 0                      ' debug
   
   
 EVENT:
   
-  'write information to pars for live monitoring
-  PAR_61 = mode        
-  PAR_76 = n_of_communication_timeouts ' for debugging
-    
-  if(trying_mbi > 0) then ' Increase number of mbi trials by one
+  PAR_77 = mode        
+  
+  if(trying_mbi > 0) then
     inc(mbi_timer)
-  endif
+  endif   
   
   IF (wait_time > 0) THEN
     wait_time = wait_time - 1
   ELSE
-    ' modes:
-    '   0 : CR check
-    '   1 : wait for other adwin
-    '   2 : E spin pumping into ms=+/-1
-    '   3 : MBI of one carbon spin: Trigger AWG and wait for done
-    '   4 : MBI SSRO
-    '   5 : communicate MBI success to other adwin
-    '   6 : count repetitions of the entanglement sequence while waiting for PLU success signal
-    '   7 : wait for AWG (SWAP gate)
-    '   8 : spin-readout
-    '   9 : communicate success to other adwin
-    '  10 : count repetitions of the entanglement sequence while waiting for PLU success signal
-    '  11 : calculate phase compensation and signal to AWGs
-    '  12 : wait for AWG (purification gate)
-    '  13 : SSRO
-    '  14 : give AWG start and wait for done (Tomo Gate)
-    '  15 : SSRO
     
     SELECTCASE mode
+           
+      CASE 0 'CR check
        
-      CASE 0 'CR check // go to wait for other adwin
-        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
-          first = 0
-          
-        ENDIF
-        CR_result = CR_check(first,succes_event_counter+1)
-        IF ( CR_result > 0 ) THEN 
-          IF (Par_63 > 0) THEN 'stop signal received: stop the process
-            END
-          ENDIF
-          MBE_counter = 0
-          mode = 1 ' go to wait for second setup to be ready
-          timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
-        ENDIF
-        
-        IF ( (CR_result <> 0) AND (cr_counts < max_CR_counts) ) THEN
-          INC(DATA_42[cr_counts+1]) 'CR hist after sequence
-        ENDIF
-
-        
-        
-        
-      CASE 1 'communication between adwins
-        
-        IF (is_single_setup_experiment > 0) THEN ' don't have to wait, jump to next element
-          mode = 2
-          timer = -1
-          
-        ELSE 'communicate with other setup
-          if (timer = 0) then  ' we only get here if CR check was successful. Send this to other side
-            P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,1) 
-            P2_DIGOUT(DIO_MODULE,remote_adwin_do_failure_channel,0) 'just to be sure that there are no misunderstandings
-          endif 
-        
-          ' let's see what the other side is doing:
-          remote_success = (P2_DIGIN_LONG(DIO_MODULE) AND remote_adwin_di_success_channel) ' other side was successful as well
-          IF (remote_success > 0)  THEN
-            remote_success = 0 'forget it for the future
-            mode = 2 ' go to spin pumping
-            timer = -1
-            CPU_SLEEP(500) ' this means 500*10ns = 5us delay to ensure the signal we are currently sending also reaches the other adwin. Then switch off again
-            P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
-            P2_DIGOUT(DIO_MODULE,remote_adwin_do_failure_channel,0) ' just to be sure
-          ELSE ' no success signal. Check for fail signal
-            remote_fail = (P2_DIGIN_LONG(DIO_MODULE) AND remote_adwin_di_fail_channel) ' other side failed
-            IF (remote_fail > 0) then
-              mode = 0 ' go back to cr check
-              remote_fail = 0 ' forget for the future
-              timer = -1
-              CPU_SLEEP(500) ' this means 500*10ns = 5us delay to ensure the signal we are currently sending also reaches the other adwin. Then switch off again
-              P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
-              P2_DIGOUT(DIO_MODULE,remote_adwin_do_failure_channel,0)
-            ENDIF 
-            
-            'no fail and no success: check whether communication timed out
-            IF (timer > remote_communication_timeout) THEN
-              INC(n_of_communication_timeouts)
-              mode = 0 'go back to cr check
-              timer = -1
-            endif  
-          endif
-        endif
-        
+          mode = 1 
+          timer = -1 
+          first = 0 
+        ENDIF 
       
-        
-        
-        
-      CASE 2    ' E spin pumping
+      CASE 1    ' E spin pumping
         
         IF (timer = 0) THEN
           P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
@@ -370,26 +215,23 @@ EVENT:
           old_counts = 0
         ELSE
           counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-          DATA_24[timer] = DATA_24[timer] + counts - old_counts    ' for arrival time histogram
+          DATA_24[timer] = DATA_24[timer] + counts - old_counts
           old_counts = counts
                     
           IF (timer >= SP_E_duration) THEN
-            P2_CNT_ENABLE(CTR_MODULE,0) ' diable counter
-            P2_DIGOUT(DIO_MODULE,11,0)  ' set repumper modulation low.
+            P2_CNT_ENABLE(CTR_MODULE,0)
+            P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             
-            mode = 3   'go to mbi
-            wait_time = wait_after_pulse_duration ' make sure the lasers are really off
-            timer = 0
+            mode = 2
+            wait_time = wait_after_pulse_duration
+            timer = -1
           ENDIF
         ENDIF
-          
-      
-      
-          
-      CASE 3    ' MBI
-        ' We first need to trigger the AWG to do the selective pi-pulse
+              
+      CASE 2    ' MBI
+        ' MBI starts now; we first need to trigger the AWG to do the selective pi-pulse
         ' then wait until this is done
         IF(timer=0) THEN
           
@@ -607,7 +449,7 @@ EVENT:
               wait_time = Shutter_safety_time
               'INC(PAR_60)
             ELSE
-              wait_time = wait_after_pulse_duration
+              wait_time = wait_after_RO_pulse_duration
             ENDIF
             
             P2_CNT_ENABLE(CTR_MODULE,0)

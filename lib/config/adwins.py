@@ -2777,8 +2777,78 @@ config['adwin_pro_processes'] = {
                 },
                 # one CR check followed by multiple times SP-AWG seg-SSRO-repump-delaytime
 
-
-
+        'purification' : {
+                'index' : 9,
+                'file' : 'purification.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       , 100],
+                    ['MBI_attempts_before_CR'          ,   1], 
+                    ['C_init_SWAP_wo_SSRO'             ,   1], 
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,  20], 
+                    ['is_single_setup_experiment'      ,   1], 
+                    ['is_master'                       ,   1], 
+                    ['is_barrett_kok'                  ,   0], 
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['do_SSRO_after_electron_carbon_SWAP',  1],
+                    ['communicate_SSRO_after_electron_carbon_SWAP',  1],
+                    ['remote_awg_trigger_channel'      ,  1],
+                    ['invalid_data_marker_do_channel'  ,  1],              
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 50,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['E_MBI_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['phase_per_sequence_repetition'    , 0],
+                    ['phase_per_compensation_repetition', 0],
+                    ['total_phase_offset_after_sequence', 0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    },
+                'data_long' : {
+                    'CR_hist'        : 29,
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'N_MBI_starts'   : 24,  # number of MBI attempts
+                    'N_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
+                    'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
+                    'N_MBI_success'             : 28, # time needed until mbi success (in process cycles)
+                    'SP_hist'                   : 29,    #SP histogram
+                    'adwin_communication_time'  : 33,  #time spent for communication between adwins
+                    'plu_which'                 : 34,  #Information whether same or opposite detector has clicked (provided by the PLU)
+                    'attempts_first'            : 35,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 36, # number of repetitions after swapping until the second succesful entanglement attempt
+                    'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
+                    'purification_result'       : 38,  # electron readout after purification step
+                    'ssro_result'               : 39, # SSRO counts final spin readout after tomography
+                    },
+                },
         }
 
 
@@ -2913,9 +2983,9 @@ config['adwin_m1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 3,
         'green_aom' : 4,
-        'yellow_aom' : 5,
-        'matisse_aom' : 6,
-        'DLpro_frq': 7,
+        'newfocus_aom' : 5,
+        'DLPro_aom' : 6,      
+        'DLpro_frq': 7,        #not currently used
         'newfocus_frq': 8,
         }
 config['adwin_m1_processes'] = {

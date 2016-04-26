@@ -1,10 +1,12 @@
-execfile(qt.reload_current_setup)
+
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 # reload all parameters and modules, import classes
 from measurement.scripts.espin import espin_funcs
 # reload(espin_funcs)
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 from measurement.lib.pulsar import pulselib
+
+execfile(qt.reload_current_setup)
 
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -16,7 +18,7 @@ NOTE: do adjust the MW duration & amplitudes to refer to the proper type of puls
 """
 
 
-def calibrate_scrof_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = False):
+def calibrate_BB1_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = False):
     m = pulsar_msmt.ScrofulousPiCalibrationSingleElement(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -35,7 +37,7 @@ def calibrate_scrof_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = Fal
     m.params['pts'] = pts
     # m.params['repetitions'] = 3000 if multiplicity == 1 else 5000
     m.params['repetitions'] = 600 if multiplicity == 1 else 600
-    rng = 0.2 if multiplicity == 1 else 0.08
+    rng = 0.2 if multiplicity == 1 else 0.06
 
     ### Pulse settings
     m.params['multiplicity'] = np.ones(pts)*multiplicity
@@ -66,7 +68,7 @@ def calibrate_scrof_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = Fal
     m.MW_pi = ps.X_pulse(m)
     m.MW_pi = pulse.cp(m.MW_pi,length = m.params['BB1_fast_pi_duration'], amplitude = m.params['BB1_fast_pi_amp'])
     m.MW_pi2 = ps.Xpi2_pulse(m)
-    m.Phi1 = pulse.cp(m.MW_pi, phase = m.params['X_phase']+104.5,)
+    m.Phi1 = pulse.cp(m.MW_pi, phase = m.params['X_phase']+104.5)
     m.Phi2 = pulse.cp(m.MW_pi, phase = m.params['X_phase']+313.4)
     m.Phi3 = pulse.cp(m.MW_pi, phase = m.params['X_phase'])
     # m.Phi60 = pulse.cp(m.MW_pi, phase = m.params['X_phase']+60)
@@ -83,7 +85,7 @@ def calibrate_scrof_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = Fal
 
 
 
-def sweep_number_pi_pulses(name,  debug=False, pts = 30):
+def sweep_number_pi_pulses(name,debug = False, pts = 30):
     m = pulsar_msmt.GeneralPiCalibration(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -124,4 +126,4 @@ def sweep_number_pi_pulses(name,  debug=False, pts = 30):
 
 
 if __name__ == '__main__':
-    calibrate_scrof_pi_pulse(SAMPLE_CFG + 'BB1_Pi', multiplicity =1, debug = False)
+    calibrate_BB1_pi_pulse(SAMPLE_CFG + 'BB1_Pi', multiplicity =1, debug = False)

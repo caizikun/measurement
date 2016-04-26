@@ -94,30 +94,32 @@ def QMem(name, carbon_list   = [5],
 
     pts = 11
     #f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/m.params['C1_freq_0']) # round(1/f_larmor,9)
+    tau_larmor = round(1/m.params['C5_freq_0'],9)
     ### calculate the carbon revival:
-    f0 = m.params['C1_freq_0']
-    f1 = m.params['C1_freq_1_m1']
+    f0 = m.params['C5_freq_0']
+    f1 = m.params['C5_freq_1_m1']
     df = abs(f1-f0)
-    tau_c2 = 1/df-mod(1/df,tau_larmor)
-    print tau_c2,tau_larmor,mod(1/df,tau_larmor)
-    print 1/df
+    # tau_c2 = 1/df-mod(1/df,tau_larmor)
+    # print tau_c2,tau_larmor,mod(1/df,tau_larmor)
+    # print 1/df
+    print tau_larmor,m.params['C5_freq_0']
     rng = tau_larmor*pts/2
-    m.params['repump_wait'] =  np.linspace(tau_larmor-400e-9,tau_larmor+400e-9,pts)#np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = pts*[500e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = [500]*pts
+    m.params['repump_wait'] =  np.linspace(tau_larmor-1400e-9,tau_larmor,pts)#np.round(np.arange(tau_c2-rng,tau_c2+rng,tau_larmor),9) # time between pi pulse and beginning of the repumper
+    m.params['average_repump_time'] = pts*[110e-9] #this parameter has to be estimated from calivbration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = [1000]*pts
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
 
 
+    ps.X_pulse(m) #this updated fast_pi_amp
     m.params['pi_amps'] = pts*[m.params['Hermite_pi_amp']]
     print m.params['repump_wait']
     print np.mod(m.params['repump_wait'],tau_larmor)
 
-    m.params['fast_repump_duration'] = pts*[2.e-6] #how long the repumper beam is shined in.
+    m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repumper beam is shined in.
 
-    m.params['fast_repump_power'] = 2.000e-9
+    m.params['fast_repump_power'] = 1000e-9
 
 
     ### For the Autoanalysis
@@ -154,7 +156,7 @@ if __name__ == '__main__':
     debug = False
 
     if True:   #turn measurement on or off
-        for c in [1]:
+        for c in [5]:
             if breakst:
                 break
             for tomo in ['Z']:
