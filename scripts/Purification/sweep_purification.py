@@ -85,24 +85,22 @@ def generate_AWG_seq(name):
     m.params['reps_per_ROsequence'] = 1
 
     ### adwin process variables: should be automatically set.
-    m.params['Nr_C13_init']     = 0
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
+    m.params['Nr_C13_init']     = 0 # Not necessary (only for C13 MBI)
+    m.params['Nr_MBE']          = 0 # Not necessary (only for C13 MBI)
+    m.params['Nr_parity_msmts'] = 0 # Not necessary (only for C13 MBI)
     m.params['Tomography_bases'] = ['X']
 
 
     ###parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['non_local']           = 1
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1
-    m.params['do_LDE_1']            = 1 # TODO finish jumping and event triggering for LDE
-    m.params['swap_onto_carbon']    = 1
+    m.params['do_N_MBI']            = 0 # Not necessary (only for C13 MBI)
+    m.params['init_and_ro_carbon']  = 1 # XXXX C_init_SWAP_wo_SSRO threshold?
+    m.params['do_LDE_1']            = 1 # TODO finish jumping and event triggering for LDE / INIT ELEMENT
+    m.params['swap_onto_carbon']    = 1 # do_SSRO_after_electron_carbon_SWAP
     m.params['do_LDE_2']            = 1 # TODO finish jumping and event triggering for LDE
-    m.params['phase_correct']       = 1 
-    m.params['purify']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 1 # this gets rid of the final RO since it is done in the adwin
+    m.params['phase_correct']       = 1 # do_phase_correction
+    m.params['purify']              = 0 # do_purifying_gate
 
     ### upload
     run_sweep(m,debug = True,upload_only = True)
