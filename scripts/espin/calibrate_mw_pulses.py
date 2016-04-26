@@ -9,7 +9,6 @@ from measurement.lib.pulsar import pulselib
 reload(pulselib)
 execfile(qt.reload_current_setup)
 
-execfile(qt.reload_current_setup)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -46,7 +45,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['pts'] = pts
     m.params['repetitions'] = 600 if multiplicity == 1 else 1000
-    rng = 0.3 if multiplicity == 1 else 0.05 if multiplicity <= 5 else 0.05
+    rng = 0.3 if multiplicity == 1 else 0.08 if multiplicity <= 5 else 0.03
 
     m.params['multiplicity'] = np.ones(pts)*multiplicity
 
@@ -68,7 +67,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
             print 'calibrating square pulses'
             m.params['MW_duration'] =  m.params['Square_pi_length']
             m.params['MW_pulse_amplitudes'] = m.params['Square_pi_amp'] + np.linspace(-rng, rng, pts)
-    m.params['delay_reps'] = 195 ## Currently not used
+    m.params['delay_reps'] = 1## Currently not used
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
    
@@ -320,7 +319,7 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
     #m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
     m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)
     
-    m.params['delay_reps'] = 195 ## Currently not used
+    m.params['delay_reps'] = 500 ## Currently not used
     
 
     # for the autoanalysis
@@ -372,9 +371,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False, pulse_shape='Hermite')
+    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2= False, pulse_shape='Hermite')
     # sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

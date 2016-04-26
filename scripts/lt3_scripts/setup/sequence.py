@@ -37,10 +37,8 @@ qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker',
 # sync ADwin
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
-# qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
-#     high=2.7, low=0, offset=0., delay=269e-9, active=True)
-qt.pulsar.define_channel(id='ch3_marker1', name='RND_halt', type='marker', 
-    high=2.0, low=0, offset=0, delay=100e-9, active=True)
+#qt.pulsar.define_channel(id='ch3_marker1', name='RND_halt', type='marker', 
+#    high=2.0, low=0, offset=0, delay=100e-9, active=True)
 qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=102e-9, active=True)
 
@@ -83,7 +81,7 @@ qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,
         'TRIGGER_SOURCE'            :   1,    # External | Internal
         'CLOCK_SOURCE'              :   1,    # Internal | External
-        'REFERENCE_SOURCE'          :   2,    # Internal | External
+        'REFERENCE_SOURCE'          :   1,    # Internal | External
         'EXTERNAL_REFERENCE_TYPE'   :   1,    # Fixed | Variable
         'REFERENCE_CLOCK_FREQUENCY_SELECTION':1, #10 MHz | 20 MHz | 100 MHz
         'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm

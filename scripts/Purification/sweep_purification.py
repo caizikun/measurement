@@ -89,24 +89,30 @@ def generate_AWG_seq(name):
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 1
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
+    ### adwin process variables: should be automatically set.
+    m.params['Nr_C13_init']     = 0 # Not necessary (only for C13 MBI)
+    m.params['Nr_MBE']          = 0 # Not necessary (only for C13 MBI)
+    m.params['Nr_parity_msmts'] = 0 # Not necessary (only for C13 MBI)
     m.params['Tomography_bases'] = ['X']
 
 
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['non_local']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1
-    m.params['do_LDE_1']            = 1 
-    m.params['swap_onto_carbon']    = 1
-    m.params['do_LDE_2']            = 1 
-    m.params['phase_correct']       = 1
-    m.params['purify']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+    ###parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.params['non_local']           = 1 # in adwin: 'is_two_setup_experiment'
+    m.params['do_N_MBI']            = 0 # Not necessary (only for C13 MBI)
+    #m.params['electron_ro_after_first_seq'] = 0 # for Barret-Kok- SPCORR...
+    # electron_ro_after_first_seq not required.
+    m.params['do_carbon_init']  = 1 
+    m.params['do_C_init_SWAP_wo_SSRO'] = 0
+    
+    # TODO finish jumping and event triggering for LDE / INIT ELEMENT
+    # we always do LDE1
+    m.params['do_swap_onto_carbon']    = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+    m.params['do_LDE_2']            = 1
+    m.params['do_phase_correction'] = 1 # previously: phase_correct
+    m.params['do_purifying_gate']   = 0 # previously: purify
+    m.params['do_carbon_readout']  = 1 
 
 
 

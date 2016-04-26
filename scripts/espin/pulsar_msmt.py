@@ -1650,6 +1650,7 @@ class SSRO_MWInit(GeneralPiCalibration):
 class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 
     def generate_sequence(self, upload=True, **kw):
+
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
             length = 15000e-9, amplitude = 0)
@@ -1689,9 +1690,10 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             seq.append(name = e.name+'-{}'.format(j), 
                 wfname = e.name,
                 trigger_wait = True)
-            # seq.append(name = 'wait-{}-{}'.format(i,j), 
-            #     wfname = wait_1us.name, 
-            #     repetitions = self.params['delay_reps'])
+
+            seq.append(name = 'wait-{}-{}'.format(i,j), 
+                wfname = wait_1us.name, 
+                repetitions = self.params['delay_reps'])
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         # elements.append(wait_1us)
