@@ -40,9 +40,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9
-	hermite_pi_amp =  0.730 # AR 04/04
+	hermite_pi_amp =  0.707 # SK 21/04
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.524 # 17-3 SK&NK
+	hermite_pi2_amp = 0.507 # SK 21/04 
 
 	square_pi_length = 18e-9
 	square_pi_amp = 0.799 # 02-19
@@ -55,7 +55,7 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 130e-9 #180e-9
-	hermite_pi_amp = 0.246 #0.2
+	hermite_pi_amp = 0.301#0.246 #0.2
 	hermite_pi2_length = 50e-9#36e-9
 	hermite_pi2_amp = 0.311
 
@@ -86,7 +86,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       50e-6, #XXXX 50e-6
+		'green_repump_amplitude':       20e-6, #XXXX 50e-6
 		'green_repump_duration':        30,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -220,8 +220,9 @@ cfg['samples'][sample_name] = {
 ###############
 	### Please uncomment the SIL you are working on
 
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
-	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-108.202-17.70]+[26.26-121.83] + [0.0]*8),
+
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
 
 
 	#########################
@@ -263,39 +264,42 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447968.42+ 483714)/2., 
-	'C1_freq_0' 		: 447939.94,
+	'C1_freq_0' 		: 447965.66,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : (447939.94+429778.34)/2., 
-	'C1_freq_0' 		: 447939.94,
-	'C1_freq_1_p1' 		: 429778.34,
+	'C1_freq_p1'        : 436757.82,#434257.72, 
+	'C1_freq_0' 		: 447965.66,
+	'C1_freq_1_p1' 		: 425517.3,
 
-	'C1_Ren_tau_p1'    :   [10.884e-6],
-	'C1_Ren_N_p1'      :   [12],
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [49.73] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
+	'C1_Ren_N_p1'      :   [12], #12
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [64.19] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
+	# is this the place for unconditional taus and Ns?
+	'C1_unc_tau_p1'    :   [9.16e-6],
+	'C1_unc_N_p1'      :   [12],
 	###############
 	#### C2 ~ 15 ###
 	###############
 	'C2_freq_m1'        : (447774.53+432700)/2.,
-	'C2_freq_0' 		: 447658.29,
+	'C2_freq_0' 		: 447725.47,
 	'C2_freq_1_m1' 		: 432700, 
 
 	'C2_Ren_tau_m1'    :   [10.786e-6],
 	'C2_Ren_N_m1'      :   [24],
 	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C2_freq_p1'        : (447774.53+465561)/2.,
-	'C2_freq_0' 		: 447658.29,
-	'C2_freq_1_p1' 		: 464342.93,
+	'C2_freq_p1'        : 456025,
+	'C2_freq_0' 		: 447725.47,
+	'C2_freq_1_p1' 		: 464353.86,
 	
-	'C2_Ren_tau_p1'    :   [9.318e-6],
-	'C2_Ren_N_p1'      :   [24],
-	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-30.56] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
+	'C2_Ren_N_p1'      :   [24],#[26],
+	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	###############
 	#### C3 ~ 42 ###
@@ -370,7 +374,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9,
 		'Ex_RO_amplitude':				 5e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 30e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 20e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -502,7 +506,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.4e-6,
+		'max_dec_tau'         :     0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

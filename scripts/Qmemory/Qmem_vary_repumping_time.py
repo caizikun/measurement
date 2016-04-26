@@ -65,6 +65,7 @@ def QMem(name, carbon_list   = [5],
     m.params['init_method_list']    = carbon_init_methods*len(carbon_init_list)
     m.params['init_state_list']     = carbon_init_states*len(carbon_init_list)    
     m.params['Nr_C13_init']         = len(carbon_init_list)
+    m.params['Nr_C13_SWAP']         = 0
 
     m.params['el_after_init']       = '0'
 
@@ -98,7 +99,7 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 21
+    pts = 16
 
     tau_larmor = kw.get('tau_larmor', round(1./m.params['C1_freq_0'],9))
     print 'Tau larmor is ', tau_larmor
@@ -189,11 +190,12 @@ if __name__ == '__main__':
                                                                             carbon_init_list        = [c],
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
-                                                                            Repetitions  = 1000,
+                                                                            Repetitions  = 250,
                                                                             seq_reps = 250,
                                                                             repump_power = repump_power_sweep[sweep_elem],
-                                                                            do_optical_pi = False )
-    if True: ### turn measurement on/off
+                                                                            do_optical_pi = False)
+                                                                            # tau_larmor = 2.1e-6 )
+    if False: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
             if breakst:
                 break

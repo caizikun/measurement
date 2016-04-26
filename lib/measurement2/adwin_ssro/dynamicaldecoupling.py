@@ -694,7 +694,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
                 elif Gate_sequence[i+1].phase == None or Gate_sequence[i+1].phase == 'reset':
-                    g.dec_duration =0
+                    if g.dec_duration != None:
+                        pass
+                    else:
+                        g.dec_duration =0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
                     Carbon_index  = Gate_sequence[i+1].Carbon_ind
@@ -2634,14 +2637,7 @@ class NuclearRamsey_v2(DynamicalDecoupling):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    '-'*5
-                    print g.name
-                    print g.C_phases_before_gate
-                    print g.C_phases_after_gate
-
+            
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
