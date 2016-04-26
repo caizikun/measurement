@@ -15,16 +15,16 @@ params_lt4 = {}
 #general sequence things. All of this are set automatically.
 params_lt4['MW_during_LDE'] 	= 1 
 params_lt4['do_general_sweep']    = False
-params_lt4['non_local']           = 1
+params_lt4['is_two_setup_experiment'] = 0
 params_lt4['do_N_MBI']            = 0
-params_lt4['init_carbon']         = 0
-params_lt4['do_LDE_1']            = 1 # TODO finish the LDE elements for non local operation
-params_lt4['swap_onto_carbon']    = 0
+params_lt4['do_carbon_init']         = 0
+params_lt4['do_LDE_1']            = 1 # we always do this.
+params_lt4['do_swap_onto_carbon']    = 0
 params_lt4['do_LDE_2']            = 0 # TODO finish the LDE element for non local operation
-params_lt4['phase_correct']       = 0 
-params_lt4['purify']              = 0
-params_lt4['C13_RO']              = 0 #if 0 then RO of the electron via an adwin trigger.
-params_lt4['final_RO_in_adwin']   = 0 # this gets rid of the final RO
+params_lt4['do_phase_correction']       = 0 
+params_lt4['do_purifying_gate']              = 0
+params_lt4['do_carbon_readout']   = 0 #if 0 then RO of the electron via an adwin trigger.
+
 
 #adwin channel defs:
 params_lt4['AWG_start_DO_channel'] = 9

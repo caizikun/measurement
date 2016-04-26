@@ -16,6 +16,21 @@ params_lt1['MW_during_LDE'] = 1
 # LDE element
 params_lt1['AWG_SP_power']              = 5e-9
 params_lt1['LDE_SP_duration']           = 2e-6
+params_lt1['MW_during_LDE']             = 1 
+params_lt1['LDE_decouple_time']         = 1/qt.exp_params['samples'][name]['C1_freq_0']
+
+#general sequence things. All of this are set automatically.
+params_lt1['do_general_sweep']          = False
+params_lt1['is_two_setup_experiment']   = 1
+params_lt1['do_N_MBI']                  = 0
+params_lt1['do_carbon_init']            = 1
+params_lt1['do_LDE_1']                  = 1 # we always do this.
+params_lt1['do_swap_onto_carbon']       = 1
+params_lt1['do_LDE_2']                  = 1 # TODO finish the LDE element for non local operation
+params_lt1['do_phase_correction']       = 1 
+params_lt1['do_purifying_gate']         = 1
+params_lt1['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
+
 
 
 # define adwin channels here #XXXXX

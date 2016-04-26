@@ -58,7 +58,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2) 
-    Gate.adwin_success_pulse = pulse.SquarePulse(channel = 'adwin_success_trigger',
+    Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_sync_counter',
         length = 5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
@@ -116,12 +116,17 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     ### add the option to plug in a yellow laser pulse during spin pumping. not yet considered
 
-    # 2 HH sync
+    ### 2 syncs
+
+    # 2a HH sync
     if msmt.params['sync_during_LDE'] == 1 :
         e.add(Gate.HHsync,
             refpulse = 'initial_delay')
 
-    #4 MW pulses
+    # 2b
+    e.add(Gate.adwin_count_pulse,
+        refpulse = 'initial_delay')
+    #3 MW pulses
     if msmt.params['MW_during_LDE'] == 1 :
         
         # print 'this is the x pulse start'
@@ -145,17 +150,17 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpoint_new    = 'center',
             name            = 'MW_Theta')
 
-        # final MW RO rotation
-        # if msmt.joint_params['do_final_mw_LDE'] == 1:
-        #     e.add(pulse.cp(Gate.mw_pi2,
-        #         phase           = msmt.joint_params['LDE_final_mw_phase']),
-        #         start           = msmt.params['LDE_decouple_time'],
-        #         refpulse        = 'MW_pi',
-        #         refpoint        = 'start',
-        #         refpoint_new    = 'start',
-        #         name            = 'MW_RO_rotation')
+        #final MW RO rotation
+        if msmt.joint_params['do_final_mw_LDE'] == 1:
+            e.add(pulse.cp(Gate.mw_pi2,
+                phase           = msmt.joint_params['LDE_final_mw_phase']),
+                start           = msmt.params['LDE_decouple_time'],
+                refpulse        = 'MW_pi',
+                refpoint        = 'start',
+                refpoint_new    = 'start',
+                name            = 'MW_RO_rotation')
 
-    # 3 opt. pi pulses
+    #4 opt. pi pulses
     for i in range(msmt.joint_params['opt_pi_pulses']):
         name = 'opt pi {}'.format(i+1)
         refpulse = 'opt pi {}'.format(i) if i > 0 else 'MW_Theta'
@@ -195,6 +200,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     
 
     # if msmt.joint_params['opt_pi_pulses'] > 1:
+    ### then we should build up the MW pulses in a different way.
 
 
     Gate.reps = msmt.joint_params['LDE_attempts_before_CR']
@@ -257,7 +263,7 @@ def _lt3_entanglement_event_element(Gate):
     e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
 
     e.append(pulse.cp(Gate.TIQ, length=1e-6))
-    e.append(Gate.adwin_success_pulse)
+    # e.append(Gate.adwin_success_pulse)
     return e
 
 def _lt3_sequence_finished_element(Gate):
@@ -274,7 +280,7 @@ def _lt4_entanglement_event_element(Gate):
     e= element.Element('Entanglement event element', pulsar=qt.pulsar)
 
     e.append(pulse.cp(Gate.TIQ, length=1e-6))
-    e.append(Gate.adwin_success_pulse)
+    # e.append(Gate.adwin_success_pulse)
     return e
 
 def _lt4_sequence_finished_element(Gate):

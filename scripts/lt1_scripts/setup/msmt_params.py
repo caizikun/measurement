@@ -403,6 +403,8 @@ cfg['samples']['Gretel_sil2'] ={
 
 #XXXXX
 ### dummy parameters for purification testing. delete when done.
+'Carbon_LDE_init_phase_correction_list'  : np.array([0.0]*11),
+'scascasdf'  : np.array([0.0]*11),
 'electron_transition' : '_m1',
 'C1_freq_m1'       :   (438753.54 + 413107.0)/2.,#24.618e3,
 'C1_freq_1_m1' : 413107.0,#24.543e3, 

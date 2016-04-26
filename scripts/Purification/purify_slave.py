@@ -23,7 +23,7 @@ class purify_single_setup(DD.MBI_C13):
     """
     mprefix = 'purifcation slave'
     adwin_process = 'MBI_multiple_C13' ### TODO make adwin script with 'no mbi' flag
-
+    #adwin_process = 'purification'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -32,8 +32,8 @@ class purify_single_setup(DD.MBI_C13):
     def autoconfig(self):
 
         # setup logical adwin parameters --> how many C13 intialization steps are there?
-        self.params['C13_MBI_threshold_list'] = [1]*(self.params['swap_onto_carbon'] + self.params['purify'])
-        if self.params['init_carbon'] > 0: 
+        self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
+        if self.params['do_carbon_init'] > 0: 
             if self.params['carbon_init_method'] == 'MBI':
                 self.params['C13_MBI_threshold_list'] =[1] + self.params['C13_MBI_threshold_list'] 
             else:
@@ -175,7 +175,7 @@ class purify_single_setup(DD.MBI_C13):
         self.load_remote_carbon_params(master = master) # generate carbon 9 from the joint params
 
         # generate the list of gates in the remote setting
-        if self.params['init_carbon'] > 0:#the carbon has been initialized. use a slight difference in the sequence
+        if self.params['do_carbon_init'] > 0:#the carbon has been initialized. use a slight difference in the sequence
             carbon_init_seq = DD.MBI_C13.carbon_swap_gate(self,go_to_element = 'start',
                         prefix = 'C_swap', pt=0,
                         addressed_carbon = 9)
@@ -216,7 +216,7 @@ class purify_single_setup(DD.MBI_C13):
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
 
-        if self.params['non_local'] > 0:
+        if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + slave_seq_duration - master_seq_duration - init_RO_wait_diff
@@ -251,7 +251,7 @@ class purify_single_setup(DD.MBI_C13):
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
         
 
-        if self.params['non_local'] > 0:
+        if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
 
@@ -295,17 +295,17 @@ class purify_single_setup(DD.MBI_C13):
 
         LDE_elt.generate_LDE_elt(self,Gate)
 
-        if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok
-            Gate.event_jump = 'start'
+        if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
+            Gate.event_jump = 'next'
             Gate.go_to = 'start'
         else:
             Gate.event_jump = 'next'
             Gate.go_to = 'start'
             
-            if self.params['phase_correct'] == 0 and 'LDE2' in Gate.name:
+            if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
-            elif self.params['swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+            elif self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
 
@@ -336,13 +336,8 @@ class purify_single_setup(DD.MBI_C13):
             AWG_sync_wait.scheme = 'single_element'
             self.generate_AWG_sync_elt(AWG_sync_wait)
 
-            ### Nitrogen MBI
-            mbi = DD.Gate('MBI_'+str(pt),'MBI')
+
             
-            ### initialize carbon in +Z or +X
-            carbon_init_seq = self.initialize_carbon_sequence(go_to_element = 'start',
-                    prefix = 'C_Init', pt =pt,
-                    addressed_carbon = self.params['carbon'],initialization_method = self.params['carbon_init_method'])
 
             ### LDE elements
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')
@@ -364,14 +359,7 @@ class purify_single_setup(DD.MBI_C13):
             LDE_repump2 = DD.Gate('LDE_repump_'+str(pt),'Trigger',duration = 5e-6)
 
 
-            ### Elementes for swapping
-            swap_with_init = self.carbon_swap_gate(
-                            go_to_element = 'start',
-                            pt = pt,
-                            addressed_carbon = self.params['carbon'])
 
-            ### need to write this method XXX
-            #swap_without_init = 
 
             ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
             dynamic_phase_correct = DD.Gate(
@@ -412,15 +400,7 @@ class purify_single_setup(DD.MBI_C13):
                 RO_basis_list       = ['X'])
                 
 
-            carbon_tomo_seq = self.readout_carbon_sequence(
-                    prefix              = 'Tomo',
-                    pt                  = pt,
-                    go_to_element       = None,
-                    event_jump_element  = None,
-                    RO_trigger_duration = 10e-6,
-                    el_state_in         = 0,
-                    carbon_list         = [self.params['carbon']],
-                    RO_basis_list       = self.params['Tomography_bases']) 
+
 
             e_RO = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
@@ -442,7 +422,8 @@ class purify_single_setup(DD.MBI_C13):
             #######################################################################
 
             if self.params['do_N_MBI'] > 0: 
-                ### needs corresponding adwin parameter (Nr_N_init)
+                ### Nitrogen MBI
+                mbi = DD.Gate('MBI_'+str(pt),'MBI')
                 gate_seq.append(mbi)
 
 
@@ -450,8 +431,12 @@ class purify_single_setup(DD.MBI_C13):
             # gate_seq.append(DD.Gate('dummy_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 
 
-            if self.params['init_carbon'] > 0:
-                ### needs corresponding adwin parameter (Nr_C13_init)
+            if self.params['do_carbon_init'] > 0:
+                ### initialize carbon in +Z or +X
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = 'start',
+                        prefix = 'C_Init', pt =pt,
+                        addressed_carbon = self.params['carbon'],initialization_method = self.params['carbon_init_method'])
+
                 if gate_seq != []:
                     carbon_init_seq[0].wait_for_trigger = False
 
@@ -465,8 +450,17 @@ class purify_single_setup(DD.MBI_C13):
 
                 gate_seq.append(LDE_rephase1)
 
-            if self.params['swap_onto_carbon'] > 0:
-                if self.params['init_carbon']:
+            if self.params['do_swap_onto_carbon'] > 0:
+                ### Elementes for swapping
+                swap_with_init = self.carbon_swap_gate(
+                                go_to_element = 'start',
+                                pt = pt,
+                                addressed_carbon = self.params['carbon'])
+
+                ### need to write this method XXX
+                #swap_without_init = 
+
+                if self.params['do_carbon_init']:
                     # put simons gate seq here
                     gate_seq.extend(swap_with_init)
                 else:
@@ -480,32 +474,42 @@ class purify_single_setup(DD.MBI_C13):
 
                 gate_seq.append(LDE2)
 
-                if self.params['purify'] > 0 or self.params['phase_correct'] > 0:
+                if self.params['do_purifying_gate'] > 0 or self.params['do_phase_correction'] > 0:
                     # electron has to stay coherent after LDE attempts
                     gate_seq.append(LDE_rephase2)
 
                 else: # this is used if we sweep the number of repetitions for Qmemory testing.
                     gate_seq.append(LDE_repump2)
 
-            if self.params['phase_correct'] > 0:
+            if self.params['do_phase_correction'] > 0:
                 gate_seq.extend([dynamic_phase_correct,final_dynamic_phase_correct])
 
-            if self.params['purify'] > 0:
+            if self.params['do_purifying_gate'] > 0:
                 gate_seq.extend(carbon_purify_seq)
 
-            if self.params['final_RO_in_adwin'] == 0:
 
-                if self.params['C13_RO'] > 0:
-                    gate_seq.extend(carbon_tomo_seq)
 
-                else: #No carbon spin RO? Do espin RO!
-                    gate_seq.extend(e_RO)
+            if self.params['do_carbon_readout'] > 0:
+
+                carbon_tomo_seq = self.readout_carbon_sequence(
+                        prefix              = 'Tomo',
+                        pt                  = pt,
+                        go_to_element       = None,
+                        event_jump_element  = None,
+                        RO_trigger_duration = 10e-6,
+                        el_state_in         = 0,
+                        carbon_list         = [self.params['carbon']],
+                        RO_basis_list       = self.params['Tomography_bases']) 
+                gate_seq.extend(carbon_tomo_seq)
+
+            else: #No carbon spin RO? Do espin RO!
+                gate_seq.extend(e_RO)
 
 
             ###############################################
             # prepare and program the actual AWG sequence #
             ###############################################
-
+            print len(gate_seq)
             #### insert elements here
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
@@ -516,7 +520,7 @@ class purify_single_setup(DD.MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-
+        print upload
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
@@ -535,4 +539,4 @@ class purify_slave(purify_single_setup):
     mprefix = 'purifcation slave'
     ### XXX
     ### insert remote slave_adwin process here
-    adwin_process = purification
+    adwin_process = 'purification'
