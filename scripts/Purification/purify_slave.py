@@ -1,7 +1,5 @@
 """
-Contains two different types of classes
- - the single-setup experiments of the purification project.
- - a class with altered adwin process for the slave setup during remote measurements
+Contains the single-setup experiments of the purification project.
 
 NK 2016
 """
@@ -63,6 +61,33 @@ class purify_single_setup(DD.MBI_C13):
         # else:
         #     print self.mprefix, self.name, ': Ignoring yellow'
 
+    # def initialize_carbon_sequence(**kw):
+    #     """
+    #     manipulates the length of the C_init RO_wait in order to correctly synchronize both AWGs
+    #     only does this on the side of master AWG.
+    #     """
+
+    #     store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
+
+    #     master_REN_duration = self.joint_params['master_Ren_N']*2*self.joint_params['master_Ren_tau']
+    #     slave_REN_duration = self.joint_params['slave_Ren_N']*2*self.joint_params['slave_Ren_tau']
+    #     master_slave_diff = 2*(master_REN_duration - slave_REN_duration)
+    #     if setup == master_setup and master_REN_duration-slave_REN_duration:
+            
+    #         carbon_str = str(kw.get('addressed_carbon',1))
+    #         ### calculate the necessary wait length.
+    #         if 
+    #         self.params['Carbon_init_RO_wait'] = self.params['slave_init_RO_wait'] + slave_REN_duration - local_REN_duration
+
+    #     seq = MBI_C13.initialize_carbon_sequence(**kw)
+
+    #     ### restore the old value
+    #     self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
+
+    #     return seq
+
+
+
     def generate_AWG_sync_elt(self,Gate):
         ### used in non-local msmts syncs master and slave AWGs
         ### uses the scheme 'single_element'
@@ -74,9 +99,17 @@ class purify_single_setup(DD.MBI_C13):
         #     Gate.elements = [LDE_elt._slave_Sequence_start_element]
 
     def generate_LDE_element(self,Gate):
-        ### the parent function in DD_2 is overwritten by this special function that relies solely on
-        ### msmt_params, joint_params & params_lt3 / params_lt4.
+        """
+        the parent function in DD_2 is overwritten by this special function that relies solely on
+        msmt_params, joint_params & params_lt3 / params_lt4.
+        """
+
         LDE_elt.generate_LDE_elt(self,Gate)
+
+        if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok
+            Gate.event_jump = 'start'
+        else:
+            Gate.event_jump = 'next'
 
 
     def generate_sequence(self,upload=True,debug=False):
@@ -195,9 +228,9 @@ class purify_single_setup(DD.MBI_C13):
                 ### needs corresponding adwin parameter (Nr_N_init)
                 gate_seq.append(mbi)
 
-            if self.params['non_local'] > 0 and self.joint_params['master_setup'] == qt.current_setup:
-                # master AWG gets the first trigger and has to wait for the slave awg to respond
-                gate_seq.append(AWG_sync_wait)
+            # if self.params['non_local'] > 0 and self.joint_params['master_setup'] == qt.current_setup:
+            #     # master AWG gets the first trigger and has to wait for the slave awg to respond
+            #     gate_seq.append(AWG_sync_wait)
 
             if self.params['init_carbon'] > 0:
                 ### needs corresponding adwin parameter (Nr_C13_init)
@@ -211,6 +244,7 @@ class purify_single_setup(DD.MBI_C13):
                 if gate_seq == []:
                     LDE1.wait_for_trigger = True
                 gate_seq.append(LDE1)
+                #insert wait gate for AOM delay when measuring on carbon spins!
 
             if self.params['swap_onto_carbon'] > 0:
                 if self.params['init_carbon']:
@@ -222,6 +256,7 @@ class purify_single_setup(DD.MBI_C13):
 
             if self.params['do_LDE_2'] > 0:
                 gate_seq.append(LDE2)
+                #insert wait gate for AOM delay!
 
             if self.params['phase_correct'] > 0:
                 gate_seq.extend([dynamic_phase_correct,final_dynamic_phase_correct])
@@ -268,4 +303,4 @@ class purify_slave(purify_single_setup):
     mprefix = 'purifcation slave'
     ### XXX
     ### insert remote slave_adwin process here
-    """ adwin_process = purification_slave"""
+    adwin_process = purification

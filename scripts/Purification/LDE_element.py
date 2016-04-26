@@ -132,7 +132,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
             start = start,
             refpulse = refpulse,
             refpoint = refpoint,)
-
+    
+    print e.length()
     #4 MW pulses
     if msmt.params['MW_during_LDE'] == 1 :
         #mw pi/2 pulse or 'theta'
@@ -152,7 +153,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             name            = 'MW_pi')
 
         # final MW RO rotation
-        if msmt.joint_params['do_final_mw'] == 1:
+        if msmt.joint_params['do_final_mw_LDE'] == 1:
             e.add(pulse.cp(Gate.mw_pi2,
                 phase           = msmt.joint_params['LDE_final_mw_phase']),
                 start           = msmt.params['MW_1_separation'],

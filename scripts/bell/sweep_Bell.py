@@ -181,7 +181,7 @@ def tail_sweep(name):
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.1,0.7,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.6,1.0,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -300,14 +300,15 @@ def SP_correlations_PSB(name):
     _setup_params(m, setup = qt.current_setup)
     pts = 1
     m.params['do_general_sweep']=0
-    m.params['repetitions'] = 10000
-    m.params['MW_during_LDE'] = 1 
+    m.params['repetitions'] = 5000
+    m.params['RND_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
     m.params['MW_RND_amp_I']     = 0
     m.params['MW_RND_duration_I']= m.params['MW_pi2_duration'] 
     m.params['MW_RND_amp_Q']     = 0
     m.params['MW_RND_duration_Q']= m.params['MW_pi2_duration']
-    #m.joint_params['do_echo'] = 0
-    #m.joint_params['do_final_MW_rotation'] = 1
+    m.joint_params['do_echo'] = 0
+    m.joint_params['do_final_MW_rotation'] = 1
     m.params['live_filter_queue_length'] = 2
     print m.params['MW_pi2_amp']
     m.joint_params['use_live_marker_filter']=False
@@ -338,10 +339,10 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    # tail_sweep('tail') 
+    tail_sweep('local_short_fiber') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
     #echo_sweep('PippinSil1')
     #rnd_echo_ro('SAMPLE_CFG_'+str(qt.bell_name_index))
-    SP_correlations_PSB('lt3_PSB_msm1')
+    #SP_correlations_PSB('lt4_PSB_msm1')

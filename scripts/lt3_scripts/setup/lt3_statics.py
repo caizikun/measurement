@@ -11,9 +11,11 @@ if qt.exp_params['protocols']['AdwinSSRO']['yellow']:
 else:
     ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.green_aom
 
-# pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SMB100']
-pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SGS100A']
-pulsar_msmt.PulsarMeasurement.mwsrc2 = qt.instruments['SMB100']
+pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SMB100']
+
+#below the dual MW configuration!
+# pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SGS100A']
+# pulsar_msmt.PulsarMeasurement.mwsrc2 = qt.instruments['SMB100']
 
 pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
 pulsar_msmt.PulsarMeasurement.physical_adwin = qt.instruments['physical_adwin']

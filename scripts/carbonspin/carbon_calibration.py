@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1, 2]
+carbons = [1,2]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -69,21 +69,21 @@ if SETUP == 'lt2':
 elif SETUP == 'lt3':
     detuning_basic = 1e3
     detuning_dict = {
-        '1' : detuning_basic,
-        '2' : detuning_basic,
+        '1' : 5*detuning_basic,
+        '2' : 5*detuning_basic,
         '5' : detuning_basic,
         '6' : 2*detuning_basic,
         '7' : 2*detuning_basic,
-        '8' : 10*detuning_basic}
+        '8' : detuning_basic}
 
 elif SETUP == 'lt4':
-    detuning_basic = 1e3
+    detuning_basic = 3e3
     detuning_dict = {
         '1' : detuning_basic,
         '3' : detuning_basic,
         '4' : detuning_basic,
         '5' : detuning_basic,
-        '6' : detuning_basic,
+        '6' : 5*detuning_basic,
         '8' : detuning_basic
         }
 ######

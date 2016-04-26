@@ -1,5 +1,8 @@
 """
 Script for a carbon Rabi sequence
+
+Carbon A and B are the same guy.
+Address A on resonance, B on unconditional resonance
 """
 import numpy as np
 import qt 
@@ -52,44 +55,19 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
 
 
 if __name__ == '__main__':
-    # N_list=np.arange(30,70,4)
-    # tau_list = [(9.098)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_uncondGate_C3_tau_'+str(tau_list[1]),RO_phase = 0, RO_Z =True, carbon_A = 3, carbon_B = 3, tau_list=tau_list,N=N_list)
-    
-    # N_list=np.arange(40,100,4)
-    # tau_list = [(6.824)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_uncondGate_C3_tau_'+str(tau_list[1]),RO_phase = 0, RO_Z =True, carbon_A = 3, carbon_B = 3, tau_list=tau_list,N=N_list)
-    
-    # N_list=np.arange(2,60,8)
-    # tau_list = [(11.944)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_condGate_C3_tau_'+str(tau_list[1]),RO_phase = 0, RO_Z =True, carbon_A = 3, carbon_B = 3, tau_list=tau_list,N=N_list)
-    
 
-    # N_list=np.arange(2,100,16)
-    # # N_list=[24,28,32]
-    # tau_list = [(7.22)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_condGate_C5_tau_'+str(tau_list[0]),RO_phase = 0, RO_Z =True, carbon_A = 1, carbon_B = 1, tau_list=tau_list,N=N_list)
-    
 
     N_list=np.arange(2,100,16)
     # N_list=[24,28,32]
-    tau_list = [(9.444)*1e-6]*len(N_list)
-    Crosstalk(SAMPLE + '_condGate_C5_tau_'+str(tau_list[0]),RO_phase = 0, RO_Z =True, carbon_A = 1, carbon_B = 1, tau_list=tau_list,N=N_list)
-    
-    # N_list=np.arange(2,60,8)
-    # tau_list = [(16.5)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_condGate_C3_tau_'+str(tau_list[1]),RO_phase = 0, RO_Z =True, carbon_A = 3, carbon_B = 3, tau_list=tau_list,N=N_list)
-
-    # N_list=np.arange(80,120,4)
-    # tau_list = [(5.688)*1e-6]*len(N_list)
-    # Crosstalk(SAMPLE + '_uncondGate_C3_tau_'+str(tau_list[1]),RO_phase = 0, RO_Z =True, carbon_A = 3, carbon_B = 3, tau_list=tau_list,N=N_list)
-       
-
-
-
-
-
-
+    tau_list = [(9.18)*1e-6]*len(N_list)
+    Crosstalk(SAMPLE + '_condGate_C5_tau_'+str(tau_list[0]),
+        RO_phase = 0, 
+        RO_Z =True, 
+        carbon_A = 1, 
+        carbon_B = 1, 
+        tau_list=tau_list,
+        N=N_list)
+ 
 
 
 

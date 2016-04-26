@@ -98,25 +98,27 @@ def QMem(name, carbon_list   = [5],
     ###################################
 
     ### determine sweep parameters
-    pts = 31
+    pts = 21
 
-    f_larmor = m.params['C5_freq_0']#(m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/f_larmor,9)
+    tau_larmor = kw.get('tau_larmor', round(1./m.params['C4_freq_0'],9))
+    print 'Tau larmor is ', tau_larmor
+
 
     m.params['repump_wait'] =  pts*[tau_larmor] # time between pi pulse and beginning of the repumper
-    m.params['average_repump_time'] = np.linspace(-0.5e-6,1.5e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
-    m.params['fast_repump_repetitions'] = pts*[80.]
+    m.params['average_repump_time'] = np.linspace(-0.5e-6,1.5e-6,pts)#np.linspace(-0.2e-6,1.5e-6,pts) #this parameter has to be estimated from calibration curves, goes into phase calculation
+    m.params['fast_repump_repetitions'] = pts*[kw.get('seq_reps',250.)]
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
     m.params['do_optical_pi']=kw.get('do_optical_pi', False)
 
     ps.X_pulse(m)
+    print 'pi pulse amps',m.params['fast_pi_amp'],m.params['Hermite_pi_amp']
     m.params['pi_amps'] = pts*[m.params['fast_pi_amp']]
     # print 'this is the pi pulse amplitude',ps.X_pulse(m).env_amplitude,ps.X_pulse(m).Sw_risetime
     m.params['fast_repump_duration'] = pts*[2.5e-6] #how long the repump beam is applied.
 
-    m.params['fast_repump_power'] = kw.get('repump_power', 900e-9)
+    m.params['fast_repump_power'] = kw.get('repump_power', 50e-9)
 
 
     ### For the Autoanalysis
@@ -159,9 +161,9 @@ if __name__ == '__main__':
     # QMem('C5_positive_tomo_X',debug=False,tomo_list = ['X'])
     # QMem('C5_positive_tomo_Y',debug=False,tomo_list = ['Y'])
     debug = False
-    repump_power_sweep = [850e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
-    
-    if True: ### turn measurement on/off
+    repump_power_sweep = [1000e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
+
+    if False: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
             if breakst:
                 break
@@ -169,7 +171,7 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [5]:#,2,3,5,6]:#[1,3,5,6,2]:
+            for c in [4,5,8]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
                 for tomo in ['X','Y']:
@@ -189,9 +191,43 @@ if __name__ == '__main__':
                                                                             carbon_init_list        = [c],
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
-                                                                            Repetitions  = 1500,
-                                                                            repump_power = repump_power_sweep[sweep_elem])
+                                                                            Repetitions  = 500,
+                                                                            seq_reps = 200,
+                                                                            repump_power = repump_power_sweep[sweep_elem],
+                                                                            do_optical_pi = False )
+    if False: ### turn measurement on/off
+        for sweep_elem in range(len(repump_power_sweep)):
+            if breakst:
+                break
+            #stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
+            # get repump speed
+            #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
+            
+            for c in [4,5]:
+                if breakst:
+                    break
+                for tomo in ['Z']:
+                    optimize(breakst or debug)
 
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        QMem('Sweep_repump_time_'+ro+'_Tomo_'+tomo+'_C'+str(c)+'_repump_power'+str(repump_power_sweep[sweep_elem]),
+                                                                            debug=debug,
+                                                                            tomo_list = [tomo], 
+                                                                            el_RO = ro,
+                                                                            carbon_list   = [c],               
+                                                                            carbon_init_list        = [c],
+                                                                            carbon_init_thresholds  = [0],
+                                                                            carbon_init_methods     = ['swap'],
+                                                                            Repetitions  = 250,
+                                                                            seq_reps = 1000,
+                                                                            repump_power = repump_power_sweep[sweep_elem],
+                                                                            do_optical_pi = False )
+   
     ######################
     ### two qubit loop ###
     ######################
@@ -232,4 +268,79 @@ if __name__ == '__main__':
 
                         if abs(last_check-time.time()) > 30*60: ## check every 30 minutes
                             optimize(breakst or debug)
-                            last_check = time.time()            
+                            last_check = time.time()           
+
+
+
+    #############################
+    #### Tau Larmor sweep ######3
+    #############################
+
+    tau_Larmor_sweep_elements = np.arange( 2.1e-6, 2.6e-6, 0.1e-6)
+
+    if False: ### turn measurement on/off
+        for sweep_elem in range(len(tau_Larmor_sweep_elements)):
+            if breakst:
+                break
+            #stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
+            # get repump speed
+            #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
+            
+            for c in [4,5,8]:#,2,3,5,6]:#[1,3,5,6,2]:
+                if breakst:
+                    break
+                for tomo in ['X','Y','Z']:
+                    optimize(breakst or debug)
+
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        QMem('Sweep_repump_time_'+ro+'_Tomo_'+tomo+'_C'+str(c)+'tLarmor'+str(1e6*tau_Larmor_sweep_elements[sweep_elem]),
+                                                                            debug=debug,
+                                                                            tomo_list = [tomo], 
+                                                                            el_RO = ro,
+                                                                            carbon_list   = [c],               
+                                                                            carbon_init_list        = [c],
+                                                                            carbon_init_thresholds  = [1],
+                                                                            carbon_init_methods     = ['MBI'],
+                                                                            Repetitions  = 1000,
+                                                                            seq_reps = 200,
+                                                                            repump_power = 1000e-9,
+                                                                            tau_larmor =  tau_Larmor_sweep_elements[sweep_elem]
+                                                                            )
+    if True: ### turn measurement on/off
+        for sweep_elem in range(len(tau_Larmor_sweep_elements)):
+            if breakst:
+                break
+            #stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
+            # get repump speed
+            #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
+            
+            for c in [4,5,8]:
+                if breakst:
+                    break
+                for tomo in ['Z']:
+                    optimize(breakst or debug)
+
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        QMem('Sweep_repump_time_'+ro+'_Tomo_'+tomo+'_C'+str(c)+'tLarmor'+str(1e6*tau_Larmor_sweep_elements[sweep_elem]),
+                                                                            debug=debug,
+                                                                            tomo_list = [tomo], 
+                                                                            el_RO = ro,
+                                                                            carbon_list   = [c],               
+                                                                            carbon_init_list        = [c],
+                                                                            carbon_init_thresholds  = [0],
+                                                                            carbon_init_methods     = ['swap'],
+                                                                            Repetitions  = 1000,
+                                                                            seq_reps = 1000,
+                                                                            repump_power = 1000e-9,
+                                                                            tau_larmor =  tau_Larmor_sweep_elements[sweep_elem]
+                                                                            )
