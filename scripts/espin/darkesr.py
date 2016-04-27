@@ -33,7 +33,7 @@ def darkesr(name, **kw):
 
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m1_transition = kw.get('m1_transition',True)
-    m.params['range']        = kw.get('range', 2e6) #5e6
+    m.params['range']        = kw.get('range', 30e6) #5e6
     # Range must be smaller than 30MHz because freq sweep is done via ssb mod
 
     m1_freq = m.params['ms-1_cntr_frq']-43e6
