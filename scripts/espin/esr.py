@@ -14,11 +14,11 @@ green_power = 25e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
 
-if False: #m1 transition
+if True: #m1 transition
     range_f     =  0.09 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -13#-13      #in dBm
-    center_f    = 1.74792#4.055#3.95#1.74666#2.828#2.861
+    mw_power    = -5#-13      #in dBm
+    center_f    =  2.8#4.055#3.95#1.74666#2.828#2.861
 else: #p1 transition
     range_f     =  0.09 # 0.03 in GHz
     steps       = 101      #101
