@@ -6,13 +6,13 @@ NK 2016
 import numpy as np
 import qt
 
-execfile(qt.reload_current_setup)
+
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import LDE_element as LDE_elt; reload(LDE_elt)
-
+execfile(qt.reload_current_setup)
 
 
 class purify_single_setup(DD.MBI_C13):
@@ -46,8 +46,7 @@ class purify_single_setup(DD.MBI_C13):
 
         # add values from AWG calibrations
         self.params['SP_voltage_AWG'] = \
-                self.A_aom.power_to_voltage(
-                        self.params['AWG_SP_power'], controller='sec')
+                self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 

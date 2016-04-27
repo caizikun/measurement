@@ -2,13 +2,16 @@
 contains all necessary parameters for remote measurements
 '''
 import qt
-import params_lt1 #impot lt3 and l4 later on.
+import params_lt4
+import params_lt3
+reload(params_lt4)
+reload(params_lt3)
 name = qt.exp_params['protocols']['current']
 
 
 joint_params = {}
 ###
-joint_params['master_setup'] = 'lt1'
+joint_params['master_setup'] = 'lt4'
 
 
 ### default process settings
@@ -59,8 +62,8 @@ joint_params['LDE_element_length'] = 10e-6 #needs to be set accordingly.
 
 #XXX
 #change params to LT3 and LT4 later on.
-joint_params['master_LDE_decouple_time']    = params_lt1.params_lt1['LDE_decouple_time']
-joint_params['master_average_repump_time']  = params_lt1.params_lt1['average_repump_time']
+joint_params['master_LDE_decouple_time']    = params_lt4.params_lt4['LDE_decouple_time']
+joint_params['master_average_repump_time']  = params_lt4.params_lt4['average_repump_time']
 
-joint_params['slave_LDE_decouple_time']     = params_lt1.params_lt1['LDE_decouple_time']
-joint_params['slave_average_repump_time']   = params_lt1.params_lt1['average_repump_time']
+joint_params['slave_LDE_decouple_time']     = params_lt3.params_lt3['LDE_decouple_time']
+joint_params['slave_average_repump_time']   = params_lt3.params_lt3['average_repump_time']

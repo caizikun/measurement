@@ -15,7 +15,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     '''
     m.params['setup']=setup
     sample_name = qt.exp_params['samples']['current']
-    sample_name = qt.exp_params['protocols']['current']
+    name = qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
@@ -24,7 +24,6 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][name]['pulses'])
     m.params.from_dict(qt.exp_params['samples'][sample_name])
-
 
 
     if setup == 'lt1':
@@ -42,14 +41,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
             m.params[k] = params_lt4.params_lt4[k]
         # msmt.params['MW_BellStateOffset'] = 0.0
         # bseq.pulse_defs_lt4(msmt)
-    # elif setup == 'lt3' :
-    #     import params_lt3
-    #     reload(params_lt3)
-    #     msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
-    #     for k in params_lt3.params_lt3:
-    #         msmt.params[k] = params_lt3.params_lt3[k]
-    #     msmt.params['MW_BellStateOffset'] = 0.0
-    #     bseq.pulse_defs_lt3(msmt)
+    elif setup == 'lt3' :
+         import params_lt3
+         reload(params_lt3)
+         m.AWG_RO_AOM = qt.instruments['PulseAOM']
+         for k in params_lt3.params_lt3:
+             m.params[k] = params_lt3.params_lt3[k]
+         #msmt.params['MW_BellStateOffset'] = 0.0
+         #bseq.pulse_defs_lt3(msmt)
     else:
         print 'Sweep_purification.py: invalid setup:', setup
 

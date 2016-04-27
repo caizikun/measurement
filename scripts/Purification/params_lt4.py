@@ -52,8 +52,11 @@ params_lt4['remote_awg_trigger_channel'] = 1
 params_lt4['invalid_data_marker_do_channel'] = 1 
 
 # LDE element
-params_lt4['AWG_SP_power']              = 5e-9 #insert appropriate repump power.
+params_lt4['AWG_SP_power']              = 500e-9 #insert appropriate repump power.
 params_lt4['LDE_SP_duration']           = 2e-6
+params_lt4['LDE_decouple_time']         = 2.32e-6
+params_lt4['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
+
 
 #eom pulse
 params_lt4['eom_pulse_amplitude']		= 1.9 
