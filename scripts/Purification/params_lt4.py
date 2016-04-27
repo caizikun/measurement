@@ -15,31 +15,41 @@ params_lt4 = {}
 #general sequence things. All of this are set automatically.
 params_lt4['MW_during_LDE'] 	= 1 
 params_lt4['do_general_sweep']    = False
-params_lt4['non_local']           = 1
+params_lt4['is_two_setup_experiment'] = 0
 params_lt4['do_N_MBI']            = 0
-params_lt4['init_carbon']         = 0
-params_lt4['do_LDE_1']            = 1 # TODO finish the LDE elements for non local operation
-params_lt4['swap_onto_carbon']    = 0
+params_lt4['do_carbon_init']         = 0
+params_lt4['do_LDE_1']            = 1 # we always do this.
+params_lt4['do_swap_onto_carbon']    = 0
 params_lt4['do_LDE_2']            = 0 # TODO finish the LDE element for non local operation
-params_lt4['phase_correct']       = 0 
-params_lt4['purify']              = 0
-params_lt4['C13_RO']              = 0 #if 0 then RO of the electron via an adwin trigger.
-params_lt4['final_RO_in_adwin']   = 0 # this gets rid of the final RO
+params_lt4['do_phase_correction']       = 0 
+params_lt4['do_purifying_gate']              = 0
+params_lt4['do_carbon_readout']   = 0 #if 0 then RO of the electron via an adwin trigger.
 
-#adwin channel defs:
-params_lt4['AWG_start_DO_channel'] = 9
-params_lt4['AWG_done_DI_channel'] = 18
-params_lt4['AWG_event_jump_DO_channel'] = 8
+
+#adwin params defs:
 params_lt4['SP_duration'] = 30 #10
-params_lt4['wait_after_pulse_duration'] = 3
-params_lt4['remote_CR_DI_channel'] = 19
-params_lt4['PLU_DI_channel'] = 21
+params_lt4['wait_after_pulse_duration'] = 1
 params_lt4['do_sequences'] = 1
-params_lt4['SSRO_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
+params_lt4['Dynamical_stop_ssro_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
+params_lt4['MBI_attempts_before_CR'] = 1 
+
+
+# channels
 params_lt4['wait_for_AWG_done'] = 1
-params_lt4['sequence_wait_time'] = 10 #NOTE should be set in autoconfig! Not done yet!
-params_lt4['wait_for_remote_CR'] = 1  #NOTE should be set when generating the msmt! Not done yet!
-params_lt4['invalid_data_marker_do_channel'] = 5
+params_lt4['PLU_event_di_channel'] = 1 
+params_lt4['PLU_which_di_channel'] = 1 
+params_lt4['AWG_start_DO_channel'] = 1 
+params_lt4['AWG_done_DI_channel']= 1 
+params_lt4['AWG_event_jump_DO_channel'] = 1 
+params_lt4['AWG_repcount_DI_channel'] = 1 
+params_lt4['remote_adwin_di_success_channel'] = 1 
+params_lt4['remote_adwin_di_fail_channel'] = 1 
+params_lt4['remote_adwin_do_success_channel'] = 1 
+params_lt4['remote_adwin_do_fail_channel'] = 1 
+params_lt4['adwin_comm_safety_cycles'] = 1 
+params_lt4['adwin_comm_timeout_cycles'] = 1 
+params_lt4['remote_awg_trigger_channel'] = 1
+params_lt4['invalid_data_marker_do_channel'] = 1 
 
 # LDE element
 params_lt4['AWG_SP_power']              = 5e-9 #insert appropriate repump power.

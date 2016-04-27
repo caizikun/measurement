@@ -523,7 +523,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             print 'Error: connection element (%s )decoupling duration is too short g.dec_duration = %s, tau_cut_before = %s, tau_cut after = %s, must be atleast 1us' %(g.name, g.dec_duration,g.tau_cut_before,g.tau_after)
             return
         elif (g.dec_duration/(2*self.params['dec_pulse_multiple']))<self.params['min_dec_tau']:
-            print 'Warning: connection element decoupling duration is too short. Not decoupling in time interval. \n dec_duration = %s, min dec_duration = %s' %(g.dec_duration,2*self.params['min_dec_tau']*self.params['dec_pulse_multiple'])
+            print 'Warning: connection element decoupling duration is too short. Not decoupling in time interval. \n dec_duration = %s, min dec_duration = %s, gate name = %s' %(g.dec_duration,2*self.params['min_dec_tau']*self.params['dec_pulse_multiple'],g.name)
             g.N=0
             g.tau = 0
             return g
@@ -594,6 +594,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 C_freq_1.append(None)
                 C_freq_0.append(None)
                 C_freq.append (None)
+
         return C_freq_0, C_freq_1, C_freq
 
     def load_extra_phase_correction_lists(self, Gate):
@@ -850,7 +851,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             # print 'Warning: %s, el state in sup for passive elt' %g.name
 
             elif g.Gate_type=='Trigger':
-
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
                         if g.el_state_before_gate == '0':# and g.C_phases_after_gate[iC]!=None:
@@ -1633,6 +1633,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         tau_cut_before  = Gate.tau_cut_before
         tau_cut_after   = Gate.tau_cut_after
 
+
+
         ### the NV is in an eigenstate before we apply the phase gate add this time as additional waiting.
         if N == 0 and Gate.dec_duration != 0 and Gate.el_state_before_gate in ['0','1']:
             tau_cut_before += Gate.dec_duration
@@ -1685,9 +1687,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         decoupling_elt = element.Element('%s_tau_%s_N_%s' %(prefix,tau_prnt,N), pulsar = qt.pulsar, global_time=True)
 
         if N == 0 and Gate.Gate_type == 'electron_Gate':
+
             T_final = pulse.SquarePulse(channel='MW_Imod', name='wait fin T',
                 length = tau_cut_after-(eP.length-2*eP.risetime)/2.0, amplitude = 0.) #Overwrite length of T_final element
-
+            
             decoupling_elt.append(T_initial)
             decoupling_elt.append(eP)
             decoupling_elt.append(T_final)
@@ -1756,7 +1759,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
 
             decoupling_elt.append(T_final)
-
+        
+        # if 'C_Init9' in decoupling_elt.name and '_y_' in decoupling_elt.name:
+        #     print decoupling_elt.name
+        #     decoupling_elt.print_overview()
         Gate.elements = [decoupling_elt]
 
     def generate_electron_gate_element(self,Gate):
