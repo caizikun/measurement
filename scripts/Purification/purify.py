@@ -39,6 +39,7 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
 
     def run(self, **kw):
         pq.PQMeasurement.run(self,**kw)
+        
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \

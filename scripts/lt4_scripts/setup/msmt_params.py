@@ -193,7 +193,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
-
+    'phase_per_sequence_repetition'    :0,
+    'phase_per_compensation_repetition':0,
+    'total_phase_offset_after_sequence':0,
 ###############
 ### SIL2    ###
 ###############

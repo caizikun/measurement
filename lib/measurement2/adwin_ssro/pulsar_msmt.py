@@ -214,8 +214,7 @@ class SSRO_MWInit(PulsarMeasurement):
                 e.append(T)
                 e.append(X)
                 e.append(Trig)
-            
-
+        
             #seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
         else:
             e.append(T)
@@ -225,32 +224,6 @@ class SSRO_MWInit(PulsarMeasurement):
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
         qt.pulsar.program_awg(seq,*elements) 
-        # # This is only useful if you want to initialize via multiple pulses
-        # elements = []
-        # for i in range(self.params['pts']):
-        #     e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
-        #     for j in range(int(self.params['multiplicity'][i])):
-        #         e.append(T,
-        #             pulse.cp(X,
-        #                 amplitude=self.params['MW_pulse_amplitudes'][i]
-        #                 ))
-        #     e.append(T)
-        #     elements.append(e)
-
-        # # sequence
-        # seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
-        # for i,e in enumerate(elements):           
-        #     # for j in range(self.params['multiplicity']):
-        #     seq.append(name = e.name+'-{}'.format(j), 
-        #         wfname = e.name,
-        #         trigger_wait = True)
-        #     # seq.append(name = 'wait-{}-{}'.format(i,j), 
-        #     #     wfname = wait_1us.name, 
-        #     #     repetitions = self.params['delay_reps'])
-        #     seq.append(name='sync-{}'.format(i),
-        #          wfname = sync_elt.name)
-
-        # elements.append(sync_elt)
        
 
 class Multiple_SP_SSRO(PulsarMeasurement):
