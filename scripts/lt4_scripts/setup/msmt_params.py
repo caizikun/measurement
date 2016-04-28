@@ -193,7 +193,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
-
+    'phase_per_sequence_repetition'    :0,
+    'phase_per_compensation_repetition':0,
+    'total_phase_offset_after_sequence':0,
 ###############
 ### SIL2    ###
 ###############
@@ -289,7 +291,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 2e-9, #2e-9 
 		'Ex_RO_amplitude':				 4.5e-9, #used to 8e-9
 		'Ex_SP_amplitude':				 0,
-		'Ex_SP_calib_amplitude':		 20e-9,
+		'Ex_SP_calib_amplitude':		 1e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 1000,

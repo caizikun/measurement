@@ -266,7 +266,7 @@ cfg['protocols'][name]['AdwinSSRO+C13'] = {
 'Shutter_safety_time':                  50000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
 
 'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
-'min_dec_tau'         : 20e-9 + 140e-9,#140e-9 = fast_pi_duration (check pulselib below)
+'min_dec_tau'         : 2.1e-6,#20e-9 + 140e-9,#140e-9 = fast_pi_duration (check pulselib below)
 'max_dec_tau'         : 2.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
 'dec_pulse_multiple'  : 4      #4. 
 
@@ -403,18 +403,20 @@ cfg['samples']['Gretel_sil2'] ={
 
 #XXXXX
 ### dummy parameters for purification testing. delete when done.
-# 'electron_transition' : '_m1',
-# 'C1_freq_m1'       :   440e3,#24.618e3,
-# 'C1_freq_1_m1' : 460e3,#24.543e3, 
-# 'C1_Ren_tau_m1'    :   [10e-6],#[30.652e-6],#[30.632e-6],#39.424e-6
-# 'C1_Ren_N_m1'      :   [4],#[164],#[184],#132
-# 'Carbon_LDE_phase_correction_list' : np.array([0]*10),
-# 'C1_Ren_extra_phase_correction_list_m1' : np.array([-75] * 10),
+'Carbon_LDE_init_phase_correction_list'  : np.array([0.0]*11),
+'scascasdf'  : np.array([0.0]*11),
+'electron_transition' : '_m1',
+'C1_freq_m1'       :   (438753.54 + 413107.0)/2.,#24.618e3,
+'C1_freq_1_m1' : 413107.0,#24.543e3, 
+'C1_Ren_tau_m1'    :   [8.81e-6],#[30.652e-6],#[30.632e-6],#39.424e-6
+'C1_Ren_N_m1'      :   [28],#[164],#[184],#132
+'Carbon_LDE_phase_correction_list' : np.array([0]*10),
+'C1_Ren_extra_phase_correction_list_m1' : np.array([-19.64] * 10),
 
 #C13-params
 
 'C1_freq'       :   24.618e3, 
-'C1_freq_0' : 24.338e3, 
+'C1_freq_0' : 438757.84,#24.338e3, 
 'C1_freq_1' : 24.543e3, 
 'C1_Ren_tau'    :   [30.652e-6],#[30.632e-6],#39.424e-6
 'C1_Ren_N'      :   [164],#[184],#132
@@ -422,21 +424,21 @@ cfg['samples']['Gretel_sil2'] ={
 'C1_gate_optimize_tau_list' : [30.644e-6,30.652e-6,30.660e-6,30.668e-6,30.676e-6],#[30.668e-6]*5,
 'C1_gate_optimize_N_list': [164]*5,
 
-'C2_freq'       :   0*450.301e3, # not yet measured
-'C2_freq_0' : 0*431932.22,# not yet measured
-'C2_freq_1' : 0*469009.46,# not yet measured
-'C2_Ren_tau'    :   [31.440e-6],# NOTE: coarse calibration 2015-08-05
-'C2_Ren_N'      :   [300], # NOTE: coarse calibration 2015-08-05
-'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
+# 'C2_freq'       :   0*450.301e3, # not yet measured
+# 'C2_freq_0' : 0*431932.22,# not yet measured
+# 'C2_freq_1' : 0*469009.46,# not yet measured
+# 'C2_Ren_tau'    :   [31.440e-6],# NOTE: coarse calibration 2015-08-05
+# 'C2_Ren_N'      :   [300], # NOTE: coarse calibration 2015-08-05
+# 'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
 
 ########
 ##no C3 defined yet for gretel
-'C3_freq'       :   450.301e3,
-'C3_freq_0' : 431932.22,
-'C3_freq_1' : 469009.46,
-'C3_Ren_tau'    :   [11.976E-6],
-'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
-'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)
+# 'C3_freq'       :   450.301e3,
+# 'C3_freq_0' : 431932.22,
+# 'C3_freq_1' : 469009.46,
+# 'C3_Ren_tau'    :   [11.976E-6],
+# 'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
+# 'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)
 }
 
 

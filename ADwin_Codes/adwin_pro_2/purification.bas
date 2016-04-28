@@ -8,8 +8,13 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
+<<<<<<< HEAD
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Bookmarks                      = 3,16,64,144,286,480,516,518,564,566,624,626,649,670
+=======
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,16,62,142,283,487,523,525,569,571,629,631,654,675
+' Bookmarks                      = 3,16,74,144,300,507,547,549,594,596,645,647,672,693
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -38,6 +43,10 @@
 
 
 #INCLUDE ADwinPro_All.inc
+<<<<<<< HEAD
+#INCLUDE ADwinGoldII.inc
+=======
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
 #INCLUDE math.inc
@@ -50,8 +59,13 @@
 #DEFINE max_CR_counts      200     
 
 'init
+<<<<<<< HEAD
+DIM DATA_20[100] AS LONG                           ' integer parameters from python
+DIM DATA_21[100] AS FLOAT                          ' float parameters from python
+=======
 DIM DATA_20[100] AS LONG   ' integer parameters from python
 DIM DATA_21[100] AS FLOAT  ' float parameters from python
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 
 'return data
 'data 22 is the cr result before the sequence
@@ -64,70 +78,78 @@ DIM DATA_28[max_repetitions] AS LONG ' time needed until mbi success (in process
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
 '30 ' CR integer parameters
 '31 CR float parameters
+<<<<<<< HEAD
+
+=======
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 DIM DATA_33[max_repetitions] AS LONG  'time spent for communication between adwins
 DIM DATA_34[max_repetitions] AS LONG ' Information whether same or opposite detector has clicked (provided by the PLU)
 DIM DATA_35[max_repetitions] AS LONG ' number of repetitions until the first succesful entanglement attempt
 DIM DATA_36[max_repetitions] AS LONG ' number of repetitions after swapping until the second succesful entanglement attempt
 DIM DATA_37[max_repetitions] AS LONG ' SSRO_after_electron_carbon_SWAP_result
-DIM DATA_38[max_repetitions] AS LONG ' SSRO counts after purifying gate
-DIM DATA_39[max_repetitions] AS LONG ' SSRO counts final spin readout
+DIM DATA_38[max_repetitions] AS LONG ' SSRO counts final electron readout
+DIM DATA_39[max_repetitions] AS LONG ' SSRO counts final carbon spin readout
 
-DIM i as long ' for FOR loops
-DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern, AWG_repcount_DI_pattern AS LONG
-DIM AWG_repcount_is_hi, AWG_repcount_was_hi, AWG_repcount_switched_to_hi as long
-DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
-'Phase compensation
-DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition AS FLOAT
-DIM phase_compensation_repetitions, required_phase_compensation_repetitions as long
-
+'general paramters
+DIM cycle_duration AS LONG 'repetition rate of the event structure. Typically 1us
+DIM repetition_counter, success_event_counter AS LONG 'counts how many repetitions of the experiment have been done
+DIM timer, wait_time, mode, i AS LONG 
 DIM SP_duration AS LONG
 DIM wait_after_pulse_duration AS LONG
-DIM cycle_duration AS LONG 'repetition rate of the event structure. Typically 1us
-DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO_is_ms0 AS LONG
-DIM CR_result AS LONG
+DIM CR_result, first_CR AS LONG
 DIM SSRO_result AS LONG
-DIM C_init_SWAP_wo_SSRO AS LONG
-
+DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO_is_ms0 AS LONG
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
-DIM E_MBI_voltage AS FLOAT
 
-DIM timer, wait_time, mode AS LONG
-
-DIM MBI_failed AS LONG
-DIM old_counts, counts AS LONG
-DIM first_CR AS LONG
-DIM MBI_starts AS LONG
-DIM repetition_counter AS LONG 'counts how many repetitions of the experiment have been done
-
-' MBI stuff
-dim current_MBI_attempt as long
-dim MBI_attempts_before_CR as long
-dim mbi_timer as long
-dim trying_mbi as long
+' Channels & triggers
 dim AWG_done_is_hi, AWG_done_was_hi, AWG_done_switched_to_hi as long
+DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern, AWG_repcount_DI_pattern AS LONG
+DIM AWG_repcount_is_hi, AWG_repcount_was_hi, AWG_repcount_switched_to_hi as long
+DIM invalid_data_marker_do_channel AS LONG
 
-'Added for communication with other Adwin and PLU
+' PLU
+DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
+DIM PLU_event_di_was_high, PLU_event_di_is_high AS LONG
+DIM detector_of_last_entanglement, same_detector as LONG
+
+' MBI
+dim mbi_timer, trying_mbi as long
+DIM old_counts, counts AS LONG
+DIM E_MBI_voltage AS FLOAT
+DIM MBI_starts, MBI_failed AS LONG
+dim current_MBI_attempt, MBI_attempts_before_CR as long
+
+' Phase compensation
+DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition AS FLOAT
+DIM phase_compensation_repetitions, required_phase_compensation_repetitions as long
+DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
+
+' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
+<<<<<<< HEAD
+DIM remote_adwin_do_success_channel, remote_adwin_do_fail_channel  as long
+=======
 DIM remote_adwin_do_success_channel, remote_adwin_do_fail_channel, remote_awg_trigger_channel  as long
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 DIM local_success, remote_success, local_fail, remote_fail, combined_success as long
 DIM success_mode_after_adwin_comm, fail_mode_after_adwin_comm as long
 DIM success_mode_after_SSRO, fail_mode_after_SSRO as long
 DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins should wait to guarantee bidirectional communication is successful
 DIM adwin_comm_timeout_cycles as long ' if one side fails completely, the other can go on
 DIM adwin_comm_done, adwin_timeout_requested as long
+<<<<<<< HEAD
+DIM n_of_comm_timeouts, is_single_setup_experiment as long
+DIM is_master, is_barrett_kok as long
+=======
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
-DIM is_master, is_barrett_kok, has_phase_compensation as long
+DIM is_master as long
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
 
-DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
-DIM PLU_event_di_was_high, PLU_event_di_is_high AS LONG
-DIM detector_of_last_entanglement, same_detector as LONG
-
-DIM do_SSRO_after_electron_carbon_SWAP, SSRO_after_electron_carbon_SWAP_result as long
-DIM communicate_SSRO_after_electron_carbon_SWAP as long
-
-DIM invalid_data_marker_do_channel AS LONG
-DIM succes_event_counter AS LONG
-
+' Sequence flow control
+DIM do_carbon_init, do_C_init_SWAP_wo_SSRO AS LONG
+DIM do_swap_onto_carbon, do_SSRO_after_electron_carbon_SWAP as long
+DIM do_LDE_2, do_phase_correction as long
+DIM do_purifying_gate, do_carbon_readout as long
 
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -139,34 +161,59 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   SP_duration                  = DATA_20[2]
   wait_after_pulse_duration    = DATA_20[3] 'Time to wait after turning off a laser pulse to ensure it is really off
 
-  MBI_attempts_before_CR       = DATA_20[4] 
-  C_init_SWAP_wo_SSRO          = DATA_20[5]
+<<<<<<< HEAD
+  MBI_attempts_before_CR       = DATA_20[5] 
+  C_init_SWAP_wo_SSRO          = DATA_20[7]
   Dynamical_stop_ssro_threshold= DATA_20[6]
-  Dynamical_stop_ssro_duration = DATA_20[7]
+  Dynamical_stop_ssro_duration = DATA_20[4]
   
-  is_two_setup_experiment   = Data_20[8]
+  is_single_setup_experiment   = Data_20[8]
   is_master                    = DATA_20[9]
-  is_barrett_kok               = DATA_20[10]
+  is_barrett_kok               = DATA_20[9]
   
-  PLU_event_di_channel         = DATA_20[11]
-  PLU_which_di_channel         = DATA_20[12]
+  PLU_event_di_channel         = DATA_20[10]
+  PLU_which_di_channel         = DATA_20[11]
   
-  AWG_start_DO_channel         = DATA_20[13]
-  AWG_done_DI_channel          = DATA_20[14]
-  AWG_event_jump_DO_channel    = DATA_20[15]
-  AWG_repcount_DI_channel      = DATA_20[16]
+  AWG_start_DO_channel         = DATA_20[12]
+  AWG_done_DI_channel          = DATA_20[13]
+  AWG_event_jump_DO_channel    = DATA_20[14]
+  AWG_repcount_DI_channel      = DATA_20[15]
+=======
+  MBI_attempts_before_CR       = DATA_20[4] 
+  Dynamical_stop_ssro_threshold= DATA_20[5]
+  Dynamical_stop_ssro_duration = DATA_20[6]
   
-  remote_adwin_di_success_channel  = DATA_20[17]
-  remote_adwin_di_fail_channel     = DATA_20[18]
-  remote_adwin_do_success_channel  = DATA_20[19]
-  remote_adwin_do_fail_channel     = DATA_20[20]
-  adwin_comm_safety_cycles         = DATA_20[21]
-  adwin_comm_timeout_cycles        = DATA_20[22]
+  is_master                    = DATA_20[7]
+  is_two_setup_experiment      = Data_20[8]
+
+  do_carbon_init               = DATA_20[9]
+  do_C_init_SWAP_wo_SSRO       = DATA_20[10]
+  do_swap_onto_carbon          = DATA_20[11]
+  do_SSRO_after_electron_carbon_SWAP = DATA_20[12]
+  do_LDE_2                     = DATA_20[13]
+  do_phase_correction          = DATA_20[14]
+  do_purifying_gate            = DATA_20[15]
+  do_carbon_readout            = DATA_20[16]
   
-  do_SSRO_after_electron_carbon_SWAP = DATA_20[23]          ' if no, one will continue with the sequence, if yes, the success of the swap will be stored
-  communicate_SSRO_after_electron_carbon_SWAP = DATA_20[24] ' if no, one will continue with the sequence, if yes, the sequence will continue only if both setups were succesful
-  remote_awg_trigger_channel = DATA_20[25]
-  invalid_data_marker_do_channel   = DATA_20[26] 'marks timeharp data invalid
+  PLU_event_di_channel         = DATA_20[17]
+  PLU_which_di_channel         = DATA_20[18]
+  
+  AWG_start_DO_channel         = DATA_20[19]
+  AWG_done_DI_channel          = DATA_20[20]
+  AWG_event_jump_DO_channel    = DATA_20[21]
+  AWG_repcount_DI_channel      = DATA_20[22]
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
+  
+  remote_adwin_di_success_channel  = DATA_20[23]
+  remote_adwin_di_fail_channel     = DATA_20[24]
+  remote_adwin_do_success_channel  = DATA_20[25]
+  remote_adwin_do_fail_channel     = DATA_20[26]
+  adwin_comm_safety_cycles         = DATA_20[27]
+  adwin_comm_timeout_cycles        = DATA_20[28]
+  
+  remote_awg_trigger_channel = DATA_20[29]
+  invalid_data_marker_do_channel   = DATA_20[30] 'marks timeharp data invalid
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
   
   ' read float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -184,6 +231,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     DATA_25[i] = 0
     DATA_27[i] = 0
     DATA_28[i] = 0
+<<<<<<< HEAD
+    DATA_29[i] = 0
+=======
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
     DATA_33[i] = 0
     DATA_34[i] = 0
     DATA_35[i] = 0
@@ -238,7 +289,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   success_mode_after_SSRO = 0
   fail_mode_after_SSRO = 0
       
-  succes_event_counter = 0
+  success_event_counter = 0
   Success_of_SSRO_is_ms0 = 1 'usually, we condition on getting a click
   SSRO_result = 0
       
@@ -268,8 +319,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_63 = 0                      ' stop flag
   PAR_73 = repetition_counter     ' repetition counter
   PAR_74 = 0                      ' MBI failed
-  PAR_77 = succes_event_counter   ' number of entanglement events
-  PAR_78 = 0                      ' MBI starts Y
+  PAR_77 = success_event_counter  ' number of successful runs
+  PAR_78 = 0                      ' MBI starts
   PAR_76 = 0                      ' n_of_communication_timeouts for debugging
   
 
@@ -279,12 +330,29 @@ EVENT:
   
   'write information to pars for live monitoring
   PAR_61 = mode        
-  PAR_76 = n_of_comm_timeouts ' for debugging
   
-    
-  if(trying_mbi > 0) then ' Increase number of mbi trials by one
-    inc(mbi_timer)
+  if (timer=0) then 'skip sequences that are deactivated
+    if ((mode = 2) and (do_carbon_init= 0))THEN
+      mode = 4 ' go to entanglement sequence 1
+    else
+      IF ((mode = 5) and (do_swap_onto_carbon = 0)) THEN
+        mode = 6 ' go to entanglement sequence 2
+      ENDIF   
+      IF ((mode = 6) and (do_LDE_2 = 0)) THEN
+        mode = 7 ' phase compensation
+      ENDIF 
+      IF ((mode = 7) and (do_phase_correction = 0)) THEN
+        mode = 8 ' phase compensation
+      ENDIF
+      IF ((mode = 8) and (do_purifying_gate = 0)) THEN
+        success_of_SSRO_is_ms0 = 1 ' in case one wants to change this here or has changed it elsewhere
+        mode = 200 'go to SSRO
+        success_mode_after_SSRO = 9
+        fail_mode_after_SSRO = 9   
+      ENDIF
+    endif
   endif
+  
   
   IF (wait_time > 0) THEN
     wait_time = wait_time - 1
@@ -318,6 +386,7 @@ EVENT:
               ELSE ' no signal received. Did the connection time out?
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
+                  PAR_76 = n_of_comm_timeouts ' for debugging
                   combined_success = 0 ' just to be sure
                   adwin_comm_done = 1 ' below: reset everything and go on
                 endif                
@@ -340,6 +409,7 @@ EVENT:
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
                   combined_success = 0
                   inc(n_of_comm_timeouts) ' give to par for local debugging
+                  PAR_76 = n_of_comm_timeouts ' for debugging
                 ELSE ' should I request a timeout in the next round now?
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
@@ -374,6 +444,7 @@ EVENT:
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          first_CR = 1 ' I'm doing SSRO. I therefore want to save the CR_after value in the next CR check
         ELSE
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
           IF (counts >= Dynamical_stop_ssro_threshold) THEN ' photon detected
@@ -426,10 +497,14 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         
-        if ( CR_check(first_CR,succes_event_counter+1) > 0 ) then ' do CR check. if First_CR is high, the result will be saved. 
+        if ( CR_check(first_CR,repetition_counter+1) > 0 ) then ' do CR check. if First_CR is high, the result will be saved. 
           ' In case the result is zero, the CR check will be repeated
           timer = -1          
+<<<<<<< HEAD
+          IF (is_single_setup_experiment = 1) THEN 'only one setup involved. Skip communication step
+=======
           IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
             mode = 1 'go to spin pumping directly
           ELSE ' two setups involved
             local_success = 1 ' remember for communication step
@@ -439,7 +514,7 @@ EVENT:
             success_mode_after_adwin_comm = 1 ' go to spin pumping 
           ENDIF
         endif  
-        first_CR = 0        
+        first_CR = 0 ' forget for the future
         
         
       CASE 1    ' E spin pumping
@@ -461,7 +536,7 @@ EVENT:
             P2_DIGOUT(DIO_MODULE,11,0)  ' set repumper modulation low.
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
-            mode = 2   'go to mbi
+            mode = 2
             wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
             timer = -1
           ENDIF
@@ -471,7 +546,11 @@ EVENT:
           
       CASE 2    ' Carbon init, either MBI or SWAP (with SSRO afterwards or not)
         ' We first need to send a trigger command to the AWGs on both sides that tells them to start the gate sequence
+<<<<<<< HEAD
+        ' in local mode, this is done by each ADWIN, in remote mode the Master AWG (later) triggers the slave AWG
+=======
         ' in local mode, this is done by each ADWIN, in remote mode the Master Adwin also triggers the slave AWG
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
         
         IF (timer=0) THEN   ' MBI sequence starts
           INC(MBI_starts)
@@ -481,6 +560,14 @@ EVENT:
           endif
           INC(data_25[repetition_counter])
           ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
+<<<<<<< HEAD
+          if ((is_single_setup_experiment > 0) or (is_master>0)) then   
+            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0) 
+          endif 
+         
+=======
           if (is_two_setup_experiment = 0) then   
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -497,13 +584,14 @@ EVENT:
             ENDIF
           endif 
           
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
         ELSE ' AWG in MBI sequence is running
           ' Detect if the AWG is done and has sent a trigger; this construction prevents multiple adwin jumps when the awg sends a looooong pulse
           AWG_done_was_hi = AWG_done_is_hi
           AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)  
           if ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) then ' AWG has done the MW pulses -> go to next step
             timer = -1
-            IF (C_init_SWAP_wo_SSRO > 0) THEN 'no SSRO and no communication required
+            IF (do_C_init_SWAP_wo_SSRO > 0) THEN 'no SSRO and no communication required
               mode = 4 'go straight to the entanglement sequence
             ELSE
               success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
@@ -514,6 +602,10 @@ EVENT:
           endif 
         ENDIF
         
+        if(trying_mbi > 0) then ' Increase number of mbi trials by one
+          inc(mbi_timer)
+        endif
+        
           
       CASE 3 ' MBI SSRO done; check MBI success
         IF (local_success>0) THEN ' successful MBI readout
@@ -523,7 +615,11 @@ EVENT:
           DATA_28[repetition_counter] = DATA_28[repetition_counter] + mbi_timer ' save the time MBI has taken
           DATA_27[repetition_counter] = SSRO_result
           current_MBI_attempt = 1 ' reset counter
+<<<<<<< HEAD
+          if (is_single_setup_experiment = 1) then 'only one setup involved. Skip communication step
+=======
           if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
             mode = 4 ' entanglement sequence
           else
             mode = 100 ' adwin communication
@@ -540,8 +636,11 @@ EVENT:
           
           IF (current_MBI_attempt = MBI_attempts_before_CR) then ' failed too often -> communicate failure (if in remote mode) and then go to CR
             current_MBI_attempt = 1 'reset counter
+<<<<<<< HEAD
+            if (is_single_setup_experiment = 0) then 'two setups involved
+=======
             if (is_two_setup_experiment > 0) then 'two setups involved
-              fail_mode_after_adwin_comm = 0 ' CR check. Don't have to specify fail_mode because I didn't succeed
+              fail_mode_after_adwin_comm = 0 ' CR check. Don't have to specify success_mode because I didn't succeed
               mode = 100
             else
               mode = 0 ' directly back to CR
@@ -564,20 +663,27 @@ EVENT:
         ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
         
         INC(repetition_counter) 'whenever we start the entanglement sequence, we count this as a repetition. AWG will stop and send a done trigger once the max amount of reps is reached
+        Par_73 = repetition_counter ' write to PAR
         
         AWG_repcount_was_hi = AWG_repcount_is_hi
         AWG_repcount_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)
         IF ((AWG_repcount_was_hi = 0) and (AWG_repcount_is_hi > 0)) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           inc(AWG_sequence_repetitions_first_attempt) ' increase the number of attempts counter
         ENDIF
+<<<<<<< HEAD
+        
         'check the done trigger
+        'IF (Digin_Edge(1) AND AWG_done_DI_pattern) THEN ' XXX try this construction. might enable shorter sequences
+=======
+        'check the done trigger
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
         AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
         AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
         IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence.
           DATA_35[repetition_counter] = AWG_sequence_repetitions_first_attempt 'save the result
           timer = -1
-          if (is_two_setup_experiment = 0 ) then ' this is a single-setup phase calibration measurement. Go on to next mode:
-            mode = 7 'is single setup experiment: correct for acquired phase, do purification gate and carbon readout.
+          if (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+            mode = 5 'swap
           else ' two setups involved: Done means failure of the sequence
             mode = 0 'go to cr check
             P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
@@ -593,75 +699,68 @@ EVENT:
         IF ((PLU_event_di_was_high = 0) and (PLU_event_di_is_high > 0)) THEN ' PLU signal received
           DATA_35[repetition_counter] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
-          if (is_barrett_kok > 0) then
-            mode = 200 ' jump to SSRO
-            success_mode_after_ssro = 10 'mode 10: store the ssro result and go to cr check
-            fail_mode_after_ssro = 10
-          else
-            mode = 5 'go on to SWAP operation
-          endif
-          
+          mode = 5  'swap
         ENDIF
-
-              
+       
       CASE 5  'wait for the electron Carbon swap to be done and then read out the electron if this is specified in the msmt parameters
         AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
         AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
         IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the swap sequence.
           timer = -1
-          if ( do_SSRO_after_electron_carbon_SWAP =0  0 ) then
-            mode = 6
+          if (do_SSRO_after_electron_carbon_SWAP = 0) then
+            mode = 6 ' entangle 2
           else
             mode = 200   ' dsSSRO
             Success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it before
-            IF (communicate_SSRO_after_electron_carbon_SWAP >0) THEN
-              success_mode_after_SSRO = 100 'adwin comm
-              fail_mode_after_SSRO = 100
-            ENDIF
-            success_mode_after_SSRO = 6
-            fail_mode_after_SSRO = 6 ' we have to go on here, independent of the local result, to keep the setups in sync
+            success_mode_after_SSRO = 100 'adwin comm
+            fail_mode_after_SSRO = 100
+            success_mode_after_adwin_comm = 6 ' entangle 2
+            fail_mode_after_adwin_comm = 0 ' can also be 6 in case one wants to implement a deterministic protocol
           endif
         ENDIF
         
       CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4 
-        
-        DATA_37[repetition_counter] = SSRO_result
-        
-        AWG_repcount_was_hi = AWG_repcount_is_hi
-        AWG_repcount_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)
-        IF ((AWG_repcount_was_hi = 0) and (AWG_repcount_is_hi > 0)) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
-          inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
-        ENDIF
-        
-        'check the done trigger
-        AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
-        AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
-        IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
-          DATA_36[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
-          timer = -1
-          mode = 0 'go to cr check  XXX we could also do tomography (mode =7) here to measure the (decohered) carbon state after swapping the first round
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-        ENDIF
-        
-        'check the PLU
-        PLU_event_di_was_high = PLU_event_di_is_high
-        PLU_event_di_is_high = (P2_DIGIN_LONG(DIO_MODULE) AND PLU_event_di_pattern) 
-        IF ((PLU_event_di_was_high = 0) and (PLU_event_di_is_high > 0)) THEN 'PLU signal received
-          DATA_35[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
-          'check whether clicks happened on the same detector
-          same_detector = detector_of_last_entanglement ' remember result of first round
-          detector_of_last_entanglement = (P2_DIGIN_LONG(DIO_MODULE) AND PLU_which_di_pattern) 'second round result
-          IF (same_detector = detector_of_last_entanglement) THEN ' identical in both rounds
-            same_detector = 1
-          ELSE 'not identical
-            same_detector = 0
+        if (timer = 0) then
+          DATA_37[repetition_counter] = SSRO_result
+          
+        else
+          AWG_repcount_was_hi = AWG_repcount_is_hi
+          AWG_repcount_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)
+          IF ((AWG_repcount_was_hi = 0) and (AWG_repcount_is_hi > 0)) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
+            inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
           ENDIF
-          DATA_34[repetition_counter] = same_detector 'save to data file
-          mode = 7 'go on to next case
-          timer = -1
-        ENDIF
+        
+          'check the done trigger
+          AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
+          AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
+          IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
+            DATA_36[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
+            timer = -1
+            mode = 0 'go to cr check  XXX we could also do tomography (mode =7) here to measure the (decohered) carbon state after swapping the first round
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+          ENDIF
+        
+          'check the PLU
+          PLU_event_di_was_high = PLU_event_di_is_high
+          PLU_event_di_is_high = (P2_DIGIN_LONG(DIO_MODULE) AND PLU_event_di_pattern) 
+          IF ((PLU_event_di_was_high = 0) and (PLU_event_di_is_high > 0)) THEN 'PLU signal received
+            DATA_35[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
+            'check whether clicks happened on the same detector
+            same_detector = detector_of_last_entanglement ' remember result of first round
+            detector_of_last_entanglement = (P2_DIGIN_LONG(DIO_MODULE) AND PLU_which_di_pattern) 'second round result
+            IF (same_detector = detector_of_last_entanglement) THEN ' identical in both rounds
+              same_detector = 1
+            ELSE 'not identical
+              same_detector = 0
+            ENDIF
+            DATA_34[repetition_counter] = same_detector 'save to data file
+            mode = 7 'go on to next case
+            timer = -1
+          ENDIF
+        endif
+        
         
       CASE 7 ' Phase synchronisation
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
@@ -706,23 +805,40 @@ EVENT:
           fail_mode_after_SSRO = 9   
         ENDIF
         
-      CASE 9 'store the result of the purification step. wait for TOMO gate to be done and do SSRO again
+      CASE 9 'store the result of the electron readout. Wait for TOMO gate to be done and do SSRO again
+        inc(success_event_counter)
+        PAR_77 = success_event_counter ' for the LabView live update
         DATA_38[repetition_counter] = SSRO_result
-        AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
-        AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
-        IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence.
-          timer = -1
-          success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
-          mode = 200 'go to SSRO
-          success_mode_after_SSRO = 10
-          fail_mode_after_SSRO = 10
-        ENDIF
-        
+        if (do_carbon_readout=0) then
+          mode=0 'go to cr check
+
+        else    
+          IF (timer = 0)THEN
+            if (SSRO_result = 0) then  ' send jump to awg in case the electron readout was 0. THis is required for accurate gate phases
+              P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
+              CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+              P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+            endif
+          ENDIF    
+          AWG_done_was_hi = AWG_done_is_hi ' check the status of the done channel
+          AWG_done_is_hi = (P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)
+          IF ((AWG_done_was_hi = 0) and (AWG_done_is_hi > 0)) THEN  'awg trigger tells us it is done with the entanglement sequence.
+            timer = -1
+            success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
+            mode = 200 'go to SSRO
+            success_mode_after_SSRO = 10
+            fail_mode_after_SSRO = 10
+          ENDIF
+        endif
+ 
       CASE 10 'store the result of the tomography
         timer = -1
+<<<<<<< HEAD
+        DATA_38[repetition_counter] = SSRO_result
+=======
         DATA_39[repetition_counter] = SSRO_result
+>>>>>>> 52d59ddb0186d8e5e6873e3af90d5fe1adc7c200
         mode =0 'go to CR check
-        Par_73 = repetition_counter
         
     endselect
     
