@@ -142,7 +142,7 @@ class ScanGUI(QtGui.QMainWindow):
         self.ui.dsb_max_lambda.setDecimals(2)
         self.ui.dsb_max_lambda.setSingleStep(0.01)
         self.ui.sb_nr_calib_pts.setRange(1,99)
-        self.ui.sb_wait_cycles.setRange(1,9999)
+        self.ui.sb_wait_cycles.setRange(1,999999)
         self.ui.sb_delay_msync.setRange(0, 9999)
         self.ui.sb_mindelay_msync.setRange(0, 9999)
         self.ui.sb_mindelay_msync.setSingleStep(1)
@@ -1095,10 +1095,10 @@ class ControlPanelGUI (QtGui.QMainWindow):
             ex.show()
 
     def set_laser_coarse (self, value):
-        self._exp_mngr.set_laser_wavelength (wavelength=value)
+        self._exp_mngr.set_laser_wavelength (value)
 
     def set_laser_power (self, value):
-        self._laser.set_power_level (power=value)
+        self._laser.set_power_level (value)
 
     def set_fine_laser_tuning (self, value):
         voltage = 3*(value-50)/50.
@@ -1216,7 +1216,7 @@ class ControlPanelGUI (QtGui.QMainWindow):
         self.fileQuit()
 
 adwin = qt.instruments.get_instruments()['adwin']
-wm_adwin = qt.instruments.get_instruments()['physical_adwin_cav1']
+wm_adwin = qt.instruments.get_instruments()['physical_adwin']
 moc = qt.instruments.get_instruments()['master_of_cavity']
 newfocus1 = qt.instruments.get_instruments()['newfocus1']
 ctr = qt.instruments.get_instruments()['counters']
