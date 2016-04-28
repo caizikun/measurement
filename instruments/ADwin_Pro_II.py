@@ -31,7 +31,7 @@ class ADwin_Pro_II(Instrument): #1
     TODO:
     '''
 
-    def __init__(self, name, address): #2
+    def __init__(self, name, address, processor_type=1011): #2
          # Initialize wrapper
         logging.info(__name__ + ' : Initializing instrument ADwin Pro II')
         Instrument.__init__(self, name, tags=['physical'])
@@ -39,9 +39,11 @@ class ADwin_Pro_II(Instrument): #1
         self._address = address
 
         # Load dll and open connection
+        self._processor_type = processor_type
         self._load_dll()
         sleep(0.01)
         self._adwin32.e_Get_ADBFPar.restype = c_float
+       
 #        self.add_function('Set_DAC_Voltage')
         self.add_function('Get_Par')
         self.add_function('Get_FPar')
@@ -61,11 +63,12 @@ class ADwin_Pro_II(Instrument): #1
     def _load_dll(self): #3
         print self.get_name() +' : Loading adwin32.dll'
         WINDIR=os.environ['WINDIR']
+
         self._adwin32 = windll.LoadLibrary(WINDIR+'\\adwin32')
         ErrorMsg=c_int32(0)
         ProcType = self._adwin32.e_ADProzessorTyp(self._address,ctypes.byref(ErrorMsg))
-        if ProcType != 1011:
-            logging.warning(self.get_name() + ' WARNING: ADwin Pro II with T11 processor expected. Processor type %s found'%ProcType)
+        if ProcType != self._processor_type:
+            logging.warning(self.get_name() + ' WARNING: ADwin Pro II with T11 or T12 processor expected. Processor type %s found'%ProcType)
         if ErrorMsg.value != 0:
             logging.warning(self.get_name() + ' : error in ADwin.ProcType: %s'%ErrorMsg.value)
 
@@ -73,7 +76,12 @@ class ADwin_Pro_II(Instrument): #1
 
     def Boot(self):
         ErrorMsg=c_int32(0)
-        filename = adwin_path+'\\ADwin11.btl'
+        if self._processor_type == 1011:
+            filename = adwin_path+'\\ADwin11.btl'
+        elif self._processor_type == 1012:
+            filename = adwin_path+'\\ADwin12.btl'
+        else:
+            logging.error(self.get_name() + ': error Boot for processor type not supported')
         self._adwin32.e_ADboot(filename,self._address,100000,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
             logging.warning(self.get_name() + ' : error in ADwin.Boot: %s'%ErrorMsg.value)

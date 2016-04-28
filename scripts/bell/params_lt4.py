@@ -58,7 +58,7 @@ params_lt4['Ex_SP_amplitude'] = 0e-9
 params_lt4['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
 params_lt4['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
-params_lt4['MW_Q_amp_factor'] = 0.925/0.9
+params_lt4['MW_Q_amp_factor'] = 0#0.925/0.9
 
 params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
@@ -85,7 +85,7 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWGs # params taken from the previous LT1 params
-params_lt4['eom_pulse_amplitude']		= 1.9 
+params_lt4['eom_pulse_amplitude']		= 1.9
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 50e-9
 params_lt4['eom_off_amplitude']         = -0.293 # calibration 2015-11-04
@@ -93,18 +93,18 @@ params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
-params_lt4['aom_risetime']              = 17e-9
-params_lt4['aom_amplitude']             = 0.57#CR 31  
+params_lt4['aom_risetime']              = 28e-9#17e-9
+params_lt4['aom_amplitude']             = 0.667#CR 31  
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 5e-9 # 2014-11-18
+params_lt4['AWG_RO_power']            = 15e-9 # 2014-11-18
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt4['MW_opt_puls1_separation'] = 20e-9 #distance between the end of the MW and the start of opt puls1
+params_lt4['MW_opt_puls1_separation'] = 50e-9 #distance between the end of the MW and the start of opt puls1
 params_lt4['MW_1_separation'] 		  = joint_params.joint_params['opt_pulse_separation']
 params_lt4['MW_RND_wait'] 			  = 10e-9#160e-9 #wait start RND MW after end of RND halt pulse
 params_lt4['RND_duration'] 			  = 200e-9

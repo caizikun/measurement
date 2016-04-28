@@ -691,14 +691,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #######################
 
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
+
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
                 elif Gate_sequence[i+1].phase == None or Gate_sequence[i+1].phase == 'reset':
-                    g.dec_duration =0
+                    if g.dec_duration !=  None:
+                        pass# print 'i am passing',g.name,g.dec_duration
+                    else:
+                        g.dec_duration =0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
                     Carbon_index  = Gate_sequence[i+1].Carbon_ind
                     if g.C_phases_before_gate[Carbon_index] == None:
+
                         g.dec_duration = 0
                     else:
                         phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi)
@@ -707,6 +712,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                 (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ):
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
+
                             g.dec_duration = 0
                         else:
                             g.dec_duration =(round( phase_diff/C_freq[Carbon_index]
@@ -2634,13 +2640,13 @@ class NuclearRamsey_v2(DynamicalDecoupling):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    '-'*5
-                    print g.name
-                    print g.C_phases_before_gate
-                    print g.C_phases_after_gate
+            # if debug:
+            #     print '*'*10
+            #     for g in gate_seq:
+            #         '-'*5
+            #         print g.name
+            #         print g.C_phases_before_gate
+            #         print g.C_phases_after_gate
 
         if upload:
             print ' uploading sequence'
@@ -3909,6 +3915,7 @@ class MBI_C13(DynamicalDecoupling):
                         Gate(prefix+'_pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = Final_pi2_pulse_phase))
+                
 
             elif (readout_orientation == 'negative' and el_state_in == 0) or (readout_orientation == 'positive' and el_state_in == 1):
                 print 'RO negative or el state in =1!'
@@ -3916,6 +3923,7 @@ class MBI_C13(DynamicalDecoupling):
                         Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi2',
                         phase = Final_pi2_pulse_phase_negative))
+                
         else:
             carbon_RO_seq.append(Gate(prefix+'Wait_gate_'+str(pt),'passive_elt',
                 wait_time = 20e-6))      
@@ -3938,7 +3946,7 @@ class MBI_C13(DynamicalDecoupling):
                 Gate(prefix+'_Trigger_'+str(pt),'Trigger',
                 wait_time = RO_trigger_duration,
                 go_to = go_to_element, event_jump = event_jump_element,
-                el_state_before_gate = el_RO_result))
+                el_state_before_gate = el_RO_result)) 
 
         return carbon_RO_seq
 

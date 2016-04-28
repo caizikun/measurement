@@ -18,7 +18,7 @@ from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def darkesr(name):
+def darkesr(name, **kw):
     '''dark ESR on the 0 <-> -1 transition
     '''
 
@@ -32,13 +32,20 @@ def darkesr(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
-    m.params['mw_frq'] = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
+    m1_transition = kw.get('m1_transition',True)
+    m.params['range']        = kw.get('range', 30e6) #5e6
+    # Range must be smaller than 30MHz because freq sweep is done via ssb mod
+
+    m1_freq = m.params['ms-1_cntr_frq']-43e6
+    p1_freq = m.params['ms+1_cntr_frq']-43e6
+
+    m.params['mw_frq'] = m1_freq if m1_transition else p1_freq #MW source frequency
     m.params['repetitions']  = 500
-    m.params['range']        = 1e6 #5e6
-    m.params['pts'] = 101
+    m.params['pts'] = 151
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
-    m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
-    m.params['mw_power'] = 15 #20
+    m.params['ssbmod_amplitude'] =  m.params['DESR_pulse_amplitude']
+ 
+    m.params['mw_power'] = 20
     m.params['Ex_SP_amplitude']=0
 
     m.params['ssbmod_frq_start'] = 43e6 - m.params['range']  
@@ -68,11 +75,11 @@ def darkesrp1(name):
 
     # m.params['ssmod_detuning'] = m.params['MW_modulation_frequency']
     m.params['mw_frq']         = m.params['ms+1_cntr_frq']-43e6# - m.params['ssmod_detuning'] # MW source frequency, detuned from the target
-    m.params['mw_power'] = 10
-    m.params['Ex_SP_amplitude']=0
-    m.params['range']        = 1e6
-    m.params['pts'] = 101
-    m.params['repetitions'] = 1000
+    m.params['mw_power'] = 20
+    m.params['Ex_SP_amplitude']= 0
+    m.params['range']        = 3e6
+    m.params['pts'] = 151
+    m.params['repetitions'] = 500
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] = m.params['DESR_pulse_amplitude'] #0.03 changed to msmt params # NK 2015-05-27
 
@@ -128,5 +135,9 @@ def Generaldarkesr(name):
 
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
-    darkesrp1(SAMPLE_CFG)
+    #darkesrp1(SAMPLE_CFG)
+    #darkesr(SAMPLE_CFG, range=5e6, m1_transition = False, pulse_amp = 1)
+    darkesr(SAMPLE_CFG, range=5e6, m1_transition = True)
+    # Range must be smaller than 30MHz because freq sweep is done via ssb mod
+    # pulse_amp = 1 is good for first searching
     

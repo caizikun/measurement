@@ -175,7 +175,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-    carbons = [2]
+    carbons = [1]
 
     brekast = False
     for c in carbons:

@@ -28,13 +28,13 @@ def Carbon_Ramsey(name,tau = None,N=None):
     m.params['Final_Pulse']         =   '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 8 
+    m.params['addressed_carbon'] = 5
 
     ### Sweep paramater
     # m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
     #                                                        np.linspace(15e3,22e3,25).astype(int)*1e-9]))
 
-    m.params['free_evolution_times']    = np.linspace(10e3,70e3,70).astype(int)*1e-9
+    m.params['free_evolution_times']    = np.linspace(5e3,30e3,48).astype(int)*1e-9
 
     m.params['pts']                     = len(m.params['free_evolution_times'])
     m.params['sweep_pts']               = m.params['free_evolution_times']
@@ -49,6 +49,7 @@ def Carbon_Ramsey(name,tau = None,N=None):
     if tau ==None: 
         m.params['C_Ren_tau'+m.params['electron_transition']] = m.params['C'+str(m.params['addressed_carbon'])+'_Ren_tau'+m.params['electron_transition']][0]
     else: 
+        print tau
         m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
 
@@ -56,4 +57,4 @@ def Carbon_Ramsey(name,tau = None,N=None):
 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE_CFG)
+    Carbon_Ramsey(SAMPLE_CFG,tau=8.658e-6,N=38)

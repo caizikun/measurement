@@ -150,7 +150,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             print 'Suggested power level would exceed V_max of the AOM driver.'
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
-            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2','ch4m1':'ch4_marker1'}
             print 'AOM voltage', dephasing_AOM_voltage
             self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
             qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
@@ -319,16 +319,17 @@ class Simple_Electron_repumping(pulsar_msmt.MBI):
 
     def generate_sequence(self, upload=True, debug = False):
 
-
         #configure the repumping beam. power and AWG channel
         
         repumping_AOM_voltage=qt.instruments[self.params['repump_AOM']].power_to_voltage(self.params['laser_repump_amplitude'],controller='sec')
         if repumping_AOM_voltage > (qt.instruments[self.params['repump_AOM']]).get_sec_V_max():
             print 'Suggested power level would exceed V_max of the AOM driver.'
+            return
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
-            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2', 'ch4m1':'ch4_marker1'}
             print 'AOM voltage', repumping_AOM_voltage
+            print self.params['repump_AOM'] 
             self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['repump_AOM']].get_sec_channel()])
             qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',repumping_AOM_voltage)
             print self.params['Channel_alias']
@@ -340,10 +341,16 @@ class Simple_Electron_repumping(pulsar_msmt.MBI):
         T = pulse.SquarePulse(name='syncpulse', channel='MW_pulsemod',
             length = 1000e-9, amplitude = 0)
 
+        #Called dephasing, but does repump...
         Dephasing = pulse.SquarePulse(channel=self.params['Channel_alias'],
-            length = 1000e-9, amplitude = repumping_AOM_voltage)
+            length = 1000e-9, amplitude = repumping_AOM_voltage) 
 
         X = ps.X_pulse(self)
+        X_mw2 = ps.pi_pulse_MW2(self)
+        if False: #optical pumping using p1 transition
+            squareX = ps.mw2_squareX(self)
+        else: #optical pumping using m1 transition
+            squareX = ps.squareX(self)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
@@ -356,55 +363,54 @@ class Simple_Electron_repumping(pulsar_msmt.MBI):
                 global_time = True)
 
             e.append(T)
-
-
-            # if not init_in_zero:
-            e.append(
-            pulse.cp(X))
+            
+            #initialize the electron after pumping to 0
+            if self.params['init_state'] == 'm1':
+                e.append(pulse.cp(X)) 
+            elif self.params['init_state'] == 'p1':
+                e.append(pulse.cp(X_mw2))
+            else: # init in zero
+                pass
 
             e.append(pulse.cp(T, length=self.params['MW_repump_delay1'][i]))
 
-            if self.params['repumping_time'][i] != 0:
-                e.append(pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
+            pump_cycle_no = 0
+            while pump_cycle_no < self.params['pumping_cycles']:
+                pump_cycle_no += 1
+                if self.params['repumping_time'][i] != 0:
+                    if pump_cycle_no>1:
+                        e.append(pulse.cp(T, length=self.params['delay_before_MW'][i]))
+                        e.append(pulse.cp(squareX))
+                        e.append(pulse.cp(T, length=self.params['delay_after_MW'][i]))
+                    e.append(pulse.cp(Dephasing, length=self.params['repumping_time'][i]))
+
 
             e.append(
                 pulse.cp(T, length=self.params['MW_repump_delay2'][i]))
 
-            if self.params['RO_pm1']:
-                e.append(
-                    pulse.cp(X))
+            #initialize the electron after pumping to 0
+            if self.params['ro_state'] == 'm1':
+                e.append(pulse.cp(X)) 
+            elif self.params['ro_state'] == 'p1':
+                e.append(pulse.cp(X_mw2))
+            else: # ro zero
+                pass
 
             e.append(pulse.cp(T, length=2e-6))
-            # e.append(adwin_sync)
+
             elts.append(e)
-
-        # sequence
-        # seq = pulsar.Sequence('MBI Electron Ramsey sequence')
-        # for i,e in enumerate(elts):
-        #     seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
-        #         trigger_wait = True, goto_target = 'MBI-%d' % i,
-        #         jump_target = e.name)
-        #     seq.append(name = e.name, wfname = e.name,
-        #         trigger_wait = True)
-
-        # program AWG
-            # e = element.Element('Adwin_sync_pt-%d' % i, pulsar=qt.pulsar,
-            #     global_time = True)
-            # e.append(adwin_sync)
-            # elts.append(e)
 
         adwin_elt = element.Element('Adwin_sync', pulsar=qt.pulsar,
                         global_time = True)
         adwin_elt.append(adwin_sync)
-        # sequence
-        # print len(elts)
+
         seq = pulsar.Sequence('MBI Electron Ramsey sequence')
         for i,e in enumerate(elts):
             seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
                 trigger_wait = True, goto_target = 'MBI-%d' % i,
                 jump_target = e.name)
             seq.append(name = e.name, wfname = e.name,
-                trigger_wait = True,repetitions = self.params['Repump_multiplicity'][i])
+                trigger_wait = True, repetitions = self.params['Repump_multiplicity'][i])
             seq.append(name = 'Adwin-sync-%d' % i, wfname = adwin_elt.name,
                 trigger_wait = False)
 
