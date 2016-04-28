@@ -3723,15 +3723,6 @@ class MBI_C13(DynamicalDecoupling):
                  
         '''
 
-
-
-            carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
-            
-        elif swap_type  ==  'swap_wo_init_rot':
-            # Puts carbon state into rotated basis (i.e. equiv to a y rotation after swap)
-            carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
-           
-
         if type(go_to_element) != str:
             go_to_element = go_to_element.name
 
@@ -3814,12 +3805,9 @@ class MBI_C13(DynamicalDecoupling):
             carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
 
         elif swap_type  ==  'swap_wo_init':
-
-
             carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
             
         elif swap_type  ==  'swap_wo_init_rot':
-            # Puts carbon state into rotated basis (i.e. equiv to a y rotation after swap)
             carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
             
         else: 
