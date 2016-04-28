@@ -29,13 +29,13 @@ from measurement.lib.config import moc_cfg
 
                     
 class master_of_cavity(CyclopeanInstrument):
-
+ 
     def __init__(self, name, jpe, adwin, laser, use_cfg = False, **kw):
-        Instrument.__init__(self, name)
+        CyclopeanInstrument.__init__(self, name, tags =[])
 
-        _laser = qt.instruments[laser]
-        _adwin = qt.instruments[adwin]
-        _jpe = qt.instruments[jpe]
+        self._laser = qt.instruments[laser]
+        self._adwin = qt.instruments[adwin]
+        self._jpe_cadm = qt.instruments[jpe]
 
         self._laser_updated = False
 
@@ -84,10 +84,8 @@ class master_of_cavity(CyclopeanInstrument):
         self.ch_x = 1
         self.ch_y = 2
         self.ch_z = 3
-        self._jpe_cadm = qt.instruments[jpe]
         # self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
         self._step_size = None
-        self.ins_adwin = qt.instruments[adwin]
         self._fine_piezo_V = None
         self.set_fine_piezo_voltages (0,0,0)
 
@@ -128,8 +126,7 @@ class master_of_cavity(CyclopeanInstrument):
                 _f = open(cfg_fn, 'w')
                 _f.write('')
                 _f.close()        
-            self.ins_cfg = config.Config(cfg_fn)   # this uses awesome QT lab properties, 
-            #that automatically saves the config file when closing qtlab. I think, at least... #test it
+            self.ins_cfg = config.Config(cfg_fn)  
             self.load_cfg()
             self.save_cfg()
 
@@ -352,12 +349,12 @@ class master_of_cavity(CyclopeanInstrument):
 
     def set_laser_wavelength(self, value):
         self._laser.set_wavelength()
-    def get_laser_wavelength(self, value):
+    def get_laser_wavelength(self):
         return self._laser.get_wavelength()
 
     def set_laser_power(self, value):
         self._laser.set_power()
-    def get_laser_power(self, value):
+    def get_laser_power(self):
         return self._laser.get_power()
 
     def get_laser_wm_frequency(self, value):
@@ -375,50 +372,50 @@ class master_of_cavity(CyclopeanInstrument):
         return output
             
     def step (self, ch, steps):
-        self._jpe_cadm.move (addr=self.addr, ch=ch, steps = steps, 
-            T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
+        self._jpe_cadm.move (self.addr, ch, steps, 
+            self.temperature, self.JPE_freq, self.rel_step_size)
         
     def set_as_origin (self):
-        self._jpe_tracker.set_as_origin()
+        self.set_as_origin()
 
     def reset_spindle_tracker(self):
-        self._jpe_tracker.reset_spindle_tracker()
+        self.reset_spindle_tracker()
         print 'S1, S2, S3 ', self.track_z1, self.track_z2, self.track_z3
 
     def print_current_position(self):
-        print 'x = ', self.track_curr_x
-        print 'y = ', self.track_curr_y
-        print 'z = ', self.track_curr_z
+        print 'current JPE steppers position'
+        print 'x = ', self.get_track_curr_x()
+        print 'y = ', self.get_track_curr_y()
+        print 'z = ', self.get_track_curr_z()
 
     def print_tracker_params(self):
-        z1, z2, z3 = self._jpe_tracker.tracker_file_readout()
+        z1, z2, z3 = self.tracker_file_readout()
         print 'Spindle positions: ', z1, z2, z3
 
     def get_position (self):
         return self.track_curr_x, self.track_curr_y, self.track_curr_z
 
     def set_fine_piezo_voltages (self, v1,v2,v3):
-        #self.ins_adwin.set_dac('jpe_fine_tuning_1', v1)
-        #self.ins_adwin.set_dac('jpe_fine_tuning_2', v2)
-        #self.ins_adwin.set_dac('jpe_fine_tuning_3', v3)
-        self.ins_adwin.set_fine_piezos (voltage = np.array([v1, v2, v3]))
+        #self._adwin.set_dac('jpe_fine_tuning_1', v1)
+        #self._adwin.set_dac('jpe_fine_tuning_2', v2)
+        #self._adwin.set_dac('jpe_fine_tuning_3', v3)
+        self._adwin.set_fine_piezos (voltage = np.array([v1, v2, v3]))
         self._fine_piezo_V = np.array([v1,v2,v3])
 
     def get_fine_piezo_voltages(self):
         return self._fine_piezo_V
 
     def move_spindle_steps (self, s1, s2, s3, x, y, z):
-        self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1)
-        self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2)
-        self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3)
-        self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
-        print "Current position (MOC): ", x,y,z
+        self._jpe_cadm.move(self.addr, self.ch_x, s1,self.temperature,self.JPE_freq, self.rel_step_size)
+        self._jpe_cadm.move(self.addr, self.ch_y, s2,self.temperature,self.JPE_freq, self.rel_step_size)
+        self._jpe_cadm.move(self.addr, self.ch_z, s3,self.temperature,self.JPE_freq, self.rel_step_size)
+        self.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
 
     def move_to_xyz (self, x, y, z, verbose=True):
         if (self.temperature == None):
             print 'Temperature not set!'
         else:
-            dz1, dz2, dz3 = self._jpe_tracker.position_to_spindle_steps (x=x, y=y, z=z, update_tracker=False)#no need to update tracker, since position values are set below
+            dz1, dz2, dz3 = self.position_to_spindle_steps (x=x, y=y, z=z, update_tracker=False)#no need to update tracker, since position values are set below
             s1 = dz1/self._step_size
             s2 = dz2/self._step_size
             s3 = dz3/self._step_size
@@ -438,13 +435,13 @@ class master_of_cavity(CyclopeanInstrument):
             print 'a=', a
             if (a=='y'):
                 print 'moving'
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_x, steps = s1,
-                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_y, steps = s2,
-                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
-                self._jpe_cadm.move(addr = self.addr, ch = self.ch_z, steps = s3,
-                    T=self.temperature, freq=self.JPE_freq, reL_step=self.rel_step_size)
-                self._jpe_tracker.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
+                self._jpe_cadm.move(self.addr, self.ch_x, s1,
+                    self.temperature, self.JPE_freq, self.rel_step_size)
+                self._jpe_cadm.move(self.addr,self.ch_y, s2,
+                    self.temperature, self.JPE_freq, self.rel_step_size)
+                self._jpe_cadm.move(self.addr,self.ch_z, s3,
+                    self.temperature, self.JPE_freq, self.rel_step_size)
+                self.tracker_update(spindle_incr=[s1,s2,s3], pos_values = [x,y,z])
         def remove(self):
             self.save_cfg()
             Instrument.remove()
