@@ -439,6 +439,17 @@ cfg['protocols'][name]['pulses'] = {
       	'mw2_Square_pi_amp' :		0,
       	'mw2_Square_pi2_length' :   0,
     	'mw2_Square_pi2_amp' :		0,
+
+    	'eom_pulse_amplitude'		 : 1.9,
+    	'eom_pulse_duration'         : 2e-9,
+    	'eom_off_duration'           : 50e-9,
+    	'eom_off_amplitude'          : -0.293, # calibration 2015-11-04
+    	'eom_overshoot_duration1'    : 20e-9,
+    	'eom_overshoot1'             : -0.04,
+    	'eom_overshoot_duration2'    : 4e-9,
+    	'eom_overshoot2'             : -0.00,
+    	'aom_risetime'               : 28e-9, #17e-9
+    	'aom_amplitude'              : 0.667, #CR 31  
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
