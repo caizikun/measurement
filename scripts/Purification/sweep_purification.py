@@ -1,13 +1,23 @@
 '''
 Allows for sweeps of general parameters within the purification sequence.
 Only supports single setup experiments with one specific adwin script
-
 NK 2016
 '''
+
 import numpy as np
 import qt 
 import purify_slave; reload(purify_slave)
+import msvcrt
+name = qt.exp_params['protocols']['current']
 
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
 
 def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']):
     '''
@@ -15,7 +25,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     '''
     m.params['setup']=setup
     sample_name = qt.exp_params['samples']['current']
-    sample_name = qt.exp_params['protocols']['current']
+    name = qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
@@ -25,7 +35,10 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols'][name]['pulses'])
     m.params.from_dict(qt.exp_params['samples'][sample_name])
 
-
+    ### soon not necessary anymore.
+    m.params['Nr_C13_init']     = 0 # Not necessary (only for adwin: C13 MBI)
+    m.params['Nr_MBE']          = 0 # Not necessary (only for adwin: C13 MBI)
+    m.params['Nr_parity_msmts'] = 0 # Not necessary (only for adwin: C13 MBI)
 
     if setup == 'lt1':
         import params_lt1
@@ -42,14 +55,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
             m.params[k] = params_lt4.params_lt4[k]
         # msmt.params['MW_BellStateOffset'] = 0.0
         # bseq.pulse_defs_lt4(msmt)
-    # elif setup == 'lt3' :
-    #     import params_lt3
-    #     reload(params_lt3)
-    #     msmt.AWG_RO_AOM = qt.instruments['PulseAOM']
-    #     for k in params_lt3.params_lt3:
-    #         msmt.params[k] = params_lt3.params_lt3[k]
-    #     msmt.params['MW_BellStateOffset'] = 0.0
-    #     bseq.pulse_defs_lt3(msmt)
+    elif setup == 'lt3' :
+         import params_lt3
+         reload(params_lt3)
+         m.AWG_RO_AOM = qt.instruments['PulseAOM']
+         for k in params_lt3.params_lt3:
+             m.params[k] = params_lt3.params_lt3[k]
+         #msmt.params['MW_BellStateOffset'] = 0.0
+         #bseq.pulse_defs_lt3(msmt)
     else:
         print 'Sweep_purification.py: invalid setup:', setup
 
@@ -72,58 +85,113 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['trigger_wait'] = 1
 
 
-def run_sweep(m,debug=True, upload_only=True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False):
 
 
     m.autoconfig()
-    print m.params['C13_MBI_threshold_list']
     m.generate_sequence()
     if upload_only:
         return
     m.setup(debug=debug)
 
-    # m.run(autoconfig=False, setup=False,debug=debug)    
-    # m.save()    
-    # m.finish()
-def generate_AWG_seq(name):
+    if not debug:
+        # m.run(autoconfig=False, setup=False,debug=debug)
+
+        if save_name != '':
+            m.save(save_name)
+        else:
+            m.save()
+
+        if multiple_msmts:
+            return
+
+        m.finish()
+
+
+def turn_all_sequence_elements_off(m):
+    """
+    turns all parts of the AWG sequence off. except for do_LDE_1
+    running this function before sequence generation will generate 
+    Barrett & Kok like sequences
+    """
+
+    m.params['is_two_setup_experiment'] = 0
+    m.params['do_N_MBI']                = 0 
+    m.params['do_carbon_init']          = 0
+    m.params['do_C_init_SWAP_wo_SSRO']  = 0
+    m.params['MW_before_LDE1']          = 0
+    m.params['LDE_1_is_init']           = 0
+    m.params['do_swap_onto_carbon']     = 0
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+    m.params['do_LDE_2']                = 0
+    m.params['do_phase_correction']     = 0 
+    m.params['do_purifying_gate']       = 0 
+    m.params['do_carbon_readout']       = 0 
+
+    m.params['PLU_during_LDE'] = 0
+
+    ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
+    ### interesting to look at the spinpumping though...
+
+def turn_all_sequence_elements_on(m):
+    """
+    turns all parts of the AWG sequence on. except for do_LDE_1
+    Running this function before generating the sequence
+    creates the full purification sequence
+    """
+
+    m.params['is_two_setup_experiment'] = 1
+    m.params['do_N_MBI']                = 0 # we never do this (or might actually do this... depends)
+    m.params['do_carbon_init']          = 1
+    m.params['do_C_init_SWAP_wo_SSRO']  = 1
+    m.params['LDE_1_is_el_init']        = 0
+    m.params['do_swap_onto_carbon']     = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2']                = 1
+    m.params['do_phase_correction']     = 1 
+    m.params['do_purifying_gate']       = 1 
+    m.params['do_carbon_readout']       = 1 
+
+    m.params['PLU_during_LDE'] = 1
+
+
+def repump_speed(name):
+    """
+    Initializes the electron in ms = -1 
+    and sweeps the repump duration at the beginning of LDE_1
+    """
 
     m = purify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    pts = 8
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
 
-    ### adwin process variables: should be automatically set.
-    m.params['Nr_C13_init']     = 0 # Not necessary (only for C13 MBI)
-    m.params['Nr_MBE']          = 0 # Not necessary (only for C13 MBI)
-    m.params['Nr_parity_msmts'] = 0 # Not necessary (only for C13 MBI)
-    m.params['Tomography_bases'] = ['X']
+    turn_all_sequence_elements_off(m)
 
+    ### sequence specific parameters
+    m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
+    m.params['LDE_1_is_init']  = 1
+    m.params['input_el_state'] = 'mZ'
+    m.params['MW_during_LDE'] = 0
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
 
-    ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.params['is_two_setup_experiment']           = 1 
-    m.params['do_N_MBI']            = 0 # Not necessary (only for C13 MBI)
-    #m.params['electron_ro_after_first_seq'] = 0 # for Barret-Kok- SPCORR...
-    # electron_ro_after_first_seq not required.
-    m.params['do_carbon_init']  = 1 
-    m.params['do_C_init_SWAP_wo_SSRO'] = 0
-    
-    # TODO finish jumping and event triggering for LDE / INIT ELEMENT
-    # we always do LDE1
-    m.params['do_swap_onto_carbon']    = 1
-    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
-    m.params['do_LDE_2']            = 1
-    m.params['do_phase_correction'] = 1 # previously: phase_correct
-    m.params['do_purifying_gate']   = 1 # previously: purify
-    m.params['do_carbon_readout']  = 1 
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_SP_duration'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(0.0,2.5e-6,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    ### upload sequence & run
+    ### upload and run
 
     run_sweep(m,debug = True,upload_only = True)
 
-def SPCorrs(name):
+def SPCorrs(name,debug = True,upload_only = True):
     """
     Performs a regular Spin-photon correlation measurement.
     NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
@@ -133,31 +201,16 @@ def SPCorrs(name):
 
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    m.params['reps_per_ROsequence'] = 5000
 
-    ### adwin process variables: should be automatically set.
-    m.params['Nr_C13_init']     = 0 # Not necessary (only for C13 MBI)
-    m.params['Nr_MBE']          = 0 # Not necessary (only for C13 MBI)
-    m.params['Nr_parity_msmts'] = 0 # Not necessary (only for C13 MBI)
-
-
+    turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['is_two_setup_experiment'] = 0
-    m.params['do_N_MBI']            = 0 # Not necessary (only for C13 MBI)
-    #m.params['electron_ro_after_first_seq'] = 0 # for Barret-Kok- SPCORR...
-    # electron_ro_after_first_seq not required.
-    m.params['do_carbon_init']  = 0
-    m.params['do_C_init_SWAP_wo_SSRO'] = 0
-    
-    # TODO finish jumping and event triggering for LDE / INIT ELEMENT
-    m.params['do_swap_onto_carbon']    = 0
-    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
-    m.params['do_LDE_2']            = 0
-    m.params['do_phase_correction'] = 0 
-    m.params['do_purifying_gate']   = 0 
-    m.params['do_carbon_readout']  = 0 
 
+    ### this can also be altered to the actual theta pulse by negating the if statement
+    if True:
+        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
     m.joint_params['opt_pi_pulses'] = 2
 
@@ -165,138 +218,452 @@ def SPCorrs(name):
 
     run_sweep(m,debug = True,upload_only = True)
 
-def sweep_average_repump_time(name):
 
+def tail_sweep(name,debug = True,upload_only=True):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
+    """
     m = purify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    pts = 7
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1000
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
+    turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
 
 
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['MW_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 0
+    m.params['is_two_setup_experiment'] = 1 ## we want to do optical pi pulses on both setups!
 
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 0
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+    ### need to find this out!
+    # m.params['MIN_SYNC_BIN'] =       5000
+    # m.params['MAX_SYNC_BIN'] =       9000 
+
+    # put sweep together:
+    sweep_off_voltage = False
+    if sweep_off_voltage:
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+    else:
+        m.params['general_sweep_name'] = 'aom_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(0.6,1.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### upload
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+def sweep_average_repump_time(name,do_Z = False):
+    """
+    sweeps the average repump time.
+    runs the measurement for X and Y tomography. Also does positive vs. negative RO
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    pts = 16
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 350
+
+    turn_all_sequence_elements_off(m)
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_general_sweep']    = 1
+    m.params['do_carbon_init']  = 1; 
+    m.params['do_carbon_readout']  = 1 
+
+    m.joint_params['LDE_attempts'] = 150
+
+    ### define sweep
+    m.params['general_sweep_name'] = 'average_repump_time'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(-0.0e-6,1.5e-6,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### loop over tomography bases and RO directions upload & run
+
+    if do_Z:
+        for t in ['Z']:
+            for ro in ['positive','negative']:
+                save_name = t+'_'+ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                m.params['do_C_init_SWAP_wo_SSRO'] = 1
+                run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    else:
+        for t in ['X','Y']:
+            for ro in ['positive','negative']:
+                m.params['carbon_init_method'] = 'MBI';
+                m.params['do_C_init_SWAP_wo_SSRO'] = 0;
+                save_name = t+'_'+ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+
+def sweep_number_of_reps(name,do_Z = False):
+
+    """
+    sweeps the average repump time.
+    runs the measurement for X and Y tomography. Also does positive vs. negative RO
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    pts = 2
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 350
+
+    turn_all_sequence_elements_off(m)
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_general_sweep']    = 1
+    m.params['do_carbon_init']  = 1
+    m.params['do_carbon_readout']  = 1 
+
+
+    ### calculate the sweep array
+    minReps = 1
+    maxReps = 250
+    step = int((maxReps-minReps)/pts)+1
+    ### define sweep
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    print 'sweep pts', np.arange(minReps,maxReps,step)
+    ### loop over tomography bases and RO directions upload & run
+
+    if do_Z:
+        for t in ['Z']:
+            for ro in ['positive','negative']:
+                print t,ro
+                save_name = t+'_'+ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    else:
+        for t in ['X','Y']:
+            for ro in ['positive']:#,'negative']:
+                m.params['carbon_init_method'] = 'MBI'
+                print t,ro
+                save_name = t+'_'+ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+def characterize_el_to_c_swap(name):
+    """
+    sweeps the average repump time.
+    runs the measurement for X and Y tomography. Also does positive vs. negative RO
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    m.params['reps_per_ROsequence'] = 350
+
+    turn_all_sequence_elements_off(m)
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_general_sweep']    = 1
+    m.params['do_carbon_init']  = 1; # we still have to decide on this
+    m.params['do_carbon_readout']  = 1 
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+
+    m.params['LDE_1_is_init'] = 1 # only use a preparational value
+
+    m.joint_params['opt_pi_pulses'] = 0 # no pi pulses
+
+    ### define sweep
+    m.params['general_sweep_name'] = 'Tomography_bases'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = [['X'],['Y'],['Z']]
+    m.params['pts'] = len(m.params['general_sweep_pts'])
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
+    el_state_list = ['X','mX','Y','mY','Z','mZ']
     
-    run_sweep(m,debug = True,upload_only = True)
 
-def sweep_number_of_reps(name):
+    x_phase = m.params['X_phase']
+    y_phase = m.params['Y_phase']
 
+    first_mw_phase_dict = { 'X' :   y_phase, 
+                            'mX':   y_phase + 180,
+                            'Y' :   x_phase + 180, 
+                            'mY':   x_phase, 
+                            'Z' :   x_phase, 
+                            'mZ':   x_phase}
+
+    first_mw_amp_dict = {   'X' :   m.params['Hermite_pi2_amp'], 
+                            'mX':   m.params['Hermite_pi2_amp'],
+                            'Y' :   m.params['Hermite_pi2_amp'], 
+                            'mY':   m.params['Hermite_pi2_amp'], 
+                            'Z' :   0, 
+                            'mZ':   m.params['Hermite_pi_amp']}
+
+    first_mw_length_dict = {'X' :   m.params['Hermite_pi2_length'], 
+                            'mX':   m.params['Hermite_pi2_length'],
+                            'Y' :   m.params['Hermite_pi2_length'], 
+                            'mY':   m.params['Hermite_pi2_length'], 
+                            'Z' :   m.params['Hermite_pi_length'], 
+                            'mZ':   m.params['Hermite_pi_length']}                        
+
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    for el_state in el_state_list:
+        if breakst:
+            break
+        for ro in ['positive','negative']:
+            breakst = show_stopper()
+            if breakst:
+                break
+
+            save_name = 'el_state_'+ el_state +'_'+ro
+            m.params['input_el_state'] = el_state
+            m.params['mw_first_pulse_amp'] = first_mw_amp_dict[el_state]
+            m.params['mw_first_pulse_length'] = first_mw_length_dict[el_state]
+            m.params['mw_first_pulse_phase'] = first_mw_phase_dict[el_state]
+            m.params['carbon_readout_orientation'] = ro
+
+            run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+def calibrate_LDE_phase(name):
+    """
+    uses LDE 1 and swap to initialize the carbon in state |x>.
+    Sweeps the number of repetitions (LDE2) and performs tomography of X.
+    Is used to calibrate the acquired phase per LDE repetition.
+    """
     m = purify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    pts = 15
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 350
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
-
-
+    turn_all_sequence_elements_off(m)
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+    m.params['do_carbon_init'] = 1
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2'] = 1
+    m.params['Tomography_bases'] = ['X']
+    m.params['do_carbon_readout']  = 1
 
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0 
+    m.params['input_el_state'] = 'Y'
+    m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
-def calibrate_memory_phase(name):
 
+    ### calculate sweep array
+    minReps = 1
+    maxReps = 250
+    step = int((maxReps-minReps)/pts)+1
+
+    ### define sweep
+    m.params['do_general_sweep']    = 1
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+                     
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    for ro in ['positive','negative']:
+        breakst = show_stopper()
+        if breakst:
+            break
+        save_name = ro
+        m.params['carbon_readout_orientation'] = ro
+
+        run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+def calibrate_dynamic_phase_correct(name):
+    """
+    same as calibrate LDE_phase but here we add a dynamic phase correct element and
+    sweep the number of repetitions of that element.
+    Serves as a calibration for the adwin
+    """
     m = purify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    pts = 15
+    
+    m.params['reps_per_ROsequence'] = 350
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
-
-
+    turn_all_sequence_elements_off(m)
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+    m.params['do_carbon_init'] = 1
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2'] = 1
+    m.params['do_phase_correction'] = 1
+    m.params['Tomography_bases'] = ['X']
+    m.params['do_carbon_readout']  = 1
 
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0 
+    m.params['input_el_state'] = 'Y'
+    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    m.params['mw_first_pulse_amp'] = 0
+    m.joint_params['LDE_attempts'] = 5
 
-def check_dynamic_phase_correct(name):
 
+    ### calculate sweep array
+    minReps = 1
+    maxReps = 50
+    step = int((maxReps-minReps)/pts)+1
+
+    ### define sweep
+    m.params['do_general_sweep']    = 1
+    m.params['general_sweep_name'] = 'phase_correct_max_reps'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['pts'] = len(np.arange(minReps,maxReps,step))
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+                     
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    for ro in ['positive','negative']:
+        breakst = show_stopper()
+        if breakst:
+            break
+        save_name = ro
+        m.params['carbon_readout_orientation'] = ro
+
+        run_sweep(m,debug = True,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+def apply_dynamic_phase_correction(name,debug=True):
+    """
+    combines all carbon parts of the sequence in order to 
+    verify that all parts of the sequence work correctly.
+    Here the adwin performs dynamic phase correction such that an
+    initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
+    Has the option to either sweep the repetitions of LDE2 (easy mode)
+    Or use the plu to trigger events. <-- still needs to be programmed.
+    """
     m = purify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    pts = 15
+    
+    m.params['reps_per_ROsequence'] = 350
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
-
-
+    turn_all_sequence_elements_off(m)
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+    m.params['do_carbon_init'] = 1
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2'] = 1
+    m.params['do_phase_correction'] = 1
+    m.params['Tomography_bases'] = ['X']
+    m.params['do_carbon_readout']  = 1
 
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0 
+    m.params['input_el_state'] = 'Y'
+    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    m.params['mw_first_pulse_amp'] = 0
+
+
+
+    ### calculate sweep array
+    minReps = 1
+    maxReps = 250
+    step = int((maxReps-minReps)/pts)+1
+
+    ### define sweep
+    m.params['do_general_sweep']    = 1
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['pts'] = len(np.arange(minReps,maxReps,step))
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+                     
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    for ro in ['positive','negative']:
+        breakst = show_stopper()
+        if breakst:
+            break
+        save_name = ro
+        m.params['carbon_readout_orientation'] = ro
+
+        run_sweep(m,debug = debug,upload_only = True,multiple_msmts = True,save_name=save_name)
+
+    m.finish()
+
+
 
 if __name__ == '__main__':
-    # generate_AWG_seq('Sequence_testing')
-    SPCorrs('Sequence_testing')
+
+    ### these measurements need to be changed to PQ classes.
+    # tail_sweep(name+'_tail_Sweep')
+    # SPCorrs(name+'_SPCorrs')
+    # repump_speed(name+'_repump_speed')
+    ######
+
+    ### measurements that work without PQ
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True)
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False)
+
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+
+    # calibrate_LDE_phase(name+'_LDE_phase_calibration')
+    # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration')
+
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation')
+
+    ### to be programmed
+
+    # apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)

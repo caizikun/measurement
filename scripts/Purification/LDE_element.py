@@ -21,8 +21,11 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_X = ps.X_pulse(msmt)
     Gate.mw_pi2 = ps.Xpi2_pulse(msmt)
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
-    Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'])
+    Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
+    if hasattr(Gate,'first_pulse_is_pi2'):
+        if Gate.first_pulse_is_pi2:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
 
 def _create_laser_pulses(msmt,Gate):
     Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
@@ -58,7 +61,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2) 
-    Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_sync_counter',
+    Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
         length = 5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
@@ -160,6 +163,24 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 refpoint_new    = 'start',
                 name            = 'MW_RO_rotation')
 
+    ### we still need the first MW pulse as a reference for the optical pi pulses.
+    else:
+        # MW pi pulse
+        e.add(pulse.cp(Gate.mw_X,amplitude=0),
+            start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
+            refpulse        = 'initial_delay',#'MW_Theta',
+            refpoint        = 'end',#'end',
+            refpoint_new    = 'center',#'end',
+            name            = 'MW_pi')
+
+        #mw pi/2 pulse or 'theta'
+        e.add(pulse.cp(Gate.mw_first_pulse,amplitude=0),
+            start           = -msmt.params['LDE_decouple_time'],
+            refpulse        = 'MW_pi',#'opt pi 1', 
+            refpoint        = 'center', 
+            refpoint_new    = 'center',
+            name            = 'MW_Theta')
+
     #4 opt. pi pulses
     for i in range(msmt.joint_params['opt_pi_pulses']):
         name = 'opt pi {}'.format(i+1)
@@ -203,7 +224,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     ### then we should build up the MW pulses in a different way.
 
 
-    Gate.reps = msmt.joint_params['LDE_attempts_before_CR']
+    # Gate.reps = msmt.joint_params['LDE_attempts_before_CR']
     Gate.elements = [e]
     Gate.elements_duration = msmt.joint_params['LDE_element_length']
 

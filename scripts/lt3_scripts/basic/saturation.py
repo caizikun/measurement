@@ -5,9 +5,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL2_ZPL_local_short_fiber_optim_CR'
+name = 'Pippin_SIL2_ZPL_local_short_fiber_optm_CR'
 steps=21
-max_power=90e-6       #[w]
+max_power=190e-6       #[w]
 counter=2 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 do_bg=True

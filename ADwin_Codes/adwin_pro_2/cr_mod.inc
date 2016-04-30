@@ -242,8 +242,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           PAR_70 = total_CR_counts
           Inc(Par_72)
           IF (first_cr > 0) THEN ' first CR after SSRO sequence
-            DATA_23[repetition_index] = cr_counts
-            first_cr=0
+            DATA_23[repetition_index-1] = cr_counts
+            first_cr = 0
           ENDIF
                   
           IF (cr_counts < current_cr_threshold) THEN

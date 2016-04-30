@@ -40,6 +40,7 @@ params_lt4['PLU_event_di_channel'] = 1
 params_lt4['PLU_which_di_channel'] = 1 
 params_lt4['AWG_start_DO_channel'] = 1 
 params_lt4['AWG_done_DI_channel']= 1 
+params_lt4['wait_for_awg_done_timeout_cycles'] = 5000  # 5ms
 params_lt4['AWG_event_jump_DO_channel'] = 1 
 params_lt4['AWG_repcount_DI_channel'] = 1 
 params_lt4['remote_adwin_di_success_channel'] = 1 
@@ -52,8 +53,11 @@ params_lt4['remote_awg_trigger_channel'] = 1
 params_lt4['invalid_data_marker_do_channel'] = 1 
 
 # LDE element
-params_lt4['AWG_SP_power']              = 5e-9 #insert appropriate repump power.
+params_lt4['AWG_SP_power']              = 500e-9 #insert appropriate repump power.
 params_lt4['LDE_SP_duration']           = 2e-6
+params_lt4['LDE_decouple_time']         = 2.32e-6
+params_lt4['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
+
 
 #eom pulse
 params_lt4['eom_pulse_amplitude']		= 1.9 
@@ -70,8 +74,8 @@ params_lt4['aom_amplitude']             = 0.57 #calibrate!
 #timings
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = -22e-9
-params_lt4['MW_1_separation']           = joint_params.joint_params['opt_pulse_separation'] #or alternatively tau_larmor
-params_lt4['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
+#params_lt4['MW_1_separation']           = joint_params.joint_params['opt_pulse_separation'] #or alternatively tau_larmor
+params_lt4['AWG_wait_for_lt3_start']    =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
 params_lt4['sync_during_LDE']           = 1
 

@@ -800,18 +800,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                     g.dec_duration = round(phase_diff/C_freq_1[Carbon_index]*1e9)*1e-9
 
                             ### electron is not in an eigenstate we need to decouple. write new/smart function for this.
-                            else:    
+                            else:
+   
                                 # print Carbon_index,C_freq[Carbon_index],phase_diff,self.params['dec_pulse_multiple']
                                 g.dec_duration =(round( phase_diff/C_freq[Carbon_index]
                                         *1e9/(self.params['dec_pulse_multiple']*2))
                                         *(self.params['dec_pulse_multiple']*2)*1e-9)
-                                #print 'decoupling duration: ',g.dec_duration
+                                # print 'decoupling duration: ',g.dec_duration
                                 while g.dec_duration <= self.params['min_dec_duration']:
                                     phase_diff = phase_diff +2*np.pi
                                     g.dec_duration =(round( phase_diff/C_freq[Carbon_index]
                                             *1e9/(self.params['dec_pulse_multiple']*2))
                                             *(self.params['dec_pulse_multiple']*2)*1e-9)
                                 g.dec_duration = g.dec_duration
+
                 # print 'phases before ',g.C_phases_before_gate
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None) :
@@ -861,7 +863,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.elements_duration*C_freq_1[iC])%(2*np.pi)
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_before_gate[iC]%(2*np.pi)
-                            print 'Warning: %s, el state in sup for Trigger elt' %g.name
+                            # print 'Warning: %s, el state in sup for Trigger elt' %g.name
 
             elif g.Gate_type =='MBI':
                 for iC in range(len(g.C_phases_before_gate)):
@@ -880,7 +882,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 # print 'phase before LDE ', g.C_phases_before_gate
                 # print 'phase after LDE ', g.C_phases_after_gate                 
 
-
+            elif g.Gate_type == 'single_element':
+                pass
+                
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
 
@@ -3967,7 +3971,7 @@ class MBI_C13(DynamicalDecoupling):
                         phase = Final_pi2_pulse_phase))
 
             elif (readout_orientation == 'negative' and el_state_in == 0) or (readout_orientation == 'positive' and el_state_in == 1):
-                print 'RO negative or el state in =1!'
+                # print 'RO negative or el state in =1!'
                 carbon_RO_seq.append(
                         Gate(prefix+'_-pi2_final_phase=' +str(Final_pi2_pulse_phase) + '_' +str(pt),'electron_Gate',
                         Gate_operation='pi2',

@@ -42,10 +42,9 @@ qt.pulsar.define_channel(id='ch3_marker1', name='adwin_count', type='marker',
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
 
-qt.pulsar.define_channel(id='ch4_marker1', name='adwin_success_trigger', type='marker', 
-    high=2.0, low=0, offset=0., delay=0., active=True)
-#qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker',  #Purification: Plu synced by other setup
-#    high=2.0, low=0, offset=0., delay=102e-9, active=True)
+
+qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker',  #Purification: Plu synced by other setup
+   high=2.0, low=0, offset=0., delay=102e-9, active=True)
 
 
 # define optical voltages

@@ -6,13 +6,13 @@ NK 2016
 import numpy as np
 import qt
 
-execfile(qt.reload_current_setup)
+
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import LDE_element as LDE_elt; reload(LDE_elt)
-
+execfile(qt.reload_current_setup)
 
 
 class purify_single_setup(DD.MBI_C13):
@@ -22,8 +22,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'MBI_multiple_C13' ### TODO make adwin script with 'no mbi' flag
-    #adwin_process = 'purification'
+    adwin_process = 'purification'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -32,6 +31,7 @@ class purify_single_setup(DD.MBI_C13):
     def autoconfig(self):
 
         # setup logical adwin parameters --> how many C13 intialization steps are there?
+        # this can go out soon.
         self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
         if self.params['do_carbon_init'] > 0: 
             if self.params['carbon_init_method'] == 'MBI':
@@ -41,13 +41,15 @@ class purify_single_setup(DD.MBI_C13):
         
         self.params['Nr_C13_init'] = len(self.params['C13_MBI_threshold_list'])
         
+
+        self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
+
         DD.MBI_C13.autoconfig(self)
 
 
         # add values from AWG calibrations
         self.params['SP_voltage_AWG'] = \
-                self.A_aom.power_to_voltage(
-                        self.params['AWG_SP_power'], controller='sec')
+                self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
@@ -73,6 +75,87 @@ class purify_single_setup(DD.MBI_C13):
         #     qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
         # else:
         #     print self.mprefix, self.name, ': Ignoring yellow'
+
+    def run(self, autoconfig=True, setup=True):
+
+        """
+        inherited from pulsar msmt.
+        """
+        if autoconfig:
+            self.autoconfig()
+       
+        
+        if setup:
+            self.setup()
+
+        for i in range(10):
+            self.physical_adwin.Stop_Process(i+1)
+            qt.msleep(0.1)
+        qt.msleep(1)
+        # self.adwin.load_MBI()   
+        # New functionality, now always uses the adwin_process specified as a class variables 
+        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+
+        exec(loadstr)
+        qt.msleep(1)
+        # print loadstr 
+
+        length = self.params['nr_of_ROsequences']
+
+
+        self.start_adwin_process(stop_processes=['counter'], load=False)
+        qt.msleep(1)
+        self.start_keystroke_monitor('abort')
+
+        while self.adwin_process_running():
+
+            if self.keystroke('abort') != '':
+                print 'aborted.'
+                self.stop_keystroke_monitor('abort')
+                break
+
+            reps_completed = self.adwin_var('completed_reps')
+            print('completed %s / %s readout repetitions' % \
+                    (reps_completed, self.params['repetitions']))
+            qt.msleep(1)
+
+        try:
+            self.stop_keystroke_monitor('abort')
+        except KeyError:
+            pass # means it's already stopped
+
+        self.stop_adwin_process()
+        reps_completed = self.adwin_var('completed_reps')
+        print('completed %s / %s readout repetitions' % \
+                (reps_completed, self.params['repetitions']))
+
+    def save(self, name='adwindata'):
+        reps = self.adwin_var('completed_reps')
+        sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
+        if self.params['Nr_parity_msmts'] == 0:
+            parity_reps = 1
+        else:
+            parity_reps =  reps*self.params['Nr_parity_msmts']
+
+
+        self.save_adwin_data(name,
+                [   ('CR_before', reps),
+                    ('CR_after', reps),
+                    ('C13_MBI_attempts', reps), 
+                    ('C13_MBI_starts', reps), 
+                    ('C13_MBI_success', reps), 
+                    ('SSRO_result_after_Cinit',reps),
+                    ('statistics', 10),
+                    ('adwin_communication_time'              ,reps),  
+                    ('plu_which'                             ,reps),  
+                    ('attempts_first'                        ,reps),  
+                    ('attempts_second'                       ,reps), 
+                    ('SSRO_after_electron_carbon_SWAP_result',reps), 
+                    ('carbon_readout_result'                 ,reps),
+                    ('electron_readout_result'               , reps),
+                    ('ssro_results'                           , reps), 
+                    ])
+        return
 
     def load_remote_carbon_params(self,master=True):
         """
@@ -102,7 +185,7 @@ class purify_single_setup(DD.MBI_C13):
         self.params['stored_max_dec_tau']          = self.params['max_dec_tau'] 
         self.params['stored_dec_pulse_multiple']   = self.params['dec_pulse_multiple'] 
         self.params['stored_carbon_init_RO_wait']  = self.params['Carbon_init_RO_wait']
-
+        self.params['stored_min_dec_duration']     = self.params['min_dec_duration']
         # overwrite parameters for phase gates for sequence calculation 
 
         self.params['min_phase_correct'] = self.joint_params[prefix + '_min_phase_correct']
@@ -110,6 +193,7 @@ class purify_single_setup(DD.MBI_C13):
         self.params['max_dec_tau'] = self.joint_params[prefix + '_max_dec_tau']
         self.params['dec_pulse_multiple'] = self.joint_params[prefix + '_dec_pulse_multiple']
         self.params['Carbon_init_RO_wait'] = self.joint_params[prefix + '_carbon_init_RO_wait']
+        self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
     def restore_msmt_parameters(self):
         """
@@ -120,6 +204,8 @@ class purify_single_setup(DD.MBI_C13):
         self.params['max_dec_tau']          = self.params['stored_max_dec_tau'] 
         self.params['dec_pulse_multiple']   = self.params['stored_dec_pulse_multiple'] 
         self.params['Carbon_init_RO_wait']  = self.params['stored_carbon_init_RO_wait']
+        self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
+
 
     def calculate_sequence_duration(self,gate_seq,verbose = False,**kw):
         """
@@ -131,8 +217,6 @@ class purify_single_setup(DD.MBI_C13):
         Known bug: The length of the first MW element depends on the used channel delays.
         If the Pulsemod delay is larger than 500 ns --> TROUBLE! don't do that!
         """
-        
-
 
         gate_seq = self.generate_AWG_elements(gate_seq,0)
 
@@ -171,6 +255,9 @@ class purify_single_setup(DD.MBI_C13):
         return seq_duration
 
     def calculate_C13_swap_duration(self,master=True,**kw):
+        '''
+        Calculates the duration of the swap. At the moment only one swap type supported
+        '''
         # load remote params and store current msmt params
         self.load_remote_carbon_params(master = master) # generate carbon 9 from the joint params
 
@@ -183,6 +270,7 @@ class purify_single_setup(DD.MBI_C13):
             # no C13 init, calculate the other gate sequence.
             # TODO make correct gate sequence in DD_2.py
             carbon_init_seq = []
+            return 0
 
 
         # calculate remote sequence duration
@@ -245,7 +333,9 @@ class purify_single_setup(DD.MBI_C13):
         store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
 
         # calculate sequence durations 
+ 
         master_seq_duration = self.calculate_C13_swap_duration(master = True,verbose=False,**kw)
+
         slave_seq_duration = self.calculate_C13_swap_duration(master= False,verbose=False,**kw)
 
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
@@ -297,7 +387,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
             Gate.event_jump = 'next'
-            Gate.go_to = 'start'
+            Gate.go_to = 'next' 
         else:
             Gate.event_jump = 'next'
             Gate.go_to = 'start'
@@ -305,10 +395,9 @@ class purify_single_setup(DD.MBI_C13):
             if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
-            elif self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+            elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
-
 
     def generate_sequence(self,upload=True,debug=False):
         """
@@ -326,7 +415,7 @@ class purify_single_setup(DD.MBI_C13):
 
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
-                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
+                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
 
@@ -342,21 +431,35 @@ class purify_single_setup(DD.MBI_C13):
             ### LDE elements
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')
             LDE1.el_state_after_gate = 'sup'
+
+                ### if statement to decide what LDE1 does: init or entangling.
+            if self.params['LDE_1_is_init'] >0:
+                LDE1.reps = 1
+
+                if self.params['input_el_state'] in ['X','mX','Y','mY']:
+                    LDE1.first_pulse_is_pi2 = True
+            else:
+                LDE1.reps = self.params['LDE_attempts']
             
+
+
+            ### LDE elements need rephasing or repumping elements
             LDE_rephase1 = DD.Gate('LDE_rephasing_1'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase1.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-            LDE_repump1 = DD.Gate('LDE_repump_'+str(pt),'Trigger',duration = 5e-6)
+            LDE_repump1 = DD.Gate('LDE_repump_1_'+str(pt),'Trigger',duration = 5e-6)
 
+            ### WE have two LDE elements with potentially different functions
             LDE2 = DD.Gate('LDE2'+str(pt),'LDE')
             LDE2.el_state_after_gate = 'sup'
-            
+            LDE2.reps = self.params['LDE_attempts']
+
             LDE_rephase2 = DD.Gate('LDE_rephasing_2_'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase2.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase2)
 
-            LDE_repump2 = DD.Gate('LDE_repump_'+str(pt),'Trigger',duration = 5e-6)
+            LDE_repump2 = DD.Gate('LDE_repump_2_'+str(pt),'Trigger',duration = 5e-6)
 
 
 
@@ -442,13 +545,27 @@ class purify_single_setup(DD.MBI_C13):
 
                 gate_seq.extend(carbon_init_seq)
 
+            #### insert a MW pi pulse when repumping
+            if self.params['MW_before_LDE1'] > 0:
+                mw_pi = DD.Gate('elec_pi_'+str(pt),'electron_Gate',
+                    Gate_operation='pi')
+
+                if gate_seq == []:
+                    mw_pi.wait_for_trigger = True
+                gate_seq.append(mw_pi)
+
+
             if self.params['do_LDE_1'] > 0:
                 ### needs corresponding adwin parameter 
                 if gate_seq == []:
                     LDE1.wait_for_trigger = True
                 gate_seq.append(LDE1)
 
-                gate_seq.append(LDE_rephase1)
+                if self.params['do_swap_onto_carbon'] > 0:
+                    gate_seq.append(LDE_rephase1)
+
+                elif self.params['LDE_1_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2:
+                    gate_seq.append(LDE_repump1)
 
             if self.params['do_swap_onto_carbon'] > 0:
                 ### Elementes for swapping
@@ -460,8 +577,8 @@ class purify_single_setup(DD.MBI_C13):
                 ### need to write this method XXX
                 #swap_without_init = 
 
-                if self.params['do_carbon_init']:
-                    # put simons gate seq here
+                if self.params['do_carbon_init'] > 0:
+                    # put stens gate seq here
                     gate_seq.extend(swap_with_init)
                 else:
                     #do full swap: need to figure out the full gate sequence.
@@ -499,7 +616,8 @@ class purify_single_setup(DD.MBI_C13):
                         RO_trigger_duration = 10e-6,
                         el_state_in         = 0,
                         carbon_list         = [self.params['carbon']],
-                        RO_basis_list       = self.params['Tomography_bases']) 
+                        RO_basis_list       = self.params['Tomography_bases'],
+                        readout_orientation = self.params['carbon_readout_orientation']) 
                 gate_seq.extend(carbon_tomo_seq)
 
             else: #No carbon spin RO? Do espin RO!
@@ -509,7 +627,7 @@ class purify_single_setup(DD.MBI_C13):
             ###############################################
             # prepare and program the actual AWG sequence #
             ###############################################
-            print len(gate_seq)
+
             #### insert elements here
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
@@ -520,7 +638,6 @@ class purify_single_setup(DD.MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-        print upload
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
