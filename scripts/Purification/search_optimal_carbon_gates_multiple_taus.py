@@ -290,16 +290,16 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [36,28,28,28], 
-										'C_N_steps' : 10} # steps of 2 	
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.35e-6],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  :16e-9, # steps of 2e-9
+										'C_N' 		: [26], 
+										'C_N_steps' : 12} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [5.22e-6],#[6.4e-6, 8.73e-6]
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [34],#[36,44], # 34,
-										'C_N_steps' : 10} # steps of 2 	
+		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
+										'C_tau_rng'  :16e-9, # steps of 2e-9
+										'C_N' 		: [42],#[36,44], # 34,
+										'C_N_steps' : 12} # steps of 2 	
 
 
 		# multi_tau_carbon_dict['C6'] = {'C_taus' 	: [3.725e-6],#[6.17e-6,9.355e-6,19.625e-6],#[17.175e-6, 19.395e-6, 23.838e-6 ,24.940e-6],
@@ -308,13 +308,13 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} 
 
 
-		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
-		 								'C_tau_rng' : 12e-9,
-										'C_N' 		: [34 ,36, 38, 42],  #34, 42,
-										'C_N_steps' : 10} 
+		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [4.86e-6], #[3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
+		 								'C_tau_rng' : 16e-9,
+										'C_N' 		: [38],  #34, 42,
+										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [1,2]
+	carbons = [5,8]
 
 	### msmt loop begins here.
 	breakst = False

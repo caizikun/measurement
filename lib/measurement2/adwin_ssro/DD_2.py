@@ -3792,21 +3792,23 @@ class MBI_C13(DynamicalDecoupling):
             Carbon_ind  = addressed_carbon,
             N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
             tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
-            phase       = self.params['Y_phase'])
+            phase       = self.params['C13_Y_phase'])
 
         C_unc_x = Gate(prefix+str(addressed_carbon)+'_unc_x_pt'+str(pt), 'Carbon_Gate',
             Carbon_ind  = addressed_carbon,
             N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
             tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
-            phase       = self.params['X_phase'])
+            phase       = self.params['C13_X_phase'])
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
             carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
 
         elif swap_type  ==  'swap_wo_init':
-            carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
-            
+
+            #carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
+            carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
+
         elif swap_type  ==  'swap_wo_init_rot':
             carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
             
@@ -6662,7 +6664,7 @@ class elec_to_carbon_swap(MBI_C13):
             #######################
             ## INITIALIZE CARBON ##
             #######################
-            if self.params['SWAP_type'] == 'swap_w_init':
+            if True: # self.params['SWAP_type'] == 'swap_w_init':
                 carbon_init_seq = self.initialize_carbon_sequence(
                     go_to_element         = mbi,
                     prefix                = 'init_C',

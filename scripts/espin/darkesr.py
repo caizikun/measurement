@@ -122,7 +122,7 @@ def Generaldarkesr(name):
     m.params['pulse_shape']='Square'
     m.params['pulse_type'] = m.params['pulse_shape'] 
     desr_pi = ps.desr_pulse(m)
-    print desr_pi
+    # print desr_pi
     m.params['MW_pi_duration'] = m.params['desr_pulse_duration']
     m.autoconfig()
     #m.params['sweep_pts']=m.params['pts']

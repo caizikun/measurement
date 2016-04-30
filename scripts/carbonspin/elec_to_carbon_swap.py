@@ -27,7 +27,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def SWAP(name, 
         carbon                  =   1,               
         carbon_init_states      =   ['up'], 
-        carbon_init_methods     =   ['swap'], 
+        carbon_init_methods     =   ['MBI'], 
         carbon_init_thresholds  =   [0,1],  
 
         elec_init_state         =   ['Z'],
@@ -42,7 +42,7 @@ def SWAP(name,
     funcs.prepare(m)
 
     ''' set experimental parameters '''
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
     m.params['el_after_init']               = '0'
 
@@ -120,12 +120,14 @@ if __name__ == '__main__':
 
     '''' NOTE REMOVE RO_after_swap from SWAP params '''
     breakst     = False
-    carbons     = [1,2]
-    el_state    = ['X','mX','Y','mY','Z','mZ']
+    carbons     = [4]
+    el_state    = ['X','Y','Z']
     
+    debug = False
     RO_after_swap = True
     swap_type = 'swap_w_init'
-    if swap_type == 'swap_wo_init':
+    if swap_type == 'swap_wo_init' or swap_type == 'swap_wo_init_rot':
+
         c_i_t = [1] #its deterministic but still, there might be phase errors
     else:
         c_i_t = [0, 1]
@@ -159,6 +161,9 @@ if __name__ == '__main__':
                 carbon_init_thresholds = c_i_t,
                 swap_type = swap_type)
 
+            breakst = show_stopper(breakst = breakst)
+            if breakst:
+                break
 
             SWAP(SAMPLE + '_carbon' + str(c) +'_'+'negative'+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
                 el_RO= 'negative', 

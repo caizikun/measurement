@@ -15,7 +15,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 """
 This script calibrates pi and pi/2 pulses.
 Pulse shape can be Square or Hermite --> the appropriate pulse will be chosen from pulse_select.py.
-NOTE: do adjust the MW duration & amplitudes to refer to the proper type of pulse!
+NOTE: do adjust the MW duration & amplitudes you have to refer to the proper type of pulse in msmt params!
 """
 
 
@@ -67,7 +67,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
             print 'calibrating square pulses'
             m.params['MW_duration'] =  m.params['Square_pi_length']
             m.params['MW_pulse_amplitudes'] = m.params['Square_pi_amp'] + np.linspace(-rng, rng, pts)
-    m.params['delay_reps'] = 1## Currently not used
+    m.params['delay_reps'] = 0## Currently not used
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
    
@@ -75,6 +75,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params['wait_for_AWG_done'] = 1
 
     m.MW_pi = pulse.cp(ps.pi_pulse_MW2(m), phase = 0) if mw2 else pulse.cp(ps.X_pulse(m), phase = 0)
+    
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
 
@@ -371,9 +372,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2= False, pulse_shape='Hermite')
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =11, debug = False, mw2= False, pulse_shape='Hermite')
     # sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
+    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

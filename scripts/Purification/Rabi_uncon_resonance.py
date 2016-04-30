@@ -86,17 +86,17 @@ def unconditional_rabi(name,
 if __name__ == '__main__':
 
 
-    N_list      =   np.arange(2,100,4)
-    tau_list    =   [(9.16)*1e-6] *len(N_list)
+    N_list      =   np.arange(2,80,4)
+    tau_list    =   [(6.93)*1e-6] *len(N_list)
 
     # tau_range = 0.1e-6
-    # tau_list = np.arange(9.18e-6-tau_range,9.18e-6+tau_range,4e-9) #steps of 2e-9
-    # N_list = [20]*len(tau_list)
+    # tau_list = np.arange(7e-6-tau_range,7e-6+tau_range,10e-9) #steps of 2e-9
+    # N_list = [32]*len(tau_list)
 
     unconditional_rabi(SAMPLE + '_uncondGate_tau_'+str(tau_list[0]),
         C13_init_method = 'swap',
-        carbon_A        = 1, 
-        carbon_B        = 1, 
+        carbon_A        = 4, 
+        carbon_B        = 4, 
         tau_list        = tau_list,
         N_list          =  N_list,
         electron_readout_orientation = 'positive',

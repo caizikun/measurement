@@ -312,12 +312,6 @@ class DarkESR(PulsarMeasurement):
 
         self.params['sweep_name'] = 'MW frq (GHz)'
         
-        # why make this array here, assuming you want equally spaced points?
-        # Just define sweep_pts in the script, and measure those points.
-        #self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
-        #    self.params['ssbmod_frq_stop'], self.params['pts']) + \
-        #        self.params['mw_frq'])*1e-9
-
     def generate_sequence(self, upload=True):
 
         # define the necessary pulses
@@ -1687,9 +1681,10 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             seq.append(name = e.name+'-{}'.format(j), 
                 wfname = e.name,
                 trigger_wait = True)
-            seq.append(name = 'wait-{}-{}'.format(i,j), 
-                wfname = wait_1us.name, 
-                repetitions = self.params['delay_reps'])
+            if self.params['delay_reps'] != 0:
+                seq.append(name = 'wait-{}-{}'.format(i,j), 
+                    wfname = wait_1us.name, 
+                    repetitions = self.params['delay_reps'])
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
         elements.append(wait_1us)

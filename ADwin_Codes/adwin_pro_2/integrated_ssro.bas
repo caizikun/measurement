@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '

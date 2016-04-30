@@ -474,7 +474,7 @@ class adwin(Instrument):
 
     def set_dac_voltage(self, (name, value), timeout=1, **kw):
         if 'set_dac' in self.processes:
-            print name
+            # print name
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)
 
