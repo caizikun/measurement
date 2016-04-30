@@ -22,8 +22,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'MBI_multiple_C13' ### TODO make adwin script with 'no mbi' flag
-    #adwin_process = 'purification'
+    adwin_process = 'purification'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -72,6 +71,87 @@ class purify_single_setup(DD.MBI_C13):
         #     qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
         # else:
         #     print self.mprefix, self.name, ': Ignoring yellow'
+
+    def run(self, autoconfig=True, setup=True):
+
+        """
+        inherited from pulsar msmt.
+        """
+        if autoconfig:
+            self.autoconfig()
+       
+        
+        if setup:
+            self.setup()
+
+        for i in range(10):
+            self.physical_adwin.Stop_Process(i+1)
+            qt.msleep(0.1)
+        qt.msleep(1)
+        # self.adwin.load_MBI()   
+        # New functionality, now always uses the adwin_process specified as a class variables 
+        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+
+        exec(loadstr)
+        qt.msleep(1)
+        # print loadstr 
+
+        length = self.params['nr_of_ROsequences']
+
+
+        self.start_adwin_process(stop_processes=['counter'], load=False)
+        qt.msleep(1)
+        self.start_keystroke_monitor('abort')
+
+        while self.adwin_process_running():
+
+            if self.keystroke('abort') != '':
+                print 'aborted.'
+                self.stop_keystroke_monitor('abort')
+                break
+
+            reps_completed = self.adwin_var('completed_reps')
+            print('completed %s / %s readout repetitions' % \
+                    (reps_completed, self.params['repetitions']))
+            qt.msleep(1)
+
+        try:
+            self.stop_keystroke_monitor('abort')
+        except KeyError:
+            pass # means it's already stopped
+
+        self.stop_adwin_process()
+        reps_completed = self.adwin_var('completed_reps')
+        print('completed %s / %s readout repetitions' % \
+                (reps_completed, self.params['repetitions']))
+
+    def save(self, name='adwindata'):
+        reps = self.adwin_var('completed_reps')
+        sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
+        if self.params['Nr_parity_msmts'] == 0:
+            parity_reps = 1
+        else:
+            parity_reps =  reps*self.params['Nr_parity_msmts']
+
+
+        self.save_adwin_data(name,
+                [   ('CR_before', reps),
+                    ('CR_after', reps),
+                    ('C13_MBI_attempts', reps), 
+                    ('C13_MBI_starts', reps), 
+                    ('C13_MBI_success', reps), 
+                    ('SSRO_result_after_Cinit',reps),
+                    ('statistics', 10),
+                    ('adwin_communication_time'              ,reps),  
+                    ('plu_which'                             ,reps),  
+                    ('attempts_first'                        ,reps),  
+                    ('attempts_second'                       ,reps), 
+                    ('SSRO_after_electron_carbon_SWAP_result',reps), 
+                    ('carbon_readout_result'                 ,reps),
+                    ('electron_readout_result'               , reps),
+                    ('ssro_results'                           , reps), 
+                    ])
+        return
 
     def load_remote_carbon_params(self,master=True):
         """
@@ -296,7 +376,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
             Gate.event_jump = 'next'
-            Gate.go_to = 'start'
+            Gate.go_to = 'next' 
         else:
             Gate.event_jump = 'next'
             Gate.go_to = 'start'

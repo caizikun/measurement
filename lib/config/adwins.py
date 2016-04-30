@@ -2801,7 +2801,8 @@ config['adwin_pro_processes'] = {
                     ['PLU_event_di_channel'            ,   0], 
                     ['PLU_which_di_channel'            ,   0], 
                     ['AWG_start_DO_channel'            ,   0], 
-                    ['AWG_done_DI_channel'             ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
                     ['AWG_event_jump_DO_channel'       ,   0], 
                     ['AWG_repcount_DI_channel'         ,   0], 
                     ['remote_adwin_di_success_channel' ,   1], 
@@ -2811,7 +2812,8 @@ config['adwin_pro_processes'] = {
                     ['adwin_comm_safety_cycles'        ,   1], 
                     ['adwin_comm_timeout_cycles'       ,   1], 
                     ['remote_awg_trigger_channel'      ,   1],
-                    ['invalid_data_marker_do_channel'  ,   1],              
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],            
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2839,10 +2841,10 @@ config['adwin_pro_processes'] = {
                     'CR_hist'        : 29,
                     'CR_before'      : 22,
                     'CR_after'       : 23,
-                    'N_MBI_starts'   : 24,  # number of MBI attempts
-                    'N_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
+                    'C13_MBI_starts'   : 24,  # number of MBI attempts
+                    'C13_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
                     'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
-                    'N_MBI_success'             : 28, # time needed until mbi success (in process cycles)
+                    'C13_MBI_success'             : 28, # time needed until mbi success (in process cycles)
                     'SP_hist'                   : 29,    #SP histogram
                     'adwin_communication_time'  : 33,  #time spent for communication between adwins
                     'plu_which'                 : 34,  #Information whether same or opposite detector has clicked (provided by the PLU)
@@ -2851,6 +2853,7 @@ config['adwin_pro_processes'] = {
                     'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
                     'electron_readout_result'   : 38,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 39, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 40, # result of the last ssro in the adwin
                     },
                 },
         }

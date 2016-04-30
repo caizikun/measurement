@@ -58,7 +58,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 5e-6, amplitude = 2) 
-    Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_sync_counter',
+    Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
         length = 5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):

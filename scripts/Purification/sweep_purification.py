@@ -81,9 +81,11 @@ def run_sweep(m,debug=True, upload_only=True):
         return
     m.setup(debug=debug)
 
-    # m.run(autoconfig=False, setup=False,debug=debug)    
-    # m.save()    
-    # m.finish()
+    if not debug:
+        m.run(autoconfig=False, setup=False)    
+        m.save()    
+        m.finish()
+
 def generate_AWG_seq(name):
 
     m = purify_slave.purify_single_setup(name)
@@ -122,7 +124,7 @@ def generate_AWG_seq(name):
 
     run_sweep(m,debug = True,upload_only = True)
 
-def SPCorrs(name):
+def SPCorrs(name,debug = False,upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
@@ -132,7 +134,7 @@ def SPCorrs(name):
 
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+    m.params['reps_per_ROsequence'] = 1000
 
     ### adwin process variables: should be automatically set.
     m.params['Nr_C13_init']     = 0 # Not necessary (only for C13 MBI)
@@ -162,139 +164,139 @@ def SPCorrs(name):
 
     ### upload
 
-    run_sweep(m,debug = True,upload_only = True)
+    run_sweep(m,debug = debug,upload_only = upload_only)
 
-def sweep_average_repump_time(name):
+# def sweep_average_repump_time(name):
 
-    m = purify_slave.purify_single_setup(name)
-    prepare(m)
+#     m = purify_slave.purify_single_setup(name)
+#     prepare(m)
 
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+#     ### general params
+#     m.params['pts'] = 1
+#     m.params['reps_per_ROsequence'] = 1
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
+#     ### adwin process variables: should be set automatically.
+#     m.params['Nr_MBE']          = 0
+#     m.params['Nr_parity_msmts'] = 0
+#     m.params['Tomography_bases'] = ['X']
 
 
 
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 0
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+#     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+#     m.params['do_general_sweep']    = 0
+#     m.params['is_two_setup_experiment']           = 0
+#     m.params['do_N_MBI']            = 0
+#     m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
+#     m.params['do_LDE_1']            = 0 
+#     m.params['swap_onto_carbon']    = 0
+#     m.params['do_LDE_2']            = 1 
+#     m.params['do_phase_correction']       = 0
+#     m.params['do_purifying_gate']              = 0
+#     m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
+#     m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
 
-    ### upload
+#     ### upload
     
-    run_sweep(m,debug = True,upload_only = True)
+#     run_sweep(m,debug = True,upload_only = True)
 
-def sweep_number_of_reps(name):
+# def sweep_number_of_reps(name):
 
-    m = purify_slave.purify_single_setup(name)
-    prepare(m)
+#     m = purify_slave.purify_single_setup(name)
+#     prepare(m)
 
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+#     ### general params
+#     m.params['pts'] = 1
+#     m.params['reps_per_ROsequence'] = 1
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
-
-
-
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
-
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
-
-def calibrate_memory_phase(name):
-
-    m = purify_slave.purify_single_setup(name)
-    prepare(m)
-
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
-
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
+#     ### adwin process variables: should be set automatically.
+#     m.params['Nr_C13_init']     = 1
+#     m.params['Nr_MBE']          = 0
+#     m.params['Nr_parity_msmts'] = 0
+#     m.params['Tomography_bases'] = ['X']
 
 
 
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+#     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+#     m.params['do_general_sweep']    = 0
+#     m.params['is_two_setup_experiment']           = 0
+#     m.params['do_N_MBI']            = 0
+#     m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
+#     m.params['do_LDE_1']            = 0 
+#     m.params['swap_onto_carbon']    = 0
+#     m.params['do_LDE_2']            = 1 
+#     m.params['do_phase_correction']       = 0
+#     m.params['do_purifying_gate']              = 1
+#     m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
+#     m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
 
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
+#     ### upload
+#     run_sweep(m,debug = True,upload_only = True)
 
-def check_dynamic_phase_correct(name):
+# def calibrate_memory_phase(name):
 
-    m = purify_slave.purify_single_setup(name)
-    prepare(m)
+#     m = purify_slave.purify_single_setup(name)
+#     prepare(m)
 
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1
+#     ### general params
+#     m.params['pts'] = 1
+#     m.params['reps_per_ROsequence'] = 1
 
-    ### adwin process variables: should be set automatically.
-    m.params['Nr_C13_init']     = 1
-    m.params['Nr_MBE']          = 0
-    m.params['Nr_parity_msmts'] = 0
-    m.params['Tomography_bases'] = ['X']
+#     ### adwin process variables: should be set automatically.
+#     m.params['Nr_C13_init']     = 1
+#     m.params['Nr_MBE']          = 0
+#     m.params['Nr_parity_msmts'] = 0
+#     m.params['Tomography_bases'] = ['X']
 
 
 
-    ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_general_sweep']    = 0
-    m.params['is_two_setup_experiment']           = 0
-    m.params['do_N_MBI']            = 0
-    m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
-    m.params['do_LDE_1']            = 0 
-    m.params['swap_onto_carbon']    = 0
-    m.params['do_LDE_2']            = 1 
-    m.params['do_phase_correction']       = 0
-    m.params['do_purifying_gate']              = 1
-    m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
-    m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+#     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+#     m.params['do_general_sweep']    = 0
+#     m.params['is_two_setup_experiment']           = 0
+#     m.params['do_N_MBI']            = 0
+#     m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
+#     m.params['do_LDE_1']            = 0 
+#     m.params['swap_onto_carbon']    = 0
+#     m.params['do_LDE_2']            = 1 
+#     m.params['do_phase_correction']       = 0
+#     m.params['do_purifying_gate']              = 1
+#     m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
+#     m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
 
-    ### upload
-    run_sweep(m,debug = True,upload_only = True)
+#     ### upload
+#     run_sweep(m,debug = True,upload_only = True)
+
+# def check_dynamic_phase_correct(name):
+
+#     m = purify_slave.purify_single_setup(name)
+#     prepare(m)
+
+#     ### general params
+#     m.params['pts'] = 1
+#     m.params['reps_per_ROsequence'] = 1
+
+#     ### adwin process variables: should be set automatically.
+#     m.params['Nr_C13_init']     = 1
+#     m.params['Nr_MBE']          = 0
+#     m.params['Nr_parity_msmts'] = 0
+#     m.params['Tomography_bases'] = ['X']
+
+
+
+#     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+#     m.params['do_general_sweep']    = 0
+#     m.params['is_two_setup_experiment']           = 0
+#     m.params['do_N_MBI']            = 0
+#     m.params['init_carbon']         = 1; m.params['carbon_init_method'] = 'MBI';
+#     m.params['do_LDE_1']            = 0 
+#     m.params['swap_onto_carbon']    = 0
+#     m.params['do_LDE_2']            = 1 
+#     m.params['do_phase_correction']       = 0
+#     m.params['do_purifying_gate']              = 1
+#     m.params['C13_RO']              = 1 #if 0 then RO of the electron via an adwin trigger.
+#     m.params['final_RO_in_adwin']   = 0 # this gets rid of the final RO since it is done in the adwin
+
+#     ### upload
+#     run_sweep(m,debug = True,upload_only = True)
 
 if __name__ == '__main__':
     # generate_AWG_seq('Sequence_testing')
