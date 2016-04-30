@@ -185,7 +185,7 @@ class purify_single_setup(DD.MBI_C13):
         self.params['stored_max_dec_tau']          = self.params['max_dec_tau'] 
         self.params['stored_dec_pulse_multiple']   = self.params['dec_pulse_multiple'] 
         self.params['stored_carbon_init_RO_wait']  = self.params['Carbon_init_RO_wait']
-
+        self.params['stored_min_dec_duration']     = self.params['min_dec_duration']
         # overwrite parameters for phase gates for sequence calculation 
 
         self.params['min_phase_correct'] = self.joint_params[prefix + '_min_phase_correct']
@@ -193,6 +193,7 @@ class purify_single_setup(DD.MBI_C13):
         self.params['max_dec_tau'] = self.joint_params[prefix + '_max_dec_tau']
         self.params['dec_pulse_multiple'] = self.joint_params[prefix + '_dec_pulse_multiple']
         self.params['Carbon_init_RO_wait'] = self.joint_params[prefix + '_carbon_init_RO_wait']
+        self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
     def restore_msmt_parameters(self):
         """
@@ -203,6 +204,8 @@ class purify_single_setup(DD.MBI_C13):
         self.params['max_dec_tau']          = self.params['stored_max_dec_tau'] 
         self.params['dec_pulse_multiple']   = self.params['stored_dec_pulse_multiple'] 
         self.params['Carbon_init_RO_wait']  = self.params['stored_carbon_init_RO_wait']
+        self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
+
 
     def calculate_sequence_duration(self,gate_seq,verbose = False,**kw):
         """
@@ -330,7 +333,9 @@ class purify_single_setup(DD.MBI_C13):
         store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
 
         # calculate sequence durations 
+ 
         master_seq_duration = self.calculate_C13_swap_duration(master = True,verbose=False,**kw)
+
         slave_seq_duration = self.calculate_C13_swap_duration(master= False,verbose=False,**kw)
 
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
@@ -559,7 +564,7 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['do_swap_onto_carbon'] > 0:
                     gate_seq.append(LDE_rephase1)
 
-                elif self.params['LDE_1_is_init'] == 0:
+                elif self.params['LDE_1_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2:
                     gate_seq.append(LDE_repump1)
 
             if self.params['do_swap_onto_carbon'] > 0:
@@ -622,7 +627,7 @@ class purify_single_setup(DD.MBI_C13):
             ###############################################
             # prepare and program the actual AWG sequence #
             ###############################################
-            print len(gate_seq)
+
             #### insert elements here
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
@@ -633,7 +638,6 @@ class purify_single_setup(DD.MBI_C13):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-        print upload
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)

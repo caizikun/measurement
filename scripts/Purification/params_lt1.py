@@ -1,10 +1,5 @@
-'''
-dummy file with local parameters for AWG sequence generation
-
-NK 2016
-'''
 import qt
-import joint_params
+
 
 name = qt.exp_params['protocols']['current']
 
@@ -18,6 +13,10 @@ params_lt1['AWG_SP_power']              = 5e-9
 params_lt1['LDE_SP_duration']           = 2e-6
 params_lt1['MW_during_LDE']             = 1 
 params_lt1['LDE_decouple_time']         = 1/qt.exp_params['samples'][name]['C1_freq_0']
+params_lt1['average_repump_time'] = 400e-9 + 700e-9 # put repump AOM delay here!
+params_lt1['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
+params_lt1['MW_opt_puls1_separation']   = 22e-9
+
 
 #general sequence things. All of these are set automatically.
 params_lt1['do_general_sweep']          = False
@@ -51,13 +50,7 @@ params_lt1['eom_overshoot2']            = 0
 params_lt1['aom_risetime']              = 40e-9#10e-9 # try to minimize by realigning!
 params_lt1['aom_amplitude']             = 0.65 # on CR 31
 
-#timings
-params_lt1['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
-params_lt1['MW_opt_puls1_separation']   = 22e-9
 
-
-params_lt1['average_repump_time'] = 400e-9 + 700e-9 # put repump AOM delay here!
-params_lt1['LDE_decouple_time'] = 2.32e-6
 
 # probably not necessary
 params_lt1['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
