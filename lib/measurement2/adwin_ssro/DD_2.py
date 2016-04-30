@@ -3710,14 +3710,17 @@ class MBI_C13(DynamicalDecoupling):
             swap_type               = 'swap_w_init'):
         #el_RO_result, not important.. only for RO trigger. Just as el_after_init is not important and do_wait_after_pi.
         '''
-        By SK
+        By SK and PeeeeeH
         Gate performs swap operation between electron and carbon state
         Possible states: X, -X, Y, -Y, Z, -Z
         Does one of two types of swaps:
             1) swap_w_init:  C13 has been initialised in |Z|, swap sequence requires less gates
                 |Ren_-y| - |y| - |Ren_x| - |-y| 
             2) swap_wo_init: C13 in mixed state. The full sequence
-                |Ren_x| - |x_e| - |Ren_my| - |y_e + z_e, y_c| - |Ren_x|
+                |Ren_ym| - |x| - |Ren_xm| - |y , x_c| - |Ren_y|
+           2) swap_wo_init_rot: C13 in mixed state, put C13 in rotated basis after swap. The full sequence
+                |Ren_y| - |ym| - |Ren_x| - |xm, y_c| - |Ren_x|
+                 
         '''
 
         if type(go_to_element) != str:
@@ -3739,10 +3742,14 @@ class MBI_C13(DynamicalDecoupling):
                 Gate_operation ='pi2',
                 phase = self.params['X_phase'])
 
-        #bitching about uniqueness
-        e_x2 = Gate(prefix+str(addressed_carbon)+'_x2_pt'+str(pt),'electron_Gate',
+        e_xm = Gate(prefix+str(addressed_carbon)+'_xm_pt'+str(pt),'electron_Gate',
                 Gate_operation ='pi2',
-                phase = self.params['X_phase'])
+                phase = self.params['X_phase']+180)
+
+        #bitching about uniqueness
+        #e_x2 = Gate(prefix+str(addressed_carbon)+'_x2_pt'+str(pt),'electron_Gate',
+        #        Gate_operation ='pi2',
+        #        phase = self.params['X_phase'])
 
 
         ###################
@@ -3769,21 +3776,40 @@ class MBI_C13(DynamicalDecoupling):
                 phase = self.params['C13_X_phase'])
 
         # bitching about uniqueness
-        C_Ren_x2 = Gate(prefix+str(addressed_carbon)+'_Ren_x2_pt'+str(pt), 'Carbon_Gate',
+        C_Ren_x_2 = Gate(prefix+str(addressed_carbon)+'_Ren_x_2_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'])
+
+        C_Ren_xm = Gate(prefix+str(addressed_carbon)+'_Ren_xm_pt'+str(pt), 'Carbon_Gate',
+                Carbon_ind = addressed_carbon,
+                phase = self.params['C13_X_phase']+180)
+
+        ########################
+        # Un-conditional gates #
+        ########################
+
+        C_unc_y = Gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt), 'Carbon_Gate',
+            Carbon_ind  = addressed_carbon,
+            N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
+            tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
+            phase       = self.params['Y_phase'])
+
+        C_unc_x = Gate(prefix+str(addressed_carbon)+'_unc_x_pt'+str(pt), 'Carbon_Gate',
+            Carbon_ind  = addressed_carbon,
+            N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
+            tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
+            phase       = self.params['X_phase'])
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
             carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
 
         elif swap_type  ==  'swap_wo_init':
-            C_unc_y = Gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt), 'Carbon_Gate',
-                Carbon_ind  = addressed_carbon,
-                N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
-                tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
-                phase       = self.params['Y_phase'])
-            carbon_swap_seq = [C_Ren_x, e_x, C_Ren_ym, e_x2, C_unc_y, C_Ren_x2]
+            carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
+            
+        elif swap_type  ==  'swap_wo_init_rot':
+            carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
+            
         else: 
             return 'Unsupported swap type (location: DD_2.carbon_swap_gate)'
        
