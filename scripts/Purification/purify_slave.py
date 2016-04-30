@@ -32,6 +32,7 @@ class purify_single_setup(DD.MBI_C13):
     def autoconfig(self):
 
         # setup logical adwin parameters --> how many C13 intialization steps are there?
+        # this can go out soon.
         self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
         if self.params['do_carbon_init'] > 0: 
             if self.params['carbon_init_method'] == 'MBI':
@@ -41,6 +42,9 @@ class purify_single_setup(DD.MBI_C13):
         
         self.params['Nr_C13_init'] = len(self.params['C13_MBI_threshold_list'])
         
+
+        self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
+
         DD.MBI_C13.autoconfig(self)
 
 
@@ -131,8 +135,6 @@ class purify_single_setup(DD.MBI_C13):
         Known bug: The length of the first MW element depends on the used channel delays.
         If the Pulsemod delay is larger than 500 ns --> TROUBLE! don't do that!
         """
-        
-
 
         gate_seq = self.generate_AWG_elements(gate_seq,0)
 
@@ -171,6 +173,9 @@ class purify_single_setup(DD.MBI_C13):
         return seq_duration
 
     def calculate_C13_swap_duration(self,master=True,**kw):
+        '''
+        Calculates the duration of the swap. At the moment only one swap type supported
+        '''
         # load remote params and store current msmt params
         self.load_remote_carbon_params(master = master) # generate carbon 9 from the joint params
 
@@ -183,6 +188,7 @@ class purify_single_setup(DD.MBI_C13):
             # no C13 init, calculate the other gate sequence.
             # TODO make correct gate sequence in DD_2.py
             carbon_init_seq = []
+            return 0
 
 
         # calculate remote sequence duration
@@ -305,10 +311,9 @@ class purify_single_setup(DD.MBI_C13):
             if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
-            elif self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+            elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
                 Gate.go_to = None
                 Gate.event_jump = None
-
 
     def generate_sequence(self,upload=True,debug=False):
         """
@@ -326,7 +331,7 @@ class purify_single_setup(DD.MBI_C13):
 
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
-                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
+                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
 
@@ -342,21 +347,35 @@ class purify_single_setup(DD.MBI_C13):
             ### LDE elements
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')
             LDE1.el_state_after_gate = 'sup'
+
+                ### if statement to decide what LDE1 does: init or entangling.
+            if self.params['LDE_1_is_init'] >0:
+                LDE1.reps = 1
+
+                if self.params['input_el_state'] in ['X','mX','Y','mY']:
+                    LDE1.first_pulse_is_pi2 = True
+            else:
+                LDE1.reps = self.params['LDE_attempts']
             
+
+
+            ### LDE elements need rephasing or repumping elements
             LDE_rephase1 = DD.Gate('LDE_rephasing_1'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase1.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-            LDE_repump1 = DD.Gate('LDE_repump_'+str(pt),'Trigger',duration = 5e-6)
+            LDE_repump1 = DD.Gate('LDE_repump_1_'+str(pt),'Trigger',duration = 5e-6)
 
+            ### WE have two LDE elements with potentially different functions
             LDE2 = DD.Gate('LDE2'+str(pt),'LDE')
             LDE2.el_state_after_gate = 'sup'
-            
+            LDE2.reps = self.params['LDE_attempts']
+
             LDE_rephase2 = DD.Gate('LDE_rephasing_2_'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase2.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase2)
 
-            LDE_repump2 = DD.Gate('LDE_repump_'+str(pt),'Trigger',duration = 5e-6)
+            LDE_repump2 = DD.Gate('LDE_repump_2_'+str(pt),'Trigger',duration = 5e-6)
 
 
 
@@ -442,13 +461,27 @@ class purify_single_setup(DD.MBI_C13):
 
                 gate_seq.extend(carbon_init_seq)
 
+            #### insert a MW pi pulse when repumping
+            if self.params['MW_before_LDE1'] > 0:
+                mw_pi = DD.Gate('elec_pi_'+str(pt),'electron_Gate',
+                    Gate_operation='pi')
+
+                if gate_seq == []:
+                    mw_pi.wait_for_trigger = True
+                gate_seq.append(mw_pi)
+
+
             if self.params['do_LDE_1'] > 0:
                 ### needs corresponding adwin parameter 
                 if gate_seq == []:
                     LDE1.wait_for_trigger = True
                 gate_seq.append(LDE1)
 
-                gate_seq.append(LDE_rephase1)
+                if self.params['do_swap_onto_carbon'] > 0:
+                    gate_seq.append(LDE_rephase1)
+
+                elif self.params['LDE_1_is_init'] == 0:
+                    gate_seq.append(LDE_repump1)
 
             if self.params['do_swap_onto_carbon'] > 0:
                 ### Elementes for swapping
@@ -460,8 +493,8 @@ class purify_single_setup(DD.MBI_C13):
                 ### need to write this method XXX
                 #swap_without_init = 
 
-                if self.params['do_carbon_init']:
-                    # put simons gate seq here
+                if self.params['do_carbon_init'] > 0:
+                    # put stens gate seq here
                     gate_seq.extend(swap_with_init)
                 else:
                     #do full swap: need to figure out the full gate sequence.
@@ -499,7 +532,8 @@ class purify_single_setup(DD.MBI_C13):
                         RO_trigger_duration = 10e-6,
                         el_state_in         = 0,
                         carbon_list         = [self.params['carbon']],
-                        RO_basis_list       = self.params['Tomography_bases']) 
+                        RO_basis_list       = self.params['Tomography_bases'],
+                        readout_orientation = self.params['carbon_readout_orientation']) 
                 gate_seq.extend(carbon_tomo_seq)
 
             else: #No carbon spin RO? Do espin RO!

@@ -19,12 +19,15 @@ params_lt1['LDE_SP_duration']           = 2e-6
 params_lt1['MW_during_LDE']             = 1 
 params_lt1['LDE_decouple_time']         = 1/qt.exp_params['samples'][name]['C1_freq_0']
 
-#general sequence things. All of this are set automatically.
+#general sequence things. All of these are set automatically.
 params_lt1['do_general_sweep']          = False
 params_lt1['is_two_setup_experiment']   = 1
-params_lt1['do_N_MBI']                  = 0
+params_lt1['do_N_MBI']                  = 0 #practically not in use
 params_lt1['do_carbon_init']            = 1
+params_lt1['MW_before_LDE1']            = 0
+params_lt1['LDE_1_is_init']             = 0
 params_lt1['do_LDE_1']                  = 1 # we always do this.
+params_lt1['LDE_1_is_el_init']          = 0
 params_lt1['do_swap_onto_carbon']       = 1
 params_lt1['do_LDE_2']                  = 1 # TODO finish the LDE element for non local operation
 params_lt1['do_phase_correction']       = 1 
@@ -32,6 +35,7 @@ params_lt1['do_purifying_gate']         = 1
 params_lt1['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
 
 
+params_lt1['phase_correct_max_reps']    = 10 
 
 # define adwin channels here #XXXXX
 
@@ -70,11 +74,13 @@ params_lt1['PLU_4_delay']             = 150e-9
 
 params_lt1['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt1['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
+params_lt1['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
-### Everything carbon
-params_lt1['carbon']                    = 1
-params_lt1['carbon_init_method']        = 'swap'
 
-### Everything about the sequence/logic
+### Everything carbon and what type of control we have.
 
-params_lt1['phase_correct_max_reps']    = 10 
+params_lt1['carbon']                        = 1
+params_lt1['carbon_init_method']            = 'swap'
+params_lt1['carbon_readout_orientation']    = 'positive'
+
+

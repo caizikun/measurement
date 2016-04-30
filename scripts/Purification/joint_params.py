@@ -51,7 +51,7 @@ joint_params['do_final_mw_LDE']         = 0 # only changed for B&K
 joint_params['opt_pi_pulses'] = 1
 joint_params['opt_pulse_separation']    = 250e-9 #350e-9 changed for higher visibility of 
 
-joint_params['LDE_attempts_before_CR'] = 250 # 1000 for tpqi seems ok
+joint_params['LDE_attempts'] = 250 # 1000 for tpqi seems ok
 
 joint_params['LDE_element_length'] = 10e-6 #needs to be set accordingly.
 
