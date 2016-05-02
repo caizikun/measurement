@@ -42,7 +42,7 @@ def SWAP(name,
     funcs.prepare(m)
 
     ''' set experimental parameters '''
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 400
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
     m.params['el_after_init']               = '0'
 
