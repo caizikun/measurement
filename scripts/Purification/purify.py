@@ -15,6 +15,7 @@ reload(pq)
 
 class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'PQ_C13_Measurement'
+    adwin_process = 'purification'
     
     def __init__(self, name):
         purify_slave.purify_single_setup.__init__(self, name)
@@ -30,8 +31,7 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
 
     def start_measurement_process(self):
         qt.msleep(.5)
-       
-         self.start_adwin_process(stop_processes=['counter'])
+        self.start_adwin_process(stop_processes=['counter'])
         qt.msleep(.5)
 
     def measurement_process_running(self):
@@ -51,17 +51,10 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
         print('Total completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['SSRO_repetitions']))
 
-class PQDDMeasurementIntegrated(pq.PQMeasurementIntegrated, purify_slave.purify_single_setup): 
-    mprefix = 'PQ_C13_msmt_Integrated'
-
-    def run(self, **kw):
-        pq.PQMeasurementIntegrated.run(self,**kw)
-    
 
 class purify_master(PQPurifyMeasurement):
     mprefix = 'Purification'
-    ### XXX
-    ### insert adwin_process here
+    adwin_process = 'purification'
 
     def __init__(self, name):
         PQPurifyMeasurement.__init__(self, name)
@@ -69,17 +62,10 @@ class purify_master(PQPurifyMeasurement):
         self.params = m2.MeasurementParameters('LocalParameters')
         self.params['pts']=1
         self.params['repetitions']=1
-
-    def autoconfig(self, **kw):
-        ###XXX
-        self.params['sequence_wait_time'] = self.joint_params['LDE_attempts_before_CR']*self.joint_params['LDE_element_length']*1e6\
-        +self.params['free_precession_time_1st_revival']*1e6*self.joint_params['wait_for_1st_revival']+ 20
-        ###XXX find out what this
-
-        #print 'I am the sequence waiting time', self.params['sequence_wait_time']
-        
-        PQPurifyMeasurement.autoconfig(self, **kw)
     
+    def save(self, name = 'adwinadata'):
+        purify_slave.purify_single_setup.save(self)
+        
     def print_measurement_progress(self):
         tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
         self.physical_adwin.Set_Par(50, int(tail_cts))
@@ -87,25 +73,19 @@ class purify_master(PQPurifyMeasurement):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s readout repetitions' % reps_completed)
 
-
-
-    def setup(self, **kw):
-        DD_pq.PQDDMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)
-        if self.joint_params['twitter_randomness']:
-            self._rnd_dataset=np.loadtxt(self.params['twitter_rnd_fp'],dtype=np.int)     
-
-    def save(self, name='ssro'):
-        reps = self.adwin_var('entanglement_events')
-        self.save_adwin_data(name,
-                [   ('CR_before', reps),
-                    ('CR_after', reps),
-                    ('SP_hist', self.params['SP_duration']),
-                    ('CR_hist', 200),
-                    ('RO_data', reps),
-                    ('statistics', 10),
-                    'entanglement_events',
-                    'completed_reps',
-                    'total_CR_counts'])
+    # def save(self, name='ssro'):
+    #     reps = self.adwin_var('entanglement_events')
+    #     self.save_adwin_data(name,
+    #             [   ('CR_before', reps),
+    #                 ('CR_after', reps),
+    #                 ('SP_hist', self.params['SP_duration']),
+    #                 ('CR_hist', 200),
+    #                 ('RO_data', reps),
+    #                 ('statistics', 10),
+    #                 'entanglement_events',
+    #                 'completed_reps',
+    #                 'total_CR_counts'])
+    
     def finish(self):
         h5_joint_params_group = self.h5basegroup.create_group('joint_params')
         joint_params = self.joint_params.to_dict()
@@ -138,6 +118,8 @@ class purify_master(PQPurifyMeasurement):
         MIN_HIST_SYNC_BIN = np.uint64(self.params['MIN_HIST_SYNC_BIN'])
         MAX_HIST_SYNC_BIN = np.uint64(self.params['MAX_HIST_SYNC_BIN'])
         
+
+        #### entanglement marker number
         entanglement_marker_number = self.params['entanglement_marker_number'] # add to BS and LT
         wait_for_late_data=self.params['wait_for_late_data']                   # add to BS and LT
         TTTR_RepetitiveReadouts = self.params['TTTR_RepetitiveReadouts']           # add to BS
@@ -303,7 +285,7 @@ class purify_master(PQPurifyMeasurement):
         self.stop_measurement_process()
 
     def stop_measurement_process(self):
-        DD_pq.PQDDMeasurement.stop_measurement_process(self)
+        PQPurifyMeasurement.stop_measurement_process(self)
         self.AWG_RO_AOM.turn_off()
         self.E_aom.turn_off()
         self.A_aom.turn_off()

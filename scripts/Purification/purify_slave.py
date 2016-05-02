@@ -131,11 +131,7 @@ class purify_single_setup(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
-        sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-        if self.params['Nr_parity_msmts'] == 0:
-            parity_reps = 1
-        else:
-            parity_reps =  reps*self.params['Nr_parity_msmts']
+        # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
 
 
         self.save_adwin_data(name,
@@ -647,13 +643,4 @@ class purify_single_setup(DD.MBI_C13):
 
 
 
-class purify_slave(purify_single_setup):
 
-    """
-    measurement class that is exectued on LT3 for remote measurements.
-    Comes with a slightly adapted adwin process for setup communication.
-    """
-    mprefix = 'purifcation slave'
-    ### XXX
-    ### insert remote slave_adwin process here
-    adwin_process = 'purification'

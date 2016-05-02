@@ -109,3 +109,18 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 1
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
+
+
+### Everything HydraHarp
+params_lt4['MAX_DATA_LEN']        =   int(100e6)
+params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+params_lt4['MIN_SYNC_BIN']        =   int(0.0) #5 us #XXX was 5us
+params_lt4['MAX_SYNC_BIN']        =   int(18.5e-6*1e12) #15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(0) #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(18500*1e3) #XXXXX was 5560*1e3
+params_lt4['entanglement_marker_number'] = 1
+params_lt4['measurement_time']    =   24*60*60 #sec = 24H
+params_lt4['measurement_abort_check_interval']    = 1 #sec
+params_lt4['wait_for_late_data'] = 0 #in units of measurement_abort_check_interval
+params_lt4['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
+params_lt4['TTTR_RepetitiveReadouts'] =  1
