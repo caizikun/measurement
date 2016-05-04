@@ -27,7 +27,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 def SWAP(name, 
         carbon                  =   1,               
         carbon_init_states      =   ['up'], 
-        carbon_init_methods     =   ['MBI'], 
+        carbon_init_methods     =   ['swap'], 
         carbon_init_thresholds  =   [0,1],  
 
         elec_init_state         =   ['Z'],

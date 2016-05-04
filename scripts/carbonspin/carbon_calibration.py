@@ -39,16 +39,20 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = True
-
+self_phase_calibration = False
+self_unc_phase_calibration = True
+self_unc_phase_offset_calibration = True
+check_unc_phase_calibration = True
+check_phase_or_offset = 'offset' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
-debug = False
+# Note that wont save to file if debug is on.
+debug = False 
 
 ### repetitions per data point.
 freq_reps = 500
@@ -195,6 +199,62 @@ def NuclearRamseyWithInitialization_phase(name,
   
     funcs.finish(m, upload =True, debug=debug)
 
+# Added by PH to calibrate the phase for unconditional rotations on the carbons.
+def NuclearRamseyWithInitialization_unc_phase(name, 
+        carbon_nr           = 1,               
+        carbon_init_state   = 'up', 
+        el_RO               = 'positive',
+        el_state            = 0,
+        check_phase_or_offset     = 'phase',
+        check_phase         = False,
+        debug               = False):
+
+    m = DD.NuclearRamseyWithInitializationUncondCGate(name)
+    funcs.prepare(m)
+
+    '''Set parameters'''
+
+    if check_phase_or_offset != 'phase' and check_phase_or_offset != 'offset':
+        print "Wrong parameter passed to check_phase_or_offset"
+        return
+
+    m.params['check_phase_or_offset'] = check_phase_or_offset
+    m.params['check_phase'] = check_phase
+
+    ### Sweep parameters
+    m.params['reps_per_ROsequence'] = phase_reps
+    m.params['C13_MBI_RO_state'] =0
+    m.params['pts'] = 25
+    if carbon_nr == 6 and SETUP == 'lt2':
+        m.params['pts'] = 21
+
+    m.params['add_wait_gate'] = False
+    # m.params['free_evolution_time'] = np.ones(m.params['pts'] )*360e-6
+    m.params['C_unc_phase'] = np.linspace(-60, 400,m.params['pts'])    
+
+    m.params['sweep_name'] = 'phase'
+    m.params['sweep_pts']  = m.params['C_unc_phase']
+
+    '''Derived and fixed parameters'''
+
+    m.params['electron_readout_orientation'] = el_RO
+    m.params['carbon_nr']                    = carbon_nr
+    m.params['init_state']                   = carbon_init_state  
+    m.params['electron_after_init'] = str(el_state)
+
+
+    if check_phase_or_offset == 'phase':
+        m.params['C13_MBI_threshold_list'] = [0]
+    else: #For offset calibration we use MBI.
+        m.params['C13_MBI_threshold_list'] = [1]
+
+    m.params['Nr_C13_init']       = 1
+    m.params['Nr_MBE']            = 0
+    m.params['Nr_parity_msmts']   = 0
+
+  
+    funcs.finish(m, upload =True, debug=debug)
+
 
 def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_init_method = 'MBI', 
 					N_list = np.arange(4,300,24), debug = False,el_RO= 'positive',el_state = 0, nr_of_gates = 1,smart_sweep_pts=False,estimate_phase=0):
@@ -244,7 +304,7 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     funcs.finish(m, upload =True, debug=debug)
 
 
-def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,debug):
+def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_phase,self_unc_phase_offset,debug):
 
     """
     This routine automatically takes the measured values and writes them to the measurement parameters.
@@ -271,7 +331,14 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,debug):
                 search_string = 'C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string
                 data = write_to_file_subroutine(data,search_string)
 
+            if self_unc_phase:
+                search_string = 'C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string
+                data = write_to_file_subroutine(data,search_string)
 
+            if self_unc_phase_offset:
+                search_string = 'C'+str(c)+'_unc_phase_offset'+electron_transition_string
+                data = write_to_file_subroutine(data,search_string)
+                
         ### after compiling the new msmt_params, the are flushed to the python file.
         f = open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','w')
         f.writelines(data)
@@ -400,13 +467,13 @@ if n == 1 and f_ms0:
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
 
-	print 'Calibrate extra phase for gate for all 3 carbon spins'
-
-	#set all to zero to start with
 
 
 if n == 1 and self_phase_calibration:
-	for c in carbons:
+    print 'Calibrate extra phase for gate for all 3 carbon spins'
+
+    #set all to zero to start with
+    for c in carbons:
 		if n == 1:
 			qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string][c] = 0
 			# measure
@@ -431,6 +498,83 @@ if n == 1 and self_phase_calibration:
 			n = stop_msmt()
 
 
+##################################################################
+##### Calibrate extra phase for unconditional rotations     ######
+#################################################################
+
+if n == 1 and self_unc_phase_calibration:
+    print 'Calibrate extra phase for unconditional rotations for carbon spins'
+
+    for c in carbons:
+        if n == 1:
+            # measure
+            NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c)
+            # fit
+            phi0,u_phi_0,Amp,Amp_u =    cr.Carbon_Ramsey(timestamp=None, 
+                                   offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+                                   frequency = 1/360., phase =0, 
+                                   plot_fit = True, show_guess = False,fixed = [2,3,4,5],
+                                return_phase = True, return_amp = True,
+                                return_results = False, 
+                                title = 'phase_C'+str(c))
+            if Amp < 0:
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+90 
+            else:
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0-90 # Zero phase gives a -Y rotation!
+
+            print 'C'+str(c)+'_unc_extra_phase_correction_list['+str(c)+']'
+            print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c]
+            
+
+            n = stop_msmt()
+
+if n == 1 and self_unc_phase_offset_calibration:
+    print 'Calibrate phase offset for unconditional rotations for carbon spins'
+
+    for c in carbons:
+        if n == 1:
+            # measure
+            NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c, check_phase_or_offset = 'offset')
+            # fit
+            phi0,u_phi_0,Amp,Amp_u =    cr.Carbon_Ramsey(timestamp=None, 
+                                   offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+                                   frequency = 1/360., phase =0, 
+                                   plot_fit = True, show_guess = False,fixed = [2,3,4,5],
+                                return_phase = True, return_amp = True,
+                                return_results = True, 
+                                title = 'phase_C'+str(c))
+            if Amp < 0:
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+270 # phi 0 gives -y rotation
+            else:
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+90
+
+            print 'C'+str(c)+'_unc_phase_offset'+electron_transition_string
+            print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string]
+            
+
+            n = stop_msmt()
+
+if n == 1 and check_unc_phase_calibration:
+    print 'Check calibration of unconditional rotations for carbon spins'
+
+    #set all to zero to start with
+
+    for c in carbons:
+        if n == 1:
+
+            # measure
+            NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c, check_phase_or_offset = check_phase_or_offset, check_phase = True)
+            # fit
+            phi0,u_phi_0,Amp,Amp_u =    cr.Carbon_Ramsey(timestamp=None, 
+                                   offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
+                                   frequency = 1/360., phase =0, 
+                                   plot_fit = True, show_guess = False,fixed = [2,3,4,5],
+                                return_phase = True, return_amp = True,
+                                return_results = True, 
+                                title = 'phase_C'+str(c))
+                       
+
+            n = stop_msmt()
 
 ########################
 ######################## Cross-phase calibraiton.
@@ -542,6 +686,28 @@ if self_phase_calibration:
 	print '#########################'
 print
 
+if self_unc_phase_calibration:
+    print '#########################'
+    print 'self unconditional phases'
+    print
+    for c in carbons:
+        print 'C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string+'['+str(c)+']'
+        print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c]
+    print
+    print '#########################'
+print
+
+if self_unc_phase_offset_calibration:
+    print '#########################'
+    print 'self unconditional phases'
+    print
+    for c in carbons:
+        print ['C'+str(c)+'_unc_phase_offset'+electron_transition_string]
+        print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string]
+    print
+    print '#########################'
+print
+
 if cross_phase_calibration and len(carbons)>1:
 	print '#########################'
 	print 'cross phases'
@@ -557,7 +723,7 @@ if cross_phase_calibration and len(carbons)>1:
 
 # write to msmt_params.py if the calibration was finished succesfully.
 if n== 1:
-    write_to_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,debug)
+    write_to_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,self_unc_phase_calibration,self_unc_phase_offset_calibration,debug)
 else:
 	print 'Sequence was aborted: I did not save the calibration results'
 
