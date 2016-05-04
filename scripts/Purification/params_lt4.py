@@ -43,6 +43,7 @@ params_lt4['SP_duration'] = 30 #10
 params_lt4['wait_after_pulse_duration'] = 1
 params_lt4['do_sequences'] = 1
 params_lt4['Dynamical_stop_ssro_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
+params_lt4['E_RO_durations']  = [params_lt4['Dynamical_stop_ssro_duration']] # only necessary for analysis
 params_lt4['Dynamical_stop_ssro_threshold'] = 1
 params_lt4['MBI_attempts_before_CR'] = 1 
 
@@ -122,5 +123,7 @@ params_lt4['entanglement_marker_number'] = 1
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
 params_lt4['measurement_abort_check_interval']    = 1 #sec
 params_lt4['wait_for_late_data'] = 0 #in units of measurement_abort_check_interval
-params_lt4['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
+params_lt4['TTTR_read_count'] = 131072#qt.instruments['HH_400'].get_T2_READMAX()
 params_lt4['TTTR_RepetitiveReadouts'] =  1
+
+params_lt4['measurement_time'] = 24.*60.*60. 

@@ -86,7 +86,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       10e-6,#XXXXXXXXX20e-6, #XXXX 50e-6
+		'green_repump_amplitude':       20e-6,# 20e-6
 		'green_repump_duration':        30,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,

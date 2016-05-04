@@ -2813,7 +2813,8 @@ config['adwin_pro_processes'] = {
                     ['adwin_comm_timeout_cycles'       ,   1], 
                     ['remote_awg_trigger_channel'      ,   1],
                     ['invalid_data_marker_do_channel'  ,   1],  
-                    ['repetitions'                     ,   0],            
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],          
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2854,6 +2855,7 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 38,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 39, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 40, # result of the last ssro in the adwin
+                    'sync_number'               : 41, # current sync number to compare with HydraHarp data
                     },
                 },
         }

@@ -13,7 +13,7 @@ reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
-
+import copy
 
 class purify_single_setup(DD.MBI_C13):
 
@@ -30,22 +30,30 @@ class purify_single_setup(DD.MBI_C13):
 
     def autoconfig(self):
 
+        self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
+                                    'ch1m2': 'ch1_marker2',
+                                    'ch2m1': 'ch2_marker1',
+                                    'ch2m2': 'ch2_marker2',
+                                    'ch3m1': 'ch3_marker1',
+                                    'ch3m2': 'ch3_marker2',
+                                    'ch4m1': 'ch4_marker1',
+                                    'ch4m2': 'ch4_marker2',}
         # setup logical adwin parameters --> how many C13 intialization steps are there?
         # this can go out soon.
-        self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
-        if self.params['do_carbon_init'] > 0: 
-            if self.params['carbon_init_method'] == 'MBI':
-                self.params['C13_MBI_threshold_list'] =[1] + self.params['C13_MBI_threshold_list'] 
-            else:
-                self.params['C13_MBI_threshold_list'] =[0] + self.params['C13_MBI_threshold_list'] 
+        # self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
+        # if self.params['do_carbon_init'] > 0: 
+        #     if self.params['carbon_init_method'] == 'MBI':
+        #         self.params['C13_MBI_threshold_list'] =[1] + self.params['C13_MBI_threshold_list'] 
+        #     else:
+        #         self.params['C13_MBI_threshold_list'] =[0] + self.params['C13_MBI_threshold_list'] 
         
-        self.params['Nr_C13_init'] = len(self.params['C13_MBI_threshold_list'])
+        # self.params['Nr_C13_init'] = len(self.params['C13_MBI_threshold_list'])
         
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
         DD.MBI_C13.autoconfig(self)
-
+        self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration'])*1e-6+50e-6
 
         # add values from AWG calibrations
         self.params['SP_voltage_AWG'] = \
@@ -90,15 +98,15 @@ class purify_single_setup(DD.MBI_C13):
 
         for i in range(10):
             self.physical_adwin.Stop_Process(i+1)
-            qt.msleep(0.1)
-        qt.msleep(1)
+            qt.msleep(0.3)
+        qt.msleep(2)
         # self.adwin.load_MBI()   
         # New functionality, now always uses the adwin_process specified as a class variables 
         loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
 
         exec(loadstr)
-        qt.msleep(1)
-        # print loadstr 
+        qt.msleep(2)
+        print loadstr 
 
         length = self.params['nr_of_ROsequences']
 
@@ -135,24 +143,51 @@ class purify_single_setup(DD.MBI_C13):
 
 
         self.save_adwin_data(name,
-                [   ('CR_before', reps),
-                    ('CR_after', reps),
-                    ('C13_MBI_attempts', reps), 
+                [   ('CR_before',1, reps),
+                    ('CR_after',1, reps),
+                    ('C13_MBI_attempts',1, reps), 
                     ('C13_MBI_starts', reps), 
-                    ('C13_MBI_success', reps), 
-                    ('SSRO_result_after_Cinit',reps),
+                    ('C13_MBI_success',1, reps), 
+                    ('SSRO_result_after_Cinit',1,reps),
                     ('statistics', 10),
-                    ('adwin_communication_time'              ,reps),  
-                    ('plu_which'                             ,reps),  
-                    ('attempts_first'                        ,reps),  
-                    ('attempts_second'                       ,reps), 
-                    ('SSRO_after_electron_carbon_SWAP_result',reps), 
-                    ('carbon_readout_result'                 ,reps),
-                    ('electron_readout_result'               , reps),
-                    ('ssro_results'                           , reps), 
+                    ('adwin_communication_time'              ,1,reps),  
+                    ('plu_which'                             ,1,reps),  
+                    ('attempts_first'                        ,1,reps),  
+                    ('attempts_second'                       ,1,reps), 
+                    ('SSRO_after_electron_carbon_SWAP_result',1,reps), 
+                    ('carbon_readout_result'                 ,1,reps),
+                    ('electron_readout_result'               ,1, reps),
+                    ('ssro_results'                          ,1, reps), 
+                    ('sync_number'                           ,1,reps ),  
                     ])
         return
 
+    
+    def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):
+        """
+        The Trigger element of DD_2 is changed such that there is a 5 us waiting time at the end of the elements.
+        Helps with the adwin counting and saves time for the adwin.
+        """
+
+        if outputChannel == 'adwin_sync':
+            TrigHigh = pulse.SquarePulse(channel = outputChannel,
+                length = duration-5e-6, amplitude = 2)
+            TrigLow = pulse.SquarePulse(channel = outputChannel,
+                length = 5e-6, amplitude = 0)
+            Trig_element = element.Element(name, pulsar=qt.pulsar,
+                global_time = True)
+            Trig_element.append(TrigHigh)
+            Trig_element.append(TrigLow)
+
+        else:
+            #Output channels for lasers are defined on AWG marker channels. Therefore, amplitue=1.=HIGH!
+            Trig = pulse.SquarePulse(channel = outputChannel,
+                length = duration, amplitude = 1.)
+            Trig_element = element.Element(name, pulsar=qt.pulsar,
+                global_time = True)
+            Trig_element.append(Trig)
+
+        return Trig_element
     def load_remote_carbon_params(self,master=True):
         """
         Generates a hypothetical carbon with index = 9 from the joint measurement parameters.
@@ -381,19 +416,23 @@ class purify_single_setup(DD.MBI_C13):
 
         LDE_elt.generate_LDE_elt(self,Gate)
 
-        if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
-            Gate.event_jump = 'next'
-            Gate.go_to = 'next' 
+        if Gate.reps == 1:
+            if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
+                Gate.event_jump = 'next'
+                Gate.go_to = 'next' 
+            else:
+                Gate.event_jump = 'next'
+                Gate.go_to = 'start'
+                
+                if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
+                    Gate.go_to = None
+                    Gate.event_jump = None
+                elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+                    Gate.go_to = None
+                    Gate.event_jump = None
         else:
-            Gate.event_jump = 'next'
-            Gate.go_to = 'start'
-            
-            if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
-                Gate.go_to = None
-                Gate.event_jump = None
-            elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
-                Gate.go_to = None
-                Gate.event_jump = None
+            Gate.go_to = None
+            Gate.event_jump = 'second_next'
 
     def generate_sequence(self,upload=True,debug=False):
         """
@@ -424,9 +463,15 @@ class purify_single_setup(DD.MBI_C13):
 
             
 
-            ### LDE elements
+            ### LDE elements: WE have two LDE elements with potentially different functions
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')
             LDE1.el_state_after_gate = 'sup'
+
+            if self.params['LDE_attempts'] > 1:
+                LDE1.reps = self.params['LDE_attempts']-1
+                LDE1_final = DD.Gate('LDE1_final_'+str(pt),'LDE')
+                LDE1_final.el_state_after_gate = 'sup'
+                LDE1_final.reps = 1
 
                 ### if statement to decide what LDE1 does: init or entangling.
             if self.params['LDE_1_is_init'] >0:
@@ -434,8 +479,8 @@ class purify_single_setup(DD.MBI_C13):
 
                 if self.params['input_el_state'] in ['X','mX','Y','mY']:
                     LDE1.first_pulse_is_pi2 = True
-            else:
-                LDE1.reps = self.params['LDE_attempts']
+            elif self.params['LDE_attempts'] != 1:
+                LDE1.reps = self.params['LDE_attempts'] - 1
             
 
 
@@ -444,21 +489,31 @@ class purify_single_setup(DD.MBI_C13):
             LDE_rephase1.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-            LDE_repump1 = DD.Gate('LDE_repump_1_'+str(pt),'Trigger',duration = 5e-6)
+            LDE_repump1 = DD.Gate('LDE_repump_1_'+str(pt),'Trigger')
+            LDE_repump1.duration = 10e-6
+            LDE_repump1.elements_duration = LDE_repump1.duration
+            LDE_repump1.channel = 'AOM_Newfocus'
+            LDE_repump1.el_state_before_gate = '0' 
 
-            ### WE have two LDE elements with potentially different functions
+            ### Second LDE element goes here.
             LDE2 = DD.Gate('LDE2'+str(pt),'LDE')
             LDE2.el_state_after_gate = 'sup'
-            LDE2.reps = self.params['LDE_attempts']
+            if self.params['LDE_attempts']>1:
+                LDE2.reps = self.params['LDE_attempts']-1
+                LDE2_final = DD.Gate('LDE2_final_'+str(pt),'LDE')
+                LDE2_final.el_state_after_gate = 'sup'
+                LDE2_final.reps = 1
 
+            ### LDE elements need rephasing or RO elements afterwards
             LDE_rephase2 = DD.Gate('LDE_rephasing_2_'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase2.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephase2)
 
-            LDE_repump2 = DD.Gate('LDE_repump_2_'+str(pt),'Trigger',duration = 5e-6)
-
-
-
+            LDE_repump2 = DD.Gate('LDE_RO_2_'+str(pt),'Trigger')
+            LDE_repump2.duration = 10e-6
+            LDE_repump2.elements_duration = LDE_repump2.duration
+            LDE_repump2.channel ='AOM_Newfocus'
+            LDE_repump2.el_state_before_gate = '0'
 
             ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
             dynamic_phase_correct = DD.Gate(
@@ -557,11 +612,17 @@ class purify_single_setup(DD.MBI_C13):
                     LDE1.wait_for_trigger = True
                 gate_seq.append(LDE1)
 
+                # print 'LDE1 reps',LDE1.reps
+                ### append last adwin synchro element 
+                if LDE1.reps > 1:
+                    gate_seq.append(LDE1_final)
+
                 if self.params['do_swap_onto_carbon'] > 0:
                     gate_seq.append(LDE_rephase1)
 
                 elif self.params['LDE_1_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2:
                     gate_seq.append(LDE_repump1)
+                    # gate_seq.append(DD.Gate('LDE_1_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 
             if self.params['do_swap_onto_carbon'] > 0:
                 ### Elementes for swapping
@@ -587,6 +648,10 @@ class purify_single_setup(DD.MBI_C13):
 
                 gate_seq.append(LDE2)
 
+                # need a final element for adwin communication
+                if LDE2.reps> 1:
+                    gate_seq.appen(LDE2_final)
+
                 if self.params['do_purifying_gate'] > 0 or self.params['do_phase_correction'] > 0:
                     # electron has to stay coherent after LDE attempts
                     gate_seq.append(LDE_rephase2)
@@ -603,19 +668,78 @@ class purify_single_setup(DD.MBI_C13):
 
 
             if self.params['do_carbon_readout'] > 0:
+                if self.params['do_purifying_gate'] >0:
+                    ### prepare branching of the sequence
+                    gate_seq0 = copy.deepcopy(gate_seq)
+                    gate_seq1 = copy.deepcopy(gate_seq)
 
-                carbon_tomo_seq = self.readout_carbon_sequence(
-                        prefix              = 'Tomo',
-                        pt                  = pt,
-                        go_to_element       = None,
-                        event_jump_element  = None,
-                        RO_trigger_duration = 10e-6,
-                        el_state_in         = 0,
-                        carbon_list         = [self.params['carbon']],
-                        RO_basis_list       = self.params['Tomography_bases'],
-                        readout_orientation = self.params['carbon_readout_orientation']) 
-                gate_seq.extend(carbon_tomo_seq)
 
+                    carbon_tomo_seq0 = self.readout_carbon_sequence(
+                            prefix              = 'Tomo0',
+                            pt                  = pt,
+                            go_to_element       = None,
+                            event_jump_element  = None,
+                            RO_trigger_duration = 10e-6,
+                            el_state_in         = 0,
+                            carbon_list         = [self.params['carbon']],
+                            RO_basis_list       = self.params['Tomography_bases'],
+                            readout_orientation = self.params['carbon_readout_orientation']) 
+                    gate_seq0.extend(carbon_tomo_seq0)
+
+                    carbon_tomo_seq1 = self.readout_carbon_sequence(
+                            prefix              = 'Tomo1',
+                            pt                  = pt,
+                            go_to_element       = None,
+                            event_jump_element  = None,
+                            RO_trigger_duration = 10e-6,
+                            el_state_in         = 1,
+                            carbon_list         = [self.params['carbon']],
+                            RO_basis_list       = self.params['Tomography_bases'],
+                            readout_orientation = self.params['carbon_readout_orientation']) 
+                    gate_seq1.extend(carbon_tomo_seq1)
+
+
+                    # Make jump statements for branching to two different ROs
+                    gate_seq[-1].go_to       = carbon_tomo_seq1[0].name
+                    gate_seq[-1].event_jump  = carbon_tomo_seq0[0].name
+
+
+                    # In the end all roads lead to Rome
+                    Rome = DD.Gate('Rome_'+str(pt),'passive_elt',
+                            wait_time = 3e-6)
+                    gate_seq1.append(Rome)
+                    gate_seq0[-1].go_to = gate_seq1[-1].name
+
+                    # take care of electron states after the purification msmt. I.e. the electron state is set during the trigger.
+                    
+                    gate_seq0[len(gate_seq)-1].el_state_before_gate =  '0' #Element -1
+                    gate_seq1[len(gate_seq)-1].el_state_before_gate =  '1' #Element -1
+
+                    ### generate and merge branches
+                    gate_seq = self.generate_AWG_elements(gate_seq,pt)
+                    gate_seq0 = self.generate_AWG_elements(gate_seq0,pt)
+                    gate_seq1 = self.generate_AWG_elements(gate_seq1,pt)
+
+                    merged_sequence = []
+                    merged_sequence.extend(gate_seq)
+                    merged_sequence.extend(gate_seq0[len(gate_seq):])
+                    merged_sequence.extend(gate_seq1[len(gate_seq):])
+                    gate_seq = copy.deepcopy(merged_sequence) # for further processing
+
+                else: ### no purifying gate --> we don't need branching!
+                    carbon_tomo_seq = self.readout_carbon_sequence(
+                            prefix              = 'Tomo',
+                            pt                  = pt,
+                            go_to_element       = None,
+                            event_jump_element  = None,
+                            RO_trigger_duration = 10e-6,
+                            el_state_in         = 0,
+                            carbon_list         = [self.params['carbon']],
+                            RO_basis_list       = self.params['Tomography_bases'],
+                            readout_orientation = self.params['carbon_readout_orientation']) 
+                    gate_seq.extend(carbon_tomo_seq)
+
+                # print 'This is the tomography base', self.params['Tomography_bases']
             else: #No carbon spin RO? Do espin RO!
                 gate_seq.extend(e_RO)
 
@@ -625,7 +749,16 @@ class purify_single_setup(DD.MBI_C13):
             ###############################################
 
             #### insert elements here
-            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            if not (self.params['do_purifying_gate'] > 0 and self.params['do_carbon_readout'] > 0):
+                gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+
+            #### for carbon phase debbuging purposes.
+            # for g in gate_seq:
+            #     print g.name
+            #     self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
+
 
             ### Convert elements to AWG sequence and add to combined list
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)

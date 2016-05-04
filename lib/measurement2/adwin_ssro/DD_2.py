@@ -774,11 +774,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
                     Carbon_index  = Gate_sequence[i+1].Carbon_ind
+
                     if g.C_phases_before_gate[Carbon_index] == None:
                         g.dec_duration = 0
 
                     ### check for the electron in an eigenstate
-
 
                     else:
                         phase_diff =(desired_phase - g.C_phases_before_gate[Carbon_index])%(2*np.pi)
@@ -878,9 +878,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if g.C_phases_before_gate[iC] != None:
                         # print "repump_duration {:.2}, t {:.2}, duration_initial {:.2}, t_rep {:.2}, AOM_delay {:.2}".format(g.repump_duration,g.t,g.duration_initial,g.t_rep,g.AOM_delay) 
-                        g.C_phases_after_gate[iC] = (g.LDE_phase_correction_list_init[iC]+g.LDE_phase_correction_list[iC]*(g.reps-1))%(2*np.pi)
-                # print 'phase before LDE ', g.C_phases_before_gate
-                # print 'phase after LDE ', g.C_phases_after_gate                 
+                        g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.LDE_phase_correction_list_init[iC]+g.LDE_phase_correction_list[iC]*(g.reps-1))%(2*np.pi)
+                
+                # print g.name
+                # print 'phase before LDE ', g.C_phases_before_gate*180/np.pi
+                # print 'phase after LDE ', g.C_phases_after_gate*180/np.pi                 
 
             elif g.Gate_type == 'single_element':
                 pass
@@ -2274,6 +2276,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     pass
                 elif gate.go_to == 'next':
                     gate.go_to = gate_seq[i+1].elements[0].name
+                elif gate.go_to == 'second_next':
+
+                    gate.go_to = gate_seq[i+2].elements[0].name
                 elif gate.go_to == 'self': 
                     gate.go_to = gate.elements[0].name
                 elif gate.go_to =='start':
@@ -2288,6 +2293,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     pass
                 elif gate.event_jump == 'next':
                     gate.event_jump = gate_seq[i+1].elements[0].name
+                elif gate.event_jump == 'second_next':
+                    gate.event_jump = gate_seq[i+2].elements[0].name
                 elif gate.event_jump =='self':
                     gate.elements[0].name
                 elif gate.event_jump == 'start' :
@@ -3806,8 +3813,8 @@ class MBI_C13(DynamicalDecoupling):
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
-            #carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
-            carbon_swap_seq = []
+            carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]
+            # carbon_swap_seq = []
         elif swap_type  ==  'swap_wo_init':
 
             #carbon_swap_seq = [C_Ren_ym, e_x, C_Ren_xm, C_unc_x, e_y, C_Ren_y] #for actual swap, need zm rotation on carbon at the end
