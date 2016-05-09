@@ -126,9 +126,13 @@ def generate_LDE_elt(msmt,Gate, **kw):
         e.add(Gate.HHsync,
             refpulse = 'initial_delay')
 
-    # 2b
+    # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay')
+
+    if Gate.reps == 1:
+        e.add(Gate.adwin_trigger_pulse,
+            refpulse = 'initial_delay')
     #3 MW pulses
     if msmt.params['MW_during_LDE'] == 1 :
         

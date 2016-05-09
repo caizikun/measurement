@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -39,14 +39,14 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = False
+f_ms0 = True
 
-f_ms1 = False
+f_ms1 = True
 
-self_phase_calibration = False
-self_unc_phase_calibration = True
-self_unc_phase_offset_calibration = True
-check_unc_phase_calibration = True
+self_phase_calibration = True
+self_unc_phase_calibration = False
+self_unc_phase_offset_calibration = False
+check_unc_phase_calibration = False
 check_phase_or_offset = 'offset' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1

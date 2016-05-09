@@ -5,13 +5,15 @@ import logging
 import purify_slave
 from collections import deque
 import measurement.lib.measurement2.measurement as m2
-import purify_slave
+import purify_slave, sweep_purification
 import measurement.lib.measurement2.pq.pq_measurement as pq
-from measurement.lib.measurement2.adwin_ssro import DD_pq
 from measurement.lib.measurement2.adwin_ssro import DD_2
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 reload(T2_tools_v3)
 reload(pq)
+reload(purify_slave);reload(sweep_purification)
+
+name = qt.exp_params['protocols']['current']
 
 class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'PQ_C13_Measurement'
@@ -52,7 +54,7 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
                 (reps_completed, self.params['SSRO_repetitions']))
 
 
-class purify_master(PQPurifyMeasurement):
+class purify(PQPurifyMeasurement):
     mprefix = 'Purification'
     adwin_process = 'purification'
 
@@ -94,7 +96,7 @@ class purify_master(PQPurifyMeasurement):
         self.h5data.flush()
 
 
-        DD_pq.PQDDMeasurement.finish(self)
+        PQPurifyMeasurement.finish(self)
 
     def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False):
         if debug:
@@ -291,3 +293,106 @@ class purify_master(PQPurifyMeasurement):
         self.A_aom.turn_off()
         self.repump_aom.turn_off()
 
+
+
+def tail_sweep(name,debug = True,upload_only=True):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
+    """
+    m = purify(name)
+    sweep_purification.prepare(m)
+
+    ### general params
+    pts = 7
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+
+
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['MW_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 0
+    m.params['is_two_setup_experiment'] = 1 ## we want to do optical pi pulses on both setups!
+
+    ### need to find this out!
+    # m.params['MIN_SYNC_BIN'] =       5000
+    # m.params['MAX_SYNC_BIN'] =       9000 
+
+    # put sweep together:
+    sweep_off_voltage = False
+    if sweep_off_voltage:
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+    else:
+        m.params['general_sweep_name'] = 'aom_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(0.6,1.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+
+
+
+def SPCorrs(name,debug = True,upload_only = True):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
+    """
+    m = purify(name)
+    sweep_purification.prepare(m)
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 5000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+
+    ### this can also be altered to the actual theta pulse by negating the if statement
+    if True:
+        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
+    m.joint_params['opt_pi_pulses'] = 2
+
+    ### upload
+
+    sweep_purification.run_sweep(m,debug = True,upload_only = True)
+
+
+
+def EntangleZZ(name):
+    pass
+
+def EntangleXX(name):
+    pass
+
+def PurifyZZ(name):
+    pass
+
+def PurifyXX(name): 
+    pass
+
+def PurifyYY(name):
+    pass
+
+
+if __name__ == '__main__':
+
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    # SPCorrs(name+'_SPCorrs')
+    # repump_speed(name+'_repump_speed')
+    ######

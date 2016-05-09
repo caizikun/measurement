@@ -1,4 +1,5 @@
 import qt
+import joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -23,7 +24,7 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 500e-9
+params_lt3['AWG_SP_power']              = 1000e-9
 params_lt3['LDE_SP_duration']           = 2e-6
 params_lt3['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
@@ -32,10 +33,11 @@ params_lt3['MW_opt_puls1_separation']   = 22e-9
 
 
 #adwin params defs:
-params_lt3['SP_duration'] = 10 #10
+params_lt3['SP_duration'] = 30#10 #10
 params_lt3['wait_after_pulse_duration'] = 1
 params_lt3['do_sequences'] = 1
 params_lt3['Dynamical_stop_ssro_duration'] = qt.exp_params['protocols'][name]['AdwinSSRO-integrated']['SSRO_duration'] #15 
+params_lt3['E_RO_durations']  = [params_lt3['Dynamical_stop_ssro_duration']] # only necessary for analysis
 params_lt3['Dynamical_stop_ssro_threshold'] = 1
 params_lt3['MBI_attempts_before_CR'] = 1 
 
@@ -100,3 +102,23 @@ params_lt3['carbon']                        = 1
 params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
 
+### Everything TimeHarp / this is imported from Bell.joint_params
+params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+params_lt3['MIN_SYNC_BIN'] =       0
+params_lt3['MAX_SYNC_BIN'] =       20000
+params_lt3['MIN_HIST_SYNC_BIN'] =  1
+params_lt3['MAX_HIST_SYNC_BIN'] =  15000
+params_lt3['TTTR_RepetitiveReadouts'] =  10 #
+params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+params_lt3['measurement_abort_check_interval']    = 2. #sec
+params_lt3['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
+params_lt3['use_live_marker_filter']=True
+params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt3['tail_start_bin'] = 7480
+params_lt3['tail_stop_bin'] = 7480 + 200
+params_lt3['prepulse_start_bin'] = 7570
+params_lt3['prepulse_stop_bin'] = 7570 + 18
+params_lt3['live_filter_queue_length'] = 10
+
+params_lt3['measurement_time'] = 24.*60.*60. 

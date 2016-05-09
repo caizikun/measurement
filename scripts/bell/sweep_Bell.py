@@ -339,7 +339,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('local_short_fiber') 
+    tail_sweep('test_connection_B-56') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 
