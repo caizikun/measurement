@@ -235,8 +235,8 @@ cfg['samples'][sample_name] = {
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
-	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-46.49] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-	'C4_unc_phase_offset_m1' : 132.95,
+	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [55.27] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_unc_phase_offset_m1' : 15.38,
 	###############
 	# C5 (A ~ -26) #
 	###############
@@ -403,6 +403,9 @@ cfg['protocols'][name]['pulses'] = {
 
 		'C13_X_phase' 			:0,
 		'C13_Y_phase' 			:270,
+
+		'C13_X_phase_uncond' 			:0,
+		'C13_Y_phase_uncond' 			:90,
 
 		'pulse_shape': pulse_shape,
 		'MW_switch_risetime'	:	500e-9,

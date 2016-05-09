@@ -518,9 +518,9 @@ if n == 1 and self_unc_phase_calibration:
                                 return_results = False, 
                                 title = 'phase_C'+str(c))
             if Amp < 0:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+90 
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi-90 
             else:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0-90 # Zero phase gives a -Y rotation!
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+90 # Zero phase gives a -Y rotation!
 
             print 'C'+str(c)+'_unc_extra_phase_correction_list['+str(c)+']'
             print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c]
@@ -544,9 +544,9 @@ if n == 1 and self_unc_phase_offset_calibration:
                                 return_results = True, 
                                 title = 'phase_C'+str(c))
             if Amp < 0:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+270 # phi 0 gives -y rotation
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+90 # phi 0 gives -y rotation
             else:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+90
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0-90
 
             print 'C'+str(c)+'_unc_phase_offset'+electron_transition_string
             print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string]

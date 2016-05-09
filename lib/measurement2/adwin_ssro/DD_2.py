@@ -3721,7 +3721,7 @@ class MBI_C13(DynamicalDecoupling):
     
         phase_offset = self.params['C'+str(Carbon_ind)+'_unc_phase_offset'+el_trans]
         extra_phase = (self.params['C'+str(Carbon_ind)+'_unc_extra_phase_correction_list'+el_trans][Carbon_ind] 
-            + phase_offset)
+            - phase_offset)
 
         # Need phase offset to adjust phase, plus extra phase to bring it back! 
         return Gate(name, 'Carbon_Gate',
@@ -3822,11 +3822,11 @@ class MBI_C13(DynamicalDecoupling):
 
         C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
             Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_Y_phase'])
+            phase       = self.params['C13_Y_phase_uncond'])
 
         C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
             Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_X_phase'])
+            phase       = self.params['C13_X_phase_uncond'])
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
@@ -5150,7 +5150,8 @@ class NuclearRamseyWithInitializationUncondCGate(MBI_C13):
                         Carbon_ind  = addressed_carbon,
                         N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
                         tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
-                        phase       = 0)
+                        phase       = 0,
+                        extra_phase_after_gate = self.params['C_unc_phase'][pt])
 
                 else: # Used afterwards to check everything works.
   
@@ -5180,7 +5181,7 @@ class NuclearRamseyWithInitializationUncondCGate(MBI_C13):
                         event_jump_element  = None,
                         RO_trigger_duration = 10e-6,
                         carbon_list         = [self.params['carbon_nr']],
-                        RO_basis_list       = [self.params['C_unc_phase'][pt]],
+                        RO_basis_list       = [0],
                         readout_orientation = self.params['electron_readout_orientation'])
                 gate_seq.extend(carbon_tomo_seq)
 
@@ -5201,10 +5202,8 @@ class NuclearRamseyWithInitializationUncondCGate(MBI_C13):
 
                 if self.params['check_phase'] == False:
                     ### Un-conditional gate 
-                    C_unc = Gate('C_unc_pt'+str(pt), 'Carbon_Gate',
+                     C_unc = self.unconditional_carbon_gate('C_unc_pt'+str(pt),
                         Carbon_ind  = addressed_carbon,
-                        N           = self.params['C' + str(addressed_carbon) + '_unc_N' + el_trans][0],
-                        tau         = self.params['C' + str(addressed_carbon) + '_unc_tau'+el_trans][0],
                         phase       = self.params['C_unc_phase'][pt])
                 else:
                      C_unc = self.unconditional_carbon_gate('C_unc_pt'+str(pt),
