@@ -7,9 +7,6 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-#execfile(qt.reload_current_setup)
-# from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
-# import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
 
 '''
 General idea: for every basic pulse type, check the corresponding parameter in msmt_params
@@ -23,7 +20,6 @@ Edited by NK and SK 20160128
 def check_pulse_shape(msmt):
 
 	pulse_shape = msmt.params['pulse_shape']
-# if 'pulse_shape' not in msmt.params.parameters:
 	if pulse_shape == 'Square':
 		#print 'pulse select selected square pulses'
 		msmt.params['fast_pi_duration'] = msmt.params['Square_pi_length']
@@ -39,7 +35,8 @@ def check_pulse_shape(msmt):
 		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Hermite_pi_length']
 		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Hermite_pi2_length']
 	else:
-		raise Exception('Error in pulse select: ')#, sys.exc_info()[0]
+		raise Exception('Error in pulse select: '), sys.exc_info()[0]
+
 	return pulse_shape
 
 def X_pulse(msmt):
@@ -219,8 +216,8 @@ def mw2_X_pulse(msmt):
 	pi pulse on MW source No2
 	'''	
 	pulse_shape = check_pulse_shape(msmt)
-	
 	if pulse_shape == 'Square':
+		print 'doing Squares on MW2'
 		X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
 			I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
 			PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],

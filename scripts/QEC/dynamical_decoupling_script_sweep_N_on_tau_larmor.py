@@ -40,8 +40,8 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     else:
         m.params['Final_Pulse'] ='-x'
     ### Calculate tau larmor
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = 1/f_larmor#rounds to ns
+    #f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    #tau_larmor = 1/f_larmor#rounds to ns
     #tau_larmor =9.668e-6
     # tau_larmor= 9.52e-6+2*2.314e-6
     
@@ -105,8 +105,8 @@ def SimpleDecoupling_Single_Block(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], 
     m.params['Number of pulses in XY scheme'] = XY_scheme
     m.params['DD_in_eigenstate'] = False
     ### Calculate tau larmor
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/f_larmor,9)#rounds to ns
+    #f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    #tau_larmor = round(1/f_larmor,9)#rounds to ns
     #tau_larmor =9.668e-6
     # tau_larmor= 9.52e-6+2*2.314e-6
 
@@ -145,7 +145,7 @@ def take_DD_Data(larmor_nr,Nmin,Nmax,Nstep,Single_Block=False,shutter=False,XY_s
 
     Continue_bool = True 
 
-    nr_list = np.array([Larmor_nr])
+    nr_list = np.array([larmor_nr])
     print 'nrofruns', nr_of_runs
     
     for n, N in enumerate(range(Nmin,Nmax+Nstep,Nstep)):
@@ -156,9 +156,9 @@ def take_DD_Data(larmor_nr,Nmin,Nmax,Nstep,Single_Block=False,shutter=False,XY_s
             GreenAOM.set_power(7e-6)
             counters.set_is_running(1)
             optimiz0r.optimize(dims = ['x','y','z'], int_time = 120)
-            stools.turn_off_all_lt2_lasers()
+            #stools.turn_off_all_lt2_lasers()
 
-        SimpleDecoupling(SAMPLE+'_RepT'+str(XY_scheme)+'sweep_N_on_tau_L'+ Larmor_nr + '_part'+str(n+1),sweep='tau',N=N,nr_list = nr_list,reps=reps, XY_scheme=XY_scheme, shutter=0, debug=debug)
+        SimpleDecoupling(SAMPLE+'_RepT'+str(XY_scheme)+'sweep_N_on_tau_L'+ str(larmor_nr) + '_part'+str(n+1),sweep='tau',N=N,nr_list = nr_list,reps=reps, XY_scheme=XY_scheme, shutter=0, debug=debug)
 
     ### get the remaining larmor revivals in.
 
@@ -172,21 +172,23 @@ if __name__ == '__main__':
     debug = False
     Cont = True
     Run_Msmt = True
-    optimize = True
+    optimize = False
 
     
   
     if n==1 and Cont:
         Nmin = 2
         Nmax = 100
+        Nstep = 10
         larmor_nr = 5
         reps = 800
+        tau_larmor = 1/447968.42
+        pts = 10
+        #Number_of_pulses = 5
+        nr_of_runs = int(np.floor((Nmax-Nmin)/float(Nstep)))
+        #Total_time += reps*sum(np.linspace(2*Number_of_pulses*tau_larmor*larmor_min,2*Number_of_pulses*tau_larmor*larmor_max,nr_of_runs)) /3600.
 
-        Number_of_pulses = N
-        nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))
-        Total_time += reps*sum(np.linspace(2*Number_of_pulses*2.315e-6*larmor_min,2*Number_of_pulses*2.315e-6*larmor_max,nr_of_runs)) /3600.
-
-        print Total_time
+        #print Total_time
 
         if Run_Msmt:
             Cont = take_DD_Data(larmor_nr,Nmin,Nmax,Nstep,pts,optimize=optimize,XY_scheme=8,reps=reps,debug=debug)

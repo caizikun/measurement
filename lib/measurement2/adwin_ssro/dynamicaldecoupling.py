@@ -942,7 +942,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
                 elif Gate_sequence[i+1].phase == None or Gate_sequence[i+1].phase == 'reset':
-                    # print 'I am setting the phase 0 becuase of this',Gate_sequence[i+1].phase    
+                    if g.dec_duration !=  None:
+                        pass# print 'i am passing',g.name,g.dec_duration
+                    else:
                     g.dec_duration =0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
@@ -950,6 +952,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     # print 'I want this phase for this carbon',g.name,desired_phase,Carbon_index
 
                     if g.C_phases_before_gate[Carbon_index] == None:
+
                         g.dec_duration = 0
 
                     else:
@@ -962,6 +965,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                 (abs(phase_diff -2*np.pi) <=  (self.params['min_phase_correct']/180.*np.pi)) ):
                         # For very small phase differences correcting phase with decoupling introduces a larger error
                         #  than the phase difference error.
+
                             g.dec_duration = 0
                         else:                                    
                             self.params['electron_transition_used']=self.params['C'+str(Carbon_index)+'_dec_trans']
@@ -3103,13 +3107,13 @@ class NuclearRamsey_v2(DynamicalDecoupling):
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
 
-            if debug:
-                print '*'*10
-                for g in gate_seq:
-                    '-'*5
-                    print g.name
-                    print g.C_phases_before_gate
-                    print g.C_phases_after_gate
+            # if debug:
+            #     print '*'*10
+            #     for g in gate_seq:
+            #         '-'*5
+            #         print g.name
+            #         print g.C_phases_before_gate
+            #         print g.C_phases_after_gate
 
         if upload:
             print ' uploading sequence'

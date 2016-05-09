@@ -2,40 +2,34 @@ import qt
 import msvcrt
 import numpy as np
 
-#execfile(qt.reload_current_setup)
-
-#SAMPLE = qt.exp_params['samples']['current']
+SAMPLE = qt.exp_params['samples']['current']
 
 ##############
 ### Inputs ###
 ##############
 
-
-### LT2 with 111_No1_Sil18
 name='ESR_'+ qt.exp_params['protocols']['current']
-steps       = 301      #101
-mw_power    = -18#-13      #in dBm
-green_power = 25e-6     #15e-6
+
+green_power = 20e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
-center_f    = 1.74#4.055#3.95#1.74666#2.828#2.861
-#center_f    = 1.705#3.95#1.74666#2.828#2.861
-'''
-steps       = 60       #101
-mw_power    = -10    #in dBm
-green_power = 40e-6    #10e-6
-int_time    = 200       # in ms
-reps        = 150
-center_f    = 1.840  # in GHz
-'''
-range_f  =  0.03 # in GHz
 
+if False: #m1 transition
+    range_f     =  0.06 # 0.03 in GHz
+    steps       = 101      #101
+    mw_power    = -15#-13      #in dBm
+    center_f    =  1.75#4.055#3.95#1.74666#2.828#2.861
+else: #p1 transition
+    range_f     =  0.06 # 0.03 in GHz
+    steps       = 101      #101
+    mw_power    = -10     #in dBm
+    center_f    = 4.02
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SGS100A']
-#ins_smb = qt.instruments['SMB100']
+ins_smb = qt.instruments['SGS100']
+# ins_smb = qt.instruments['SMB100']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
@@ -101,4 +95,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-ins_aom.set_power(30e-6)
+#ins_aom.set_power(30e-6)

@@ -108,6 +108,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
             self.autoconfig()         
         if setup:
             self.setup()
+        print 'SSRO'
         print self.adwin_process
         self.start_adwin_process(stop_processes=['counter'])
         qt.msleep(1)

@@ -7,12 +7,15 @@ AOM = qt.instruments['GreenAOM']
 
 # counter = [0, 1, 2]
 # counter = [0]
+z_start = [55.]
+xstart = [-31.21]*len(z_start)
+xstop = [-16.21]*len(z_start)
+ystart = [7.20]*len(z_start)
+ystop = [22.2]*len(z_start)
+xpx = 101
+ypx = 101
 
-xstart = [-80.00]
-ystart = [0.00]
 
-
-z_start = [51.80]*9
 # z_start = [39.40]
 
 # zoom_depth = [2.5, 3.0, 3.5]
@@ -21,19 +24,19 @@ counter = 0
 
 for x in xstart:
   scan2d.set_xstart(x)
-  scan2d.set_xstop(x+70.0)
+  scan2d.set_xstop(-16.21)
   for y in ystart:
     scan2d.set_ystart(y)
-    scan2d.set_ystop(y+70.0)
-    zoom = [0.5, 1.5]  # delta z compare to focus
+    scan2d.set_ystop(22.2)
+    zoom = np.arange(3.,14.,1)  # delta z compare to focus
     # zoom = [2.00]
     optical_power= np.ones(20)*150e-6#[300e-6,300e-6,300e-6,300e-6,300e-6]  # Optical power for the different scans
     # optical_power = np.ones(4) * 50e-6
     # optical_power[1:4] *= 2 
     focus= z_start[counter] # z reference position
-    xsteps=[701]*len(zoom)
-    ysteps=[701]*len(zoom)
-    pixeltime =[10., 5., 5.]
+    xsteps=[xpx]*len(zoom)
+    ysteps=[ypx]*len(zoom)
+    pixeltime =[10.]*len(zoom)
     j=0
     k=0
     stop_scan = False

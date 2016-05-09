@@ -12,7 +12,7 @@ from measurement.lib.config import adwins as adwinscfg
 
 
 class adwin_cav1(adwin):
-    def __init__(self, name, physical_adwin ='physical_adwin_cav1', **kw):
+    def __init__(self, name, physical_adwin ='physical_adwin', **kw):
         adwin.__init__(self, name, 
                 adwin = qt.instruments[physical_adwin], 
                 processes = adwinscfg.config['adwin_cav1_processes'],
@@ -200,7 +200,6 @@ class adwin_cav1(adwin):
 
     def scan_photodiode(self, scan_type, nr_steps = 100, nr_scans = 5, wait_cycles = 50, 
             start_voltage = -3, end_voltage = 3, use_sync = 0, delay_ms = 0, scan_to_start=False):
-
         voltage_step = (end_voltage - start_voltage)/float(nr_steps)
         montana_sync_ch = adwinscfg.config['adwin_cav1_dios']['montana_sync_ch']
         ADC_ch = self.adcs['photodiode']
@@ -231,7 +230,6 @@ class adwin_cav1(adwin):
             do_scan = False
 
         if do_scan:
-            print 'Running scan... '
             scan_params = {}
             scan_params['DAC_ch_1'] = DAC_ch_1
             scan_params['DAC_ch_2'] = DAC_ch_2
@@ -247,11 +245,12 @@ class adwin_cav1(adwin):
             scan_params['nr_steps'] = nr_steps
 
             _steps,_pxtime = self.speed2px(dac_names, start_voltages)
+
             if scan_to_start:
-                print 'scanning to start'
                 self.linescan(dac_names, self.get_dac_voltages(dac_names),
                         start_voltages, _steps, _pxtime, value='none', 
                         scan_to_start=False, blocking = True)
+                print 'started scan to start'
             qt.msleep(0.1)
 
             self.start_voltage_scan_sync (DAC_ch_1=DAC_ch_1, DAC_ch_2=DAC_ch_2, DAC_ch_3=DAC_ch_3, ADC_channel=ADC_ch, 

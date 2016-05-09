@@ -2,31 +2,40 @@
 ### original created by Cristian Bonato - 2015
 ### edited by Suzanne van Dam - 2016
 ### SvD: I am removing the experiment mangaer from it.... I don't see why we need it.
+### SvD: I removed the buggy 2D scan. Find it back in the old cav_scan_gui_v8.py
 ################
 
 import os
+from datetime import datetime
+import h5py 
+
 from instrument import Instrument
 from cyclopean_instrument import CyclopeanInstrument
+from matplotlib import pyplot as plt
 
 import qt
 import time
+
 import types
 import numpy as np
 from lib import config
 
 
 class cavity_scan_manager(CyclopeanInstrument):
-    def __init__ (self, name, adwin, physical_adwin):
+    def __init__ (self, name, adwin, physical_adwin,use_cfg=False):
         CyclopeanInstrument.__init__(self,name, tags=[])
 
         # self._exp_mngr = exp_mngr
         self._adwin = qt.instruments[adwin]
         self._physical_adwin = qt.instruments[physical_adwin]
 
-        self._scan_initialized = False
-        self.V_min = None
-        self.V_max = None
-        self.nr_V_points = None
+        # self._scan_initialized = False
+        # self.V_min = None
+        # self.V_max = None
+        # self.nr_V_points = None
+        self._running_task = None
+
+        self.sampling_interval = 100
         # self.nr_avg_scans = 1
         # self.nr_repetitions = 1
 
@@ -78,30 +87,6 @@ class cavity_scan_manager(CyclopeanInstrument):
                 type= types.IntType, 
                 flags= Instrument.FLAG_GETSET)
         self.nr_steps_finelaser=121
-
-        self.add_parameter('minlambda_lrlaser',
-                type= types.FloatType, 
-                flags=Instrument.FLAG_GETSET, 
-                units = 'nm',
-                minval = 636, maxval = 640)
-        self.minlambda_lrlaser=636.8
-
-        self.add_parameter('maxlambda_lrlaser',
-                type= types.FloatType, 
-                flags=Instrument.FLAG_GETSET, 
-                units = 'nm',
-                minval = 636, maxval = 640)
-        self.maxlambda_lrlaser=637.2
-
-        self.add_parameter('nr_steps_lrlaser',
-                type= types.IntType, 
-                flags= Instrument.FLAG_GETSET)
-        self.nr_steps_lrlaser=101
-
-        self.add_parameter('nr_calib_pts_lrlaser',
-                type= types.IntType, 
-                flags= Instrument.FLAG_GETSET)
-        self.nr_calib_pts_lrlaser=2
 
         self.add_parameter('sync_delay_ms',
                 type= types.IntType,
@@ -158,47 +143,85 @@ class cavity_scan_manager(CyclopeanInstrument):
                 flags=Instrument.FLAG_GETSET)
         self.status_label='idle'
 
+        self.add_parameter('task_is_running', 
+                type= types.BooleanType,
+                flags=Instrument.FLAG_GETSET)
+        self.task_is_running = False
+
+        self.add_parameter('running_task', 
+                type= types.StringType,
+                flags=Instrument.FLAG_GETSET)
+        self.running_task = False
+
         self.data = None
         self.PD_signal = None
         self.tstamps_ms = None
         self.scan_params = None
 
-        self.add_function('manage_tasks')
+        #variable properties are saved in the cfg file 
+        if use_cfg:
+            cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
+            if not os.path.exists(cfg_fn):
+                _f = open(cfg_fn, 'w')
+                _f.write('')
+                _f.close()        
+            self.ins_cfg = config.Config(cfg_fn)   # this uses awesome QT lab properties, 
+            #that automatically saves the config file when closing qtlab. I think, at least... #test it
+            self.load_cfg()
+            self.save_cfg()
+
         self.add_function('start_lengthscan')
         self.add_function('stop_lengthscan')
         self.add_function('laser_scan')
         self.add_function('length_scan')
         self.add_function('save')
-        self.add_function('save_2D_scan')
-
+        self.add_function('run_new_length_scan')
+        self.add_function('run_new_fine_laser_scan')
+        self.add_function('run_new_sweep_msyncdelay')
 
     ###########
     ### task management
     ###########
 
-    def manage_tasks (self):
+    def load_cfg(self):
+        params = self.ins_cfg.get_all()
+        if 'minV_lengthscan' in params:
+            self.set_minV_lengthscan(params['minV_lengthscan'])
+        if 'maxV_lengthscan' in params:
+            self.set_maxV_lengthscan(params['maxV_lengthscan'])
+
+    def save_cfg(self):
+        self.ins_cfg['minV_lengthscan'] = self.minV_lengthscan
+        self.ins_cfg['maxV_lengthscan'] = self.maxV_lengthscan
+
+    def _sampling_event (self):
         '''
         Function that manages the tasks of the scan manager. 
-        If the cavity_scan_gui is started this function is executed periodically.
+        If the instrument is running this function is executed every sampling_interval.
         It makes sure that no two scans are executed at the same time.
         '''
-        if (self._running_task == 'length_scan'):
-            self.run_new_length_scan()
-        elif (self._running_task == 'lr_laser_scan'):
-            self.run_new_lr_laser_scan()
-        elif (self._running_task == 'fine_laser_scan'):
-            self.run_new_fine_laser_scan()
-        elif (self._running_task == 'fine_laser_calib'):
-            self.run_new_laser_calibration()
-        elif (self._running_task == 'timeseries'):
-            self.run_new_timeseries()
-        elif (self._running_task == 'update_2D_scan'):
-            self.run_update_2D_scan()            
-        elif (self._running_task == 'sweep_msyncdelay'):
-            self.run_new_sweep_msyncdelay()            
-        else:
-            idle = True
+        if not self._is_running:
+            return False
 
+        if self.get_task_is_running():
+            #a task is already running, so do not start a new one.
+            return True
+
+        if (self._running_task == 'length_scan'):
+            self.set_task_is_running(True)
+            self.run_new_length_scan()
+        elif (self._running_task == 'fine_laser_scan'):
+            self.set_task_is_running(True)
+            self.run_new_fine_laser_scan()
+        # elif (self._running_task == 'update_2D_scan'):
+        #     self.run_update_2D_scan()            
+        # elif (self._running_task == 'sweep_msyncdelay'):
+        #     self.run_new_sweep_msyncdelay()            
+        else:
+            print("no task specified. cavity scan manager instrument is stopping.")
+            return False
+
+        return True
     ######## start and stop functions of scans. These are linked to buttons on the can gui.
     ######## Work in Progress note: 
     ######## maybe I should only have this in the gui. 
@@ -208,84 +231,43 @@ class cavity_scan_manager(CyclopeanInstrument):
     ######## to specify the parameters. Without having to set all parameters with set_.... 
     ######## but OK, that I can take care of later.
     def start_lengthscan(self):
-        if (self._running_task==None):
+        if (self.get_task_is_running()== False):
+            self.set_is_running(True)
             self._running_task = 'length_scan'
-
+        else:
+            print('could not start lengthscan; a task is already running')
     def stop_lengthscan(self):
         if (self._running_task=='length_scan'):
-            self._running_task = None
-            self._2D_scan_is_active = False
+            self.set_task_is_running(False)
+            self.set_is_running(False)
+        else:
+            print('could not stop lengthscan; another task is running')
 
     def start_finelaser(self):
-        if (self._running_task==None):
+        if (self.get_task_is_running()== False):
+            self.set_is_running(True)
             self._running_task = 'fine_laser_scan'
+        else:
+            print('could not start laserscan; a task is already running')
 
     def stop_finelaser(self):
         if (self._running_task == 'fine_laser_scan'):
-            self._running_task = None
+            self.set_task_is_running(False)
+            self.set_is_running (False)
+        else:
+            print('could not stop laserscan; another task is running')            
             # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)###SvD: I do not see why we need to do this. 
             #maybe I need to do this later again, but somewhat differently?
 
-    def start_lr_scan(self):
-        if (self._running_task==None):
-            self.curr_l = self._scan_mngr.minlambda_lrlaser
-            if (self.minlambda_lrlaser>self._scan_mngr.maxlambda_lrlaser):
-                self._scan_direction = -1
-            else:
-                self._scan_direction = +1
-
-            print 'Scan direction: ', self._scan_direction
-            print self.curr_l
-            self.lr_scan_frq_list = []
-            self.lr_scan_sgnl_list = []
-            self._running_task = 'lr_laser_scan'
-
-    def resume_lr_scan(self):
-        if (self._running_task==None):
-            self._running_task = 'lr_laser_scan'
-
-    def stop_lr_scan(self):
-        if (self._running_task == 'lr_laser_scan'):
-            self._running_task = None
-            self._2D_scan_is_active = False
-            print 'Stopping!'
-
-    def start_2D_scan (self):
-        '''
-        function that starts a 2D scan sweeping both cavity length and laser frequency
-        SvD: I think it needs debugging
-        '''
-        if (self._running_task==None):
-            self.curr_pz_volt = self.minV_lengthscan
-            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_1'], dac_voltage=self.curr_pz_volt)
-            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_2'], dac_voltage=self.curr_pz_volt)
-            self._adwin.start_set_dac(dac_no=self._adwin.dacs['jpe_fine_tuning_3'], dac_voltage=self.curr_pz_volt)
-
-            # self._exp_mngr.set_piezo_voltage (self.curr_pz_volt) 
-
-            self.pzV_step = (self.maxV_lengthscan-self.minV_lengthscan)/float(self.nr_steps_lengthscan)
-            self.dict_2D_scan = {}
-            self.dict_pzvolt = {}
-            self._2D_scan_is_active = True
-
-            if (self._scan_mngr.minlambda_lrlaser>self._scan_mngr.maxlambda_lrlaser):
-                self.curr_l = self._scan_mngr.minlambda_lrlaser
-                self._scan_direction = -1
-            else:
-                self.curr_l = self._scan_mngr.minlambda_lrlaser
-                self._scan_direction = +1            
-            self.lr_scan_frq_list = np.array([])
-            self.lr_scan_sgnl_list = np.array([])
-            self._running_task = 'lr_laser_scan'
-            self.idx_2D_scan = 0
-
     def start_sweep_msyncdelay(self):
         if (self._running_task==None):
+            CyclopeanInstrument._start_running(self)
             self._running_task = 'sweep_msyncdelay'
 
     def stop_sweep_msyncdelay(self):
         if (self._running_task=='sweep_msyncdelay'):
             self._running_task==None
+            self._is_running = False
 
 
     ##############
@@ -300,185 +282,100 @@ class cavity_scan_manager(CyclopeanInstrument):
     def run(self,**kw):
         self.nr_avg_scans = kw.pop('nr_avg_scans', self.nr_avg_scans)
         self.nr_repetitions = kw.pop('nr_repetitions', self.nr_repetitions)
-        get_nr_avg_scans()
-        get_nr_repetitions()
+        self.get_nr_avg_scans()
+        self.get_nr_repetitions()
 
-    def run_new_lengthscan(self, **kw):
+    def run_new_length_scan(self, **kw):
         self.run(**kw)
+        self._running_task = 'length_scan'
+
         self.minV_lengthscan=kw.pop('minV_lengthscan', self.minV_lengthscan)
         self.maxV_lengthscan=kw.pop('maxV_lengthscan', self.maxV_lengthscan)
         self.nr_steps_lengthscan = kw.pop('nr_steps_lengthscan',self.nr_steps_lengthscan)
-        enable_autosave = kw.pop('enable_autosave',True)
+        self.get_minV_lengthscan()
+        self.get_maxV_lengthscan()
+        self.get_nr_steps_lengthscan()
 
+        enable_autosave = kw.pop('enable_autosave',True)
         self.reset_data('PD_signal', (self.nr_steps_lengthscan))
         self.reset_data('v_vals',  (self.nr_steps_lengthscan))
 
         # the core of the lengtscan function
-        self.status_label = "<font style='color: red;'>SCANNING PIEZOs</font>"
+        self.status_label = "<font style='color: red;'>length scan</font>"
+        self.get_status_label()
         self.length_scan ()
 
         #set data in order for the UI to connect to it.       
         self.status_label = "<font style='color: red;'>idle</font>"
+        self.get_status_label()
+
         # self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
         if self.success:
-            self.set_data('PD_signal', self.data[0])
             self.set_data('v_vals', self.v_vals)
-            # self.ui.plot_canvas.update_plot (x = self.v_vals, y=self.data[0], x_axis = 'piezo voltage [V]', 
-            #             y_axis = 'photodiode signal (a.u.)', color = 'RoyalBlue')
+            qt.msleep(0.1)
+            self.set_data('PD_signal', self.PD_signal)
+            qt.msleep(0.1)
+
             self.saveX_values = self.v_vals
             self.saveY_values = self.PD_signal
             self.save_tstamps_ms = self.tstamps_ms                  
             self.saveX_label = 'piezo_voltage'
             self.saveY_label = 'PD_signal'
             self.save_scan_type = 'msync'
-            self.curr_task = 'length_scan'
         else:        
             msg_text = 'Cannot Sync to Montana signal!'
             ex = MsgBox(msg_text = msg_text)
             ex.show()
-            self.curr_task = None
+            self.stop_lengthscan()
       
         if self.autosave and enable_autosave:
             self.save()
         if self.autostop:
-            self._running_task = None
+            self.stop_lengthscan()
+
             # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)#SvD: this seems unnecessary
+        self.set_task_is_running(False)
 
-        return self.success
+    def run_new_fine_laser_scan(self, **kw):
+        self._running_task = 'fine_laser_scan'
 
-    def run_new_fine_laser_scan(self):
+        self.minV_finelaser=kw.pop('minV_finelaser', self.minV_finelaser)
+        self.maxV_finelaser=kw.pop('maxV_finelaser', self.maxV_finelaser)
+        self.nr_steps_finelaser = kw.pop('nr_steps_finelaser',self.nr_steps_finelaser)
+        self.wait_cycles = kw.pop('wait_cycles', self.wait_cycles)
+        self.get_minV_finelaser()
+        self.get_maxV_finelaser()
+        self.get_nr_steps_finelaser()
 
-        self.reset_data('PD_signal', (self.nr_steps_lengthscan))
-        self.reset_data('v_vals',  (self.nr_steps_lengthscan))
+        self.reset_data('PD_signal', (self.nr_steps_finelaser))
+        self.reset_data('v_vals',  (self.nr_steps_finelaser))
 
-        self.status_label = "<font style='color: red;'>idle</font>"
-        self.set_scan_params (v_min=self.minV_finelaser, v_max=self.maxV_finelaser, nr_points=self.nr_steps_finelaser)
+        self.status_label = "<font style='color: red;'>laser scan</font>"
+        self.get_status_label()
         self.laser_scan(use_wavemeter = False)
+
         self.set_data('PD_signal', self.data[0])
+        qt.msleep(0.1)
         self.set_data('v_vals', self.v_vals)
-        # self.ui.plot_canvas.update_plot (x = self.v_vals, y=self.data[0], x_axis = 'laser-tuning voltage [V]', 
-        #             y_axis = 'photodiode signal (a.u.)', color = 'b')
+        qt.msleep(0.1)
+
         self.saveX_values = self.v_vals
         self.saveY_values = self.PD_signal  
         self.saveX_label = 'laser_tuning_voltage'
         self.saveY_label = 'PD_signal'        
-        self.curr_task = 'fine_laser_scan'
         self.status_label = "<font style='color: red;'>idle</font>"
+        self.get_status_label()
 
         if self.autosave:
             self.save()
         if self.autostop:
-            self._running_task = None
+            self.stop_finelaser()
 
-
-
-    def run_new_lr_laser_scan (self):
-
-        #first decide how to approach the calibration, 
-        #depending on the number of calibration pts.
-        #This is the number of points actually measured on the wavemeter
-        #(should be minimized to keep the scan fast)
-        self.reset_data('PD_signal', (self.nr_steps_lengthscan))
-        self.reset_data('v_vals',  (self.nr_steps_lengthscan))
-
-        nr_calib_pts = self.nr_calib_pts
-        b0 = -21.3
-        c0 = -0.13
-        d0 = 0.48
-        self._exp_mngr.set_laser_wavelength(self.curr_l)
-        qt.msleep (0.1)
-        if self._2D_scan_is_active:
-            self.status_label =  "<font style='color: red;'>LASER SCAN: "+str(self.curr_l)+"nm - pzV = "+str(self.curr_pz_volt)+"</font>"
-        else:
-            self.status_label = "<font style='color: red;'>LASER SCAN: "+str(self.curr_l)+"nm</font>"
-
-        #acquire calibration points
-        dac_no = self._adwin.dacs['newfocus_freqmod']
-        print "DAC no ", dac_no
-        self._adwin.start_set_dac(dac_no=dac_no, dac_voltage=-3)
-        qt.msleep (0.1)
-        V_calib = np.linspace (-3, 3, nr_calib_pts)
-        f_calib = np.zeros(nr_calib_pts)
-        print "----- Frequency calibration routine:"
-        for n in np.arange (nr_calib_pts):
-            qt.msleep (0.3)
-            self._adwin.start_set_dac(dac_no = dac_no, dac_voltage = V_calib[n])
-            print "Point nr. ", n, " ---- voltage: ", V_calib[n]
-            qt.msleep (0.5)
-            f_calib[n] = self._physical_adwin.Get_FPar (self._exp_mngr._wm_port)
-            qt.msleep (0.2)
-            print "        ", n, " ---- frq: ", f_calib[n]
-
-        print 'f_calib:', f_calib
-        #finel laser scan
-        self.set_scan_params (v_min=-3, v_max=3, nr_points=self.nr_steps_lr_scan) #real fine-scan
-        self.laser_scan(use_wavemeter = False)
-        V = self.v_vals
-        if (nr_calib_pts==1):
-            V_calib = int(V_calib)
-            f_calib = int(f_calib)
-            b = b0
-            c = c0
-            d = d0
-            a = f_calib + 3*b - 9*c + 27*d
-        elif ((nr_calib_pts>1) and (nr_calib_pts<4)):
-            a, c = self.fit_calibration(V = V_calib, freq = f_calib, fixed=[1,3])
-            b = b0
-            d = d0
-        else:
-            a, b, c, d = self.fit_calibration(V = V_calib, freq = f_calib, fixed=[])
-        freq = a + b*V + c*V**2 + d*V**3
-
-        self.lr_scan_frq_list =  np.append(self.lr_scan_frq_list,freq)
-        self.lr_scan_sgnl_list  = np.append(self.lr_scan_sgnl_list, self.PD_signal)
-
-        if self._2D_scan_is_active and (self.idx_2D_scan != 0):
-            if self.lr_scan_sgnl.ndim == 1:
-                self.lr_scan_sgnl = np.array([self.lr_scan_sgnl])
-            self.lr_scan_sgnl_list = np.array([self.lr_scan_sgnl_list])
-
-            print 'appending ',np.shape(self.lr_scan_sgnl),' to ',np.shape(self.lr_scan_sgnl_list)
-
-            self.lr_scan_sgnl = np.append(self.lr_scan_sgnl,self.lr_scan_sgnl_list,axis=0)
-            print 'results in: ',np.shape(self.lr_scan_sgnl)
-        else:
-            self.lr_scan_frq = (np.array(self.lr_scan_frq_list)).flatten()
-            self.lr_scan_sgnl = (np.array(self.lr_scan_sgnl_list)).flatten()
-
-        self.set_data('v_vals', lr_scan_frq)
-        self.set_data('PD_signal', lr_scan_sgnl)
-
-        # self.ui.plot_canvas.update_multiple_plots (x = self.lr_scan_frq, y=self.lr_scan_sgnl, x_axis = 'laser frequency (GHz)', 
-        #         y_axis = 'photodiode signal (a.u.)', autoscale=False, color = 'none')
-
-        self.saveX_values = self.lr_scan_frq
-        self.saveY_values = self.lr_scan_sgnl  
-        self.saveX_label = 'frequency_GHz'
-        self.saveY_label = 'PD_signal'
-        self.curr_task = 'lr_scan'
-        self.status_label = "<font style='color: red;'>idle</font>"
-
-        self.curr_l = self.curr_l + self._scan_direction*self.coarse_wavelength_step
-        print 'New wavelength: ', self.curr_l
-        if (self._scan_direction > 0):
-            print 'Scan cond: l>max_l'
-            stop_condition = (self.curr_l>=self.max_lambda)
-        else:
-            print 'Scan cond: l<min_l'
-            stop_condition = (self.curr_l<=self.max_lambda)
-
-        if stop_condition:
-            if self._2D_scan_is_active:
-                self._running_task = 'update_2D_scan'
-            else:
-                self._running_task = None
-                if self.autosave:
-                    self.save()
-        else:
-            self._running_task = 'lr_laser_scan'
+        self.set_task_is_running(False)
 
 
     def run_new_sweep_msyncdelay(self):
+        self._running_task='sweep_msyncdelay'
         print "starting a new sweep of the montana sync delay"
         self.initialize_msmt_params()
         #calculate nr of sync pulses in which nr_scans = nr_scans, and remainder nr_scans in last sync pulse
@@ -534,29 +431,6 @@ class cavity_scan_manager(CyclopeanInstrument):
         #always stop after the mmt
         self._running_task = None
 
-    def run_update_2D_scan (self):
-
-        #store current laserscan in dictionary
-        self.dict_2D_scan ['pzv_'+str(self.idx_2D_scan)] = self.curr_pz_volt
-        self.dict_2D_scan ['frq_'+str(self.idx_2D_scan)] = np.asarray(self.saveX_values).flatten()
-        self.dict_2D_scan ['sgnl_'+str(self.idx_2D_scan)] = np.asarray(self.saveY_values).flatten()
-
-        #update paramter values
-        self.idx_2D_scan = self.idx_2D_scan + 1
-        self.curr_pz_volt = self.curr_pz_volt + self.pzV_step
-
-        if (self.curr_pz_volt<self.maxV_lengthscan):
-            self._exp_mngr.set_piezo_voltage (self.curr_pz_volt)
-            print 'New pzV = ', self.curr_pz_volt
-            self.curr_l = self.min_lambda
-            self.lr_scan_frq_list = np.array([])
-            self.lr_scan_sgnl_list = np.array([])
-            self._running_task = 'lr_laser_scan'
-        else:
-            self.curr_pz_volt = self.curr_pz_volt - self.pzV_step
-            self.save_2D_scan()
-            self._running_task = None
-            self._2D_scan_is_active = False
 
     def save(self, **kw):
         '''
@@ -572,12 +446,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         data_index = kw.pop('data_index', '')
         fName = kw.pop('fname', None)
         if fName == None:
-            if (self.curr_task == 'lr_scan'):
-                minL = str(int(10*self.minlambda_lrlaser))
-                maxL = str(int(10*self.maxlambda_lrlaser))
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self.curr_task+'_'+minL+'_'+maxL
-            else:
-                fName =  datetime.now().strftime ('%H%M%S%f')[:-2] + '_' + self.curr_task
+            fName =  datetime.now().strftime ('%H%M%S') + '_' + str(self._running_task)
             if self.file_tag:
                 fName = fName + '_' + self.file_tag
         
@@ -588,10 +457,10 @@ class cavity_scan_manager(CyclopeanInstrument):
         
         f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
 
-        if (self.curr_task+'_processed_data_'+data_index) not in f5.keys():
-            scan_grp = f5.create_group(self.curr_task+'_processed_data_'+data_index)
+        if (self._running_task+'_processed_data_'+data_index) not in f5.keys():
+            scan_grp = f5.create_group(self._running_task+'_processed_data_'+data_index)
         else:
-            scan_grp = f5[self.curr_task+'_processed_data_'+data_index]
+            scan_grp = f5[self._running_task+'_processed_data_'+data_index]
         scan_grp.create_dataset(self.saveX_label, data = self.saveX_values)
         scan_grp.create_dataset(self.saveY_label, data = self.saveY_values)
 
@@ -647,62 +516,9 @@ class cavity_scan_manager(CyclopeanInstrument):
 
         return fName
 
-    def save_2D_scan(self):
-        '''
-        Function that saves a 2 dimensional scan into an HDF5 file.
-        '''
-        fName = time.strftime ('%H%M%S') + '_2Dscan'
-        if self.file_tag:
-            fName = fName + '_' + self.file_tag
-        f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
-        directory = os.path.join(f0, fName)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
-        for k in np.arange (self.idx_2D_scan):
-            scan_grp = f5.create_group(str(k))
-            scan_grp.create_dataset('frq', data = self.dict_2D_scan ['frq_'+str(k)])
-            scan_grp.create_dataset('sgnl', data = self.dict_2D_scan ['sgnl_'+str(k)])
-            scan_grp.attrs['pzV'] = self.dict_2D_scan ['pzv_'+str(k)]
-        f5.close()
-
-
-    def fit_calibration(self, V, freq, fixed):
-        guess_b = -21.3
-        guess_c = -0.13
-        guess_d = 0.48
-        guess_a = freq[0] +3*guess_b-9*guess_c+27*guess_d
-
-        a = fit.Parameter(guess_a, 'a')
-        b = fit.Parameter(guess_b, 'b')
-        c = fit.Parameter(guess_c, 'c')
-        d = fit.Parameter(guess_d, 'd')
-
-        p0 = [a, b, c, d]
-        fitfunc_str = ''
-
-        def fitfunc(x):
-            return a()+b()*x+c()*x**2+d()*x**3
-
-
-        fit_result = fit.fit1d(V,freq, None, p0=p0, fitfunc=fitfunc, fixed=fixed,
-                do_print=False, ret=True)
-        if (len(fixed)==2):
-            a_fit = fit_result['params_dict']['a']
-            c_fit = fit_result['params_dict']['c']
-            return a_fit, c_fit
-        else:
-            a_fit = fit_result['params_dict']['a']
-            b_fit = fit_result['params_dict']['b']
-            c_fit = fit_result['params_dict']['c']
-            d_fit = fit_result['params_dict']['d']
-            return a_fit, b_fit, c_fit, d_fit
-
     def laser_scan (self, use_wavemeter = False, force_single_scan = True):
-
-        v_step = float(self.maxV_finelaser-self.minV_finelaser)/float(self.nr_V_steps)
-        self.v_vals = np.linspace(self.minV_finelaser, self.maxV_finelaser, self.nr_V_steps)
+        v_step = float(self.maxV_finelaser-self.minV_finelaser)/float(self.nr_steps_finelaser)
+        self.v_vals = np.linspace(self.minV_finelaser, self.maxV_finelaser, self.nr_steps_finelaser)
         
         self.frequencies = np.zeros (self.nr_steps_finelaser)
         self.PD_signal = np.zeros (self.nr_steps_finelaser)
@@ -725,11 +541,12 @@ class cavity_scan_manager(CyclopeanInstrument):
                 qt.msleep (0.01)
                 self.frequencies[n] = self._physical_adwin.Get_FPar (self._wm_port) 
                 qt.msleep (0.05)
+ 
         else:
             self.success, self.data, self.tstamps_ms, self.scan_params = self._adwin.scan_photodiode (scan_type = 'laser',
-                     nr_steps = self.nr_steps_finelaser, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
+                    nr_steps = self.nr_steps_finelaser, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
                     start_voltage = self.minV_finelaser, end_voltage = self.maxV_finelaser, 
-                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
+                    use_sync = self.use_sync, delay_ms = self.sync_delay_ms, scan_to_start = True)
 
             for j in np.arange (self.nr_avg_scans):
                 if (j==0):
@@ -737,19 +554,19 @@ class cavity_scan_manager(CyclopeanInstrument):
                 else:
                     values = values + self.data[j]
             self.PD_signal = values/float(self.nr_avg_scans)
+        
+
 
     def length_scan (self):
-
         v_step = float(self.maxV_lengthscan-self.minV_lengthscan)/float(self.nr_steps_lengthscan)
         self.v_vals = np.linspace(self.minV_lengthscan, self.maxV_lengthscan, self.nr_steps_lengthscan)  
         self.PD_signal = np.zeros (self.nr_steps_lengthscan)
 
         self.success, self.data, self.tstamps_ms, self.scan_params = self._adwin.scan_photodiode (scan_type = 'fine_piezos',
                 nr_steps = self.nr_steps_lengthscan, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
-                start_voltage = self.minV_lengthscan, end_voltage = self.maxV_lengthscan, 
+                start_voltage = self.minV_lengthscan, end_voltage = self.maxV_lengthscan, scan_to_start=True,
                 use_sync = self.use_sync, delay_ms = self.sync_delay_ms)
 
-        #output PD_signal as the average over nr_avg_scans
         for j in np.arange (self.nr_avg_scans):
             if (j==0):
                 values = self.data[0]
@@ -761,6 +578,18 @@ class cavity_scan_manager(CyclopeanInstrument):
     ############
     ### get and set functions for parameters
     ############
+
+    def do_get_task_is_running(self):
+        return self.task_is_running
+
+    def do_set_task_is_running(self,value):
+        self.task_is_running = value
+
+    def do_get_running_task(self):
+        return self._running_task
+
+    def do_set_running_task(self,value):
+        self._running_task = value
 
     def do_get_autosave(self):
         return self.autosave
@@ -846,49 +675,25 @@ class cavity_scan_manager(CyclopeanInstrument):
     def do_set_nr_steps_finelaser(self,value):
         self.nr_steps_finelaser = value
 
-    def do_get_minlambda_lrlaser(self):
-        return self.minlambda_lrlaser
-
-    def do_set_minlambda_lrlaser(self,value):
-        self.minlambda_lrlaser = value
-
-    def do_get_maxlambda_lrlaser(self):
-        return self.maxlambda_lrlaser
-
-    def do_set_maxlambda_lrlaser(self,value):
-        self.maxlambda_lrlaser = value
-
-    def do_get_nr_steps_lrlaser(self):
-        return self.nr_steps_lrlaser
-
-    def do_set_nr_steps_lrlaser(self,value):
-        self.nr_steps_lrlaser = value
-
-    def do_get_nr_calib_pts_lrlaser(self):
-        return self.nr_calib_pts_lrlaser
-
-    def do_set_nr_calib_pts_lrlaser(self,value):
-        self.nr_calib_pts_lrlaser = value
-
-    def do_get_sync_delay_ms(self,value):
+    def do_get_sync_delay_ms(self):
         return self.sync_delay_ms
 
     def do_set_sync_delay_ms(self,value):
         self.sync_delay_ms = value
 
-    def do_get_min_msyncdelay(self,value):
+    def do_get_min_msyncdelay(self):
         return self.min_msyncdelay
 
     def do_set_min_msyncdelay(self,value):
         self.min_msyncdelay = value
 
-    def do_get_max_msyncdelay(self,value):
+    def do_get_max_msyncdelay(self):
         return self.max_msyncdelay
 
     def do_set_max_msyncdelay(self,value):
         self.max_msyncdelay = value
 
-    def do_get_nr_steps_msyncdelay(self,value):
+    def do_get_nr_steps_msyncdelay(self):
         return self.nr_steps_msyncdelay
 
     def do_set_nr_steps_msyncdelay(self,value):

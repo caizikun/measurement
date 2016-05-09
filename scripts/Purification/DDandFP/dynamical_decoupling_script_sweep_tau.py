@@ -28,14 +28,14 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
     funcs.prepare(m)
 
-    if True: ### if you don't want to do MBI for this script.
+    if False: ### if you don't want to do MBI for this script.
         m.params['MBI_threshold'] = 0
         m.params['Ex_SP_amplitude'] = 0.
         m.params['Ex_MBI_amplitude'] = 0.
-        m.params['SP_E_duration'] = 20 
+        m.params['SP_E_duration'] = 50 
         
-        m.params['repump_after_MBI_A_amplitude'] = [18e-9] #20e-9
-        m.params['repump_after_MBI_duration'] = [50] # 50  
+        m.params['repump_after_MBI_A_amplitude'] = [12e-9] #20e-9
+        m.params['repump_after_MBI_duration'] = [200] # 50  
 
 
     '''set experimental parameters'''
@@ -46,7 +46,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
     else:
         m.params['Final_Pulse'] ='x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
-    # m.params['Decoupling_sequence_scheme'] = 'single_block'
+    #m.params['Decoupling_sequence_scheme'] = 'single_block'
     Number_of_pulses = N 
     tau_list = np.arange(tau_min,tau_max,tau_step) 
     print tau_list
@@ -65,7 +65,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 if __name__ == '__main__':
 
     SimpleDecoupling_swp_tau(SAMPLE, 
-        tau_min=14.5e-6,
-        tau_max=14.7e-6,
-        tau_step = 4e-9,
-        N=64)
+        tau_min=2.2e-6,
+        tau_max=2.3e-6,
+        tau_step = 2e-9,
+        N=32)

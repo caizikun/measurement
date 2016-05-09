@@ -18,8 +18,8 @@
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
 
-DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
-DIM DATA_19[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine
+DIM DATA_18[max_repump_duration] AS FLOAT 'AT EM_LOCAL 'repump freq voltage sine
+DIM DATA_19[max_CR_duration] AS FLOAT 'AT EM_LOCAL 'CR gate voltage sine
 
 'return
 'used in cr.inc
@@ -242,8 +242,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           PAR_70 = total_CR_counts
           Inc(Par_72)
           IF (first_cr > 0) THEN ' first CR after SSRO sequence
-            DATA_23[repetition_index] = cr_counts
-            first_cr=0
+            DATA_23[repetition_index-1] = cr_counts
+            first_cr = 0
           ENDIF
                   
           IF (cr_counts < current_cr_threshold) THEN

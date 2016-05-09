@@ -138,7 +138,6 @@ params_lt4['prepulse_start_bin'] = 5378 - 20
 params_lt4['prepulse_stop_bin'] = 5378
 params_lt4['live_filter_queue_length'] = 10
 
-params_lt4['twitter_rnd_fp'] = r'D:\twitter_rnd\Bob_current.txt'
 
 params_lt4['measurement_time'] =   40*60#sec = 40 mins
 

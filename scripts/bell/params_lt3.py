@@ -54,7 +54,7 @@ params_lt3['Ex_SP_amplitude'] = 0e-9
 ### pulses and MW stuff lt3
 #####################
 ## general
-params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
+params_lt3['mw_frq'] 				= qt.exp_params['samples'][sample_name]['mw_frq']
 params_lt3['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt3['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
 params_lt3['MW_Q_amp_factor'] = 0.#0.920/0.907 # calibrated on lt3 on the 2015-12-15
@@ -82,7 +82,7 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 # LDE Sequence in the AWG
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
-params_lt3['eom_pulse_duration']         = 2e-9
+params_lt3['eom_pulse_duration']         = 1e-9 #2e9
 params_lt3['eom_off_amplitude']          = -0.02 # calibration from 2015-12-30
 params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
@@ -90,12 +90,12 @@ params_lt3['eom_overshoot1']             = -0.03 # calibration from 19-03-2014#
 params_lt3['eom_overshoot_duration2']    = 10e-9
 params_lt3['eom_overshoot2']             = 0
 params_lt3['aom_risetime']				 = 40e-9#10e-9 #
-params_lt3['aom_amplitude']				 = 0.65 # on CR 31
+params_lt3['aom_amplitude']				 = 0.6 # on CR 25
 
 params_lt3['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt3['AWG_SP_power']            = params_lt3['A_SP_amplitude']
-params_lt3['AWG_RO_power']            = 9e-9#15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
+params_lt3['AWG_RO_power']            = 15e-9#15e-9 #params_lt3['Ex_RO_amplitude'] 15nW calibrated on 2015-03-19
 params_lt3['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT
 params_lt3['LDE_SP_duration']         = 5e-6
 params_lt3['LDE_yellow_duration']     = -1 # if this is < 0, no yellow pulse is added to the sequence
@@ -130,7 +130,7 @@ params_lt3['TTTR_RepetitiveReadouts']= 	joint_params.joint_params['TTTR_Repetiti
 params_lt3['TTTR_read_count'] =    		joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_data']
-params_lt3['entanglement_marker_number'] = 4
+params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
 params_lt3['prepulse_start_bin'] = 7570
