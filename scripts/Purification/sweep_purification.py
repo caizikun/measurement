@@ -386,7 +386,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','Z','mZ']#,'mX','Y','mY','Z','mZ']
+    el_state_list = ['X','mX','Y','mY','Z','mZ']
     
 
     x_phase = m.params['X_phase']

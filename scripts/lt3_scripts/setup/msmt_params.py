@@ -40,9 +40,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9
-	hermite_pi_amp =  0.707 # SK 21/04
+	hermite_pi_amp =  0.7198 # SK 21/04
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.507 # SK 21/04 
+	hermite_pi2_amp = 0.521 # SK 21/04 
 
 	square_pi_length = 18e-9
 	square_pi_amp = 0.799 # 02-19
@@ -264,7 +264,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447968.42+ 483714)/2., 
-	'C1_freq_0' 		: 447965.66,
+	'C1_freq_0' 		: 447938.4,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -272,16 +272,19 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 436757.82,#434257.72, 
-	'C1_freq_0' 		: 447965.66,
-	'C1_freq_1_p1' 		: 425517.3,
+	'C1_freq_0' 		: 447938.4,
+	'C1_freq_1_p1' 		: 425515.33,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [64.19] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [59.89] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
 	'C1_unc_tau_p1'    :   [9.16e-6],
 	'C1_unc_N_p1'      :   [12],
+	'C1_unc_phase_offset_p1' : 0,
+	'C1_unc_extra_phase_correction_list_p1': np.array([0]*11),
+
 	###############
 	#### C2 ~ 15 ###
 	###############

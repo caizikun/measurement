@@ -382,7 +382,7 @@ class purify_single_setup(DD.MBI_C13):
                 # adjust the length of the element of the slave RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
 
-        seq = DD.MBI_C13.carbon_swap_gate(self,**kw)
+        seq = DD.MBI_C13.carbon_swap_gate_multi_options(self,**kw)
 
         ### restore the old value
         self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
@@ -629,7 +629,9 @@ class purify_single_setup(DD.MBI_C13):
                 swap_with_init = self.carbon_swap_gate(
                                 go_to_element = 'start',
                                 pt = pt,
-                                addressed_carbon = self.params['carbon'])
+                                addressed_carbon = self.params['carbon'],
+                                swap_type               = 'swap_w_init',
+                                RO_after_swap           = True)
 
                 ### need to write this method XXX
                 #swap_without_init = 

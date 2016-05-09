@@ -34,7 +34,7 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     m.params['reps_per_ROsequence'] = reps #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
 
-    tau_larmor = 1/m.params['C1_freq_0']
+    tau_larmor = 1/m.params['C4_freq_0']
     if N==1:
         m.params['Final_Pulse'] ='x'
     else:
@@ -202,9 +202,9 @@ if __name__ == '__main__':
     if n==1 and Cont:
         N = 64 ### number of pulses
         pts = 50 ### number of points per loading of the AWG
-        larmor_freq = 1/447873.07#2.232e-6
+        larmor_freq = 2.26e-6
         larmor_max = 120 ### the order of the last revival
-        larmor_min = 3
+        larmor_min = 4
         larmor_step = 8
         reps = 800
 

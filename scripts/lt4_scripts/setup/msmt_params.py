@@ -74,8 +74,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_after_pulse_duration':    3,
 		'cr_wait_after_pulse_duration': 3,
 		'wait_for_AWG_done':            0,
-		'Ex_off_voltage':               0.,
-		'A_off_voltage':                -0.0,
+		'Ex_off_voltage':               0.03,
+		'A_off_voltage':                -0.2,
 		'yellow_repump_amplitude':      50e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
@@ -225,17 +225,18 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : (419813.37+ 446136.16)/2,
-	'C4_freq_0' 		: 446136.16,
-	'C4_freq_1_m1' 		: 419813.37,
+	'C4_freq_m1'        : (419823.82+ 446122.14)/2,
+	'C4_freq_0' 		: 446208.54,
+	'C4_freq_1_m1' 		: 419906.65,
 
-	'C4_Ren_tau_m1'    :   [6.35e-6], #6.52e-6
+	'C4_Ren_tau_m1'    :   [6.36e-6], #6.52e-6
 	'C4_Ren_N_m1'      :   [32], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [-15.9] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [134.54] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
-	'C4_unc_tau_m1'		:  [7e-6],
-
+	'C4_unc_tau_m1'		:  [6.93e-6],
+	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-46.49] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_unc_phase_offset_m1' : 132.95,
 	###############
 	# C5 (A ~ -26) #
 	###############
@@ -281,6 +282,11 @@ cfg['samples'][sample_name] = {
 	'C8_Ren_N_m1'      :   [44], #36
 	'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [223.37] + [0.0]),
 	
+	'C8_unc_N_m1'		:  [40],
+	'C8_unc_tau_m1'		:  [6.93e-6],
+	'C8_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [41.6] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C8_unc_phase_offset_m1' : -55.29,
+
 
 	}
 
