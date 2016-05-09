@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name,tau = None,N=None):
+def Carbon_Ramsey(name,tau = None,N=None,debug=False):
 
     # m = DD.NuclearRamsey(name)
     # m = DD.NuclearRamsey_v2(name)
@@ -53,8 +53,8 @@ def Carbon_Ramsey(name,tau = None,N=None):
         m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
 
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=debug)
 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE_CFG,tau=4.306e-6,N=18)
+    Carbon_Ramsey(SAMPLE_CFG,tau=4.306e-6,N=18,debug=True)

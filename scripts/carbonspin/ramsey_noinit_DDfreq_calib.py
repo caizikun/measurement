@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
+def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = [],debug = False):
 
     m = DD.NuclearRamsey_v2(name)
 
@@ -62,6 +62,6 @@ if __name__ == '__main__':
     # evolution_times3 = np.linspace(38e3,41e3,20).astype(int)*1e-9
 
     for carbon in [6]:
-        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
-        Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
-        Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)
+        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1,debug = True)
+        # Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
+        # Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)

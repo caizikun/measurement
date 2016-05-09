@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [8]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -53,7 +53,7 @@ debug = False
 ### repetitions per data point.
 freq_reps = 500
 phase_reps = 500
-crosstalk_reps = 400
+crosstalk_reps = 500
 
 
 ### this is used to determine the detuning of the ramsey measurements.
@@ -63,8 +63,10 @@ if SETUP == 'lt2':
     	'1' : detuning_basic,
     	'2' : detuning_basic*2,
     	'3' : detuning_basic*3.,
+        '4' : detuning_basic*2,
     	'5' : detuning_basic,
-    	'6' : detuning_basic*4.}
+    	'6' : detuning_basic*4.,
+        '7' : detuning_basic*4}
 
 elif SETUP == 'lt3':
     detuning_basic = 20e3
@@ -437,7 +439,7 @@ if n == 1 and self_phase_calibration:
 
 if cross_phase_calibration and n ==1 and len(carbons)>1:
     #set all cross-phases to zero to start with
-    estimate_phase=np.zeros([7,7])
+    estimate_phase=np.zeros([8,8])
     for c in carbons:
         # remove that specific carbon from the list
         carbons_cross = copy.deepcopy(carbons)

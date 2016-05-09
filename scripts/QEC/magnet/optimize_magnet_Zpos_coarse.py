@@ -79,10 +79,10 @@ if __name__ == '__main__':
     init_pulse_length = 10e-6 
 
         ### for the remainder of the steps
-    repeat_range = 0.4
-    repeat_pts   = 61
-    repeat_reps  = 3000 #1000
-    repeat_power = 0.0015# 
+    repeat_range = 0.51
+    repeat_pts   = 71
+    repeat_reps  = 1500#1000
+    repeat_power = 0.0013# 
     repeat_pulse_length = 8e-6
 
     if only_fine == True:
@@ -165,10 +165,10 @@ if __name__ == '__main__':
         optimiz0r.optimize(dims=['x','y','z'])
         
         
-        darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps, power = fine_power, pulse_length=repeat_pulse_length)
+        darkesr(SAMPLE_CFG, range_MHz=repeat_range, pts=repeat_pts, reps=repeat_reps, power = repeat_power, pulse_length=repeat_pulse_length)
 
         #Determine frequency and B-field --> this fit programme returns in MHz, needs input GHz
-        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr(current_f_msm1*1e-9,
+        f0_temp,u_f0_temp = dark_esr_auto_analysis.analyze_dark_esr_double(current_f_msm1*1e-9,
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 )
         delta_f0_temp = f0_temp*1e6-current_f_msm1*1e-3
 
