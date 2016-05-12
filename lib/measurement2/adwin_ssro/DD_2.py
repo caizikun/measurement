@@ -695,15 +695,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             This is correct by default. If you want to change it be cautious.
             If N is a multiple of 2 pulses this will create a 180 degree phase offset in the electron pulses because it ends in XY.
             '''
-<<<<<<< HEAD
-   
-        # print g.name
-=======
 
         #print g.name
         #print 'this is what i have',g.dec_duration,g.N,g.tau
->>>>>>> 2c63c2de433c81d894f86a6efe719db598ece2ba
-        # print 'this is the el state given to the connection element',g.el_state_before_gate
 
         if g.dec_duration == 0:
             g.N = 0
