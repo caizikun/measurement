@@ -4356,7 +4356,7 @@ class MBI_C13(DynamicalDecoupling):
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
-            carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym, C_unc_x]
+            carbon_swap_seq = [C_Ren_ym, e_y, C_Ren_x, e_ym]#, C_unc_x]
             # carbon_swap_seq = []
         elif swap_type  ==  'swap_wo_init':
 
