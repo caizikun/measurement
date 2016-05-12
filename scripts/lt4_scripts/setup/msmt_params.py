@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 114e-9
-	hermite_pi_amp = 0.68#0.554
+	hermite_pi_amp = 0.707
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 70e-9
-	hermite_pi2_amp = 0.4067#0.608
+	hermite_pi2_amp = 0.414#0.608
 
 
 ### General settings for AdwinSSRO
@@ -191,11 +191,11 @@ cfg['samples'][sample_name] = {
 ###############
 ### Carbons ###
 ###############
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]*11),
-	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*11),
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[-30.532-0.365+25.2+0.835]+[0.0]*7),
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
     'phase_per_sequence_repetition'    :0,
-    'phase_per_compensation_repetition':0,
-    'total_phase_offset_after_sequence':0,
+    'phase_per_compensation_repetition':26.04*np.pi/180,
+    'total_phase_offset_after_sequence':178.4/180 * np.pi,
 ###############
 ### SIL2    ###
 ###############
@@ -226,17 +226,17 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (419823.82+ 446122.14)/2,
-	'C4_freq_0' 		: 446208.54,
-	'C4_freq_1_m1' 		: 419906.65,
+	'C4_freq_0' 		: 446117.14,
+	'C4_freq_1_m1' 		: 419812.84,
 
 	'C4_Ren_tau_m1'    :   [6.36e-6], #6.52e-6
 	'C4_Ren_N_m1'      :   [32], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [134.54] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [119.43] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
-	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [55.27] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-	'C4_unc_phase_offset_m1' : 15.38,
+	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [139.34] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_unc_phase_offset_m1' : 126.74,
 	###############
 	# C5 (A ~ -26) #
 	###############
@@ -394,7 +394,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 }
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 10}
+	'SSRO_duration' : 8}
 
 cfg['protocols'][name]['pulses'] = {
 
@@ -403,9 +403,6 @@ cfg['protocols'][name]['pulses'] = {
 
 		'C13_X_phase' 			:0,
 		'C13_Y_phase' 			:270,
-
-		'C13_X_phase_uncond' 			:0,
-		'C13_Y_phase_uncond' 			:90,
 
 		'pulse_shape': pulse_shape,
 		'MW_switch_risetime'	:	500e-9,

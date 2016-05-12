@@ -368,11 +368,11 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1 # we still have to decide on this
-    m.params['do_C_init_SWAP_wo_SSRO'] = 1
+    m.params['do_C_init_SWAP_wo_SSRO'] = 1 # we still have to decide on this
     m.params['do_carbon_readout']  = 1 
     m.params['do_swap_onto_carbon'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
-
+    # m.params['do_C_init_SWAP_wo_SSRO'] = 0
     m.params['LDE_1_is_init'] = 1 # only use a preparational value
 
     m.joint_params['opt_pi_pulses'] = 0 # no pi pulses in this sequence.
@@ -386,7 +386,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','mX','Y','mY','Z','mZ']
+    el_state_list = ['X']#,'mX','Y','mY','Z','mZ']
     
 
     x_phase = m.params['X_phase']
@@ -396,8 +396,8 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
                             'mX':   y_phase + 180,
                             'Y' :   x_phase + 180, 
                             'mY':   x_phase, 
-                            'Z' :   x_phase, 
-                            'mZ':   x_phase}
+                            'Z' :   x_phase + 180, 
+                            'mZ':   x_phase + 180}
 
     first_mw_amp_dict = {   'X' :   m.params['Hermite_pi2_amp'], 
                             'mX':   m.params['Hermite_pi2_amp'],
@@ -445,7 +445,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
 
     ### general params
     pts = 15
-    m.params['pts'] = pts
+    
     m.params['reps_per_ROsequence'] = 350
 
     turn_all_sequence_elements_off(m)
@@ -453,6 +453,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_carbon_init'] = 1
     m.params['do_swap_onto_carbon'] = 1
+    m.params['do_C_init_SWAP_wo_SSRO']  = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     m.params['do_LDE_2'] = 1
     m.params['Tomography_bases'] = ['X']
@@ -461,13 +462,13 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Y'
+    m.params['input_el_state'] = 'Z'
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
 
     ### calculate sweep array
     minReps = 1
-    maxReps = 250
+    maxReps = 101
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -475,8 +476,14 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['pts'] = len(m.params['general_sweep_pts'])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    #### increase the detuning for more precise measurements
+    m.params['phase_detuning'] = 0#8
+    phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
+    m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = phase_per_rep + m.params['phase_detuning']
 
                      
     ### loop over tomography bases and RO directions upload & run
@@ -485,7 +492,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
         breakst = show_stopper()
         if breakst:
             break
-        save_name = ro
+        save_name = 'X_'+ro
         m.params['carbon_readout_orientation'] = ro
 
         run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name)
@@ -502,7 +509,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 1 #15
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -511,24 +518,26 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_carbon_init'] = 1
     m.params['do_swap_onto_carbon'] = 1
+    m.params['do_C_init_SWAP_wo_SSRO']  = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     m.params['do_LDE_2'] = 1
     m.params['do_phase_correction'] = 1
     m.params['Tomography_bases'] = ['X']
     m.params['do_carbon_readout']  = 1
+    m.params['MW_during_LDE'] = 0
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Y'
+    m.params['input_el_state'] = 'Z'
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
-    m.params['mw_first_pulse_amp'] = 0
-    m.joint_params['LDE_attempts'] = 5
+    # m.params['mw_first_pulse_amp'] = 0
+    m.joint_params['LDE_attempts'] = 1
 
 
     ### calculate sweep array
-    minReps = 1
-    maxReps = 50
+    minReps = 2
+    maxReps = 16.
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -539,7 +548,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['pts'] = len(np.arange(minReps,maxReps,step))
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
-
+    m.params['phase_detuning'] = 0 # for the analyis
                      
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -547,7 +556,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
         breakst = show_stopper()
         if breakst:
             break
-        save_name = ro
+        save_name = 'X_'+ro
         m.params['carbon_readout_orientation'] = ro
 
         run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name)
@@ -567,7 +576,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 20
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -625,7 +634,7 @@ if __name__ == '__main__':
 
     ### measurements that work without PQ
 
-    # repump_speed(name+'_repump_speed')
+    # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
@@ -633,10 +642,10 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    # calibrate_LDE_phase(name+'_LDE_phase_calibration')
-    # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration')
+    # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation')
 

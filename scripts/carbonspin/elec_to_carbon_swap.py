@@ -1,5 +1,3 @@
-
-
 ## SCRIPT SWAP GATE
 
 import numpy as np
@@ -120,15 +118,16 @@ if __name__ == '__main__':
 
     '''' NOTE REMOVE RO_after_swap from SWAP params '''
     breakst     = False
-    carbons     = [1]
-    el_state    = ['X','Y','Z']
+    carbons     = [4]
+    el_state    = ['X']#,'Y','Z']
     
     debug = False
     RO_after_swap = True
     swap_type = 'swap_w_init'
+    
     if swap_type == 'swap_wo_init' or swap_type == 'swap_wo_init_rot':
 
-        c_i_t = [1] #its deterministic but still, there might be phase errors
+        c_i_t = [ 1] #its deterministic but still, there might be phase errors
     else:
         c_i_t = [0, 1]
 

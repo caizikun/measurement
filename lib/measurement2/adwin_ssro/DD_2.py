@@ -417,6 +417,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             # skip if connection elts are explicitly not wanted.
             if gate_seq[i].no_connection_elt or gate_seq[i+1].no_connection_elt:
+                # print 'continue',gate_seq[i].name
                 continue
 
             if ((gate_seq[i].Gate_type in gates_in_need_of_connecting_elts1) and
@@ -504,7 +505,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             This is correct by default. If you want to change it be cautious.
             If N is a multiple of 2 pulses this will create a 180 degree phase offset in the electron pulses because it ends in XY.
             '''
-
+   
         # print g.name
         # print 'this is the el state given to the connection element',g.el_state_before_gate
 
@@ -749,6 +750,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                     elif g.C_phases_after_gate[iC] == 'reset':
                         g.C_phases_after_gate[iC] = 0
+                        # print g.name
+
 
                     elif g.C_phases_after_gate[iC] == None:
                         g.C_phases_after_gate[iC] = np.mod(g.C_phases_before_gate[iC]+(2*g.tau*g.N)*C_freq[iC],  2*np.pi)
@@ -769,6 +772,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #######################
 
             elif g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate':
+
                 if i == len(Gate_sequence)-1:
                     g.dec_duration = 0
                 elif Gate_sequence[i+1].phase == None or Gate_sequence[i+1].phase == 'reset' or Gate_sequence[i-1].no_connection_elt:
@@ -830,7 +834,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC]+ g.dec_duration*C_freq_1[iC])%(2*np.pi)
                         else:
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC]+ g.dec_duration*C_freq[iC])%(2*np.pi)
-
+                # if 'Tomo_y_pi2_in' in g.name:
+                #     print g.name, g.C_phases_before_gate[iC],g.C_phases_after_gate[iC],g.dec_duration 
             #########
             # Special elements
             #########
@@ -880,18 +885,27 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if g.C_phases_before_gate[iC] != None:
                         # print "repump_duration {:.2}, t {:.2}, duration_initial {:.2}, t_rep {:.2}, AOM_delay {:.2}".format(g.repump_duration,g.t,g.duration_initial,g.t_rep,g.AOM_delay) 
-                        g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.LDE_phase_correction_list_init[iC]+g.LDE_phase_correction_list[iC]*(g.reps-1))%(2*np.pi)
-                
-                # print g.name
-                # print 'phase before LDE ', g.C_phases_before_gate*180/np.pi
-                # print 'phase after LDE ', g.C_phases_after_gate*180/np.pi                 
+                        if Gate_sequence[i-1].Gate_type == 'LDE':
+                            g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.LDE_phase_correction_list[iC]*(g.reps))%(2*np.pi)
+                        else:    
+                            g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC] + g.LDE_phase_correction_list_init[iC]+g.LDE_phase_correction_list[iC]*(g.reps))%(2*np.pi)                
 
             elif g.Gate_type == 'single_element':
                 pass
-                
+
+
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
-
+        
+        # for g in Gate_sequence:
+        #     if 'inal' in g.name:
+        #         print g.name, 
+        #         print 'before',g.C_phases_before_gate[4]
+        #         print 'after',g.C_phases_after_gate[4]
+        # if hasattr(g,'scheme'):
+        #     print 'scheeeeme'
+        #     if g.scheme == 'carbon_phase_feedback':
+        #         print g.name,g.reps,g.C_phases_after_gate[4],g.C_phases_before_gate[4]  
 
         return Gate_sequence
 
@@ -1498,7 +1512,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ''' 
             # ### Correct for part that is cut off when combining to sequence
 
-            Gate.no_connection_elt = True
+            # Gate.no_connection_elt = True
             tau_cut = 1e-6
             Gate.tau_cut = 1e-6
 
@@ -1530,16 +1544,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     decoupling_elt.append(T)
 
                 if n%16 in x_list:
-                    decoupling_elt.append(pulse.cp(X))
+                    decoupling_elt.append(pulse.cp(X))#, amplitude=0))
                     # print 'X'
                 elif n%16 in y_list:
-                    decoupling_elt.append(pulse.cp(Y))
+                    decoupling_elt.append(pulse.cp(Y))#, amplitude=0))
                     # print 'Y'
                 elif n%16 in mx_list:
-                    decoupling_elt.append(pulse.cp(mX))
+                    decoupling_elt.append(pulse.cp(mX))#, amplitude=0))
                     # print 'mX'
                 elif n%16 in my_list:
-                    decoupling_elt.append(pulse.cp(mY))
+                    decoupling_elt.append(pulse.cp(mY))#, amplitude=0))
                     # print 'mY'
                 else:
                     raise Exception('Error in pulse sequence')
@@ -1561,11 +1575,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 final_pulse = X
                 P_type = 'X'
 
-            decoupling_elt.append(final_pulse)
+            decoupling_elt.append(pulse.cp(final_pulse))#, amplitude = 0))
 
             if (not 'end' in Gate.scheme):
                 decoupling_elt.append(T)
-                adwin_sync =  pulse.SquarePulse(channel='adwin_sync', name='adwin_sync_counter',
+                adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 5e-6, amplitude = 1.)
                 decoupling_elt.add(adwin_sync,start=10e-9)
             else:
@@ -2607,9 +2621,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # if hasattr(g,'tau_cut'):   
             #     print g.name, g.tau_cut
             if (g.Gate_type == 'Connection_element' or g.Gate_type == 'electron_Gate'):
+
                 # print 'i am connecting or an electron gate',g.name
                 self.determine_connection_element_parameters(g)
-                # print g.name, g.tau_cut_before,g.tau_cut_after,g.N,g.tau
+
                 self.generate_connection_element(g)
 
         return Gate_sequence
@@ -3568,7 +3583,7 @@ class MBI_C13(DynamicalDecoupling):
     def initialize_electron_sequence(self,
         prefix                  = 'init_e',
         el_after_c_init         ='0',
-        wait_for_trigger        = True,
+        wait_for_trigger        = False,
         elec_init_state         = 'Z',
         pt                      = 1,):
         '''
@@ -3607,6 +3622,9 @@ class MBI_C13(DynamicalDecoupling):
             Gate_operation='pi2',
             phase = self.params['X_phase'])
 
+        wait = Gate(prefix+'_wait_pt'+str(pt),'passive_elt',
+            wait_time=3e-6)
+
         ### THIS!
         # elec_toX =  pulse.cp(init_el_x, phase = self.params['Y_phase']       ) ### X
         # elec_toY =  pulse.cp(iRnit_el_x, phase = self.params['X_phase']       ) ### Y
@@ -3624,7 +3642,7 @@ class MBI_C13(DynamicalDecoupling):
                 if elec_init_state    == 'mZ': ## -Z gate, i.e. rotation around X of pi
                     electron_init_seq.append(elec_minZ)
                 elif elec_init_state  == 'Z': ## Z is pass
-                    pass
+                    electron_init_seq.append(wait)
                 elif elec_init_state  == 'X': ## y pi/2 gate
                     electron_init_seq.append(elec_toX)
                 elif elec_init_state  == 'mX': ## -y pi/2 gate
@@ -3638,7 +3656,7 @@ class MBI_C13(DynamicalDecoupling):
                 if elec_init_state    == 'Z':  #Do nothing
                     electron_init_seq.append(elec_minZ)
                 elif elec_init_state  == 'mZ': ## -Z gate, i.e. rotation around X of pi
-                    pass
+                    electron_init_seq.append(wait)
                 elif elec_init_state  == 'X': ## y pi/2 gate
                     electron_init_seq.append(elec_minX)
                 elif elec_init_state  == 'mX': ## -y pi/2 gate
@@ -3655,7 +3673,7 @@ class MBI_C13(DynamicalDecoupling):
 
         # prints
         # print '@ end of initialize elec sequence part, state: ' + str(elec_init_state)
-
+        electron_init_seq[0].wait_for_trigger = wait_for_trigger
         return electron_init_seq  
 
     def carbon_swap_gate(self,
@@ -3728,7 +3746,7 @@ class MBI_C13(DynamicalDecoupling):
     
         phase_offset = self.params['C'+str(Carbon_ind)+'_unc_phase_offset'+el_trans]
         extra_phase = (self.params['C'+str(Carbon_ind)+'_unc_extra_phase_correction_list'+el_trans][Carbon_ind] 
-            - phase_offset)
+            + phase_offset)
 
         # Need phase offset to adjust phase, plus extra phase to bring it back! 
         return Gate(name, 'Carbon_Gate',
@@ -3829,11 +3847,11 @@ class MBI_C13(DynamicalDecoupling):
 
         C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
             Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_Y_phase_uncond'])
+            phase       = self.params['C13_Y_phase'])
 
         C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
             Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_X_phase_uncond'])
+            phase       = self.params['C13_X_phase'])
 
         print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':

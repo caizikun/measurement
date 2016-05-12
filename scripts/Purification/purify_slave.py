@@ -106,7 +106,7 @@ class purify_single_setup(DD.MBI_C13):
 
         exec(loadstr)
         qt.msleep(2)
-        print loadstr 
+        # print loadstr 
 
         length = self.params['nr_of_ROsequences']
 
@@ -473,12 +473,17 @@ class purify_single_setup(DD.MBI_C13):
                 LDE1_final.el_state_after_gate = 'sup'
                 LDE1_final.reps = 1
 
-                ### if statement to decide what LDE1 does: init or entangling.
+            ### if statement to decide what LDE1 does: init or entangling.
             if self.params['LDE_1_is_init'] >0:
                 LDE1.reps = 1
 
                 if self.params['input_el_state'] in ['X','mX','Y','mY']:
                     LDE1.first_pulse_is_pi2 = True
+
+                elif self.params['input_el_state'] in ['Z']:
+                    LDE1.no_first_pulse = True
+
+            ### if more than 1 reps then we need to take the final element into account
             elif self.params['LDE_attempts'] != 1:
                 LDE1.reps = self.params['LDE_attempts'] - 1
             
@@ -516,13 +521,16 @@ class purify_single_setup(DD.MBI_C13):
             LDE_repump2.el_state_before_gate = '0'
 
             ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
+            dynamic_phase_tau = round(1/self.params['C'+str(self.params['carbon'])+'_freq_0'],9)
+
             dynamic_phase_correct = DD.Gate(
                     'C13_Phase_correct'+str(pt),
                     'Carbon_Gate',
                     Carbon_ind          = self.params['carbon'], 
-                    event_jump          = 'next',
-                    tau                 = 2.32e-6,#1/self.params['C'+str(self.params['carbon'])+'_freq_0'],
-                    N                   = 2)
+                    #event_jump          = 'next',
+                    tau                 = dynamic_phase_tau,
+                    N                   = 2,
+                    no_connection_elt = True)
             # additional parameters needed for DD_2.py
             dynamic_phase_correct.scheme = 'carbon_phase_feedback'
             dynamic_phase_correct.reps = self.params['phase_correct_max_reps']-1
@@ -531,7 +539,7 @@ class purify_single_setup(DD.MBI_C13):
                     'Final C13_Phase_correct'+str(pt),
                     'Carbon_Gate',
                     Carbon_ind  = self.params['carbon'], 
-                    tau         = 2.32e-6,#1/self.params['C'+str(self.params['carbon'])+'_freq_0'],
+                    tau         = dynamic_phase_tau,
                     N           = 2,
                     no_connection_elt = True)
 
@@ -541,6 +549,7 @@ class purify_single_setup(DD.MBI_C13):
             final_dynamic_phase_correct.scheme = 'carbon_phase_feedback_end_elt'
             final_dynamic_phase_correct.C_phases_after_gate = [None]*10
             final_dynamic_phase_correct.C_phases_after_gate[self.params['carbon']] = 'reset'
+            # print final_dynamic_phase_correct.C_phases_after_gate
 
             ### comment we could include branching for the last tomography step.! otherwise the phase will be off upon measuring the wrong outcome (i.e. the dark state)
             carbon_purify_seq = self.readout_carbon_sequence(
@@ -652,7 +661,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 # need a final element for adwin communication
                 if LDE2.reps> 1:
-                    gate_seq.appen(LDE2_final)
+                    gate_seq.append(LDE2_final)
 
                 if self.params['do_purifying_gate'] > 0 or self.params['do_phase_correction'] > 0:
                     # electron has to stay coherent after LDE attempts

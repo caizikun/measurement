@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -44,8 +44,8 @@ f_ms0 = True
 f_ms1 = True
 
 self_phase_calibration = True
-self_unc_phase_calibration = False
-self_unc_phase_offset_calibration = False
+self_unc_phase_calibration = True
+self_unc_phase_offset_calibration = True
 check_unc_phase_calibration = False
 check_phase_or_offset = 'offset' # Check timing after, or phase offset.
 cross_phase_calibration = False
@@ -507,6 +507,7 @@ if n == 1 and self_unc_phase_calibration:
 
     for c in carbons:
         if n == 1:
+
             # measure
             NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c)
             # fit
@@ -518,9 +519,9 @@ if n == 1 and self_unc_phase_calibration:
                                 return_results = False, 
                                 title = 'phase_C'+str(c))
             if Amp < 0:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi-90 
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi 
             else:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+90 # Zero phase gives a -Y rotation!
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+180 # Zero phase gives a -Y rotation!
 
             print 'C'+str(c)+'_unc_extra_phase_correction_list['+str(c)+']'
             print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c]
@@ -534,6 +535,8 @@ if n == 1 and self_unc_phase_offset_calibration:
     for c in carbons:
         if n == 1:
             # measure
+            qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = 0
+            
             NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c, check_phase_or_offset = 'offset')
             # fit
             phi0,u_phi_0,Amp,Amp_u =    cr.Carbon_Ramsey(timestamp=None, 
@@ -544,9 +547,9 @@ if n == 1 and self_unc_phase_offset_calibration:
                                 return_results = True, 
                                 title = 'phase_C'+str(c))
             if Amp < 0:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+90 # phi 0 gives -y rotation
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0-90 # phi 0 gives -y rotation
             else:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0-90
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0+90
 
             print 'C'+str(c)+'_unc_phase_offset'+electron_transition_string
             print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string]

@@ -26,7 +26,9 @@ def _create_mw_pulses(msmt,Gate):
     if hasattr(Gate,'first_pulse_is_pi2'):
         if Gate.first_pulse_is_pi2:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
-
+    if hasattr(Gate,'no_first_pulse'):
+        if Gate.no_first_pulse:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
 def _create_laser_pulses(msmt,Gate):
     Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
@@ -133,8 +135,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
     if Gate.reps == 1:
         e.add(Gate.adwin_trigger_pulse,
             refpulse = 'initial_delay')
+        
     #3 MW pulses
-    if msmt.params['MW_during_LDE'] == 1 :
+    if msmt.params['MW_during_LDE'] == 1: # and not ('LDE2' in Gate.name):
         
         # print 'this is the x pulse start'
         # x_start = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']-msmt.params['SP_AOM_turn_on_delay'])
@@ -250,7 +253,26 @@ def _LDE_rephasing_elt(msmt,Gate):
     _create_syncs_and_triggers(msmt,Gate)
     e = element.Element(Gate.name, pulsar = qt.pulsar)
 
-    wait_duration = msmt.params['average_repump_time']
+    ### we need to add some time for the following carbon gate to this rephasing element
+    ### this time is tau_cut and is calculated below.
+    c = str(msmt.params['carbon'])
+    e_trans = msmt.params['electron_transition']
+    tau = msmt.params['C'+c+'_Ren_tau'+e_trans][0]
+    ps.X_pulse(msmt)
+    fast_pi_duration        = msmt.params['fast_pi_duration'] # TODO make this depend on the X/Y_pi_pulse length ()for example from self._X_elt()
+    pulse_tau               = tau - fast_pi_duration/2.0
+    n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) 
+    if n_wait_reps %2 == 0:
+        tau_cut = 1e-6
+    else:
+        tau_cut = 1.5e-6
+
+    # LDE 2 does not need tau_cut because we do dynamic phase correction.
+    if 'LDE_rephasing_2' in Gate.name:
+        tau_cut = 0
+
+    ### avg. repump time + tau_cut gives the right amount of time.
+    wait_duration = msmt.params['average_repump_time'] + tau_cut
     e.add(pulse.cp(Gate.T_sync, length=wait_duration))
 
     return e
