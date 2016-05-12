@@ -27,6 +27,7 @@ def check_pulse_shape(msmt):
 		msmt.params['fast_pi_amp'] = msmt.params['Square_pi_amp']
 		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Square_pi_length']
 		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Square_pi2_length']
+		msmt.params['mw2_fast_pi_amp'] = msmt.params['mw2_Square_pi_amp']
 	elif pulse_shape == 'Hermite':
 		#print 'pulse select selected hermite pulses'
 		msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
@@ -34,6 +35,7 @@ def check_pulse_shape(msmt):
 		msmt.params['fast_pi_amp'] = msmt.params['Hermite_pi_amp']
 		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Hermite_pi_length']
 		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Hermite_pi2_length']
+		msmt.params['mw2_fast_pi_amp'] = msmt.params['mw2_Hermite_pi_amp']
 	else:
 		raise Exception('Error in pulse select: '), sys.exc_info()[0]
 

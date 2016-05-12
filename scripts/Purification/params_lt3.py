@@ -60,11 +60,11 @@ params_lt3['remote_adwin_di_success_channel'] = 19
 params_lt3['remote_adwin_di_fail_channel'] = 18
 params_lt3['remote_adwin_do_success_channel'] = 13
 params_lt3['remote_adwin_do_fail_channel'] = 8
-params_lt3['adwin_comm_safety_cycles'] = 2 
+params_lt3['adwin_comm_safety_cycles'] = 5
 params_lt3['adwin_comm_timeout_cycles'] = 1000 # 1ms 
 params_lt3['remote_awg_trigger_channel'] = 1 # not used on slave
 params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
-
+params_lt3['master_slave_awg_trigger_delay'] = 10 # times 10ns
 
 
 # #eom pulse

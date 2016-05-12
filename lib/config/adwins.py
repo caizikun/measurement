@@ -2814,7 +2814,8 @@ config['adwin_pro_processes'] = {
                     ['remote_awg_trigger_channel'      ,   1],
                     ['invalid_data_marker_do_channel'  ,   1],  
                     ['repetitions'                     ,   0],  
-                    ['C13_MBI_RO_duration'             ,  25],          
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,  1 ], # times 10ns     
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,

@@ -33,58 +33,32 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
-    pulse_shape = kw.get('pulse_shape', None)
-    if pulse_shape == None:
-        pulse_shape == m.params['pulse_shape']
-    else:
-        m.params['pulse_shape'] = pulse_shape
-    m.params['pulse_type'] = pulse_shape
-      
-
-
-    pts = 21
+    pulse_shape = m.params['pulse_shape']
+    pts = 12
 
     m.params['pts'] = pts
     
+    ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
+    m.params['repetitions'] = 600 if multiplicity == 1 else 500
+    rng = 0.1 if multiplicity == 1 else 0.03
+
+
+    ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
+    ###             therefore, I removed them
     if mw2:
-        print m.params['pulse_shape']
-        if m.params['pulse_shape'] == 'Hermite':
-            m.params['repetitions'] = 600 if multiplicity == 1 else 500
-            rng = 0.1 if multiplicity == 1 else 0.01
-            m.params['mw2_duration'] = m.params['mw2_Hermite_pi_length']
-            m.params['mw2_pulse_amplitudes'] = m.params['mw2_Hermite_pi_amp'] + np.linspace(-rng, rng, pts)
-            m.params['MW_pulse_amplitudes'] = m.params['mw2_Hermite_pi_amp'] + np.linspace(-rng, rng, pts)
+        m.params['MW_pulse_amplitudes'] = m.params['mw2_fast_pi_amp'] + np.linspace(-rng, rng, pts)
+    else: 
+        m.params['MW_pulse_amplitudes'] = m.params['fast_pi_amp'] + np.linspace(-rng, rng, pts)  
             
-        else:
-            print 'calibrating square pulses'
-            m.params['repetitions'] = 600 if multiplicity == 1 else 500
-            rng = 0.1 if multiplicity == 1 else 0.01 
-            m.params['mw2_duration'] =  m.params['mw2_Square_pi_length']
-            m.params['mw2_pulse_amplitudes'] = m.params['mw2_Square_pi_amp'] + np.linspace(-rng, rng, pts)
-            m.params['MW_pulse_amplitudes'] = m.params['mw2_Square_pi_amp'] + np.linspace(-rng, rng, pts)
-           
-    else:
-        if m.params['pulse_shape'] == 'Hermite':
-            m.params['repetitions'] = 600 if multiplicity == 1 else 500
-            rng = 0.1 if multiplicity == 1 else 0.1 
-            m.params['MW_duration'] = m.params['Hermite_pi_length']
-            m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)  #XXXXX -0.05, 0.05
-            
-        else:
-            print 'calibrating square pulses'
-            m.params['repetitions'] = 600 if multiplicity == 1 else 500
-            rng = 0.3 if multiplicity == 1 else 0.01 
-            m.params['MW_duration'] =  m.params['Square_pi_length']
-            m.params['MW_pulse_amplitudes'] = m.params['Square_pi_amp'] + np.linspace(-rng, rng, pts)
             
     
     m.params['multiplicity'] = np.ones(pts)*multiplicity
-    m.params['delay_reps'] = 195 ## Currently not used
+    m.params['delay_reps'] = 0
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'
    
-    m.params['sweep_pts'] = m.params['mw2_pulse_amplitudes'] if mw2 else m.params['MW_pulse_amplitudes'  ]
+    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
     m.params['wait_for_AWG_done'] = 1
 
     m.MW_pi = pulse.cp(ps.mw2_X_pulse(m), phase = 0) if mw2 else pulse.cp(ps.X_pulse(m), phase = 0)
@@ -389,9 +363,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False, pulse_shape='Hermite')
+    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
     #sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
+    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
     #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

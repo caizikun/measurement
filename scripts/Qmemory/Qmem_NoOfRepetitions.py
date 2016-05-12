@@ -128,9 +128,9 @@ def QMem(name,
 
 
     minReps = kw.get('minReps',0) # minimum number of LDE reps
+    maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C1_freq_0']))
 
-    maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C4_freq_0']))
-    # maxReps = 250
+
     step = int((maxReps-minReps)/pts)
 
     
@@ -143,7 +143,7 @@ def QMem(name,
     print 'min Reps: ', minReps, ' Max reps: ', maxReps
     print 'carbons ', carbon_list, ' couplings: ', abs(abs(coupling_difference)-m.params['C1_freq_0'])
 
-    f_larmor = m.params['C4_freq_0']
+    f_larmor = m.params['C1_freq_0']
     tau_larmor = round(1/f_larmor,9)
     # tau_larmor = 2.1e-6
     print 'Calculated tau_larmor', tau_larmor
@@ -152,8 +152,7 @@ def QMem(name,
 
     m.params['repump_wait'] = pts*[tau_larmor]#tau_larmor] #pts*[2e-6] # time between pi pulse and beginning of the repumper
     m.params['fast_repump_power'] = kw.get('repump_power', 20e-9)
-
-    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',3.5e-6)] #how long the beam is irradiated
+    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',1.5e-6)] #how long the beam is irradiated
     m.params['average_repump_time'] = pts*[kw.get('average_repump_time',110e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
 
 
@@ -218,7 +217,7 @@ if __name__ == '__main__':
  
         swap_type = ['swap_w_init']
         # print qt.exp_params['samples']['Pippin']['Carbon_LDE_phase_correction_list']
-        for c in [1,2]:#,2,3,5,6]:
+        for c in [1]:#,2,3,5,6]:
             if breakst:
                 break
             for e in ['X','mX','Y','mY','Z','mZ']:
@@ -242,11 +241,11 @@ if __name__ == '__main__':
                                     carbon_init_thresholds  = [0,1],  #1 XXX
                                     carbon_init_methods     = ['swap'], # MBI/swap XXX
                                     repump_power    = repump_power,
-                                    Repetitions     = 2000,
+                                    repetitions     = 500,
                                     pts             = 20,
                                     do_optical_pi   = False,
                                     minReps         = 1,
-                                    maxReps         = 1001,
+                                    maxReps         = 801,
                                     carbon_swap_list = [c],
                                     e_swap_state    = e,
                                     swap_type       = swap_type,

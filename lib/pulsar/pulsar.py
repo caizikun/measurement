@@ -521,7 +521,7 @@ class Pulsar:
                                             wfname_l,
                                             nrep_l, wait_l, goto_l, logic_jump_l)
 
-        print 'I am doing this'
+
         filename = sequence.name+'_FILE.AWG'
         awg_file=self.AWG.generate_awg_file(packed_waveforms,
                                             np.array(wfname_l),

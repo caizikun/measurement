@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -39,15 +39,15 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 self_unc_phase_calibration = True
-self_unc_phase_offset_calibration = True
+self_unc_phase_offset_calibration = False
 check_unc_phase_calibration = False
-check_phase_or_offset = 'offset' # Check timing after, or phase offset.
+check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
@@ -62,7 +62,7 @@ crosstalk_reps = 500
 
 ### this is used to determine the detuning of the ramsey measurements.
 if SETUP == 'lt2':
-    detuning_basic = 0.44e3
+    detuning_basic = 5e3
     detuning_dict = {
     	'1' : detuning_basic,
     	'2' : detuning_basic*2,
@@ -73,9 +73,9 @@ if SETUP == 'lt2':
         '7' : detuning_basic*4}
 
 elif SETUP == 'lt3':
-    detuning_basic = 1e3
+    detuning_basic = 5e3
     detuning_dict = {
-        '1' : 5*detuning_basic,
+        '1' : detuning_basic,
         '2' : 5*detuning_basic,
         '5' : detuning_basic,
         '6' : 2*detuning_basic,
@@ -519,11 +519,11 @@ if n == 1 and self_unc_phase_calibration:
                                    plot_fit = True, show_guess = False,fixed = [2,3,4,5],
                                 return_phase = True, return_amp = True,
                                 return_results = False, 
-                                title = 'phase_C'+str(c))
+                                title = 'unc_phase_C'+str(c))
             if Amp < 0:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi 
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = -phi0-90 
             else:
-                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = phi0+180 # Zero phase gives a -Y rotation!
+                qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c] = -phi0+90 # Zero phase gives a -Y rotation!
 
             print 'C'+str(c)+'_unc_extra_phase_correction_list['+str(c)+']'
             print qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string][c]
@@ -539,15 +539,15 @@ if n == 1 and self_unc_phase_offset_calibration:
             # measure
             qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = 0
             
-            NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_C'+str(c), carbon_nr= c, check_phase_or_offset = 'offset')
+            NuclearRamseyWithInitialization_unc_phase(SAMPLE+'_unc_phase_offset_C'+str(c), carbon_nr= c, check_phase_or_offset = 'offset')
             # fit
             phi0,u_phi_0,Amp,Amp_u =    cr.Carbon_Ramsey(timestamp=None, 
                                    offset = 0.5, amplitude = 0.5, x0=0, decay_constant = 1e5, exponent = 2, 
                                    frequency = 1/360., phase =0, 
                                    plot_fit = True, show_guess = False,fixed = [2,3,4,5],
                                 return_phase = True, return_amp = True,
-                                return_results = True, 
-                                title = 'phase_C'+str(c))
+                                return_results = False, 
+                                title = 'unc_phase_offset_C'+str(c))
             if Amp < 0:
                 qt.exp_params['samples'][SAMPLE]['C'+str(c)+'_unc_phase_offset'+electron_transition_string] = phi0-90 # phi 0 gives -y rotation
             else:

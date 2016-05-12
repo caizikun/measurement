@@ -1675,7 +1675,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             elements.append(e)
 
         # sequence
-        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_shape']))
         for i,e in enumerate(elements):           
             # for j in range(self.params['multiplicity']):
             seq.append(name = e.name+'-{}'.format(j), 
