@@ -4444,17 +4444,18 @@ class MBI_C13(DynamicalDecoupling):
 
         # elif len(carbon_list) == 0 and do_RO_electron==True:
         #     print 'No Carbons selected for readout; reading out electron'
-
+        carbons_to_RO = []
         number_of_carbons_to_RO = 0
-        carbons_to_RO=[]
+
         for jj, basis in enumerate(RO_basis_list):
             #checks how many carbons to read out and adds those in a list (in order of readout)
-            if basis != 'I':    
+            if basis != 'I':   
                 number_of_carbons_to_RO += 1
                 carbons_to_RO.append(carbon_list[jj])
+
         if number_of_carbons_to_RO == 0 and do_RO_electron == False:
             return []
-        # print carbons_to_RO
+        
         #######################
         ### Create sequence ###
         #######################

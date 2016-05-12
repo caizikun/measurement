@@ -565,19 +565,20 @@ class purify_single_setup(DD.MBI_C13):
 
 
 
-            e_RO = self.readout_carbon_sequence(
-                    prefix              = 'Tomo',
-                    pt                  = pt,
-                    go_to_element       = None,
-                    event_jump_element  = None,
-                    RO_trigger_duration = 10e-6,
-                    el_state_in         = 0,
-                    carbon_list         = [],
-                    RO_basis_list       = [],
-                    do_RO_electron      = True,
-                    do_init_pi2         = False) 
+            # e_RO = self.readout_carbon_sequence(
+            #         prefix              = 'Tomo',
+            #         pt                  = pt,
+            #         go_to_element       = None,
+            #         event_jump_element  = None,
+            #         RO_trigger_duration = 10e-6,
+            #         el_state_in         = 0,
+            #         carbon_list         = [],
+            #         RO_basis_list       = [],
+            #         do_RO_electron      = True,
+            #         do_init_pi2         = False) 
 
-
+            e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
+                wait_time = 10e-6)]
 
 
             #######################################################################

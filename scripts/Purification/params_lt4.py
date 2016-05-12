@@ -69,7 +69,7 @@ params_lt4['adwin_comm_safety_cycles'] = 5
 params_lt4['adwin_comm_timeout_cycles'] = 1000 # 1 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
-
+params_lt4['master_slave_awg_trigger_delay'] = 10 # times 10ns
 
 #eom pulse went to msmt params but might come back.
 # params_lt4['eom_pulse_amplitude']		= 1.9 
