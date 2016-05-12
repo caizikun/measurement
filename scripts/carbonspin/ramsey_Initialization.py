@@ -31,7 +31,7 @@ def NuclearRamseyWithInitialization_cal(name,
 
     ### Sweep parameters
     m.params['reps_per_ROsequence'] = 250
-    m.params['C13_MBI_RO_state'] = el_state
+    m.params['C13_MBI_RO_state'] = 0
     ### overwritten from msmnt params
 
     ####################################
@@ -52,7 +52,6 @@ def NuclearRamseyWithInitialization_cal(name,
 
     m.params['sweep_name'] = 'free_evolution_time'
     m.params['sweep_pts']  = m.params['free_evolution_time']
-
 
     ############################################
     ### Option 2; Sweep RO phase at set time ###
@@ -78,13 +77,12 @@ def NuclearRamseyWithInitialization_cal(name,
     funcs.finish(m, upload =True, debug=debug)
 
 
-def qstop(sleep=2):
-    print '--------------------------------'
-    print 'press q to stop measurement loop'
-    print '--------------------------------'
-    qt.msleep(sleep)
-    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-        return True
+    # print '--------------------------------'
+    # print 'press q to stop measurement loop'
+    # print '--------------------------------'
+    # qt.msleep(sleep)
+    # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #     return True
 
 if __name__ == '__main__':
 
@@ -94,19 +92,19 @@ if __name__ == '__main__':
     #qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
     #qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
     #qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
-
+  
 
     stopper = False
 
-    detuning = 1e3
-    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(1)+'_ms' + str(0) + '_' + 'positive', 
+    detuning = 5000
+    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(4)+'_ms' + str(1) + '_' + 'positive', 
                         carbon_nr           = 1,               
                         carbon_init_state   = 'up', 
                         el_RO               = 'positive',
                         detuning            = detuning,
-                        el_state            = 0,
-                        debug               = False,
-                        free_evolution_time = 100e-6 + np.linspace(0.,6.0*1./detuning,36))
+                        el_state            = 1,
+                        debug               = True,
+                        free_evolution_time = 400e-6 + np.linspace(0.,2.8*1./detuning,1))
     
 
 
