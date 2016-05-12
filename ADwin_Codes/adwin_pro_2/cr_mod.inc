@@ -10,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_repetitions 400000
 #DEFINE max_CR_duration   250
 #DEFINE max_repump_duration 2000
 

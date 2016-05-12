@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -45,7 +45,7 @@ f_ms1 = False
 
 self_phase_calibration = False
 self_unc_phase_calibration = True
-self_unc_phase_offset_calibration = True
+self_unc_phase_offset_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
