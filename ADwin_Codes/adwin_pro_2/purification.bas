@@ -9,7 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,16,20,75,78,151,214,215,250,318,319,334,540,614,777,779,794,795,796
+' Bookmarks                      = 3,16,20,75,77,197,316,317,337,554,628,815,816,817
+' Foldings                       = 478,482,501,530,583,589,712,744,766
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,8 +44,8 @@
 #INCLUDE .\cr.inc
 #INCLUDE math.inc
 
-' #DEFINE max_repetitions 100000  this is defined as 500000 in cr check
-#DEFINE max_purification_repetitions    10000
+' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
+#DEFINE max_purification_repetitions    10000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins       2000  
 
 'init
@@ -85,15 +86,11 @@ DIM digin_this_cycle AS long
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
 
 ' Channels & triggers
-dim AWG_done_is_hi, AWG_done_was_hi, AWG_done_switched_to_hi, AWG_done_was_low as long
+dim AWG_done_was_low, AWG_repcount_was_low, PLU_event_di_was_high, master_slave_awg_trigger_delay as long
 DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_event_jump_DO_channel, AWG_done_DI_pattern, AWG_repcount_DI_pattern AS LONG
-DIM AWG_repcount_is_hi, AWG_repcount_was_low as long
-DIM invalid_data_marker_do_channel AS LONG
-dim sync_trigger_counter_channel, sync_trigger_counter_pattern as long
-
-' PLU
 DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
-DIM PLU_event_di_was_high, PLU_event_di_is_high AS LONG
+dim sync_trigger_counter_channel, sync_trigger_counter_pattern as long
+DIM invalid_data_marker_do_channel AS LONG
 DIM detector_of_last_entanglement, same_detector as LONG
 
 ' MBI
@@ -132,82 +129,9 @@ DIM do_purifying_gate, do_carbon_readout as long
 DIM mode_after_spinpumping, mode_after_LDE, mode_after_LDE_2, mode_after_SWAP, mode_after_purification, mode_after_phase_correction as long
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
-  'read int params from python script
   
   init_CR()
   
-  cycle_duration               = DATA_20[1]
-  SP_duration                  = DATA_20[2]
-  wait_after_pulse_duration    = DATA_20[3] 'Time to wait after turning off a laser pulse to ensure it is really off
-
-  MBI_attempts_before_CR       = DATA_20[4] 
-  Dynamical_stop_ssro_threshold= DATA_20[5]
-  Dynamical_stop_ssro_duration = DATA_20[6]
-  
-  is_master                    = DATA_20[7]
-  is_two_setup_experiment      = Data_20[8]
-
-  do_carbon_init               = DATA_20[9]
-  do_C_init_SWAP_wo_SSRO       = DATA_20[10]
-  do_swap_onto_carbon          = DATA_20[11]
-  do_SSRO_after_electron_carbon_SWAP = DATA_20[12]
-  do_LDE_2                     = DATA_20[13]
-  do_phase_correction          = DATA_20[14]
-  do_purifying_gate            = DATA_20[15]
-  do_carbon_readout            = DATA_20[16]
-  
-  PLU_event_di_channel         = DATA_20[17]
-  PLU_which_di_channel         = DATA_20[18]
-  
-  AWG_start_DO_channel         = DATA_20[19]
-  AWG_done_DI_channel          = DATA_20[20]
-  wait_for_awg_done_timeout_cycles = DATA_20[21]
-  AWG_event_jump_DO_channel    = DATA_20[22]
-  AWG_repcount_DI_channel      = DATA_20[23]
-  
-  remote_adwin_di_success_channel  = DATA_20[24]
-  remote_adwin_di_fail_channel     = DATA_20[25]
-  remote_adwin_do_success_channel  = DATA_20[26]
-  remote_adwin_do_fail_channel     = DATA_20[27]
-  adwin_comm_safety_cycles         = DATA_20[28]
-  adwin_comm_timeout_cycles        = DATA_20[29]
-  
-  remote_awg_trigger_channel       = DATA_20[30]
-  invalid_data_marker_do_channel   = DATA_20[31] 'marks timeharp data invalid
-  No_of_sequence_repetitions       = DATA_20[32] 'how often do we run the sequence
-  
-  C13_MBI_RO_duration              = DATA_20[33] 'C13_MBI_RO_duration
-  ' read float params from python
-  E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
-  E_MBI_voltage                = DATA_21[2]  
-  A_SP_voltage                 = DATA_21[3]
-  E_RO_voltage                 = DATA_21[4]
-  A_RO_voltage                 = DATA_21[5]
-  phase_per_sequence_repetition = DATA_21[6] ' how much phase do we acquire per repetition
-  phase_per_compensation_repetition =DATA_21[7] '
-  total_phase_offset_after_sequence = DATA_21[8] 'how much phase have we acquired during the pulses
-              
-  
-  ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
-  FOR i = 1 TO max_purification_repetitions
-    DATA_24[i] = -1
-    DATA_25[i] = -1
-    DATA_27[i] = -1
-    DATA_28[i] = -1
-    DATA_33[i] = -1
-    DATA_34[i] = -1
-    DATA_35[i] = -1
-    DATA_36[i] = -1
-    DATA_37[i] = -1
-    DATA_38[i] = -1
-    DATA_39[i] = -1
-    DATA_40[i] = -1
-  NEXT i
-  
-  FOR i = 1 TO max_SP_bins
-    DATA_29[i] = 0
-  NEXT i
-
   n_of_comm_timeouts = 0 ' used for debugging, goes to a par   
   MBI_failed          = 0
   MBI_starts          = 0
@@ -254,30 +178,87 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   success_event_counter = 0
   Success_of_SSRO_is_ms0 = 1 'usually, we condition on getting a click
   SSRO_result = 0
-      
-  P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
-  P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-  P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off Ex laser
-
-  P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
-  P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
-  P2_CNT_MODE(CTR_MODULE,sync_trigger_counter_channel,000010000b) 'configure counter
-
-  P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
-  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
-  P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation high.
   
   mode = 0
   timer = 0
   mbi_timer = 0
   trying_mbi = 0
-  processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
+      
   
-  AWG_done_is_hi = 0      
-  AWG_done_was_hi = 0
-  AWG_done_switched_to_hi = 0
+''''''''''''''''''''''''''''''''''''''
+  'read params from python script 
+''''''''''''''''''''''''''''''''''''''
+  cycle_duration               = DATA_20[1]
+  SP_duration                  = DATA_20[2]
+  wait_after_pulse_duration    = DATA_20[3] 'Time to wait after turning off a laser pulse to ensure it is really off
+  MBI_attempts_before_CR       = DATA_20[4] 
+  Dynamical_stop_ssro_threshold= DATA_20[5]
+  Dynamical_stop_ssro_duration = DATA_20[6]
+  is_master                    = DATA_20[7]
+  is_two_setup_experiment      = Data_20[8]
+  do_carbon_init               = DATA_20[9]
+  do_C_init_SWAP_wo_SSRO       = DATA_20[10]
+  do_swap_onto_carbon          = DATA_20[11]
+  do_SSRO_after_electron_carbon_SWAP = DATA_20[12]
+  do_LDE_2                     = DATA_20[13]
+  do_phase_correction          = DATA_20[14]
+  do_purifying_gate            = DATA_20[15]
+  do_carbon_readout            = DATA_20[16]
+  PLU_event_di_channel         = DATA_20[17]
+  PLU_which_di_channel         = DATA_20[18]
+  AWG_start_DO_channel         = DATA_20[19]
+  AWG_done_DI_channel          = DATA_20[20]
+  wait_for_awg_done_timeout_cycles = DATA_20[21]
+  AWG_event_jump_DO_channel    = DATA_20[22]
+  AWG_repcount_DI_channel      = DATA_20[23]
+  remote_adwin_di_success_channel  = DATA_20[24]
+  remote_adwin_di_fail_channel     = DATA_20[25]
+  remote_adwin_do_success_channel  = DATA_20[26]
+  remote_adwin_do_fail_channel     = DATA_20[27]
+  adwin_comm_safety_cycles         = DATA_20[28]
+  adwin_comm_timeout_cycles        = DATA_20[29]
+  remote_awg_trigger_channel       = DATA_20[30]
+  invalid_data_marker_do_channel   = DATA_20[31] 'marks timeharp data invalid
+  No_of_sequence_repetitions       = DATA_20[32] 'how often do we run the sequence
+  C13_MBI_RO_duration              = DATA_20[33] 'C13_MBI_RO_duration
+  master_slave_awg_trigger_delay   = DATA_20[34]
   
+  ' float params from python
+  E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
+  E_MBI_voltage                = DATA_21[2]  
+  A_SP_voltage                 = DATA_21[3]
+  E_RO_voltage                 = DATA_21[4]
+  A_RO_voltage                 = DATA_21[5]
+  phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
+  phase_per_compensation_repetition = DATA_21[7] '
+  total_phase_offset_after_sequence = DATA_21[8] 'how much phase have we acquired during the pulses
+              
+
+''''''''''''''''''''''''''''''''''''''
+  ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
+''''''''''''''''''''''''''''''''''''''
+  FOR i = 1 TO max_purification_repetitions
+    DATA_24[i] = -1
+    DATA_25[i] = -1
+    DATA_27[i] = -1
+    DATA_28[i] = -1
+    DATA_33[i] = -1
+    DATA_34[i] = -1
+    DATA_35[i] = -1
+    DATA_36[i] = -1
+    DATA_37[i] = -1
+    DATA_38[i] = -1
+    DATA_39[i] = -1
+    DATA_40[i] = -1
+  NEXT i
+  FOR i = 1 TO max_SP_bins
+    DATA_29[i] = 0
+  NEXT i
+  
+  
+''''''''''''''''''''''''''''
   ' init parameters
+''''''''''''''''''''''''''''
   Par_60 = timer                  ' time
   Par_61 = mode                   ' current mode
   PAR_63 = 0                      ' stop flag
@@ -287,12 +268,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_78 = 0                      ' MBI starts
   PAR_76 = 0                      ' n_of_communication_timeouts for debugging
   PAR_80 = 0                      ' n_of timeouts when waiting for AWG done
-  PAR_62 = 0 ' for debugging
-  PAR_65 = 0 ' for debugging
+  PAR_62 = -1 ' for debugging
+  PAR_65 = -1 ' for debugging
 
-
-  'flow control: 
-  
+'''''''''''''''''''''''''
+  ' flow control: 
+'''''''''''''''''''''''''
   if (do_carbon_readout = 1) then
     mode_after_purification = 9 ' Carbon tomography
   else
@@ -328,45 +309,79 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   else
     mode_after_spinpumping = 4 ' LDE 1
   endif
+  
+  
+'''''''''''''''''''''''''''
+  ' define channels etc
+'''''''''''''''''''''''''''
+  P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off green
+  P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+  P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off Ex laser
 
+  P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
+  P2_CNT_MODE(CTR_MODULE, counter_channel, 000010000b) 'configure counter
+  P2_CNT_MODE(CTR_MODULE, sync_trigger_counter_channel, 000010000b) 'configure counter
+
+  P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
+  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
+  P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation high.
+   
+  processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
+  
   P2_CNT_CLEAR(CTR_MODULE, sync_trigger_counter_pattern)    'clear and turn on sync trigger counter
   P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)
+  
+  
+  
+  
   
 EVENT:
   
   'write information to pars for live monitoring
   PAR_61 = mode   
-  'Par_60 = timer     
+  Par_60 = timer     
     
   IF (wait_time > 0) THEN
     wait_time = wait_time - 1
   ELSE
+    
     SELECTCASE mode
       
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
         ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
-        IF (adwin_comm_done = 0) THEN 'previous communication was not successful
-          DATA_33[repetition_counter] = DATA_33[repetition_counter] + timer
+        if (timer = 0) then ' forget values from previous runs
+          adwin_timeout_requested = 0
           combined_success = 0
-          digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
-          remote_success = ( digin_this_cycle AND remote_adwin_di_success_channel) 'read remote channels
-          remote_fail = (digin_this_cycle AND remote_adwin_di_fail_channel)
+          adwin_comm_done = 0
+          remote_success = 0
+          remote_fail = 0
+        endif
+        
+        IF (adwin_comm_done = 0) THEN 'previous communication was not successful
+          DATA_33[repetition_counter] = DATA_33[repetition_counter] + timer  ' store time spent in adwin communication for debugging
+          digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
+          if ( (digin_this_cycle AND remote_adwin_di_success_pattern) > 0) then
+            remote_success = 1
+          endif
+          if ( (digin_this_cycle AND remote_adwin_di_fail_pattern) > 0) then
+            remote_fail = 1
+          endif
         
           IF (is_master>0) THEN 
-            if ((remote_success > 0) and (remote_fail > 0)) then ' own signal successfully communicated to other side -> go on to next mode
-              adwin_comm_done = 1
+            if ((remote_success > 0 ) and (remote_fail > 0)) then ' own signal successfully communicated to other side -> go on to next mode
+              adwin_comm_done = 1 ' go to next mode in cleanup step below
+              wait_time = adwin_comm_safety_cycles ' make sure the other adwin is ready for counting etc.
             else ' own signal not yet received on other side -> send it or wait for slave's signal to decide what to do
-              IF ((remote_success > 0) or (remote_fail > 0)) then ' remote signal received: decide whether both setups were successful
-                if ((local_success > 0) and (remote_success > 0)) then
+              IF ((remote_success >0) or (remote_fail >0)) then ' remote signal received: decide whether both setups were successful
+                if ((local_success > 0) and (remote_success >0)) then
                   combined_success = 1
                 else
                   combined_success = 0
                 endif
-                'send combined success, wait for a round trip to make sure that our signal has arrived
+                'send combined success and then wait for confirmation
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
-                wait_time = 2 * adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
               ELSE ' no signal received. Did the connection time out?
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
@@ -377,16 +392,16 @@ EVENT:
               ENDIF 
             endif
             
-          ELSE ' I'm the slave. 
-            if (timer = 0) then 'first round: send my signal
+          ELSE ' I'm the slave, and the communication is not yet done.
+            if (timer = 0) then ' first round: send my signal
               P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, local_success)
               P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-local_success) 
             else 'Did the master tell me what to do?
-              if ((remote_success > 0) or (remote_fail > 0)) then 'signal received
-                P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 1) 'send confirmation: both channels high
-                P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1) 'send confirmation
-                wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+              if ((remote_success >0 ) or (remote_fail >0)) then 'signal received
+                P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 1) 'send confirmation: both channels high
+                P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 1) 'send confirmation
                 combined_success = remote_success
+                wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time to make sure the other setup has received our signal
                 adwin_comm_done = 1 ' below: reset everything and go on
               else ' still no signal. Did the connection time out?
                 IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
@@ -406,18 +421,16 @@ EVENT:
             endif
           ENDIF
         ENDIF
-
-        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory
+        
+        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
           if (combined_success > 0) then ' both successful: continue
             mode = success_mode_after_adwin_comm
           else 'fail: go to fail mode
             mode = fail_mode_after_adwin_comm
           endif
-          adwin_timeout_requested = 0
-          adwin_comm_done = 0 'forget for next round of the experiment
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
-          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
         ENDIF
        
         
@@ -495,6 +508,8 @@ EVENT:
           ENDIF
         endif  
         
+        
+        
       CASE 1    ' E spin pumping
         
         IF (timer = 0) THEN
@@ -510,7 +525,7 @@ EVENT:
           old_counts = counts
                     
           IF (timer = SP_duration) THEN
-            P2_CNT_ENABLE(CTR_MODULE,0) ' diable counter
+            P2_CNT_ENABLE(CTR_MODULE,0) ' disable counter
             P2_DIGOUT(DIO_MODULE,11,0)  ' set repumper modulation low.
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
@@ -520,7 +535,7 @@ EVENT:
           ENDIF
         ENDIF
         
-          
+         
           
       CASE 2    ' Carbon init, either MBI or SWAP (with SSRO afterwards or not)
         ' We first need to send a trigger command to the AWGs on both sides that tells them to start the gate sequence
@@ -637,13 +652,12 @@ EVENT:
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
           else 
             IF (is_master > 0) THEN ' trigger own and remote AWG
-              P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
             ENDIF
           endif 
         ENDIF
@@ -673,9 +687,9 @@ EVENT:
 
               else ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check
-                P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-                CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-                P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+                'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
               endif
             endif 
             awg_done_was_low = 0 ' remember
@@ -698,13 +712,13 @@ EVENT:
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
           else 
             IF (is_master>0) THEN ' trigger own and remote AWG
-              P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+              'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+              'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
             ENDIF
           endif 
         ENDIF
@@ -738,6 +752,8 @@ EVENT:
           ENDIF  
         ENDIF
                 
+      
+        
       CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4   XXX adjust triggering to be the same as in 1
         IF (timer =0) THEN
           DATA_37[repetition_counter] = SSRO_result
@@ -746,30 +762,32 @@ EVENT:
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
           else 
-            IF (is_master>0) THEN ' trigger own and remote AWG
-              P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+            IF (is_master > 0) THEN ' trigger own and remote AWG
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
-              'P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
-              'P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
+              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
             ENDIF
           endif 
         ENDIF
         
+        
+        ' monitor inputs
         digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
-        IF ((digin_this_cycle AND AWG_repcount_DI_pattern) >0) THEN 'awg is high. 
-          if (awg_repcount_was_low > 0) then ' this construction prevents double counts if the awg signal is long
-            inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
-          endif
-          awg_repcount_was_low = 0
-        ELSE
-          awg_repcount_was_low = 1
-        ENDIF
-         
+        
+        if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
+          IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
+            inc(AWG_sequence_repetitions_first_attempt) ' increase the number of attempts counter
+          ENDIF
+          AWG_repcount_was_low = 0
+        else
+          AWG_repcount_was_low = 1
+        endif
+
         'check the PLU
-        IF ((digin_this_cycle AND PLU_event_di_pattern)>0) THEN 'PLU signal received
+        IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
           DATA_35[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
           'check whether clicks happened on the same detector
           same_detector = detector_of_last_entanglement ' remember result of first round
@@ -787,12 +805,16 @@ EVENT:
             if (awg_done_was_low > 0) then ' switched in this round
               DATA_36[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
               timer = -1
-              mode = 12 ' finalize and go to CR   
-              P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-              CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+              IF (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+                mode = mode_after_LDE_2
+              ELSE ' two setups involved: Done means failure of the sequence
+                mode = 12 ' finalize and go to cr check
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+                'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+              ENDIF
             endif
-            awg_done_was_low = 0
+            awg_done_was_low = 0  ' remember
           ELSE ' AWG not done yet
             awg_done_was_low = 1
             IF ( timer > wait_for_awg_done_timeout_cycles) THEN

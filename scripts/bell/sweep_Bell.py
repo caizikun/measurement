@@ -142,10 +142,10 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 1000 # 
+    m.params['repetitions'] = 100000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
-    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['RND_during_LDE'] = 0
     m.joint_params['RO_during_LDE'] = 0
     m.params['MW_during_LDE'] = 0
@@ -181,7 +181,7 @@ def tail_sweep(name):
         else:
             m.params['general_sweep_name'] = 'aom_amplitude'
             print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.6,1.0,pts)
+            m.params['general_sweep_pts'] = np.linspace(0.73,0.73,pts)
             m.params['sweep_name'] = m.params['general_sweep_name'] 
             m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -339,7 +339,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('test_connection_B-56') 
+    tail_sweep('telecom_sweep_bell_180mW') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 

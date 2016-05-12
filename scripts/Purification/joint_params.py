@@ -46,6 +46,8 @@ joint_params['master_max_dec_tau'] = 2.4e-6
 joint_params['master_dec_pulse_multiple'] = 4
 joint_params['master_carbon_init_RO_wait'] = 70e-6
 
+joint_params['master_slave_awg_trigger_delay'] = 10 # times 10ns
+
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False
 joint_params['initial_delay']           = 10e-9 #DONT CHANGE THIS
