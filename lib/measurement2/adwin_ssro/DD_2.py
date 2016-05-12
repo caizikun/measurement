@@ -1832,9 +1832,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     decoupling_elt.append(pulse.cp(mY))#, amplitude=0))
                     # print 'mY'
         else:
-                    raise Exception('Error in pulse sequence')
+            raise Exception('Error in pulse sequence')
 
-                decoupling_elt.append(T_twice)
+            decoupling_elt.append(T_twice)
 
 
             #### need to adapt for final pulse and the number of pulses

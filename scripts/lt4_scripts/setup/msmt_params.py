@@ -182,6 +182,7 @@ cfg['samples'][sample_name] = {
 	'mw2_mod_freq'   :      0,
 	'mw2_frq'        :      0, 
 	'mw2_power'      :      0,
+	'multiple_source':      False,
 	'ms-1_cntr_frq' :       f_msm1_cntr,
 	'ms+1_cntr_frq' :       f_msp1_cntr,
 	'N_0-1_splitting_ms-1': N_frq,
