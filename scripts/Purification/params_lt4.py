@@ -54,27 +54,21 @@ params_lt4['phase_correct_max_reps']    = 10
 
 # channels
 # params_lt4['wait_for_AWG_done'] = 1 # not used in adwin script
-params_lt4['PLU_event_di_channel'] = 1 
-params_lt4['PLU_which_di_channel'] = 1 
+params_lt4['PLU_event_di_channel'] = 21
+params_lt4['PLU_which_di_channel'] = 20
 # params_lt4['AWG_start_DO_channel'] = 1 defined in msmt params
 # params_lt4['AWG_done_DI_channel']= 1 defined in msmt params
-params_lt4['wait_for_awg_done_timeout_cycles'] = 10000  # 10ms
+params_lt4['wait_for_awg_done_timeout_cycles'] = 1000000  # 10ms
 # params_lt4['AWG_event_jump_DO_channel'] = 1 defined in msmt params
-params_lt4['AWG_repcount_DI_channel'] = 1 
-params_lt4['remote_adwin_di_success_channel'] = 1 
-params_lt4['remote_adwin_di_fail_channel'] = 1 
-params_lt4['remote_adwin_do_success_channel'] = 1 
-params_lt4['remote_adwin_do_fail_channel'] = 1 
-params_lt4['adwin_comm_safety_cycles'] = 1 
+params_lt4['AWG_repcount_DI_channel'] = 19
+params_lt4['remote_adwin_di_success_channel'] = 22
+params_lt4['remote_adwin_di_fail_channel'] = 23
+params_lt4['remote_adwin_do_success_channel'] = 14
+params_lt4['remote_adwin_do_fail_channel'] = 15
+params_lt4['adwin_comm_safety_cycles'] = 5
 params_lt4['adwin_comm_timeout_cycles'] = 1000 # 1 ms
-params_lt4['remote_awg_trigger_channel'] = 1
+params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
-
-# LDE element
-params_lt4['AWG_SP_power']              = 500e-9 #insert appropriate repump power.
-params_lt4['LDE_SP_duration']           = 2e-6
-params_lt4['LDE_decouple_time']         = 2.32e-6
-params_lt4['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
 
 
 #eom pulse went to msmt params but might come back.
@@ -107,7 +101,7 @@ params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 ### Everything carbon
-params_lt4['carbon']                    = 1
+params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
 

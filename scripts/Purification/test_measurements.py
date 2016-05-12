@@ -60,4 +60,4 @@ def test_adwin_communication(name,debug = False,upload_only=False):
 
 if __name__ == '__main__':
 
-    test_adwin_communication(name+'_test_adwin_communication',upload_only=False)
+    test_adwin_communication(name+'_test_adwin_communication', upload_only=False)

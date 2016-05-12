@@ -118,8 +118,8 @@ if __name__ == '__main__':
 
     '''' NOTE REMOVE RO_after_swap from SWAP params '''
     breakst     = False
-    carbons     = [1]
-    el_state    = ['X','Y','Z']
+    carbons     = [4]
+    el_state    = ['X']#,'Y','Z']
     
     debug = False
     RO_after_swap = True

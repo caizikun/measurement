@@ -207,13 +207,13 @@ if __name__ == '__main__':
     last_check = time.time() ### time reference for long measurement loops
     breakst = False    
     debug = False
-    repump_power = 1000e-9
+    repump_power = 10e-9
 
 
     ############################################################
     #### SK SWAP and subsequent Carbon Decay w ent attempts ####
     ############################################################
-    if True:
+    if False:
  
         swap_type = ['swap_w_init']
         # print qt.exp_params['samples']['Pippin']['Carbon_LDE_phase_correction_list']
@@ -257,17 +257,17 @@ if __name__ == '__main__':
     ### single qubit X loop ###
     #########################
 
-    if False: ### turn measurement on/off
+    if True: ### turn measurement on/off
         # stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
         # get repump speed
-        for c in [4,5,8]:#,2,3,5,6]:
+        for c in [4]:#,2,3,5,6]:
             if breakst:
                 break
-            for tomo in ['X','Y']:
+            for tomo in ['Z']:#,'Y']:
                 # optimize(breakst or debug)
                 if breakst:
                     break
-                for ro in ['positive','negative']:
+                for ro in ['positive']:#,'negative']:
                     breakst = show_stopper()
                     if breakst:
                         break
@@ -278,11 +278,13 @@ if __name__ == '__main__':
                                 el_RO = ro,
                                 carbon_list   = [c],               
                                 carbon_init_list        = [c],
-                                carbon_init_thresholds  = [1],  #1 XXX
-                                carbon_init_methods     = ['MBI'], # MBI/swap XXX
+                                carbon_init_thresholds  = [0],  #1 XXX
+                                carbon_init_methods     = ['swap'], # MBI/swap XXX
                                 repump_power = repump_power,
-                                repetitions = 250,
-                                pts = 16,
+                                Repetitions = 5000,
+                                maxReps = 500,
+                                minReps = 200,
+                                pts = 2,
                                 do_optical_pi = False,
                                 ) 
                 ### optimize position and calibrate powers

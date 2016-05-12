@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,16,20,75,77,197,316,317,337,554,628,815,816,817
-' Foldings                       = 478,482,501,530,583,589,712,744,766
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,16,20,75,77,197,317,318,335,552,627,819,820,821
+' Foldings                       = 476,480,582
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -238,8 +238,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
 ''''''''''''''''''''''''''''''''''''''
   FOR i = 1 TO max_purification_repetitions
-    DATA_24[i] = -1
-    DATA_25[i] = -1
+    DATA_24[i] = 0
+    DATA_25[i] = 0
     DATA_27[i] = -1
     DATA_28[i] = -1
     DATA_33[i] = -1
@@ -250,6 +250,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     DATA_38[i] = -1
     DATA_39[i] = -1
     DATA_40[i] = -1
+    DATA_41[i] = -1
   NEXT i
   FOR i = 1 TO max_SP_bins
     DATA_29[i] = 0
@@ -286,7 +287,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     mode_after_phase_correction = mode_after_purification ' as defined above
   ENDIF
   
-  if (do_phase_correction=1) then
+  if ((do_phase_correction=1) and (do_purifying_gate = 1)) then ' special case: in the adwin do phase only makes sense in conjunction with do_purify
     mode_after_LDE_2 = 7 'phase correction
   else
     mode_after_LDE_2 = mode_after_phase_correction ' as defined above
@@ -333,14 +334,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   
   
-  
-  
 EVENT:
   
   'write information to pars for live monitoring
   PAR_61 = mode   
   Par_60 = timer     
-    
   IF (wait_time > 0) THEN
     wait_time = wait_time - 1
   ELSE
@@ -439,7 +437,7 @@ EVENT:
                      
         IF (timer = 0) THEN 
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
+          P2_CNT_ENABLE(CTR_MODULE, counter_pattern OR sync_trigger_counter_pattern)    'turn on counter
           if (is_mbi_readout>0) then
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
             RO_duration = C13_MBI_RO_duration
@@ -451,7 +449,7 @@ EVENT:
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
           IF (counts >= Dynamical_stop_ssro_threshold) THEN ' photon detected
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-            P2_CNT_ENABLE(CTR_MODULE, 0)  ' disable counter
+            P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)  ' disable photon counter, keep sync trigger counter on
             wait_time = RO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase xxx to do: is this still accurate to the us?
             timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
             SSRO_result = 1
@@ -470,7 +468,7 @@ EVENT:
             DATA_40[repetition_counter] = SSRO_result 'save as last electron readout
             if (timer = RO_duration) then ' no count after ssro duration -> failed  xxx to do: is this still accurate to the us?
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-              P2_CNT_ENABLE(CTR_MODULE,0) 'disable counter
+              P2_CNT_ENABLE(CTR_MODULE,sync_trigger_counter_pattern) 'disable photon counter, keep sync trigger counter on
               timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
               IF (Success_of_SSRO_is_ms0 = 0) THEN
                 local_success = 1 'remember for adwin communication in next mode. Success_of_SSRO_is_ms0 is usually 1, but could be inverted here
@@ -517,7 +515,7 @@ EVENT:
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)                       ' turn on counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern OR sync_trigger_counter_pattern)                       ' turn on counter
           old_counts = 0
         ELSE
           counts = P2_CNT_READ(CTR_MODULE,counter_channel)
@@ -525,7 +523,7 @@ EVENT:
           old_counts = counts
                     
           IF (timer = SP_duration) THEN
-            P2_CNT_ENABLE(CTR_MODULE,0) ' disable counter
+            P2_CNT_ENABLE(CTR_MODULE,sync_trigger_counter_pattern) ' disable photon counter, keep sync trigger cuounter on
             P2_DIGOUT(DIO_MODULE,11,0)  ' set repumper modulation low.
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
@@ -575,6 +573,7 @@ EVENT:
                 mode = 3 'go to MBI verification. Is required to send the jump trigger that signals Adwin is done with SSRO
                 local_success = 1
                 local_fail = 0
+                SSRO_result = -2 ' for debugging
               ELSE
                 success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
                 mode = 200 ' go to dynamical stop RO
@@ -605,10 +604,10 @@ EVENT:
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
           trying_mbi = 0
+          DATA_28[repetition_counter] = DATA_28[repetition_counter] + mbi_timer' save the time MBI has taken
           mbi_timer = 0
           is_mbi_readout = 0
           DATA_24[repetition_counter] = DATA_24[repetition_counter] + current_MBI_attempt ' number of attempts needed in the successful cycle for histogram
-          DATA_28[repetition_counter] = DATA_28[repetition_counter] + mbi_timer ' save the time MBI has taken
           DATA_27[repetition_counter] = SSRO_result
           current_MBI_attempt = 1 ' reset counter
           if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
@@ -754,8 +753,13 @@ EVENT:
                 
       
         
-      CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4   XXX adjust triggering to be the same as in 1
+      CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
+          if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+          endif
           DATA_37[repetition_counter] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
@@ -779,7 +783,7 @@ EVENT:
         
         if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
           IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
-            inc(AWG_sequence_repetitions_first_attempt) ' increase the number of attempts counter
+            inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
           ENDIF
           AWG_repcount_was_low = 0
         else
@@ -964,8 +968,7 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
         timer = -1
-        DATA_41[repetition_counter] = P2_CNT_READ(CTR_MODULE, counter_channel)
-
+        DATA_41[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)
 
     endselect
     

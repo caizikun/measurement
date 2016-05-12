@@ -48,12 +48,12 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 1000 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Initial_Pulse']       = 'x'
     m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
-
-    m.params['addressed_carbon'] = 3
+    
+    m.params['addressed_carbon'] = 4
     m.name += '_carbon%s' % m.params['addressed_carbon']
     ### Sweep parameter ###
     if t_start != None and t_end != None and pts != None:
@@ -92,7 +92,7 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE, t_start = 3.2, t_end = 35.0, pts = 121)
+    Carbon_Ramsey(SAMPLE, t_start = 15, t_end = 75, pts = 46)
     # interrupt_script()
     # optimize_NV()
     # Carbon_Ramsey(SAMPLE, t_start = None, t_end = None, pts = None)
