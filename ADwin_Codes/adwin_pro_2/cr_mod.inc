@@ -107,6 +107,8 @@ SUB init_CR()
   repump_mod_amplitude_invert = 0
   cr_mod_amplitude_invert = 0
   
+  current_cr_threshold = CR_preselect
+  
   
   'output pars
   PAR_70 = 0                      ' cumulative counts from probe intervals
@@ -137,11 +139,10 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE
-
     SELECTCASE cr_mode 
+     
         
       CASE 0    ' repump and repump modulation
-              
         IF (cr_timer = 0) THEN
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    'turn on counter
@@ -209,31 +210,29 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         
       CASE 1  ' ----cr modulation control before CR check
         IF (cr_timer = 0) THEN
+          inc(par_62)
           if (first_CR>0) then
             cr_timer = -1
             cr_mode = 2  'skip modulation in frist cr after
+          else
+            'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
+            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
+            cr_old_counts = 0
+            IF (cr_mod_activated > 0) THEN
+              'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
+              'if cr_mod_amplitude_invert = 1 then
+              '  cr_mod_amplitude_invert = 0
+              'else
+              '  cr_mod_amplitude_invert = 1
+              'endif
+              cr_i=0
+            ELSE
+              cr_mode = 2 ' go to normal CR check
+            ENDIF
           endif
-          
-          CR_preselect                 = PAR_75
-          CR_probe                     = PAR_68
-          cr_mod_activated             = PAR_67
-          'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
-          cr_old_counts = 0
-          IF (cr_mod_activated > 0) THEN
-            'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
-            'if cr_mod_amplitude_invert = 1 then
-            '  cr_mod_amplitude_invert = 0
-            'else
-            '  cr_mod_amplitude_invert = 1
-            'endif
-            cr_i=0
-          ELSE
-            cr_mode = 2 ' go to normal CR check
-          ENDIF
         ELSE
           IF (cr_timer = CR_duration) THEN
             cr_mode = 2 ' go to normal CR check
@@ -265,40 +264,63 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         ENDIF
         
       CASE 2    ' E/A laser CR check
-                 
-        IF (cr_timer = CR_duration) THEN
-          'P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.   XXX channel not connected
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
-          cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-          P2_CNT_ENABLE(CTR_MODULE,0) 'disable
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
+        if (cr_timer = 0) then
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
+          CR_preselect = PAR_75 'read labview parameters
+          CR_probe = PAR_68
+          cr_mod_activated = PAR_67
+        else
+          IF (cr_timer = CR_duration) THEN
+            'P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation low.   XXX channel not connected
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
+            cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
+            P2_CNT_ENABLE(CTR_MODULE,0) 'disable
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)
 
-          Inc(Par_72) ' total number of cr checks
-          IF (first_cr > 0) THEN ' first CR after SSRO sequence; repetition index is increased in main script after SSRO has been done. CR check gets repetition_counter-1 (for compatibility)
-            DATA_23[repetition_index] = cr_counts
-            first_cr = 0
-          ENDIF
-                  
-          IF (cr_counts < current_cr_threshold) THEN
-            CR_check = -1 ' return failure
-            inc(PAR_79) ' number of failed CR checks
-            current_CR_threshold = CR_preselect
-            CR_repump = PAR_69 ' read if threshold has been changed by labview
-            IF (cr_counts < CR_repump) THEN
-              cr_mode = 0 ' go to repump
-            ELSE ' counts were not below repumping threshold. go to modulation mode
-              cr_mode = 1
+            Inc(Par_72) ' total number of cr checks
+            PAR_70 = PAR_70 + cr_counts ' total number of cr counts for labview monitoring
+            
+            IF (first_cr > 0) THEN ' first CR after SSRO sequence; repetition index is increased in main script after SSRO has been done. CR check gets repetition_counter-1 (for compatibility)
+              DATA_23[repetition_index] = cr_counts
+              first_cr = 0
             ENDIF
-          ELSE ' CR check successful
-            cr_mode = 2 ' next run: CR after check: skip modulation
-            current_cr_threshold = CR_probe
-            CR_check = 1 ' return success
-            DATA_22[repetition_index+1] = cr_counts  ' save CR before the SSRO sequence; repetition index is increased in main script after SSRO has been done, CR_check gets repetition_counter-1 (for compatibility)
+            
+
+            if (cr_mod_activated>0) then
+              cr_mode = 1
+            else 
+              cr_mode = 2
+            endif 'cr_mode overwritten later if counts are below repump threshold
+            
+            IF (cr_counts < current_cr_threshold) THEN
+              CR_check = -1 ' return failure
+              inc(PAR_79) ' number of failed CR checks
+              current_CR_threshold = CR_preselect
+              CR_repump = PAR_69 ' read if threshold has been changed by labview
+              IF (cr_counts < CR_repump) THEN
+                cr_mode = 0 ' go to repump
+              ELSE ' counts were not below repumping threshold. go to modulation mode if activated, else conventional cr check again
+                
+                if (cr_mod_activated>0) then
+                  cr_mode = 1
+                else 
+                  cr_mode = 2
+                endif
+              ENDIF
+            ELSE ' CR check successful
+              cr_mode = 1 ' next run: CR after check will skip modulation if first_CR is set
+              current_cr_threshold = CR_probe
+              CR_check = 1 ' return success
+              DATA_22[repetition_index+1] = cr_counts  ' save CR before the SSRO sequence; repetition index is increased in main script after SSRO has been done, CR_check gets repetition_counter-1 (for compatibility)
+            ENDIF
+            cr_timer = -1
+            cr_wait_after_pulse = cr_wait_after_pulse_duration
           ENDIF
-          cr_timer = -1
-          cr_wait_after_pulse = cr_wait_after_pulse_duration
-        ENDIF
+        endif
         
     ENDSELECT
     inc(cr_timer)

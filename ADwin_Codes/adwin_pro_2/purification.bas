@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,16,20,75,77,197,317,318,335,556,631,823,824,825
+' Bookmarks                      = 3,16,20,75,77,197,317,318,335,552,627,819,820,821
 ' Foldings                       = 476
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -490,11 +490,11 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter > No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-        cr_result = CR_check(first_CR,repetition_counter-1)
-        if ( cr_result > 0 ) then ' do CR check. if first_CR is high, the result will be saved as CR_after. 
-          ' In case the result is zero, the CR check will be continued
+        cr_result = CR_check(first_CR,repetition_counter-1) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
+        first_CR = 0 ' forget for next repetition
+        if ( cr_result > 0 ) then 
+          ' In case the result is not positive, the CR check will be repeated/continued
           timer = -1     
-          first_CR = 0 ' forget for next repetition     
           IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
             mode = 1 'go to spin pumping directly
           ELSE ' two setups involved
@@ -503,10 +503,6 @@ EVENT:
             mode = 100 'go to communication step
             fail_mode_after_adwin_comm = 0 ' back to cr check. Fail can be timeout. This allows to keep the NV on resonance in case the other setup has jumped
             success_mode_after_adwin_comm = 1 ' go to spin pumping 
-          ENDIF
-        else
-          IF (cr_result < 0) then 'negative result is output for failed cr check
-            first_CR = 0
           ENDIF
         endif  
         
