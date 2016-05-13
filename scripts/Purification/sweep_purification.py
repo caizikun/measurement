@@ -386,7 +386,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','mX','Y','mY','Z','mZ']
+    el_state_list = ['X']#,'mX','Y','mY','Z','mZ']
     
 
     x_phase = m.params['X_phase']
@@ -509,7 +509,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 1 #15
+    pts = 15
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -524,7 +524,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['do_phase_correction'] = 1
     m.params['Tomography_bases'] = ['X']
     m.params['do_carbon_readout']  = 1
-    m.params['MW_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
@@ -537,7 +537,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
     ### calculate sweep array
     minReps = 2
-    maxReps = 16.
+    maxReps = 30.
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -552,7 +552,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
                      
     ### loop over tomography bases and RO directions upload & run
     breakst = False
-    for ro in ['positive','negative']:
+    for ro in ['positive']:#,'negative']:
         breakst = show_stopper()
         if breakst:
             break

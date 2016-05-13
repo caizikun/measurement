@@ -528,8 +528,8 @@ class purify_single_setup(DD.MBI_C13):
                     'Carbon_Gate',
                     Carbon_ind          = self.params['carbon'], 
                     #event_jump          = 'next',
-                    tau                 = dynamic_phase_tau,
-                    N                   = 2,
+                    tau                 = 4*dynamic_phase_tau,
+                    N                   = 1,
                     no_connection_elt = True)
             # additional parameters needed for DD_2.py
             dynamic_phase_correct.scheme = 'carbon_phase_feedback'
@@ -539,8 +539,8 @@ class purify_single_setup(DD.MBI_C13):
                     'Final C13_Phase_correct'+str(pt),
                     'Carbon_Gate',
                     Carbon_ind  = self.params['carbon'], 
-                    tau         = dynamic_phase_tau,
-                    N           = 2,
+                    tau         = 4*dynamic_phase_tau,
+                    N           = 1,
                     no_connection_elt = True)
 
 
@@ -739,18 +739,20 @@ class purify_single_setup(DD.MBI_C13):
                     gate_seq = copy.deepcopy(merged_sequence) # for further processing
 
                 else: ### no purifying gate --> we don't need branching!
-                    carbon_tomo_seq = self.readout_carbon_sequence(
-                            prefix              = 'Tomo',
-                            pt                  = pt,
-                            go_to_element       = None,
-                            event_jump_element  = None,
-                            RO_trigger_duration = 10e-6,
-                            el_state_in         = 0,
-                            carbon_list         = [self.params['carbon']],
-                            RO_basis_list       = self.params['Tomography_bases'],
-                            readout_orientation = self.params['carbon_readout_orientation']) 
-                    gate_seq.extend(carbon_tomo_seq)
-
+                    # carbon_tomo_seq = self.readout_carbon_sequence(
+                    #         prefix              = 'Tomo',
+                    #         pt                  = pt,
+                    #         go_to_element       = None,
+                    #         event_jump_element  = None,
+                    #         RO_trigger_duration = 10e-6,
+                    #         el_state_in         = 0,
+                    #         carbon_list         = [self.params['carbon']],
+                    #         RO_basis_list       = self.params['Tomography_bases'],
+                    #         readout_orientation = self.params['carbon_readout_orientation']) 
+                    # gate_seq.extend(carbon_tomo_seq)
+                    e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
+                        wait_time = 20e-6)]
+                    gate_seq.extend(e_RO)
                 # print 'This is the tomography base', self.params['Tomography_bases']
             else: #No carbon spin RO? Do espin RO!
                 gate_seq.extend(e_RO)

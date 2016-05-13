@@ -40,8 +40,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
-'#INCLUDE .\cr.inc
+'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
