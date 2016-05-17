@@ -46,6 +46,8 @@ joint_params['master_max_dec_tau'] = 2.4e-6
 joint_params['master_dec_pulse_multiple'] = 4
 joint_params['master_carbon_init_RO_wait'] = 70e-6
 
+joint_params['master_slave_awg_trigger_delay'] = 10 # times 10ns
+
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False
 joint_params['initial_delay']           = 10e-9 #DONT CHANGE THIS
@@ -67,3 +69,17 @@ joint_params['master_average_repump_time']  = params_lt4.params_lt4['average_rep
 
 joint_params['slave_LDE_decouple_time']     = params_lt3.params_lt3['LDE_decouple_time']
 joint_params['slave_average_repump_time']   = params_lt3.params_lt3['average_repump_time']
+
+
+### everything PQ
+joint_params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+joint_params['MIN_SYNC_BIN'] =       0
+joint_params['MAX_SYNC_BIN'] =       20000
+joint_params['MIN_HIST_SYNC_BIN'] =  1
+joint_params['MAX_HIST_SYNC_BIN'] =  15000
+joint_params['TTTR_RepetitiveReadouts'] =  10 #
+joint_params['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+joint_params['measurement_abort_check_interval']    = 2. #sec
+joint_params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
+joint_params['use_live_marker_filter']=True

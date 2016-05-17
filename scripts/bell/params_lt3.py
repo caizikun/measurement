@@ -81,8 +81,9 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
+# Moved to msmt_params.py
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
-params_lt3['eom_pulse_duration']         = 1e-9 #2e9
+params_lt3['eom_pulse_duration']         = 2e-9 #2e-9
 params_lt3['eom_off_amplitude']          = -0.02 # calibration from 2015-12-30
 params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9
@@ -130,7 +131,7 @@ params_lt3['TTTR_RepetitiveReadouts']= 	joint_params.joint_params['TTTR_Repetiti
 params_lt3['TTTR_read_count'] =    		joint_params.joint_params['TTTR_read_count']
 params_lt3['measurement_abort_check_interval']    = joint_params.joint_params['measurement_abort_check_interval']
 params_lt3['wait_for_late_data'] = 		joint_params.joint_params['wait_for_late_data']
-params_lt3['entanglement_marker_number'] = 4
+params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 params_lt3['tail_start_bin'] = 7480
 params_lt3['tail_stop_bin'] = 7480 + 200
 params_lt3['prepulse_start_bin'] = 7570

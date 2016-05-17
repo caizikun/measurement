@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -25,9 +25,11 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr.inc
+'#INCLUDE .\cr_mod_bell.inc
 
 #DEFINE max_SP_bins       2000
-#DEFINE max_SSRO_dim      1000000
+#DEFINE max_SSRO_dim      500000
 
 'init     
 DIM DATA_20[100] AS LONG
@@ -107,6 +109,8 @@ LOWINIT:
   'live updated pars
   Par_73 = repetition_counter     ' SSRO repetitions
   par_74 = 0                      ' SSRO cumulative counts
+  par_62 = -1
+  par_65 = -1
 
 EVENT:
 
@@ -153,6 +157,8 @@ EVENT:
             timer = -1
           ENDIF
         ENDIF
+        
+        
       CASE 3    ' SP filter (postselection)
         IF (timer = 0) THEN
           P2_CNT_CLEAR(CTR_MODULE,  counter_pattern)    'clear counter
@@ -176,6 +182,8 @@ EVENT:
             wait_after_pulse = wait_after_pulse_duration
           ENDIF
         ENDIF
+        
+        
       CASE 4    '  wait for AWG sequence or for fixed duration
         IF (timer = 0) THEN
           IF (send_AWG_start > 0) THEN
@@ -240,7 +248,7 @@ EVENT:
             mode = 0
             timer = -1
             wait_after_pulse = wait_after_pulse_duration
-            repetition_counter = repetition_counter + 1
+            inc(repetition_counter)
             Par_73 = repetition_counter
             
             IF (repetition_counter = SSRO_repetitions) THEN
@@ -264,7 +272,7 @@ EVENT:
               mode = 0
               timer = -1
               wait_after_pulse = wait_after_pulse_duration
-              repetition_counter = repetition_counter + 1
+              inc(repetition_counter)
               Par_73 = repetition_counter
               DATA_25[i] = counts
               

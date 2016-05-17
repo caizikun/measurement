@@ -1088,7 +1088,7 @@ class MBI(PulsarMeasurement):
 
         exec(loadstr)
         qt.msleep(1)
-        # print loadstr 
+        print loadstr 
 
         length = self.params['nr_of_ROsequences']
 
@@ -1675,7 +1675,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             elements.append(e)
 
         # sequence
-        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_shape']))
         for i,e in enumerate(elements):           
             # for j in range(self.params['multiplicity']):
             seq.append(name = e.name+'-{}'.format(j), 
@@ -1955,7 +1955,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
 
         pulse_pi=kw.get('pulse_pi', None)
         pulse_pi2=kw.get('pulse_pi2', None)
-
+        
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
 
@@ -2756,7 +2756,7 @@ class Sweep_pm_risetime(GeneralPiCalibration):
                     phase =  self.params['X_phase'])
             else:
                 X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
                     PM_channel='mw2_pulsemod', Sw_channel = self.params['MW_switch_channel'],
                     frequency = 0.,
                     PM_risetime = self.params['PM_risetime_sweep'][i],

@@ -67,24 +67,23 @@ def SweepGates(name,**kw):
     m.params['init_state_list']     = ['up']
     m.params['Nr_C13_init']         = 1
 
-   
-    m.params["C1_gate_sym_tau_list"]=[3.882e-6,9.436e-6,4.996e-6,3.888e-6,8.322e-6,6.102e-6,8.328e-6,7.220e-6,6.112e-6]
-    m.params["C1_gate_sym_N_list"]=[34,62,36,34,58,40,50,44,46]
-       
+    m.params["C1_gate_sym_tau_list"]=[4.992e-6,5.000e-6,9.432e-6,6.098e-6,6.106e-6,7.210e-6,7.212e-6,9.440e-6]
+    m.params["C1_gate_sym_N_list"]=[38,36,82,48,38,58,50,64]
+
     #m.params['C2_gate_sym_N_list']= [18]*4
     #m.params['C2_gate_sym_tau_list']=[8.880e-6]*4
-    m.params["C2_gate_sym_tau_list"]=[10.816e-6,9.680e-6,11.956e-6,8.540e-6,13.092e-6,7.402e-6,14.232e-6,6.262e-6,5.126e-6,14.238e-6]
-    m.params["C2_gate_sym_N_list"]=[14,14,14,14,16,14,16,14,12,16]
-       
+    m.params["C2_gate_sym_tau_list"]=[6.510e-6,5.328e-6,7.694e-6,8.886e-6,10.072e-6,12.430e-6,13.610e-6,7.704e-6]
+    m.params["C2_gate_sym_N_list"]=[16,16,16,20,20,20,22,18]
+
     #m.params['C3_gate_sym_N_list']= [16]*4
     #m.params['C3_gate_sym_tau_list']=[14.232e-6]*4
-    m.params["C3_gate_sym_tau_list"]=[10.816e-6,9.680e-6,11.956e-6,8.540e-6,13.092e-6,7.402e-6,14.232e-6,6.262e-6,5.126e-6,14.238e-6]
-    m.params["C3_gate_sym_N_list"]=[14,14,14,14,16,14,16,14,12,16]
+    m.params["C3_gate_sym_tau_list"]=[5.126e-6,15.366e-6,6.262e-6,14.230e-6,7.402e-6,13.090e-6,8.538e-6,11.954e-6]
+    m.params["C3_gate_sym_N_list"]=[12,16,14,16,14,16,14,14]
 
     #m.params['C4_gate_sym_N_list']= [34,36,38,40,34,40,40,36]
    # m.params['C4_gate_sym_tau_list']=[6.428e-6,1.760e-6,14.604e-6,6.430e-6,8.764e-6,5.264e-6,2.930e-6,14.590e-6]
-    m.params["C5_gate_sym_tau_list"]=[5.356e-6,6.544e-6,10.122e-6,11.310e-6,10.126e-6,4.162e-6,11.314e-6,12.504e-6,7.736e-6,13.680e-6]
-    m.params["C5_gate_sym_N_list"]=[26,28,34,38,42,26,46,46,30,58]
+    m.params["C5_gate_sym_tau_list"]=[12.496e-6,13.682e-6,13.690e-6,14.884e-6,4.174e-6,11.302e-6,5.368e-6,13.694e-6]
+    m.params["C5_gate_sym_N_list"]=[42,54,50,72,30,38,36,64]
     ##################################
     ### RO bases,timing and number of pulses (sweep parameters) ###
     ##################################
@@ -134,7 +133,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-    carbons = [3,5]
+    carbons = [1,2,3,5]
 
 
     brekast = False
@@ -151,3 +150,5 @@ if __name__ == '__main__':
             if breakst: break
 
             SweepGates(el_RO+'_C'+str(c),carbon=c, el_RO = el_RO, debug = False)
+
+            

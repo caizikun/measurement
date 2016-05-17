@@ -33,16 +33,18 @@ C_split  = 0.847e6
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
 electron_transition = '+1'
+multiple_source = False
 
+mw1_source = ''
 if electron_transition == '+1':
 	electron_transition_string = '_p1'
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9
-	hermite_pi_amp =  0.707 # SK 21/04
+	hermite_pi_amp =  0.721 # SK 21/04
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.507 # SK 21/04 
+	hermite_pi2_amp = 0.523 # SK 21/04 
 
 	square_pi_length = 18e-9
 	square_pi_amp = 0.799 # 02-19
@@ -86,7 +88,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       10e-6,#XXXXXXXXX20e-6, #XXXX 50e-6
+		'green_repump_amplitude':       15e-6,# 20e-6
 		'green_repump_duration':        30,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -213,6 +215,7 @@ cfg['samples'][sample_name] = {
 	'N_0-1_splitting_ms-1': N_frq,
 	'N_HF_frq'      :       N_HF_frq,
 	'C_split'		:		C_split,
+	'multiple_source' :		False,
 
 
 ###############
@@ -220,9 +223,9 @@ cfg['samples'][sample_name] = {
 ###############
 	### Please uncomment the SIL you are working on
 
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-108.202-17.70]+[26.26-121.83] + [0.0]*8),
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-21.486]+[0.0] + [0.0]*8),#np.array([0.0]+[-82.07-0.416]+[26.26-121.83] + [0.0]*8),
 
-	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
+	'Carbon_LDE_init_phase_correction_list' :np.array([0.0]+[185.848]+[+0.0]+ [0.]+ [0.0]*8), #np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
 
 
 	#########################
@@ -263,25 +266,28 @@ cfg['samples'][sample_name] = {
 	################
 	#### C1 ~ -35 ###
 	################
-	'C1_freq_m1'        : (447968.42+ 483714)/2., 
-	'C1_freq_0' 		: 447965.66,
+	'C1_freq_m1'        : (447929.95 + 483714)/2., 
+	'C1_freq_0' 		: 447939.97,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 436757.82,#434257.72, 
-	'C1_freq_0' 		: 447965.66,
-	'C1_freq_1_p1' 		: 425517.3,
+	'C1_freq_p1'        : 434538,#434257.72, 
+	'C1_freq_0' 		: 447939.97,
+	'C1_freq_1_p1' 		: 425523.52,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [64.19] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [59.37] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
-	'C1_unc_tau_p1'    :   [9.16e-6],
+	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
+	'C1_unc_phase_offset_p1' : 82.6,
+	'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
 	###############
 	#### C2 ~ 15 ###
 	###############
@@ -372,9 +378,9 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9,
-		'Ex_RO_amplitude':				 5e-9, #5e-9
+		'Ex_RO_amplitude':				 5e-9,#5e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 20e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 9e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -477,7 +483,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
 		'C13_MBI_RO_duration':                  25,  
-		'E_C13_MBI_RO_amplitude':               0.05e-9, 
+		'E_C13_MBI_RO_amplitude':               0.2e-9, 
 		'SP_duration_after_C13':                30, #use long repumping in case of swap init
 		'A_SP_amplitude_after_C13_MBI':         12e-9,
 		'E_SP_amplitude_after_C13_MBI':         0e-9,
@@ -506,7 +512,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.35e-6,#0.35e-6,
+		'max_dec_tau'         :     0.26e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

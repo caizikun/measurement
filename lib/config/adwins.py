@@ -2682,6 +2682,7 @@ config['adwin_pro_processes'] = {
                     'ssro_results' : 27,
                     'C13_MBI_starts' : 29,
                     'C13_MBI_success' : 32,
+                    'C13_MBI_threshold_list': 40,
                     'C13_MBE_starts' : 41,
                     'C13_MBE_success': 42,
                     'parity_RO_results': 43,
@@ -2813,7 +2814,10 @@ config['adwin_pro_processes'] = {
                     ['adwin_comm_timeout_cycles'       ,   1], 
                     ['remote_awg_trigger_channel'      ,   1],
                     ['invalid_data_marker_do_channel'  ,   1],  
-                    ['repetitions'                     ,   0],            
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,  1 ], # times 10ns  
+                    ['phase_correct_max_reps'          ,  5 ],   
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2844,7 +2848,7 @@ config['adwin_pro_processes'] = {
                     'C13_MBI_starts'   : 24,  # number of MBI attempts
                     'C13_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
                     'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
-                    'C13_MBI_success'             : 28, # time needed until mbi success (in process cycles)
+                    'Phase_correction_repetitions' : 28, # time needed until mbi success (in process cycles)
                     'SP_hist'                   : 29,    #SP histogram
                     'adwin_communication_time'  : 33,  #time spent for communication between adwins
                     'plu_which'                 : 34,  #Information whether same or opposite detector has clicked (provided by the PLU)
@@ -2854,6 +2858,7 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 38,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 39, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 40, # result of the last ssro in the adwin
+                    'sync_number'               : 41, # current sync number to compare with HydraHarp data
                     },
                 },
         }

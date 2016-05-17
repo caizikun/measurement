@@ -200,11 +200,11 @@ if __name__ == '__main__':
     optimize = True
     n = 1
     if n==1 and Cont:
-        N = 64 ### number of pulses
+        N = 1 ### number of pulses
         pts = 50 ### number of points per loading of the AWG
-        larmor_freq = 1/447873.07#2.232e-6
-        larmor_max = 120 ### the order of the last revival
-        larmor_min = 3
+        larmor_freq = 2.26e-6
+        larmor_max = 80 ### the order of the last revival
+        larmor_min = 4
         larmor_step = 8
         reps = 800
 

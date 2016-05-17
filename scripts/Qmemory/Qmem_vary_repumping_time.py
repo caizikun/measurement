@@ -163,7 +163,7 @@ if __name__ == '__main__':
     debug = False
     repump_power_sweep = [1000e-9]#,1000e-9,500e-9, 200e-9, 50e-9, 20e-9,10e-9, 5e-9, 1e-9,0.5e-9]
 
-    if False: ### turn measurement on/off
+    if True: ### turn measurement on/off
         for sweep_elem in range(len(repump_power_sweep)):
             if breakst:
                 break
@@ -171,7 +171,7 @@ if __name__ == '__main__':
             # get repump speed
             #repump_speed('ElectronRepump_'+str(repump_power_sweep[sweep_elem])+'W', repump_power=repump_power_sweep[sweep_elem],max_duration = 5e-6)#-4.*repump_power_sweep[sweep_elem]/2.)
             
-            for c in [4,5,8]:#,2,3,5,6]:#[1,3,5,6,2]:
+            for c in [1]:#,2,3,5,6]:#[1,3,5,6,2]:
                 if breakst:
                     break
                 for tomo in ['X','Y']:
@@ -192,7 +192,7 @@ if __name__ == '__main__':
                                                                             carbon_init_thresholds  = [1],
                                                                             carbon_init_methods     = ['MBI'],
                                                                             Repetitions  = 500,
-                                                                            seq_reps = 200,
+                                                                            seq_reps = 100,
                                                                             repump_power = repump_power_sweep[sweep_elem],
                                                                             do_optical_pi = False )
     if False: ### turn measurement on/off
@@ -311,7 +311,7 @@ if __name__ == '__main__':
                                                                             repump_power = 1000e-9,
                                                                             tau_larmor =  tau_Larmor_sweep_elements[sweep_elem]
                                                                             )
-    if True: ### turn measurement on/off
+    if False: ### turn measurement on/off
         for sweep_elem in range(len(tau_Larmor_sweep_elements)):
             if breakst:
                 break

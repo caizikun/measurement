@@ -53,10 +53,10 @@ def SweepGates(name,**kw):
 	N_list = kw.pop('N_list',None)
 
 
-	m = DD.Sweep_Carbon_Gate(name)
+	m = DD.Sweep_Uncond_Carbon_Gate(name)
 	funcs.prepare(m)
 
-	m.params['C13_MBI_threshold_list'] = [1]
+	m.params['C13_MBI_threshold_list'] = [0]
 	m.params['el_after_init'] = '0'
 
 
@@ -72,8 +72,7 @@ def SweepGates(name,**kw):
 	### Carbon Initialization settings #####
 	########################################
 
-	m.params['carbon_init_list']    = [carbon]
-	m.params['init_method_list']    = ['MBI']    
+	m.params['carbon_init_list']    = [carbon]  
 	m.params['init_state_list']     = ['up']
 	m.params['Nr_C13_init']         = 1
 
@@ -265,15 +264,10 @@ if __name__ == '__main__':
 		#######################
 		#### SIL 2 ###########
 		#####################
-		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
+		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [9.15e-6], 
 										'C_tau_rng' : 20e-9, # steps of 2e-9
-										'C_N' 		: [10,10,10,10,10,10,14],
-										'C_N_steps' : 4} # steps of 2 	
-
-		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [9.318e-6,10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
-										'C_tau_rng' : 12e-9, # steps of 2e-9
-										'C_N' 		: [24,24,22,24,26,26,42],
-										'C_N_steps' : 10} # steps of 2 	
+										'C_N' 		: [12],
+										'C_N_steps' : 2} # steps of 2 	
 	
 	elif qt.current_setup == 'lt4':
 		
@@ -293,7 +287,7 @@ if __name__ == '__main__':
 		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.35e-6],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
 										'C_tau_rng'  :16e-9, # steps of 2e-9
 										'C_N' 		: [26], 
-										'C_N_steps' : 18} # steps of 2 	
+										'C_N_steps' : 12} # steps of 2 	
 
 
 		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
@@ -314,7 +308,7 @@ if __name__ == '__main__':
 										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [4,8]
+	carbons = [1]
 
 	### msmt loop begins here.
 	breakst = False
@@ -394,6 +388,7 @@ if __name__ == '__main__':
 										N_list = current_N_list,
 										debug = False)
 
+				if i%2 == 0:
 					optimize()
 
 			

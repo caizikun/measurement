@@ -85,8 +85,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 ### LT 2 parameters
-    tau =6.52e-6 # tau_L nr 32 dip in N=16
-    NoP1=np.arange(10,80,2)
+    tau = 10.812e-6 # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,200,8)
 
     # NoP2=np.arange(4,240,12)
     # NoP2=np.arange(1154,1345,64)
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # NoP1=np.arange(100,160,20)
     # idx=0
     # t=tau_ctr
-    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,300,16),tau =tau, reps_per_ROsequence = 750)
+    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,180,14),tau =tau, reps_per_ROsequence = 750)
     '''
     tau_array = tau_ctr+np.linspace(-.048e-6,.048e-6,9)
     for idx,t in enumerate(tau_array):
