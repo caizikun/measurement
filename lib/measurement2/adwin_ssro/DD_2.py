@@ -1819,16 +1819,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     decoupling_elt.append(T)
 
                 if n%16 in x_list:
-                    decoupling_elt.append(pulse.cp(X, amplitude=0))
+                    decoupling_elt.append(pulse.cp(X))
                     # print 'X'
                 elif n%16 in y_list:
-                    decoupling_elt.append(pulse.cp(Y, amplitude=0))
+                    decoupling_elt.append(pulse.cp(Y))
                     # print 'Y'
                 elif n%16 in mx_list:
-                    decoupling_elt.append(pulse.cp(mX, amplitude=0))
+                    decoupling_elt.append(pulse.cp(mX))
                     # print 'mX'
                 elif n%16 in my_list:
-                    decoupling_elt.append(pulse.cp(mY, amplitude=0))
+                    decoupling_elt.append(pulse.cp(mY))
                     # print 'mY'
                 else:
                     raise Exception('Error in pulse sequence')
@@ -1838,8 +1838,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             #### need to adapt for final pulse and the number of pulses
             if N%8 == 2:
-                final_pulse = mX
-                P_type = 'mX'
+                final_pulse = Y
+                P_type = 'Y'
             elif N%8 in [3,4,5]:
                 final_pulse = Y
                 P_type = 'Y'
@@ -1850,13 +1850,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 final_pulse = X
                 P_type = 'X'
 
-            decoupling_elt.append(pulse.cp(final_pulse, amplitude = 0))
+            decoupling_elt.append(pulse.cp(final_pulse))
 
             if (not 'end' in Gate.scheme):
                 decoupling_elt.append(T)
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
-                    length = 5e-6, amplitude = 1.)
-                decoupling_elt.add(adwin_sync,start=10e-9)
+                    length = 2.5e-6, amplitude = 2)
+                decoupling_elt.add(adwin_sync,start=2000e-9)
             else:
                 decoupling_elt.append(T_out)  
 
@@ -2080,9 +2080,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             decoupling_elt.append(T_final)
         
-        # if 'C_Init9' in decoupling_elt.name and '_y_' in decoupling_elt.name:
-        #     print decoupling_elt.name
-        #     decoupling_elt.print_overview()
         Gate.elements = [decoupling_elt]
 
     def generate_transfer_element(self,Gate,pt=1):

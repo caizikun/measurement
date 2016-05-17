@@ -10,21 +10,21 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
-#DEFINE max_CR_duration   250
+#DEFINE max_repetitions 100000
+#DEFINE max_CR_duration   500
 #DEFINE max_repump_duration 2000
 
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
 
-DIM DATA_18[max_repump_duration] AS FLOAT 'AT EM_LOCAL 'repump freq voltage sine
-DIM DATA_19[max_CR_duration] AS FLOAT 'AT EM_LOCAL 'CR gate voltage sine
+DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
+DIM DATA_19[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine
 
 'return
 'used in cr.inc
 DIM DATA_22[max_repetitions] AS LONG  ' CR counts before sequence
-DIM DATA_23[max_repetitions] AS LONG ' CR counts after sequence
+DIM DATA_23[max_repetitions] AS LONG  ' CR counts after sequence
 DIM DATA_26[max_stat] AS LONG         ' statistics
 
 DIM cr_mode, cr_timer, cr_i AS LONG
@@ -242,7 +242,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           PAR_70 = total_CR_counts
           Inc(Par_72)
           IF (first_cr > 0) THEN ' first CR after SSRO sequence
-            DATA_23[repetition_index-1] = cr_counts
+            DATA_23[repetition_index] = cr_counts
             first_cr = 0
           ENDIF
                   
@@ -254,7 +254,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           ELSE
             cr_mode = 1
             CR_check = 1
-            DATA_22[repetition_index+1] = cr_counts  ' CR before nEt SSRO sequence
+            DATA_22[repetition_index+1] = cr_counts  ' CR before next SSRO sequence
             current_cr_threshold = CR_probe
           ENDIF
           cr_timer = -1

@@ -29,6 +29,7 @@ def _create_mw_pulses(msmt,Gate):
     if hasattr(Gate,'no_first_pulse'):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+
 def _create_laser_pulses(msmt,Gate):
     Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
@@ -62,9 +63,9 @@ def _create_syncs_and_triggers(msmt,Gate):
                                     length = msmt.params['PLU_gate_duration'])
 
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
-        length = 5e-6, amplitude = 2) 
+        length = 2.5e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
-        length = 5e-6, amplitude = 2) 
+        length = 2.5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
@@ -132,7 +133,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay')
 
-    if Gate.reps == 1:
+    if Gate.is_final:
         e.add(Gate.adwin_trigger_pulse,
             refpulse = 'initial_delay')
         
@@ -269,7 +270,7 @@ def _LDE_rephasing_elt(msmt,Gate):
 
     # LDE 2 does not need tau_cut because we do dynamic phase correction.
     if 'LDE_rephasing_2' in Gate.name:
-        tau_cut = 0
+        tau_cut =0e-6#0e-6
 
     ### avg. repump time + tau_cut gives the right amount of time.
     wait_duration = msmt.params['average_repump_time'] + tau_cut

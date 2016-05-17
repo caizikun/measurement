@@ -19,7 +19,7 @@
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
 
-
+DIM DATA_15[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
 DIM DATA_16[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine for error signal calc   EM_local memory because conventional one is too full
 DIM DATA_17[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine for error signal calc
 DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
@@ -87,6 +87,7 @@ SUB init_CR()
   'fill data_17 and data_18 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO repump_duration
     DATA_18[cr_i] = 3277* (repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)+repump_mod_control_offset)+32768
+    DATA_15[cr_i] = 3277* (-repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)+repump_mod_control_offset)+32768
     DATA_17[cr_i] = repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)
   NEXT cr_i
   
@@ -181,7 +182,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               IF (cr_i = 0) THEN 'Every second execution, we set new voltages on AOM
                 cr_i = 2 ' cr_i is set to 0 at beginning of each repumping and decremented at the end of this loop. 
                 if (repump_mod_amplitude_invert>0) then
-                  P2_DAC_2(repump_mod_DAC_channel, -DATA_18[cr_timer]) ' put current voltage on freq mod aom
+                  P2_DAC_2(repump_mod_DAC_channel, DATA_15[cr_timer]) ' put current voltage on freq mod aom
                 else
                   P2_DAC_2(repump_mod_DAC_channel, DATA_18[cr_timer]) ' put current voltage on freq mod aom
                 endif
@@ -210,7 +211,6 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         
       CASE 1  ' ----cr modulation control before CR check
         IF (cr_timer = 0) THEN
-          inc(par_62)
           if (first_CR>0) then
             cr_timer = -1
             cr_mode = 2  'skip modulation in frist cr after
@@ -327,4 +327,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
   ENDIF
   
 ENDFUNCTION
+
+SUB finish_CR()
+ENDSUB
 
