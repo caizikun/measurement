@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 114e-9
-	hermite_pi_amp = 0.707
+	hermite_pi_amp = 0.705
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 70e-9
-	hermite_pi2_amp = 0.414#0.608
+	hermite_pi2_amp = 0.410#0.608
 
 
 ### General settings for AdwinSSRO
@@ -66,7 +66,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       10e-6,
+		'green_repump_amplitude':       18e-6,
 		'green_repump_duration':        20,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           0,
@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      50e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      20e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -182,6 +182,7 @@ cfg['samples'][sample_name] = {
 	'mw2_mod_freq'   :      0,
 	'mw2_frq'        :      0, 
 	'mw2_power'      :      0,
+	'multiple_source':      False,
 	'ms-1_cntr_frq' :       f_msm1_cntr,
 	'ms+1_cntr_frq' :       f_msp1_cntr,
 	'N_0-1_splitting_ms-1': N_frq,
@@ -191,11 +192,11 @@ cfg['samples'][sample_name] = {
 ###############
 ### Carbons ###
 ###############
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[-30.532-0.365+25.2+0.835]+[0.0]*7),
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :0,
-    'phase_per_compensation_repetition':26.04*np.pi/180,
-    'total_phase_offset_after_sequence':178.4/180 * np.pi,
+    'phase_per_sequence_repetition'    :-122.76 + 360-31.282+4.818, #adwin needs positive values
+    'phase_per_compensation_repetition':360-6.2, # adwin needs positive values
+    'total_phase_offset_after_sequence': 180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############
@@ -209,7 +210,7 @@ cfg['samples'][sample_name] = {
 
 	'C1_Ren_tau_m1'    :   [5.97e-6],
 	'C1_Ren_N_m1'      :   [28],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-5.02] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
 
 	###############
 	# C3 (A ~ -55)#
@@ -220,18 +221,18 @@ cfg['samples'][sample_name] = {
 
 	'C3_Ren_tau_m1'    :   [3.66e-6],
 	'C3_Ren_N_m1'      :   [50],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [86.36] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
 	
 	###############
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (419823.82+ 446122.14)/2,
-	'C4_freq_0' 		: 446117.14,
-	'C4_freq_1_m1' 		: 419812.84,
+	'C4_freq_0' 		: 446128.33,
+	'C4_freq_1_m1' 		: 419820.5,
 
 	'C4_Ren_tau_m1'    :   [6.36e-6], #6.52e-6
-	'C4_Ren_N_m1'      :   [32], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [119.43] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_N_m1'      :   [28], #28
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [96.77] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
@@ -258,7 +259,7 @@ cfg['samples'][sample_name] = {
 
 	'C6_Ren_tau_m1'    :   [4.935e-6],
 	'C6_Ren_N_m1'      :   [44],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [214.63] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
 
 	###############
 	# C7(A ~ 11)  #

@@ -47,10 +47,10 @@ params_lt4['E_RO_durations']  = [params_lt4['Dynamical_stop_ssro_duration']] # o
 params_lt4['Dynamical_stop_ssro_threshold'] = 1
 params_lt4['MBI_attempts_before_CR'] = 1 
 
-params_lt4['phase_per_sequence_repetition'] =0.
-params_lt4['phase_per_compensation_repetition'] =0.
-params_lt4['total_phase_offset_after_sequence'] =0.
-params_lt4['phase_correct_max_reps']    = 10 
+# params_lt4['phase_per_sequence_repetition'] =0.
+# params_lt4['phase_per_compensation_repetition'] =0.
+# params_lt4['total_phase_offset_after_sequence'] =0.
+params_lt4['phase_correct_max_reps']    = 80
 
 # channels
 # params_lt4['wait_for_AWG_done'] = 1 # not used in adwin script

@@ -6,7 +6,7 @@ import numpy as np
 import qt
 
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)
@@ -43,7 +43,6 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['sweep_pts'] = Number_of_pulses
     print m.params['sweep_pts']
     m.params['sweep_name'] = 'Number of pulses'
-
     m.autoconfig()
 
 
@@ -57,8 +56,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 6.36e-6
-    NoP1=np.arange(2,80,8)
+    tau = 4.6e-6
+    NoP1=np.arange(2,16,2)
 
     SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
         NoP=NoP1,
