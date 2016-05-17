@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,16,77,149,329,540,590,592,770,772,789
+' Bookmarks                      = 3,16,77,150,331,547,781,783,800
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -101,6 +101,7 @@ DIM detector_of_last_entanglement, same_detector as LONG
 dim mbi_timer, trying_mbi as long
 DIM old_counts, counts AS LONG
 DIM E_MBI_voltage AS FLOAT
+DIM is_mbi_readout as long
 DIM MBI_starts, MBI_failed AS LONG
 dim current_MBI_attempt, MBI_attempts_before_CR as long
 
@@ -212,6 +213,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   wait_time           = 0
   current_MBI_attempt = 1
   digin_this_cycle    = 0
+  is_mbi_readout = 0
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -422,7 +424,11 @@ EVENT:
         IF (timer = 0) THEN 
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          if (is_mbi_readout>0) then
+            P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
+          else
+            P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_RO_voltage+32768) ' turn on Ex laser
+          endif
         ELSE
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
           IF (counts >= Dynamical_stop_ssro_threshold) THEN ' photon detected
@@ -531,6 +537,7 @@ EVENT:
           PAR_78 = MBI_starts          
           if(data_25[repetition_counter] = 0) then  ' first mbi run (data25: number of mbi cycles before success in respective run)
             trying_mbi = 1
+            inc(PAR_62)
           endif
           INC(data_25[repetition_counter])
           ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
@@ -562,6 +569,7 @@ EVENT:
               ELSE
                 success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
                 mode = 200 ' go to dynamical stop RO
+                is_mbi_readout = 1 ' ... in MBI mode
                 success_mode_after_SSRO = 3 ' Check MBI success
                 fail_mode_after_SSRO = 3 ' Check MBI success
               ENDIF 
@@ -584,8 +592,12 @@ EVENT:
           
       CASE 3 ' MBI SSRO done; check MBI success
         IF (local_success>0) THEN ' successful MBI readout
+          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
           trying_mbi = 0
           mbi_timer = 0
+          is_mbi_readout = 0
           DATA_24[repetition_counter] = DATA_24[repetition_counter] + current_MBI_attempt ' number of attempts needed in the successful cycle for histogram
           DATA_28[repetition_counter] = DATA_28[repetition_counter] + mbi_timer ' save the time MBI has taken
           DATA_27[repetition_counter] = SSRO_result
@@ -600,11 +612,7 @@ EVENT:
         ELSE ' MBI failed. Retry or communicate?
           INC(MBI_failed)
           PAR_74 = MBI_failed 'for debugging
-           
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          
+
           IF (current_MBI_attempt = MBI_attempts_before_CR) then ' failed too often -> communicate failure (if in remote mode) and then go to CR
             current_MBI_attempt = 1 'reset counter
             if (is_two_setup_experiment > 0) then 'two setups involved
@@ -668,19 +676,22 @@ EVENT:
             mode = mode_after_LDE   
           else ' no plu signal. check for timeout or done
             IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
+              if (awg_done_was_low =1) then
+                DATA_35[repetition_counter] = AWG_sequence_repetitions_first_attempt 'save the result
+                timer = -1
+                if (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+                  mode = mode_after_LDE
+
+                else ' two setups involved: Done means failure of the sequence
+                  mode = 0 'go to cr check
+                  P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+                  CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                  P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+                endif
+              endif 
               awg_done_was_low = 0 ' remember
-              DATA_35[repetition_counter] = AWG_sequence_repetitions_first_attempt+1 'save the result
-              timer = -1
-              if (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
-                mode = mode_after_LDE
-              else ' two setups involved: Done means failure of the sequence
-                mode = 0 'go to cr check
-                P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-                CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-                P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-              endif
             ELSE ' awg done is low.
-              awg_done_was_low =1
+              awg_done_was_low = 1
               if( timer > wait_for_awg_done_timeout_cycles) then
                 inc(PAR_80) ' signal the we have an awg timeout
                 END ' terminate the process
