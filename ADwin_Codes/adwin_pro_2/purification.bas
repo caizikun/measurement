@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,16,20,75,77,197,317,318,335,552,627,819,820,821
 ' Foldings                       = 476,480,582
 '<Header End>
@@ -806,7 +806,7 @@ EVENT:
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
           IF ((digin_this_cycle AND AWG_Done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
-            if (awg_done_was_low > 0) then ' switched in this round
+            if (awg_done_was_low = 1) then ' switched in this round
               DATA_36[repetition_counter] = AWG_sequence_repetitions_second_attempt 'save the result
               timer = -1
               IF (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode

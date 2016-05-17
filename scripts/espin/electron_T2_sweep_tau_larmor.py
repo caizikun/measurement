@@ -203,9 +203,9 @@ if __name__ == '__main__':
         N = 64 ### number of pulses
         pts = 50 ### number of points per loading of the AWG
         larmor_freq = 2.26e-6
-        larmor_max = 80 ### the order of the last revival
+        larmor_max = 100 ### the order of the last revival
         larmor_min = 4
-        larmor_step = 4
+        larmor_step = 12
         reps = 800
 
         Number_of_pulses = N

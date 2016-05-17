@@ -142,7 +142,7 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 100000 # 
+    m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 2
@@ -157,7 +157,7 @@ def tail_sweep(name):
     m.params['MIN_SYNC_BIN'] =       5000
     m.params['MAX_SYNC_BIN'] =       9000 
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)

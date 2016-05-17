@@ -386,7 +386,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','mX','Y','mY','Z','mZ']
+    el_state_list = ['mZ']#['X','mX','Y','mY','Z','mZ']
     
 
     x_phase = m.params['X_phase']
@@ -423,6 +423,12 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
             if breakst:
                 break
 
+            if el_state == 'mZ':
+                m.params['MW_during_LDE'] = 0
+            else:
+                m.params['MW_during_LDE'] = 1
+
+
             save_name = 'el_state_'+ el_state +'_'+ro
             m.params['input_el_state'] = el_state
             m.params['mw_first_pulse_amp'] = first_mw_amp_dict[el_state]
@@ -452,8 +458,8 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_carbon_init'] = 1
-    m.params['do_swap_onto_carbon'] = 1
     m.params['do_C_init_SWAP_wo_SSRO']  = 1
+    m.params['do_swap_onto_carbon'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     m.params['do_LDE_2'] = 1
     m.params['Tomography_bases'] = ['X']
@@ -463,12 +469,12 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
-    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
 
     ### calculate sweep array
     minReps = 1
-    maxReps = 101
+    maxReps = 51
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -481,7 +487,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 0#8
+    m.params['phase_detuning'] = 8
     phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
     m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = phase_per_rep + m.params['phase_detuning']
 
@@ -509,7 +515,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 1 #15
+    pts = 10
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -537,7 +543,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
     ### calculate sweep array
     minReps = 2
-    maxReps = 16.
+    maxReps = 42.
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -602,7 +608,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False):
 
     ### calculate sweep array
     minReps = 1
-    maxReps = 250
+    maxReps = 50
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -642,10 +648,10 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
+    calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation')
 
