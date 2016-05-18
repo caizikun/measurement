@@ -226,9 +226,9 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     prepare(m)
 
     ### general params
-    pts = 1
+    pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -237,22 +237,23 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1 
 
-    m.joint_params['LDE_attempts'] = 1
-    m.params['MW_during_LDE'] = 0
-    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 150
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 1
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.750e-6,1.5e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.3e-6,0.8e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
     if do_Z:
         for t in ['Z']:
+            m.joint_params['LDE_attempts'] = 300
             if breakst:
                 break
             for ro in ['positive','negative']:
@@ -293,9 +294,9 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     prepare(m)
 
     ### general params
-    pts = 2
+    pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -304,10 +305,12 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     m.params['do_carbon_init']  = 1
     m.params['do_carbon_readout']  = 1 
 
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 200
+    maxReps = 500
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE_attempts'

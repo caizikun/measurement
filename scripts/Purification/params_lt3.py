@@ -25,11 +25,11 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
 params_lt3['AWG_SP_power']              = 1000e-9
-params_lt3['LDE_SP_duration']           = 2e-6
-params_lt3['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
+params_lt3['LDE_SP_duration']           = 1.5e-6
+params_lt3['average_repump_time'] = 0.246e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
-params_lt3['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
-params_lt3['MW_opt_puls1_separation']   = 22e-9
+# params_lt3['opt_pulse_start']           = 2.e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
+params_lt3['MW_opt_puls1_separation']   = 100-9 # was 22 e-9. needs to be adjusted.
 
 
 #adwin params defs:
