@@ -157,15 +157,23 @@ def quantum_random_number_status():
     qt.instruments['adwin'].start_get_dio(dio_no=17)
     return qt.instruments['adwin'].get_get_dio_var('dio_val') > 0
 
-def reset_plu():
-    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
-        qt.msleep(0.1)
-        qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
-        qt.msleep(1.0)
-        qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
-        print 'Plu reset complete'
-    else:
-        print 'plu reset failed'
+# reset plu on BS
+# def reset_plu():   
+#     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
+#         qt.msleep(0.1)
+#         qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
+#         qt.msleep(1.0)
+#         qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
+#         print 'Plu reset complete'
+#     else:
+#         print 'plu reset failed'
+
+def reset_plu(): 
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
 
 
 def calibrate_aom_frq_max(name='YellowAOM', pts=21):

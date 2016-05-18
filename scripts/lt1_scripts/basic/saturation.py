@@ -5,9 +5,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Membrane_on_saphire_ZPL'
+name = 'Fritz_SIL5'
 steps=21
-max_power=450e-6       #[w]
+max_power=150e-6       #[w]
 counter=1  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
 bg_x=-2          #delta x position of background [um]

@@ -701,9 +701,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    ### measurements that work without PQ
-
-    # repump_speed(name+'_repump_speed',upload_only = False)
+    #repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)

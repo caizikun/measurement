@@ -486,12 +486,12 @@ EVENT:
 
       CASE 0 'CR check
         
-
+        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
-        first_CR = 0 ' forget for next repetition
+        'first_CR = 0 ' forget for next repetition... is done in cr_mod.inc
         
         'check for break put after such that the last run records a CR_after result
-        IF (((Par_63 > 0) or (repetition_counter > max_repetitions)) or (repetition_counter > No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
+        IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
         
@@ -676,6 +676,7 @@ EVENT:
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           detector_of_last_entanglement = (digin_this_cycle AND PLU_which_di_pattern) 'remember which detector clicked
+          data_34[repetition_counter+1]=detector_of_last_entanglement ' store which detector has clicked for SPCORR mm
           DATA_35[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -959,11 +960,8 @@ EVENT:
         ENDIF
  
       CASE 10 'store the result of the tomography
-        timer = -1
         DATA_39[repetition_counter+1] = SSRO_result
         mode = 12 'go to CR check
-        INC(repetition_counter) ' count this as a repetition.
-        first_CR=1 ' we want to store the CR after result in the next run
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
         mode = 200
@@ -972,13 +970,11 @@ EVENT:
         success_mode_after_SSRO = 12
         fail_mode_after_SSRO = 12
         success_of_SSRO_is_ms0 = 1        
-        INC(repetition_counter) ' count this as a repetition.
-        first_CR=1 ' we want to store the CR after result in the next run
-        
+                
         
       CASE 12 ' reinit all variables, increase number of repetitions and go to cr check
         'INC(repetition_counter) ' count this as a repetition. 
-        Par_73 = repetition_counter ' write to PAR, start at zero
+        Par_73 = repetition_counter ' write to PAR
         'forget all parameters of previous runs
         AWG_repcount_was_low = 1
         AWG_done_was_low = 1
@@ -991,7 +987,9 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
         timer = -1
-        DATA_41[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)
+        DATA_41[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
+        INC(repetition_counter) ' count this as a repetition.
+        first_CR=1 ' we want to store the CR after result in the next run
 
     endselect
     

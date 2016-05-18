@@ -1,5 +1,6 @@
 """
 Contains the single-setup experiments of the purification project.
+This class provides the sequence generation for the purification experiment.
 
 NK 2016
 """
@@ -38,17 +39,14 @@ class purify_single_setup(DD.MBI_C13):
                                     'ch3m2': 'ch3_marker2',
                                     'ch4m1': 'ch4_marker1',
                                     'ch4m2': 'ch4_marker2',}
-        # setup logical adwin parameters --> how many C13 intialization steps are there?
-        # this can go out soon.
-        # self.params['C13_MBI_threshold_list'] = [1]*(self.params['do_swap_onto_carbon'] + self.params['do_purifying_gate'])
-        # if self.params['do_carbon_init'] > 0: 
-        #     if self.params['carbon_init_method'] == 'MBI':
-        #         self.params['C13_MBI_threshold_list'] =[1] + self.params['C13_MBI_threshold_list'] 
-        #     else:
-        #         self.params['C13_MBI_threshold_list'] =[0] + self.params['C13_MBI_threshold_list'] 
+
+        ### reset the plu
         
-        # self.params['Nr_C13_init'] = len(self.params['C13_MBI_threshold_list'])
-        
+        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+        qt.msleep(0.1)
+        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
+        qt.msleep(0.1)
+        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
@@ -60,7 +58,6 @@ class purify_single_setup(DD.MBI_C13):
                 self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
-
 
 
 
@@ -156,9 +153,10 @@ class purify_single_setup(DD.MBI_C13):
                     ('attempts_second'                       ,1,reps), 
                     # ('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('carbon_readout_result'                 ,1,reps),
-                    ('electron_readout_result'               ,1, reps),
-                    ('ssro_results'                          ,1, reps), 
-                    ('sync_number'                           ,1,reps ),  
+                    ('electron_readout_result'               ,1,reps),
+                    ('ssro_results'                          ,1,reps), 
+                    ('sync_number'                           ,1,reps),  
+                    'completed_reps'
                     ])
         return
 
@@ -188,6 +186,7 @@ class purify_single_setup(DD.MBI_C13):
             Trig_element.append(Trig)
 
         return Trig_element
+
     def load_remote_carbon_params(self,master=True):
         """
         Generates a hypothetical carbon with index = 9 from the joint measurement parameters.
