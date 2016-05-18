@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,824,825,826
+' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,832,833,834
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -675,8 +675,12 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          detector_of_last_entanglement = (digin_this_cycle AND PLU_which_di_pattern) 'remember which detector clicked
-          data_34[repetition_counter+1]=detector_of_last_entanglement ' store which detector has clicked for SPCORR mm
+          IF ((digin_this_cycle AND PLU_which_di_pattern)>0) THEN
+            detector_of_last_entanglement = 1 'remember which detector clicked
+          ELSE
+            detector_of_last_entanglement = 0 'remember which detector clicked
+          ENDIF
+          data_34[repetition_counter+1]= detector_of_last_entanglement ' store which detector has clicked for SPCORR mm
           DATA_35[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -799,7 +803,11 @@ EVENT:
           DATA_35[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
           'check whether clicks happened on the same detector
           same_detector = detector_of_last_entanglement ' remember result of first round
-          detector_of_last_entanglement = (digin_this_cycle AND PLU_which_di_pattern) 'second round result
+          IF ((digin_this_cycle AND PLU_which_di_pattern)>0) THEN
+            detector_of_last_entanglement = 1 'remember which detector clicked
+          ELSE
+            detector_of_last_entanglement = 0 'remember which detector clicked
+          ENDIF
           if (same_detector = detector_of_last_entanglement) THEN ' identical in both rounds
             same_detector = 1
           else 'not identical
