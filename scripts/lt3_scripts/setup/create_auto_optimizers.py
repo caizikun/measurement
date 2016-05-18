@@ -9,8 +9,8 @@ if True:
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
             get_count_f = _get_count_rej, get_msmt_running_f = _get_msmt_running_rej)
 if True:
-    _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x)
-    _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3()
+    _setctrl_gate = lambda x: qt.instruments['ivvi'].set_dac3(x) # was 3
+    _getctrl_gate=  lambda: qt.instruments['ivvi'].get_dac3() # was 3
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)
     _getnorm = lambda: qt.instruments['physical_adwin'].Get_Par(72)
     gate_optimizer = qt.instruments.create('gate_optimizer', 'simple_optimizer', 
