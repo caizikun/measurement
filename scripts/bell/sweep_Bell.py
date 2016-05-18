@@ -171,19 +171,12 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        sweep_off_voltage = False
-        if sweep_off_voltage:
-            m.params['general_sweep_name'] = 'eom_off_amplitude'
-            print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
-            m.params['sweep_name'] = m.params['general_sweep_name'] 
-            m.params['sweep_pts'] = m.params['general_sweep_pts']
-        else:
-            m.params['general_sweep_name'] = 'aom_amplitude'
-            print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.73,0.73,pts)
-            m.params['sweep_name'] = m.params['general_sweep_name'] 
-            m.params['sweep_pts'] = m.params['general_sweep_pts']
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+
 
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
