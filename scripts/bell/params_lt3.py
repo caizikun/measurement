@@ -81,8 +81,9 @@ params_lt3['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWG
+# Moved to msmt_params.py
 params_lt3['eom_pulse_amplitude']        = 2.0 # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
-params_lt3['eom_pulse_duration']         = 1e-9 #2e9
+params_lt3['eom_pulse_duration']         = 2e-9 #2e-9
 params_lt3['eom_off_amplitude']          = -0.02 # calibration from 2015-12-30
 params_lt3['eom_off_duration']           = 50e-9 
 params_lt3['eom_overshoot_duration1']    = 20e-9

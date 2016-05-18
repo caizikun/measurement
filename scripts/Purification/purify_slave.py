@@ -538,7 +538,7 @@ class purify_single_setup(DD.MBI_C13):
                     Carbon_ind          = self.params['carbon'], 
                     event_jump          = 'next',
                     tau                 = dynamic_phase_tau,
-                    N                   = 2,
+                    N                   = 4,
                     no_connection_elt = True)
             # additional parameters needed for DD_2.py
             dynamic_phase_correct.scheme = 'carbon_phase_feedback'
@@ -549,7 +549,7 @@ class purify_single_setup(DD.MBI_C13):
                     'Carbon_Gate',
                     Carbon_ind  = self.params['carbon'], 
                     tau         = dynamic_phase_tau,
-                    N           = 2,
+                    N           = 4,
                     no_connection_elt = True)
 
 

@@ -223,9 +223,9 @@ cfg['samples'][sample_name] = {
 ###############
 	### Please uncomment the SIL you are working on
 
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-82.07-0.416]+[26.26-121.83] + [0.0]*8),
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-21.486]+[0.0] + [0.0]*8),#np.array([0.0]+[-82.07-0.416]+[26.26-121.83] + [0.0]*8),
 
-	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
+	'Carbon_LDE_init_phase_correction_list' :np.array([0.0]+[185.848]+[+0.0]+ [0.]+ [0.0]*8), #np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
 
 
 	#########################
@@ -266,27 +266,27 @@ cfg['samples'][sample_name] = {
 	################
 	#### C1 ~ -35 ###
 	################
-	'C1_freq_m1'        : (447968.42+ 483714)/2., 
-	'C1_freq_0' 		: 447918.34,
+	'C1_freq_m1'        : (447929.95 + 483714)/2., 
+	'C1_freq_0' 		: 447939.97,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : (447935.88+425536.7)/2,#434257.72, 
-	'C1_freq_0' 		: 447918.34,
-	'C1_freq_1_p1' 		: 425505.64,
+	'C1_freq_p1'        : 434538,#434257.72, 
+	'C1_freq_0' 		: 447939.97,
+	'C1_freq_1_p1' 		: 425523.52,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [59.49] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [59.37] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
-	'C1_unc_phase_offset_p1' : 84.52,
-	'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [-11.91] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_unc_phase_offset_p1' : 82.6,
+	'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	###############
 	#### C2 ~ 15 ###
@@ -512,7 +512,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.3e-6,#0.35e-6,
+		'max_dec_tau'         :     0.26e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

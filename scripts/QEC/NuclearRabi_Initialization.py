@@ -4,7 +4,7 @@ import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -23,7 +23,7 @@ def Single_C_rabi_initialized(name,
         gate_phase            = 'X',
         reps                  = 200):
 
-    m = DD.NuclearRabiWithInitialization_v2(name)
+    m = DD.NuclearRabiWithInitialization(name)
     funcs.prepare(m)
 
     '''Set parameters'''
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     # Single_C_gate_characterization(SAMPLE+'positive_constant_time_prt1_carbon_'+str(c), 
     #                 el_RO= 'positive',carbon_nr = c,nr_of_pulses_list= np.linspace(0,4,2))
 
-    for c in [5]:
+    for c in [1]:
         print '--------------------------------'
         print 'press q to stop measurement loop'
         print '--------------------------------'
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             n = 0
         for el_during in [0,1]:
 
-            for C13_RO_basis in ['X','Z']:#,'Y','Z']:
+            for C13_RO_basis in ['Z']:#,'Y','Z']:
                 print '--------------------------------'
                 print 'press q to stop measurement loop'
                 print '--------------------------------'
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                     n = 0
 
                 Single_C_rabi_initialized(SAMPLE+'positive_Rabi_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during),el_during_experiment = el_during,
-                                     C13_RO_basis = [C13_RO_basis], el_RO= 'positive',carbon_nr = c,nr_of_pulses_list= np.arange(0,130,12))
-                Single_C_rabi_initialized(SAMPLE+'negative_Rabi_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during),el_during_experiment = el_during,
-                                     C13_RO_basis = [C13_RO_basis], el_RO= 'negative',carbon_nr = c,nr_of_pulses_list= np.arange(0,130,12))
+                                     C13_RO_basis = [C13_RO_basis], el_RO= 'positive',carbon_nr = c,nr_of_pulses_list= np.arange(0,60,4))
+                #Single_C_rabi_initialized(SAMPLE+'negative_Rabi_carbon_'+str(c)+'_RO_'+C13_RO_basis+'_'+str(el_during),el_during_experiment = el_during,
+                #                     C13_RO_basis = [C13_RO_basis], el_RO= 'negative',carbon_nr = c,nr_of_pulses_list= np.arange(0,60,4))
             
