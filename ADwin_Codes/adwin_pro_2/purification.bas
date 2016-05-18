@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,823,824,825
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -54,10 +54,10 @@ DIM DATA_21[100] AS FLOAT  ' float parameters from python
 'return data
 'data 22 is the cr result before the sequence
 'data 23 is the first cr result after the sequence
-DIM DATA_24[max_purification_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle
-DIM DATA_25[max_purification_repetitions] AS LONG ' number of cycles before success
+'DIM DATA_24[max_purification_repetitions] AS LONG ' number of MBI attempts needed in the successful cycle
+'DIM DATA_25[max_purification_repetitions] AS LONG ' number of cycles before success
 '26 is used in cr for 'statistics'
-DIM DATA_27[max_purification_repetitions] AS LONG ' SSRO result after mbi / swap step
+'DIM DATA_27[max_purification_repetitions] AS LONG ' SSRO result after mbi / swap step
 DIM DATA_28[max_purification_repetitions] AS LONG ' Phase_correction_repetitions needed to correct the phase of the carbon
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
 '30 ' CR integer parameters
@@ -66,7 +66,7 @@ DIM DATA_33[max_purification_repetitions] AS LONG  'time spent for communication
 DIM DATA_34[max_purification_repetitions] AS LONG ' Information whether same or opposite detector has clicked (provided by the PLU)
 DIM DATA_35[max_purification_repetitions] AS LONG ' number of repetitions until the first succesful entanglement attempt
 DIM DATA_36[max_purification_repetitions] AS LONG ' number of repetitions after swapping until the second succesful entanglement attempt
-DIM DATA_37[max_purification_repetitions] AS LONG ' SSRO_after_electron_carbon_SWAP_result
+'DIM DATA_37[max_purification_repetitions] AS LONG ' SSRO_after_electron_carbon_SWAP_result
 DIM DATA_38[max_purification_repetitions] AS LONG ' SSRO counts electron readout after purification gate
 DIM DATA_39[max_purification_repetitions] AS LONG ' SSRO counts carbon spin readout after tomography
 DIM DATA_40[max_purification_repetitions] AS LONG ' SSRO counts last electron spin readout performed in the adwin seuqnece
@@ -237,15 +237,15 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
 ''''''''''''''''''''''''''''''''''''''
   FOR i = 1 TO max_purification_repetitions
-    DATA_24[i] = 0
-    DATA_25[i] = 0
-    DATA_27[i] = -1
+    'DATA_24[i] = 0
+    'DATA_25[i] = 0
+    'DATA_27[i] = -1
     DATA_28[i] = -1
     DATA_33[i] = -1
     DATA_34[i] = -1
     DATA_35[i] = -1
     DATA_36[i] = -1
-    DATA_37[i] = -1
+    'DATA_37[i] = -1
     DATA_38[i] = -1
     DATA_39[i] = -1
     DATA_40[i] = -1
@@ -546,10 +546,10 @@ EVENT:
         IF (timer=0) THEN   ' MBI sequence starts
           INC(MBI_starts)
           PAR_78 = MBI_starts          
-          if(data_25[repetition_counter+1] = 0) then  ' first mbi run (data25: number of mbi cycles before success in respective run)
-            trying_mbi = 1
-          endif
-          INC(data_25[repetition_counter+1])
+          '          if(data_25[repetition_counter+1] = 0) then  ' first mbi run (data25: number of mbi cycles before success in respective run)
+          '            trying_mbi = 1
+          '          endif
+          'INC(data_25[repetition_counter+1])
           ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
           if (is_two_setup_experiment = 0) then  
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
@@ -597,9 +597,9 @@ EVENT:
           endif 
         ENDIF
         
-        if(trying_mbi > 0) then ' Increase number of mbi trials by one
-          inc(mbi_timer)
-        endif
+        '        if(trying_mbi > 0) then ' Increase number of mbi trials by one
+        '          inc(mbi_timer)
+        '        endif
         
           
       CASE 3 ' MBI SSRO done; check MBI success
@@ -607,11 +607,11 @@ EVENT:
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to the entanglement sequence
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          trying_mbi = 0
+          'trying_mbi = 0
           mbi_timer = 0
           is_mbi_readout = 0
-          DATA_24[repetition_counter+1] = DATA_24[repetition_counter+1] + current_MBI_attempt ' number of attempts needed in the successful cycle for histogram
-          DATA_27[repetition_counter+1] = SSRO_result
+          'DATA_24[repetition_counter+1] = DATA_24[repetition_counter+1] + current_MBI_attempt ' number of attempts needed in the successful cycle for histogram
+          'DATA_27[repetition_counter+1] = SSRO_result
           current_MBI_attempt = 1 ' reset counter
           if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
             mode = 4 ' entanglement sequence
@@ -763,7 +763,7 @@ EVENT:
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
             P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
           endif
-          DATA_37[repetition_counter+1] = SSRO_result
+          'DATA_37[repetition_counter+1] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -985,7 +985,7 @@ EVENT:
         AWG_sequence_repetitions_first_attempt = 0
         AWG_sequence_repetitions_second_attempt = 0
         current_MBI_attempt = 1
-        trying_mbi = 0
+        'trying_mbi = 0
         mbi_timer = 0 
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 

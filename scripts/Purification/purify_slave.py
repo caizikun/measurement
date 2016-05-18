@@ -145,16 +145,16 @@ class purify_single_setup(DD.MBI_C13):
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
-                    ('C13_MBI_attempts',1, reps), 
-                    ('C13_MBI_starts', reps), 
+                    # ('C13_MBI_attempts',1, reps), #DATA24
+                    # ('C13_MBI_starts', reps),  #DATA25
                     ('Phase_correction_repetitions',1, reps), 
-                    ('SSRO_result_after_Cinit',1,reps),
+                    # ('SSRO_result_after_Cinit',1,reps), #DATA27
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('plu_which'                             ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
                     ('attempts_second'                       ,1,reps), 
-                    ('SSRO_after_electron_carbon_SWAP_result',1,reps), 
+                    # ('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1, reps),
                     ('ssro_results'                          ,1, reps), 
@@ -759,8 +759,8 @@ class purify_single_setup(DD.MBI_C13):
                     #     wait_time = 20e-6)]
                     # gate_seq.extend(e_RO)
                 # print 'This is the tomography base', self.params['Tomography_bases']
-            # else: #No carbon spin RO? Do espin RO!
-            #     gate_seq.extend(e_RO)
+            else: #No carbon spin RO? Do espin RO!
+                gate_seq.extend(e_RO)
 
 
             ###############################################

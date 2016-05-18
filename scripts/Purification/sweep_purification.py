@@ -226,9 +226,9 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     prepare(m)
 
     ### general params
-    pts = 1
+    pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -237,22 +237,23 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1 
 
-    m.joint_params['LDE_attempts'] = 1
-    m.params['MW_during_LDE'] = 0
-    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 150
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 1
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.750e-6,1.5e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.3e-6,0.8e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
     if do_Z:
         for t in ['Z']:
+            m.joint_params['LDE_attempts'] = 300
             if breakst:
                 break
             for ro in ['positive','negative']:
@@ -293,9 +294,9 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     prepare(m)
 
     ### general params
-    pts = 2
+    pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -304,10 +305,12 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     m.params['do_carbon_init']  = 1
     m.params['do_carbon_readout']  = 1 
 
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 200
+    maxReps = 500
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE_attempts'
@@ -705,7 +708,7 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
@@ -716,4 +719,4 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     # apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
+    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
