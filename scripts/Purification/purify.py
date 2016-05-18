@@ -357,7 +357,7 @@ def SPCorrs(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
     m.joint_params['opt_pi_pulses'] = 2
-    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use only one AWG
+    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use only one EOM
 
     ### upload
 

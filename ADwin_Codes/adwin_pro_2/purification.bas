@@ -9,9 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,832,833,834
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,823,824,825
+' Bookmarks                      = 3,16,20,75,77,197,317,318,335,557,631,832,833,834,3,16,20,75,77,197,317,318,335,557,631,823,824,825
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -64,7 +62,7 @@ DIM DATA_28[max_purification_repetitions] AS LONG ' Phase_correction_repetitions
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
 '30 ' CR integer parameters
 '31 CR float parameters
-DIM DATA_33[max_purification_repetitions] AS LONG  'time spent for communication between adwins
+DIM DATA_33[max_purification_repetitions] AS LONG 'time spent for communication between adwins
 DIM DATA_34[max_purification_repetitions] AS LONG ' Information whether same or opposite detector has clicked (provided by the PLU)
 DIM DATA_35[max_purification_repetitions] AS LONG ' number of repetitions until the first succesful entanglement attempt
 DIM DATA_36[max_purification_repetitions] AS LONG ' number of repetitions after swapping until the second succesful entanglement attempt
