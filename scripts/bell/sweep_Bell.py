@@ -142,7 +142,7 @@ def tail_sweep(name):
 
     pts=7
     m.params['pts']=pts
-    m.params['repetitions'] = 100000 # 
+    m.params['repetitions'] = 1000 # 
 
     m.joint_params['LDE_attempts_before_CR'] = 250
     m.joint_params['opt_pi_pulses'] = 2
@@ -154,10 +154,16 @@ def tail_sweep(name):
     m.joint_params['do_final_MW_rotation'] = 0
     m.joint_params['wait_for_1st_revival'] = 0
 
-    m.params['MIN_SYNC_BIN'] =       5000
-    m.params['MAX_SYNC_BIN'] =       9000 
+    if m.PQ_ins == qt.instruments['HH_400']:
+        print 'using HH'
+        m.params['MIN_SYNC_BIN'] =       5e6
+        m.params['MAX_SYNC_BIN'] =       9e6
+    else:
+        print 'using PQ instrument: ', m.PQ_ins.get_name()
+        m.params['MIN_SYNC_BIN'] =       5e3
+        m.params['MAX_SYNC_BIN'] =       9e3
 
-    do_sweep_aom_power = False
+    do_sweep_aom_power = True
     if do_sweep_aom_power:
         p_aom= qt.instruments['PulseAOM']
         aom_voltage_sweep = np.zeros(pts)
@@ -171,20 +177,11 @@ def tail_sweep(name):
         m.params['sweep_name'] = 'aom power (percentage/max_power_aom)' 
         m.params['sweep_pts'] = aom_power_sweep/max_power_aom
     else:
-        sweep_off_voltage = False
-        if sweep_off_voltage:
-            m.params['general_sweep_name'] = 'eom_off_amplitude'
-            print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
-            m.params['sweep_name'] = m.params['general_sweep_name'] 
-            m.params['sweep_pts'] = m.params['general_sweep_pts']
-        else:
-            m.params['general_sweep_name'] = 'aom_amplitude'
-            print 'sweeping the', m.params['general_sweep_name']
-            m.params['general_sweep_pts'] = np.linspace(0.73,0.73,pts)
-            m.params['sweep_name'] = m.params['general_sweep_name'] 
-            m.params['sweep_pts'] = m.params['general_sweep_pts']
-
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     run_sweep(m, th_debug=False, measure_bs=False, upload_only = False)
 
@@ -323,6 +320,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
     if upload_only:
         return
     if measure_bs:
+            print 'measuring on the BS'
             m.bs_helper.set_script_path(r'D:/measuring/measurement/scripts/bell/bell_bs.py')
             m.bs_helper.set_measurement_name(m.name)
             m.bs_helper.set_is_running(True)
@@ -339,7 +337,7 @@ def run_sweep(m, th_debug=False, measure_bs=True, upload_only = False):
 
 if __name__ == '__main__':
     SAMPLE_CFG = qt.exp_params['protocols']['current']
-    tail_sweep('telecom_sweep_bell_180mW') 
+    tail_sweep('AOM_calibration') 
     #check_mw_position('test')
     #heating_check('test')
     #tune('tune_lt3_PippinSil1') 

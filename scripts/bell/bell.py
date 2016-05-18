@@ -116,7 +116,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
-
+        #print 'HH parameters', TTTR_RepetitiveReadouts, TTTR_read_count, T2_WRAPAROUND, T2_TIMEFACTOR, T2_READMAX
         print 'run PQ measurement, TTTR_read_count', TTTR_read_count
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
@@ -142,6 +142,7 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         _timer=time.time()
         ii=0
         k_error_message = 0
+        c=0
 
         if live_filter_on_marker:
             _queue_hhtime      = deque([],self.params['live_filter_queue_length'])
@@ -201,7 +202,10 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
                             newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
                             T2_tools_v3.T2_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
                             MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
-              
+                if c==0:
+                    print  MIN_SYNC_BIN, MAX_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number
+                    c =1
+
                 if newlength > 0:
 
                     if new_entanglement_markers == 0 and live_filter_on_marker:

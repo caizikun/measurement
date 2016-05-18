@@ -121,24 +121,41 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 150e-9
 
-params_lt4['MAX_DATA_LEN'] 			=       joint_params.joint_params['MAX_DATA_LEN']
-params_lt4['BINSIZE'] 				=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt4['MIN_SYNC_BIN'] 			=       joint_params.joint_params['MIN_SYNC_BIN']
-params_lt4['MAX_SYNC_BIN'] 			=       joint_params.joint_params['MAX_SYNC_BIN']
-params_lt4['MIN_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
-params_lt4['MAX_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
-params_lt4['TTTR_RepetitiveReadouts']=	 	joint_params.joint_params['TTTR_RepetitiveReadouts']
-params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count']
-params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
-params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
-params_lt4['entanglement_marker_number'] = 4
+# params_lt4['MAX_DATA_LEN'] 			=       joint_params.joint_params['MAX_DATA_LEN']
+# params_lt4['BINSIZE'] 				=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+# params_lt4['MIN_SYNC_BIN'] 			=       joint_params.joint_params['MIN_SYNC_BIN']
+# params_lt4['MAX_SYNC_BIN'] 			=       joint_params.joint_params['MAX_SYNC_BIN']
+# params_lt4['MIN_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
+# params_lt4['MAX_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
+# params_lt4['TTTR_RepetitiveReadouts']=	 	joint_params.joint_params['TTTR_RepetitiveReadouts']
+# params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count']
+# params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
+# params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
+# params_lt4['entanglement_marker_number'] = 4
 params_lt4['tail_start_bin'] = 5380
 params_lt4['tail_stop_bin'] = 5380 + 200
 params_lt4['prepulse_start_bin'] = 5378 - 20
 params_lt4['prepulse_stop_bin'] = 5378
 params_lt4['live_filter_queue_length'] = 10
 
-params_lt4['twitter_rnd_fp'] = r'D:\twitter_rnd\Bob_current.txt'
+### for HH_400 LT4
+if True: # change to false for using TH
+	params_lt4['RND_start'] = 10065e-9+200e-9+200e-9# = dt(f,BC)-dt(AC) + margin + rnd freshness (40ns propagation + k=32*5ns)
+	params_lt4['use_live_marker_filter'] = False
+	params_lt4['MAX_DATA_LEN']        =   int(100e6)
+	params_lt4['BINSIZE']             =   2  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+	params_lt4['MIN_SYNC_BIN']        =   int(0.0)
+	params_lt4['MAX_SYNC_BIN']        =   int(18.5*1e6)
+	params_lt4['MIN_HIST_SYNC_BIN']   =   int(0)
+	params_lt4['MAX_HIST_SYNC_BIN']   =   int(18500*1e3)
+	params_lt4['entanglement_marker_number'] = 1
+	params_lt4['measurement_time']    =   24*60*60 #sec = 24H
+	params_lt4['measurement_abort_check_interval']    = 1 #sec
+	params_lt4['wait_for_late_data'] = 0 #in units of measurement_abort_check_interval
+	params_lt4['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
+	params_lt4['TTTR_RepetitiveReadouts'] =  1
 
-params_lt4['measurement_time'] =   40*60#sec = 40 mins
+	params_lt4['twitter_rnd_fp'] = r'D:\twitter_rnd\Bob_current.txt'
+
+	params_lt4['measurement_time'] =   40*60#sec = 40 mins
 

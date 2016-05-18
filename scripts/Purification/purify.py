@@ -45,13 +45,13 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s / %s readout repetitions' % \
-                (reps_completed, self.params['SSRO_repetitions']))
+                (reps_completed, self.params['repetitions']))
 
     def stop_measurement_process(self):
         self.stop_adwin_process()
         reps_completed = self.adwin_var('completed_reps')
         print('Total completed %s / %s readout repetitions' % \
-                (reps_completed, self.params['SSRO_repetitions']))
+                (reps_completed, self.params['repetitions']))
 
 
 class purify(PQPurifyMeasurement):
@@ -68,25 +68,15 @@ class purify(PQPurifyMeasurement):
     def save(self, name = 'adwinadata'):
         purify_slave.purify_single_setup.save(self)
         
-    def print_measurement_progress(self):
-        tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
-        self.physical_adwin.Set_Par(50, int(tail_cts))
+    # def print_measurement_progress(self):
+    #     pass
+        # tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
+        # self.physical_adwin.Set_Par(50, int(tail_cts))
         
-        reps_completed = self.adwin_var('completed_reps')    
-        print('completed %s readout repetitions' % reps_completed)
+        # reps_completed = self.adwin_var('completed_reps')    
+        # print('completed %s readout repetitions' % reps_completed)
+        
 
-    # def save(self, name='ssro'):
-    #     reps = self.adwin_var('entanglement_events')
-    #     self.save_adwin_data(name,
-    #             [   ('CR_before', reps),
-    #                 ('CR_after', reps),
-    #                 ('SP_hist', self.params['SP_duration']),
-    #                 ('CR_hist', 200),
-    #                 ('RO_data', reps),
-    #                 ('statistics', 10),
-    #                 'entanglement_events',
-    #                 'completed_reps',
-    #                 'total_CR_counts'])
     
     def finish(self):
         h5_joint_params_group = self.h5basegroup.create_group('joint_params')
@@ -97,6 +87,7 @@ class purify(PQPurifyMeasurement):
 
 
         PQPurifyMeasurement.finish(self)
+
 
     def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False):
         if debug:
@@ -297,8 +288,7 @@ class purify(PQPurifyMeasurement):
 
 def tail_sweep(name,debug = True,upload_only=True):
     """
-    Performs a regular Spin-photon correlation measurement.
-    NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
+    Performs a tail_sweep in the LDE_1 element
     """
     m = purify(name)
     sweep_purification.prepare(m)
@@ -310,13 +300,15 @@ def tail_sweep(name,debug = True,upload_only=True):
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
+    ### --> for this measurement: none.
+
+    
 
 
     m.joint_params['opt_pi_pulses'] = 2
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
-    m.params['is_two_setup_experiment'] = 1 ## we want to do optical pi pulses on both setups!
+    m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
 
     ### need to find this out!
     # m.params['MIN_SYNC_BIN'] =       5000
@@ -324,6 +316,7 @@ def tail_sweep(name,debug = True,upload_only=True):
 
     # put sweep together:
     sweep_off_voltage = False
+    m.params['do_general_sweep']    = True
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -342,13 +335,9 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-
-
-
-def SPCorrs(name,debug = True,upload_only = True):
+def SPCorrs(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
-    NOTE: purify_single_setup has to be updated to be pq measurement for this to actually work.
     """
     m = purify(name)
     sweep_purification.prepare(m)
@@ -360,6 +349,7 @@ def SPCorrs(name,debug = True,upload_only = True):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
+    m.params['PLU_during_LDE'] = 1
 
     ### this can also be altered to the actual theta pulse by negating the if statement
     if True:
@@ -367,10 +357,11 @@ def SPCorrs(name,debug = True,upload_only = True):
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
     m.joint_params['opt_pi_pulses'] = 2
+    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use only one AWG
 
     ### upload
 
-    sweep_purification.run_sweep(m,debug = True,upload_only = True)
+    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
 
@@ -392,7 +383,7 @@ def PurifyYY(name):
 
 if __name__ == '__main__':
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
-    # SPCorrs(name+'_SPCorrs')
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    SPCorrs(name+'_SPCorrs',debug = False,upload_only=False)
     # repump_speed(name+'_repump_speed')
     ######

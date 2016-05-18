@@ -136,7 +136,9 @@ ENDSUB
 FUNCTION CR_check(first_cr, repetition_index) As LONG
 
   CR_check = 0 'return variable
-  
+  if (first_CR>0) then
+    cr_mode = 2  'skip modulation in frist cr after
+  endif
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE
@@ -211,28 +213,24 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         
       CASE 1  ' ----cr modulation control before CR check
         IF (cr_timer = 0) THEN
-          if (first_CR>0) then
-            cr_timer = -1
-            cr_mode = 2  'skip modulation in frist cr after
-          else
-            'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
-            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
-            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
-            cr_old_counts = 0
-            IF (cr_mod_activated > 0) THEN
-              'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
-              'if cr_mod_amplitude_invert = 1 then
-              '  cr_mod_amplitude_invert = 0
-              'else
-              '  cr_mod_amplitude_invert = 1
-              'endif
-              cr_i=0
-            ELSE
-              cr_mode = 2 ' go to normal CR check
-            ENDIF
-          endif
+          'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
+          cr_old_counts = 0
+          IF (cr_mod_activated > 0) THEN
+            'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
+            'if cr_mod_amplitude_invert = 1 then
+            '  cr_mod_amplitude_invert = 0
+            'else
+            '  cr_mod_amplitude_invert = 1
+            'endif
+            cr_i=0
+          ELSE
+            cr_mode = 2 ' go to normal CR check
+          ENDIF
+          
         ELSE
           IF (cr_timer = CR_duration) THEN
             cr_mode = 2 ' go to normal CR check

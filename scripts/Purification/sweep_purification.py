@@ -698,14 +698,12 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    ### measurements that work without PQ
-
-    # repump_speed(name+'_repump_speed',upload_only = False)
+    #repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
@@ -716,4 +714,4 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     # apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
+    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
