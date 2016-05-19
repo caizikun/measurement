@@ -2842,23 +2842,22 @@ config['adwin_pro_processes'] = {
                     'entanglement_events': 77,
                     },
                 'data_long' : {
-                    'CR_hist'        : 29,
                     'CR_before'      : 22,
                     'CR_after'       : 23,
-                    'C13_MBI_starts'   : 24,  # number of MBI attempts
-                    'C13_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
-                    'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
-                    'Phase_correction_repetitions' : 28, # time needed until mbi success (in process cycles)
+                    # 'C13_MBI_starts'   : 24,  # number of MBI attempts
+                    # 'C13_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
+                    # 'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
                     'SP_hist'                   : 29,    #SP histogram
-                    'adwin_communication_time'  : 33,  #time spent for communication between adwins
-                    'plu_which'                 : 34,  #Information whether same or opposite detector has clicked (provided by the PLU)
-                    'attempts_first'            : 35,  # number of repetitions until the first succesful entanglement attempt
-                    'attempts_second'           : 36, # number of repetitions after swapping until the second succesful entanglement attempt
-                    'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
-                    'electron_readout_result'   : 38,  # electron readout, e.g. after purification step
-                    'carbon_readout_result'     : 39, # SSRO counts final spin readout after tomography
-                    'ssro_results'              : 40, # result of the last ssro in the adwin
-                    'sync_number'               : 41, # current sync number to compare with HydraHarp data
+                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'plu_which'                 : 102,  #Information whether same or opposite detector has clicked (provided by the PLU)
+                    'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
+                    # 'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
+                    'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'sync_number'               : 108, # current sync number to compare with HydraHarp data
                     },
                 },
         }

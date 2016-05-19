@@ -40,13 +40,26 @@ class purify_single_setup(DD.MBI_C13):
                                     'ch4m1': 'ch4_marker1',
                                     'ch4m2': 'ch4_marker2',}
 
-        ### reset the plu
-        
-        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
-        qt.msleep(0.1)
-        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
-        qt.msleep(0.1)
-        qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+        ### reset the plu via the adwin. This only makes sense if you are LT4!!! Watch out!
+        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+        # qt.msleep(0.1)
+        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
+        # qt.msleep(0.1)
+        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+
+        #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
+        qt.msleep(0.5)
+
+        for i in range(10):
+            self.physical_adwin.Stop_Process(i+1)
+            qt.msleep(0.3)
+        qt.msleep(1)
+        # self.adwin.load_MBI()   
+        # New functionality, now always uses the adwin_process specified as a class variables 
+        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+
+        exec(loadstr)
+        qt.msleep(1)
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
@@ -81,7 +94,7 @@ class purify_single_setup(DD.MBI_C13):
         # else:
         #     print self.mprefix, self.name, ': Ignoring yellow'
 
-    def run(self, autoconfig=True, setup=True):
+    def run(self, autoconfig=False, setup=False):
 
         """
         inherited from pulsar msmt.
@@ -93,23 +106,13 @@ class purify_single_setup(DD.MBI_C13):
         if setup:
             self.setup()
 
-        for i in range(10):
-            self.physical_adwin.Stop_Process(i+1)
-            qt.msleep(0.3)
-        qt.msleep(2)
-        # self.adwin.load_MBI()   
-        # New functionality, now always uses the adwin_process specified as a class variables 
-        loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
-
-        exec(loadstr)
-        qt.msleep(2)
         # print loadstr 
 
         length = self.params['nr_of_ROsequences']
 
-
-        self.start_adwin_process(stop_processes=['counter'], load=False)
-        qt.msleep(1)
+        qt.msleep(2)
+        self.start_adwin_process(load=False)
+        qt.msleep(0.1)
         self.start_keystroke_monitor('abort')
 
         while self.adwin_process_running():
@@ -144,14 +147,15 @@ class purify_single_setup(DD.MBI_C13):
                     ('CR_after',1, reps),
                     # ('C13_MBI_attempts',1, reps), #DATA24
                     # ('C13_MBI_starts', reps),  #DATA25
-                    ('Phase_correction_repetitions',1, reps), 
-                    # ('SSRO_result_after_Cinit',1,reps), #DATA27
+                    # ('Phase_correction_repetitions',1, reps), 
+                    #('SSRO_result_after_Cinit',1,reps), #DATA27
+                    #('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('plu_which'                             ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
                     ('attempts_second'                       ,1,reps), 
-                    # ('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
+
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 

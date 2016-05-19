@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -26,7 +26,7 @@
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-'#INCLUDE .\cr_mod_bell.inc
+'#INCLUDE .\cr_mod_Bell.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      500000
@@ -101,7 +101,6 @@ LOWINIT:
 
   P2_Digprog(DIO_MODULE,11)      'XXXX in is now 16:23,configure DIO 08:15 as input, all other ports as output. NK and AR: did input and output get swapped?
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
-  P2_DIGOUT(DIO_MODULE,11,1) 'turn on modulation for repumping with a single laser
   mode = 0
   timer = 0
   processdelay = cycle_duration

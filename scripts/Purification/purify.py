@@ -33,7 +33,7 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
 
     def start_measurement_process(self):
         qt.msleep(.5)
-        self.start_adwin_process(stop_processes=['counter'])
+        self.start_adwin_process(load=False)
         qt.msleep(.5)
 
     def measurement_process_running(self):
@@ -89,7 +89,7 @@ class purify(PQPurifyMeasurement):
         PQPurifyMeasurement.finish(self)
 
 
-    def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False):
+    def run(self, autoconfig=False, setup=False, debug=False, live_filter_on_marker=False):
         if debug:
             self.run_debug()
             return
@@ -99,6 +99,19 @@ class purify(PQPurifyMeasurement):
             
         if setup:
             self.setup()
+
+
+        ### this is now in autoconfig. NK 18-05-2016
+        # for i in range(10):
+        #     self.physical_adwin.Stop_Process(i+1)
+        #     qt.msleep(0.3)
+        # qt.msleep(1)
+        # # self.adwin.load_MBI()   
+        # # New functionality, now always uses the adwin_process specified as a class variables 
+        # loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+        # exec(loadstr)
+        # qt.msleep(2)
+
 
         rawdata_idx = 1
         t_ofl = np.uint64(0)
@@ -294,7 +307,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.prepare(m)
 
     ### general params
-    pts = 7
+    pts = 3
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -326,7 +339,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(0.6,1.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(0.1,1.0,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -383,7 +396,7 @@ def PurifyYY(name):
 
 if __name__ == '__main__':
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
-    SPCorrs(name+'_SPCorrs',debug = False,upload_only=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    # SPCorrs(name+'_SPCorrs',debug = False,upload_only=False)
     # repump_speed(name+'_repump_speed')
     ######
