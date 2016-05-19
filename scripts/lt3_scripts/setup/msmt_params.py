@@ -89,7 +89,7 @@ cfg['protocols']['AdwinSSRO']={
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
 		'green_repump_amplitude':       15e-6,# 20e-6
-		'green_repump_duration':        30,
+		'green_repump_duration':        30, # maximum is 1000 for CR_mod
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
 		'wait_after_RO_pulse_duration': 3,
@@ -99,7 +99,7 @@ cfg['protocols']['AdwinSSRO']={
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
 		'yellow_repump_amplitude':      10e-9,#42e-9, #50e-9
-		'yellow_repump_duration':       300,
+		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -112,12 +112,12 @@ cfg['protocols']['cr_mod']={
 	'cr_mod_control_offset'     :   0.0,
 	'cr_mod_control_amp'        :   0.1, #V
 	'cr_mod_control_avg_pts'	:   500000.,
-	'repump_mod_control_offset' :   5.4, #not gets set automatically
+	'repump_mod_control_offset' :   5.4, #note, gets set automatically
 	'repump_mod_control_amp'    :   .5, #V
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -222,11 +222,11 @@ cfg['samples'][sample_name] = {
 ### Carbons ###
 ###############
 	### Please uncomment the SIL you are working on
-
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[-21.486]+[0.0] + [0.0]*8),#np.array([0.0]+[-82.07-0.416]+[26.26-121.83] + [0.0]*8),
-
-	'Carbon_LDE_init_phase_correction_list' :np.array([0.0]+[185.848]+[+0.0]+ [0.]+ [0.0]*8), #np.array([0.0]+[-80.]+[+122.7]+ [0.]+ [0.0]*8),
-
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
+    'phase_per_sequence_repetition'    :-122.76 + 360-31.282+4.818, #adwin needs positive values
+    'phase_per_compensation_repetition':360-6.2, # adwin needs positive values
+    'total_phase_offset_after_sequence': 180.0,#42.328,
 
 	#########################
 	#####     SIL1      #####

@@ -124,7 +124,7 @@ if __name__ == '__main__':
     
     debug = False
     RO_after_swap = True
-    swap_type = 'prob_init'
+    swap_type = 'swap_w_init'
     # swap_type = 'swap_wo_init_rot'
     
     if swap_type == 'swap_w_init':

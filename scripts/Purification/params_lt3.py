@@ -29,7 +29,7 @@ params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['average_repump_time'] = 0.246e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 # params_lt3['opt_pulse_start']           = 2.e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
-params_lt3['MW_opt_puls1_separation']   = 100-9 # was 22 e-9. needs to be adjusted.
+params_lt3['MW_opt_puls1_separation']   = 100e-9 # was 22 e-9. needs to be adjusted.
 
 
 #adwin params defs:
@@ -41,10 +41,10 @@ params_lt3['E_RO_durations']  = [params_lt3['Dynamical_stop_ssro_duration']] # o
 params_lt3['Dynamical_stop_ssro_threshold'] = 1
 params_lt3['MBI_attempts_before_CR'] = 1 
 
-params_lt3['phase_per_sequence_repetition'] =0.
-params_lt3['phase_per_compensation_repetition'] =0.
-params_lt3['total_phase_offset_after_sequence'] =0.
-params_lt3['phase_correct_max_reps']    = 10 
+# params_lt3['phase_per_sequence_repetition'] =0.
+# params_lt3['phase_per_compensation_repetition'] =0.
+# params_lt3['total_phase_offset_after_sequence'] =0.
+params_lt3['phase_correct_max_reps']    = 80 
 
 
 # channels
@@ -53,7 +53,7 @@ params_lt3['PLU_event_di_channel'] = 20
 params_lt3['PLU_which_di_channel'] = 20 # not used on slave
 #params_lt3['AWG_start_DO_channel'] =  defined in msmt params
 #params_lt3['AWG_done_DI_channel']= defined in msmt params
-params_lt3['wait_for_awg_done_timeout_cycles'] = 10000  # 10ms
+params_lt3['wait_for_awg_done_timeout_cycles'] = 1000000  # 10ms
 #params_lt3['AWG_event_jump_DO_channel'] =  defined in msmt params
 params_lt3['AWG_repcount_DI_channel'] = 16 
 params_lt3['remote_adwin_di_success_channel'] = 19 
