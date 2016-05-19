@@ -46,7 +46,7 @@
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
-#DEFINE max_purification_repetitions    60000 ' high number needed to have good statistics in the repump_speed calibration measurement
+#DEFINE max_purification_repetitions    20000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins       2000  
 
 'init
@@ -254,7 +254,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' note: the MemCpy function only works for T11 processors.
   '  ' this is a faster way of filling up global data arrays in the external memory. See Adbasic manual
   array_step = 1
-  FOR i = 1 TO 520 ' 300 is derived from max_purification_length/100
+  FOR i = 1 TO 200 ' 300 is derived from max_purification_length/100
     MemCpy(Initializer[1],DATA_100[array_step],100)
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
@@ -999,7 +999,7 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
         timer = -1
-        DATA_108[repetition_counter-1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
+        DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
         
         first_CR=1 ' we want to store the CR after result in the next run
 
