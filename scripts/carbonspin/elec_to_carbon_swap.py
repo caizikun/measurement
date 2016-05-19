@@ -120,7 +120,7 @@ if __name__ == '__main__':
     breakst     = False
     carbons     = [1]
     #el_state    = ['X','mX','Y','mY','Z','mZ']
-    el_state    = ['X','Y','Z']
+    el_state    = ['Z','mZ']
     
     debug = False
     RO_after_swap = True

@@ -388,7 +388,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     # m.params['do_C_init_SWAP_wo_SSRO'] = 0
     m.params['LDE_1_is_init'] = 1 # only use a preparational value
-    # m.params['MW_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0 # no pi pulses in this sequence.
 
     ### define sweep
@@ -400,8 +400,9 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['Z']#,'mX','Y','mY','Z','mZ']
+    el_state_list = ['mZ']
     
+    print m.params['carbon_init_method']
 
     x_phase = m.params['X_phase']
     y_phase = m.params['Y_phase']
@@ -411,7 +412,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
                             'Y' :   x_phase + 180, 
                             'mY':   x_phase, 
                             'Z' :   x_phase + 180, 
-                            'mZ':   x_phase + 180}
+                            'mZ':   x_phase}
 
     first_mw_amp_dict = {   'X' :   m.params['Hermite_pi2_amp'], 
                             'mX':   m.params['Hermite_pi2_amp'],
@@ -426,6 +427,8 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
                             'mY':   m.params['Hermite_pi2_length'], 
                             'Z' :   m.params['Hermite_pi_length'], 
                             'mZ':   m.params['Hermite_pi_length']}                        
+
+
 
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -460,7 +463,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 20
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -479,13 +482,13 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
-    m.params['mw_first_pulse_phase'] = m.params['X_phase']
-    # m.params['mw_first_pulse_amp'] = 0
-
+    m.params['mw_first_pulse_phase'] = m.params['X_phase'] + 180
+    m.params['mw_first_pulse_amp'] = 0
+    m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
 
     ### calculate sweep array
     minReps = 1
-    maxReps = 52
+    maxReps = 20
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -498,7 +501,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 8
+    m.params['phase_detuning'] = 80.6
     phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
     m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = phase_per_rep + m.params['phase_detuning']
 
@@ -727,9 +730,9 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
