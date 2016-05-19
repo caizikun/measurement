@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,195,195,333,333,334,334,349,349,565,565,632,632,824,825,826,833,834,835
 ' Foldings                       = 638,656
 '<Header End>
@@ -46,7 +46,7 @@
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
-#DEFINE max_purification_repetitions    60000 ' high number needed to have good statistics in the repump_speed calibration measurement
+#DEFINE max_purification_repetitions    52000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins       2000  
 
 'init
@@ -999,7 +999,7 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
         timer = -1
-        DATA_108[repetition_counter-1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
+        DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
         
         first_CR=1 ' we want to store the CR after result in the next run
 
