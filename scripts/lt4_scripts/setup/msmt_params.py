@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 114e-9
-	hermite_pi_amp = 0.705
+	hermite_pi_amp = 0.691
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 70e-9
-	hermite_pi2_amp = 0.410#0.608
+	hermite_pi2_amp = 0.407#0.608
 
 
 ### General settings for AdwinSSRO
@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      20e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      28e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -95,7 +95,8 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
+
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -205,7 +206,7 @@ cfg['samples'][sample_name] = {
 	# C1 (A~ -350)#
 	###############
 	'C1_freq_m1'        : (441045.84+8165920)/2.,
-	'C1_freq_0' 		: 441045.84,
+	'C1_freq_0' 		: 446128.33,
 	'C1_freq_1_m1' 		: 8165920,
 
 	'C1_Ren_tau_m1'    :   [5.97e-6],
@@ -351,8 +352,8 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
-		'C13_MBI_RO_duration':                  30,  #25
-		'E_C13_MBI_RO_amplitude':               0.1e-9, #0.02e-9
+		'C13_MBI_RO_duration':                  40,  #25
+		'E_C13_MBI_RO_amplitude':               0.07e-9, #0.02e-9
 		'SP_duration_after_C13':                20, #use long repumping in case of swap init
 		'A_SP_amplitude_after_C13_MBI':         12e-9,
 		'E_SP_amplitude_after_C13_MBI':         0e-9,

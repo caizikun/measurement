@@ -57,9 +57,15 @@ class purify_single_setup(DD.MBI_C13):
         # self.adwin.load_MBI()   
         # New functionality, now always uses the adwin_process specified as a class variables 
         loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
+        latest_process = qt.instruments['adwin'].get_latest_process()
+        boolish = self.adwin_process in latest_process
 
-        exec(loadstr)
-        qt.msleep(1)
+        if not boolish:
+            print 'executing ADWin load'
+            exec(loadstr)
+            qt.msleep(1)
+        else:
+            print 'Omitting adwin load!!! Be wary of your changes!'
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
