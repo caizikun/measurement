@@ -84,8 +84,10 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
             m.params['Decoupling_sequence_scheme']='repeating_T_elt_XY16'
         elif XY_scheme == 8:
             m.params['Decoupling_sequence_scheme']='repeating_T_elt'
+        elif XY_scheme == 4:
+            m.params['Decoupling_sequence_scheme']='repeating_T_elt_XY4'
         else:
-            raise Exception('XY Scheme not reckognized')
+            raise Exception('XY Scheme not recognized')
         #m.params['Decoupling_sequence_scheme']='single_block'
 
 

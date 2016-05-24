@@ -293,7 +293,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.finish()
 
 
-def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
+def sweep_number_of_reps(name,do_Z = False, upload_only = False, maxReps = 500, debug=False):
 
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
@@ -318,7 +318,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 500
+
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE_attempts'
@@ -501,10 +501,9 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 80.6
-    phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
-    m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = phase_per_rep + m.params['phase_detuning']
-
+    m.params['phase_detuning'] = 20
+    #phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
+    m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = m.params['phase_detuning']
                      
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -530,7 +529,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 20
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -550,6 +549,8 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
+    
+    # pulse parameters - make Z so that ends up in X.
     m.params['input_el_state'] = 'Z'
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
     m.params['mw_first_pulse_amp'] = 0
@@ -557,15 +558,16 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
 
     ### calculate sweep array
-    minReps = 2
-    maxReps = 90.
-    step = int((maxReps-minReps)/pts)+1
+    minReps = 1
+    maxReps = 20
+    step = int((maxReps-minReps+1.)/pts)
 
     ### define sweep
     m.params['do_general_sweep']    = 1
     m.params['general_sweep_name'] = 'phase_correct_max_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps+1,step)
+    print m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['general_sweep_pts'])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
@@ -602,7 +604,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 40
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -625,22 +627,28 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
+    
+    # pulse parameters - make Z so that ends up in X.
     m.params['input_el_state'] = 'Z'
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
-    # m.params['mw_first_pulse_amp'] = 0
+    m.params['mw_first_pulse_amp'] = 0
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 10
+    m.params['phase_detuning'] = 5
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
 
-
+    ### calculate sweep array
+    minReps = 1
+    maxReps = 80
+    step = int((maxReps-minReps+1.)/pts)
 
     ### define sweep
     m.params['do_general_sweep']    = 1
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.arange(1,61,6)#np.arange(minReps,maxReps,step)
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps+1,step)#np.arange(minReps,maxReps,step)
+    print m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['general_sweep_pts'])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
@@ -722,20 +730,20 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    repump_speed(name+'_repump_speed',upload_only = False)
+    # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',maxReps = 500, do_Z = False)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',maxReps = 1000, do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
+    #calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    #calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     # apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)

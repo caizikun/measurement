@@ -433,7 +433,7 @@ if f_ms1 and n == 1:
 
                 n = stop_msmt()
 
-                optimize()
+                #optimize()
 
     
 
@@ -609,7 +609,7 @@ if cross_phase_calibration and n ==1 and len(carbons)>1:
 
 if n == 1 and cross_phase_calibration and len(carbons)>1:
 
-    optimize()
+    #optimize()
 
     for c in carbons:
         # remove that specific carbon from the list
