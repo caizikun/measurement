@@ -201,6 +201,9 @@ def repump_speed(name,debug = False,upload_only=False):
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 0
+    
     m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ'
@@ -727,12 +730,12 @@ if __name__ == '__main__':
     # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
-    sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)

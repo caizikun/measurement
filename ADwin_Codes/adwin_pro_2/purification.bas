@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,196,196,336,336,337,337,352,352,568,568,637,637,828,829,830,837,838,839
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,340,340,341,341,356,356,572,572,641,641,833,834,835,842,843,844
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -27,14 +27,18 @@
 '   0 : CR check
 '   1 : E spin pumping into ms=+/-1
 '   2 : MBI of one carbon spin
-'   3 : Carbon init successful?
+'   3 : Carbon init successful --> adwin communication?
+'   31: Send AWG trigger in case of success on both sides.
 '   4 : run entanglement sequence and count reps while waiting for PLU success signal
-'   5 : wait for the electron Carbon swap to be done and then read out the electron if this is specified in the msmt parameters
+'   5 : wait for the electron Carbon swap to be done and then read out the electron if this is specified in the msmt parameters. Go to adwin communication in that case
+'   51: send awg trigger in case of successful swap.
 '   6 : save SSRO after SWAP result, run entanglement sequence and count reps while waiting for PLU success signal
 '   7 : Phase synchronisation
 '   8 : Purification gate
-'   9 : Tomo gte
+'   9 : Tomo gate
 '  10 : Save result
+'  11 : in case of electron RO only
+'  12 : Parameter reinitialization
 
 
 #INCLUDE ADwinPro_All.inc
@@ -770,6 +774,7 @@ EVENT:
         CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
         P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
         mode = mode_after_swap 'see flow control
+        timer = -1
         
       CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
