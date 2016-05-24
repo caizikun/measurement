@@ -161,7 +161,6 @@ class purify_single_setup(DD.MBI_C13):
                     ('plu_which'                             ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
                     ('attempts_second'                       ,1,reps), 
-
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
