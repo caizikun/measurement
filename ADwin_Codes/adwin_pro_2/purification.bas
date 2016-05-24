@@ -9,8 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,195,195,333,333,334,334,349,349,565,565,632,632,824,825,826,833,834,835
-' Foldings                       = 638,656
+' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,196,196,336,336,337,337,352,352,568,568,637,637,829,830,831,838,839,840
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -125,6 +124,7 @@ DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins 
 DIM adwin_comm_timeout_cycles, wait_for_awg_done_timeout_cycles as long ' if one side fails completely, the other can go on
 DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
+DIM PLU_during_LDE as long
 DIM is_master as long
 
 ' Sequence flow control
@@ -221,6 +221,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   C13_MBI_RO_duration              = DATA_20[33] 'C13_MBI_RO_duration
   master_slave_awg_trigger_delay   = DATA_20[34]
   phase_correct_max_reps           = DATA_20[35]
+  PLU_during_LDE                   = DATA_20[36]
+  
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
@@ -608,19 +610,16 @@ EVENT:
         
       CASE 3 ' MBI SSRO done; check MBI success
         IF ( (local_success>0) OR (do_C_init_SWAP_wo_SSRO >0) ) THEN ' successful MBI readout
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to the entanglement sequence
-          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
           'trying_mbi = 0
           mbi_timer = 0
           is_mbi_readout = 0
           current_MBI_attempt = 1 ' reset counter
           if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
-            mode = 4 ' entanglement sequence
+            mode = 31 ' entanglement sequence
           else
             mode = 100 ' adwin communication
             fail_mode_after_adwin_comm = 0 ' CR check 
-            success_mode_after_adwin_comm = 4 ' entanglement sequence
+            success_mode_after_adwin_comm = 31 ' entanglement sequence
           endif 
         ELSE ' MBI failed. Retry or communicate?
           INC(MBI_failed)
@@ -641,7 +640,12 @@ EVENT:
         ENDIF               
         timer = -1      
         
-      
+      CASE 31 'tell the AWG to jump in case of a succesful MBI attempts
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to the entanglement sequence
+        CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+        mode = 4
+        timer = -1
         
       CASE 4    '  wait and count repetitions of the entanglement AWG sequence
         ' the awg gives repeated adwin sync pulses, which are counted. In the case of an entanglement event, we get a plu signal.
@@ -691,7 +695,7 @@ EVENT:
             if (awg_done_was_low =1) then
               DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
               timer = -1
-              if (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              if ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
 
               else ' two setups involved: Done means failure of the sequence
@@ -823,7 +827,7 @@ EVENT:
             if (awg_done_was_low > 0) then ' switched in this round
               DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
               timer = -1
-              IF (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              IF ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE_2
               ELSE ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check

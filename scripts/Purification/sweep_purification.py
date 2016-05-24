@@ -242,14 +242,14 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1 
 
-    m.joint_params['LDE_attempts'] = 150
+    m.joint_params['LDE_attempts'] = 75
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 1
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-0.3e-6,0.8e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.5e-6,1.2e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
@@ -312,13 +312,13 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1
     m.params['do_carbon_readout']  = 1 
-
+    # m.params['mw_first_pulse_amp'] = 0
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 500
+    maxReps = 200
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE_attempts'
@@ -400,7 +400,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['Z']#,'mX','Y','mY','Z','mZ']
+    el_state_list = ['X','mX','Y','mY','Z','mZ']
     
 
     x_phase = m.params['X_phase']
@@ -623,21 +623,26 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
-    m.params['mw_first_pulse_phase'] = m.params['X_phase']
-    # m.params['mw_first_pulse_amp'] = 0
+    # m.params['mw_first_pulse_phase'] = m.params['Y_phase']
+    # m.params['mw_first_pulse_amp'] = 0.698
+    # m.params['mw_first_pulse_length'] = 114e-9
+    # m.params['MW_during_LDE'] = 0
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 10
+    m.params['phase_detuning'] = 0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
 
-
+    ### calculate sweep array
+    minReps = 2
+    maxReps = 400.
+    step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
     m.params['do_general_sweep']    = 1
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.arange(1,61,6)#np.arange(minReps,maxReps,step)
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
     m.params['pts'] = len(m.params['general_sweep_pts'])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
@@ -719,10 +724,10 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    repump_speed(name+'_repump_speed',upload_only = False)
+    # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
-    # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
+    sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)

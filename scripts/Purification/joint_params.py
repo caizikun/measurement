@@ -18,9 +18,6 @@ joint_params['master_setup'] = 'lt4'
 
 joint_params['LDE_final_mw_phase'] = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
-
-
-
 ### joint carbon parameters. Need to be updated by hand.
 joint_params['slave_N'] = [12]
 joint_params['slave_tau'] = [10.886e-6]
@@ -58,7 +55,7 @@ joint_params['opt_pulse_separation']    = 250e-9 #350e-9 changed for higher visi
 
 joint_params['LDE_attempts'] = 250 # 1000 for tpqi seems ok
 
-joint_params['LDE_element_length'] = 6.3e-6 #DO NOT CHANGE THIS
+joint_params['LDE_element_length'] = 7e-6 #DO NOT CHANGE THIS
 ### mw timing for LDE and for keeping coherence afterwards
 
 

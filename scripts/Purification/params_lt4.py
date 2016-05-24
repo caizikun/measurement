@@ -32,7 +32,7 @@ params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 params_lt4['MW_during_LDE']             = 1 
 params_lt4['AWG_SP_power']              = 1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
-params_lt4['average_repump_time'] = 400e-9 + 700e-9 # XXX put repump AOM delay here!
+params_lt4['average_repump_time'] 		= 200e-9 
 params_lt4['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C4_freq_0']
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 22e-9
@@ -104,6 +104,8 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
+params_lt4['dynamic_phase_tau']			= 2.3e-6
+params_lt4['dynamic_phase_N']			= 2
 
 
 ### Everything HydraHarp
