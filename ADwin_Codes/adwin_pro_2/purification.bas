@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,340,340,341,341,356,356,572,572,641,641,833,834,835,842,843,844
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,358,358,580,580,649,649,841,842,843,850,851,852
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -348,6 +348,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
 
   P2_Digprog(DIO_MODULE,0011b) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
    
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
   
@@ -374,11 +376,13 @@ EVENT:
           adwin_comm_done = 0
           remote_success = 0
           remote_fail = 0
+
         endif
                 
         IF (adwin_comm_done = 0) THEN 'previous communication was not successful
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
+          
           if ( (digin_this_cycle AND remote_adwin_di_success_pattern) > 0) then
             remote_success = 1
           endif
@@ -391,7 +395,9 @@ EVENT:
               adwin_comm_done = 1 ' go to next mode in cleanup step below
               wait_time = adwin_comm_safety_cycles ' make sure the other adwin is ready for counting etc.
             else ' own signal not yet received on other side -> send it or wait for slave's signal to decide what to do
+
               IF ((remote_success >0) or (remote_fail >0)) then ' remote signal received: decide whether both setups were successful
+
                 if ((local_success > 0) and (remote_success >0)) then
                   combined_success = 1
                 else
@@ -400,15 +406,17 @@ EVENT:
                 'send combined success and then wait for confirmation
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
-              ELSE ' no signal received. Did the connection time out?
-                if (timer > adwin_comm_timeout_cycles) then
-                  inc(n_of_comm_timeouts) ' give to par for local debugging
-                  PAR_1 = n_of_comm_timeouts ' for debugging
-                  combined_success = 0 ' just to be sure
-                  adwin_comm_done = 1 ' below: reset everything and go on
-                endif                
-              ENDIF 
+              ENDIF
+              ' no signal received. Did the connection time out?
+              if (timer > adwin_comm_timeout_cycles) then
+                inc(n_of_comm_timeouts) ' give to par for local debugging
+                'PAR_1 = n_of_comm_timeouts ' for debugging
+                combined_success = 0 ' just to be sure
+                adwin_comm_done = 1 ' below: reset everything and go on
+              endif                
+            
             endif
+            
                     
           ELSE ' I'm the slave, and the communication is not yet done.
             if (timer = 0) then ' first round: send my signal
