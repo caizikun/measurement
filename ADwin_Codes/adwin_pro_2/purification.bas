@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,196,196,336,336,337,337,352,352,568,568,637,637,829,830,831,838,839,840
+' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,196,196,336,336,337,337,352,352,568,568,637,637,828,829,830,837,838,839
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -748,10 +748,10 @@ EVENT:
               if (is_two_setup_experiment > 0) THEN
                 success_mode_after_SSRO = 100 'adwin comm
                 fail_mode_after_SSRO = 100
-                success_mode_after_adwin_comm = mode_after_swap  ' see flow control
+                success_mode_after_adwin_comm = 51  ' see flow control
                 fail_mode_after_adwin_comm = 12 ' finalize and go to cr. could also be 6 in case one wants to implement a deterministic protocol
               else
-                success_mode_after_SSRO = mode_after_swap ' see flow control
+                success_mode_after_SSRO = 51 ' see flow control
                 fail_mode_after_SSRO = 12 ' finalize and start over
               endif
             ENDIF
@@ -765,15 +765,14 @@ EVENT:
           ENDIF  
         ENDIF
                 
-      
+      CASE 51 ' success case of the swap operation. Is only triggered either if adwin comm was succesful or the local swap worked (single setup)
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
+        CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+        mode = mode_after_swap 'see flow control
         
       CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
-          if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
-            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          endif
           'DATA_37[repetition_counter+1] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
