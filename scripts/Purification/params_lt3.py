@@ -26,7 +26,7 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 params_lt3['MW_during_LDE']             = 1 
 params_lt3['AWG_SP_power']              = 1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
-params_lt3['average_repump_time'] = 0.246e-6 # XXX put repump AOM delay here!
+params_lt3['average_repump_time'] = 0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 # params_lt3['opt_pulse_start']           = 2.e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt3['MW_opt_puls1_separation']   = 100e-9 # was 22 e-9. needs to be adjusted.
@@ -101,6 +101,8 @@ params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt3['carbon']                        = 1
 params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
+params_lt3['dynamic_phase_tau'] = 2.310e-6
+params_lt3['dynamic_phase_N'] = 2 
 
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6

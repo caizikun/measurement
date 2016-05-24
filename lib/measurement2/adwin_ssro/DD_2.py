@@ -1115,7 +1115,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         elif g.el_state_before_gate == 'sup':
                             g.C_phases_before_gate[iC]%(2*np.pi)
                             print 'Warning: %s, el state in sup for Trigger elt' %g.name
-                            raise ValueError('El state is in sup during trigger. makes no sense!')
+                            # raise ValueError('El state is in sup during trigger. makes no sense!')
 
             elif g.Gate_type =='MBI':
                 for iC in range(len(g.C_phases_before_gate)):
@@ -3330,14 +3330,14 @@ class SimpleDecoupling(DynamicalDecoupling):
 
             else:
                 #Generate the start and end pulse
-                # print 'Initial_pulse'
-                # print self.params['Initial_Pulse']
-                #initial_Pi2.Gate_operation = self.params['Initial_Pulse']
+                print 'Initial_pulse'
+                print self.params['Initial_Pulse']
+                initial_Pi2.Gate_operation = self.params['Initial_Pulse']
                 
                 #if np.mod(pt,2)==1:
                 #   initial_Pi2.Gate_operation = '-x'
                 #else:    
-                initial_Pi2.Gate_operation = 'x'
+                #initial_Pi2.Gate_operation = 'x'
                 
                 initial_Pi2.time_before_pulse = 600e-9 # = MW switch risetime of 500 ns + 100 ns --> makes sure MW output = low when waiting for trigger #max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
                 # print 'time_before_pulse'
@@ -4324,14 +4324,6 @@ class MBI_C13(DynamicalDecoupling):
         #        phase = self.params['X_phase'])
 
 
-        ###################
-        # 1q carbon gates #
-        ###################
-        # el_trans = qt.exp_params['samples'][SAMPLE]['electron_transition']
-        el_trans = self.params['electron_transition']
-        print '@ multi option swap DD_2 el_trans: ' + el_trans
-        
-
         #####################
         # Conditional gates #
         #####################
@@ -4368,7 +4360,7 @@ class MBI_C13(DynamicalDecoupling):
             Carbon_ind  = addressed_carbon,
             phase       = self.params['C13_X_phase'])
 
-        print 'swap_type = ' + swap_type 
+        #print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
             carbon_swap_seq = [C_Ren_y,e_x,C_Ren_x,e_ym]
             

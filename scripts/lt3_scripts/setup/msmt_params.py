@@ -222,11 +222,11 @@ cfg['samples'][sample_name] = {
 ### Carbons ###
 ###############
 	### Please uncomment the SIL you are working on
-	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
-	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :-122.76 + 360-31.282+4.818, #adwin needs positive values
-    'phase_per_compensation_repetition':360-6.2, # adwin needs positive values
-    'total_phase_offset_after_sequence': 180.0,#42.328,
+	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
+	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
+    'phase_per_sequence_repetition'    : 328.24,#4.162, #adwin needs positive values
+    'phase_per_compensation_repetition': 13.154, # adwin needs positive values
+    'total_phase_offset_after_sequence': 117., #68.386,#42.328,
 
 	#########################
 	#####     SIL1      #####
@@ -267,20 +267,20 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447949.29,
+	'C1_freq_0' 		: 447940.23,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434538,#434257.72, 
-	'C1_freq_0' 		: 447949.29,
-	'C1_freq_1_p1' 		: 425539.55,
+	'C1_freq_p1'        : 434615.6,#434257.72, 
+	'C1_freq_0' 		: 447940.23,
+	'C1_freq_1_p1' 		: 425530.23,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [58.49] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [55.85] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
 	'C1_unc_tau_p1'    :   [9.132e-6],
@@ -512,7 +512,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.26e-6,#0.35e-6,
+		'max_dec_tau'         :     0.255e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters
