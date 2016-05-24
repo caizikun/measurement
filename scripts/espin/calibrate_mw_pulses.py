@@ -41,7 +41,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
     m.params['repetitions'] = 600 if multiplicity == 1 else 500
-    rng = 0.1 if multiplicity == 1 else 0.03
+    rng = 0.2 if multiplicity == 1 else 0.03
 
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.

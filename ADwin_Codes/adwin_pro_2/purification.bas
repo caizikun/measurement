@@ -8,9 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,195,195,333,333,334,334,349,349,565,565,632,632,824,825,826,833,834,835
-' Foldings                       = 638,656
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,196,196,336,336,337,337,352,352,568,568,637,637,828,829,830,837,838,839
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -125,6 +124,7 @@ DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins 
 DIM adwin_comm_timeout_cycles, wait_for_awg_done_timeout_cycles as long ' if one side fails completely, the other can go on
 DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
+DIM PLU_during_LDE as long
 DIM is_master as long
 
 ' Sequence flow control
@@ -221,6 +221,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   C13_MBI_RO_duration              = DATA_20[33] 'C13_MBI_RO_duration
   master_slave_awg_trigger_delay   = DATA_20[34]
   phase_correct_max_reps           = DATA_20[35]
+  PLU_during_LDE                   = DATA_20[36]
+  
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   E_MBI_voltage                = DATA_21[2]  
@@ -608,19 +610,16 @@ EVENT:
         
       CASE 3 ' MBI SSRO done; check MBI success
         IF ( (local_success>0) OR (do_C_init_SWAP_wo_SSRO >0) ) THEN ' successful MBI readout
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to the entanglement sequence
-          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
           'trying_mbi = 0
           mbi_timer = 0
           is_mbi_readout = 0
           current_MBI_attempt = 1 ' reset counter
           if (is_two_setup_experiment = 0) then 'only one setup involved. Skip communication step
-            mode = 4 ' entanglement sequence
+            mode = 31 ' entanglement sequence
           else
             mode = 100 ' adwin communication
             fail_mode_after_adwin_comm = 0 ' CR check 
-            success_mode_after_adwin_comm = 4 ' entanglement sequence
+            success_mode_after_adwin_comm = 31 ' entanglement sequence
           endif 
         ELSE ' MBI failed. Retry or communicate?
           INC(MBI_failed)
@@ -641,7 +640,12 @@ EVENT:
         ENDIF               
         timer = -1      
         
-      
+      CASE 31 'tell the AWG to jump in case of a succesful MBI attempts
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to the entanglement sequence
+        CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+        mode = 4
+        timer = -1
         
       CASE 4    '  wait and count repetitions of the entanglement AWG sequence
         ' the awg gives repeated adwin sync pulses, which are counted. In the case of an entanglement event, we get a plu signal.
@@ -691,7 +695,7 @@ EVENT:
             if (awg_done_was_low =1) then
               DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
               timer = -1
-              if (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              if ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
 
               else ' two setups involved: Done means failure of the sequence
@@ -744,10 +748,10 @@ EVENT:
               if (is_two_setup_experiment > 0) THEN
                 success_mode_after_SSRO = 100 'adwin comm
                 fail_mode_after_SSRO = 100
-                success_mode_after_adwin_comm = mode_after_swap  ' see flow control
+                success_mode_after_adwin_comm = 51  ' see flow control
                 fail_mode_after_adwin_comm = 12 ' finalize and go to cr. could also be 6 in case one wants to implement a deterministic protocol
               else
-                success_mode_after_SSRO = mode_after_swap ' see flow control
+                success_mode_after_SSRO = 51 ' see flow control
                 fail_mode_after_SSRO = 12 ' finalize and start over
               endif
             ENDIF
@@ -761,15 +765,14 @@ EVENT:
           ENDIF  
         ENDIF
                 
-      
+      CASE 51 ' success case of the swap operation. Is only triggered either if adwin comm was succesful or the local swap worked (single setup)
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
+        CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+        mode = mode_after_swap 'see flow control
         
       CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
-          if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
-            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          endif
           'DATA_37[repetition_counter+1] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
@@ -823,7 +826,7 @@ EVENT:
             if (awg_done_was_low > 0) then ' switched in this round
               DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
               timer = -1
-              IF (is_two_setup_experiment = 0 ) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              IF ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE_2
               ELSE ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check
@@ -875,7 +878,7 @@ EVENT:
             IF (acquired_phase_during_compensation > 360) THEN
               acquired_phase_during_compensation =   acquired_phase_during_compensation-360
             ENDIF
-          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= 3) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
+          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= 4.5) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
                   
           Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
@@ -925,7 +928,7 @@ EVENT:
             timer = -1
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
-            is_mbi_readout = 0
+            is_mbi_readout = 1
             success_mode_after_SSRO = mode_after_purification
             fail_mode_after_SSRO = mode_after_purification   
           endif
@@ -956,7 +959,7 @@ EVENT:
 
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
-            is_mbi_readout = 0 ' Note that changed from 1, NEEDS TO BE CHANGED BACK
+            is_mbi_readout = 0
             success_mode_after_SSRO = 10
             fail_mode_after_SSRO = 10
           endif

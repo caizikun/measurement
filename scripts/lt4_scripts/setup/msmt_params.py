@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 114e-9
-	hermite_pi_amp = 0.691
+	hermite_pi_amp = 0.698
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 70e-9
-	hermite_pi2_amp = 0.407#0.608
+	hermite_pi2_amp = 0.4085#0.608
 
 
 ### General settings for AdwinSSRO
@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      28e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      35e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -195,9 +195,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :-122.76 + 360-31.282+4.818, #adwin needs positive values
-    'phase_per_compensation_repetition':360-6.2, # adwin needs positive values
-    'total_phase_offset_after_sequence': 180.0,#42.328,
+    'phase_per_sequence_repetition'    :350.776-14.472, #adwin needs positive values
+    'phase_per_compensation_repetition':360-6.21, # adwin needs positive values
+    'total_phase_offset_after_sequence': -129.1,#180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############
@@ -355,7 +355,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		'C13_MBI_RO_duration':                  40,  #25
 		'E_C13_MBI_RO_amplitude':               0.07e-9, #0.02e-9
 		'SP_duration_after_C13':                20, #use long repumping in case of swap init
-		'A_SP_amplitude_after_C13_MBI':         12e-9,
+		'A_SP_amplitude_after_C13_MBI':         52e-9,
 		'E_SP_amplitude_after_C13_MBI':         0e-9,
 		'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
 		                
@@ -462,7 +462,7 @@ cfg['protocols'][name]['pulses'] = {
 
 cfg['protocols'][name]['cr_linescan'] = {
 		'A_CR_amplitude':				 2e-9,
-		'CR_duration' :				 	 100,
+		'CR_duration' :				 	 80,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
