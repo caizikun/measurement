@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,16,16,20,20,82,82,84,84,195,195,333,333,334,334,349,349,565,565,632,632,824,825,826,833,834,835
 ' Foldings                       = 638,656
 '<Header End>
@@ -875,7 +875,7 @@ EVENT:
             IF (acquired_phase_during_compensation > 360) THEN
               acquired_phase_during_compensation =   acquired_phase_during_compensation-360
             ENDIF
-          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= 4.5) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
+          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= 3) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
                   
           Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
@@ -925,7 +925,7 @@ EVENT:
             timer = -1
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
-            is_mbi_readout = 1
+            is_mbi_readout = 0
             success_mode_after_SSRO = mode_after_purification
             fail_mode_after_SSRO = mode_after_purification   
           endif
@@ -956,7 +956,7 @@ EVENT:
 
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
-            is_mbi_readout = 0
+            is_mbi_readout = 0 ' Note that changed from 1, NEEDS TO BE CHANGED BACK
             success_mode_after_SSRO = 10
             fail_mode_after_SSRO = 10
           endif
