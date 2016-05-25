@@ -21,15 +21,15 @@ joint_params['LDE_final_mw_phase'] = qt.exp_params['protocols'][name]['pulses'][
 ### joint carbon parameters. Need to be updated by hand.
 joint_params['slave_N'] = [12]
 joint_params['slave_tau'] = [10.886e-6]
-joint_params['slave_eigen_phase'] = 64.19
-joint_params['slave_freq_0'] = 447965.66
-joint_params['slave_freq_1'] = 425517.3
-joint_params['slave_freq'] = 436757.82
+joint_params['slave_eigen_phase'] = 55.85
+joint_params['slave_freq_0'] = 447940.23
+joint_params['slave_freq_1'] = 425530.23
+joint_params['slave_freq'] = 434615.6
 joint_params['slave_min_phase_correct'] = 2
 joint_params['slave_min_dec_tau'] = 30e-9 + 100e-9
-joint_params['slave_max_dec_tau'] = 0.55e-6
+joint_params['slave_max_dec_tau'] = 0.255e-6
 joint_params['slave_dec_pulse_multiple'] = 4
-joint_params['slave_carbon_init_RO_wait'] = 70e-6
+joint_params['slave_carbon_init_RO_wait'] = 75e-6
 
 joint_params['master_N'] = [32]
 joint_params['master_tau'] = [6.36e-6]
