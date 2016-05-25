@@ -338,12 +338,13 @@ class purify_single_setup(DD.MBI_C13):
         store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
 
         # calculate sequence durations 
-        master_seq_duration = self.calculate_C13_init_duration(master = False,verbose=False,**kw)
+        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
         slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
 
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
         print master_seq_duration,slave_seq_duration
+        print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
         
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
@@ -355,6 +356,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
 
+        print 'after calculating', self.params['Carbon_init_RO_wait']
         seq = DD.MBI_C13.initialize_carbon_sequence(self,**kw)
 
         ### restore the old value
