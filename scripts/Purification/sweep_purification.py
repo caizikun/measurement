@@ -201,9 +201,9 @@ def repump_speed(name,debug = False,upload_only=False):
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    # m.params['MW_during_LDE'] = 0
-    # m.params['Hermite_pi_amp'] = 0
-
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 0
+    
     m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ'
@@ -211,7 +211,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
 
-    
+    # m.params['Hermite_pi_amp'] = 0
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
@@ -240,6 +240,10 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
 
     turn_all_sequence_elements_off(m)
 
+    ### sequence specific parameters
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 0
+
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1 
@@ -249,9 +253,6 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 1
 
-    m.params['is_two_setup_experiment'] = 1
-    m.params['PLU_during_LDE'] = 0
-    
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
@@ -281,10 +282,10 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
                 autoconfig = False
 
     else:
-        for t in ['X']:#,'Y']:
+        for t in ['X']:
             if breakst:
                 break
-            for ro in ['positive']:#,'negative']:
+            for ro in ['positive']:
                 breakst = show_stopper()
                 if breakst:
                     break
@@ -730,7 +731,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    # repump_speed(name+'_repump_speed',upload_only = False)
+    #repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
