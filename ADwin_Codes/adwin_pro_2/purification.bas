@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,358,358,580,580,649,649,841,842,843,850,851,852
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,360,360,586,586,655,655,848,849,850,857,858,859
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -356,6 +356,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_CNT_CLEAR(CTR_MODULE, sync_trigger_counter_pattern)    'clear and turn on sync trigger counter
   P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)
   
+  
+  PAR_62 = master_slave_awg_trigger_delay
 EVENT:
   
   'write information to pars for live monitoring
@@ -378,8 +380,20 @@ EVENT:
           remote_fail = 0
 
         endif
+        
+        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
+          if (combined_success > 0) then ' both successful: continue
+            mode = success_mode_after_adwin_comm
+          else 'fail: go to fail mode
+            mode = fail_mode_after_adwin_comm
+          endif
+          timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
+
                 
-        IF (adwin_comm_done = 0) THEN 'previous communication was not successful
+        ELSE 'previous communication was not successful
+          
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
           
@@ -448,16 +462,7 @@ EVENT:
           ENDIF
         ENDIF
                 
-        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
-          if (combined_success > 0) then ' both successful: continue
-            mode = success_mode_after_adwin_comm
-          else 'fail: go to fail mode
-            mode = fail_mode_after_adwin_comm
-          endif
-          timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
-          P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
-          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
-        ENDIF
+
        
         
         
@@ -582,6 +587,7 @@ EVENT:
             IF (is_master>0) THEN ' trigger own and remote AWG
               'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
               P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
@@ -739,6 +745,7 @@ EVENT:
             IF (is_master>0) THEN ' trigger own and remote AWG
               'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
               P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
@@ -1027,5 +1034,8 @@ EVENT:
 
     
 FINISH:
-
+  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
+   
 

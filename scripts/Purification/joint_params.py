@@ -31,19 +31,18 @@ joint_params['slave_max_dec_tau'] = 0.55e-6
 joint_params['slave_dec_pulse_multiple'] = 4
 joint_params['slave_carbon_init_RO_wait'] = 70e-6
 
-joint_params['master_N'] = [32]
+joint_params['master_N'] = [28]
 joint_params['master_tau'] = [6.36e-6]
-joint_params['master_eigen_phase'] = 136.99
-joint_params['master_freq_0'] = 446126.51
-joint_params['master_freq_1'] = 419816.27
-joint_params['master_freq'] = 430605.12
+joint_params['master_eigen_phase'] = 96.77
+joint_params['master_freq_0'] = 446128.33
+joint_params['master_freq_1'] = 419820.5
+joint_params['master_freq'] = (419823.82+ 446122.14)/2
 joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.1e-6
 joint_params['master_max_dec_tau'] = 2.4e-6
 joint_params['master_dec_pulse_multiple'] = 4
-joint_params['master_carbon_init_RO_wait'] = 70e-6
+joint_params['master_carbon_init_RO_wait'] = 80e-6
 
-joint_params['master_slave_awg_trigger_delay'] = 10 # times 10ns
 
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False

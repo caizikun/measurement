@@ -343,7 +343,8 @@ class purify_single_setup(DD.MBI_C13):
 
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
-
+        print master_seq_duration,slave_seq_duration
+        
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
