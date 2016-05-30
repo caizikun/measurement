@@ -273,3 +273,15 @@ def load_regular_linescan():
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['adwin'].load_linescan()
     
+def apply_awg_voltage(awg, chan, voltage):
+    """
+    applies a voltage on an awg channel;
+    if its a marker, by setting its LO-value to the given voltage.
+    if an analog channel, by setting the offset.
+    """
+    if 'marker' in chan:
+        return getattr(qt.instruments[awg], 'set_{}_low'.format(chan))(voltage)
+    else:
+        return getattr(qt.instruments[awg], 'set_{}_offset'.format(chan))(voltage)
+
+

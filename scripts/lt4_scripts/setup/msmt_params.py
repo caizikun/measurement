@@ -20,8 +20,8 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.709685e9#1.739038e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 4.048270e9    #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.716222e9#1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.039757e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -34,28 +34,28 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 290e-9#100e-9
-	hermite_pi_amp = 0.873
+	hermite_pi_length = 290e-9#100e-9 #Not calibrated
+	hermite_pi_amp = 0.873 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
 
-	hermite_pi2_length = 76e-9
-	hermite_pi2_amp = 0.840
+	hermite_pi2_length = 76e-9 #Not calibrated
+	hermite_pi2_amp = 0.840 #Not calibrated
 
 else:
 	electron_transition_string = '_m1'
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 114e-9
-	hermite_pi_amp = 0.698
+	hermite_pi_length = 94e-9
+	hermite_pi_amp = 0.913
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
-	hermite_pi2_length = 70e-9
-	hermite_pi2_amp = 0.4085#0.608
+	hermite_pi2_length = 50e-9
+	hermite_pi2_amp = 0.565#0.608
 
 
 ### General settings for AdwinSSRO
@@ -95,7 +95,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -227,13 +227,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : (419823.82+ 446122.14)/2,
-	'C4_freq_0' 		: 446128.33,
-	'C4_freq_1_m1' 		: 419820.5,
+	'C4_freq_m1'        : (416812.23+ 443393.29)/2,
+	'C4_freq_0' 		: 443416.22,
+	'C4_freq_1_m1' 		: 416815.78,
 
-	'C4_Ren_tau_m1'    :   [6.36e-6], #6.52e-6
+	'C4_Ren_tau_m1'    :   [6.384e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [96.77] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-100.61] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
@@ -331,7 +331,7 @@ cfg['protocols'][name]['AdwinSSRO+MBI']={
 
 	#Repump after succesfull MBI
 	'repump_after_MBI_duration' :           [50],
-	'repump_after_MBI_A_amplitude':         [18e-9],  #18e-9
+	'repump_after_MBI_A_amplitude':         [30e-9],  #18e-9
 	'repump_after_MBI_E_amplitude':         [0e-9],
 
 	#MBI parameters
@@ -384,8 +384,8 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		'min_dec_tau'         :     2.0e-6,#2.1e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
 		'max_dec_tau'         :     2.5e-6,#2.4e-6,#0.2e-6,#2.5e-6
 		'dec_pulse_multiple'  :     4,      #4.
-		'min_dec_duration'	  :		2.0e-6,
-		'max_dec_duration'	  :		2.5e-6,
+		# 'min_dec_duration'	  :		2.0e-6,
+		# 'max_dec_duration'	  :		2.5e-6,
 		# Memory entanglement sequence parameters
 		'optical_pi_AOM_amplitude' :     0.5,
 		'optical_pi_AOM_duration' :      200e-9,
@@ -434,8 +434,8 @@ cfg['protocols'][name]['pulses'] = {
 
     	### composite pulses
 
-    	'BB1_fast_pi_amp':			0.802,#0.429,#0.604,
-    	'BB1_fast_pi_duration':		90e-9,#170e-9,#200e-9,#hermite_pi_length,
+    	'BB1_fast_pi_amp':			0.529,#0.604,
+    	'BB1_fast_pi_duration':		130e-9,#200e-9,#hermite_pi_length,
 
 
     	# Second mw source
@@ -457,7 +457,7 @@ cfg['protocols'][name]['pulses'] = {
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
     	'aom_risetime'               : 28e-9, #17e-9
-    	'aom_amplitude'              : 0.655, #CR 31   AR 2016-05-17
+    	'aom_amplitude'              : 0.431, #CR 31   AR 2016-05-26
 }
 
 cfg['protocols'][name]['cr_linescan'] = {

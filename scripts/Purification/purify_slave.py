@@ -48,6 +48,7 @@ class purify_single_setup(DD.MBI_C13):
         # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
 
         #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
+
         qt.msleep(0.5)
 
         for i in range(10):
@@ -71,6 +72,7 @@ class purify_single_setup(DD.MBI_C13):
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
         DD.MBI_C13.autoconfig(self)
+
         self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration'])*1e-6+50e-6
 
         # add values from AWG calibrations
@@ -285,9 +287,9 @@ class purify_single_setup(DD.MBI_C13):
         # generate the list of gates in the remote setting
         carbon_init_seq = DD.MBI_C13.initialize_carbon_sequence(self,go_to_element = 'start',
                     prefix = 'C_Init', pt=0,
-                    addressed_carbon = 9, initialization_method = self.params['carbon_init_method'])
+                    addressed_carbon = 9,initialization_method = self.params['carbon_init_method'])
         # calculate remote sequence duration
-        seq_duration = self.calculate_sequence_duration(carbon_init_seq,**kw)
+        seq_duration = self.calculate_sequence_duration(carbon_init_seq,)
         
         #restore actual msmt params.
         self.restore_msmt_parameters()
@@ -343,7 +345,9 @@ class purify_single_setup(DD.MBI_C13):
         
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
-
+        # print master_seq_duration*1e6,slave_seq_duration*1e6
+        # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
+        
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
@@ -354,6 +358,9 @@ class purify_single_setup(DD.MBI_C13):
 
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
 
+        # print 'after calculating', self.params['Carbon_init_RO_wait']
+
+        ### prepare the actual sequence with adjusted trigger length.
         seq = DD.MBI_C13.initialize_carbon_sequence(self,**kw)
 
         ### restore the old value

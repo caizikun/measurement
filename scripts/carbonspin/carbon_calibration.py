@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -43,7 +43,7 @@ f_ms0 = True
 
 f_ms1 = True
 
-self_phase_calibration = True
+self_phase_calibration = False
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
@@ -474,7 +474,7 @@ if n == 1 and f_ms0:
 
 
 if n == 1 and self_phase_calibration:
-    print 'Calibrate extra phase for gate for all 3 carbon spins'
+    print 'Calibrate self phases for gates'
 
     #set all to zero to start with
     for c in carbons:

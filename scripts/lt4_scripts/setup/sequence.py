@@ -28,7 +28,7 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
 
 # marker channels
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=268e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
+    high=2.0, low=0, offset=0., delay=256e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
 qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHarp Sync
     high=2.0, low=0, offset=0., delay=102e-9, active=True) #XX plug in/ calibrate delay
 

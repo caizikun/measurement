@@ -41,7 +41,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
     m.params['repetitions'] = 600 if multiplicity == 1 else 500
-    rng = 0.2 if multiplicity == 1 else 0.03
+    rng = 0.2 if multiplicity == 1 else 0.05
 
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
@@ -363,7 +363,7 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    #calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 31, debug = False, mw2=False)
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =15, debug = False, mw2=False)
     #sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)

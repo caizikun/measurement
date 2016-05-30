@@ -3289,34 +3289,11 @@ class SimpleDecoupling(DynamicalDecoupling):
             simple_el_dec.tau = tau_list[pt]
             simple_el_dec.prefix = 'electron'
             simple_el_dec.scheme = self.params['Decoupling_sequence_scheme']
-        
-            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
-            ## TODO Find a better way to implement it? Better script?
-            try:
-                self.params['DD_in_eigenstate']
-            except:
-                pass
-            else:
-                if self.params['DD_in_eigenstate']:
-                    simple_el_dec.N = 32
-                    simple_el_dec.prefix = 'electron_'+ str(Number_of_pulses[pt])
-                else:
-                    pass
 
 
             ## Generate the decoupling elements
             self.generate_decoupling_sequence_elements(simple_el_dec)
 
-            ## MAB 20150331 Implemented to do DD starting with electron in eigenstate.
-            try:
-                self.params['DD_in_eigenstate']
-            except:
-                pass
-            else:
-                if self.params['DD_in_eigenstate']:
-                    simple_el_dec.reps = divmod(Number_of_pulses[pt],simple_el_dec.N)[0]
-                else:
-                    pass
 
             #In case single block used inital and final pulse no
             if simple_el_dec.scheme == 'single_block':
@@ -3330,8 +3307,6 @@ class SimpleDecoupling(DynamicalDecoupling):
 
             else:
                 #Generate the start and end pulse
-                print 'Initial_pulse'
-                print self.params['Initial_Pulse']
                 initial_Pi2.Gate_operation = self.params['Initial_Pulse']
                 
                 #if np.mod(pt,2)==1:
@@ -3356,6 +3331,12 @@ class SimpleDecoupling(DynamicalDecoupling):
                 self.generate_electron_gate_element(initial_Pi2)
                 self.generate_electron_gate_element(final_Pi2)
 
+            if self.params['DD_in_eigenstate']:
+                simple_el_dec.wait_for_trigger = True
+                # wait_gate = Gate('Sample_cooldown_'+str(pt),'passive_elt',wait_time = 50e-3)
+                # self.generate_passive_wait_element(wait_gate)
+                gate_seq = [simple_el_dec,wait_gate]
+
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq,explicit=False)
 
@@ -3365,17 +3346,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 combined_seq.append_element(seq_el)
 
         if upload:
-            # print 'uploading list of elements'
-            # qt.pulsar.upload(*combined_list_of_elements)
             print ' uploading sequence'
-            # qt.pulsar.program_sequence(combined_seq)
-            # print 'combined_list_of_elements'
-            # for i in np.arange(len(combined_list_of_elements)):
-            #     print str(i),' = ',combined_list_of_elements[i].name
-            # print 'combined_seq'
-            # for i in np.arange(len(combined_seq.elements)):
-            #     print str(i),' = ',combined_seq.elements[i]['wfname'] 
-            #print 'combined_seq', combined_list_of_elements
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
         else:
             print 'upload = false, no sequence uploaded to AWG'

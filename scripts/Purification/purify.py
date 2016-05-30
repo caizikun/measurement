@@ -298,6 +298,68 @@ class purify(PQPurifyMeasurement):
         self.repump_aom.turn_off()
 
 
+def load_TH_params(m):
+    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
+    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       0
+    m.params['MAX_SYNC_BIN'] =       15e3
+    m.params['MIN_HIST_SYNC_BIN'] =  1
+    m.params['MAX_HIST_SYNC_BIN'] =  15000
+    m.params['TTTR_RepetitiveReadouts'] =  10 #
+    m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+    m.params['measurement_abort_check_interval']    = 2. #sec
+    m.params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
+    m.params['use_live_marker_filter']=False
+
+
+def MW_Position(name,debug = False,upload_only=False):
+    """
+    Initializes the electron in ms = -1 
+    Put a very long repumper. Leave one MW pi pulse to find the microwave position.
+    THIS MEASUREMENT RUNS EXCLUSIVELY ON THE TIMEHARP!
+    NK 2016
+    """
+
+    m = purify(name)
+
+    load_TH_params(m)
+    sweep_purification.prepare(m)
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 2000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    
+    m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
+    m.params['input_el_state'] = 'mZ'
+    m.params['MW_during_LDE'] = 1
+    # m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
+    # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    print 'This is the duration and amp',m.params['Hermite_pi_amp'],m.params['Hermite_pi_length']
+    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['LDE_attempts'] = 250
+
+    m.params['LDE_SP_delay'] = 0e-6
+
+
+    # m.params['Hermite_pi_amp'] = 0
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_SP_duration'
+    print 'sweeping the', m.params['general_sweep_name']
+    # m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
+    m.params['general_sweep_pts'] = np.array([2e-6])
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
+
+    ### upload and run
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def tail_sweep(name,debug = True,upload_only=True):
     """
@@ -307,9 +369,9 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.prepare(m)
 
     ### general params
-    pts = 3
+    pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 50000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -318,7 +380,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     
 
 
-    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
@@ -339,7 +401,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(0.1,1.0,pts)
+        m.params['general_sweep_pts'] = np.array([0.431])#np.linspace(0.1,1.0,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -396,7 +458,7 @@ def PurifyYY(name):
 
 if __name__ == '__main__':
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
     # SPCorrs(name+'_SPCorrs',debug = False,upload_only=False)
-    # repump_speed(name+'_repump_speed')
+    MW_Position(name+'_MW_position',upload_only=False)
     ######

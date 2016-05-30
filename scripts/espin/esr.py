@@ -14,16 +14,16 @@ green_power = 20e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
 
-if False: #m1 transition
-    range_f     =  0.06 # 0.03 in GHz
+if True: #m1 transition
+    range_f     =  0.01 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -15#-13      #in dBm
-    center_f    =  1.75#4.055#3.95#1.74666#2.828#2.861
+    mw_power    = -17#-13      #in dBm
+    center_f    =  1.715#4.055#3.95#1.74666#2.828#2.861
 else: #p1 transition
-    range_f     =  0.06 # 0.03 in GHz
+    range_f     =  0.01 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -14     #in dBm
-    center_f    = 4.02
+    mw_power    = -13     #in dBm
+    center_f    = 4.043#25
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
