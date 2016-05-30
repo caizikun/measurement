@@ -137,7 +137,7 @@ if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #darkesrp1(SAMPLE_CFG)
     #darkesr(SAMPLE_CFG, range=5e6, m1_transition = False, pulse_amp = 1)
-    darkesr(SAMPLE_CFG, range=5e6, m1_transition = True)
+    darkesr(SAMPLE_CFG, range=5e6, m1_transition = False)
     # Range must be smaller than 30MHz because freq sweep is done via ssb mod
     # pulse_amp = 1 is good for first searching
     

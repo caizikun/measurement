@@ -41,7 +41,7 @@ joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.1e-6
 joint_params['master_max_dec_tau'] = 2.4e-6
 joint_params['master_dec_pulse_multiple'] = 4
-joint_params['master_carbon_init_RO_wait'] = 80e-6
+joint_params['master_carbon_init_RO_wait'] = 90e-6
 
 
 ### parameters for LDE timing:

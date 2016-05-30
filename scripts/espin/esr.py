@@ -22,14 +22,14 @@ if False: #m1 transition
 else: #p1 transition
     range_f     =  0.06 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -10     #in dBm
+    mw_power    = -14     #in dBm
     center_f    = 4.02
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SGS100']
-# ins_smb = qt.instruments['SMB100']
+#ins_smb = qt.instruments['SGS100']
+ins_smb = qt.instruments['SMB100']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments

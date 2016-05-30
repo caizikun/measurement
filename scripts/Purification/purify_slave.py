@@ -285,7 +285,7 @@ class purify_single_setup(DD.MBI_C13):
         # generate the list of gates in the remote setting
         carbon_init_seq = DD.MBI_C13.initialize_carbon_sequence(self,go_to_element = 'start',
                     prefix = 'C_Init', pt=0,
-                    addressed_carbon = 9)
+                    addressed_carbon = 9, initialization_method = self.params['carbon_init_method'])
         # calculate remote sequence duration
         seq_duration = self.calculate_sequence_duration(carbon_init_seq,**kw)
         
@@ -338,9 +338,9 @@ class purify_single_setup(DD.MBI_C13):
         store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
 
         # calculate sequence durations 
-        master_seq_duration = self.calculate_C13_init_duration(master = False,verbose=False,**kw)
+        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
         slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
-
+        
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
 

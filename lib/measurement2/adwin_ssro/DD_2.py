@@ -3599,7 +3599,7 @@ class MBI_C13(DynamicalDecoupling):
         self.params['min_dec_duration'] = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
         self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration']+self.params['SP_duration_after_C13'])*1e-6+20e-6
-        print 'RO wait', self.params['Carbon_init_RO_wait']
+
         ### necessary if your setup does not have two microwave sources. NK 12-05-2016
         ### this gives all carbons the same specific transition.
         if not self.params['multiple_source']:
@@ -3983,7 +3983,6 @@ class MBI_C13(DynamicalDecoupling):
         the second conditional gate for swap 
 
         '''
-        
         if type(go_to_element) != str:
             go_to_element = go_to_element.name
    
