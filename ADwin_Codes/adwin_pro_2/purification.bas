@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,358,358,580,580,649,649,841,842,843,850,851,852
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,358,358,582,582,651,651,844,845,846,853,854,855
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -406,15 +406,16 @@ EVENT:
                 'send combined success and then wait for confirmation
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
+              ELSE
+                ' no signal received. Did the connection time out?
+                if (timer > adwin_comm_timeout_cycles) then
+                  inc(n_of_comm_timeouts) ' give to par for local debugging
+                  'PAR_1 = n_of_comm_timeouts ' for debugging
+                  combined_success = 0 ' just to be sure
+                  adwin_comm_done = 1 ' below: reset everything and go on
+                endif                
               ENDIF
-              ' no signal received. Did the connection time out?
-              if (timer > adwin_comm_timeout_cycles) then
-                inc(n_of_comm_timeouts) ' give to par for local debugging
-                'PAR_1 = n_of_comm_timeouts ' for debugging
-                combined_success = 0 ' just to be sure
-                adwin_comm_done = 1 ' below: reset everything and go on
-              endif                
-            
+              
             endif
             
                     
@@ -576,12 +577,13 @@ EVENT:
           ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
           if (is_two_setup_experiment = 0) then
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            CPU_SLEEP(16) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
           else 
             IF (is_master>0) THEN ' trigger own and remote AWG
               'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
               P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
@@ -739,6 +741,7 @@ EVENT:
             IF (is_master>0) THEN ' trigger own and remote AWG
               'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
               P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) 
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel OR 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
@@ -926,6 +929,7 @@ EVENT:
             IF (is_master>0) THEN ' trigger own and remote AWG
               'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
               P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+              CPU_SLEEP(master_slave_awg_trigger_delay) 
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
               'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering

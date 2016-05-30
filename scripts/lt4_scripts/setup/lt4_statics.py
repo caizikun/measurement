@@ -15,6 +15,6 @@ pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SGS100']
 pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
 pulsar_msmt.PulsarMeasurement.physical_adwin = qt.instruments['physical_adwin']
 
-#pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### replace by HydraHarp!
+# pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### replace by HydraHarp!
 pq_measurement.PQMeasurement.PQ_ins=qt.instruments['HH_400']
 #pq_threaded_measurement.PQ_threaded_Measurement.PQ_ins=qt.instruments['TH_260N']

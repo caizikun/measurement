@@ -41,7 +41,7 @@ joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.1e-6
 joint_params['master_max_dec_tau'] = 2.4e-6
 joint_params['master_dec_pulse_multiple'] = 4
-joint_params['master_carbon_init_RO_wait'] = 80e-6
+joint_params['master_carbon_init_RO_wait'] = 90e-6
 
 
 ### parameters for LDE timing:
@@ -55,7 +55,6 @@ joint_params['opt_pulse_separation']    = 250e-9 #350e-9 changed for higher visi
 joint_params['LDE_attempts'] = 250 # 1000 for tpqi seems ok
 
 joint_params['LDE_element_length'] = 7e-6 #DO NOT CHANGE THIS
-### mw timing for LDE and for keeping coherence afterwards
 
 
 #change params to LT3 and LT4 later on.

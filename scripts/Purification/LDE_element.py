@@ -30,6 +30,9 @@ def _create_mw_pulses(msmt,Gate):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
 
+    ### only use this if you want two proper pi pulses.
+    # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
+
 def _create_laser_pulses(msmt,Gate):
     Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
@@ -113,10 +116,11 @@ def generate_LDE_elt(msmt,Gate, **kw):
         amplitude = 0, 
         length = msmt.joint_params['initial_delay']),
     name = 'initial_delay')
-
+    
     e.add(pulse.cp( Gate.AWG_repump,
                     length          = msmt.params['LDE_SP_duration'], 
                     amplitude       = 1.0), 
+                    start           = msmt.params['LDE_SP_delay'],
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
 
