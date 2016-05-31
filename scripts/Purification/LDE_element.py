@@ -56,15 +56,25 @@ def _create_laser_pulses(msmt,Gate):
 
 def _create_syncs_and_triggers(msmt,Gate):
     
-    Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
+    #### hydraharp/timeharp synchronization
+    if setup == 'lt4' and msmt.params['is_two_setup_experiment'] == 1:
+        Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 0)
+    else:
+        Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
-    if setup == 'lt1' or setup == 'lt4': #XXX get rid of LT1 later on.
+    if setup == 'lt3':
+        Gate.LT3HHsync = pulse.SquarePulse(channel = 'HHsync',length = 50e-9, amplitude = 1.0)
+
+
+    # PLU comm
+    if setup == 'lt4': #XXX get rid of LT1 later on.
         plu_amp = 1.0
     else:
         plu_amp = 0.0
     Gate.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = plu_amp, 
                                     length = msmt.params['PLU_gate_duration'])
 
+    # adwin comm
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 2.5e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
@@ -133,6 +143,10 @@ def generate_LDE_elt(msmt,Gate, **kw):
         e.add(Gate.HHsync,
             refpulse = 'initial_delay')
 
+        ### one awg has to sync all yime-tagging devices.
+        if setup == 'LT3' and msmt.params['is_two_setup_experiment'] > 0:
+            e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
+
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay')
@@ -144,38 +158,57 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #3 MW pulses
     if msmt.params['MW_during_LDE'] == 1: # and not ('LDE2' in Gate.name):
         
-        # print 'this is the x pulse start'
-        # x_start = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']-msmt.params['SP_AOM_turn_on_delay'])
-        # print x_start
-        # print msmt.joint_params['LDE_element_length'] - x_start
-
+        # we choose to build the MW pulses up from the end of the element.
+        # this is more convenient when trying to preserve the coherence of the electron over several elements
+        # it however becomes more complicated from a programming point of view.
+        
         # MW pi pulse
-        e.add(Gate.mw_X,
-            start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
-            refpulse        = 'initial_delay',#'MW_Theta',
-            refpoint        = 'end',#'end',
-            refpoint_new    = 'center',#'end',
-            name            = 'MW_pi')
-
-        #mw pi/2 pulse or 'theta'
-        e.add(Gate.mw_first_pulse,
-            start           = -msmt.params['LDE_decouple_time'],
-            refpulse        = 'MW_pi',#'opt pi 1', 
-            refpoint        = 'center', 
-            refpoint_new    = 'center',
-            name            = 'MW_Theta')
-
-        #final MW RO rotation
         if msmt.joint_params['do_final_mw_LDE'] == 1:
+            # the last pulse is defined to come in 500 ns before the end of the LDE element
             e.add(pulse.cp(Gate.mw_pi2,
                 phase           = msmt.joint_params['LDE_final_mw_phase']),
-                start           = msmt.params['LDE_decouple_time'],
+                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-500e-9,
                 refpulse        = 'MW_pi',
-                refpoint        = 'start',
-                refpoint_new    = 'start',
+                refpoint        = 'end',
+                refpoint_new    = 'center',
                 name            = 'MW_RO_rotation')
 
-    ### we still need the first MW pulse as a reference for the optical pi pulses.
+            e.add(Gate.mw_X,
+                start           = -msmt.params['LDE_decouple_time'],
+                refpulse        = 'MW_RO_rotation',#'MW_Theta',
+                refpoint        = 'center',#'end',
+                refpoint_new    = 'center',#'end',
+                name            = 'MW_pi')
+
+            #mw pi/2 pulse or 'theta'
+            e.add(Gate.mw_first_pulse,
+                start           = -msmt.params['LDE_decouple_time'],
+                refpulse        = 'MW_pi',#'opt pi 1', 
+                refpoint        = 'center', 
+                refpoint_new    = 'center',
+                name            = 'MW_Theta')
+
+
+        else: # no final mw duration = no barret & kok
+            e.add(Gate.mw_X,
+                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
+                refpulse        = 'initial_delay',#'MW_Theta',
+                refpoint        = 'end',#'end',
+                refpoint_new    = 'center',#'end',
+                name            = 'MW_pi')
+
+            #mw pi/2 pulse or 'theta'
+            e.add(Gate.mw_first_pulse,
+                start           = -msmt.params['LDE_decouple_time'],
+                refpulse        = 'MW_pi',#'opt pi 1', 
+                refpoint        = 'center', 
+                refpoint_new    = 'center',
+                name            = 'MW_Theta')
+
+
+
+
+    ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
     else:
         # MW pi pulse
         e.add(pulse.cp(Gate.mw_X,amplitude=0),
@@ -282,74 +315,4 @@ def _LDE_rephasing_elt(msmt,Gate):
 
     return e
 
-### communication for start, finish & success elements / used in two setup sequences with mutual AWG triggering
-def _master_sequence_start_element(msmt,Gate):
-    """
-    first element of a two-setup sequence. Sends a trigger to AWG lt3
-    """
-    _create_wait_times(Gate)
-    _create_syncs_and_triggers(msmt,Gate)
-    e = element.Element('LDE_start', pulsar = qt.pulsar)
-    e.append(Gate.T_sync)
-    ref_p=e.append(Gate.HHsync)
-    e.add(pulse.cp(Gate.T_sync, length=msmt.params['AWG_wait_for_lt3_start']),
-        refpulse=ref_p,
-        refpoint='start'
-        )
-    ref_p=e.add(pulse.cp(Gate.plu_gate, length=50e-9), refpulse=ref_p, start=100e-9)
-    ref_p=e.add(pulse.cp(Gate.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
-    ref_p=e.add(pulse.cp(Gate.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
-    ref_p=e.add(pulse.cp(Gate.plu_gate, length=50e-9), refpulse=ref_p, start=50e-9)
-    return e
-
-def _slave_sequence_start_element(Gate):
-    """
-    first element of a two-setup entangling sequence. Sends waits an additional time after receiving the trigger from lt4, before starting lde
-    """
-    e = element.Element('lt3_start', pulsar = qt.pulsar)
-    e.append(pulse.cp(Gate.SP_pulse, length=1e-6, amplitude = 0))
-    return e
-
-def _lt3_entanglement_event_element(Gate):
-    
-    e= element.Element('Entanglement trigger', pulsar=qt.pulsar)
-
-    e.append(pulse.cp(Gate.TIQ, length=1e-6))
-    # e.append(Gate.adwin_success_pulse)
-    return e
-
-def _lt3_sequence_finished_element(Gate):
-    """
-    last element of a two-setup entangling sequence. Sends a trigger to ADwin lt3.
-    """
-    e = element.Element('LDE_finished', pulsar = qt.pulsar)
-    e.append(Gate.TIQ)
-    e.append(Gate.adwin_trigger_pulse)
-    return e
-
-def _lt4_entanglement_event_element(Gate):
-    
-    e= element.Element('Entanglement event element', pulsar=qt.pulsar)
-
-    e.append(pulse.cp(Gate.TIQ, length=1e-6))
-    # e.append(Gate.adwin_success_pulse)
-    return e
-
-def _lt4_sequence_finished_element(Gate):
-    """
-    last element of a two-setup entangling sequence. Sends a trigger to ADwin lt4.
-    """
-    e = element.Element('LDE_finished', pulsar = qt.pulsar)
-    e.append(Gate.TIQ)
-    e.append(Gate.adwin_trigger_pulse)
-    return e
-
-def _lt4_wait_1us_element(Gate):
-    """
-    A 1us empty element we can use to replace 'real' elements for certain modes.
-    """
-    e = element.Element('wait_1_us', 
-        pulsar = qt.pulsar)
-    e.append(pulse.cp(Gate.T, length=1e-6))
-    return e
 

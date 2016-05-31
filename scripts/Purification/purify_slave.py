@@ -406,15 +406,6 @@ class purify_single_setup(DD.MBI_C13):
         return seq
 
 
-    def generate_AWG_sync_elt(self,Gate):
-        ### used in non-local msmts syncs master and slave AWGs
-        ### uses the scheme 'single_element'
-        
-        #if self.joint_params['master_setup'] == qt.current_setup:
-        Gate.elements = [LDE_elt._master_sequence_start_element(self,Gate)]
-        Gate.wait_for_trigger = True
-        # else: not used!
-        #     Gate.elements = [LDE_elt._slave_Sequence_start_element]
 
     def generate_LDE_rephasing_elt(self,Gate):
         ### used in non-local msmts syncs master and slave AWGs
@@ -470,14 +461,7 @@ class purify_single_setup(DD.MBI_C13):
 
             gate_seq = []
 
-
-            ### generate all gates within the sequence
-            AWG_sync_wait = DD.Gate('AWG_sync','single_element',wait_time = self.params['AWG_wait_for_lt3_start'] )
-            AWG_sync_wait.scheme = 'single_element'
-            self.generate_AWG_sync_elt(AWG_sync_wait)
-
-
-            
+      
 
             ### LDE elements: WE have two LDE elements with potentially different functions
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')

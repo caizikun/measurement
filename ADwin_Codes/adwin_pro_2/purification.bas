@@ -300,7 +300,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   if (do_carbon_readout = 1) then
     mode_after_purification = 9 ' Carbon tomography
   else
-    mode_after_purification = 11 ' SSRO
+    mode_after_purification = 11 ' wait for trigger then do SSRO
   endif
   
   IF (do_purifying_gate = 1) THEN
@@ -992,18 +992,30 @@ EVENT:
       CASE 10 'store the result of the tomography
         DATA_106[repetition_counter+1] = SSRO_result
         mode = 12 'go to CR check
-        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12!!!!!
+        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 is be used to init everything without previous success!!!!!
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
-        mode = 200
-        timer = -1
-        is_mbi_readout = 0
-        success_mode_after_SSRO = 12
-        fail_mode_after_SSRO = 12
-        success_of_SSRO_is_ms0 = 1        
-        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12!!!!!
-                
+        ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.
+        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
+          if (awg_done_was_low>0) then
+            mode = 200
+            timer = -1
+            is_mbi_readout = 0
+            success_mode_after_SSRO = 12
+            fail_mode_after_SSRO = 12
+            success_of_SSRO_is_ms0 = 1        
+            INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 is be used to init everything without previous success!!!!!
+          endif
+          awg_done_was_low = 0
+        ELSE ' AWG not done yet
+          awg_done_was_low = 1
+          IF ( timer > wait_for_awg_done_timeout_cycles) THEN
+            inc(PAR_80) ' signal the we have an awg timeout
+            END ' terminate the process
+          ENDIF  
+        ENDIF
         
+                              
       CASE 12 ' reinit all variables, increase number of repetitions and go to cr check
 
         Par_73 = repetition_counter ' write to PAR

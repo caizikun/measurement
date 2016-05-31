@@ -742,8 +742,8 @@ if __name__ == '__main__':
     #sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False)
-    sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=True)
+    #sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
