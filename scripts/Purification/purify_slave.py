@@ -342,7 +342,7 @@ class purify_single_setup(DD.MBI_C13):
         # calculate sequence durations 
         master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
         slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
-
+        
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
         # print master_seq_duration*1e6,slave_seq_duration*1e6
@@ -629,7 +629,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 # print 'LDE1 reps',LDE1.reps
                 ### append last adwin synchro element 
-                if LDE1.reps > 1:
+                if not LDE1.is_final:
                     gate_seq.append(LDE1_final)
 
                 if self.params['do_swap_onto_carbon'] > 0:

@@ -313,6 +313,17 @@ def load_TH_params(m):
     m.params['use_live_marker_filter']=False
 
 
+def load_BK_params(m):
+    # m.params['']
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['LDE_decouple_time'] = 0.5e-6
+    m.joint_params['opt_pulse_separation'] = 0.5e-6 
+    m.joint_params['do_final_mw_LDE'] = 1
+
+    #### compensate a change in plu windows.
+    ### insert parameter adjustment here.
+
+
 def MW_Position(name,debug = False,upload_only=False):
     """
     Initializes the electron in ms = -1 
@@ -410,12 +421,46 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def SPCorrs(name, debug = False, upload_only = False):
+def SPCorrsPuri(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
     m = purify(name)
+    load_TH_params(m)
     sweep_purification.prepare(m)
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 50000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.params['PLU_during_LDE'] = 0
+    m.joint_params['LDE_attempts'] = 3
+
+    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+    ### this can also be altered to the actual theta pulse by negating the if statement
+    if True:
+        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
+    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use one EOM only
+
+    ### upload
+
+    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+
+def SPCorrsBK(name, debug = False, upload_only = False):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    """
+    m = purify(name)
+    load_TH_params(m)
+    sweep_purification.prepare(m)
+    load_BK_params(m)
+    m.joint_params['do_final_mw_LDE'] = 0
 
     ### general params
     m.params['pts'] = 1
@@ -425,20 +470,19 @@ def SPCorrs(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 1
+    m.params['LDE_final_mw_amplitude'] = 0
+    m.joint_params['opt_pi_pulses'] = 2
 
     ### this can also be altered to the actual theta pulse by negating the if statement
     if True:
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use only one EOM
+    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use one EOM only
 
     ### upload
 
     sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
-
-
 
 def EntangleZZ(name):
     pass
@@ -458,7 +502,11 @@ def PurifyYY(name):
 
 if __name__ == '__main__':
 
+
+    # MW_Position(name+'_MW_position',upload_only=False)
+
     # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
-    # SPCorrs(name+'_SPCorrs',debug = False,upload_only=False)
-    MW_Position(name+'_MW_position',upload_only=False)
+
+    SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=False)
+    # SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=True)
     ######

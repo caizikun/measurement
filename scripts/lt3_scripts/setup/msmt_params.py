@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 100e-9
-	hermite_pi_amp =  0.721 # SK 21/04
-	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.523 # SK 21/04 
+	hermite_pi_length = 80e-9
+	hermite_pi_amp = 0.812#0.662#0.562 # PH 21/04
+	hermite_pi2_length = 45e-9
+	hermite_pi2_amp = 0.460 # SK 21/04 
 
 	square_pi_length = 18e-9
 	square_pi_amp = 0.799 # 02-19
@@ -88,7 +88,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       15e-6,# 20e-6
+		'green_repump_amplitude':       25e-6,# 15e-6
 		'green_repump_duration':        30, # maximum is 1000 for CR_mod
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -100,7 +100,7 @@ cfg['protocols']['AdwinSSRO']={
 		'A_off_voltage':                -0.0,
 		'yellow_repump_amplitude':      10e-9,#42e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
-		'yellow_CR_repump':             1,
+		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
 		'SSRO_stop_after_first_photon':	1,
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 328.24,#4.162, #adwin needs positive values
-    'phase_per_compensation_repetition': 13.154, # adwin needs positive values
-    'total_phase_offset_after_sequence': 117., #68.386,#42.328,
+    'phase_per_sequence_repetition'    : 329.06,#4.162, #adwin needs positive values
+    'phase_per_compensation_repetition': 13.12, # adwin needs positive values
+    'total_phase_offset_after_sequence': 113., #68.386,#42.328,
 
 	#########################
 	#####     SIL1      #####
@@ -267,7 +267,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447940.23,
+	'C1_freq_0' 		: 447926.26,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -275,12 +275,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447940.23,
-	'C1_freq_1_p1' 		: 425530.23,
+	'C1_freq_0' 		: 447926.26,
+	'C1_freq_1_p1' 		: 425513.87,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [55.85] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [58.67] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
 	'C1_unc_tau_p1'    :   [9.132e-6],
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.5
+        'aom_amplitude':					0.2
 }
 
 

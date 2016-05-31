@@ -3954,7 +3954,6 @@ class MBI_C13(DynamicalDecoupling):
         the second conditional gate for swap 
 
         '''
-        
         if type(go_to_element) != str:
             go_to_element = go_to_element.name
    

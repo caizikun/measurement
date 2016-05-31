@@ -28,8 +28,8 @@ else: #p1 transition
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SGS100']
-# ins_smb = qt.instruments['SMB100']
+#ins_smb = qt.instruments['SGS100']
+ins_smb = qt.instruments['SMB100']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments

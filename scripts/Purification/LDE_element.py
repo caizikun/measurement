@@ -227,6 +227,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             name            = 'MW_Theta')
 
     #4 opt. pi pulses
+    # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
     for i in range(msmt.joint_params['opt_pi_pulses']):
         name = 'opt pi {}'.format(i+1)
         refpulse = 'opt pi {}'.format(i) if i > 0 else 'MW_Theta'
@@ -279,8 +280,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # uncomment for thourogh checks.
     # e.print_overview()
 
-    if e_len != msmt.joint_params['LDE_element_length']:
-        raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
+    # if e_len != msmt.joint_params['LDE_element_length']:
+    #     raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
 
 
 def _LDE_rephasing_elt(msmt,Gate):

@@ -388,6 +388,10 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
 
     turn_all_sequence_elements_off(m)
 
+    ### sequence specific parameters
+    m.params['is_two_setup_experiment'] = 0
+    m.params['PLU_during_LDE'] = 0
+
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1 # 
@@ -413,7 +417,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','mX','Y','mY','Z','mZ']
+    el_state_list = ['X','mX','Z']
     
 
     x_phase = m.params['X_phase']
@@ -540,7 +544,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 40
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -567,8 +571,8 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
 
     ### calculate sweep array
-    minReps = 2
-    maxReps = 90.
+    minReps = 1
+    maxReps = 120.
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -580,7 +584,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    ### for the analyis
+    ### for the analyis - phase detuning is always zero
     m.params['phase_detuning'] = 0 
                      
     ### loop over tomography bases and RO directions upload & run
@@ -636,6 +640,9 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
+    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    m.params['mw_first_pulse_amp'] = 0
+
     # m.params['mw_first_pulse_phase'] = m.params['Y_phase']
     # m.params['mw_first_pulse_amp'] = 0.698
     # m.params['mw_first_pulse_length'] = 114e-9
@@ -739,7 +746,7 @@ if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
 
-    #sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=True)
@@ -747,10 +754,10 @@ if __name__ == '__main__':
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    #calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
-    # apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
