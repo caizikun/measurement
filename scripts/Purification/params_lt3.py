@@ -29,7 +29,6 @@ params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] = 0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
-# params_lt3['opt_pulse_start']           = 2.e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt3['MW_opt_puls1_separation']   = 100e-9 # was 22 e-9. needs to be adjusted.
 
 
@@ -96,7 +95,7 @@ params_lt3['PLU_4_delay']             = 150e-9
 params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
-
+params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 ### Everything carbon
 
 params_lt3['carbon']                        = 1

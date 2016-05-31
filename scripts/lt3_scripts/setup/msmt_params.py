@@ -88,7 +88,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       15e-6,# 20e-6
+		'green_repump_amplitude':       25e-6,# 15e-6
 		'green_repump_duration':        30, # maximum is 1000 for CR_mod
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -100,7 +100,7 @@ cfg['protocols']['AdwinSSRO']={
 		'A_off_voltage':                -0.0,
 		'yellow_repump_amplitude':      10e-9,#42e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
-		'yellow_CR_repump':             1,
+		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
 		'SSRO_stop_after_first_photon':	1,
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.5
+        'aom_amplitude':					0.2
 }
 
 

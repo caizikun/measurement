@@ -645,7 +645,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 # print 'LDE1 reps',LDE1.reps
                 ### append last adwin synchro element 
-                if LDE1.reps > 1:
+                if not LDE1.is_final:
                     gate_seq.append(LDE1_final)
 
                 if self.params['do_swap_onto_carbon'] > 0:
