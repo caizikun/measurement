@@ -422,11 +422,11 @@ class purify_single_setup(DD.MBI_C13):
         """
 
         LDE_elt.generate_LDE_elt(self,Gate)
-
+        print 'generating LDE'
         if Gate.reps == 1:
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
                 Gate.event_jump = 'next'
-                Gate.go_to = 'next' 
+                Gate.go_to = 'start' 
             else:
                 Gate.event_jump = 'next'
                 Gate.go_to = 'start'

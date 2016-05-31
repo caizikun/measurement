@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,200,200,342,342,343,343,358,358,582,582,651,651,844,845,846,853,854,855
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,339,339,340,340,355,355,579,579,648,648,825,826,827,834,835,836
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -101,7 +101,6 @@ DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_even
 DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
 dim sync_trigger_counter_channel, sync_trigger_counter_pattern as long
 DIM invalid_data_marker_do_channel AS LONG
-DIM detector_of_last_entanglement, same_detector as LONG
 
 ' MBI
 dim mbi_timer, trying_mbi as long
@@ -160,8 +159,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   AWG_sequence_repetitions_second_attempt =0
   phase_compensation_repetitions =0
   required_phase_compensation_repetitions =0
-  detector_of_last_entanglement = 0
-  same_detector =0 
   phase_to_compensate =0
   total_phase_offset_after_sequence =0
   
@@ -695,12 +692,7 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          IF ((digin_this_cycle AND PLU_which_di_pattern)>0) THEN
-            detector_of_last_entanglement = 1 'remember which detector clicked
-          ELSE
-            detector_of_last_entanglement = 0 'remember which detector clicked
-          ENDIF
-          DATA_102[repetition_counter+1]= detector_of_last_entanglement ' store which detector has clicked for SPCORR mm
+          DATA_102[repetition_counter+1]= (digin_this_cycle AND PLU_which_di_pattern) ' store which detector has clicked for SPCORR mm
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -823,18 +815,7 @@ EVENT:
         IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
           'check whether clicks happened on the same detector
-          same_detector = detector_of_last_entanglement ' remember result of first round
-          IF ((digin_this_cycle AND PLU_which_di_pattern)>0) THEN
-            detector_of_last_entanglement = 1 'remember which detector clicked
-          ELSE
-            detector_of_last_entanglement = 0 'remember which detector clicked
-          ENDIF
-          if (same_detector = detector_of_last_entanglement) THEN ' identical in both rounds
-            same_detector = 1
-          else 'not identical
-            same_detector = 0
-          endif
-          DATA_102[repetition_counter+1] = same_detector 'save to data file
+          DATA_102[repetition_counter+1] = (digin_this_cycle AND PLU_which_di_pattern) 'save to data file
           mode = mode_after_LDE_2 'go on to next case
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
@@ -872,9 +853,6 @@ EVENT:
           awg_repcount_was_low = 0
           phase_compensation_repetitions =0
           phase_to_compensate = total_phase_offset_after_sequence + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
-          if (same_detector = 0) then
-            phase_to_compensate = phase_to_compensate + 180
-          endif
           if (phase_to_compensate > 360) then           ' The built in Mod function works only for integers and takes 0.44 us.
             Do                              
               phase_to_compensate = phase_to_compensate - 360

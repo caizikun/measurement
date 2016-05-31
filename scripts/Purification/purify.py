@@ -436,7 +436,7 @@ def SPCorrsPuri(name, debug = False, upload_only = False):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 3
 
     m.joint_params['opt_pi_pulses'] = 2
@@ -507,6 +507,6 @@ if __name__ == '__main__':
 
     # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
 
-    SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=False)
+    SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=True)
     # SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=True)
     ######
