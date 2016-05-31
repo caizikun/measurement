@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,339,339,340,340,355,355,579,579,648,648,825,826,827,834,835,836
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,339,339,340,340,355,355,579,579,648,648,832,833,834,841,842,843
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -71,7 +71,7 @@ DIM DATA_21[100] AS FLOAT  ' float parameters from python
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
 DIM DATA_100[max_purification_repetitions] AS LONG at DRAM_Extern' Phase_correction_repetitions needed to correct the phase of the carbon 
 DIM DATA_101[max_purification_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
-DIM DATA_102[max_purification_repetitions] AS LONG at DRAM_Extern' Information whether same or opposite detector has clicked (provided by the PLU) 
+DIM DATA_102[max_purification_repetitions] AS LONG at DRAM_Extern' Information which detector has clicked (provided by the PLU) 
 DIM DATA_103[max_purification_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_104[max_purification_repetitions] AS LONG at DRAM_Extern' number of repetitions after swapping until the second succesful entanglement attempt 
 DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts electron readout after purification gate 
@@ -692,7 +692,11 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          DATA_102[repetition_counter+1]= (digin_this_cycle AND PLU_which_di_pattern) ' store which detector has clicked for SPCORR mm
+          if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
+            DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
+          else
+            DATA_102[repetition_counter+1]=2
+          endif
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -814,8 +818,11 @@ EVENT:
         'check the PLU
         IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
-          'check whether clicks happened on the same detector
-          DATA_102[repetition_counter+1] = (digin_this_cycle AND PLU_which_di_pattern) 'save to data file
+          if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
+            DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
+          else
+            DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
+          endif
           mode = mode_after_LDE_2 'go on to next case
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
