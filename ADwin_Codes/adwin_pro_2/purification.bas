@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,340,340,341,341,356,356,581,581,650,650,835,836,837,844,845,846
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -369,13 +369,14 @@ EVENT:
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
         ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
+        inc(par_62)
         if (timer = 0) then ' forget values from previous runs
+          inc(par_65)
           adwin_timeout_requested = 0
           combined_success = 0
           adwin_comm_done = 0
           remote_success = 0
           remote_fail = 0
-
         endif
         
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
@@ -391,7 +392,6 @@ EVENT:
           'previous communication was not successful
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
-          
           if ( (digin_this_cycle AND remote_adwin_di_success_pattern) > 0) then
             remote_success = 1
           endif
@@ -404,9 +404,7 @@ EVENT:
               adwin_comm_done = 1 ' go to next mode in cleanup step below
               wait_time = adwin_comm_safety_cycles ' make sure the other adwin is ready for counting etc.
             else ' own signal not yet received on other side -> send it or wait for slave's signal to decide what to do
-
               IF ((remote_success >0) or (remote_fail >0)) then ' remote signal received: decide whether both setups were successful
-
                 if ((local_success > 0) and (remote_success >0)) then
                   combined_success = 1
                 else
@@ -416,7 +414,7 @@ EVENT:
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
               ELSE
-                ' no signal received. Did the connection time out?
+                ' no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   PAR_1 = n_of_comm_timeouts ' for debugging
@@ -515,7 +513,10 @@ EVENT:
    
 
       CASE 0 'CR check
-        
+        if ((first_CR>0) and (timer = 0)) then
+          inc(par_50)
+        endif
+        inc(par_51)
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
         'first_CR = 0 ' forget for next repetition... is done in cr_mod.inc
@@ -694,12 +695,13 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
-            DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
-          else
-            DATA_102[repetition_counter+1]=2
-          endif
-          par_62 = 666
+          IF (is_master >0) THEN ' plu which only connected on lt4
+            if ((digin_this_cycle AND PLU_which_di_pattern) >0) then
+              DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
+            else
+              DATA_102[repetition_counter+1]=2
+            endif        
+          ENDIF
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -710,9 +712,7 @@ EVENT:
               timer = -1
               if (PLU_during_LDE = 0) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
-                par_65 = 666
               else ' two setups involved: Done means failure of the sequence
-                par_65 = 666
                 mode = 12 ' finalize and go to cr check
                 'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
                 'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -723,7 +723,7 @@ EVENT:
           ELSE ' awg done is low.
             awg_done_was_low = 1
             if( timer > wait_for_awg_done_timeout_cycles) then
-              inc(PAR_80) ' signal the we have an awg timeout
+              inc(PAR_80) ' signal that we have an awg timeout
               END ' terminate the process
             endif
           ENDIF  
@@ -980,8 +980,9 @@ EVENT:
  
       CASE 10 'store the result of the tomography
         DATA_106[repetition_counter+1] = SSRO_result
-        mode = 12 'go to CR check
-        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 is be used to init everything without previous success!!!!!
+        mode = 12 'go to reinit and CR check
+        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
+        first_CR=1 ' we want to store the CR after result in the next run
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
         ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.
@@ -991,13 +992,10 @@ EVENT:
             mode = 200
             timer = -1
             is_mbi_readout = 0
-            success_mode_after_SSRO = 12
-            fail_mode_after_SSRO = 12
-            success_of_SSRO_is_ms0 = 1        
-            INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 is be used to init everything without previous success!!!!!
-            inc(par_50)
+            success_mode_after_SSRO = 10 'used to be 12. Now we also go to case 10 in order to increment the rep counter and set first_CR to 0 before doing the cleanup
+            fail_mode_after_SSRO = 10
+            success_of_SSRO_is_ms0 = 1      
           endif
-
           awg_done_was_low = 0
         ELSE ' AWG not done yet
           awg_done_was_low = 1
@@ -1025,7 +1023,7 @@ EVENT:
         timer = -1
         DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
         
-        first_CR=1 ' we want to store the CR after result in the next run
+
 
     endselect
     

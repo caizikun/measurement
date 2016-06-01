@@ -221,6 +221,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['general_sweep_pts'] = np.linspace(0.0,2.e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
+    m.params['is_two_setup_experiment']=1   #XXXX
 
     ### upload and run
 
