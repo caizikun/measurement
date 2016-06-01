@@ -467,7 +467,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = True
+    m.params['PLU_during_LDE'] = False
     m.joint_params['LDE_attempts'] = 250
 
     m.joint_params['opt_pi_pulses'] = 2

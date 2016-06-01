@@ -219,6 +219,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['general_sweep_pts'] = np.linspace(0.0,2.e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
+    m.params['is_two_setup_experiment']=1   #XXXX
 
     ### upload and run
 
@@ -746,13 +747,13 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
 
 if __name__ == '__main__':
 
-    #repump_speed(name+'_repump_speed',upload_only = False)
+    repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
-    #sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
