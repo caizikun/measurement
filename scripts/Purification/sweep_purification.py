@@ -156,8 +156,9 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_correction']     = 0 
     m.params['do_purifying_gate']       = 0 
     m.params['do_carbon_readout']       = 0 
-    m.params['do_repump_after_LDE2'] = 0
-    m.params['PLU_during_LDE'] = 0
+    m.params['do_repump_after_LDE2']    = 0
+    m.params['PLU_during_LDE']          = 0
+    m.params['is_TPQI']                 = 0
 
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
@@ -166,7 +167,7 @@ def turn_all_sequence_elements_on(m):
     """
     turns all parts of the AWG sequence on. except for do_LDE_1
     Running this function before generating the sequence
-    creates the full purification sequence
+    creates the full purification sequence (no special sequences such as TPQI etc.)
     """
 
     m.params['is_two_setup_experiment'] = 1
@@ -180,8 +181,9 @@ def turn_all_sequence_elements_on(m):
     m.params['do_phase_correction']     = 1 
     m.params['do_purifying_gate']       = 1 
     m.params['do_carbon_readout']       = 1 
-    m.params['do_repump_after_LDE2'] = 0
-    m.params['PLU_during_LDE'] = 1
+    m.params['do_repump_after_LDE2']    = 0
+    m.params['PLU_during_LDE']          = 1
+    m.params['is_TPQI']                 = 0
 
 
 def repump_speed(name,debug = False,upload_only=False):
@@ -749,7 +751,7 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=True)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     #sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
@@ -757,7 +759,7 @@ if __name__ == '__main__':
     #calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)

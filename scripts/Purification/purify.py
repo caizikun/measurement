@@ -314,11 +314,14 @@ def load_TH_params(m):
 
 
 def load_BK_params(m):
-    # m.params['']
     m.joint_params['opt_pi_pulses'] = 2
-    m.params['LDE_decouple_time'] = 0.5e-6
-    m.joint_params['opt_pulse_separation'] = 0.5e-6 
+    m.params['LDE_decouple_time'] = 0.50e-6
+    m.joint_params['opt_pulse_separation'] = 0.50e-6 
+    m.joint_params['LDE_element_length'] = 3.5e-6
     m.joint_params['do_final_mw_LDE'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.params['LDE_SP_duration'] = 1.5e-6
+
 
     #### compensate a change in plu windows.
     ### insert parameter adjustment here.
@@ -333,10 +336,9 @@ def MW_Position(name,debug = False,upload_only=False):
     """
 
     m = purify(name)
-
-    load_TH_params(m)
     sweep_purification.prepare(m)
 
+    load_TH_params(m)
     ### general params
     pts = 1
     m.params['pts'] = pts
@@ -349,22 +351,20 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
     m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 1
-    # m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
-    # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
-    print 'This is the duration and amp',m.params['Hermite_pi_amp'],m.params['Hermite_pi_length']
-    m.joint_params['opt_pi_pulses'] = 1
+
+    # m.params['PLU_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 2
+
     m.joint_params['LDE_attempts'] = 250
 
     m.params['LDE_SP_delay'] = 0e-6
 
-
-    # m.params['Hermite_pi_amp'] = 0
-    ### prepare sweep
+    ### prepare sweep / necessary for the measurement that we under go.
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    # m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
-    m.params['general_sweep_pts'] = np.array([2e-6])
+    m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
+    # m.params['general_sweep_pts'] = np.array([2e-6])
     m.params['sweep_name'] = m.params['general_sweep_name']
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
@@ -394,7 +394,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
-    m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
+    m.params['is_two_setup_experiment'] = 1 ## we want to do optical pi pulses on both setups!
 
     ### need to find this out!
     # m.params['MIN_SYNC_BIN'] =       5000
@@ -421,12 +421,43 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def SPCorrsPuri(name, debug = False, upload_only = False):
+def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
     m = purify(name)
-    load_TH_params(m)
+    
+    sweep_purification.prepare(m)
+    load_TH_params(m) # has to be after prepare(m)
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 50000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.params['PLU_during_LDE'] = 0
+    m.joint_params['LDE_attempts'] = 1
+
+    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+    ### this can also be altered to the actual theta pulse by negating the if statement
+    if True:
+        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
+    m.params['is_two_setup_experiment'] = 0
+
+    ### upload
+
+    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+
+def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    """
+    m = purify(name)
     sweep_purification.prepare(m)
 
     ### general params
@@ -436,8 +467,8 @@ def SPCorrsPuri(name, debug = False, upload_only = False):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 3
+    m.params['PLU_during_LDE'] = True
+    m.joint_params['LDE_attempts'] = 250
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
@@ -446,7 +477,7 @@ def SPCorrsPuri(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    m.params['is_two_setup_experiment'] = 0 # XXX this has to be changed once we use one EOM only
+    m.params['is_two_setup_experiment'] = 1
 
     ### upload
 
@@ -457,8 +488,8 @@ def SPCorrsBK(name, debug = False, upload_only = False):
     Performs a regular Spin-photon correlation measurement.
     """
     m = purify(name)
-    load_TH_params(m)
     sweep_purification.prepare(m)
+    load_TH_params(m) # has to be after prepare(m)
     load_BK_params(m)
     m.joint_params['do_final_mw_LDE'] = 0
 
@@ -484,11 +515,53 @@ def SPCorrsBK(name, debug = False, upload_only = False):
 
     sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
 
-def EntangleZZ(name):
+
+def TPQI(name,debug = False,upload_only=False):
+    
+    m = purify(name)
+    sweep_purification.prepare(m)
+
+    pts = 1
+    m.params['reps_per_ROsequence'] = 50000
+    sweep_purification.turn_all_sequence_elements_off(m)
+
+    m.params['is_TPQI'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['do_general_sweep'] = 0
+    m.params['MW_during_LDE'] = 0
+
+
+    m.joint_params['LDE_element_length'] = 10e-6
+    m.joint_params['opt_pi_pulses'] = 10
+    m.joint_params['opt_pulse_separation'] = 700e-9
+    m.joint_params['LDE_attempts'] = 500
+
+    ### upload and run
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def EntangleZZ(name,debug = False,upload_only=False):
     pass
 
-def EntangleXX(name):
-    pass
+def EntangleXX(name,debug = False,upload_only=False):
+    m = purify(name)
+    sweep_purification.prepare(m)
+   
+    pts = 1
+    m.params['reps_per_ROsequence'] = 50000
+    sweep_purification.turn_all_sequence_elements_off(m)
+
+    m.params['is_two_setup_experiment'] = 1
+    m.params['do_general_sweep'] = 0
+    m.params['MW_during_LDE'] = 1
+    load_BK_params(m)
+
+
+    ### upload and run
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 def PurifyZZ(name):
     pass
@@ -502,11 +575,16 @@ def PurifyYY(name):
 
 if __name__ == '__main__':
 
-
+    ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
 
-    SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=True)
-    # SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=True)
-    ######
+    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    #SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=False)
+
+
+    ###### non-local measurements
+    # TPQI(name+'_TPQI',debug = False,upload_only=True)
+    #EntangleXX(name+'_TPQI',debug = False,upload_only=True)

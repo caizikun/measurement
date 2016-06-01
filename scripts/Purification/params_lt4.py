@@ -36,7 +36,7 @@ params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 200e-9#250e-9#350e-9#213e-9 
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_1_m1'],9)+100e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
-params_lt4['MW_opt_puls1_separation']   = 850e-9#220e-9
+params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 
 
 #adwin params defs:
