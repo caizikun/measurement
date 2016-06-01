@@ -380,9 +380,9 @@ def tail_sweep(name,debug = True,upload_only=True):
     sweep_purification.prepare(m)
 
     ### general params
-    pts = 1
+    pts = 7
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 50000
+    m.params['reps_per_ROsequence'] = 2000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -394,7 +394,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
-    m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
+    m.params['is_two_setup_experiment'] = 1 ## we want to do optical pi pulses on both setups!
 
     ### need to find this out!
     # m.params['MIN_SYNC_BIN'] =       5000
@@ -412,7 +412,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.array([0.431])#np.linspace(0.1,1.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(0.2,0.5,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -505,8 +505,8 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
 
-    SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=True)
+    # SPCorrsPuri(name+'_SPCorrs_Pure',debug = False,upload_only=True)
     # SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=True)
     ######
