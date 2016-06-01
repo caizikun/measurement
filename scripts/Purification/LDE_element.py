@@ -144,7 +144,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpulse = 'initial_delay')
 
         ### one awg has to sync all yime-tagging devices.
-        if setup == 'LT3' and msmt.params['is_two_setup_experiment'] > 0:
+        if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
+            print 'i added the thing' 
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization
@@ -167,8 +168,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
             # the last pulse is defined to come in 500 ns before the end of the LDE element
             e.add(pulse.cp(Gate.mw_pi2,
                 phase           = msmt.joint_params['LDE_final_mw_phase']),
-                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-500e-9,
-                refpulse        = 'MW_pi',
+                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-0.6e-6,
+                refpulse        = 'initial_delay',
                 refpoint        = 'end',
                 refpoint_new    = 'center',
                 name            = 'MW_RO_rotation')
@@ -228,9 +229,20 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     #4 opt. pi pulses
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
+
+    if not (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
+        ### set amplitudes of EOM pulses to 0.
+        ### XXXX TODO
+        pass
+
+    if msmt.params['is_TPQI'] > 0:
+        initial_reference = 'spinpumping'
+        msmt.params['MW_opt_puls1_separation'] = 1e-6
+    else:
+        initial_reference = 'MW_Theta'
     for i in range(msmt.joint_params['opt_pi_pulses']):
         name = 'opt pi {}'.format(i+1)
-        refpulse = 'opt pi {}'.format(i) if i > 0 else 'MW_Theta'
+        refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
         start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
         refpoint = 'start' if i > 0 else 'end'
 
@@ -280,8 +292,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # uncomment for thourogh checks.
     # e.print_overview()
 
-    # if e_len != msmt.joint_params['LDE_element_length']:
-    #     raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
+    if e_len != msmt.joint_params['LDE_element_length']:
+        raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
 
 
 def _LDE_rephasing_elt(msmt,Gate):

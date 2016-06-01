@@ -16,6 +16,8 @@ import LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
 
+
+
 class purify_single_setup(DD.MBI_C13):
 
     """
@@ -28,6 +30,16 @@ class purify_single_setup(DD.MBI_C13):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
         self.params = m2.MeasurementParameters('LocalParameters')
+        self.current_setup = qt.current_setup
+    
+
+    def reset_plu(self): 
+        self.adwin.start_set_dio(dio_no=0, dio_val=0)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=0, dio_val=1)
+        qt.msleep(0.1)
+        self.adwin.start_set_dio(dio_no=0, dio_val=0)
+        qt.msleep(0.1)
 
     def autoconfig(self):
 
@@ -67,7 +79,7 @@ class purify_single_setup(DD.MBI_C13):
             qt.msleep(1)
         else:
             print 'Omitting adwin load!!! Be wary of your changes!'
-            #exec(loadstr)
+            # exec(loadstr)
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
 
@@ -81,6 +93,9 @@ class purify_single_setup(DD.MBI_C13):
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
+        ### Adwin LT4 is connected to the plu. Needs to reset it.
+        if self.current_setup == 'lt4' and self.params['PLU_during_LDE'] > 0:
+            self.reset_plu()
 
 
         '''
@@ -422,11 +437,14 @@ class purify_single_setup(DD.MBI_C13):
         """
 
         LDE_elt.generate_LDE_elt(self,Gate)
-        print 'generating LDE'
+
         if Gate.reps == 1:
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
                 Gate.event_jump = 'next'
-                Gate.go_to = 'start' 
+                if self.params['PLU_during_LDE'] > 0:
+                    Gate.go_to = 'start'
+                else:
+                    Gate.go_to = 'next'
             else:
                 Gate.event_jump = 'next'
                 Gate.go_to = 'start'
@@ -439,7 +457,7 @@ class purify_single_setup(DD.MBI_C13):
                     Gate.event_jump = None
         else:
             Gate.go_to = None
-            Gate.event_jump = 'second_next'
+            Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
 
     def generate_sequence(self,upload=True,debug=False):
         """

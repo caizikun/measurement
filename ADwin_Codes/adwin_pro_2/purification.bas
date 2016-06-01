@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,339,339,340,340,355,355,579,579,648,648,832,833,834,841,842,843
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,8 +43,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
-'#INCLUDE .\cr.inc
+'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr.inc
 '#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
@@ -279,6 +279,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
 ''''''''''''''''''''''''''''
   ' init parameters
 ''''''''''''''''''''''''''''
+  
   Par_60 = timer                  ' time
   Par_61 = mode                   ' current mode
   PAR_63 = 0                      ' stop flag
@@ -288,6 +289,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_78 = 0                      ' MBI starts
   PAR_1 = 0                      ' n_of_communication_timeouts for debugging
   PAR_80 = 0                      ' n_of timeouts when waiting for AWG done
+  par_50 = -1 ' for debugging
   PAR_62 = -1 ' for debugging
   PAR_65 = -1 ' for debugging
   
@@ -375,8 +377,18 @@ EVENT:
           remote_fail = 0
 
         endif
-                
-        IF (adwin_comm_done = 0) THEN 'previous communication was not successful
+        
+        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
+          if (combined_success > 0) then ' both successful: continue
+            mode = success_mode_after_adwin_comm
+          else 'fail: go to fail mode
+            mode = fail_mode_after_adwin_comm
+          endif
+          timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
+        ELSE
+          'previous communication was not successful
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
           
@@ -407,7 +419,7 @@ EVENT:
                 ' no signal received. Did the connection time out?
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
-                  'PAR_1 = n_of_comm_timeouts ' for debugging
+                  PAR_1 = n_of_comm_timeouts ' for debugging
                   combined_success = 0 ' just to be sure
                   adwin_comm_done = 1 ' below: reset everything and go on
                 endif                
@@ -446,16 +458,7 @@ EVENT:
           ENDIF
         ENDIF
                 
-        IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
-          if (combined_success > 0) then ' both successful: continue
-            mode = success_mode_after_adwin_comm
-          else 'fail: go to fail mode
-            mode = fail_mode_after_adwin_comm
-          endif
-          timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
-          P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
-          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
-        ENDIF
+
        
         
         
@@ -521,7 +524,6 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-        
 
         if ( cr_result > 0 ) then 
           ' In case the result is not positive, the CR check will be repeated/continued
@@ -697,6 +699,7 @@ EVENT:
           else
             DATA_102[repetition_counter+1]=2
           endif
+          par_62 = 666
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -705,10 +708,11 @@ EVENT:
             if (awg_done_was_low =1) then
               DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
               timer = -1
-              if ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              if (PLU_during_LDE = 0) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
-
+                par_65 = 666
               else ' two setups involved: Done means failure of the sequence
+                par_65 = 666
                 mode = 12 ' finalize and go to cr check
                 'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
                 'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -981,6 +985,7 @@ EVENT:
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
         ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.
+        
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low>0) then
             mode = 200
@@ -990,7 +995,9 @@ EVENT:
             fail_mode_after_SSRO = 12
             success_of_SSRO_is_ms0 = 1        
             INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 is be used to init everything without previous success!!!!!
+            inc(par_50)
           endif
+
           awg_done_was_low = 0
         ELSE ' AWG not done yet
           awg_done_was_low = 1
