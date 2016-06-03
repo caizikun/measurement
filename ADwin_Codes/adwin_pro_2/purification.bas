@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,340,340,341,341,356,356,581,581,650,650,835,836,837,844,845,846
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,340,340,341,341,356,356,580,580,649,649,835,836,837,844,845,846
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -369,9 +369,8 @@ EVENT:
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
         ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
-        inc(par_62)
+
         if (timer = 0) then ' forget values from previous runs
-          inc(par_65)
           adwin_timeout_requested = 0
           combined_success = 0
           adwin_comm_done = 0
@@ -695,13 +694,14 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          IF (is_master >0) THEN ' plu which only connected on lt4
-            if ((digin_this_cycle AND PLU_which_di_pattern) >0) then
-              DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
-            else
-              DATA_102[repetition_counter+1]=2
-            endif        
-          ENDIF
+          inc(par_62)
+          '          IF (is_master >0) THEN ' plu which only connected on lt4
+          '            if ((digin_this_cycle AND PLU_which_di_pattern) >0) then
+          '              DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
+          '            else
+          '              DATA_102[repetition_counter+1]=2
+          '            endif        
+          '          ENDIF
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           timer = -1
           mode = mode_after_LDE   
@@ -1033,5 +1033,7 @@ EVENT:
 
     
 FINISH:
-
+  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
+  P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
 

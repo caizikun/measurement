@@ -201,6 +201,8 @@ class purify_single_setup(DD.MBI_C13):
                 length = 5e-6, amplitude = 0)
             Trig_element = element.Element(name, pulsar=qt.pulsar,
                 global_time = True)
+            if duration == 10e-6:
+                Trig_element.append(TrigLow)
             Trig_element.append(TrigHigh)
             Trig_element.append(TrigLow)
 

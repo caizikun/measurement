@@ -18,7 +18,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705599e9 #Electron spin ms=-1 frquency 
+f_msm1_cntr = 1.705964 #2016-06-02 #Electron spin ms=-1 frquency 
 f_msp1_cntr = 4.049337e9 #4.049453e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 80e-9
-	hermite_pi_amp = 0.812#0.662#0.562 # PH 21/04
+	hermite_pi_amp = 0.828 # 06-02
 	hermite_pi2_length = 45e-9
-	hermite_pi2_amp = 0.460 # SK 21/04 
+	hermite_pi2_amp = 0.468 # 06-02
 
 	square_pi_length = 18e-9
 	square_pi_amp = 0.799 # 02-19
@@ -267,7 +267,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447926.26,
+	'C1_freq_0' 		: 448071.59,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -275,12 +275,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447926.26,
-	'C1_freq_1_p1' 		: 425513.87,
+	'C1_freq_0' 		: 448071.59,
+	'C1_freq_1_p1' 		: 425153.4,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [58.67] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [183.18] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# is this the place for unconditional taus and Ns?
 	'C1_unc_tau_p1'    :   [9.132e-6],
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.2
+        'aom_amplitude':					0.400,#0.2
 }
 
 

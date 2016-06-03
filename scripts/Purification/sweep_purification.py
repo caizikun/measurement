@@ -211,7 +211,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
 
-    m.params['is_two_setup_experiment'] = 1
+    # m.params['is_two_setup_experiment'] = 1
 
     # m.params['Hermite_pi_amp'] = 0
     ### prepare sweep

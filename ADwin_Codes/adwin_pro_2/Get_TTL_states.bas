@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -17,7 +17,7 @@ DIM channel, set,channel_pattern AS LONG
 INIT:
   P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
  
-  channel=22    'Number of DIO to set 
+  channel=20    'Number of DIO to set 
   channel_pattern=2^channel
   PAR_65 = 0
 EVENT:
