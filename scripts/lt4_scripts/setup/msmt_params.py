@@ -49,7 +49,7 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.911
+	hermite_pi_amp = 0.908
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248

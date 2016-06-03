@@ -67,7 +67,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
 
     # PLU comm
-    if setup == 'lt4': #XXX get rid of LT1 later on.
+    if setup == 'lt3': #XXX get rid of LT1 later on.
         plu_amp = 1.0
     else:
         plu_amp = 0.0
@@ -76,7 +76,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     # adwin comm
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
-        length = 2.5e-6, amplitude = 2) 
+        length = 1.2e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
         length = 2.5e-6, amplitude = 2) 
 
@@ -152,9 +152,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay')
 
-    if Gate.is_final:
-        e.add(Gate.adwin_trigger_pulse,
-            refpulse = 'initial_delay')
+
         
     #3 MW pulses
     if msmt.params['MW_during_LDE'] == 1: # and not ('LDE2' in Gate.name):
@@ -274,12 +272,23 @@ def generate_LDE_elt(msmt,Gate, **kw):
             start = msmt.params['PLU_3_delay'], 
             refpulse = plu_ref_name)
 
-        e.add(Gate.plu_gate, name = 'plu gate 4', start = msmt.params['PLU_4_delay'],
+        e.add(pulse.cp(Gate.plu_gate, 
+                length = msmt.params['PLU_gate_3_duration']),
+                 name = 'plu gate 4', start = msmt.params['PLU_4_delay'],
                 refpulse = 'plu gate 3')
     
-
-    # if msmt.joint_params['opt_pi_pulses'] > 1:
-    ### then we should build up the MW pulses in a different way.
+    #### gives a done trigger that has to be timed accordingly
+    if Gate.is_final:
+        ## one can time accurately if we use the plu during the experiment
+        if setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0:
+            e.add(Gate.adwin_trigger_pulse,
+                start = 300e-9, # should always come in later than the plu signal
+                refpulse = 'plu gate 3')
+        ## otherwise put the pulse at the end of the LDE sequence
+        else:
+            e.add(Gate.adwin_trigger_pulse,
+                    start = msmt.joint_params['LDE_element_length'] - 2.6e-6,
+                    refpulse = 'initial_delay')
 
 
     # Gate.reps = msmt.joint_params['LDE_attempts_before_CR']

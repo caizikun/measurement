@@ -90,12 +90,12 @@ params_lt4['AWG_wait_for_lt3_start']    =  9347e-9#8.768e-6+787e-9#1787e-9#1487e
 params_lt4['sync_during_LDE']           = 1
 
 params_lt4['PLU_during_LDE']          = 1
-params_lt4['PLU_gate_duration']       = 200e-9#70e-9
+params_lt4['PLU_gate_duration']       = 200e-9#70e-9 # 200e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9
 params_lt4['PLU_1_delay']             = 1e-9
 params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
-params_lt4['PLU_4_delay']             = 150e-9
+params_lt4['PLU_4_delay']             = 1500e-9
 
 params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
@@ -113,9 +113,9 @@ params_lt4['dynamic_phase_N']			= 2
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 params_lt4['MIN_SYNC_BIN']        =   int(0.0) #5 us #XXX was 5us
-params_lt4['MAX_SYNC_BIN']        =   int(18.5e-6*1e12) #15 us # XXX was 15us 
+params_lt4['MAX_SYNC_BIN']        =   int(7.5e-6*1e12) #15 us # XXX was 15us 
 params_lt4['MIN_HIST_SYNC_BIN']   =   int(0) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(18500*1e3) #XXXXX was 5560*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(7500*1e3) #XXXXX was 5560*1e3
 params_lt4['entanglement_marker_number'] = 1
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
 params_lt4['measurement_abort_check_interval']    = 1 #sec

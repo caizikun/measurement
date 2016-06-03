@@ -17,7 +17,7 @@ DIM channel, set,channel_pattern AS LONG
 INIT:
   P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
  
-  channel=22    'Number of DIO to set 
+  channel=18   'Number of DIO to set 
   channel_pattern=2^channel
   PAR_65 = 0
 EVENT:
