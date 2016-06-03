@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,197,197,340,340,341,341,356,356,580,580,649,649,835,836,837,844,845,846
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,835,836,837,844,845,846
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -71,7 +71,7 @@ DIM DATA_21[100] AS FLOAT  ' float parameters from python
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
 DIM DATA_100[max_purification_repetitions] AS LONG at DRAM_Extern' Phase_correction_repetitions needed to correct the phase of the carbon 
 DIM DATA_101[max_purification_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
-DIM DATA_102[max_purification_repetitions] AS LONG at DRAM_Extern' Information which detector has clicked (provided by the PLU) 
+DIM DATA_102[max_purification_repetitions] AS LONG at DRAM_Extern' Information which how many AWG attempts lie between successful events
 DIM DATA_103[max_purification_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_104[max_purification_repetitions] AS LONG at DRAM_Extern' number of repetitions after swapping until the second succesful entanglement attempt 
 DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts electron readout after purification gate 
@@ -128,7 +128,7 @@ DIM adwin_comm_timeout_cycles, wait_for_awg_done_timeout_cycles as long ' if one
 DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
 DIM PLU_during_LDE as long
-DIM is_master as long
+DIM is_master,cumulative_awg_counts as long
 
 ' Sequence flow control
 DIM do_carbon_init, do_C_init_SWAP_wo_SSRO AS LONG
@@ -152,6 +152,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   digin_this_cycle    = 0
   is_mbi_readout      = 0
   RO_duration         = 0
+  cumulative_awg_counts   = 0
 
   AWG_done_was_low = 1
   AWG_repcount_was_low =1
@@ -371,6 +372,7 @@ EVENT:
         ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
 
         if (timer = 0) then ' forget values from previous runs
+
           adwin_timeout_requested = 0
           combined_success = 0
           adwin_comm_done = 0
@@ -515,7 +517,6 @@ EVENT:
         if ((first_CR>0) and (timer = 0)) then
           inc(par_50)
         endif
-        inc(par_51)
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
         'first_CR = 0 ' forget for next repetition... is done in cr_mod.inc
@@ -694,7 +695,6 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          inc(par_62)
           '          IF (is_master >0) THEN ' plu which only connected on lt4
           '            if ((digin_this_cycle AND PLU_which_di_pattern) >0) then
           '              DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
@@ -978,14 +978,18 @@ EVENT:
           ENDIF  
         ENDIF
  
-      CASE 10 'store the result of the tomography
+      CASE 10 'store the result of the tomography and the sync number counter
         DATA_106[repetition_counter+1] = SSRO_result
+        DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
+        DATA_108[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)         ' store value of the sync number counter. Redundant to the above, but this is really important
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
         
+        
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
         ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.
+        ' after that, we go to case 10 to increment the repetition counter and then we clean up in case 12
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low>0) then
@@ -1006,12 +1010,27 @@ EVENT:
         ENDIF
         
                               
-      CASE 12 ' reinit all variables, increase number of repetitions and go to cr check
+      CASE 12 ' reinit all variables and go to cr check
+        
+        'IF (First_CR = 1) THEN ' last run has been successful
+        '  IF (repetition_counter = 1) THEN ' start of the sequence
+        '    cumulative_awg_counts = 0
+        '  ELSE
+        '    cumulative_awg_counts = DATA_102[repetition_counter-1]
+        '  ENDIF
+        '  
+        '  DATA_102[repetition_counter] = DATA_102[repetition_counter]+AWG_sequence_repetitions_first_attempt+AWG_sequence_repetitions_second_attempt+cumulative_awg_counts+1
+        '  DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
+        '  
+        'ELSE ' last run failed
+        '  DATA_102[repetition_counter+1] = DATA_102[repetition_counter+1]+AWG_sequence_repetitions_first_attempt+AWG_sequence_repetitions_second_attempt
+        'ENDIF
 
         Par_73 = repetition_counter ' write to PAR
+        cumulative_awg_counts = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt 'remember sync counts, independent of success or failure
         'forget all parameters of previous runs
         AWG_repcount_was_low = 1
-        AWG_done_was_low = 1
+        AWG_done_was_low = 1  
         AWG_sequence_repetitions_first_attempt = 0
         AWG_sequence_repetitions_second_attempt = 0
         current_MBI_attempt = 1
@@ -1020,10 +1039,7 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
-        timer = -1
-        DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
-        
-
+        timer = -1        
 
     endselect
     
@@ -1033,7 +1049,7 @@ EVENT:
 
     
 FINISH:
-  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
-  P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
-  P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
+  P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
+  P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
+  P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
 

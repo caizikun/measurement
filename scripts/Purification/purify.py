@@ -309,7 +309,7 @@ def load_TH_params(m):
     m.params['TTTR_RepetitiveReadouts'] =  10 #
     m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
     m.params['measurement_abort_check_interval']    = 2. #sec
-    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
+    m.params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
     m.params['use_live_marker_filter']=False
 
 
@@ -338,7 +338,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m = purify(name)
     sweep_purification.prepare(m)
 
-    load_TH_params(m)
+    # load_TH_params(m)
     ### general params
     pts = 1
     m.params['pts'] = pts
@@ -353,13 +353,10 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_during_LDE'] = 1
 
     m.params['PLU_during_LDE'] = 0
-    # m.joint_params['opt_pi_pulses'] = 1
-    m.params['is_two_setup_experiment'] =0
-
     m.joint_params['opt_pi_pulses'] = 1
+    m.params['is_two_setup_experiment'] = 0
 
     m.joint_params['LDE_attempts'] = 250
-
 
     m.params['LDE_SP_delay'] = 0e-6
 
@@ -382,11 +379,12 @@ def tail_sweep(name,debug = True,upload_only=True):
     """
     m = purify(name)
     sweep_purification.prepare(m)
+    # load_TH_params(m)
 
     ### general params
-    pts = 7
+    pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 20000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -395,7 +393,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     
 
 
-    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
@@ -416,7 +414,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.array([0.4])#np.linspace(0.2,0.6,pts)
+        m.params['general_sweep_pts'] = np.array([0.4])#np.linspace(0.1,1.0,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -463,9 +461,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     m = purify(name)
     sweep_purification.prepare(m)
-
-    # load_BK_params(m) #otherwise does not make sense
-
+    # load_BK_params(m)
     ### general params
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 50000
@@ -473,21 +469,20 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
+    m.joint_params['do_final_mw_LDE'] = 0
     
     m.joint_params['LDE_attempts'] = 250
 
-    m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9 ## nedd to be longer for second pulse
-
-    m.joint_params['LDE_element_length'] = m.joint_params['LDE_element_length'] + 1e-6
+    m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
+    m.joint_params['LDE_element_length'] = m.joint_params['LDE_element_length']  + 1e-6
+    m.params['LDE_SP_duration'] = 1.5e-6
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
+
     m.joint_params['opt_pi_pulses'] = 2
-    # m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-    
-
+    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
     ### this can also be altered to the actual theta pulse by negating the if statement
-
     if True:
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
@@ -591,7 +586,7 @@ def PurifyYY(name):
 if __name__ == '__main__':
 
     ########### local measurements
-    #MW_Position(name+'_MW_position',upload_only=False)
+    # MW_Position(name+'_MW_position',upload_only=False)
 
     # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
 

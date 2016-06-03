@@ -2851,7 +2851,7 @@ config['adwin_pro_processes'] = {
                     'SP_hist'                   : 29,    #SP histogram
                     'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
-                    'plu_which'                 : 102,  #Information whether same or opposite detector has clicked (provided by the PLU)
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
                     'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
                     # 'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result

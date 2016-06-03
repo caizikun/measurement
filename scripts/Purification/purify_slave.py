@@ -52,12 +52,6 @@ class purify_single_setup(DD.MBI_C13):
                                     'ch4m1': 'ch4_marker1',
                                     'ch4m2': 'ch4_marker2',}
 
-        ### reset the plu via the adwin. This only makes sense if you are LT4!!! Watch out!
-        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
-        # qt.msleep(0.1)
-        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
-        # qt.msleep(0.1)
-        # qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
 
         #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
 
@@ -94,7 +88,7 @@ class purify_single_setup(DD.MBI_C13):
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
         ### Adwin LT4 is connected to the plu. Needs to reset it.
-        if self.current_setup == 'lt4' and self.params['PLU_during_LDE'] > 0:
+        if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
 
 
@@ -176,7 +170,7 @@ class purify_single_setup(DD.MBI_C13):
                     #('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
-                    ('plu_which'                             ,1,reps),  
+                    ('counted_awg_reps'                      ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
                     ('attempts_second'                       ,1,reps), 
                     ('carbon_readout_result'                 ,1,reps),
@@ -201,6 +195,7 @@ class purify_single_setup(DD.MBI_C13):
                 length = 5e-6, amplitude = 0)
             Trig_element = element.Element(name, pulsar=qt.pulsar,
                 global_time = True)
+
             if duration == 10e-6:
                 Trig_element.append(TrigLow)
             Trig_element.append(TrigHigh)
