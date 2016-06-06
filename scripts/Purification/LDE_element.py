@@ -165,8 +165,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
         if msmt.joint_params['do_final_mw_LDE'] == 1:
             # the last pulse is defined to come in 500 ns before the end of the LDE element
             e.add(pulse.cp(Gate.mw_pi2,
-                phase           = msmt.joint_params['LDE_final_mw_phase']),
-                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-0.6e-6,
+                phase           = msmt.joint_params['LDE_final_mw_phase'],
+                amplitude       = msmt.params['LDE_final_mw_amplitude']),
+                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-2e-6,
                 refpulse        = 'initial_delay',
                 refpoint        = 'end',
                 refpoint_new    = 'center',
@@ -229,9 +230,12 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
 
     if not (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
-        ### set amplitudes of EOM pulses to 0.
-        ### XXXX TODO
-        pass
+        ### The LT4 eom is not connected for this measurement. set amplitudes to 0.
+        msmt.params['eom_off_amplitude'] = 0
+        msmt.params['eom_pulse_amplitude'] = 0
+        msmt.params['eom_overshoot1'] = 0
+        msmt.params['eom_overshoot2'] = 0
+        msmt.params['eom_overshoot2'] = 0
 
     if msmt.params['is_TPQI'] > 0:
         initial_reference = 'spinpumping'
