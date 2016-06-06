@@ -338,7 +338,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m = purify(name)
     sweep_purification.prepare(m)
 
-    # load_TH_params(m)
+    load_TH_params(m)
     ### general params
     pts = 1
     m.params['pts'] = pts
@@ -373,30 +373,27 @@ def MW_Position(name,debug = False,upload_only=False):
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def tail_sweep(name,debug = True,upload_only=True):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1.):
     """
     Performs a tail_sweep in the LDE_1 element
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    # load_TH_params(m)
+    load_TH_params(m)
 
     ### general params
-    pts = 1
+    pts = 7
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 20000
+    m.params['reps_per_ROsequence'] = 5000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
 
-    
-
-
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
-    m.params['is_two_setup_experiment'] = 0 ## we want to do optical pi pulses on both setups!
+    m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
 
     ### need to find this out!
     # m.params['MIN_SYNC_BIN'] =       5000
@@ -414,7 +411,7 @@ def tail_sweep(name,debug = True,upload_only=True):
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.array([0.4])#np.linspace(0.1,1.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(minval,maxval,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -461,16 +458,18 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     m = purify(name)
     sweep_purification.prepare(m)
+    if qt.current_setup == 'lt3':
+        print 'I am lt3 and therefore I am using the timeharp'
+        load_TH_params(m)
     # load_BK_params(m)
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 50000
+    m.params['reps_per_ROsequence'] = 1000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 0
-    
     m.joint_params['LDE_attempts'] = 250
 
     m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
@@ -488,20 +487,24 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
 
-
     ### upload
 
     sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
 
-def SPCorrsBK(name, debug = False, upload_only = False):
+def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     """
-    Performs a regular Spin-photon correlation measurement.
+    Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
+
     """
     m = purify(name)
     sweep_purification.prepare(m)
+    
     load_TH_params(m) # has to be after prepare(m)
     load_BK_params(m)
-    m.joint_params['do_final_mw_LDE'] = 0
+
+
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['LDE_final_mw_amplitude'] = 0
 
     ### general params
     m.params['pts'] = 1
@@ -511,7 +514,6 @@ def SPCorrsBK(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 1
-    m.params['LDE_final_mw_amplitude'] = 0
     m.joint_params['opt_pi_pulses'] = 2
 
     ### this can also be altered to the actual theta pulse by negating the if statement
@@ -588,15 +590,17 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False)
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.5)
 
-    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
-    #SPCorrsBK(name+'_SPCorrs_BK',debug = False,upload_only=False)
 
 
-    ###### non-local measurements
-    SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    ###### non-local measurements // purification parameters
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
 
+
+    ###### non-local measurements // Barrett Kok parameters
+    BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  True)
     # TPQI(name+'_TPQI',debug = False,upload_only=True)
     #EntangleXX(name+'_TPQI',debug = False,upload_only=True)
