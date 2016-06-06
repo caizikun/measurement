@@ -291,19 +291,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     start = msmt.joint_params['LDE_element_length'] - 2.6e-6,
                     refpulse = 'initial_delay')
 
-    #### gives a done trigger that has to be timed accordingly
-    if Gate.is_final:
-        ## one can time accurately if we use the plu during the experiment
-        if setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0:
-            e.add(Gate.adwin_trigger_pulse,
-                start = 300e-9, # should always come in later than the plu signal!
-                refpulse = 'plu gate 3')
-        ## otherwise put the pulse at the end of the LDE sequence
-        else:
-            e.add(Gate.adwin_trigger_pulse,
-                    start = msmt.joint_params['LDE_element_length'] - 3.75e-6,
-                    refpulse = 'initial_delay')
-
+   
     # Gate.reps = msmt.joint_params['LDE_attempts_before_CR']
     Gate.elements = [e]
     Gate.elements_duration = msmt.joint_params['LDE_element_length']

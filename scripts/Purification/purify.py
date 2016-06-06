@@ -464,7 +464,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     # load_BK_params(m)
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 50000
+    m.params['reps_per_ROsequence'] = 1000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
