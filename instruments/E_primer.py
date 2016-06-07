@@ -102,7 +102,7 @@ class E_primer(Instrument):
         self._F_E_0 = self._get_E_func()
         self._F_Y_0 = self._get_Y_func()
    
-        ms0_level=2 if self.get_E_y() else 3
+        ms0_level=2 if self.get_E_y() else 4
         #print 'ms0_level :', ms0_level
         #print 'Ex : ', self._F_E_0
         print self.get_precision()

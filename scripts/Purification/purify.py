@@ -185,20 +185,21 @@ class purify(PQPurifyMeasurement):
                         break 
                 
                 print 'current sync, entanglement_markers, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
-                #print self.hist
+
                 pulse_cts_ch0=np.sum(self.hist[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
                 pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
                 tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
                 tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-                if qt.current_setup == 'lt3':
-                    self.physical_adwin.Set_Par(50, int(tail_cts_ch0))
-                    self.physical_adwin.Set_Par(51, int(tail_cts_ch1))
-                    self.physical_adwin.Set_Par(52, int(pulse_cts_ch1)) 
-                    print 'tail_counts PSB', tail_cts_ch0/last_sync_number, 'tail_counts ZPL', tail_cts_ch1/last_sync_number, 'pulse_counts', pulse_cts_ch1/last_sync_number
-                else:
-                    self.physical_adwin.Set_Par(51, int(tail_cts_ch0+tail_cts_ch1))
-                    self.physical_adwin.Set_Par(52, int(pulse_cts_ch0+pulse_cts_ch1))
-                    print 'tail_counts ZPL', (tail_cts_ch0+ tail_cts_ch1)/last_sync_number, 'pulse_counts', (pulse_cts_ch1 + pulse_cts_ch0)/last_sync_number
+                if last_sync_number > 0:
+                    if qt.current_setup == 'lt3':
+                        self.physical_adwin.Set_Par(50, int(tail_cts_ch0))
+                        self.physical_adwin.Set_Par(51, int(tail_cts_ch1))
+                        self.physical_adwin.Set_Par(52, int(pulse_cts_ch1)) 
+                        print 'tail_counts PSB', float(tail_cts_ch0)/last_sync_number, 'tail_counts ZPL', float(tail_cts_ch1)/last_sync_number, 'pulse_counts', pulse_cts_ch1/last_sync_number
+                    else:
+                        self.physical_adwin.Set_Par(51, int(tail_cts_ch0+tail_cts_ch1))
+                        self.physical_adwin.Set_Par(52, int(pulse_cts_ch0+pulse_cts_ch1))
+                        print 'tail_counts ZPL', float(tail_cts_ch0+ tail_cts_ch1)/last_sync_number, 'pulse_counts', float(pulse_cts_ch1 + pulse_cts_ch0)/last_sync_number
 
 
                 _timer=time.time()

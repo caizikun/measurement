@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,835,836,837,844,845,846
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,834,835,836,843,844,845
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -825,8 +825,7 @@ EVENT:
           'if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
           '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
           'else
-          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
-          endif
+          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20         
           mode = mode_after_LDE_2 'go on to next case
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
