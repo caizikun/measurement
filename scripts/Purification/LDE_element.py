@@ -38,6 +38,7 @@ def _create_laser_pulses(msmt,Gate):
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
 
 
+
     if (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
         ### The LT4 eom is not connected for this measurement. set amplitudes to 0.
         msmt.params['eom_off_amplitude'] = 0

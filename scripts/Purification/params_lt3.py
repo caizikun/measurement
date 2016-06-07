@@ -27,7 +27,7 @@ params_lt3['MW_during_LDE']             = 1
 params_lt3['AWG_SP_power']              = 1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['average_repump_time'] = 0.254e-6 # XXX put repump AOM delay here!
+params_lt3['average_repump_time'] 		= 0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 params_lt3['MW_opt_puls1_separation']   = 50e-9 # was 22 e-9. needs to be adjusted.
 
@@ -60,7 +60,7 @@ params_lt3['remote_adwin_di_success_channel'] = 19
 params_lt3['remote_adwin_di_fail_channel'] = 18
 params_lt3['remote_adwin_do_success_channel'] = 13
 params_lt3['remote_adwin_do_fail_channel'] = 8
-params_lt3['adwin_comm_safety_cycles'] = 5
+params_lt3['adwin_comm_safety_cycles'] = 3
 params_lt3['adwin_comm_timeout_cycles'] = 1000 # 1ms 
 params_lt3['remote_awg_trigger_channel'] = 1 # not used on slave
 params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
@@ -108,20 +108,23 @@ params_lt3['dynamic_phase_N'] = 2
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       0
-params_lt3['MAX_SYNC_BIN'] =       7500
-params_lt3['MIN_HIST_SYNC_BIN'] =  1
-params_lt3['MAX_HIST_SYNC_BIN'] =  7500
+params_lt3['MIN_SYNC_BIN'] =       2000
+params_lt3['MAX_SYNC_BIN'] =       3500
+params_lt3['MIN_HIST_SYNC_BIN'] =  2000
+params_lt3['MAX_HIST_SYNC_BIN'] =  3500
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
-params_lt3['tail_start_bin'] = 7480
-params_lt3['tail_stop_bin'] = 7480 + 200
-params_lt3['prepulse_start_bin'] = 7570
-params_lt3['prepulse_stop_bin'] = 7570 + 18
+
+params_lt3['pulse_start_bin'] = 3014 - 55
+params_lt3['pulse_stop_bin'] = 3014+9-55
+params_lt3['tail_start_bin'] = 3014+9-55
+params_lt3['tail_stop_bin'] = 3014+9-55+50
+params_lt3['PQ_ch1_delay'] = 55
+
 params_lt3['live_filter_queue_length'] = 10
 
 params_lt3['measurement_time'] = 24.*60.*60. 

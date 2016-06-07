@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      10e-9,#42e-9, #50e-9
-		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      9e-9,#42e-9, #50e-9
+		'yellow_repump_duration':       500, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -465,14 +465,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					50e-9,
-        'eom_off_amplitude':				-0.02,
+        'eom_off_amplitude':				-0.02, #-0.02
         'eom_pulse_amplitude':				2., # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
         'eom_overshoot_duration1':			20e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.400,#0.2
+        'aom_amplitude':					0.575,#0.2
 }
 
 
@@ -530,10 +530,10 @@ cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 4e-9,
+		'A_CR_amplitude':				 0.3e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 0.2e-9,
 		}

@@ -183,7 +183,23 @@ class purify(PQPurifyMeasurement):
                     ii+=1
                     if (_length == 0) or (self.keystroke('abort') in ['x']) or ii>wait_for_late_data: 
                         break 
+                
                 print 'current sync, entanglement_markers, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
+                #print self.hist
+                pulse_cts_ch0=np.sum(self.hist[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
+                pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
+                tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
+                tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
+                if qt.current_setup == 'lt3':
+                    self.physical_adwin.Set_Par(50, int(tail_cts_ch0))
+                    self.physical_adwin.Set_Par(51, int(tail_cts_ch1))
+                    self.physical_adwin.Set_Par(52, int(pulse_cts_ch1)) 
+                    print 'tail_counts PSB', tail_cts_ch0/last_sync_number, 'tail_counts ZPL', tail_cts_ch1/last_sync_number, 'pulse_counts', pulse_cts_ch1/last_sync_number
+                else:
+                    self.physical_adwin.Set_Par(51, int(tail_cts_ch0+tail_cts_ch1))
+                    self.physical_adwin.Set_Par(52, int(pulse_cts_ch0+pulse_cts_ch1))
+                    print 'tail_counts ZPL', (tail_cts_ch0+ tail_cts_ch1)/last_sync_number, 'pulse_counts', (pulse_cts_ch1 + pulse_cts_ch0)/last_sync_number
+
 
                 _timer=time.time()
             _length = 0
@@ -217,8 +233,8 @@ class purify(PQPurifyMeasurement):
                 hhtime, hhchannel, hhspecial, sync_time, self.hist, sync_number, \
                             newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
                             T2_tools_v3.T2_live_filter(_t, _c, _s, self.hist, t_ofl, t_lastsync, last_sync_number,
-                            MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
-              
+                                    MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
+
                 if newlength > 0:
 
                     if new_entanglement_markers == 0 and live_filter_on_marker:
@@ -303,13 +319,13 @@ def load_TH_params(m):
     m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
     m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
     m.params['MIN_SYNC_BIN'] =       0
-    m.params['MAX_SYNC_BIN'] =       15e3
+    m.params['MAX_SYNC_BIN'] =       8e3
     m.params['MIN_HIST_SYNC_BIN'] =  1
-    m.params['MAX_HIST_SYNC_BIN'] =  15000
+    m.params['MAX_HIST_SYNC_BIN'] =  8000
     m.params['TTTR_RepetitiveReadouts'] =  10 #
     m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
     m.params['measurement_abort_check_interval']    = 2. #sec
-    m.params['wait_for_late_data'] = 10 #in units of measurement_abort_check_interval
+    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
     m.params['use_live_marker_filter']=False
 
 
@@ -378,7 +394,7 @@ def MW_Position(name,debug = False,upload_only=False):
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1.):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1., local = False):
     """
     Performs a tail_sweep in the LDE_1 element
     """
@@ -389,7 +405,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1.):
     ### general params
     pts = 7
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 5000
+    m.params['reps_per_ROsequence'] = 1000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -398,19 +414,21 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1.):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
-    m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-
+    if local:
+        m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    else:
+        m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
     ### need to find this out!
     # m.params['MIN_SYNC_BIN'] =       5000
     # m.params['MAX_SYNC_BIN'] =       9000 
 
     # put sweep together:
-    sweep_off_voltage = False
+    sweep_off_voltage = True
     m.params['do_general_sweep']    = True
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.08,0.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
     else:
@@ -506,8 +524,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    
-    #load_TH_params(m) # has to be after prepare(m)
+
     load_BK_params(m)
 
 
@@ -529,7 +546,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    m.params['is_two_setup_experiment'] = 1
+    m.params['is_two_setup_experiment'] = 1 # XXX this has to be changed once we use one EOM only
 
     ### upload
 
@@ -573,13 +590,16 @@ def EntangleXX(name,debug = False,upload_only=False):
     sweep_purification.turn_all_sequence_elements_off(m)
     load_BK_params(m)
 
-    m.params['is_two_setup_experiment'] = 1
+    load_BK_params(m)
+
     m.params['do_general_sweep'] = 0
     m.params['MW_during_LDE'] = 1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     
+
+
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -600,7 +620,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.3, maxval=0.7)
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.3, maxval=.7, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -611,6 +631,6 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // Barrett Kok parameters
-    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    # TPQI(name+'_TPQI',debug = False,upload_only=True)
+    #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
+    #TPQI(name+'_TPQI',debug = False,upload_only=True)
     EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
