@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,834,835,836,843,844,845
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -724,6 +724,7 @@ EVENT:
             awg_done_was_low = 1
             if( timer > wait_for_awg_done_timeout_cycles) then
               inc(PAR_80) ' signal that we have an awg timeout
+              PAR_30 = digin_this_cycle
               END ' terminate the process
             endif
           ENDIF  
@@ -984,6 +985,8 @@ EVENT:
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
+        inc(success_event_counter)
+        PAR_77 = success_event_counter ' for the LabView live update
         
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence

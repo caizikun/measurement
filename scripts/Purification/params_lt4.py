@@ -66,7 +66,7 @@ params_lt4['remote_adwin_di_success_channel'] = 22
 params_lt4['remote_adwin_di_fail_channel'] = 23
 params_lt4['remote_adwin_do_success_channel'] = 14
 params_lt4['remote_adwin_do_fail_channel'] = 15
-params_lt4['adwin_comm_safety_cycles'] = 5
+params_lt4['adwin_comm_safety_cycles'] = 3
 params_lt4['adwin_comm_timeout_cycles'] = 1000 # 1 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
@@ -100,6 +100,7 @@ params_lt4['PLU_4_delay']             = 200e-9
 params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
 params_lt4['carbon']                    = 4
@@ -112,11 +113,18 @@ params_lt4['dynamic_phase_N']			= 2
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(0.0) #5 us #XXX was 5us
-params_lt4['MAX_SYNC_BIN']        =   int(7.5e-6*1e12) #15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(0) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(7500*1e3) #XXXXX was 5560*1e3
+params_lt4['MIN_SYNC_BIN']        =   int(2e6) #5 us #XXX was 5us
+params_lt4['MAX_SYNC_BIN']        =   int(3.5e6) #15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3) #XXXXX was 5560*1e3
 params_lt4['entanglement_marker_number'] = 1
+
+params_lt4['pulse_start_bin'] = (3014 - 55)*1e3
+params_lt4['pulse_stop_bin'] = (3014+9-55)*1e3
+params_lt4['tail_start_bin'] = (3014+9-55)*1e3
+params_lt4['tail_stop_bin'] = (3014+9-55+50)*1e3
+params_lt4['PQ_ch1_delay'] = 55e3
+
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
 params_lt4['measurement_abort_check_interval']    = 1 #sec
 params_lt4['wait_for_late_data'] = 0 #in units of measurement_abort_check_interval
