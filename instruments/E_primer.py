@@ -8,7 +8,6 @@ import instrument_helper
 import types
 from lib import config
 from analysis.lib.nv import nvlevels
-reload(nvlevels)
 
 class E_primer(Instrument):
 
@@ -102,10 +101,11 @@ class E_primer(Instrument):
         print 'E_prime_0 :', E_prime_0
         self._F_E_0 = self._get_E_func()
         self._F_Y_0 = self._get_Y_func()
-        
+   
         ms0_level=2 if self.get_E_y() else 3
         #print 'ms0_level :', ms0_level
         #print 'Ex : ', self._F_E_0
+        print self.get_precision()
         Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=self.get_precision()) 
         self._strain_split_0 = Ex-Ey
         self._strain_splitting = Ex-Ey

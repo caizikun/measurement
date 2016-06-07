@@ -298,7 +298,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     start = msmt.joint_params['LDE_element_length'] - 2.6e-6,
                     refpulse = 'initial_delay')
 
-
+   
     # Gate.reps = msmt.joint_params['LDE_attempts_before_CR']
     Gate.elements = [e]
     Gate.elements_duration = msmt.joint_params['LDE_element_length']

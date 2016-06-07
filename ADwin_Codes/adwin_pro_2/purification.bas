@@ -822,10 +822,10 @@ EVENT:
         'check the PLU
         IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
-          if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
-            DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
-          else
-            DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
+          'if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
+          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
+          'else
+          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
           endif
           mode = mode_after_LDE_2 'go on to next case
           timer = -1
