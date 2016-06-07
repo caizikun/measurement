@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,835,836,837,844,845,846
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -43,8 +43,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-'#INCLUDE .\cr_mod.inc
-#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr.inc
 '#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
@@ -949,8 +949,6 @@ EVENT:
         
       CASE 9 'store the result of the electron readout. Wait for TOMO gate to be done and do SSRO again
         IF (timer=0) THEN
-          inc(success_event_counter)
-          PAR_77 = success_event_counter ' for the LabView live update
           DATA_105[repetition_counter+1] = SSRO_result    
           if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
             P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
@@ -979,6 +977,8 @@ EVENT:
         ENDIF
  
       CASE 10 'store the result of the tomography and the sync number counter
+        inc(success_event_counter)
+        PAR_77 = success_event_counter ' for the LabView live update
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
         DATA_108[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)         ' store value of the sync number counter. Redundant to the above, but this is really important
