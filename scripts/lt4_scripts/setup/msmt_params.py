@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.908
+	hermite_pi_amp = 0.911
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.564#0.608
+	hermite_pi2_amp = 0.565#0.608
 
 
 ### General settings for AdwinSSRO
@@ -95,7 +95,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -396,7 +396,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 }
 
 cfg['protocols'][name]['AdwinSSRO-integrated'] = {
-	'SSRO_duration' : 8}
+	'SSRO_duration' : 10}
 
 cfg['protocols'][name]['pulses'] = {
 

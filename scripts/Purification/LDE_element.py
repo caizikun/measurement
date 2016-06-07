@@ -37,6 +37,15 @@ def _create_laser_pulses(msmt,Gate):
     Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
 
+
+    if (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
+        ### The LT4 eom is not connected for this measurement. set amplitudes to 0.
+        msmt.params['eom_off_amplitude'] = 0
+        msmt.params['eom_pulse_amplitude'] = 0
+        msmt.params['eom_overshoot1'] = 0
+        msmt.params['eom_overshoot2'] = 0
+        msmt.params['eom_overshoot2'] = 0
+
     Gate.eom_pulse =     msmt.eom_pulse = eom_pulses.OriginalEOMAOMPulse('Eom_Aom_Pulse', 
                     eom_channel = 'EOM_Matisse',
                     aom_channel = 'EOM_AOM_Matisse',
@@ -76,7 +85,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     # adwin comm
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
-        length = 1.2e-6, amplitude = 2) 
+        length = 1.5e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
         length = 2.5e-6, amplitude = 2) 
 
@@ -167,7 +176,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             e.add(pulse.cp(Gate.mw_pi2,
                 phase           = msmt.joint_params['LDE_final_mw_phase'],
                 amplitude       = msmt.params['LDE_final_mw_amplitude']),
-                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-2e-6,
+                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-2.5e-6,
                 refpulse        = 'initial_delay',
                 refpoint        = 'end',
                 refpoint_new    = 'center',
@@ -229,13 +238,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #4 opt. pi pulses
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
 
-    if not (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
-        ### The LT4 eom is not connected for this measurement. set amplitudes to 0.
-        msmt.params['eom_off_amplitude'] = 0
-        msmt.params['eom_pulse_amplitude'] = 0
-        msmt.params['eom_overshoot1'] = 0
-        msmt.params['eom_overshoot2'] = 0
-        msmt.params['eom_overshoot2'] = 0
+
 
     if msmt.params['is_TPQI'] > 0:
         initial_reference = 'spinpumping'
@@ -287,7 +290,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
         ## one can time accurately if we use the plu during the experiment
         if setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0:
             e.add(Gate.adwin_trigger_pulse,
-                start = 300e-9, # should always come in later than the plu signal
+                start = 1000e-9, # should always come in later than the plu signal
                 refpulse = 'plu gate 3')
         ## otherwise put the pulse at the end of the LDE sequence
         else:

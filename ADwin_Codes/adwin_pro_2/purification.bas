@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,835,836,837,844,845,846
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,8 +43,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-'#INCLUDE .\cr_mod.inc
-#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr.inc
 '#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
@@ -724,6 +724,7 @@ EVENT:
             awg_done_was_low = 1
             if( timer > wait_for_awg_done_timeout_cycles) then
               inc(PAR_80) ' signal that we have an awg timeout
+              PAR_30 = digin_this_cycle
               END ' terminate the process
             endif
           ENDIF  
@@ -826,7 +827,7 @@ EVENT:
           '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
           'else
           '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
-          endif
+          'endif
           mode = mode_after_LDE_2 'go on to next case
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
@@ -949,8 +950,6 @@ EVENT:
         
       CASE 9 'store the result of the electron readout. Wait for TOMO gate to be done and do SSRO again
         IF (timer=0) THEN
-          inc(success_event_counter)
-          PAR_77 = success_event_counter ' for the LabView live update
           DATA_105[repetition_counter+1] = SSRO_result    
           if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
             P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
@@ -985,6 +984,8 @@ EVENT:
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
+        inc(success_event_counter)
+        PAR_77 = success_event_counter ' for the LabView live update
         
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
