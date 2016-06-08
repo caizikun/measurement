@@ -39,7 +39,7 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
+f_ms0 = False
 
 f_ms1 = True
 

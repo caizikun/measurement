@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
+' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,582,582,651,651,837,838,839,846,847,848
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -293,7 +293,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_50 = -1 ' for debugging
   PAR_62 = -1 ' for debugging
   PAR_65 = -1 ' for debugging
-  
+  par_10 = -1 ' for debugging
 '''''''''''''''''''''''''
   ' flow control: 
 '''''''''''''''''''''''''
@@ -514,9 +514,6 @@ EVENT:
    
 
       CASE 0 'CR check
-        if ((first_CR>0) and (timer = 0)) then
-          inc(par_50)
-        endif
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
         'first_CR = 0 ' forget for next repetition... is done in cr_mod.inc
@@ -527,6 +524,8 @@ EVENT:
         ENDIF
 
         if ( cr_result > 0 ) then 
+          par_11 = par_10
+          par_10 = 0
           ' In case the result is not positive, the CR check will be repeated/continued
           timer = -1     
           IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
@@ -538,6 +537,8 @@ EVENT:
             fail_mode_after_adwin_comm = 0 ' back to cr check. Fail can be timeout. This allows to keep the NV on resonance in case the other setup has jumped
             success_mode_after_adwin_comm = 1 ' go to spin pumping 
           ENDIF
+        else
+          inc(par_10)
         endif  
         
         
