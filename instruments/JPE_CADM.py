@@ -69,7 +69,7 @@ class JPE_CADM(Instrument):
         else:
             print 'Specified address not available!'
             
-    def move (self, addr, ch, steps, T, freq, reL_step):
+    def move (self, addr, ch, steps, T, freq, rel_step):
 
         cw = int((np.sign(steps)+1)/2)
         steps = abs(steps)
@@ -87,7 +87,7 @@ class JPE_CADM(Instrument):
             #stop = time.time()
             if "ERROR" in out: #TODO: printing error now, but requires better error handling
                 print(out)
-            sleeptime = (1./self.freq)*steps_int +0.2
+            sleeptime = (1./freq)*steps_int +0.2
             time.sleep(sleeptime)
             #print "finished moving large steps. time it took in s: ",(stop-start)
 
@@ -102,7 +102,7 @@ class JPE_CADM(Instrument):
                 #stop = time.time()
                 if "ERROR" in out:
                     print out
-                sleeptime = (1./self.freq)*steps_cent + 0.2
+                sleeptime = (1./freq)*steps_cent + 0.2
                 time.sleep(sleeptime)
                 #print "finished moving small steps. time it took in s: ",(stop-start)
                        

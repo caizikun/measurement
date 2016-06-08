@@ -16,7 +16,7 @@ from measurement.lib.measurement2.adwin_ssro.DD_2 import Gate
 
 class QMemory_repumping(DD.MBI_C13):
     """
-    Takes a carbon and initializes it with MBI.
+    Takes a carbon and initializes it.
     We then run the following sequence N times on the electronic spin:
     pi/2__t__pi__t-trep__repump
     afterwards the blochvector should be measured in the XY plane.
@@ -25,6 +25,13 @@ class QMemory_repumping(DD.MBI_C13):
     trep
     Repump_duration
     N
+
+    This script is modular and allows for:
+    1) C13 initialization with MBI / swap
+    2) Swap electron state to Carbon
+    3) Entanglement attempts
+    4) Tomography
+    The modules can be turned on and off in the main fuction that call this QMemory.Qmem_NoOfRepetitions
 
     TODO:
     An alternative mode to determine the AOM <--> MW delays.
@@ -47,42 +54,22 @@ class QMemory_repumping(DD.MBI_C13):
 
         for pt in range(pts): ### Sweep over RO basis
             gate_seq = []
-
-            # gate_seq.append(Gate('Wait_gate_'+str(pt),'passive_elt',
-            #             wait_time = 0.2,wait_for_trigger = True))
             
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
-            #
-            # gate_seq.append(Gate('Wait_gate_'+str(pt),'passive_elt',
-            #                             wait_time = 0.2,wait_for_trigger = True))
-            # short_wait = Gate('Wait_short_'+str(pt),'passive_elt',
-            #                             wait_time = 5e-6,wait_for_trigger = False)
-            # gate_seq.append(short_wait)
-            # gate_seq.extend(self.readout_carbon_sequence(
-            #         prefix              = 'Electron_reinit',
-            #         pt                  = pt,
-            #         go_to_element       = None,
-            #         event_jump_element  = None,
-            #         RO_trigger_duration = 5e-6,
-            #         carbon_list         = [],#self.params['carbon_list'],
-            #         do_RO_electron      = True,
-            #         do_init_pi2         = False,
-            #         RO_basis_list       = [],
-            #         el_state_in         = 0,
-            #         readout_orientation = self.params['electron_readout_orientation'],
-            #         Zeno_RO             = True))
             ### Carbon initialization
             init_wait_for_trigger = True
 
 
-            
-            for kk in range(self.params['Nr_C13_init']):
+            ################
+            ### C13 Init ###
+            ################            
+            for kk in range(len(self.params['carbon_init_list'])):
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    prefix = 'C_MBI' + str(kk+1) + '_C',
+                    prefix = 'C_init_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
                     wait_for_trigger      = init_wait_for_trigger, pt =pt,
                     initialization_method = self.params['init_method_list'][kk],
                     C_init_state          = self.params['init_state_list'][kk],
@@ -91,10 +78,52 @@ class QMemory_repumping(DD.MBI_C13):
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
+            ######################
+            ### elec to C swap ###
+            ######################
+            for kk in range(self.params['Nr_C13_SWAP']): 
+                # with the carbon already initialized
+                # if self.params['SWAP_type'][kk] == 'swap_w_init':
+
+                # safety checks
+                if any(x not in self.params['carbon_init_list'] for x in self.params['carbon_swap_list']):
+                    return 'Are you sure you are initializing the carbon you want to perform swap on first :)?'
+                if any(x not in ['swap_w_init','swap_wo_init'] for x in self.params['SWAP_type']):
+                    return 'Unsupported swap type'
+
+                ###############################################################
+                # ELECTRON STATE PREPARE it is already in 0 after INIT carbon #
+                ###############################################################
+                electron_init_seq = self.initialize_electron_sequence(
+                    prefix                  = 'init_E',
+                    elec_init_state         = self.params['elec_init_state'],
+                    pt                      = pt,
+                    el_after_c_init         = self.params['el_after_init'],
+                    wait_for_trigger        = init_wait_for_trigger)
+                gate_seq.extend(electron_init_seq)
+
+
+                ########################
+                ## SWAP + el reset/RO ##
+                ########################
+                carbon_swap_seq = self.carbon_swap_gate(
+                    go_to_element         = mbi,
+                    prefix                = 'swap_C', 
+                    pt                    = pt,
+                    addressed_carbon      = self.params['carbon_swap_list'][kk],
+                    RO_after_swap         = self.params['RO_after_swap'])
+                    #swap_type             = self.params['SWAP_type'][kk])
+                gate_seq.extend(carbon_swap_seq)
+                    
+                # elif self.params['SWAP_type'][kk] == 'swap_wo_init':
+                #     return 'Not yet written'
+                # else: 
+                #     return 'Unsupported swap type / No swap gate required'
+
             
-            ############################
-            ###  DFS initialization  ###
-            ############################
+            # ############################
+            # ###  DFS initialization  ###
+            # ############################
 
             for kk in range(self.params['Nr_MBE']):
                 
@@ -129,7 +158,14 @@ class QMemory_repumping(DD.MBI_C13):
 
             ############################
             ###     Tomography       ###
-            ############################  
+            ############################
+
+            # backwards compatibility for the Tomo sweep
+            if len(self.params['Tomo_bases']) > 1:
+                tomo = [self.params['Tomo_bases'][pt]]
+            else:
+                tomo = self.params['Tomo_bases']    
+
             carbon_tomo_seq = self.readout_carbon_sequence(
                     prefix              = 'Tomo',
                     pt                  = pt,
@@ -137,15 +173,11 @@ class QMemory_repumping(DD.MBI_C13):
                     event_jump_element  = None,
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
-                    RO_basis_list       = self.params['Tomo_bases'],
+                    RO_basis_list       = tomo,
                     el_state_in         = 0,
                     readout_orientation = self.params['electron_readout_orientation'])
             
-            # gate_seq.append(
-            #     Gate('ro'+'_Trigger_'+str(pt),'Trigger',
-            #     wait_time = 10e-6,
-            #     go_to = None, event_jump = None,
-            #     el_state_before_gate = '0'))
+
             gate_seq.extend(carbon_tomo_seq)
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt)

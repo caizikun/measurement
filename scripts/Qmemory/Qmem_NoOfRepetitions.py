@@ -40,6 +40,10 @@ def QMem(name,
         debug               = True,
         tomo_list			= ['X'],
         Repetitions         = 300,
+        carbon_swap_list    = [],
+        e_swap_state        = ['X'],
+        swap_type           = None,
+        RO_after_swap       = True,
         **kw):
 
     m = QM.QMemory_repumping(name)
@@ -48,16 +52,33 @@ def QMem(name,
     m.params['do_optical_pi']=kw.get('do_optical_pi', False)
     m.params['initial_MW_pulse'] = kw.get('initial_MW_pulse','pi2')
 
-    m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
+    
     m.params['reps_per_ROsequence'] = Repetitions
     m.params['carbon_list']         = carbon_list   ### Carbons to be used
 
-    ### Carbon Initialization settings 
+    #######################################
+    ### Carbon Initialization settings ####
+    #######################################
     m.params['carbon_init_list']    = carbon_init_list
     m.params['init_method_list']    = carbon_init_methods*len(carbon_init_list)
     m.params['init_state_list']     = carbon_init_states*len(carbon_init_list)    
-    m.params['Nr_C13_init']         = len(carbon_init_list)
+    m.params['Nr_C13_init']         = len(carbon_init_thresholds)
     m.params['el_after_init']       = '0'
+
+    ################################
+    ### elec to carbon  swap settings ####
+    ################################
+    if swap_type == None:
+        m.params['C13_MBI_threshold_list'] = carbon_init_thresholds*len(carbon_init_list)
+    else:
+        m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+    print 'c_init_th' + str(m.params['C13_MBI_threshold_list'])
+
+    m.params['carbon_swap_list']    = carbon_swap_list
+    m.params['elec_init_state']     = e_swap_state 
+    m.params['SWAP_type']           = swap_type #used in carbon_swap_gate to determine swap w carbon init or w/o carbon init
+    m.params['Nr_C13_SWAP']         = len(carbon_swap_list)
+    m.params['RO_after_swap']       = RO_after_swap
 
     ####################
     ### MBE settings ###
@@ -105,22 +126,35 @@ def QMem(name,
         else:
                 pts = 11
 
+
     minReps = kw.get('minReps',0) # minimum number of LDE reps
-    maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C5_freq_0']))
+    maxReps = kw.get('maxReps', 1e3 / abs(abs(coupling_difference)-m.params['C1_freq_0']))
+
+
     step = int((maxReps-minReps)/pts)
+
+    
     m.params['fast_repump_repetitions'] = np.arange(minReps,minReps+pts*step,step)
 
+
+    #############################
+    ##### Sweep Params ##########
+    #############################
     print 'min Reps: ', minReps, ' Max reps: ', maxReps
     print 'carbons ', carbon_list, ' couplings: ', abs(abs(coupling_difference)-m.params['C1_freq_0'])
 
     f_larmor = m.params['C1_freq_0']
     tau_larmor = round(1/f_larmor,9)
+    # tau_larmor = 2.1e-6
     print 'Calculated tau_larmor', tau_larmor
+
+    # tau_larmor = 2.298e-6
 
     m.params['repump_wait'] = pts*[tau_larmor]#tau_larmor] #pts*[2e-6] # time between pi pulse and beginning of the repumper
     m.params['fast_repump_power'] = kw.get('repump_power', 20e-9)
-    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',2.5e-6)] #how long the beam is irradiated
+    m.params['fast_repump_duration'] = pts*[kw.get('fast_repump_duration',1.5e-6)] #how long the beam is irradiated
     m.params['average_repump_time'] = pts*[kw.get('average_repump_time',110e-9)] #this parameter has to be estimated from calibration curves, goes into phase calculation
+
 
     m.params['do_pi'] = True ### does a regular pi pulse
     m.params['do_BB1'] = False # ### does a BB1 pi pulse NOTE: both bools should not be true at the same time.
@@ -173,7 +207,50 @@ if __name__ == '__main__':
     last_check = time.time() ### time reference for long measurement loops
     breakst = False    
     debug = False
-    repump_power = 1000e-9
+    repump_power = 10e-9
+
+
+    ############################################################
+    #### SK SWAP and subsequent Carbon Decay w ent attempts ####
+    ############################################################
+    if False:
+ 
+        swap_type = ['swap_w_init']
+        # print qt.exp_params['samples']['Pippin']['Carbon_LDE_phase_correction_list']
+        for c in [1]:#,2,3,5,6]:
+            if breakst:
+                break
+            for e in ['X','mX','Y','mY','Z','mZ']:
+                optimize(breakst)
+                if breakst:
+                    break
+                for tomo in ['X','Y','Z']:
+                    if breakst:
+                        break
+                    for ro in ['positive','negative']:
+                        breakst = show_stopper()
+                        if breakst:
+                            break
+                        QMem('NoOfReps_'+ro+'_Tomo_'+tomo+'_elState_' + str(e) +'_C'+str(c),
+                                    debug=debug,
+                                    average_repump_time = 101e-9,
+                                    tomo_list       = [tomo], 
+                                    el_RO           = ro,
+                                    carbon_list     = [c],               
+                                    carbon_init_list        = [c],
+                                    carbon_init_thresholds  = [0,1],  #1 XXX
+                                    carbon_init_methods     = ['swap'], # MBI/swap XXX
+                                    repump_power    = repump_power,
+                                    repetitions     = 500,
+                                    pts             = 20,
+                                    do_optical_pi   = False,
+                                    minReps         = 1,
+                                    maxReps         = 801,
+                                    carbon_swap_list = [c],
+                                    e_swap_state    = e,
+                                    swap_type       = swap_type,
+                                    RO_after_swap   = True
+                                    ) 
 
 
     #########################
@@ -183,29 +260,31 @@ if __name__ == '__main__':
     if True: ### turn measurement on/off
         # stools.recalibrate_lt2_lasers(names = ['MatisseAOM','NewfocusAOM'],awg_names=['NewfocusAOM'])
         # get repump speed
-        for c in [1]:#,2,3,5,6]:
+        for c in [4]:#,2,3,5,6]:
             if breakst:
                 break
-            for tomo in ['X','Y']:
+            for tomo in ['Z']:#,'Y']:
                 # optimize(breakst or debug)
                 if breakst:
                     break
-                for ro in ['positive','negative']:
+                for ro in ['positive']:#,'negative']:
                     breakst = show_stopper()
                     if breakst:
                         break
                     QMem('NoOfReps_'+ro+'_Tomo_'+tomo+'_C'+str(c),
                                 debug=debug,
-                                average_repump_time = 111e-9,
+                                average_repump_time = 400e-9,
                                 tomo_list = [tomo], 
                                 el_RO = ro,
                                 carbon_list   = [c],               
                                 carbon_init_list        = [c],
-                                carbon_init_thresholds  = [1],  #1 XXX
-                                carbon_init_methods     = ['MBI'], # MBI/swap XXX
+                                carbon_init_thresholds  = [0],  #1 XXX
+                                carbon_init_methods     = ['swap'], # MBI/swap XXX
                                 repump_power = repump_power,
-                                repetitions = 1000,
-                                pts = 31,
+                                Repetitions = 5000,
+                                maxReps = 500,
+                                minReps = 200,
+                                pts = 2,
                                 do_optical_pi = False,
                                 ) 
                 ### optimize position and calibrate powers

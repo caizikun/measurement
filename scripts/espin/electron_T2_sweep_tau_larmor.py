@@ -35,6 +35,8 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     m.params['Initial_Pulse'] ='x'
 
     tau_larmor = 1/m.params['C1_freq_0']
+
+
     if N==1:
         m.params['Final_Pulse'] ='x'
     else:
@@ -82,8 +84,10 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
             m.params['Decoupling_sequence_scheme']='repeating_T_elt_XY16'
         elif XY_scheme == 8:
             m.params['Decoupling_sequence_scheme']='repeating_T_elt'
+        elif XY_scheme == 4:
+            m.params['Decoupling_sequence_scheme']='repeating_T_elt_XY4'
         else:
-            raise Exception('XY Scheme not reckognized')
+            raise Exception('XY Scheme not recognized')
         #m.params['Decoupling_sequence_scheme']='single_block'
 
 
@@ -197,14 +201,14 @@ if __name__ == '__main__':
     debug = False
     Cont = True
     Run_Msmt = True
-    optimize = True
+    optimize = False
     n = 1
     if n==1 and Cont:
-        N = 256 ### number of pulses
+        N = 32 ### number of pulses
         pts = 50 ### number of points per loading of the AWG
-        larmor_freq = 2.315e-6
+        larmor_freq = 2.26e-6
         larmor_max = 80 ### the order of the last revival
-        larmor_min = 1
+        larmor_min = 4
         larmor_step = 8
         reps = 800
 

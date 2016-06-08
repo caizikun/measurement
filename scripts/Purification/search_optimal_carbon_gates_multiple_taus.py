@@ -63,16 +63,20 @@ def SweepGates(name,**kw):
 
 	''' set experimental parameters '''
 
-	m.params['reps_per_ROsequence'] = 2000
+	m.params['reps_per_ROsequence'] = 1000
 
 	### Carbons to be used
 	m.params['carbon_list']         =[carbon]
 
-	### Carbon Initialization settings
+	########################################
+	### Carbon Initialization settings #####
+	########################################
+
 	m.params['carbon_init_list']    = [carbon]
 	m.params['init_method_list']    = ['MBI']    
 	m.params['init_state_list']     = ['up']
 	m.params['Nr_C13_init']         = 1
+
 
 	##################################
 	### RO bases,timing and number of pulses (sweep parameters) ###
@@ -106,6 +110,8 @@ def SweepGates(name,**kw):
 
 	### Derive other parameters
 	m.params['pts']                 = len(com_list)
+	#another init param
+	m.params['init_phase_list']		= [0]*m.params['pts'] #someone hardcoded a swap phase in there. We dont do swap -> put it to whatever
 	m.params['sweep_name']          = 'Tomo N and tau' 
 	m.params['sweep_pts']           = com_list
 	
@@ -259,15 +265,15 @@ if __name__ == '__main__':
 		#######################
 		#### SIL 2 ###########
 		#####################
-		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [10.884e-6],#[8.58e-6,6.29e-6,7.444e-6,9.74e-6,10.87e-6,13.15e-6, 15.45e-6], 
-										'C_tau_rng'  :14e-9, # steps of 2e-9
-										'C_N' 		: [12],#[10,8,10,10,10,14,16],
+		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
+										'C_tau_rng' : 20e-9, # steps of 2e-9
+										'C_N' 		: [10,10,10,10,10,10,14],
 										'C_N_steps' : 4} # steps of 2 	
 
-		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [7.38e-6],#10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
-										'C_tau_rng'  :4e-9, # steps of 2e-9
-										'C_N' 		: [20],#24,22,24,26,26,42],
-										'C_N_steps' : 2} # steps of 2 	
+		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [9.318e-6,10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
+										'C_tau_rng' : 12e-9, # steps of 2e-9
+										'C_N' 		: [24,24,22,24,26,26,42],
+										'C_N_steps' : 10} # steps of 2 	
 	
 	elif qt.current_setup == 'lt4':
 		
@@ -284,16 +290,16 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [36,28,28,28], 
-										'C_N_steps' : 10} # steps of 2 	
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.394e-6,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  :16e-9, # steps of 2e-9
+										'C_N' 		: [28,24,26,30], 
+										'C_N_steps' : 14} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [5.22e-6],#[6.4e-6, 8.73e-6]
-										'C_tau_rng'  :12e-9, # steps of 2e-9
-										'C_N' 		: [34],#[36,44], # 34,
-										'C_N_steps' : 10} # steps of 2 	
+		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
+										'C_tau_rng'  :16e-9, # steps of 2e-9
+										'C_N' 		: [42],#[36,44], # 34,
+										'C_N_steps' : 12} # steps of 2 	
 
 
 		# multi_tau_carbon_dict['C6'] = {'C_taus' 	: [3.725e-6],#[6.17e-6,9.355e-6,19.625e-6],#[17.175e-6, 19.395e-6, 23.838e-6 ,24.940e-6],
@@ -302,13 +308,13 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} 
 
 
-		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
-		 								'C_tau_rng' : 12e-9,
-										'C_N' 		: [34 ,36, 38, 42],  #34, 42,
-										'C_N_steps' : 10} 
+		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [4.86e-6], #[3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
+		 								'C_tau_rng' : 16e-9,
+										'C_N' 		: [38],  #34, 42,
+										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [1]
+	carbons = [4]
 
 	### msmt loop begins here.
 	breakst = False

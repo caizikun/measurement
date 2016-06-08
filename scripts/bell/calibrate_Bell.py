@@ -4,6 +4,9 @@ from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 # reload all parameters and modules, import classes
 from measurement.scripts.espin import espin_funcs
 reload(espin_funcs)
+import qt
+#reload all parameters and modules
+execfile(qt.reload_current_setup)
 
 def calibrate_pi_pulse(name, multiplicity=1, debug=False):
     m = pulsar_msmt.GeneralPiCalibration(name)
@@ -186,7 +189,7 @@ def check_pi4_pulse_poles(name, debug=False):
 
 
 if __name__ == '__main__':
-    stage = 3.2
+    stage = 3.42
     print 'Stage:', stage
     SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -223,8 +226,8 @@ if __name__ == '__main__':
         calibrate_pi2_pulse(SAMPLE_CFG+'_Bell_Pi2',debug = False)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.42: #new pi/2 pulse calibration
-        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity = 15,debug = debug)
-        # calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 5)
+        calibrate_pi2_pulse_2(SAMPLE_CFG+'_Bell_Pi2_2_15_rep_MWon', multiplicity =15,debug = debug)
+        # calibrate_pi2_pulse_3(SAMPLE_CFG+'_Bell_Pi2_3_5_rep', multiplicity = 1)
         print 'set msmt_params Hermite_pi2_amp'
     elif stage == 3.5:
         calibrate_Npi4_pulse(SAMPLE_CFG)

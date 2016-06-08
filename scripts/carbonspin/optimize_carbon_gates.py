@@ -68,24 +68,18 @@ def SweepGates(name,**kw):
 	m.params['init_state_list']     = ['up']
 	m.params['Nr_C13_init']         = 1
 
-	m.params['C1_gate_sym_N_list']= [36,30,44,36,42,34,38,56]
-	m.params['C1_gate_optimize_tau_list']=[3.892,1.658,6.112,2.784,6.100,1.674,2.786,8.322]
-
-   
-
-
 
 	##################################
 	### RO bases,timing and number of pulses (sweep parameters) ###
 	##################################
 
-	print m.params['electron_transition']
-	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'+m.params['electron_transition']],m.params['C'+str(carbon)+'_gate_optimize_tau_list'+m.params['electron_transition']])
+	#print m.params['electron_transition']
+	com_list,m.params['N_list'],m.params['tau_list'],m.params['Tomography Bases'] = put_sweep_together(m.params['C'+str(carbon)+'_gate_optimize_N_list'+m.params['C'+str(carbon)+'_dec_trans']],m.params['C'+str(carbon)+'_gate_optimize_tau_list'+m.params['C'+str(carbon)+'_dec_trans']])
  
 	####################
 	### MBE settings ###
 	####################
-
+	m.params['electron_transition_used']=m.params['C'+str(carbon)+'_dec_trans']
 	m.params['Nr_MBE']              = 0 
 	m.params['MBE_bases']           = []
 	m.params['MBE_threshold']       = 1
@@ -124,7 +118,7 @@ def optimize():
 
 
 if __name__ == '__main__':
-	carbons = [3]
+	carbons = [1,2,4,5]
 
 
 	brekast = False
@@ -133,7 +127,7 @@ if __name__ == '__main__':
 		breakst = show_stopper()
 		if breakst: break
 
-		optimize()
+		#optimize()
 
 		for el_RO in ['positive','negative']:
 

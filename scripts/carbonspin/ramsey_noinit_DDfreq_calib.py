@@ -6,7 +6,7 @@ import qt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)
@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
+def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = [],debug = False):
 
     m = DD.NuclearRamsey_v2(name)
 
@@ -47,7 +47,7 @@ def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = []):
         m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
     m.autoconfig()
-    funcs.finish(m, upload =True, debug=True)
+    funcs.finish(m, upload =True, debug=False)
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
@@ -57,11 +57,11 @@ if __name__ == '__main__':
     evolution_times3 = np.linspace(18e3,21e3,20).astype(int)*1e-9
 
     # for decoupling on the larmor revival
-    # evolution_times1 = np.linspace(15e3,20e3,20).astype(int)*1e-9
+    # evolution_times1 = np.linspace(22e3,28e3,20).astype(int)*1e-9
     # evolution_times2 = np.linspace(30e3,33e3,20).astype(int)*1e-9
     # evolution_times3 = np.linspace(38e3,41e3,20).astype(int)*1e-9
 
     for carbon in [1]:
-        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1)
-        # Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2)
-        # Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3)
+        Carbon_Ramsey(SAMPLE + '_evo_times_1' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times1,debug = True)
+        Carbon_Ramsey(SAMPLE + '_evo_times_2' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times2,debug = True)
+        Carbon_Ramsey(SAMPLE + '_evo_times_3' + '_C' +str(carbon),tau = None, N=None, carbon = carbon, evolution_times = evolution_times3,debug = True)

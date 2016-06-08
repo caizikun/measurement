@@ -1,5 +1,3 @@
-
-
 ## SCRIPT SWAP GATE
 
 import numpy as np
@@ -23,7 +21,6 @@ Note: 3 CNOTs are not required due to the carbon preparation
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-print '@ done SAMPLE and SAMPLE_CFG'
 
 def SWAP(name, 
         carbon                  =   1,               
@@ -35,15 +32,15 @@ def SWAP(name,
         RO_after_swap           =   True,
    
         el_RO                   = 'positive',
-        debug                   =  False):
+        debug                   =  False,
+        swap_type               =  'swap_w_init'):
 
     m = DD.elec_to_carbon_swap(name)
 
-    print '@ funcs.prepare(m)'
     funcs.prepare(m)
 
     ''' set experimental parameters '''
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 800
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
     m.params['el_after_init']               = '0'
 
@@ -56,7 +53,7 @@ def SWAP(name,
     m.params['init_method_list']    = carbon_init_methods    
     m.params['init_state_list']     = carbon_init_states    
     m.params['Nr_C13_init']         = len(carbon_init_thresholds)
-
+    m.params['SWAP_type']           = swap_type
     ### Carbon to be used
     m.params['carbon_list']         = [carbon]
  
@@ -70,10 +67,9 @@ def SWAP(name,
     ##########################
     ### ELECTRON repumping ###
     ##########################
-    m.params['Repump_duration']             = 10e-6
-    m.params['after_swap_repump_power']     = 100e-9
-    m.params['RO_after_swap']               = RO_after_swap
 
+    m.params['RO_after_swap']               = RO_after_swap
+    m.params['Repump_duration'] = 5e-6
 
     ####################
     ### MBE settings ###
@@ -101,15 +97,16 @@ def SWAP(name,
     m.params['electron_readout_orientation'] = el_RO
     for BP in m.params['Tomography Bases']:
         m.params['sweep_pts'].append(BP[0])
-    
-    print '@ funcs.finish'
+ 
     funcs.finish(m, upload =True, debug=debug)
 
-def show_stopper():
+def show_stopper(breakst = False):
+    if breakst: 
+        return True
     print '-----------------------------------'            
     print 'press q to stop measurement cleanly'
     print '-----------------------------------'
-    qt.msleep(1)
+    qt.msleep(2)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
     else: return False
@@ -118,61 +115,61 @@ def show_stopper():
 if __name__ == '__main__':
     print 'Starting Loop, engage!'
 
-    # breakst     = False
-    # debug       = False
-
-    # ''' Non Loop'''
-    # e = 'mZ'
-    # c = 2
-    # c_i_t = [0,1]
-    # RO_after_swap = True
-    # RO_orientation = 'positive'
-
-
-    # print 'RO_after_swap = ' + str(RO_after_swap)
-    # print 'carbon initialisation RO threshold = '+ str(c_i_t)
-
-    # print 'el_state = ' + str(e)
-
-    # SWAP(SAMPLE + '_carbon' + str(c) +'_'+RO_orientation+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
-    #                 el_RO= RO_orientation, 
-    #                 carbon = c,
-    #                 debug = debug, 
-    #                 elec_init_state = e,
-    #                 carbon_init_thresholds = c_i_t)
-
-    # print 'Done with non-loop part'
-
-    # RO_orientation = 'negative'
-
-    # SWAP(SAMPLE + '_carbon' + str(c) +'_'+RO_orientation+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
-    #                 el_RO= RO_orientation, carbon = c
-    #                 ,debug = debug, elec_init_state = e,
-    #                 carbon_init_thresholds = c_i_t)
-    
 
     '''' NOTE REMOVE RO_after_swap from SWAP params '''
     breakst     = False
-    carbons     = [2]
-    el_state    = ['mX','mY','mZ']
+    carbons     = [1]
+    #el_state    = ['X','mX','Y','mY','Z','mZ']
+    el_state    = ['Z','mZ']
+    
+    debug = False
     RO_after_swap = True
-    c_i_t = [0, 1]
-    RO_orientation = 'positive'
-     
-    print 'RO_after_swap = ' + str(RO_after_swap)
+    swap_type = 'swap_w_init'
+    # swap_type = 'swap_wo_init_rot'
+    
+    if swap_type == 'swap_w_init':
+        
+        if RO_after_swap:
+            c_i_t = [0,1]
+        else:
+            c_i_t = [0]
+
+        carbon_init_methods     =   ['swap']
+
+    elif swap_type == 'swap_wo_init':
+        
+        if RO_after_swap:
+            c_i_t = [1] #its deterministic but still, there might be phase errors
+        else:
+            c_i_t = []
+    
+        carbon_init_methods     =   []
+   
+    elif swap_type == 'prob_init':
+
+        RO_after_swap = True
+
+        c_i_t = [1,1]
+        
+        carbon_init_methods     =   ['MBI']
+    
+    else:
+        print "Unsupported swap type"
+
+
     print 'carbon initialisation RO threshold = '+ str(c_i_t)
 
 
     for c in carbons:
 
-        breakst = show_stopper() or breakst
+        breakst = show_stopper(breakst = breakst)
         if breakst:
             break
         print 'Loop over carbons number! C#: ' + str(c)
 
         for e in el_state:
 
-            breakst = show_stopper() or breakst
+            breakst = show_stopper(breakst = breakst)
             if breakst:
                 break
 
@@ -181,21 +178,29 @@ if __name__ == '__main__':
 
             
 
-            SWAP(SAMPLE + '_carbon' + str(c) +'_'+RO_orientation+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
-                el_RO= RO_orientation, 
+            SWAP(SAMPLE + '_carbon' + str(c) +'_'+'positive'+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
+                el_RO= 'positive', 
                 carbon = c,
                 debug = debug, 
                 elec_init_state = e, 
-                carbon_init_thresholds = c_i_t)
+                RO_after_swap = RO_after_swap,
+                carbon_init_thresholds = c_i_t,
+                carbon_init_methods = carbon_init_methods,
+                swap_type = swap_type)
 
+            breakst = show_stopper(breakst = breakst)
+            if breakst:
+                break
 
-                # SWAP(SAMPLE + '_carbon' + str(c) + '_elState'+str(e)+'_swapRO_'+str(r)+'_negative', 
-                #     el_RO= 'negative', 
-                #     carbon = c,
-                #     debug = debug, 
-                #     elec_init_state = e, 
-                #     RO_after_swap = RO_after_swap,
-                #     carbon_init_thresholds = c_i_t)
+            SWAP(SAMPLE + '_carbon' + str(c) +'_'+'negative'+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
+                el_RO= 'negative', 
+                carbon = c,
+                debug = debug, 
+                elec_init_state = e,
+                RO_after_swap = RO_after_swap,
+                carbon_init_thresholds = c_i_t,
+                carbon_init_methods = carbon_init_methods,
+                swap_type = swap_type)
 
     print 'Done with loop part' 
   

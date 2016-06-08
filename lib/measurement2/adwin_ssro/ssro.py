@@ -64,7 +64,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
             self.set_adwin_process_variable_from_params(key)
 
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:              
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            
             self.set_adwin_process_variable_from_params(key)
 
         if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key][self.adwin_process]:
