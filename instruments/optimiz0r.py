@@ -31,14 +31,29 @@ class optimiz0r(Instrument):
             if len(dims) == 0:
                 dims = self.dimensions[order]
 
+            gaussian_fit_init = self.opt1d_ins.get_gaussian_fit()
+
             for d in dims:
+                if d == 'z':
+                    gaussian_fit = kw.pop('gaussian_fit_Z', gaussian_fit_init)
+                else:
+                    gaussian_fit = gaussian_fit_init
+                
                 ret=ret and self.opt1d_ins.run(dimension=d, counter = cnt, 
-                        pixel_time=int_time, **self.dimensions[d])
+                        pixel_time=int_time, gaussian_fit = gaussian_fit, **self.dimensions[d])
                 qt.msleep(1.0)
+
+                
+
+                if msvcrt.kbhit():
+                    kb_char=msvcrt.getch()
+                    if kb_char == "q" : break
+                    
             if msvcrt.kbhit():
                 kb_char=msvcrt.getch()
                 if kb_char == "q" : break
-                
+
+            self.opt1d_ins.set_gaussian_fit(gaussian_fit_init)
         
         return ret
     

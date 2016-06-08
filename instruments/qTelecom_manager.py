@@ -32,8 +32,8 @@ class qTelecom_manager (CyclopeanInstrument):
         self._adwin = qt.instruments[adwin]
         self._pmeter = qt.instruments[powermeter]
 
-        self.dac_no = 8
-        self.adc_no = 2
+        self.dac_no = 1
+        self.adc_no = 1
 
         self.sampling_interval = 250
 
@@ -87,7 +87,7 @@ class qTelecom_manager (CyclopeanInstrument):
                 type= types.FloatType, 
                 flags=Instrument.FLAG_GETSET, 
                 units = 'muW',
-                minval = 0, maxval = 2000)
+                minval = 0, maxval = 400000)
         self.DFG_power=0
 
         self.add_parameter('target_temperature',
@@ -255,7 +255,8 @@ class qTelecom_manager (CyclopeanInstrument):
 
     def save_scan (self):
 
-        fName = time.strftime ('%H%M%S') + '_TempScan'
+        self.input_fig_title = self.get_input_fig_title()
+        fName = time.strftime ('%H%M%S') + '_TempScan_' + self.input_fig_title
         f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
         directory = os.path.join(f0, fName)
         if not os.path.exists(directory):
@@ -282,7 +283,7 @@ class qTelecom_manager (CyclopeanInstrument):
     def read_temperature (self):
         test = 0
     	self._adwin.start_read_adc (adc_no = self.adc_no)
-        voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
+        voltage = self._adwin.get_read_adc_var ('fpar')[1][1]
     	T = 0.01*int(voltage*20.*100)
         self.set_curr_temperature(T)
         self.get_curr_temperature()
@@ -297,14 +298,14 @@ class qTelecom_manager (CyclopeanInstrument):
         zero_voltage = 0.0
         self._adwin.start_set_dac(dac_no=self.dac_no, dac_voltage=zero_voltage)
         self._adwin.start_read_adc (adc_no = self.adc_no)
-        voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
+        voltage = self._adwin.get_read_adc_var ('fpar')[1][1]
         oldT = 0.01*int(voltage*20.*100)
         newT = 300
         while abs(newT - oldT) > 0.05:
             time.sleep(1)
             oldT = newT
             self._adwin.start_read_adc (adc_no = self.adc_no)
-            voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
+            voltage = self._adwin.get_read_adc_var ('fpar')[1][1]
             newT = 0.01*int(voltage*20.*100)
             # newT = 300
         else:
@@ -319,7 +320,7 @@ class qTelecom_manager (CyclopeanInstrument):
         zero_voltage = (self.get_Tmin()-self.get_knob_temperature())/20.
         self._adwin.start_set_dac(dac_no=self.dac_no, dac_voltage=zero_voltage)
         self._adwin.start_read_adc (adc_no = self.adc_no)
-        voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
+        voltage = self._adwin.get_read_adc_var ('fpar')[1][1]
         oldT = 0.01*int(voltage*20.*100)
         zero_voltage_T = oldT
         newT = self.get_Tmin()
@@ -327,7 +328,7 @@ class qTelecom_manager (CyclopeanInstrument):
             time.sleep(1)
             oldT = newT
             self._adwin.start_read_adc (adc_no = self.adc_no)
-            voltage = self._adwin.get_read_adc_var ('fpar')[0][1]
+            voltage = self._adwin.get_read_adc_var ('fpar')[1][1]
             newT = 0.01*int(voltage*20.*100)
             # newT = 300
             print newT, oldT

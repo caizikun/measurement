@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.0.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 1 - 4 as 
@@ -58,9 +59,9 @@ INIT:
     
   ' init counter
   P2_CNT_ENABLE(CTR_MODULE, 0000b)
-  P2_CNT_MODE(CTR_MODULE, 1,00001000b)
-  P2_CNT_MODE(CTR_MODULE, 2,00001000b)
-  P2_CNT_MODE(CTR_MODULE, 3,00001000b)
+  P2_CNT_MODE(CTR_MODULE, 1,00000000b)
+  P2_CNT_MODE(CTR_MODULE, 2,00000000b)
+  P2_CNT_MODE(CTR_MODULE, 3,00000000b)
   P2_CNT_MODE(CTR_MODULE, 4,00001000b)
   'CNT_SE_DIFF(0000b)
   P2_CNT_CLEAR(CTR_MODULE, 1111b)
