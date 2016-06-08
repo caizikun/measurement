@@ -18,14 +18,13 @@ def MBE(name, carbon            =   1,
         carbon_init_thresholds  =   [0],  
 
         el_RO               = 'positive',
-        debug               = False):
+        debug               = True):
 
     m = DD.Two_QB_Probabilistic_MBE_v3(name)
     funcs.prepare(m)
 
 
     m.params['el_after_init']                = '0'
-
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
 
@@ -49,7 +48,7 @@ def MBE(name, carbon            =   1,
     m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
     # m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
     # m.params['Tomography Bases'] = [['X'],['Y']]
-    m.params['Tomography Bases'] = [['Z']]
+    # m.params['Tomography Bases'] = [['Z']]
         
     ####################
     ### MBE settings ###
@@ -79,8 +78,8 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [2]
-    debug = True
+    carbons = [1]
+    debug = False
     init_method = 'swap'
 
     if init_method == 'swap':

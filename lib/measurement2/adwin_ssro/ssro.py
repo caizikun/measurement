@@ -54,7 +54,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['Ex_SP_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_SP_amplitude'])
         self.params['A_SP_voltage'] = self.A_aom.power_to_voltage(self.params['A_SP_amplitude'])
         self.params['Ex_RO_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_RO_amplitude'])
-        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])              
+        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])
         self.params['repump_voltage'] = self.repump_aom.power_to_voltage(self.params['repump_amplitude'])
         self.params['repump_off_voltage'] = self.repump_aom.get_pri_V_off()
         self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()

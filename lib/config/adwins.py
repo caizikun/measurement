@@ -2997,6 +2997,279 @@ config['adwin_m1_processes'] = {
             'index' : 5,
             'file' : 'init_data.TC5',
             },
+
+        'singleshot' : {
+                'index' : 9,
+                'file' : 'singleshot_lt2.TC9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'par' : {
+                    'completed_reps' : 73,
+                    'ssro_counts' : 74,
+                    },
+                'fpar' : {
+                    },
+                'params_long' : [
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['SP_filter_duration'          ,   0],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['Shutter_channel'             ,   4],
+                    ],
+                'params_long_index'  : 20,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                },
+
+               # ADwin CR check. This process can not run stand-alone and should be included in another adwin script/process
+        'cr_check' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_pro.inc',
+            'par' : {
+                    'CR_preselect'  : 75,
+                    'CR_probe'      : 68,
+                    'total_CR_counts': 70,
+                    'noof_repumps'   : 71,
+                    'noof_cr_checks' : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts' : 76,
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'       , 0.8],
+                    ['repump_off_voltage'   , 0.07],
+                    ['Ex_CR_voltage'        , 0.8],
+                    ['A_CR_voltage'         , 0.8],
+                    ['Ex_off_voltage'       , 0.0],
+                    ['A_off_voltage'        , -0.08]
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                },
+
+        'MBI' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one MBI step and can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'MBI_lt2.TC9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   0],
+                    ['AWG_done_DI_channel'         ,   9],
+                    ['SP_E_duration'               , 100],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['repetitions'                 ,1000],
+                    ['sweep_length'                ,  10],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['AWG_event_jump_DO_channel'   ,   6],
+                    ['MBI_duration'                ,   1],
+                    ['max_MBI_attempts'            ,   1],
+                    ['MBI_threshold'               ,   0],
+                    ['nr_of_ROsequences'           ,   1],
+                    ['wait_after_RO_pulse_duration',   3],
+                    ['N_randomize_duration'        ,  50],
+
+                    #Shutter
+                    ['use_shutter'                 ,   0],
+                    ['Shutter_channel'             ,   4], 
+                    ['Shutter_rise_time'           ,    3000],    
+                    ['Shutter_fall_time'           ,    3000], 
+                    ['Shutter_safety_time'          ,  200000],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8],
+                    ['Ex_MBI_voltage'               , 0.8],
+                    ['Ex_N_randomize_voltage'       , 0.0],
+                    ['A_N_randomize_voltage'        , 0.0],
+                    ['repump_N_randomize_voltage'   , 0.0],
+                    ['A_SP_voltage_before_MBI'      , 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 74,
+                    'current mode': 77,
+                    'MBI start': 78,
+                    'ROseq_cntr': 80,
+                    },
+                'data_long' : {
+                    'MBI_attempts' : 24,
+                    'MBI_cycles' : 25,
+                    'ssro_results' : 27,
+                    'MBI_time' : 28,
+                    },
+                },
+
+        'integrated_ssro' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_lt2.TC9',
+                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['SP_filter_duration'          ,   0],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['wait_after_RO_pulse_duration',1],
+                    ['use_shutter'                 ,   0],
+                    ['Shutter_channel'             ,   4],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                },
+
+        'MBI_multiple_C13' : {
+                'info' : """
+                    Conditional repumping, and resonant readout at the end.
+                    Has one Nitrogen-MBI step and one Carbon-MBI step, can read out multiple times (e.g., on different lines).
+                    """,
+                'index' : 9,
+                'file' : 'C13_multiple_lt2.TC9',
+                'include_cr_process' : 'cr_check', # This process includes the CR check lib
+                'params_long' : [                  # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,   0],  #1
+                    ['AWG_done_DI_channel'         ,   9],  #2
+                    ['SP_E_duration'               , 100],  #3
+                    ['wait_after_pulse_duration'   ,   1],  #4
+                    ['repetitions'                 ,1000],  #5
+                    ['sweep_length'                ,  10],  #6
+                    ['cycle_duration'              , 300],  #7  #on T11 processor 300 corresponds to 1us
+                    ['AWG_event_jump_DO_channel'   ,   6],  #8
+                    ['MBI_duration'                ,   1],  #9
+                    ['max_MBI_attempts'            ,   1],  #10
+                    ['nr_of_ROsequences'           ,   1],  #11
+                    ['wait_after_RO_pulse_duration',   3],  #12
+                    ['N_randomize_duration'        ,  50],  #13
+
+                    ['Nr_C13_init'                 ,  2],   #14
+                    ['Nr_MBE'                      ,  1],   #15
+                    ['Nr_parity_msmts'             ,  0],   #16
+                      #Thresholds
+                    ['MBI_threshold'               ,  1],   #17
+                    # ['C13_MBI_threshold'           ,  0],   #18
+                    ['MBE_threshold'               ,  1],   #19
+                    ['Parity_threshold'            ,  1],   #20
+                    # Durations
+                    ['C13_MBI_RO_duration'         , 30],   #21
+                    ['SP_duration_after_C13'       , 25],   #22
+
+                    ['MBE_RO_duration'             ,  10],  #23
+                    ['SP_duration_after_MBE'       ,  25],  #24
+
+                    ['Parity_RO_duration'          ,  100],  #25
+                    ['C13_MBI_RO_state'              ,  0 ],  #26
+                    #Shutter
+                    ['use_shutter'                 ,   0], #26 (the real 26 as 17 is commented out)
+                    ['Shutter_channel'             ,   4], #27
+                    ['Shutter_rise_time'           ,    3000], #28   
+                    ['Shutter_fall_time'           ,    3000], #29
+                    ['Shutter_safety_time'           ,  200000], #30
+                    ],
+
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'                , 0.8], #1
+                    ['Ex_MBI_voltage'               , 0.8], #2
+                    ['Ex_N_randomize_voltage'       , 0.0], #3
+                    ['A_N_randomize_voltage'        , 0.0], #4
+                    ['repump_N_randomize_voltage'   , 0.0], #5
+                    ['E_C13_MBI_RO_voltage'         , 0.0], #6
+                    ['E_SP_voltage_after_C13_MBI'   , 0.0], #7
+                    ['A_SP_voltage_after_C13_MBI'   , 0.0], #8
+
+                    ['E_MBE_RO_voltage'           , 1e-9], #9
+                    ['A_SP_voltage_after_MBE'     , 15e-9],#10
+                    ['E_SP_voltage_after_MBE'     , 0e-9], #11
+
+                    ['E_Parity_RO_voltage'        , 1e-9], #12
+                    # TODO_MAR: Add voltages for MBE and Parity
+
+
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'completed_reps' : 73,
+                    'MBI failed' : 74,
+                    'current mode': 77,
+                    'MBI start': 78,
+                    'ROseq_cntr': 80,
+                    },
+                'data_long' : {
+                    'N_MBI_attempts' : 24,  #attempts since CR check, in success run
+                    'N_MBI_starts' : 25,
+                    'N_MBI_success' : 28,
+                    'ssro_results' : 27,
+                    'C13_MBI_starts' : 29,
+                    'C13_MBI_success' : 32,
+                    'C13_MBE_starts' : 41,
+                    'C13_MBE_success': 42,
+                    'parity_RO_results': 43,
+                    },
+                },
+
 }
 
 config['adwin_rt1_dacs'] = {

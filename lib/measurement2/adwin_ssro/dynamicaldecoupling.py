@@ -7275,11 +7275,10 @@ class Two_QB_Probabilistic_MBE_v3(MBI_C13):
             init_wait_for_trigger = True
             
             for kk in range(self.params['Nr_C13_init']):
-                print self.params['init_method_list'][kk]
-                print self.params['init_state_list'][kk]
-                print self.params['carbon_init_list'][kk]
-                print 
-
+                # print self.params['carbon_init_list'][kk]
+                # print self.params['init_method_list'][kk]
+                # print self.params['init_state_list'][kk]
+                
                 if self.params['el_after_init']                == '1':
                     self.params['do_wait_after_pi']            = True
                 else: 
@@ -7436,7 +7435,7 @@ class Two_QB_Det_MBE(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases_0'][pt],
-                    readout_orientation = self.params['electron_readout_orientation'],
+                    readout_orientation = self.params['electron_readout_orientation_0'],
                     el_state_in         = 0)
             gate_seq0.extend(carbon_tomo_seq0)
 
@@ -7448,7 +7447,7 @@ class Two_QB_Det_MBE(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases_1'][pt],
-                    readout_orientation = self.params['electron_readout_orientation'],
+                    readout_orientation = self.params['electron_readout_orientation_1'],
                     el_state_in         = 1)
             gate_seq1.extend(carbon_tomo_seq1)
 

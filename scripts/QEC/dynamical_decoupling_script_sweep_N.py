@@ -7,14 +7,15 @@ import qt
 
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
-import measurement.scripts.mbi.mbi_funcs as funcs
+import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 reload(DD)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True):
+def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4), 
+            reps_per_ROsequence=1000, mbi = True, debug=False):
 
     m = DD.SimpleDecoupling(name+'_tau_'+str(tau*1e9))
     """
@@ -74,8 +75,8 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     # m.params['E_RO_durations'] = [m.params['SSRO_duration']]
     # m.params['E_RO_amplitudes'] = [m.params['Ex_RO_amplitude']]
     # ### END MODIFICATION FOR LT1 ###
-
-    funcs.finish(m, upload =True, debug=False)
+    print ';threshold=' + str(m.params['MBI_threshold'])
+    funcs.finish(m, upload =True, debug=debug)
 
 def interrupt_script(wait = 5):
     print 'press q now to exit measurement script'
@@ -99,7 +100,7 @@ if __name__ == '__main__':
     # NoP1=np.arange(100,160,20)
     # idx=0
     # t=tau_ctr
-    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,300,16),tau =tau, reps_per_ROsequence = 750)
+    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,8,2),tau =tau, reps_per_ROsequence = 75000)
     '''
     tau_array = tau_ctr+np.linspace(-.048e-6,.048e-6,9)
     for idx,t in enumerate(tau_array):

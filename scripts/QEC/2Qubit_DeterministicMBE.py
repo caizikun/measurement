@@ -102,7 +102,7 @@ def MBE(name, carbon_list   = [5,1],
     ###################################
 
     m.params['Nr_parity_msmts']     = number_of_parity_msmnts
-    m.params['Parity_threshold']    = parity_msmnts_threshold
+    m.params['Parity_threshold']    = parity_msmnts_threshold #THT: this is not used. Should be removed. REquires updating ADWIN scripts.
     
 
     ### Derive other parameters

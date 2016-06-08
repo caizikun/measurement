@@ -13,6 +13,7 @@
 from instrument import Instrument
 import numpy as np
 from analysis.lib.fitting import fit, common
+reload(common)
 import os,sys,time
 import qt
 import types
@@ -135,6 +136,10 @@ class AOM(Instrument):
                            flags=Instrument.FLAG_GETSET,
                            minval=0,maxval=31)
         
+        self.add_parameter('power_control',
+                           type = types.StringType, 
+                           option_list = ('AOM', 'DIODE'), 
+                           flags = Instrument.FLAG_GETSET)
 
         self._ins_adwin=qt.instruments[use_adwin]
         self._ins_awg=qt.instruments[use_awg]
@@ -163,6 +168,7 @@ class AOM(Instrument):
         self._sec_V_max =       1.0
         self._sec_V_min =       0.
         self._sec_V_off =       0.
+        self._power_control  ='AOM'
         self.get_all()
        
         # override from config       
@@ -306,7 +312,7 @@ class AOM(Instrument):
 
 
 
-    def calibrate(self, steps): # calibration values in uW
+    def calibrate(self, steps,control = 'AOM'): # calibration values in uW
         rng = np.arange(0,steps)
         x = np.zeros(steps, dtype = np.float64)
         y = np.zeros(steps, dtype = np.float64)
@@ -336,22 +342,46 @@ class AOM(Instrument):
         
         yf=y*1e6
         a, xc, k = (np.max(yf), np.copysign(.8, V_max + V_min), (V_max + V_min)/3.)
-        fitres = fit.fit1d(x,yf, common.fit_AOM_powerdependence, 
-                a, xc, k, do_print=True, ret=True)
+        
+        if control == 'AOM':
+            fitres = fit.fit1d(x,yf, common.fit_AOM_powerdependence, 
+                    a, xc, k, do_print=True, ret=True)
 
         
-        fd = np.zeros(len(x))
-       
-        if fitres['success']:    
-            p1 = fitres['params_dict']       
-            self.set_cal_a(p1['a']*1e-6)
-            self.set_cal_xc(p1['xc'])
-            self.set_cal_k(p1['k'])
-            fd = fitres['fitfunc'](x)
-        else:
-            print fitres['success']
-            print 'could not fit calibration curve!'
+            fd = np.zeros(len(x))
+           
+            if fitres['success']:    
+                p1 = fitres['params_dict']       
+                self.set_cal_a(p1['a']*1e-6)
+                self.set_cal_xc(p1['xc'])
+                self.set_cal_k(p1['k'])
+                fd = fitres['fitfunc'](x)
+            else:
+                print fitres['success']
+                print 'could not fit calibration curve!'
+
+        elif control == 'DIODE':
+            
+            a = (yf[-1]-yf[int(len(yf)*2/3.)])/(x[-1]-x[int(len(yf)*2/3.)])
+            k = yf[-1]-a*x[-1]
+
+            fitres = fit.fit1d(x,yf,common.fit_AOM_powerdependence_diode, 
+                    a,k, do_print=True, ret=True)
+
         
+            fd = np.zeros(len(x))
+           
+            if fitres['success']:    
+                p1 = fitres['params_dict']       
+                self.set_cal_a(p1['a']*1e-6)
+                self.set_cal_k(p1['k']*1e-6)
+
+                fd = np.zeros(len(x))
+                fd = fitres['fitfunc'](x)
+            else:
+                print fitres['success']
+                print 'could not fit calibration curve!'
+
         dat = qt.Data(name= 'aom_calibration_'+self._name+'_'+\
                 self._cur_controller)
         dat.add_coordinate('Voltage [V]')
@@ -393,10 +423,19 @@ class AOM(Instrument):
         else:
             logging.warning(self.get_name() + ' Error: controller', controller, 'not registered.')
             
-        if p <= 0:
-            voltage = V_off
-        else:
-            voltage = xc-np.log(np.log(a/float(p)))/k
+        control = self.do_get_power_control()
+
+        if control == 'AOM':
+            if p <= 0:
+                voltage = V_off
+            else:
+                voltage = xc-np.log(np.log(a/float(p)))/k
+
+        elif control == 'DIODE':
+            if p <= 0:
+                voltage = V_off
+            else:
+                voltage = (p-k)/float(a)
 
             if np.isnan(voltage) or not(V_min <= voltage <= V_max):
                 logging.warning(self.get_name() + ' Error: power out of calibration range')
@@ -408,11 +447,23 @@ class AOM(Instrument):
         xc = self.get_cal_xc()
         k = self.get_cal_k()
 
-        if u == self.get_V_off():
-            power = 0.
-        else:
-            power=a/(np.exp(np.exp(k*(-float(u)+xc))))
+        control = self.do_get_power_control()
+
+        if control == 'AOM':
+            if u == self.get_V_off():
+                power = 0.
+            else:
+                power=a/(np.exp(np.exp(k*(-float(u)+xc))))
+        
+        elif control == 'DIODE':
+            if u == self.get_V_off():
+                power = 0.
+            else:
+              power=0.5 * (np.sign((a*u+k)) + 1)* (a*u+k)* abs(np.sign((a*u+k)))
+
+
         return power
+
 
     def set_power(self,p): # power in Watt
         self.apply_voltage(self.power_to_voltage(p))
@@ -457,6 +508,24 @@ class AOM(Instrument):
         self._cur_controller = val
         # self.save_cfg()
 
+
+    def do_set_power_control(self, val):
+        # print val
+        
+        try:
+            if self.get_power() > 1e-10:
+                logging.warning('Changing '+self.get_name()+ ' controller, but output is not 0:')
+                logging.warning('Current '+self.get_name()+ ' output:'+ str(self.get_voltage())+ 'V')
+                #print 'Controller not changed.'
+                #return
+        except:
+                pass
+                #logging.warning('Error getting power of '+self.get_name())
+
+
+        self._power_control = val
+        # self.save_cfg()
+
     def do_set_wavelength(self, val):
         self._wavelength = val
         # self.save_cfg()
@@ -480,6 +549,9 @@ class AOM(Instrument):
 
     def do_get_sec_controller(self):
         return self._sec_controller
+
+    def do_get_power_control(self):
+        return self._power_control
 
     def do_get_switchable(self):
         return self._switchable

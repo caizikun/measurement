@@ -6,11 +6,12 @@ physical_adwin = qt.instruments.create('physical_adwin','ADwin_Pro_II',
 adwin = qt.instruments.create('adwin', 'adwin', 
                 adwin = qt.instruments['physical_adwin'], 
                 processes = adwinscfg.config['adwin_m1_processes'],
-                default_processes=['set_dac', 'set_dio'], 
+                default_processes=['counter', 'set_dac', 'set_dio', 'linescan'], 
                 dacs=adwinscfg.config['adwin_m1_dacs'], 
                 tags=['virtual'],
-                process_subfolder = 'adwin_pro_2_m1'
-                use_cfg=False)
+                process_subfolder = 'adwin_pro_2_m1')
+
+## why "default_processes=['set_dac', 'set_dio']," and "use_cfg=False" were added/changed here? THT
 
 wavemeter = qt.instruments.create('wavemeter','WSU_WaveMeter')
 

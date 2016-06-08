@@ -20,6 +20,7 @@ def prepare(m, sil_name=SAMPLE):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     #m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     print m.params['C13_MBI_threshold_list']
+
 def finish(m, upload=True, debug=False):
     m.autoconfig()
     print 'finished autoconfig'
@@ -32,8 +33,6 @@ def finish(m, upload=True, debug=False):
 
 
     if not debug:
-
         m.run(setup=True, autoconfig=False)
         m.save()
         m.finish()
-
