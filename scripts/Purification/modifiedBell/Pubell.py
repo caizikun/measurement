@@ -59,17 +59,9 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         reps_completed = self.adwin_var('completed_reps')    
         print('completed %s readout repetitions' % reps_completed)
 
-    def do_entanglement_actions(self):
-        #update twitter randomness
-        if self.joint_params['twitter_randomness']:
-            rnd_word='{}{}{}{}{}{}{}{}'.format(*self._rnd_dataset[0:8])
-            self.rnd_sender.set_state_bitstring(rnd_word)
-            self._rnd_dataset = self._rnd_dataset[8:]
 
     def setup(self, **kw):
         pulsar_pq.PQPulsarMeasurement.setup(self, mw=self.params['MW_during_LDE'],**kw)
-        if self.joint_params['twitter_randomness']:
-            self._rnd_dataset=np.loadtxt(self.params['twitter_rnd_fp'],dtype=np.int)     
 
     def save(self, name='ssro'):
         reps = self.adwin_var('entanglement_events')
@@ -89,8 +81,6 @@ class Bell(pulsar_pq.PQPulsarMeasurement):
         for k in joint_params:
             h5_joint_params_group.attrs[k] = joint_params[k]
         self.h5data.flush()
-        if self.joint_params['twitter_randomness']:
-            np.savetxt(self.params['twitter_rnd_fp'],self._rnd_dataset,fmt='%d')
 
         pulsar_pq.PQPulsarMeasurement.finish(self)
 

@@ -8,7 +8,7 @@ import time
 
 
 
-class Toptica_DLpro(Instrument):
+class toptica_DLpro(Instrument):
     '''SK 2016
 
     Driver for the toptica diode laser.
@@ -22,7 +22,7 @@ class Toptica_DLpro(Instrument):
     def __init__(self,name,address):
 
         '''
-        Initializes the Keithley_2100, and communicates with the wrapper.
+        Initializes the Toptica_DLpro, and communicates with the wrapper.
 
         Input:
             name (string)           : name of the instrument
@@ -36,7 +36,7 @@ class Toptica_DLpro(Instrument):
 
             Decof Command Line
         '''
-
+        print 'tests?'
         logging.info('Initializing instrument DLpro')
         Instrument.__init__(self, name, tags=['physical'])
         self._address = address
@@ -111,9 +111,7 @@ class Toptica_DLpro(Instrument):
         while "\n> " not in out:
             o = self._sock.recv(1000)
             out += o
-
-        
-        print 'readreturntest: ' + repr(out[:-3])
+    
         return out[:-3]
 
     def Remove(self):

@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 5):
+def Long_Carbon_Ramsey(name,tau = None,Addressed_Carbon = 7):
 
     m = DD.LongNuclearRamsey(name)
     funcs.prepare(m)

@@ -31,7 +31,7 @@ def NuclearRamsey_no_elDD(name,tau = None):
     m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
     m.params['Ren_Decoupling_scheme'] = 'XY8'
     m.params['Phases_of_Ren_B'] =np.ones(len(m.params['wait_times']))*0  #np.linspace(0,4*np.pi,41) #
-    m.params['C4_freq'] = 0#m.params['C1_freq']+100e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
+    m.params['C4_freq'] = 422194 #m.params['C1_freq']+100e3 # Overwrites the msmst params. Usefull to calibrate and find the correct freq 
     
     tau_larmor = m.get_tau_larmor()
     m.params['addressed_carbon'] = 4 

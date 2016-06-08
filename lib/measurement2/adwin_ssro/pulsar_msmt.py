@@ -117,7 +117,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
 class SSRO_calibration_msp1(PulsarMeasurement):
     mprefix = 'SSRO_calib_msp1'
-
+    # adwin_process = 'IntegratedSSRO_calibration'
     def autoconfig(self):
         PulsarMeasurement.autoconfig(self)
 
@@ -155,7 +155,7 @@ class SSRO_calibration_msp1(PulsarMeasurement):
         elements.append(n)
         #Spin RO element.
         e = element.Element('pi_pulse_msm1', pulsar=qt.pulsar)
-        e.append(T, length = 2e-6)
+        e.append(pulse.cp(T, length = 2e-6))
         e.append(X)
         e.append(Trig)
         elements.append(e)
@@ -165,6 +165,66 @@ class SSRO_calibration_msp1(PulsarMeasurement):
          # upload the waveforms to the AWG
         qt.pulsar.program_awg(seq,*elements)
 
+class SSRO_MWInit(PulsarMeasurement):
+    mprefix = 'SSRO_calib_MWInit'
+    adwin_process = 'singleshot'
+
+    def save(self, name='ssro'):
+        reps = self.adwin_var('completed_reps')
+        self.save_adwin_data(name,
+            [   ('CR_before', reps),
+                ('CR_after', reps),
+                ('SP_hist', self.params['SP_duration']),
+                ('RO_data', reps * self.params['SSRO_duration']),
+                ('statistics', 10),
+                'completed_reps',
+                'total_CR_counts'])
+
+
+    def autoconfig(self):
+        PulsarMeasurement.autoconfig(self)    
+
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        print self.params['pts']
+
+        #pulses
+        Trig = pulse.SquarePulse(channel = 'adwin_sync', length = 10e-6, amplitude = 2)
+        T = pulse.SquarePulse(channel='MW_Imod', length = 2e-6, amplitude = 0)
+        X = kw.get('pulse_pi', None)
+
+        if X==None:
+            print 'WARNING: No valid X Pulse'
+        else:
+            if hasattr(X,'Sw_channel'):
+                print 'this is the MW switch channel: ', X.Sw_channel
+            else:
+                print 'no switch found'
+
+        
+        #Parts and their alternatives from MW calibration
+        elements = []
+        seq = pulsar.Sequence('SSRO calibration + MW Init, RO) sequence')
+        e = element.Element('pi_pulse', pulsar=qt.pulsar)
+
+        if self.params['multiplicity'] != 0:
+            # SPIN RO ELEMENT
+            for j in range(int(self.params['multiplicity'])):
+                e.append(T)
+                e.append(X)
+                e.append(Trig)
+        
+            #seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        else:
+            e.append(T)
+            e.append(Trig)
+        elements.append(e)
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        qt.pulsar.program_awg(seq,*elements) 
+       
 
 class Multiple_SP_SSRO(PulsarMeasurement):
     mprefix = 'Multiple_SP_SSRO'
@@ -252,12 +312,6 @@ class DarkESR(PulsarMeasurement):
 
         self.params['sweep_name'] = 'MW frq (GHz)'
         
-        # why make this array here, assuming you want equally spaced points?
-        # Just define sweep_pts in the script, and measure those points.
-        #self.params['sweep_pts'] = (np.linspace(self.params['ssbmod_frq_start'],
-        #    self.params['ssbmod_frq_stop'], self.params['pts']) + \
-        #        self.params['mw_frq'])*1e-9
-
     def generate_sequence(self, upload=True):
 
         # define the necessary pulses
@@ -1034,7 +1088,7 @@ class MBI(PulsarMeasurement):
 
         exec(loadstr)
         qt.msleep(1)
-        # print loadstr 
+        print loadstr 
 
         length = self.params['nr_of_ROsequences']
 
@@ -1621,18 +1675,19 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
             elements.append(e)
 
         # sequence
-        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_shape']))
         for i,e in enumerate(elements):           
             # for j in range(self.params['multiplicity']):
             seq.append(name = e.name+'-{}'.format(j), 
                 wfname = e.name,
                 trigger_wait = True)
-            # seq.append(name = 'wait-{}-{}'.format(i,j), 
-            #     wfname = wait_1us.name, 
-            #     repetitions = self.params['delay_reps'])
+            if self.params['delay_reps'] != 0:
+                seq.append(name = 'wait-{}-{}'.format(i,j), 
+                    wfname = wait_1us.name, 
+                    repetitions = self.params['delay_reps'])
             seq.append(name='sync-{}'.format(i),
                  wfname = sync_elt.name)
-        # elements.append(wait_1us)
+        elements.append(wait_1us)
         elements.append(sync_elt)
         # upload the waveforms to the AWG
         if upload:
@@ -1900,7 +1955,7 @@ class GeneralPi2Calibration(PulsarMeasurement):
 
         pulse_pi=kw.get('pulse_pi', None)
         pulse_pi2=kw.get('pulse_pi2', None)
-
+        
         wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
         wait_1us.append(pulse.cp(T, length=1e-6))
 
@@ -2701,7 +2756,7 @@ class Sweep_pm_risetime(GeneralPiCalibration):
                     phase =  self.params['X_phase'])
             else:
                 X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-                    I_channel='MW_Imod', Q_channel='MW_Qmod',
+                    I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
                     PM_channel='mw2_pulsemod', Sw_channel = self.params['MW_switch_channel'],
                     frequency = 0.,
                     PM_risetime = self.params['PM_risetime_sweep'][i],

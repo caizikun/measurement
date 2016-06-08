@@ -4,8 +4,11 @@
 import qt
 import measurement.lib.config.adwins as adwins_cfg
 adwin = qt.instruments['adwin']
+latest_process = adwin.get_latest_process()
 reload(adwins_cfg)
-qt.instruments.reload(adwin)
+qt.instruments.reload(adwin) #why would one need to reload the entire instrument here? 
+adwin.set_latest_process(latest_process)
+
 
 from measurement.lib.pulsar import pulse, element, pulsar, pulselib,eom_pulses
 reload(pulse)

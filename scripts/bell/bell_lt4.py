@@ -342,16 +342,16 @@ if __name__ == '__main__':
     if ResetPlu:
         stools.reset_plu()
     
-    try:
-        name_index=str(qt.bell_name_index)
-    except AttributeError:
-        name_index = ''
-    qt.instruments['lt4_helper'].set_measurement_name(name_index)
+    #try:
+    #    name_index=str(qt.bell_name_index)
+    #except AttributeError:
+    #    name_index = ''
+    #qt.instruments['lt4_helper'].set_measurement_name(name_index)
     
-    qt.msleep(0.5)  
+    #qt.msleep(0.5)  
         
 
-    #SP_PSB('SPCORR_PSB',lt3=False)
+    SP_PSB('SPCORR_PSB',lt3=False)
     #SP_PSB_RandomMW('SPCORR_PSB_RandomMW')           
     
     #lt4_only('test')
@@ -363,7 +363,7 @@ if __name__ == '__main__':
     #if int(name_index)>18:
     #    qt.bell_succes = False
     #else:
-    full_bell('TheSecondFinal_day22_run_'+name_index)
+    #full_bell('TheSecondFinal_day22_run_'+name_index)
         ### 
        
-    qt.bell_succes = True
+    #qt.bell_succes = True

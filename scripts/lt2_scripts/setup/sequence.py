@@ -33,14 +33,17 @@ qt.pulsar.define_channel(id='ch3', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 # second MW source
-qt.pulsar.define_channel(id='ch2', name='MW2', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
-qt.pulsar.define_channel(id='ch3_marker1', name='MW2_pulsemod', type='marker',
+qt.pulsar.define_channel(id='ch2', name='mw2_MW_Imod', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+192e-9, active=True)
+qt.pulsar.define_channel(id='ch4', name='mw2_MW_Qmod', type='analog', high=0.9,
+    low=-0.9, offset=0., delay=spin_of+192e-9, active=True)
+
+qt.pulsar.define_channel(id='ch3_marker1', name='mw2_pulsemod', type='marker',
     high=2.0, low=0, offset=0., delay=spin_of+240e-9, active=True)
 
 #RF
-qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
+#qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+ #   low=-0.9, offset=0., delay=spin_of+240e-9, active=True)
 
 
 # sync ADwin

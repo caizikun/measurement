@@ -150,7 +150,7 @@ class ElectronRamsey_Dephasing(pulsar_msmt.MBI):
             print 'Suggested power level would exceed V_max of the AOM driver.'
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
-            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2','ch4m1':'ch4_marker1'}
             print 'AOM voltage', dephasing_AOM_voltage
             self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['dephasing_AOM']].get_sec_channel()])
             qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',dephasing_AOM_voltage)
@@ -327,8 +327,9 @@ class Simple_Electron_repumping(pulsar_msmt.MBI):
             return
         else:
             #not sure if the secondary channel of an AOM can be obtained in this way?
-            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2'}
+            channelDict={'ch2m1': 'ch2_marker1','ch2m2':'ch2_marker2', 'ch4m1':'ch4_marker1'}
             print 'AOM voltage', repumping_AOM_voltage
+            print self.params['repump_AOM'] 
             self.params['Channel_alias']=qt.pulsar.get_channel_name_by_id(channelDict[qt.instruments[self.params['repump_AOM']].get_sec_channel()])
             qt.pulsar.set_channel_opt(self.params['Channel_alias'],'high',repumping_AOM_voltage)
             print self.params['Channel_alias']

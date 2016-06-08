@@ -29,7 +29,7 @@ def run(name, **kw):
 
     pts = 50 # even number
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
     m.params['detuning'] = 0e6 #artificial detuning
 
     m.params['repump_AOM'] = 'NewfocusAOM' 
@@ -70,18 +70,18 @@ def run(name, **kw):
 
 if __name__ == '__main__':
     print 
-    newfocus_power_list = [450e-9]
+    newfocus_power_list = [1000e-9]
     pumping_cycles = 1
     #newfocus_power_list = np.arange(0.05e-6, 0.51e-6, 0.05e-6)#, 350e-9, 200e-9, 100e-9, 50e-9, 20e-9]
 
-    max_repump_duration = 700e-9
+    max_repump_duration = 2500e-9
     more_data_until = 0.
 
 
     repump_laser_config = '_Eprime'
     # MW configuration is chosen such that mw1 drives to m1 and mw2 drives to p1
-    init_states = ['m1','p1']
-    ro_states = ['0','m1','p1']
+    init_states = ['m1']
+    ro_states = ['0','m1']
 
     for power_sweep_element in range(len(newfocus_power_list)):
         for init_element in init_states:

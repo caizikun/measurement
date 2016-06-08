@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 '#INCLUDE ADwinPro_All.inc
 '#INCLUDE configuration.inc
@@ -54,6 +54,9 @@ DIM DATA_31[300] AS FLOAT
 'DIM DATA_25[500000] AS LONG AT DRAM_EXTERN 
 'DIM DATA_26[10] AS LONG AT EM_LOCAL     
 
+
+'MBI_C13 
+DIM DATA_40[100] AS LONG
 INIT:
 
 EVENT:

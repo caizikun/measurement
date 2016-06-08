@@ -58,7 +58,7 @@ params_lt4['Ex_SP_amplitude'] = 0e-9
 params_lt4['mw_frq'] 				= qt.exp_params['samples'][sample_name]['ms-1_cntr_frq']
 params_lt4['mw_power'] 				= qt.exp_params['protocols']['AdwinSSRO+espin']['mw_power']
 params_lt4['MW_pulse_mod_risetime'] = qt.exp_params['protocols']['AdwinSSRO+espin']['MW_pulse_mod_risetime']
-params_lt4['MW_Q_amp_factor'] = 0.925/0.9
+params_lt4['MW_Q_amp_factor'] = 0#0.925/0.9
 
 params_lt4['MW_pi_amp']	  	   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp'] #0.895 # 2014-07-09
 params_lt4['MW_pi_duration']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']# 180e-9 # 2014-07-09
@@ -85,7 +85,7 @@ params_lt4['wait_before_RO'] = joint_params.joint_params['wait_for_1st_revival']
 
 
 # LDE Sequence in the AWGs # params taken from the previous LT1 params
-params_lt4['eom_pulse_amplitude']		= 1.9 
+params_lt4['eom_pulse_amplitude']		= 1.9
 params_lt4['eom_pulse_duration']        = 2e-9
 params_lt4['eom_off_duration']          = 50e-9
 params_lt4['eom_off_amplitude']         = -0.293 # calibration 2015-11-04
@@ -93,18 +93,18 @@ params_lt4['eom_overshoot_duration1']   = 20e-9
 params_lt4['eom_overshoot1']            = -0.04
 params_lt4['eom_overshoot_duration2']   = 4e-9
 params_lt4['eom_overshoot2']            = -0.00
-params_lt4['aom_risetime']              = 17e-9
-params_lt4['aom_amplitude']             = 0.57#CR 31  
+params_lt4['aom_risetime']              = 28e-9#17e-9
+params_lt4['aom_amplitude']             = 0.667#CR 31  
 
 params_lt4['MW_during_LDE']           = 0 #NOTE:gets set automatically
 
 params_lt4['AWG_SP_power']            = params_lt4['A_SP_amplitude']
-params_lt4['AWG_RO_power']            = 5e-9 # 2014-11-18
+params_lt4['AWG_RO_power']            = 15e-9 # 2014-11-18
 params_lt4['AWG_yellow_power']        = 0e-9 #yellow power during SP in LDE on LT2
 params_lt4['LDE_SP_duration']         = 5.e-6 #DONT CHANGE THIS
 params_lt4['LDE_yellow_duration']     = -1. # if this is < 0, no yellow pulse is added to the sequence
 
-params_lt4['MW_opt_puls1_separation'] = 20e-9 #distance between the end of the MW and the start of opt puls1
+params_lt4['MW_opt_puls1_separation'] = 50e-9 #distance between the end of the MW and the start of opt puls1
 params_lt4['MW_1_separation'] 		  = joint_params.joint_params['opt_pulse_separation']
 params_lt4['MW_RND_wait'] 			  = 10e-9#160e-9 #wait start RND MW after end of RND halt pulse
 params_lt4['RND_duration'] 			  = 200e-9
@@ -121,24 +121,41 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 150e-9
 
-params_lt4['MAX_DATA_LEN'] 			=       joint_params.joint_params['MAX_DATA_LEN']
-params_lt4['BINSIZE'] 				=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
-params_lt4['MIN_SYNC_BIN'] 			=       joint_params.joint_params['MIN_SYNC_BIN']
-params_lt4['MAX_SYNC_BIN'] 			=       joint_params.joint_params['MAX_SYNC_BIN']
-params_lt4['MIN_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
-params_lt4['MAX_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
-params_lt4['TTTR_RepetitiveReadouts']=	 	joint_params.joint_params['TTTR_RepetitiveReadouts']
-params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count']
-params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
-params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
-params_lt4['entanglement_marker_number'] = 4
+# params_lt4['MAX_DATA_LEN'] 			=       joint_params.joint_params['MAX_DATA_LEN']
+# params_lt4['BINSIZE'] 				=       joint_params.joint_params['BINSIZE'] #2**BINSIZE*BASERESOLUTION 
+# params_lt4['MIN_SYNC_BIN'] 			=       joint_params.joint_params['MIN_SYNC_BIN']
+# params_lt4['MAX_SYNC_BIN'] 			=       joint_params.joint_params['MAX_SYNC_BIN']
+# params_lt4['MIN_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MIN_HIST_SYNC_BIN']
+# params_lt4['MAX_HIST_SYNC_BIN'] 	=  		joint_params.joint_params['MAX_HIST_SYNC_BIN']
+# params_lt4['TTTR_RepetitiveReadouts']=	 	joint_params.joint_params['TTTR_RepetitiveReadouts']
+# params_lt4['TTTR_read_count'] 		=    	joint_params.joint_params['TTTR_read_count']
+# params_lt4['measurement_abort_check_interval'] = joint_params.joint_params['measurement_abort_check_interval']
+# params_lt4['wait_for_late_data'] 	= 		joint_params.joint_params['wait_for_late_data']
+# params_lt4['entanglement_marker_number'] = 4
 params_lt4['tail_start_bin'] = 5380
 params_lt4['tail_stop_bin'] = 5380 + 200
 params_lt4['prepulse_start_bin'] = 5378 - 20
 params_lt4['prepulse_stop_bin'] = 5378
 params_lt4['live_filter_queue_length'] = 10
 
-params_lt4['twitter_rnd_fp'] = r'D:\twitter_rnd\Bob_current.txt'
+### for HH_400 LT4
+if True: # change to false for using TH
+	params_lt4['RND_start'] = 10065e-9+200e-9+200e-9# = dt(f,BC)-dt(AC) + margin + rnd freshness (40ns propagation + k=32*5ns)
+	params_lt4['use_live_marker_filter'] = False
+	params_lt4['MAX_DATA_LEN']        =   int(100e6)
+	params_lt4['BINSIZE']             =   2  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+	params_lt4['MIN_SYNC_BIN']        =   int(0.0)
+	params_lt4['MAX_SYNC_BIN']        =   int(18.5*1e6)
+	params_lt4['MIN_HIST_SYNC_BIN']   =   int(0)
+	params_lt4['MAX_HIST_SYNC_BIN']   =   int(18500*1e3)
+	params_lt4['entanglement_marker_number'] = 1
+	params_lt4['measurement_time']    =   24*60*60 #sec = 24H
+	params_lt4['measurement_abort_check_interval']    = 1 #sec
+	params_lt4['wait_for_late_data'] = 0 #in units of measurement_abort_check_interval
+	params_lt4['TTTR_read_count'] = qt.instruments['HH_400'].get_T2_READMAX()
+	params_lt4['TTTR_RepetitiveReadouts'] =  1
 
-params_lt4['measurement_time'] =   40*60#sec = 40 mins
+	params_lt4['twitter_rnd_fp'] = r'D:\twitter_rnd\Bob_current.txt'
+
+	params_lt4['measurement_time'] =   40*60#sec = 40 mins
 
