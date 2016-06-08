@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:

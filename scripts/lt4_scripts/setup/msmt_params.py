@@ -228,12 +228,12 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (416812.23+ 443393.29)/2,
-	'C4_freq_0' 		: 443416.22,
-	'C4_freq_1_m1' 		: 416815.78,
+	'C4_freq_0' 		: 443382.21,
+	'C4_freq_1_m1' 		: 416777.2,
 
 	'C4_Ren_tau_m1'    :   [6.384e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-100.61] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-105.53] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
@@ -466,5 +466,5 @@ cfg['protocols'][name]['cr_linescan'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 2.5e-9,
 		}

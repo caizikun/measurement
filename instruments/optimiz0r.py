@@ -24,7 +24,7 @@ class optimiz0r(Instrument):
 
         self.mos = mos_ins
        
-    def optimize(self, cycles=1, cnt=1, int_time=50, dims=[], order='xyz'):
+    def optimize(self, cycles=1, cnt=1, int_time=100, dims=[], order='xyz'):
         ret=True
         for c in range(cycles):
            
