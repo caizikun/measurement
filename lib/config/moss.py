@@ -229,3 +229,34 @@ config['mos_cav1'] = {
                     },
                 'lt_dimensions'  : {},#the scan mirror is never at lt.
                 }
+
+config['mos_m1'] = {
+
+                'rt_dimensions'  : {
+                    'x' : {  #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                        'dac' : 'atto_x',
+                        'micron_per_volt' : 0.6 ,
+                        'max_v' : 10.,
+                        'min_v' : -10.,
+                        'default' : 0.,
+                        'origin' : 0.,
+                        }, 
+                    'y' : {  #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                        'dac' : 'atto_y',
+                        'micron_per_volt' : 0.3 ,
+                        'min_v' : -10.,
+                        'max_v' : 10.,
+                        'default' : 0.,
+                        'origin' : 0.,
+                        },
+                    'z' : {
+                        'dac' : 'atto_z',
+                        'micron_per_volt' : 1.75,
+                        'max_v' : 10.,
+                        'min_v' : -10.,
+                        'default' : 0.,
+                        'origin' : 0.,
+                        },
+                    },
+                'lt_dimensions'  : {},
+                }

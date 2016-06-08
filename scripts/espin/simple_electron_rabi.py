@@ -24,7 +24,7 @@ def erabi(name):
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin']) #
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     # m.params.from_dict(qt.exp_params['protocols']['pulse_settings'])
@@ -39,9 +39,9 @@ def erabi(name):
     # m.params['pulse_shape'] = 'Hermite'
     # print m.params['pulse_shape']
 
-    sweep_param = 'amplitude'
+    sweep_param = 'length'
 
-    m.params['mw_power']=20 
+    m.params['mw_power']=0 
     m.params['MW_modulation_frequency'] = 43e6
     m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']# - m.params['N_HF_frq'] 
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
@@ -54,8 +54,9 @@ def erabi(name):
         elif m. params['electron_transition'] == '_p1':
             print 'plus 1 transition'
             m.params['MW_pulse_durations'] =  np.linspace(0, 800, pts) * 1e-9            
-        # m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.694552 # * 0.05 #*0.49
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['fast_pi_amp'] # * 0.05 #*0.49
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.1 # * 0.05 #*0.49
+        # m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['fast_pi_amp'] # * 0.05 #*0.49
+        # m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['Square_pi_amp'] # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         

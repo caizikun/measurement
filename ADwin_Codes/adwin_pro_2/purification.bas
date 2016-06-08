@@ -843,8 +843,7 @@ EVENT:
           'if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
           '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
           'else
-          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20
-          'endif
+          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20         
           mode = mode_after_LDE_2 'go on to next case
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1

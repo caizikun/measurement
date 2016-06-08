@@ -370,14 +370,10 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
     m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 1
- 
 
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 2
     m.params['is_two_setup_experiment'] = 1
-
-    # m.params['mw_first_pulse_amp'] = 0
-    # m.params['LDE_final_mw_amplitude'] = 0
 
     m.joint_params['LDE_attempts'] = 250
 
@@ -511,9 +507,6 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    # To get correct window
-    m.params['MIN_SYNC_BIN']        =   int(2e6) #5 us #XXX was 5us
-    m.params['MAX_SYNC_BIN']        =   int(6e6) #15 us # XXX was 15us 
 
     ### upload
 
@@ -590,7 +583,6 @@ def EntangleXX(name,debug = False,upload_only=False):
     pts = 1
     m.params['reps_per_ROsequence'] = 1000
     sweep_purification.turn_all_sequence_elements_off(m)
-    load_BK_params(m)
 
     load_BK_params(m)
 
