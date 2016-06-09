@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      50e-9,#9e-9, #50e-9
+		'yellow_repump_amplitude':      20e-9,#9e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
