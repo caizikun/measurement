@@ -15,7 +15,8 @@
 ' (including start and stop)
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod_Bell.inc
+'#INCLUDE .\cr_mod_Bell.inc
+#INCLUDE .\cr_mod.inc
 
 #DEFINE max_scan_length 1000
 ' scan settings

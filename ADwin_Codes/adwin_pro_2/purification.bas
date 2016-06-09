@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,87,87,89,89,205,205,352,352,353,353,368,368,594,594,665,665,856,857,858,865,866,867
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,205,205,352,352,353,353,368,368,594,594,665,665,856,857,858,865,866,867
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -95,6 +95,7 @@ DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO
 DIM digin_this_cycle AS long
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
 DIM time_spent_in_state_preparation, time_spent_in_sequence, time_spent_in_communication as LONG
+DIM duty_cycle as FLOAT
 
 ' Channels & triggers
 dim AWG_done_was_low, AWG_repcount_was_low, PLU_event_di_was_high, master_slave_awg_trigger_delay as long

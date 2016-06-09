@@ -24,7 +24,7 @@ class optimiz0r(Instrument):
 
         self.mos = mos_ins
        
-    def optimize(self, cycles=1, cnt=1, int_time=100, dims=[], order='xyz'):
+    def optimize(self, cycles=1, cnt=1, int_time=50, dims=[], order='xyz'):
         ret=True
         for c in range(cycles):
            
@@ -34,9 +34,6 @@ class optimiz0r(Instrument):
             gaussian_fit_init = self.opt1d_ins.get_gaussian_fit()
 
             for d in dims:
-                # if d == 'z':
-                #     gaussian_fit = kw.pop('gaussian_fit_Z', gaussian_fit_init)
-                # else:
                 gaussian_fit = gaussian_fit_init
                 
                 ret=ret and self.opt1d_ins.run(dimension=d, counter = cnt, 
