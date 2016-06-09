@@ -173,10 +173,15 @@ class purify(PQPurifyMeasurement):
             _queue_sync_number = deque([],self.params['live_filter_queue_length'])
             _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
-
+        no_of_cycles_for_live_update_reset = 100
+        live_updates = 0
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
+                    live_updates += 1
+                    if live_updates > no_of_cycles_for_live_update_reset:
+                        self.hist = np.zeros((hist_length,2), dtype = 'u4')
+                        live_updates = 0
                     # previous_last_sync = current_last_sync
                     # previous_sync_time = current_sync_time
                     self.print_measurement_progress()
@@ -197,13 +202,13 @@ class purify(PQPurifyMeasurement):
                 pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
                 tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
                 tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-                print 'duty_cycle', self.physical_adwin.Get_FPar(80)
+
                 if qt.current_setup == 'lt3':
                     # self.physical_adwin.Set_Par(50, int(tail_cts_ch0*1e4))
                     # self.physical_adwin.Set_Par(51, int(tail_cts_ch1*1e4))
                     # self.physical_adwin.Set_Par(52, int(pulse_cts_ch1*1e4))
                     if (last_sync_number > 0): 
-                        print 'tail_counts PSB', round(float(tail_cts_ch0*1e4)/float(last_sync_number),1), 'tail_counts ZPL', round(float(tail_cts_ch1*1e4)/float(last_sync_number),1), 'pulse_counts', round(float(pulse_cts_ch1*1e4)/float(last_sync_number),1)
+                        print 'tail_counts PSB lt3', round(float(2*tail_cts_ch0*1e4)/float(last_sync_number),1), 'tail_counts PSB lt4', round(float(2*tail_cts_ch1*1e4)/float(last_sync_number),1)
                 else:
                     # self.physical_adwin.Set_Par(51, int((tail_cts_ch0+tail_cts_ch1)*1e4))
                     # self.physical_adwin.Set_Par(52, int((pulse_cts_ch0+pulse_cts_ch1)*1e4))
@@ -212,6 +217,9 @@ class purify(PQPurifyMeasurement):
 
 
                 _timer=time.time()
+
+
+
             _length = 0
             newlength = 0
 
