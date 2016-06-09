@@ -41,14 +41,14 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 80e-9
-	hermite_pi_amp = 0.828 # 06-02
-	hermite_pi2_length = 45e-9
-	hermite_pi2_amp = 0.468 # 06-02
+	hermite_pi_length = 80e-9 #even
+	hermite_pi_amp = 0.834 # 06-02
+	hermite_pi2_length = 46e-9 # even
+	hermite_pi2_amp = 0.462 # 06-02
 
-	square_pi_length = 18e-9
+	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
-	square_pi2_length = 15e-9
+	square_pi2_length = 16e-9 # even
 	square_pi2_amp = 0.88 # 02-19
 
 else:
@@ -63,7 +63,7 @@ else:
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 # 26-02
-	square_pi2_length = 15e-9
+	square_pi2_length = 16e-9
 	square_pi2_amp = 0.88 # 02-19
 
 # Second MW source, currently only up to 3.2GHz, i.e. only -1 transition
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.575,#0.2
+        'aom_amplitude':					0.8,#0.2
 }
 
 

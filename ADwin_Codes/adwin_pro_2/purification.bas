@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,87,87,89,89,204,204,351,351,352,352,367,367,593,593,664,664,855,856,857,864,865,866
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,205,205,352,352,353,353,368,368,594,594,665,665,856,857,858,865,866,867
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -94,7 +94,8 @@ DIM SSRO_result AS LONG
 DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO_is_ms0 AS LONG
 DIM digin_this_cycle AS long
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
-DIM time_spent_in_state_preparation, time_spent_in_sequence, duty_cycle, time_spent_in_communication as LONG
+DIM time_spent_in_state_preparation, time_spent_in_sequence, time_spent_in_communication as LONG
+DIM duty_cycle as FLOAT
 
 ' Channels & triggers
 dim AWG_done_was_low, AWG_repcount_was_low, PLU_event_di_was_high, master_slave_awg_trigger_delay as long
@@ -998,8 +999,6 @@ EVENT:
         ENDIF
  
       CASE 10 'store the result of the tomography and the sync number counter
-        inc(success_event_counter)
-        PAR_77 = success_event_counter ' for the LabView live update
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
         DATA_108[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)         ' store value of the sync number counter. Redundant to the above, but this is really important
@@ -1066,7 +1065,7 @@ EVENT:
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
-        PAR_80 = duty_cycle
+        FPAR_80 = duty_cycle
         if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 2000E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
           time_spent_in_state_preparation = 0
           time_spent_in_sequence =0 
