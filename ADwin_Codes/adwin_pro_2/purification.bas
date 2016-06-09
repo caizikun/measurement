@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,205,205,352,352,353,353,368,368,595,595,666,666,857,858,859,866,867,868
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -390,7 +390,7 @@ EVENT:
           remote_success = 0
           remote_fail = 0
           par_15=0
-          inc(par_65)
+          inc(PAR_65)
         endif
         
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
