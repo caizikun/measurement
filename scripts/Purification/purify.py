@@ -175,7 +175,7 @@ class purify(PQPurifyMeasurement):
             _queue_sync_number = deque([],self.params['live_filter_queue_length'])
             _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
-        no_of_cycles_for_live_update_reset = 100
+        no_of_cycles_for_live_update_reset = 10
         live_updates = 0
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
