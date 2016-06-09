@@ -34,10 +34,10 @@ class optimiz0r(Instrument):
             gaussian_fit_init = self.opt1d_ins.get_gaussian_fit()
 
             for d in dims:
-                if d == 'z':
-                    gaussian_fit = kw.pop('gaussian_fit_Z', gaussian_fit_init)
-                else:
-                    gaussian_fit = gaussian_fit_init
+                # if d == 'z':
+                #     gaussian_fit = kw.pop('gaussian_fit_Z', gaussian_fit_init)
+                # else:
+                gaussian_fit = gaussian_fit_init
                 
                 ret=ret and self.opt1d_ins.run(dimension=d, counter = cnt, 
                         pixel_time=int_time, gaussian_fit = gaussian_fit, **self.dimensions[d])

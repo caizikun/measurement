@@ -189,16 +189,16 @@ class purify(PQPurifyMeasurement):
                 pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
                 tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
                 tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-                print 'duty_cycle', self.physical_adwin.Get_Par(80)
+                print 'duty_cycle', self.physical_adwin.Get_FPar(80)
                 if qt.current_setup == 'lt3':
-                    self.physical_adwin.Set_Par(50, int(tail_cts_ch0*1e4))
-                    self.physical_adwin.Set_Par(51, int(tail_cts_ch1*1e4))
-                    self.physical_adwin.Set_Par(52, int(pulse_cts_ch1*1e4))
+                    # self.physical_adwin.Set_Par(50, int(tail_cts_ch0*1e4))
+                    # self.physical_adwin.Set_Par(51, int(tail_cts_ch1*1e4))
+                    # self.physical_adwin.Set_Par(52, int(pulse_cts_ch1*1e4))
                     if (last_sync_number > 0): 
                         print 'tail_counts PSB', float(tail_cts_ch0*1e4)/float(last_sync_number), 'tail_counts ZPL', float(tail_cts_ch1*1e4)/float(last_sync_number), 'pulse_counts', float(pulse_cts_ch1*1e4)/float(last_sync_number)
                 else:
-                    self.physical_adwin.Set_Par(51, int((tail_cts_ch0+tail_cts_ch1)*1e4))
-                    self.physical_adwin.Set_Par(52, int((pulse_cts_ch0+pulse_cts_ch1)*1e4))
+                    # self.physical_adwin.Set_Par(51, int((tail_cts_ch0+tail_cts_ch1)*1e4))
+                    # self.physical_adwin.Set_Par(52, int((pulse_cts_ch0+pulse_cts_ch1)*1e4))
                     if (last_sync_number > 0): 
                         print 'tail_counts ZPL', float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number), 'pulse_counts', float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number)
 
@@ -614,7 +614,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.3, maxval=0.7, local=False)
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.4, maxval=1, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
