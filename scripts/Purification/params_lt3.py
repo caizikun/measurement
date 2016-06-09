@@ -119,10 +119,10 @@ params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interv
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['pulse_start_bin'] = 3014 - 55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['pulse_stop_bin'] = 3014+9-55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_start_bin'] = 3014+9-55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_stop_bin'] = 3014+9-55+50 -params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_start_bin'] = 3014 - 56 -params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_stop_bin'] = 3014+9-56 -params_lt3['MIN_SYNC_BIN']
+params_lt3['tail_start_bin'] = 3014+9-56 -params_lt3['MIN_SYNC_BIN']
+params_lt3['tail_stop_bin'] = 3014+9-56+50 -params_lt3['MIN_SYNC_BIN']
 params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10

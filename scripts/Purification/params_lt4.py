@@ -66,8 +66,8 @@ params_lt4['remote_adwin_di_success_channel'] = 22
 params_lt4['remote_adwin_di_fail_channel'] = 23
 params_lt4['remote_adwin_do_success_channel'] = 14
 params_lt4['remote_adwin_do_fail_channel'] = 15
-params_lt4['adwin_comm_safety_cycles'] = 3
-params_lt4['adwin_comm_timeout_cycles'] = 1000 # 1 ms
+params_lt4['adwin_comm_safety_cycles'] = 15
+params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
@@ -119,10 +119,10 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3) #XXXXX was 5560*1e3
 params_lt4['entanglement_marker_number'] = 1
 
-params_lt4['pulse_start_bin'] = 2465e3 -params_lt4['MIN_SYNC_BIN']  
-params_lt4['pulse_stop_bin'] = 2472e3 - params_lt4['MIN_SYNC_BIN']  
-params_lt4['tail_start_bin'] = 2473e3 - params_lt4['MIN_SYNC_BIN']  
-params_lt4['tail_stop_bin'] = 2550e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['pulse_start_bin'] = 2463e3 -params_lt4['MIN_SYNC_BIN']  
+params_lt4['pulse_stop_bin'] = 2471e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['tail_start_bin'] = 2471e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['tail_stop_bin'] = 2570e3 - params_lt4['MIN_SYNC_BIN']  
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H

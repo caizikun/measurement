@@ -9,6 +9,7 @@ import purify_slave, sweep_purification
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import DD_2
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+import copy
 reload(T2_tools_v3)
 reload(pq)
 reload(purify_slave);reload(sweep_purification)
@@ -155,6 +156,7 @@ class purify(PQPurifyMeasurement):
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
         self.hist = np.zeros((hist_length,2), dtype='u4')
+        self.hist_update = np.zeros((hist_length,2), dtype='u4')
         new_entanglement_markers = 0
         self.entanglement_markers = 0
 
@@ -173,17 +175,24 @@ class purify(PQPurifyMeasurement):
             _queue_sync_number = deque([],self.params['live_filter_queue_length'])
             _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
-
+        no_of_cycles_for_live_update_reset = 100
+        live_updates = 0
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
-                    # previous_last_sync = current_last_sync
-                    # previous_sync_time = current_sync_time
+                    live_updates += 1
+                    if live_updates > no_of_cycles_for_live_update_reset:
+                        self.hist_update = copy.deepcopy(self.hist)
+                        live_updates = 0
+                        last_sync_number_update = last_sync_number
+                        print 'resetting live update'
+
                     self.print_measurement_progress()
                     self._keystroke_check('abort')
                     if self.keystroke('abort') in ['q','Q']:
                         print 'aborted.'
                         self.stop_measurement_process()
+
                 else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
@@ -193,22 +202,22 @@ class purify(PQPurifyMeasurement):
                         break 
                 
                 print 'current sync, marker_events, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
-                pulse_cts_ch0=np.sum(self.hist[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
-                pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
-                tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
-                tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
+                pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
+                pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
+                tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
+                tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
                 print 'duty_cycle', self.physical_adwin.Get_FPar(80)
                 if qt.current_setup == 'lt3':
                     # self.physical_adwin.Set_Par(50, int(tail_cts_ch0*1e4))
                     # self.physical_adwin.Set_Par(51, int(tail_cts_ch1*1e4))
                     # self.physical_adwin.Set_Par(52, int(pulse_cts_ch1*1e4))
-                    if (last_sync_number > 0): 
-                        print 'tail_counts PSB', round(float(tail_cts_ch0*1e4)/float(last_sync_number),1), 'tail_counts ZPL', round(float(tail_cts_ch1*1e4)/float(last_sync_number),1), 'pulse_counts', round(float(pulse_cts_ch1*1e4)/float(last_sync_number),1)
+                    if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
+                        print 'tail_counts PSB', round(float(tail_cts_ch0*1e4)/float(last_sync_number),1), 'tail_counts ZPL', round(float(tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),1), 'pulse_counts', round(float(pulse_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),1)
                 else:
                     # self.physical_adwin.Set_Par(51, int((tail_cts_ch0+tail_cts_ch1)*1e4))
                     # self.physical_adwin.Set_Par(52, int((pulse_cts_ch0+pulse_cts_ch1)*1e4))
-                    if (last_sync_number > 0): 
-                        print 'tail_counts ZPL', round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number),1), 'pulse_counts', round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number),1)
+                    if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
+                        print 'first window tail counts ZPL', round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number-last_sync_number_update),1), 'pulse counts', round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number-last_sync_number_update),1)
 
 
                 _timer=time.time()
@@ -617,7 +626,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.4, maxval=1, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.4, maxval=1, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
