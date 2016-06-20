@@ -330,7 +330,7 @@ class DarkESR(PulsarMeasurement):
         elements = []
 
         for i, f in enumerate(1e9*self.params['sweep_pts']-self.params['mw_frq']):
-
+            # print f/1e6
             e = element.Element('DarkESR_frq-%d' % i, pulsar=qt.pulsar)
             e.add(T, name='wait')
             e.add(X(frequency=f), refpulse='wait')

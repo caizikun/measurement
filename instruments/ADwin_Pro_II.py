@@ -233,6 +233,7 @@ class ADwin_Pro_II(Instrument): #1
         ErrorMsg=c_int32(0)
         result = self._adwin32.e_ADB_Start(index,self._address,ctypes.byref(ErrorMsg))
         if result == 255:
+            error_text= str(ErrorMsg.value) + ':' + self.Get_Error_Text(ErrorMsg.value)
             logging.warning(self.get_name() + ' : error in ADwin.Start_Process: %s'%error_text)
 
     def Stop_Process(self,index):
@@ -240,6 +241,7 @@ class ADwin_Pro_II(Instrument): #1
         ErrorMsg=c_int32(0)
         result = self._adwin32.e_ADB_Stop(index,self._address,ctypes.byref(ErrorMsg))
         if result == 255:
+            error_text= str(ErrorMsg.value) + ':' + self.Get_Error_Text(ErrorMsg.value)
             logging.warning(self.get_name() + ' : error in ADwin.Stop_Process: %s'%error_text)
 
     def Process_Status(self,index):

@@ -58,8 +58,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 10.886e-6
-    NoP1=np.arange(2,24,2)
+    tau = 7.12e-6
+    NoP1=np.arange(2,48,4)
     SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
         NoP=NoP1,
         tau =tau, 

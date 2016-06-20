@@ -61,9 +61,9 @@ class counters_via_adwin(CyclopeanInstrument):
     def do_get_countrate(self, channel):
         # print 'hello'
         # print physical_adwin.Get_FPar(14)
-        # return self._countrate[channel]
-        print adwin.get_read_adc_var('fpar')[0][1]
-        return adwin.get_read_adc_var('fpar')[0][1]
+        return self._countrate[channel]
+        # print adwin.get_read_adc_var('fpar')[0][1]
+        # return adwin.get_read_adc_var('fpar')[0][1]
 
     def do_get_integration_time(self):
         return self._integration_time

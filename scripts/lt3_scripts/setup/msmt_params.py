@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL2'
+sil_name = 'SIL1'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705964 #2016-06-02 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.049337e9 #4.049453e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.705722e9#+10e6 #2016-06-02 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.049479e9 #4.049453e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 80e-9 #even
-	hermite_pi_amp = 0.834 # 06-02
+	hermite_pi_length = 90e-9 #even
+	hermite_pi_amp = 0.688#0.534 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.462 # 06-02
+	hermite_pi2_amp = 0.472 # 06-02 0.472
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -56,10 +56,10 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 130e-9 #180e-9
-	hermite_pi_amp = 0.320#0.246 #0.2
-	hermite_pi2_length = 50e-9#36e-9
-	hermite_pi2_amp = 0.311
+	hermite_pi_length = 100e-9 #180e-9
+	hermite_pi_amp = 0.432#0.246 #0.2
+	hermite_pi2_length = 90e-9#36e-9
+	hermite_pi2_amp = 0.189
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 # 26-02
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      20e-9,#9e-9, #50e-9
+		'yellow_repump_amplitude':      15e-9,#9e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -228,23 +228,23 @@ cfg['samples'][sample_name] = {
     'phase_per_compensation_repetition': 13.12, # adwin needs positive values
     'total_phase_offset_after_sequence': 113., #68.386,#42.328,
 
-	#########################
-	#####     SIL1      #####
-	#########################
-	###########
-	#### C2 ###
+	# #########################
+	# #####     SIL1      #####
+	# #########################
+	# ##########
+	# ### C2 ###
 	# ###########
 	# 'C2_freq_m1'        : (446138.+462154.03)/2.,
 	# 'C2_freq_0' 		: 445890.53,
 	# 'C2_freq_1_m1' 		: 462167.38, #1kHz uncertainty though
 
-	# 'C2_Ren_tau_m1'    :   [7.144e-6],
-	# 'C2_Ren_N_m1'      :   [30],
+	# 'C2_Ren_tau_m1'    :   [7.12e-6],
+	# 'C2_Ren_N_m1'      :   [24],
 	# 'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	############
-	#### C3 ####
-	############
+	# ###########
+	# ### C3 ####
+	# ###########
 	# # #### C3 ### C8 in up 
 	# 'C3_freq_m1'      : (446138. + 462154.03)/2.,
 	# 'C3_freq_0' 		: 445890.53,
@@ -451,7 +451,7 @@ cfg['protocols'][name]['pulses'] = {
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
     	'DESR_pulse_duration' :		4e-6,
-    	'DESR_pulse_amplitude' :	0.068,#0.194,
+    	'DESR_pulse_amplitude' :	0.0028,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.8,#0.2
+        'aom_amplitude':					0.58,#0.2
 }
 
 
@@ -530,10 +530,10 @@ cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 0.3e-9,
+		'A_CR_amplitude':				 0.6e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 0.2e-9,
+		'Ex_CR_amplitude':				 0.6e-9,
 		}

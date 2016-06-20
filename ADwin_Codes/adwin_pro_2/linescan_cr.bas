@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -51,7 +51,7 @@ DIM DACBinaryVoltage AS INTEGER
 
 DIM DATA_11[max_scan_length] AS LONG
 ' supplemental data; used when PxAction is set to 2
-DIM DATA_150[max_scan_length] AS FLOAT
+DIM DATA_15[max_scan_length] AS FLOAT
 
 dim timer, wait_time AS LONG
 dim counter1 AS LONG
@@ -98,7 +98,7 @@ LOWINIT:
   
   FOR i = 1 TO max_scan_length
     DATA_11[i] = 0
-    DATA_150[i] = 0
+    DATA_15[i] = 0
   NEXT i
   
   timer = wait_time
@@ -116,7 +116,7 @@ EVENT:
     DATA_11[CurrentStep] = DATA_11[CurrentStep] +counter1 'save last value and reset counter value
     counter1=0
     IF (PxAction = 2) THEN   ' record supplemental data per px from fpar2
-      DATA_150[CurrentStep] = FPar_2
+      DATA_15[CurrentStep] = FPar_2
     ENDIF    
     ' Set the voltage on all involved DACs
     FOR i = 1 TO NoOfDACs
