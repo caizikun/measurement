@@ -7,11 +7,11 @@ AOM = qt.instruments['GreenAOM']
 
 # counter = [0, 1, 2]
 # counter = [0]
-z_start = [0.46]*5
-xstart = [-7]*len(z_start)
-xstop = [7]*len(z_start)
-ystart = [-7]*len(z_start)
-ystop = [7]*len(z_start)
+z_start = [1.97]*10
+xstart = [0]*len(z_start)
+xstop = [8]*len(z_start)
+ystart = [0]*len(z_start)
+ystop = [8]*len(z_start)
 xpx = 201
 ypx = 201
 
@@ -21,6 +21,8 @@ ypx = 201
 # zoom_depth = [2.5, 3.0, 3.5]
 
 counter = 0
+
+stop_scan = False
 
 for x_start,x_stop,y_start,y_stop in zip(xstart,xstop,ystart,ystop):
   scan2d.set_xstart(x_start)
@@ -38,17 +40,17 @@ for x_start,x_stop,y_start,y_stop in zip(xstart,xstop,ystart,ystop):
   pixeltime =[10.]*len(zoom)
   j=0
   k=0
-  stop_scan = False
+  
   for i in zoom:
     print '%s_um'%i
     if i  == 3.5 or i == 4.0:
-      AOM.trun_on()
+      AOM.turn_on()
     else:
       AOM.turn_on()
     print 'Green power = %.1f uW' % (AOM.get_power()*1e6)
     master_of_space.set_z(focus+i)
     qt.msleep(5)
-    setup_controller.set_keyword('Cavities_NVsearch_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+    setup_controller.set_keyword('Focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
 
     lastline_reached=False
     #print 'xsteps[j]', xsteps[j]
@@ -68,6 +70,7 @@ for x_start,x_stop,y_start,y_stop in zip(xstart,xstop,ystart,ystop):
     k=k+1
     print 'scan ready' 
     counter += 1
+  if stop_scan: break
 
 AOM.turn_off()
 print 'Current coarse position X1, Y_hoog'

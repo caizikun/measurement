@@ -42,7 +42,6 @@ class counters_via_adwin(CyclopeanInstrument):
         self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, }
         self._integration_time = 1
         self._avg_periods = 100
-        # print "Test"
         
         # instruments we need to access
         self._ins_adwin = qt.instruments[adwin]
@@ -59,11 +58,7 @@ class counters_via_adwin(CyclopeanInstrument):
         self._busy = False
 
     def do_get_countrate(self, channel):
-        # print 'hello'
-        # print physical_adwin.Get_FPar(14)
-        # return self._countrate[channel]
-        print adwin.get_read_adc_var('fpar')[0][1]
-        return adwin.get_read_adc_var('fpar')[0][1]
+        return self._countrate[channel]
 
     def do_get_integration_time(self):
         return self._integration_time
@@ -85,7 +80,7 @@ class counters_via_adwin(CyclopeanInstrument):
         return True
 
     def _start_running(self):
-        print 'counters started running'
+        #print 'counters started running'
         CyclopeanInstrument._start_running(self)
         self._ins_adwin.start_counter(
                 set_integration_time=self._integration_time,

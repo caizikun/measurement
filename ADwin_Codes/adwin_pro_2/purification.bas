@@ -1067,7 +1067,7 @@ EVENT:
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
-        FPAR_80 = duty_cycle
+        FPAR_58 = duty_cycle
         if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 2000E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
           time_spent_in_state_preparation = 0
           time_spent_in_sequence =0 
