@@ -179,6 +179,7 @@ class purify(PQPurifyMeasurement):
         live_updates = 0
         last_sync_number_update = 0
         last_sync_number = 0
+
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
@@ -187,7 +188,6 @@ class purify(PQPurifyMeasurement):
                         self.hist_update = copy.deepcopy(self.hist)
                         live_updates = 0
                         last_sync_number_update = last_sync_number
-                        print 'resetting live update'
 
                     self.print_measurement_progress()
                     self._keystroke_check('abort')
@@ -209,17 +209,23 @@ class purify(PQPurifyMeasurement):
                 tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
                 tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
                 print 'duty_cycle', self.physical_adwin.Get_FPar(80)
-                if qt.current_setup == 'lt3':
-                    # self.physical_adwin.Set_Par(50, int(tail_cts_ch0*1e4))
-                    # self.physical_adwin.Set_Par(51, int(tail_cts_ch1*1e4))
-                    # self.physical_adwin.Set_Par(52, int(pulse_cts_ch1*1e4))
-                    if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
-                        print 'tail_counts PSB LT3', round(2*float(tail_cts_ch0*1e4)/float(last_sync_number- last_sync_number_update),1), 'tail_counts PSB LT4', round(2*float(tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),1)
-                else:
-                    # self.physical_adwin.Set_Par(51, int((tail_cts_ch0+tail_cts_ch1)*1e4))
-                    # self.physical_adwin.Set_Par(52, int((pulse_cts_ch0+pulse_cts_ch1)*1e4))
-                    if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
-                        print 'first window tail counts ZPL', round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number-last_sync_number_update),1), 'pulse counts', round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number-last_sync_number_update),1)
+
+
+                #### update parameters in the adwin
+                if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
+                    if qt.current_setup == 'lt3':
+
+                        tail_psb_lt3 = round(float(2*tail_cts_ch0*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        tail_psb_lt4 = round(float(2*tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        self.physical_adwin.Set_FPar(56, tail_psb_lt3)
+                        self.physical_adwin.Set_FPar(57, tail_psb_lt4)
+                         
+                        print 'tail_counts PSB', round(float(2*tail_cts_ch0*1e4)/float(last_sync_number),3)
+                    else:
+                        ZPL_tail = round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        self.physical_adwin.Set_FPar(56, ZPL_tail)
+                        self.physical_adwin.Set_FPar(57, Pulse_counts)
 
 
                 _timer=time.time()
@@ -421,6 +427,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1., lo
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
+
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
@@ -501,7 +508,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     # load_BK_params(m)
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 5000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -573,6 +580,9 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 50000
     sweep_purification.turn_all_sequence_elements_off(m)
 
+
+    m.params['MIN_SYNC_BIN'] =       1.5e6
+    m.params['MAX_SYNC_BIN'] =       9e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['do_general_sweep'] = 0
@@ -584,6 +594,10 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['opt_pulse_separation'] = 700e-9
     m.joint_params['LDE_attempts'] = 100
 
+    m.params['pulse_start_bin'] = 2403e3- m.params['MIN_SYNC_BIN']  
+    m.params['pulse_stop_bin'] = 2408e3 - m.params['MIN_SYNC_BIN'] 
+    m.params['tail_start_bin'] = 2409e3 - m.params['MIN_SYNC_BIN']  
+    m.params['tail_stop_bin'] = 2509e3  - m.params['MIN_SYNC_BIN'] 
 
     ### upload and run
 
@@ -591,9 +605,10 @@ def TPQI(name,debug = False,upload_only=False):
 
 
 def EntangleZZ(name,debug = False,upload_only=False):
+
     m = purify(name)
     sweep_purification.prepare(m)
-    
+   
     pts = 1
     m.params['reps_per_ROsequence'] = 1000
     sweep_purification.turn_all_sequence_elements_off(m)
@@ -608,10 +623,11 @@ def EntangleZZ(name,debug = False,upload_only=False):
     m.joint_params['LDE_attempts'] = 200
 
     m.params['LDE_final_mw_amplitude'] = 0
-    
+
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 def EntangleXX(name,debug = False,upload_only=False):
     m = purify(name)
@@ -629,7 +645,7 @@ def EntangleXX(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 125
-    
+
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -661,7 +677,7 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // Barrett Kok parameters
-    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    TPQI(name+'_TPQI',debug = False,upload_only=False)
-    #EntangleZZ(name+'_EntangleZZ',debug = False,upload_only=False)
-    #EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+    #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
+    TPQI(name+'_TPQI_laserpulse',debug = False,upload_only=False)
+    #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
+    # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)

@@ -482,6 +482,13 @@ class adwin(Instrument):
 
     def set_dac_voltage(self, (name, value), timeout=1, **kw):
         if 'set_dac' in self.processes:
+            
+            # # PH - added so that don't stupidly fail to set gate to zero when pid running
+            # if name == 'gate' and 'pidgate' in qt.instruments.get_instrument_names():
+            #     if qt.instruments['pidgate'].get_is_running() == True:
+            #         print 'PID gate running! Disable before manually changing dac voltages'
+            #         return False
+
             # print name
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)

@@ -119,9 +119,9 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3) #XXXXX was 5560*1e3
 params_lt4['entanglement_marker_number'] = 1
 
-params_lt4['pulse_start_bin'] = 2463e3 -params_lt4['MIN_SYNC_BIN']  
-params_lt4['pulse_stop_bin'] = 2471e3 - params_lt4['MIN_SYNC_BIN']  
-params_lt4['tail_start_bin'] = 2471e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['pulse_start_bin'] = 2490e3 -params_lt4['MIN_SYNC_BIN']  
+params_lt4['pulse_stop_bin'] = 2499e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['tail_start_bin'] = 2499e3 - params_lt4['MIN_SYNC_BIN']  
 params_lt4['tail_stop_bin'] = 2570e3 - params_lt4['MIN_SYNC_BIN']  
 params_lt4['PQ_ch1_delay'] = 0
 

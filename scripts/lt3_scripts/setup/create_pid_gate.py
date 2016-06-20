@@ -16,7 +16,7 @@ if True:
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     pidyellowfrq = qt.instruments.create('pidyellowfrq', 'pid_controller_v4', 
             set_ctrl_func=_setctrl_yellow_freq , get_val_func=_getval_yellow_freq , get_ctrl_func=_getctrl_yellow_freq, 
-            ctrl_minval=0., ctrl_maxval=35.)
+            ctrl_minval=0., ctrl_maxval=80.)
 
 #Stabilize the Newfocus frequency using information from the taper & yellow frequencies (measured on local WM):
 if True:
