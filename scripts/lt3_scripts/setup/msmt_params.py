@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      15e-9,#9e-9, #50e-9
-		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      30e-9,#9e-9, #50e-9
+		'yellow_repump_duration':       200, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -370,10 +370,10 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 5e-9,#2.5e-9,
+		'A_CR_amplitude':				 2e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 100e-9,
-		'CR_duration' :				 	 50, 
+		'CR_duration' :				 	 60, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						40e-9,
-        'aom_amplitude':					0.58,#0.2
+        'aom_amplitude':					0.8,#0.2
 }
 
 

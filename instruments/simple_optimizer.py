@@ -80,8 +80,9 @@ class simple_optimizer(Instrument):
                 np.linspace(scan_min, scan_max, steps))
         udrange=np.append(udrange,np.linspace(scan_max-self._control_step_size,initial_setpoint,int(steps/2.)))
         #print udrange #XXXXXX
-        values=np.zeros(len(udrange))
-        true_udrange=np.zeros(len(udrange))
+        values=np.array([])#np.zeros(len(udrange))
+        true_udrange=np.array([])#np.zeros(len(udrange))
+        finished = 0
         for i,sp in enumerate(udrange):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 self._set_control_f(initial_setpoint)
@@ -89,12 +90,17 @@ class simple_optimizer(Instrument):
             #print 'sp',sp
             self._set_control_f(sp)
             if self.get_dwell_after_set():
-                qt.msleep(self._dwell_time)
-            true_udrange[i]=self._get_control_f()
-            values[i]=self.get_value()
-            if values[i] > self.get_good_value():
-                break
-            
+                st = time.time()
+
+                while (time.time() - st <= self._dwell_time) and (finished == 0):
+                    qt.msleep(0.05)
+                    true_udrange.append(self._get_control_f())
+                    values.append(self.get_value())
+                    if values[-1] > self.get_good_value():
+                        finished = 1
+
+            if finished == 1: break
+
         valid_i=np.where(values>self._min_value)
         
         if self.get_do_plot():

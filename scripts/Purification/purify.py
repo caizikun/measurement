@@ -584,7 +584,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['MIN_SYNC_BIN'] =       1.5e6
     m.params['MAX_SYNC_BIN'] =       9e6
     m.params['is_TPQI'] = 1
-    m.params['is_two_setup_experiment'] = 1
+    m.params['is_two_setup_experiment'] = 0
     m.params['do_general_sweep'] = 0
     m.params['MW_during_LDE'] = 0
 
@@ -666,7 +666,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
