@@ -2,6 +2,7 @@ import qt
 import numpy as np
 from instrument import Instrument
 import plot as plt
+import time
 import types
 import os
 import msvcrt
@@ -70,7 +71,7 @@ class simple_optimizer(Instrument):
             self.ins_cfg[param] = value
             
     def scan(self):
-          
+        
         initial_setpoint = self._get_control_f()
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.
@@ -89,17 +90,21 @@ class simple_optimizer(Instrument):
                 break
             #print 'sp',sp
             self._set_control_f(sp)
+
             if self.get_dwell_after_set():
+
                 st = time.time()
 
                 while (time.time() - st <= self._dwell_time) and (finished == 0):
                     qt.msleep(0.05)
-                    true_udrange.append(self._get_control_f())
-                    values.append(self.get_value())
+                    true_udrange = np.append(true_udrange,self._get_control_f())
+                    values = np.append(values,self.get_value())
                     if values[-1] > self.get_good_value():
                         finished = 1
 
-            if finished == 1: break
+            if finished == 1: 
+                print "Found good value"
+                break
 
         valid_i=np.where(values>self._min_value)
         
