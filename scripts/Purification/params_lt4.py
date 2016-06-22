@@ -113,10 +113,10 @@ params_lt4['dynamic_phase_N']			= 2
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(2e6) #5 us #XXX was 5us
+params_lt4['MIN_SYNC_BIN']        =   int(2e6) #5 us 
 params_lt4['MAX_SYNC_BIN']        =   int(3.5e6) #15 us # XXX was 15us 
 params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3) #XXXXX was 5560*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3)
 params_lt4['entanglement_marker_number'] = 1
 
 params_lt4['pulse_start_bin'] = 2490e3 -params_lt4['MIN_SYNC_BIN']  

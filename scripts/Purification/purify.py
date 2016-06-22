@@ -584,7 +584,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['MIN_SYNC_BIN'] =       1.5e6
     m.params['MAX_SYNC_BIN'] =       9e6
     m.params['is_TPQI'] = 1
-    m.params['is_two_setup_experiment'] = 0
+    m.params['is_two_setup_experiment'] = 1
     m.params['do_general_sweep'] = 0
     m.params['MW_during_LDE'] = 0
 
@@ -594,10 +594,10 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['opt_pulse_separation'] = 700e-9
     m.joint_params['LDE_attempts'] = 100
 
-    m.params['pulse_start_bin'] = 2403e3- m.params['MIN_SYNC_BIN']  
-    m.params['pulse_stop_bin'] = 2408e3 - m.params['MIN_SYNC_BIN'] 
-    m.params['tail_start_bin'] = 2409e3 - m.params['MIN_SYNC_BIN']  
-    m.params['tail_stop_bin'] = 2509e3  - m.params['MIN_SYNC_BIN'] 
+    m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+    m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+    m.params['tail_start_bin'] = 2635e3 - m.params['MIN_SYNC_BIN']  
+    m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
 
     ### upload and run
 
@@ -666,7 +666,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -678,6 +678,6 @@ if __name__ == '__main__':
 
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    TPQI(name+'_TPQI_laserpulse',debug = False,upload_only=False)
+    TPQI(name+'_TPQI',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
