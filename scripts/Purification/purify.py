@@ -208,7 +208,7 @@ class purify(PQPurifyMeasurement):
                 pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
                 tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
                 tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-                print 'duty_cycle', self.physical_adwin.Get_FPar(80)
+                print 'duty_cycle', self.physical_adwin.Get_FPar(58)
 
 
                 #### update parameters in the adwin
@@ -414,7 +414,7 @@ def MW_Position(name,debug = False,upload_only=False):
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1., local = False):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = False):
     """
     Performs a tail_sweep in the LDE_1 element
     """
@@ -600,6 +600,12 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
 
     ### upload and run
+    # m.params['do_general_sweep'] = 1
+    # m.params['general_sweep_name'] = 'LDE_attempts'
+    # m.params['general_sweep_pts'] = np.arange(2,503,50)
+    # m.params['pts'] = len(m.params['general_sweep_pts'])
+    # m.params['sweep_name'] = m.params['general_sweep_name']
+    # m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -666,7 +672,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -678,6 +684,6 @@ if __name__ == '__main__':
 
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    TPQI(name+'_TPQI',debug = False,upload_only=False)
+    #TPQI(name+'_TPQI',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)

@@ -55,21 +55,21 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_yellow_g') 
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
-        self.add_function('zoptimize_rejection')
         self.add_function('rejecter_quarter_plus')
         self.add_function('rejecter_quarter_min')
-        self.add_function('check_laser_lock')
+        self.add_function('toggle_pid_gate')
+        self.add_function('toggle_pid_nf')
+        self.add_function('toggle_pid_yellowfrq')
+
+
 
         self.setup_name = setup_name
-        if 'lt3' in setup_name:
-            requests.packages.urllib3.disable_warnings() #XXXXXXXXXXX FIX by updating packages in Canopy package manager?
-            self._pharp=qt.instruments['PH_300']
+
 
 
         self._taper_index = 4 if 'lt3' in setup_name else 3
 
         self.max_cryo_half_rot_degrees  = 3
-        self.max_laser_reject_cycles = 25
         self.nb_min_between_nf_optim = 7
         
         self.history_length = 10
@@ -120,22 +120,22 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def publish_values(self):
         try:
-            dweet_name = 'bell_board-lt4' if 'lt4' in self.setup_name else 'bell_board-lt3'
-            dweepy.dweet_for(dweet_name,
-                {'tail'             : self.tail_counts,
-                 'pulse'            : self.pulse_counts,
-                 'PSB_tail'         : self.PSB_tail_counts,
-                 'SP_ref'           : self.SP_ref_LT4,
-                 'repump_counts'    : self.repump_counts,
-                 'strain'           : self.strain,
-                 'cr_counts'        : self.cr_counts_avg_excl_repump,
-                 'starts'           : float(self.start_seq)/self.dt,
-                 'cr_failed'        : self.failed_cr_fraction_avg,
-                 'script_running'   : self.script_running,
-                 'invalid_marker'   : self.get_invalid_data_marker(),
-                 'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
-                 'ent_events'       : self.entanglement_events,
-                 })
+            # dweet_name = 'bell_board-lt4' if 'lt4' in self.setup_name else 'bell_board-lt3'
+            # dweepy.dweet_for(dweet_name,
+            #     {'tail'             : self.tail_counts,
+            #      'pulse'            : self.pulse_counts,
+            #      'PSB_tail'         : self.PSB_tail_counts,
+            #      'SP_ref'           : self.SP_ref_LT4,
+            #      'repump_counts'    : self.repump_counts,
+            #      'strain'           : self.strain,
+            #      'cr_counts'        : self.cr_counts_avg_excl_repump,
+            #      'starts'           : float(self.start_seq)/self.dt,
+            #      'cr_failed'        : self.failed_cr_fraction_avg,
+            #      'script_running'   : self.script_running,
+            #      'invalid_marker'   : self.get_invalid_data_marker(),
+            #      'status_message'   : time.strftime('%H:%M')+': '+self.status_message,
+            #      'ent_events'       : self.entanglement_events,
+            #      })
             log_file=open(self.log_fp, 'a')  
             log_file.write(time.strftime('%Y%m%d%H%M%S')+' :{}:'.format(self.get_invalid_data_marker())+self.status_message + '\n')
             log_file.close()
@@ -217,18 +217,21 @@ class purification_optimizer(mo.multiple_optimizer):
     def check(self):
 
         try:
+            ### msmt helpers not currently implemented
             if 'lt4' in self.setup_name:
                 self.script_running = qt.instruments['lt4_measurement_helper'].get_is_running()
             else:
                 self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running() and \
-                                            'bell_lt3.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
+                                            'purify.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
+            if False:
+                print 'implement the measurement helpers in order to run the comments below.'
             if not self.script_running:
                 self.script_not_running_counter += 1
-                self.status_message = 'Bell script not running'
+                self.status_message = 'Purification script not running'
                  
                             
                 if self.script_not_running_counter > self.max_counter_for_waiting_time :
-                    self.send_error_email(subject = 'ERROR : Bell sequence not running')
+                    self.send_error_email(subject = 'ERROR : Purification sequence not running')
                     self.stop()
                     return False
                 else:
@@ -260,7 +263,6 @@ class purification_optimizer(mo.multiple_optimizer):
 
                 self.start_seq = par_counts[3]
 
-                self.qrng_voltage = qt.instruments['labjack'].get_analog_in1()
 
                 if self.start_seq > 0:
                     self.PSB_tail_counts = np.float(par_laser[0])/self.start_seq/125.*10000.
@@ -278,56 +280,27 @@ class purification_optimizer(mo.multiple_optimizer):
                 
                 self.publish_values()
 
-                if 'lt3' in self.setup_name:
-                    jitterDetected, jitter_text = self.check_jitter()
-                    lock_ok, lock_text = self.check_laser_lock()
-                else:
-                    jitterDetected, jitter_text = False, ''
-                    lock_ok, lock_text = True, ''
-
                 self.status_message = ''
 
-                if self.qrng_voltage < 0.05 or self.qrng_voltage > 0.2 :
-                    text ='The QRNG voltage is measured to be {:.3f}. The QRNG detector might be broken\n'.format(self.qrng_voltage)
-                    self.status_message += text 
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : QRNG threshold voltage too low {} setup'.format(self.setup_name)
-                    self.send_error_email(subject = subject, text = text)
-                       
-                if jitterDetected:
-                    self.status_message += 'Jitter detected!\n'
-                    text = jitter_text
-                    subject = 'ERROR :AWG jitte detected'
-                    self.send_error_email(subject = subject, text = text)
-
-                if not(lock_ok):
-                    self.status_message += 'Laser Lock issue!\n'
-                    text = lock_text
-                    subject = 'ERROR : Laser Lock issue!'
-                    self.set_invalid_data_marker(1)  
-                    self.send_error_email(subject = subject, text = text)
-                    
-                    #self.set_invalid_data_marker(1)
-
                 ## WM check.
-                if len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                    text= 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
-                    self.status_message += text 
-                    self.send_error_email(subject = subject, text = text)
-                if len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
-                    text ='The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
-                    self.status_message += text 
-                    self.send_error_email(subject = subject, text = text)
-                if len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
-                    self.set_invalid_data_marker(1)
-                    subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
-                    text ='The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
-                    self.status_message += text 
-                    self.send_error_email(subject = subject, text = text)
+                # if len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
+                #     self.set_invalid_data_marker(1)
+                #     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
+                #     text= 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
+                #     self.status_message += text 
+                #     self.send_error_email(subject = subject, text = text)
+                # if len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
+                #     self.set_invalid_data_marker(1)
+                #     subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
+                #     text ='The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
+                #     self.status_message += text 
+                #     self.send_error_email(subject = subject, text = text)
+                # if len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
+                #     self.set_invalid_data_marker(1)
+                #     subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
+                #     text ='The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
+                #     self.status_message += text 
+                #     self.send_error_email(subject = subject, text = text)
 
                 if self.cr_checks <= 50:
                     self.waiting_for_other_setup_counter += 1
@@ -397,56 +370,37 @@ class purification_optimizer(mo.multiple_optimizer):
                     self.wait_counter = 2
                     self.need_to_optimize_nf = True
 
-                elif self.SP_ref > self.get_max_SP_ref() and not np.isnan(self.SP_ref):
-                    if self.pulse_counts > self.get_max_pulse_counts():
-                        self.set_invalid_data_marker(1)
-                    else:
-                        self.set_invalid_data_marker(0)
-                    self.status_message +='Bad laser rejection detected.\n'
-                    self.laser_rejection_counter +=1
-
-                    if not(qt.instruments['rejecter'].get_is_running()):
-                        print  'Starting the optimizing...'
-                        self.zoptimize_rejection()
-                    #self.wait_counter = 1
-
-                    if qt.instruments['rejecter'].get_noof_reject_cycles() > self.max_laser_reject_cycles:
-                        text = 'Can\'t get a good laser rejection even after {} optimization cycles.'.format(self.max_laser_reject_cycles)
-                        subject = 'ERROR : Bad rejection {} setup'.format(self.setup_name)
-                        self.send_error_email(subject = subject, text = text)
-                        #self.set_invalid_data_marker(1)
-                        #self.set_failed()
          
-                elif (self.failed_cr_fraction_avg > 0.96) and (self._run_counter % self.avg_length == 0):
-                    subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
-                    self.status_message += 'Im passing too little cr checks. Please adjust the Cryo waveplate\n'
-                    if self.nf_optimize_counter < 2:
-                        self.need_to_optimize_nf = True
-                        self.nf_optimize_counter +=1
+                # elif (self.failed_cr_fraction_avg > 0.96) and (self._run_counter % self.avg_length == 0):
+                #     subject = 'WARNING : low CR sucess {} setup'.format(self.setup_name)
+                #     self.status_message += 'Im passing too little cr checks. Please adjust the Cryo waveplate\n'
+                #     if self.nf_optimize_counter < 2:
+                #         self.need_to_optimize_nf = True
+                #         self.nf_optimize_counter +=1
 
-                    self.send_error_email(subject = subject, text = self.status_message)
+                #     self.send_error_email(subject = subject, text = self.status_message)
 
-                elif self.cr_counts_avg_excl_repump > self.get_max_cr_counts_avg() :
-                    if self.cryo_half_rot_degrees < self.max_cryo_half_rot_degrees :
-                        qt.instruments['rejecter'].move('cryo_half', -0.5)
-                        self.cryo_half_rot_degrees += 0.5
-                        text = 'The average CR counts are {:.1f}. Rotating cryo half\
-                            Rotated {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
-                        self.status_message += text 
-                        subject = 'WARNING : cryo_half rotating'.format(self.setup_name)
-                        self.send_error_email(subject = subject, text = text)
+                # elif self.cr_counts_avg_excl_repump > self.get_max_cr_counts_avg() :
+                #     if self.cryo_half_rot_degrees < self.max_cryo_half_rot_degrees :
+                #         qt.instruments['rejecter'].move('cryo_half', -0.5)
+                #         self.cryo_half_rot_degrees += 0.5
+                #         text = 'The average CR counts are {:.1f}. Rotating cryo half\
+                #             Rotated {} degrees.\n'.format(self.cr_counts_avg_excl_repump, self.cryo_half_rot_degrees)
+                #         self.status_message += text 
+                #         subject = 'WARNING : cryo_half rotating'.format(self.setup_name)
+                #         self.send_error_email(subject = subject, text = text)
 
-                    else :
-                        subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
-                        text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rot_degrees)
-                        self.set_invalid_data_marker(1)  
-                        self.send_error_email(subject = subject, text = text)
+                #     else :
+                #         subject = 'WARNING : too high CR success and cryo_half at limit on {} setup'.format(self.setup_name)
+                #         text = 'I have passed too many cr checks and the cryo_half waveplate has already been rotated of {} degrees. Please check.'.format(self.max_cryo_half_rot_degrees)
+                #         self.set_invalid_data_marker(1)  
+                #         self.send_error_email(subject = subject, text = text)
 
-                elif 'lt4' in self.setup_name and self.tail_counts_avg >0 and self.tail_counts_avg < self.get_min_tail_counts():
-                    text = 'WARNING: avg tail counts too low: {:.2f} < {:.2f}'.format(self.tail_counts_avg, self.get_min_tail_counts())
-                    subject = 'Low tail counts'
-                    self.set_invalid_data_marker(1)
-                    self.send_error_email(subject = subject, text = text)
+                # elif 'lt4' in self.setup_name and self.tail_counts_avg >0 and self.tail_counts_avg < self.get_min_tail_counts():
+                #     text = 'WARNING: avg tail counts too low: {:.2f} < {:.2f}'.format(self.tail_counts_avg, self.get_min_tail_counts())
+                #     subject = 'Low tail counts'
+                #     self.set_invalid_data_marker(1)
+                #     self.send_error_email(subject = subject, text = text)
 
                 if self.status_message == '':
                     self.status_message = 'Relax Im doing my job'
@@ -530,6 +484,15 @@ class purification_optimizer(mo.multiple_optimizer):
         else:
             qt.instruments['pidgate'].stop()
 
+    def toggle_pid_gate(self):
+        self._do_set_pidgate_running(self._do_get_pidgate_running())
+
+    def toggle_pid_nf(self):
+        self._do_set_pidgate_running(self._do_get_pidgate_running())
+
+    def toggle_pid_yellowfrq(self):
+        self._do_set_pidgate_running(self._do_get_pidgate_running())
+
     def rejecter_half_plus(self):
         qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=True)
 
@@ -541,19 +504,6 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def rejecter_quarter_min(self):
         qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
-
-    #def optimize_rejecter(self):
-    #    qt.instruments['rejecter'].nd_optimize(max_range=15,stepsize=self.get_rejecter_step(),method=2,quick_scan=False)
-    def optimize_half(self):
-        qt.instruments['waveplates_optimizer'].optimize('Half')
-    def optimize_quarter(self):
-        qt.instruments['waveplates_optimizer'].optimize('Quarter')
-
-    def zoptimize_rejection(self):
-        # qt.instruments['waveplates_optimizer'].optimize_rejection()
-        qt.instruments['rejecter'].set_step_size(self.get_rejecter_step())
-        #qt.instruments['rejecter'].set_good_rejection(self.get_max_SP_ref()-1)
-        qt.instruments['rejecter'].start()
 
     def start(self):
         if self.get_is_running():
@@ -567,8 +517,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
                 self._check)
         self.init_counters()
-        if 'lt3' in self.setup_name:
-            self.start_pharp()
+
 
         d=qt.Data(name='Bell_optimizer')
         d.create_file()
@@ -601,98 +550,10 @@ class purification_optimizer(mo.multiple_optimizer):
         self.cryo_half_rot_degrees      = 0    
         self.max_counter_for_waiting_time = np.floor(12*60/self.get_read_interval())
 
-    def start_pharp(self):
-        self._pharp.OpenDevice()
-        self._pharp.start_histogram_mode()
-        self._pharp.ClearHistMem()
-        self._pharp.set_Range(4) # 64 ps binsize
-        self._pharp.set_CFDLevel0(50)
-        self._pharp.set_CFDLevel1(50)
-        qt.msleep(0.1)
-        self._pharp.StartMeas(int(1*60*60 * 1e3)) #1H measurement
+
 
 
     def stop(self):
-        if 'lt3' in self.setup_name:
-            self._pharp.StopMeas()
         self.set_is_running(False)
-        qt.instruments['rejecter'].stop()
         return gobject.source_remove(self._timer)
 
-    def check_jitter(self):
-        if not self._pharp.get_MeasRunning():
-            ret =  'Picoharp not running!'
-            self.start_pharp()
-            print ret
-            return False, ret
-        jitterDetected= False
-        hist=self._pharp.GetHistogram()
-        self._pharp.ClearHistMem()
-        ret=''
-        ret=ret+ str(hist[hist>0])
-        peaks=np.where(hist>0)[0]*self._pharp.get_Resolution()/1000.
-        ret=ret+'\n'+ str(peaks)
-        print ret
-
-        peak_loc = 889.8#890.1#  889.8
-        if len(peaks)>1:
-            peaks_width=peaks[-1]-peaks[0]
-            peak_max=np.argmax(hist)*self._pharp.get_Resolution()/1000.
-            if (peaks_width)>.5:
-                ret=ret+'\n'+ 'JITTERING!! Execute check_awg_triggering with a reset'
-                jitterDetected=True
-            elif (peak_max<peak_loc-0.25) or (peak_max>peak_loc+0.25):
-                ret=ret+'\n'+ 'Warning peak max at unexpected place, PEAK WRONG'
-                jitterDetected=True
-            else:
-                ret=ret+'\n'+'No Jitter detected'
-            ret=ret+'\n peak width: {:.2f} ns'.format(peaks_width)
-
-            ret=ret+'\npeak loc at {:.2f} ns'.format(peak_max)
-
-
-        ret=ret+'\ntotal counts in hist: {}'.format(sum(hist))
-        #print ret
-        return jitterDetected, ret
-
-    def check_laser_lock(self, do_plot=False):
-        
-        
-        if qt.instruments['signalhound'].get_frequency_center() > 136e6 or qt.instruments['signalhound'].get_frequency_center() < 134e6:
-            qt.instruments['signalhound'].set_frequency_center(135e6)
-            qt.instruments['signalhound'].set_frequency_span(5e6) 
-            qt.instruments['signalhound'].set_rbw(25e3)
-            qt.instruments['signalhound'].set_vbw(25e3)
-            qt.instruments['signalhound'].ConfigSweepMode()
-        
-        freq,mi,ma=qt.instruments['signalhound'].GetSweep(do_plot=do_plot, max_points=650)
-
-        f = common.fit_lorentz
-
-        #f = a + 2*A/np.pi*gamma/(4*(x-x0)**2+gamma**2)
-        #args = ['g_a', 'g_A', 'g_x0', 'g_gamma']
-        x = freq/1e6
-        y = mi
-
-        args=[y[0], np.max(y), x[np.argmax(y)], 0.7]
-        fitres = fit.fit1d(x, y, f, *args, fixed = [],
-                           do_print = False, ret = True, maxfev=100)
-
-        if not fitres['success']:
-            return False, 'laser lock fit failed'
-
-        x0 = fitres['params_dict']['x0']
-        gamma = fitres['params_dict']['gamma']
-        A = fitres['params_dict']['A']
-        if do_plot and fitres['success']:
-            plot_pts=100
-            x_p=np.linspace(np.min(x),np.max(x),plot_pts)
-            f_p = fitres['fitfunc'](x_p)
-            plt = qt.plots[qt.instruments['signalhound'].get_name()+'_Scan']
-            plt.add(x_p,f_p)
-            plt.update()
-
-        if gamma < 0.4 and x0 > 130 and x0 < 140 and A>0.05:  #MHZ, mV #
-            return True, 'laser lock ok,  gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)
-
-        return False, 'laser lock NOT ok, gamma = {:.2f} MHz, x0 = {:.1f} MHz, A = {:.2f} mV'.format(gamma, x0, A)

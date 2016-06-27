@@ -30,7 +30,7 @@ params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 1000e-9
+params_lt4['AWG_SP_power']              = 700e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 200e-9#250e-9#350e-9#213e-9 

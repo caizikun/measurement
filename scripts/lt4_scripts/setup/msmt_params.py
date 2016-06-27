@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      30e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      50e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -294,15 +294,15 @@ cfg['samples'][sample_name] = {
 
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 1.5e-9, #4e-9
+		'A_CR_amplitude':			 	 6e-9, #4e-9
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 20e-9,
-		'CR_duration' :				 	 70, 
+		'CR_duration' :				 	 80, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1e-9, #2e-9 
-		'Ex_RO_amplitude':				 4.5e-9, #used to 8e-9
+		'Ex_CR_amplitude':				 0.8e-9, #2e-9 
+		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 1e-9,
 		'SP_duration':					 100,
@@ -461,10 +461,10 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 1e-9,
+		'A_CR_amplitude':				 1.5e-9,
 		'CR_duration' :				 	 80,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1e-9,
+		'Ex_CR_amplitude':				 1.5e-9,
 		}
