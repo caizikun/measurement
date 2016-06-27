@@ -20,7 +20,7 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0,
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,
     low=-1.0, offset=0., delay=230e-9, active=True)
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=546e-9, active=True) #was delay=576e-9 #617 ns for normal pulses 554
+    high=1.0, low=-1.0, offset=0.0, delay=465e-9, active=True) #546e-9
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 
@@ -50,6 +50,7 @@ qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker',  #Pur
 
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
+#qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', 0.1)
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 

@@ -220,7 +220,7 @@ class purify(PQPurifyMeasurement):
                         self.physical_adwin.Set_FPar(56, tail_psb_lt3)
                         self.physical_adwin.Set_FPar(57, tail_psb_lt4)
                          
-                        print 'tail_counts PSB', round(float(2*tail_cts_ch0*1e4)/float(last_sync_number),3)
+                        # print 'tail_counts PSB (lt3/lt4)', tail_psb_lt3,tail_psb_lt4
                     else:
                         ZPL_tail = round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number-last_sync_number_update),3)
                         Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number-last_sync_number_update),3)
@@ -447,9 +447,14 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_off_voltage = False
     m.params['do_general_sweep']    = True
     if sweep_off_voltage:
-        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        # m.params['general_sweep_name'] = 'eom_off_amplitude'
+        # print 'sweeping the', m.params['general_sweep_name']
+        # m.params['general_sweep_pts'] = np.linspace(-0.02,-0.02,pts)
+        # m.params['sweep_name'] = m.params['general_sweep_name'] 
+        # m.params['sweep_pts'] = m.params['general_sweep_pts']
+        m.params['general_sweep_name'] = 'eom_overshoot1'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.03,0.03,pts)
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -600,14 +605,26 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['tail_start_bin'] = 2635e3 - m.params['MIN_SYNC_BIN']  
     m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
 
+    if qt.current_setup == 'lt3':
+        m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2100e3 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2800e3  - m.params['MIN_SYNC_BIN'] 
+        m.params['MIN_SYNC_BIN'] =       1.5e3
+        m.params['MAX_SYNC_BIN'] =       9e3
+        m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
+        m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
+        m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
+
     ### upload and run
     # m.params['do_general_sweep'] = 1
     # m.params['general_sweep_name'] = 'LDE_attempts'
+    # print 'sweeping the', m.params['general_sweep_name']
     # m.params['general_sweep_pts'] = np.arange(2,503,50)
     # m.params['pts'] = len(m.params['general_sweep_pts'])
-    # m.params['sweep_name'] = m.params['general_sweep_name']
+    # m.params['sweep_name'] = m.params['general_sweep_name'] 
     # m.params['sweep_pts'] = m.params['general_sweep_pts']
-
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
@@ -686,5 +703,6 @@ if __name__ == '__main__':
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
     #TPQI(name+'_TPQI',debug = False,upload_only=False)
+    #TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)

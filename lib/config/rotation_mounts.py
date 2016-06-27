@@ -27,13 +27,13 @@ config['waveplates_lt3'] = {
 		'neg_calib_quick' :481 ,#steps/degree
 		'neg_calib_precise':1120 ,
 	},
-	'pulse_half': {
-	'channel' : 2,
-	'axis'	  : 1,
-	'pos_calib_quick' :527 ,#steps/degree
-	'pos_calib_precise': 771 ,
-	'neg_calib_quick' :481 ,#steps/degree
-	'neg_calib_precise':1120 ,
+	'pulse_half': { ###### needs to be calibrated.
+		'channel' : 2,
+		'axis'	  : 2,
+		'pos_calib_quick' :527 ,#steps/degree
+		'pos_calib_precise': 771 ,
+		'neg_calib_quick' :481 ,#steps/degree
+		'neg_calib_precise':1120 ,
 	},
 }
 

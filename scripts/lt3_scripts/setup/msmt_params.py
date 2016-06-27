@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL1'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -88,7 +88,7 @@ cfg['protocols']['AdwinSSRO']={
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       25e-6,# 15e-6
+		'green_repump_amplitude':       15e-6,# 15e-6
 		'green_repump_duration':        30, # maximum is 1000 for CR_mod
 		'send_AWG_start':               0,
 		'sequence_wait_time':           1,
@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      30e-9,#9e-9, #50e-9
-		'yellow_repump_duration':       200, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      20e-9,#9e-9, #50e-9
+		'yellow_repump_duration':       250, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -370,17 +370,17 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 2e-9,#2.5e-9,
+		'A_CR_amplitude':				 6.0e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 100e-9,
-		'CR_duration' :				 	 60, 
+		'A_SP_amplitude':				 45e-9,
+		'CR_duration' :				 	 70, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9,
+		'Ex_CR_amplitude':				 1.0e-9,#1.5e-9,
 		'Ex_RO_amplitude':				 5e-9,#5e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 9e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 12e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -464,14 +464,14 @@ cfg['protocols'][name]['pulses'] = {
     	'mw2_Square_pi2_amp' :		mw2_square_pi_amp,
 
     	'eom_pulse_duration':				2e-9,
-        'eom_off_duration':					50e-9,
+        'eom_off_duration':					50e-9, # 50e-9
         'eom_off_amplitude':				-0.02, #-0.02
-        'eom_pulse_amplitude':				2., # (for long pulses it is 1.45, dor short:2.0)calibration from 19-03-2014
-        'eom_overshoot_duration1':			20e-9,
+        'eom_pulse_amplitude':				2., # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
+        'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						40e-9,
+        'aom_risetime':						12e-9,#40e-9
         'aom_amplitude':					0.8,#0.2
 }
 
@@ -530,10 +530,10 @@ cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 0.6e-9,
+		'A_CR_amplitude':				 2e-9,
 		'CR_duration' :				 	 100,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 0.6e-9,
+		'Ex_CR_amplitude':				 1.5e-9,
 		}
