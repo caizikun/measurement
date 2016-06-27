@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      50e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      20e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -461,8 +461,8 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 1.5e-9,
-		'CR_duration' :				 	 80,
+		'A_CR_amplitude':				 3.5e-9,
+		'CR_duration' :				 	 70,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
