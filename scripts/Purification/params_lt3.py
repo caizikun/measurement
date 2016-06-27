@@ -24,7 +24,7 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 400e-9#1000e-9
+params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.254e-6 # XXX put repump AOM delay here!

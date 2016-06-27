@@ -52,7 +52,6 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 
-        self.add_function('optimize_yellow_g') 
         self.add_function('rejecter_half_plus')
         self.add_function('rejecter_half_min')
         self.add_function('zoptimize_rejection')
@@ -486,16 +485,6 @@ class purification_optimizer(mo.multiple_optimizer):
         qt.msleep(2.5)
         self.set_pidyellowfrq_running(True)
         self.set_pid_e_primer_running(e_primer_was_running)
-
-    def optimize_yellow_g(self):
-        e_primer_was_running = self.get_pid_e_primer_running()
-        self.set_pid_e_primer_running(False)
-        self.set_pidyellowfrq_running(False)
-        qt.instruments['yellowfrq_optimizer_g'].optimize()
-        qt.msleep(2.5)
-        self.set_pidyellowfrq_running(True)
-        self.set_pid_e_primer_running(e_primer_was_running)
-
 
     def optimize_gate(self):
         self.set_pidgate_running(False)
