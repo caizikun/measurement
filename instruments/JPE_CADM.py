@@ -70,7 +70,6 @@ class JPE_CADM(Instrument):
             print 'Specified address not available!'
             
     def move (self, addr, ch, steps, T, freq, rel_step):
-
         cw = int((np.sign(steps)+1)/2)
         steps = abs(steps)
         steps_int = int(steps)
