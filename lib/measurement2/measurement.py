@@ -371,7 +371,19 @@ class AdwinControlledMeasurement(Measurement):
             grp.group.attrs[k] = adwinparams[k]
 
         self.h5data.flush()
-
+    
+    def set_adwin_process_variable_from_params(self,key):
+        try:
+            # Here we can do some checks on the settings in the adwin
+            if np.isnan(self.params[key]):
+                raise Exception('Adwin process variable {} contains NAN'.format(key))
+            self.adwin_process_params[key] = self.params[key]
+        except:
+            logging.error("Cannot set adwin process variable '%s'" \
+                    % key)
+            raise Exception('Adwin process variable {} has not been set \
+                                in the measurement params dictionary!'.format(key))
+            
     def adwin_process_running(self):
         func = getattr(self.adwin, 'is_'+self.adwin_process+'_running')
         return func()
