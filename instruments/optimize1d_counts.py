@@ -240,6 +240,8 @@ class optimize1d_counts(CyclopeanInstrument):
     def _process_fit(self, **kw):
         #print('Get the data')
         return_position_change = kw.pop('return_position_change', False)
+        return_data = kw.pop('return_data', False)
+
         self.set_data('points', self._linescan.get_points()[0])
         qt.msleep(0.1)
         self.set_data('countrates', self._linescan.get_data('countrates')\
@@ -312,7 +314,10 @@ class optimize1d_counts(CyclopeanInstrument):
 
         print "Position changed %d nm" % \
                         (self._opt_pos*1E3-self._opt_pos_prev*1E3)
-        if ret and return_position_change:
-            return (self._opt_pos*1E3-self._opt_pos_prev*1E3)
+        if ret:
+            if return_position_change:
+                return (self._opt_pos*1E3-self._opt_pos_prev*1E3)
+            elif return_data:
+                return p,cr
         return ret
 
