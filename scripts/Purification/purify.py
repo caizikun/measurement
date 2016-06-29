@@ -106,7 +106,17 @@ class purify(PQPurifyMeasurement):
         if setup:
             self.setup()
 
-
+        # Experimental addition for remote running
+        if (self.current_setup == self.joint_params['master_setup']) and self.joint_params['control_slave']:
+            qt.instruments['lt3_helper'].set_is_running(False)
+            qt.msleep(0.5)
+            qt.instruments['lt3_helper'].set_measurement_name(name)
+            qt.instruments['lt3_helper'].set_script_path(r'D:/measuring/measurement/scripts/Purification/purify.py')
+            qt.instruments['lt3_helper'].execute_script()
+            qt.instruments['lt4_helper'].set_is_running(True)
+            
+            m.lt3_helper.set_is_running(True)
+            qt.msleep(2)
         ### this is now in autoconfig. NK 18-05-2016
         # for i in range(10):
         #     self.physical_adwin.Stop_Process(i+1)
