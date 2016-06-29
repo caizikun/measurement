@@ -334,9 +334,9 @@ class RS_SGS100A(Instrument):
         logging.debug(__name__ + ' : reading status from instrument')
         stat = self._visainstrument.ask(':OUTP:STAT?')
 
-        if stat == '1':
+        if int(stat) == 1:
             return 'on'
-        elif stat == '0':
+        elif int(stat) == 0:
             return 'off'
         else:
             raise ValueError('Output status not specified : %s' % stat)
