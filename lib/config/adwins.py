@@ -4,7 +4,7 @@ config['adwin_lt1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
         'yellow_aom_frq': 4,
-        'gate_mod' : 5, #not yet N
+        'newfocus_frq' : 5, #not yet N
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
         'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
