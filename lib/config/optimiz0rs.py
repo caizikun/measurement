@@ -66,12 +66,12 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 1.1,
+                    'scan_length' : 1.3,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 1.3,
+                    'scan_length' : 1.5,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },

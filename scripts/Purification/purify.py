@@ -95,22 +95,10 @@ class purify(PQPurifyMeasurement):
         PQPurifyMeasurement.finish(self)
 
 
-    def run(self, autoconfig=False, setup=False, debug=False, live_filter_on_marker=False, control_slave = False):
+    def run(self, autoconfig=False, setup=False, debug=False, live_filter_on_marker=False):
         if debug:
             self.run_debug()
             return
-
-        # Experimental addition for remote running
-        if (self.current_setup == self.joint_params['master_setup']) and control_slave:
-            qt.instruments['lt3_helper'].set_is_running(False)
-            qt.msleep(0.5)
-            qt.instruments['lt3_helper'].set_measurement_name(name)
-            qt.instruments['lt3_helper'].set_script_path(r'D:/measuring/measurement/scripts/Purification/purify.py')
-            qt.instruments['lt3_helper'].execute_script()
-            qt.instruments['lt4_helper'].set_is_running(True)
-            
-            m.lt3_helper.set_is_running(True)
-            qt.msleep(2)
 
         if autoconfig:
             self.autoconfig()
@@ -187,7 +175,7 @@ class purify(PQPurifyMeasurement):
             _queue_sync_number = deque([],self.params['live_filter_queue_length'])
             _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
-        no_of_cycles_for_live_update_reset = 6
+        no_of_cycles_for_live_update_reset = 100
         live_updates = 0
         last_sync_number_update = 0
         last_sync_number = 0
@@ -432,7 +420,6 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    load_TH_params(m)
 
     ### general params
     pts = 7
@@ -457,21 +444,21 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     # put sweep together:
     sweep_off_voltage = False
+
     m.params['do_general_sweep']    = True
+
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(-0.02,-0.02,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
-
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(minval,maxval,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
+
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -697,7 +684,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -710,6 +697,6 @@ if __name__ == '__main__':
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
     #TPQI(name+'_TPQI',debug = False,upload_only=False)
-    #TPQI(name+'_ionisation',debug = False,upload_only=False)
+    # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
