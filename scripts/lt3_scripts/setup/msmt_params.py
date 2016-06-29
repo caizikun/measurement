@@ -463,7 +463,7 @@ cfg['protocols'][name]['pulses'] = {
       	'mw2_Square_pi2_length' :   mw2_square_pi2_length,
     	'mw2_Square_pi2_amp' :		mw2_square_pi_amp,
 
-    	'eom_pulse_duration':				3e-9,
+    	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					50e-9, # 50e-9
         'eom_off_amplitude':				-0.02, #-0.02
         'eom_pulse_amplitude':				2., # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014

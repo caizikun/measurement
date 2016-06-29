@@ -283,30 +283,30 @@ class Scan(LaserFrequencyScan):
         
         print 'ionization scan red...'
         
-        current_data = red_data.get_data()
-        fltr=np.where(current_data[:,3] == np.max(current_data[:,3]))
-        volts = current_data[fltr,0].squeeze()
-        freq = current_data[fltr,1].squeeze()
-        cts = current_data[fltr,2].squeeze()
+        # current_data = red_data.get_data()
+        # fltr=np.where(current_data[:,3] == np.max(current_data[:,3]))
+        # volts = current_data[fltr,0].squeeze()
+        # freq = current_data[fltr,1].squeeze()
+        # cts = current_data[fltr,2].squeeze()
 
-        if cts.size != 0:
-            max_cts_arg = np.argmax(cts)
-            print 'Max counts, v, f ', cts[max_cts_arg],volts[max_cts_arg],freq[max_cts_arg]
+        # if cts.size != 0:
+        #     max_cts_arg = np.argmax(cts)
+        #     print 'Max counts, v, f ', cts[max_cts_arg],volts[max_cts_arg],freq[max_cts_arg]
             
-            self.set_red_laser_voltage(volts[max_cts_arg])
-            qt.msleep(1)
+        #     self.set_red_laser_voltage(volts[max_cts_arg])
+        #     qt.msleep(1)
 
-        self.trigger_awg_for_optical_pi_pulses()
+        # self.trigger_awg_for_optical_pi_pulses()
         
-        self.set_red_laser_voltage(old_voltage)
-        qt.msleep(1)
+        # self.set_red_laser_voltage(old_voltage)
+        # qt.msleep(1)
 
-        #self.red_ionization_scan(r_stop, r_start)
+        self.red_ionization_scan(r_stop, r_start)
 
-        #print 'yellow scan...'
-        #self.yellow_scan(y_start, y_stop, y_power, voltage_step=y_step,
-        #    data = yellow_data,
-        #    **kw)
+        print 'yellow scan...'
+        self.yellow_scan(y_start, y_stop, y_power, voltage_step=y_step,
+           data = yellow_data,
+           **kw)
 
     def spectral_diffusion(self, y_start, y_stop, y_power, r_start, r_stop, r_step, r_int, r_power, **kw):
         red_data = kw.pop('red_data', None)
