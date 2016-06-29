@@ -86,8 +86,8 @@ class master_of_cavity(CyclopeanInstrument):
         self.ch_z = 3
         # self._jpe_tracker = JPE_pos_tracker(reinit_spindles=False)
         self._step_size = None
-        self._fine_piezo_V = None
-        self.set_fine_piezo_voltages (0,0,0)
+        self._fine_piezos = ['jpe_fine_tuning_1','jpe_fine_tuning_2','jpe_fine_tuning_3']
+        #self.set_fine_piezo_voltages(0,0,0)
 
         # Init that was originally in the JPE_pos_tracker.
         # all coordinates are in mm, angles in radians
@@ -395,15 +395,39 @@ class master_of_cavity(CyclopeanInstrument):
     def get_position (self):
         return self.track_curr_x, self.track_curr_y, self.track_curr_z
 
-    def set_fine_piezo_voltages (self, v1,v2,v3):
-        #self._adwin.set_dac('jpe_fine_tuning_1', v1)
-        #self._adwin.set_dac('jpe_fine_tuning_2', v2)
-        #self._adwin.set_dac('jpe_fine_tuning_3', v3)
-        self._adwin.set_fine_piezos (voltage = np.array([v1, v2, v3]))
-        self._fine_piezo_V = np.array([v1,v2,v3])
+    def ramp_fine_piezo_voltages(self,v1,v2,v3,voltage_steps=0.0001):
+        target_voltages = np.array([v1,v2,v3])
+        if not(self._adwin.is_linescan_running()) and self.check_fine_piezo_voltage_limits(target_voltages):
+            curr_voltages = self.get_fine_piezo_voltages()
+            voltage_difference = np.max(np.abs(target_voltages-curr_voltages))
+            number_of_steps = min([500,max([10,int(voltage_difference/voltage_steps)])]) #minumum 10 steps, max 500
+            self._adwin.linescan(self._fine_piezos,curr_voltages, target_voltages, number_of_steps, 5, value='none',blocking=False)
+            return True
+        return False
+
+    def check_fine_piezo_voltage_limits(self,voltages):
+        if ((voltages[0]<-2) or (voltages[0]>10)):
+            print 'Voltage out of range  - v1'
+            return False
+        elif ((voltages[1]<-2) or (voltages[1]>10)):
+            print 'Voltage out of range  - v2'
+            return False
+        elif ((voltages[2]<-2) or (voltages[2]>10)):
+            print 'Voltage out of range  - v3'
+            return False
+        else:
+            return True
+
+    def set_fine_piezo_voltages(self,v1,v2,v3):
+        target_voltages = np.array([v1,v2,v3])
+        if self.check_fine_piezo_voltage_limits(target_voltages):
+            for i in range(3):
+                self._adwin.set_dac_voltage((self._fine_piezos[i],target_voltages[i]))
+            return True
+        return False
 
     def get_fine_piezo_voltages(self):
-        return self._fine_piezo_V
+        return np.array([self._adwin.get_dac_voltage(p) for p in self._fine_piezos])
 
     def move_spindle_steps (self, s1, s2, s3, x, y, z):
         self._jpe_cadm.move(self.addr, self.ch_x, s1,self.temperature,self.JPE_freq, self.rel_step_size)

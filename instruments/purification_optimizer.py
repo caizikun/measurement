@@ -23,7 +23,7 @@ class purification_optimizer(mo.multiple_optimizer):
                     'min_repump_counts'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET},
                     'max_counter_optimize'       :   {'type':types.IntType,'flags':Instrument.FLAG_GETSET, 'val':2},
                     'rejecter_step'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET}, 
-                    'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET}, 
+                    'email_recipient'            :   {'type':types.StringType,'flags':Instrument.FLAG_GETSET, 'val':''}, 
                     'max_pulse_counts'           :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3},
                     'max_SP_ref'                 :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':6},
                     'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3.5},
@@ -166,7 +166,7 @@ class purification_optimizer(mo.multiple_optimizer):
                 print 'sending email:', subject, text
                 qt.instruments['gmailer'].send_email(self.get_email_recipient(), subject, text)
             else:
-                print 'Not sending email, as already 10 sent this bell_optimizser run, wihtout relax rounds. Restart to clear.'
+                print 'Not sending email, as already 10 sent this purification_optimizer_failed run, wihtout relax rounds. Restart to clear.'
 
         self.status_message = subject
 
@@ -189,9 +189,9 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def set_failed(self):
         if 'lt4' in self.setup_name:
-            qt.instruments['lt4_measurement_helper'].set_measurement_name('bell_optimizer_failed')    
+            qt.instruments['lt4_measurement_helper'].set_measurement_name('purification_optimizer_failed')    
         else:
-            qt.instruments['lt3_measurement_helper'].set_measurement_name('bell_optimizer_failed')
+            qt.instruments['lt3_measurement_helper'].set_measurement_name('purification_optimizer_failed')
 
 
     def stop_measurement(self):
@@ -214,7 +214,7 @@ class purification_optimizer(mo.multiple_optimizer):
         return par_counts , par_laser, dt
 
     def check(self):
-
+        print "Check started"
         try:
             ### msmt helpers not currently implemented
             if 'lt4' in self.setup_name:
@@ -281,6 +281,10 @@ class purification_optimizer(mo.multiple_optimizer):
 
                 self.status_message = ''
 
+
+                print 'Cr counts / Yellow counts ', self.cr_counts, self.repump_counts
+                
+
                 ## WM check.
                 # if len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
                 #     self.set_invalid_data_marker(1)
@@ -311,45 +315,48 @@ class purification_optimizer(mo.multiple_optimizer):
                     self.status_message+='Waiting for another {:d} rounds'.format(int(self.wait_counter))
                     self.wait_counter -=1
 
-                elif self.cr_counts < self.get_min_cr_counts() :
-                    self.status_message += 'The CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
-                    self.set_invalid_data_marker(1)
-                    self.gate_optimize_counter +=1
-                    if self.gate_optimize_counter <= self.get_max_counter_optimize() :
-                        self.optimize_gate()
-                        self.wait_counter = 1
-                        self.need_to_optimize_nf = True
-                        if self.gate_optimize_counter > self.get_max_counter_optimize()/2:
-                            self.set_pid_e_primer_running(False)
-                            qt.instruments['physical_adwin'].Set_FPar(51,66.65)
+                # PH Changed structure so that can try to optimise both gate AND yellow
+                elif (self.cr_counts < self.get_min_cr_counts() ) or (self.repump_counts < self.get_min_repump_counts()):
 
-                    else:
-                        text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
-                             self.get_max_counter_optimize())
-                        subject = 'ERROR : CR counts failure on {} setup'.format(self.setup_name)
-                        self.send_error_email(subject =  subject, text = text)
-                        self.set_pidgate_running(False)
-                        self.set_failed()
-                        self.stop_measurement()
+                    if self.cr_counts < self.get_min_cr_counts() :
+                        self.status_message += 'The CR counts are too low : {:.1f} instead of {:.1f}.\n'.format(self.cr_counts,self.get_min_cr_counts())
+                        self.set_invalid_data_marker(1)
+                        self.gate_optimize_counter +=1
+                        if self.gate_optimize_counter <= self.get_max_counter_optimize() :
+                            self.optimize_gate()
+                            self.wait_counter = 1
+                            self.need_to_optimize_nf = True
+                            if self.gate_optimize_counter > self.get_max_counter_optimize()/2:
+                                self.set_pid_e_primer_running(False)
+                                #qt.instruments['physical_adwin'].Set_FPar(51,66.65)
 
-                elif self.repump_counts < self.get_min_repump_counts():
-                    self.status_message += 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
-                                self.get_min_repump_counts())
-                    self.set_invalid_data_marker(1)
-                    self.yellow_optimize_counter +=1
-                    if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
-                        if self.yellow_optimize_counter > self.get_max_counter_optimize()-2:
-                            self.optimize_nf()
-                            qt.msleep(3)
-                        self.optimize_yellow()
-                        self.wait_counter = 1
-                        self.need_to_optimize_nf = True
-                    else :
-                        text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_min_repump_counts(),
+                        else:
+                            text = 'Can\'t get the CR counts higher than {} even after {} optimization cycles. I have stopped the measurement!'.format(self.get_min_cr_counts(),
                                  self.get_max_counter_optimize())
-                        subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
-                        self.send_error_email(subject = subject, text = text)
-                        self.set_failed()
+                            subject = 'ERROR : CR counts failure on {} setup'.format(self.setup_name)
+                            self.send_error_email(subject =  subject, text = text)
+                            self.set_pidgate_running(False)
+                            self.set_failed()
+                            self.stop_measurement()
+
+                    if self.repump_counts < self.get_min_repump_counts():
+                        self.status_message += 'The yellow laser is not in resonance. Got {:.1f} repump counts compare to {:.1f}.\n'.format(self.repump_counts, 
+                                    self.get_min_repump_counts())
+                        self.set_invalid_data_marker(1)
+                        self.yellow_optimize_counter +=1
+                        if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
+                            if self.yellow_optimize_counter > self.get_max_counter_optimize()-2:
+                                self.optimize_nf()
+                                qt.msleep(3)
+                            self.optimize_yellow()
+                            self.wait_counter = 1
+                            self.need_to_optimize_nf = True
+                        else :
+                            text = 'Can\'t get the repump counts higher than {} even after {} optimization cycles. The measurements will stop after this run!'.format(self.get_min_repump_counts(),
+                                     self.get_max_counter_optimize())
+                            subject = 'ERROR : Yellow laser not in resonance on {} setup'.format(self.setup_name)
+                            self.send_error_email(subject = subject, text = text)
+                            self.set_failed()
 
                 elif (self.need_to_optimize_nf or ((time.time()-self.nf_optimize_timer) > (self.nb_min_between_nf_optim*60)) ):
                     self.status_message += 'The NewFocus needs to be optimized.\n'
@@ -468,19 +475,21 @@ class purification_optimizer(mo.multiple_optimizer):
         return qt.instruments['pidgate'].get_is_running()
 
     def _do_set_pidgate_running(self, val):
+        print val
         if val:
             qt.instruments['pidgate'].start()
         else:
             qt.instruments['pidgate'].stop()
 
     def toggle_pid_gate(self):
-        self._do_set_pidgate_running(self._do_get_pidgate_running())
+
+        self.set_pidgate_running(not self._do_get_pidgate_running())
 
     def toggle_pid_nf(self):
-        self._do_set_pidgate_running(self._do_get_pidgate_running())
+        self.set_pid_e_primer_running(not self._do_get_pid_e_primer_running())
 
     def toggle_pid_yellowfrq(self):
-        self._do_set_pidgate_running(self._do_get_pidgate_running())
+        self.set_pidyellowfrq_running(not self._do_get_pidyellowfrq_running())
 
     def rejecter_half_plus(self):
         qt.instruments['rejecter'].move('zpl_half',self.get_rejecter_step(),quick_scan=True)
@@ -495,6 +504,7 @@ class purification_optimizer(mo.multiple_optimizer):
         qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
 
     def start(self):
+        print 'Starting'
         if self.get_is_running():
             print 'ALREADY RUNNING'
             return False
@@ -508,7 +518,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.init_counters()
 
 
-        d=qt.Data(name='Bell_optimizer')
+        d=qt.Data(name='Purification_optimizer')
         d.create_file()
         d.close_file()
         self.log_fp=d.get_filepath()

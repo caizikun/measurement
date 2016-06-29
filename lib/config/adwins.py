@@ -4,7 +4,7 @@ config['adwin_lt1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
         'yellow_aom_frq': 4,
-        'gate_mod' : 5, #not yet N
+        'newfocus_frq' : 5, #not yet N
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
         'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
@@ -3489,7 +3489,6 @@ config['adwin_cav1_dacs'] = {
         'newfocus_freqmod': 5,
         'scan_mirror_x' : 6,
         'scan_mirror_y': 7,
-        'laser_coarse_wav_imput': 8,
         }
 
 config['adwin_cav1_dios'] = {
@@ -3581,8 +3580,8 @@ config['adwin_cav1_processes'] = {
             },
 
         'read_adc' :  {
-            'index' : 1,
-            'file' : 'readADC.TB1',
+            'index' : 6,
+            'file' : 'readADC.TB6',
             'par' : {
                 'adc_no' : 21,
                 },
@@ -3605,14 +3604,7 @@ config['adwin_cav1_processes'] = {
             'file' : 'init_data.TB5',
             },
 
-
-
-
         'timeseries_photodiode' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
             'index' : 2,
             'file' : 'timeseries_photodiode.TB2',
             'params_long' : [           # keep order!!!!!!!!!!!!!
@@ -3738,10 +3730,6 @@ config['adwin_cav1_processes'] = {
             },
 
         'voltage_scan_sync' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
             'index' : 5,
             'file' : 'voltage_scan_sync.TB5',
             'params_long' : [           # keep order!!!!!!!!!!!!!
@@ -3755,21 +3743,24 @@ config['adwin_cav1_processes'] = {
                     ['nr_scans'                    ,   1],                    
                     ['wait_cycles'                 ,  50],
                     ['delay_us'                    ,   0],
+                    ['ADC_averaging_cycles'        ,   50],
+                    ['scan_auto_reverse'           ,   50],
                     ],
-                'params_long_index'  : 200,
-                'params_long_length' : 10,
+                'params_long_index'  : 20,
+                'params_long_length' : 15,
                 'params_float' : [
                     ['start_voltage_1'            ,  0.0],
                     ['start_voltage_2'            ,  0.0],
                     ['start_voltage_3'            ,  0.0],
                     ['voltage_step'               , 0.01],
                     ],
-                'params_float_index'  : 199,
+                'params_float_index'  : 21,
                 'params_float_length' : 8,
                 'par' : {
                     },
                 'data_float' : {
                     'photodiode_voltage' : 11,
+                    'laser_frequency' : 13,
                     },
                 'data_long'   : {
                     'timestamps' : 12,
@@ -3811,7 +3802,39 @@ config['adwin_cav1_processes'] = {
             },
 
 
+        'lockin_dac_adc' : {
+            'doc' : '',
+            'info' : {
+                },
+            'index' : 9,
+            'file' : 'lockin_dac_adc.TB9',
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['output_dac_channel'                ,   0],
+                    ['input_adc_channel'                 ,   0],
+                    ['modulation_bins'                   ,   0],
+                     ['error_averaging'                  ,   0],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 3,
+                'params_float' : [
+                    ['modulation_amplitude'          , 0.0],
+                    ['modulation_frequency'           , 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 2,
+                'par' : {
 
+                    },
+                'fpar' : {
+                    'dac_voltage_offset' : 71,
+                    'adc_voltage' : 72,
+                    'error_signal': 73,
+                },
+                'data_float' : {
+                    'modulation'    : 24,
+                    'adc_mod'       : 25,
+                    },
+            },
 
         }
 

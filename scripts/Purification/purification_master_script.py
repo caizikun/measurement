@@ -50,7 +50,7 @@ def bell_check_powers():
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-                qt.exp_params['protocols'][prot_name]['AdwinSSRO']['A_SP_amplitude'],
+                1e-6, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.1,0.1,0.15]
     qt.instruments['PMServo'].move_in()
