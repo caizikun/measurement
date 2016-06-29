@@ -19,9 +19,10 @@ class NewportAgilisUC(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address,
-                        baud_rate=921600, data_bits=8, stop_bits=1,
-                        parity=visa.no_parity, term_chars='\r')
+        rm = visa.ResourceManager()
+        self._visa = rm.open_resource(self._address,
+                        baud_rate=921600, data_bits=8, stop_bits=visa.constants.StopBits.one,
+                        parity=visa.constants.Parity.none, write_termination='\r',read_termination = '\r')
         self._axes = (1,2) #this is the number of axes per channel          
 
         if ins_type == 'UC2':
