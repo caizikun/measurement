@@ -18,7 +18,7 @@ NOTE: do adjust the MW duration & amplitudes to refer to the proper type of puls
 """
 
 
-def calibrate_BB1_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = False):
+def calibrate_BB1_pi_pulse(name, multiplicity=1, debug=False):
     m = pulsar_msmt.ScrofulousPiCalibrationSingleElement(name)
     
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -48,14 +48,7 @@ def calibrate_BB1_pi_pulse(name, multiplicity=1, debug=False, sweep_pi_2 = False
     m.params['swept_pulses'] = '12345'
 
     
-    if sweep_pi_2:
-        rng = 0.1
-        m.params['MW_pulse_amplitudes'] = m.params['fast_pi2_amp'] + np.linspace(-rng, rng, pts)
-        m.params['swept_pulses'] = '13'
-
-    m.params['delay_reps'] = 195 ## Currently not used
-    # m.params['mw_power'] = 20 ###put in msmt_params.
-    
+    m.params['delay_reps'] = 1#195 ## Currently not used    
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW amplitude (V)'

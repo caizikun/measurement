@@ -4,7 +4,7 @@ if True:
     _get_count_rej = lambda: qt.instruments['physical_adwin'].Get_Par(43)
     _get_msmt_running_rej = lambda: qt.instruments['lt4_measurement_helper'].get_is_running()
     rejecter = qt.instruments.create('rejecter', 'laser_reject0r_v3', rotator='rotator',
-            rotation_config_name='waveplates_lt3',
+            rotation_config_name='waveplates_lt3',waveplates = ['zpl_half','zpl_quarter','pulse_half'],
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
             get_count_f = _get_count_rej, get_msmt_running_f = _get_msmt_running_rej)
 
@@ -38,4 +38,4 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
 if True:
-    bell_optimizer  = qt.instruments.create('bell_optimizer' , 'bell_optimizer_v2', setup_name='lt4')
+    purification_optimizer  = qt.instruments.create('purification_optimizer' , 'purification_optimizer', setup_name='lt4')

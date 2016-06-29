@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, dynamic initialization and MBEand SSRO at the end.
@@ -298,7 +298,7 @@ EVENT:
   ' #############
   IF (run_case_selector = 1) THEN 'Start case selector
     SelectCase mode
-
+      
       CASE 0    'CR check // go to SP-E
         mode = 1
 

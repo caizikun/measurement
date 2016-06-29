@@ -29,35 +29,48 @@ GreenAOM  = qt.instruments.create('GreenAOM', 'AOM')            #Direct current 
 NewfocusAOM  = qt.instruments.create('NewfocusAOM', 'AOM')
 DLProAOM  = qt.instruments.create('DLProAOM', 'AOM')
 
-
+#counters
+counters = qt.instruments.create('counters', 'counters_via_adwin',adwin='adwin')
  
-if False:
 
-    counters = qt.instruments.create('counters', 'counters_via_adwin',
-            adwin='adwin')
-    # counters.set_is_running(True)
+master_of_space = qt.instruments.create('master_of_space', 
+        'master_of_space', adwin='adwin', dimension_set='mos_m1')
 
-    master_of_space = qt.instruments.create('master_of_space', 
-            'master_of_space', adwin='adwin', dimension_set='mos_lt3')
+linescan_counts = qt.instruments.create('linescan_counts', 
+        'linescan_counts',  adwin='adwin', mos='master_of_space',
+        counters='counters')
 
-    linescan_counts = qt.instruments.create('linescan_counts', 
-            'linescan_counts',  adwin='adwin', mos='master_of_space',
-            counters='counters')
+scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
+         linescan='linescan_counts', mos='master_of_space',
+        xdim='x', ydim='y', counters='counters')
+ 
+opt1d_counts = qt.instruments.create('opt1d_counts', 
+         'optimize1d_counts', linescan='linescan_counts', 
+        mos='master_of_space', counters='counters')
 
-    scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
-             linescan='linescan_counts', mos='master_of_space',
-            xdim='x', ydim='y', counters='counters')
-     
-    opt1d_counts = qt.instruments.create('opt1d_counts', 
-             'optimize1d_counts', linescan='linescan_counts', 
-            mos='master_of_space', counters='counters')
+optimiz0r = qt.instruments.create('optimiz0r', 'optimiz0r', opt1d_ins=
+        opt1d_counts, mos_ins=master_of_space, dimension_set='m1')
 
-    optimiz0r = qt.instruments.create('optimiz0r', 'optimiz0r', opt1d_ins=
-            opt1d_counts, mos_ins=master_of_space, dimension_set='lt3')
+setup_controller = qt.instruments.create('setup_controller',
+         'setup_controller',
+        use = { 'master_of_space' : 'mos'} )
 
-    setup_controller = qt.instruments.create('setup_controller',
-             'setup_controller',
-            use = { 'master_of_space' : 'mos'} )
+# Magnet
+### conex_scanner_1
+### conex_scanner_2
+### conex_scanner_3
+### master_of_magnet
+
+# servo controller and power meter
+if 1:
+    servo_ctrl=qt.instruments.create('ServoController', 'MaestroServoController', address='11')
+    servo_ctrl.Set_Acceleration(0, 0)
+    servo_ctrl.Set_Speed(0, 0)
+    PMServo = qt.instruments.create('PMServo','ServoMotor',servo_controller='ServoController', min_pos=3900, max_pos=4800)
+    PMServo.move_out()
+
+if 0:
+    x_motor = qt.instruments.create('MagnetXaxis', 'NewportConexCC', address = 'com5')
 
 
-    #execfile('D:\measuring\measurement\scripts\lt3_scripts\setup_m1.py')
+#execfile('D:\measuring\measurement\scripts\lt3_scripts\setup_m1.py')

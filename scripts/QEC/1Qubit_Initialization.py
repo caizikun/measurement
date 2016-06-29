@@ -14,7 +14,7 @@ def MBE(name, carbon            =   1,
         
         carbon_init_list        =   [1],
         carbon_init_states      =   ['up'], 
-        carbon_init_methods     =   ['swap'], 
+        carbon_init_methods     =   ['MBI'], 
         carbon_init_thresholds  =   [0],  
 
         el_RO               = 'positive',
@@ -26,12 +26,13 @@ def MBE(name, carbon            =   1,
 
     m.params['el_after_init']                = '0'
 
-
+    m.params['electron_transition_used'] = m.params['C'+str(carbon)+'_dec_trans']
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
+
 
     ''' set experimental parameters '''
 
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 1000
 
     ### Carbons to be used
     m.params['carbon_list']         = [carbon]
@@ -46,10 +47,10 @@ def MBE(name, carbon            =   1,
     ### RO bases (sweep parameter) ###
     ##################################
 
-    m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
-    # m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
+    #m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
+    m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
     # m.params['Tomography Bases'] = [['X'],['Y']]
-    m.params['Tomography Bases'] = [['Z']]
+    # m.params['Tomography Bases'] = [['X']]
         
     ####################
     ### MBE settings ###
@@ -79,9 +80,9 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [2]
-    debug = True
-    init_method = 'swap'
+    carbons = [4]
+    debug = False
+    init_method = 'MBI'
 
     if init_method == 'swap':
         for c in carbons:
@@ -91,13 +92,13 @@ if __name__ == '__main__':
 
 
             MBE(SAMPLE + 'negative_'+str(c)+'_swap', el_RO= 'negative', carbon = c, carbon_init_list = [c]
-                                                ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
+                                             ,debug = debug,carbon_init_methods     =   ['swap'], carbon_init_thresholds  =   [0])
 
     elif init_method == 'MBI':
         for c in carbons:
 
             MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c]
-                                                ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+                                                ,debug = debug, carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
 
             MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c]
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])

@@ -57,14 +57,15 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
 if __name__ == '__main__':
 
 
-    N_list=np.arange(2,100,16)
-    # N_list=[24,28,32]
-    tau_list = [(9.18)*1e-6]*len(N_list)
+    # N_list=np.arange(2,100,16)
+    # N_list=[32]
+    tau_list = np.arange[6.9e-6,7.1e-6,4e-9]
+    N_list = [32]*len(tau_list)
     Crosstalk(SAMPLE + '_condGate_C5_tau_'+str(tau_list[0]),
         RO_phase = 0, 
         RO_Z =True, 
-        carbon_A = 1, 
-        carbon_B = 1, 
+        carbon_A = 4, 
+        carbon_B = 4, 
         tau_list=tau_list,
         N=N_list)
  

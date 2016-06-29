@@ -10,26 +10,26 @@ SAMPLE = qt.exp_params['samples']['current']
 
 name='ESR_'+ qt.exp_params['protocols']['current']
 
-green_power = 25e-6     #15e-6
+green_power = 20e-6     #15e-6
 int_time    = 30     # in ms
 reps        = 50
 
-if True: #m1 transition
-    range_f     =  0.09 # 0.03 in GHz
+if False: #m1 transition
+    range_f     =  0.01 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -5#-13      #in dBm
-    center_f    =  2.8#4.055#3.95#1.74666#2.828#2.861
+    mw_power    = -20#-13      #in dBm
+    center_f    =  1.705#4.055#3.95#1.74666#2.828#2.861
 else: #p1 transition
-    range_f     =  0.09 # 0.03 in GHz
+    range_f     =  0.01 # 0.03 in GHz
     steps       = 101      #101
-    mw_power    = -8      #in dBm
-    center_f    = 4.033
+    mw_power    = -18     #in dBm
+    center_f    = 4.05#25
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 
 # Set source to use
-ins_smb = qt.instruments['SGS100']
-# ins_smb = qt.instruments['SMB100']
+#ins_smb = qt.instruments['SGS100']
+ins_smb = qt.instruments['SMB100']
 IQ_modulation = True #Does this source have IQ modulation?
 
 # Set other instruments
@@ -95,4 +95,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
-#ins_aom.set_power(30e-6)
+ins_aom.turn_off()

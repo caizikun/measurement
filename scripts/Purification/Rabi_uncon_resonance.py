@@ -86,12 +86,13 @@ def unconditional_rabi(name,
 if __name__ == '__main__':
 
 
-    N_list      =   np.arange(2,100,4)
-    tau_list    =   [(9.16)*1e-6] *len(N_list)
+    N_list      =   np.arange(2,160,8)
+    tau_list    =   [(2.314)*1e-6] *len(N_list)
 
-    # tau_range = 0.1e-6
-    # tau_list = np.arange(9.18e-6-tau_range,9.18e-6+tau_range,4e-9) #steps of 2e-9
-    # N_list = [20]*len(tau_list)
+    #tau_range = 0.1e-6
+    #tau_cent = 2.3e-6
+    #tau_list = np.arange(tau_cent-tau_range,tau_cent+tau_range,5e-9) #steps of 2e-9
+    #N_list = [12]*len(tau_list)
 
     unconditional_rabi(SAMPLE + '_uncondGate_tau_'+str(tau_list[0]),
         C13_init_method = 'swap',

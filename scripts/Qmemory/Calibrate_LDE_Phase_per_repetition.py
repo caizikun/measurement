@@ -177,14 +177,14 @@ if __name__ == '__main__':
     breakst = False    
     debug = False
     repump_power = 1000e-9
-    detuning = 0
+    detuning = 1.5
 
 
     ############################
     #### SK LDE Phase Calib ####
     ############################
-
-    for c in [1]:
+    c_list = [1]
+    for c in c_list:
         if breakst:
             break
         for tomo in ['X']:
@@ -204,20 +204,20 @@ if __name__ == '__main__':
                             carbon_init_list        = [c],
                             carbon_init_thresholds  = [1],  #1 XXX
                             carbon_init_methods     = ['MBI'], # MBI/swap XXX
-                            repump_po10wer = repump_power,
-                            Repetitions = 125,
+                            repump_power = repump_power,
+                            Repetitions = 500,
                             pts = 20,
                             do_optical_pi = False,
                             minReps = 1,
-                            maxReps = 42,
+                            maxReps = 220,
                             detuning = detuning
                             ) 
     ### analysis XXX todo: bring in detuning!
-    if not debug and not breakst:
-        for c in c_list:
-            fit_result = CD.Osci_period(carbon = str(c),fit_results = True,auto_analysis = True,fixed = [],show_guess = True,freq = 0.000,decay=89)
-            try:
-                print 'Phaseshift for carbon {}: {} +- {:2.2}'.format(c,fit_result['params_dict']['f']*180/0.5,180*fit_result['error_dict']['f']/0.5)
-                # print 'Phase shift after 1 repetition {} +- {:2.2}'.format(fit_result['params_dict']['phi'],fit_result['error_dict']['phi'])
-            except KeyError:
-                print 'frequency could not be determined'
+    # if not debug and not breakst:
+    #     for c in c_list:
+    #         fit_result = CD.Osci_period(carbon = str(c),fit_results = True,auto_analysis = True,fixed = [],show_guess = True,freq = 0.000,decay=89)
+    #         try:
+    #             print 'Phaseshift for carbon {}: {} +- {:2.2}'.format(c,fit_result['params_dict']['f']*180/0.5,180*fit_result['error_dict']['f']/0.5)
+    #             # print 'Phase shift after 1 repetition {} +- {:2.2}'.format(fit_result['params_dict']['phi'],fit_result['error_dict']['phi'])
+    #         except KeyError:
+    #             print 'frequency could not be determined'

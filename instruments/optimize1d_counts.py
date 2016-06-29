@@ -36,7 +36,6 @@ import qt
 class optimize1d_counts(CyclopeanInstrument):
     def __init__(self, name, linescan, mos, counters):
         CyclopeanInstrument.__init__(self, name, tags=[])
-
         self._linescan = qt.instruments[linescan]
         self._mos = qt.instruments[mos]
         self._counters = qt.instruments[counters]
@@ -170,12 +169,16 @@ class optimize1d_counts(CyclopeanInstrument):
         self.get_gaussian_fit()
         self.get_counter()
         self.get_pixel_time()
-        
         self._prepare()
-       
+
+        i = 0
         while self._linescan.get_is_running():
             qt.msleep(0.1)
-        
+            if i == 10:
+                print "Error while waiting for linescan to finish running! Linescan probably crashed! \nIf this is the case, execute linescan_counts.reload() to reset"
+                break
+            i += 1
+
         self._linescan.set_is_running(True)
         qt.msleep(0.5)
         

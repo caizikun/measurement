@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.0.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, dynamic initialization and MBEand SSRO at the end.
