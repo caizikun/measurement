@@ -90,7 +90,9 @@ class RS_SGS100A(Instrument):
         # if address[:5] == 'TCPIP':
         #     self._visainstrument = SocketVisa(self._address[8:], 5025)
         # else:
-        self._visainstrument = visa.instrument(address, timeout=60)
+        rm = visa.ResourceManager()
+        
+        self._visainstrument = rm.open_resource(address, timeout=60000)
         self.add_parameter(
             'frequency', type=types.FloatType, flags=Instrument.FLAG_GETSET,
             minval=1e9, maxval=20e9, units='Hz',  # format='%.12e',
