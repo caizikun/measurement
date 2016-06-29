@@ -50,7 +50,7 @@ def bell_check_powers():
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-                1e-6, # The amount for repumping in purification
+                700e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.1,0.1,0.15]
     qt.instruments['PMServo'].move_in()
@@ -110,27 +110,27 @@ if __name__ == '__main__':
             skip_first=False
 
             print 'starting the measurement at lt3'
-            # lt3_helper = qt.instruments['lt3_helper']
-            # lt3_helper.set_is_running(False)
-            # lt3_helper.set_measurement_name('optimizing')
-            # lt3_helper.set_script_path(r'Y:/measurement/scripts/Purification/purification_master_script.py')
-            # lt3_helper.execute_script()
+            lt3_helper = qt.instruments['lt3_helper']
+            lt3_helper.set_is_running(False)
+            lt3_helper.set_measurement_name('optimizing')
+            lt3_helper.set_script_path(r'Y:/measurement/scripts/Purification/purification_master_script.py')
+            lt3_helper.execute_script()
             print 'Loading CR linescan'
             execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
             lt4_succes = optimize()
             qt.msleep(5)
             #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
             #qt.msleep(5)
-            # while lt3_helper.get_is_running():
-            #     if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
-            #         print 'Measurement aborted while waiting for lt3'
-            #         lt3_succes= False
-            #         break
-            # qt.msleep(5)
-            # output = lt3_helper.get_measurement_name()         
-            # lt3_success = (output == 'True')
-            # print 'Was lt3 successfully optimized? ', lt3_success
-            lt3_success = True 
+            while lt3_helper.get_is_running():
+                if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                    print 'Measurement aborted while waiting for lt3'
+                    lt3_succes= False
+                    break
+            qt.msleep(5)
+            output = lt3_helper.get_measurement_name()         
+            lt3_success = (output == 'True')
+            print 'Was lt3 successfully optimized? ', lt3_success
+            #lt3_success = True 
             if not(lt4_succes) or not(lt3_success):
                 break  #cycle is ~1 Hour
         #stools.stop_bs_counter()
