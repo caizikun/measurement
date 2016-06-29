@@ -8,9 +8,12 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
-
+#DEFINE max_sequences     100
+#DEFINE max_nr_of_Carbon_init_steps 20
+#DEFINE max_nr_of_Carbon_MBE_steps 20
+#DEFINE max_repetitions 500000
 'Linescan:
 DIM DATA_1[8] AS FLOAT
 DIM DATA_197[8] AS FLOAT
@@ -37,8 +40,34 @@ DIM DATA_16[8] AS FLOAT AT EM_LOCAL 'modulation offsets during repump
 
 DIM DATA_20[100] AS LONG
 DIM DATA_21[100] AS FLOAT
+DIM DATA_27[1000000] AS LONG
 DIM DATA_30[100] AS LONG
 DIM DATA_31[100] AS FLOAT
+DIM DATA_28[100] AS LONG
+
+'C13 control
+'in
+DIM DATA_33[max_sequences] AS LONG                ' A SP after MBI durations
+DIM DATA_34[max_sequences] AS LONG                ' E RO durations
+DIM DATA_35[max_sequences] AS FLOAT               ' A SP after MBI voltages
+DIM DATA_36[max_sequences] AS FLOAT               ' E RO voltages
+DIM DATA_38[max_sequences] AS LONG                ' sequence wait times
+DIM DATA_39[max_sequences] AS FLOAT               ' E SP after MBI voltages
+DIM DATA_37[max_sequences] AS LONG                ' Not used?
+DIM DATA_40[max_sequences] AS LONG                ' C13 MBI threshold list
+'out
+DIM DATA_29[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number of carbon initialization START events
+DIM DATA_32[max_nr_of_Carbon_init_steps] AS LONG 'Data array to store the number of carbon initialization SUCCES events
+'C13 MBE data
+DIM DATA_51[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE START events
+DIM DATA_52[max_nr_of_Carbon_MBE_steps] AS LONG 'Data array to store the number of carbon MBE SUCCES events
+'C13 Parity data
+DIM DATA_53[max_repetitions] AS LONG 'Parity measurement outcomes (NOTE: multiple parity measurements are stored in a single array of length Nr_parity * repetitions
+
+
+'Magnetometry
+'DIM DATA_50[50000] AS FLOAT
+'DIM DATA_51[50000] AS FLOAT
 'DIM DATA_22[20000] AS LONG AT EM_LOCAL  ' CR counts before sequence
 'DIM DATA_23[20000] AS LONG AT EM_LOCAL  ' CR counts after sequence
 'DIM DATA_24[500] AS LONG AT EM_LOCAL      ' SP counts

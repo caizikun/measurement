@@ -12,6 +12,7 @@ def cp(pulse, *arg, **kw):
         call method of the pulse class), and return the copy
     """
     pulse_copy = deepcopy(pulse)
+
     return pulse_copy(*arg, **kw)
 
 
@@ -92,7 +93,37 @@ class Pulse:
     def effective_length(self):
         return self.length - self.start_offset - self.stop_offset
 
-### Some simple pulse definitions.
+# ### Some simple pulse definitions.
+# class SquarePulse(Pulse):
+#     def __init__(self, channel, name='square pulse', **kw):
+#         Pulse.__init__(self, name)
+        
+#         self.channel = channel # this is just for convenience, internally
+#         self.channels.append(channel) # this is the part the sequencer element 
+#                                       # wants to communicate with
+#         self.channels.append('MW_invswitch')
+#         self.amplitude = kw.pop('amplitude', 0)
+#         self.length = kw.pop('length', 0)
+
+#     def __call__(self, **kw):
+#         self.amplitude = kw.pop('amplitude', self.amplitude)
+#         self.length = kw.pop('length', self.length)
+#         self.channel = kw.pop('channel', self.channel)
+
+#         self.channels = []
+#         self.channels.append(self.channel)
+
+#         return self
+
+#     def chan_wf(self, chan, tvals):
+#         if chan == 'MW_invswitch':
+#             return np.ones(len(tvals))
+
+#         else:
+#             return np.ones(len(tvals)) * self.amplitude
+
+
+        ### Some simple pulse definitions.
 class SquarePulse(Pulse):
     def __init__(self, channel, name='square pulse', **kw):
         Pulse.__init__(self, name)
@@ -115,6 +146,7 @@ class SquarePulse(Pulse):
 
     def chan_wf(self, chan, tvals):
         return np.ones(len(tvals)) * self.amplitude
+
 
 
 class SinePulse(Pulse):
@@ -141,3 +173,32 @@ class SinePulse(Pulse):
         return self.amplitude * np.sin(2*np.pi * \
                 (self.frequency * tvals + self.phase/360.))
 
+class clock_train(Pulse):
+    def __init__(self, channel, name='clock train', **kw):
+        Pulse.__init__(self, name)
+
+        self.channel = channel
+        self.channels.append (channel)
+
+        self.amplitude = kw.pop('amplitude', 0.1)
+        self.cycles = kw.pop('cycles', 100)
+        self.nr_up_points = kw.pop('nr_up_points', 2)
+        self.nr_down_points = kw.pop('nr_down_points', 2)
+
+    def __call__(self, **kw):
+        self.amplitude = kw.pop('amplitude', self.amplitude)
+        self.cycles = kw.pop('cycles', self.cycles)
+        self.nr_up_points = kw.pop('nr_up_points', self.nr_up_points)
+        self.nr_down_points = kw.pop('nr_down_points', self.nr_down_points)       
+        self.length = self.cycles*(self.nr_up_points+self.nr_down_points)*1e-9
+        return self
+
+    def chan_wf(self, chan, tvals):
+        unit_cell = []
+        for i in np.arange(self.nr_up_points):
+            unit_cell.append(self.amplitude)
+        for i in np.arange(self.nr_down_points):
+            unit_cell.append(0)
+        wf = unit_cell*self.cycles
+            
+        return wf

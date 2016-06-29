@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -110,8 +110,6 @@ INIT:
     Par_49 = 1
     Par_50 = 0                                                            'tell resonant counting process to sum its data into par 45-48
   ENDIF
-  
-  
     
  
 EVENT:
@@ -123,7 +121,7 @@ EVENT:
     CNT_LATCH(111b)                                         'latch counters
     DATA_11[CurrentStep] = CNT_READ_LATCH(1)                 'read latch A of counter 1
     DATA_12[CurrentStep] = CNT_READ_LATCH(2)                 'read latch A of counter 2
-    DATA_13[CurrentStep] = CNT_READ_LATCH(3)                 'read latch A of counter 3
+    DATA_13[CurrentStep] = DATA_11[CurrentStep]+ DATA_12[CurrentStep]'  Hack sum countrates CNT_READ_LATCH(3)                 'read latch A of counter 3
     CNT_ENABLE(000b)                                        'Stop counters
     CNT_CLEAR(111b)                                         'Clear counters
     CNT_ENABLE(111b)                                        'Start counters again
@@ -132,7 +130,7 @@ EVENT:
   ENDIF
   IF (PxAction = 2) THEN
     ' DEBUG FPar_24 = 42.0
-    DATA_15[CurrentStep] = FPar_2
+    DATA_15[CurrentStep] = FPar_46
   ENDIF
   
   IF (PxAction = 3) THEN

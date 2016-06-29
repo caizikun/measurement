@@ -196,6 +196,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
+
         self.params = MeasurementParameters()
         
         if save:
@@ -336,6 +337,7 @@ class AdwinControlledMeasurement(Measurement):
     adwin_process = ''
 
     def __init__(self, name, save=True):
+        
         Measurement.__init__(self, name, save=save)
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
@@ -344,7 +346,7 @@ class AdwinControlledMeasurement(Measurement):
         proc = getattr(self.adwin, 'start_'+self.adwin_process)
         proc(load=load, stop_processes=stop_processes,
                 **self.adwin_process_params.to_dict())
-
+        print 'starting ADwin process', self.adwin_process
     def stop_adwin_process(self):
         func = getattr(self.adwin, 'stop_'+self.adwin_process)
         return func()
@@ -369,7 +371,19 @@ class AdwinControlledMeasurement(Measurement):
             grp.group.attrs[k] = adwinparams[k]
 
         self.h5data.flush()
-
+    
+    def set_adwin_process_variable_from_params(self,key):
+        try:
+            # Here we can do some checks on the settings in the adwin
+            if np.isnan(self.params[key]):
+                raise Exception('Adwin process variable {} contains NAN'.format(key))
+            self.adwin_process_params[key] = self.params[key]
+        except:
+            logging.error("Cannot set adwin process variable '%s'" \
+                    % key)
+            raise Exception('Adwin process variable {} has not been set \
+                                in the measurement params dictionary!'.format(key))
+            
     def adwin_process_running(self):
         func = getattr(self.adwin, 'is_'+self.adwin_process+'_running')
         return func()
@@ -377,7 +391,6 @@ class AdwinControlledMeasurement(Measurement):
     def adwin_var(self, var):
         v = var
         getfunc = getattr(self.adwin, 'get_'+self.adwin_process+'_var')
-        
         if type(v) == str:
                 return getfunc(v)
         elif type(v) == tuple:
@@ -415,16 +428,16 @@ class AdwinControlledMeasurement(Measurement):
 def save_instrument_settings_file(parent):
     h5settingsgroup = parent.create_group('instrument_settings')
     inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
-    
+
     for (iname, ins) in inslist:
+        if 'remote' in ins.get_options()['tags']:
+            continue
         insgroup = h5settingsgroup.create_group(iname)
         parlist = dict_to_ordered_tuples(ins.get_parameters())
-        
+        #print iname
         for (param, popts) in parlist:
             try:
-                insgroup.attrs[param] = ins.get(param, query=True) \
-                        if 'remote' in ins.get_options()['tags'] \
-                        else ins.get(param, query=False)
+                insgroup.attrs[param] = ins.get(param, query=False)
             except (ValueError, TypeError):
                     insgroup.attrs[param] = str(ins.get(param, query=False))
 
@@ -444,6 +457,7 @@ class MultipleAdwinsMeasurement(Measurement):
     def start_adwin_process(self, adwin, load=True, stop_processes=[]):
         proc = getattr(self.adwins[adwin]['ins'], 
             'start_'+self.adwins[adwin]['process'])
+        
         proc(load=load, stop_processes=stop_processes,
                 **self.adwin_process_params[adwin].to_dict())
 

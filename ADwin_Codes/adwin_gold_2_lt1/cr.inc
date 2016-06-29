@@ -1,5 +1,4 @@
 '<ADbasic Header, Headerversion 001.001>
-' Foldings                       = 171
 '<Header End>
 ' this program implements CR check fully controlled by ADwin Pro II
 '
@@ -11,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 500000
+#DEFINE max_repetitions 1000000
 'init
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
@@ -67,6 +66,7 @@ SUB init_CR()
   cr_wait_after_pulse = 0
   cr_mode = 0
   cr_timer = 0
+  cr_counts = 0
   
   PAR_70 = 0                      ' cumulative counts from probe intervals
   PAR_71 = 0                      ' number of repumps
@@ -82,8 +82,8 @@ ENDSUB
 
 FUNCTION CR_check(first_cr, repetition_index) As LONG
 
-  CR_check = 0
-  
+  CR_check = 1
+  PAR_1=1
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE
@@ -146,8 +146,8 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
             PAR_70 = PAR_70 + cr_counts
             
             IF (first_cr > 0) THEN ' first CR after SSRO sequence
-              DATA_23[repetition_index] = cr_counts
               first_cr = 0
+              DATA_23[repetition_index] = cr_counts
             ENDIF
                       
             IF (cr_counts < current_cr_threshold) THEN

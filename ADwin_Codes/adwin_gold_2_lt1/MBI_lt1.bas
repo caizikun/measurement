@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, and SSRO at the end. 
@@ -25,7 +25,7 @@
 '
 
 #INCLUDE ADwinGoldII.inc
-#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
 
 #DEFINE max_SP_bins       500 ' not used anymore? Machiel 23-12-'13
 #DEFINE max_sequences     100
@@ -126,7 +126,7 @@ INIT:
   ROseq_cntr          = 1
   seq_cntr            = 1
   
-  next_MBI_stop = -2
+  'next_MBI_stop = -2' deprecated? -Machiel 18-9-2014
   current_MBI_attempt = 1
   next_MBI_laser_stop = -2
       
@@ -137,7 +137,7 @@ INIT:
   CNT_ENABLE(0000b)'turn off all counters
   CNT_MODE(counter_channel,00001000b) 'configure counter
 
-  CONF_DIO(11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
+  CONF_DIO(0011b)  'configure DIO 00:07 as output, all other ports as input
   DIGOUT(AWG_start_DO_channel,0)
   
   mode = 0
@@ -163,7 +163,10 @@ EVENT:
  
   awg_in_was_hi = awg_in_is_hi
   awg_in_is_hi = DIGIN(AWG_done_DI_channel)
-  
+  IF (awg_in_is_hi>0)then
+    PAR_76=42
+  endif
+  PAR_13=1
   if ((awg_in_was_hi = 0) and (awg_in_is_hi > 0)) then
     awg_in_switched_to_hi = 1
   else
@@ -185,12 +188,12 @@ EVENT:
       CASE 0 'CR check
        
         IF ( CR_check(first,repetition_counter) > 0 ) THEN
-          mode = 2 
+          mode = 1 
           timer = -1 
-          first = 0 
         ENDIF 
-      
-      CASE 2    ' E spin pumping
+        first = 0 
+        
+      CASE 1    ' E spin pumping
         
         ' turn on both lasers and start counting
         IF (timer = 0) THEN
@@ -205,13 +208,13 @@ EVENT:
             DAC( E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             DAC( A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
             
-            mode = 3
+            mode = 2
             wait_time = wait_after_pulse_duration
             timer = -1
           ENDIF
         ENDIF
               
-      CASE 3    ' MBI
+      CASE 2    ' MBI
                 
         ' MBI starts now; we first need to trigger the AWG to do the selective pi-pulse
         ' then wait until we can assume this is done
@@ -232,7 +235,7 @@ EVENT:
           DIGOUT(AWG_start_DO_channel,0)
        
           ' make sure we don't accidentally think we're done before getting the trigger
-          next_MBI_stop = -2
+          'next_MBI_stop = -2 ' deprecated? -Machiel 18-9-2014
         
         else
           ' we expect a trigger from the AWG once it has done the MW pulse
@@ -240,56 +243,62 @@ EVENT:
           ' and start counting
           if(awg_in_switched_to_hi > 0) then
             
-            next_MBI_stop = timer + MBI_duration
+            'next_MBI_stop = timer + MBI_duration' deprecated? -Machiel 18-9-2014
             CNT_CLEAR(counter_pattern)    'clear counter
             CNT_ENABLE(counter_pattern)    'turn on counter
-            DAC(E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser
-                      
-          else            
-            IF (timer = next_MBI_stop) THEN
-              DAC(E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-              counts = CNT_READ( counter_channel)
-              CNT_ENABLE(0)
-                              
-              ' MBI succeeds if the counts surpass the threshold;
-              ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
-              ' if MBI fails, we
-              ' - try again (until max. number of attempts, after some scrambling)
-              ' - go back to CR checking if max number of attempts is surpassed
-              
-              IF (counts < MBI_threshold) THEN
-                INC(MBI_failed)
-                PAR_74 = MBI_failed
+            DAC(E_laser_DAC_channel, 3277*E_MBI_voltage+32768) ' turn on Ex laser  
+            mode = 3   
+            timer=0       
+          endif          
+        endif
       
-                if (current_MBI_attempt = MBI_attempts_before_CR) then
-                  current_cr_threshold = cr_preselect
-                  mode = 0 '(check resonance and start over)
-                  current_MBI_attempt = 1
-                else
-                  mode = 7
-                  INC(current_MBI_attempt)
-                endif                
-                timer = -1      
-              
-              else               
-                DIGOUT(AWG_event_jump_DO_channel,1)  ' AWG trigger
-                CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-                DIGOUT(AWG_event_jump_DO_channel,0)
-                
-                DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
-                mode = 4
-                current_MBI_attempt = 1
-                trying_mbi = 0
-                ' we want to save the time MBI takes
-                DATA_28[seq_cntr] = mbi_timer
-                mbi_timer = 0
-              
-              endif
-              timer = -1
-            endif          
-          endif
-        ENDIF
+      CASE 3
+        counts = CNT_READ( counter_channel)
+        IF (counts >= MBI_threshold) THEN
+          DAC(E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+          CNT_ENABLE(0)
         
+          DIGOUT(AWG_event_jump_DO_channel,1)  ' AWG trigger
+          CPU_SLEEP(9)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+          DIGOUT(AWG_event_jump_DO_channel,0)
+                
+          DATA_24[seq_cntr] = current_MBI_attempt ' number of attempts needed in the successful cycle
+          mode = 4
+          wait_time = MBI_duration-timer
+          timer=-1
+          current_MBI_attempt = 1
+          trying_mbi = 0
+          
+          ' we want to save the time MBI takes
+          DATA_28[seq_cntr] = mbi_timer
+          mbi_timer = 0 
+                   
+          ' MBI succeeds if the counts surpass the threshold;
+          ' we then trigger an AWG jump (sequence has to be long enough!) and move on to SP on A
+          ' if MBI fails, we
+          ' - try again (until max. number of attempts, after some scrambling)
+          ' - go back to CR checking if max number of attempts is surpassed
+              
+        ELSE
+          IF (timer = MBI_duration) THEN
+            DAC(E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
+            CNT_ENABLE(0)
+            INC(MBI_failed)
+            PAR_74 = MBI_failed
+      
+            if (current_MBI_attempt = MBI_attempts_before_CR) then
+              current_cr_threshold = cr_preselect
+              mode = 0 '(check resonance and start over)
+              current_MBI_attempt = 1
+            else
+              mode = 7
+              INC(current_MBI_attempt)
+            endif                
+            timer = -1                  
+          endif
+        endif
+    
+      
       CASE 4    ' A laser spin pumping
         A_SP_voltage_after_MBI = DATA_35[ROseq_cntr]
         E_SP_voltage_after_MBI = DATA_39[ROseq_cntr]
@@ -335,7 +344,7 @@ EVENT:
             if(awg_in_switched_to_hi > 0) then          
               mode = 6
               timer = -1
-              wait_time = 0
+              wait_time =1
             endif
           ENDIF
         
@@ -343,7 +352,7 @@ EVENT:
           ' if we do not run an awg sequence, we just wait the specified time, and go then to readout
           mode = 6
           timer = -1
-          wait_time = sequence_wait_time
+          wait_time = 1'sequence_wait_time
         endif
         
       CASE 6    ' readout on the E line
@@ -410,7 +419,7 @@ EVENT:
             DAC(A_laser_DAC_channel,3277*A_off_voltage+32768)
             DAC(repump_laser_DAC_channel,3277*repump_off_voltage+32768)
             
-            mode = 2
+            mode = 1
             timer = -1
             wait_time = wait_after_pulse_duration
           endif                    

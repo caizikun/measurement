@@ -6,7 +6,7 @@ import numpy as np
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-from measurement.lib.measurement2.adwin_ssro import pulsar as pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 
 
 
@@ -70,7 +70,7 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
 
     pts = 1
     m.params['pts'] = pts
-    m.params['repetitions'] = 2500
+    m.params['repetitions'] = 5000
 
     m.params['evolution_times'] = np.ones(1)*nr_of_hyperfine_periods/m.params['N_HF_frq']
 
@@ -84,48 +84,153 @@ def repelectronramseyCORPSE(name,delay_time=1,repump_E=0,repump_A=0,nr_of_hyperf
     m.params['sweep_name'] = 'evolution time (ns)'
     m.params['sweep_pts'] = m.params['evolution_times']/1e-9
 
-    m.autoconfig()
-    return_e=m.generate_sequence()
+    #m.autoconfig()
+    #return_e=m.generate_sequence()
     funcs.finish(m,upload=upload)
     print m.adwin_var('completed_reps')
-    return return_e
-def loop_rep_ramsey_CORPSE(label='',delay_time=1,repump_E=0,repump_A=0,nr_of_hyperfine_periods=3,phase=90,reps=2):
-    name='SIL4_'+str(nr_of_hyperfine_periods)+'_hf'
-    n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label
-    repelectronramseyCORPSE(n+"0",delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=True)
-    #AWG.clear_visa()
-    for i in np.arange(reps-1):
+
+def repelectronramseyCORPSE_loop(label='',delay_time=1,repump_E=0,repump_A=0,nr_of_hyperfine_periods=3,phase=90,reps=2,upload=True):
+    name='SIL4_'+str(nr_of_hyperfine_periods)+'_hf'+label
+    n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)
+
+    m = pulsar_msmt.RepElectronRamseysCORPSE(n)
+    funcs.prepare(m)
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols']['Hans_sil4']['Magnetometry'])
+
+
+
+    m.params['repump_E'] = repump_E
+    m.params['repump_A'] = repump_A
+    m.params['wait_time_between_msmnts']=  delay_time
+
+    pts = 1
+    m.params['pts'] = pts
+    m.params['repetitions'] = 5000
+
+    m.params['evolution_times'] = np.ones(1)*nr_of_hyperfine_periods/m.params['N_HF_frq']
+   
+
+    # MW pulses
+    m.params['CORPSE_pi2_mod_frq'] = m.params['MW_modulation_frequency']
+    m.params['CORPSE_pi2_amps'] = np.ones(pts)*m.params['CORPSE_pi2_amp']
+    m.params['CORPSE_pi2_phases1'] = np.ones(pts) * 0
+    m.params['CORPSE_pi2_phases2'] = np.ones(pts)*(phase+15)#360 * m.params['evolution_times'] * 2e6
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'evolution time (ns)'
+    m.params['sweep_pts'] = m.params['evolution_times']/1e-9
+
+    #m.autoconfig()
+    #return_e=m.generate_sequence()
+    #funcs.finish(m,upload=upload)
+    #print m.adwin_var('completed_reps')
+    
+    m.autoconfig()
+    m.generate_sequence(upload=upload)
+
+    for i in np.arange(reps):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+            m.finish()
             raise Exception('User abort')
-        n=name+"_"+str(delay_time)+"us"+"A"+str(repump_A)+"E"+str(repump_E)+"nr_"+label+"_"+str(i+1)
-        repelectronramseyCORPSE(n,delay_time=delay_time,repump_E=repump_E,repump_A=repump_A,nr_of_hyperfine_periods=nr_of_hyperfine_periods,phase=phase,upload=True)
-     #   AWG.clear_visa()
+        print '#######################################'
+        print '####    Rep nr ', str(i),' /  ', str(reps), '   ##########'
+        print '#######################################'
+        m.run(autoconfig=False)
+        m.save('rep_'+str(i))
+    m.finish()
+
+
+def msmnt_16may():
+      
+    GreenAOM.set_power(20e-6)
+    optimiz0r.optimize(dims=['x','y','z','x','y'])
+    GreenAOM.set_power(0e-6)
+    qt.msleep(2)
+    for ttt in [500, 1000, 2000]:
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=1,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=1,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+    GreenAOM.set_power(20e-6)
+    optimiz0r.optimize(dims=['x','y','z','x','y'])
+    GreenAOM.set_power(0e-6)
+    qt.msleep(2)
+    for ttt in [3000, 4000]:
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=1,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=1,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+
+    GreenAOM.set_power(20e-6)
+    optimiz0r.optimize(dims=['x','y','z','x','y'])
+    GreenAOM.set_power(0e-6)
+    qt.msleep(2)
+    for ttt in [5000, 7000]:
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=1,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=1,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+
+    GreenAOM.set_power(20e-6)
+    optimiz0r.optimize(dims=['x','y','z','x','y'])
+    GreenAOM.set_power(0e-6)
+    qt.msleep(2)
+    for ttt in [10000, 15000]:
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=1,repump_A=0,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+        repelectronramseyCORPSE_loop(label='',delay_time=ttt,repump_E=0,repump_A=1,
+        nr_of_hyperfine_periods=3,phase=90,reps=75)
+
+
+    
+
 if __name__ == '__main__':
     #AWG.clear_visa()
-    loop_rep_ramsey_CORPSE(label='',delay_time=0,repump_E=0,repump_A=0,
-        nr_of_hyperfine_periods=0.25,phase=90,reps=10)
-    
-    '''
-    GreenAOM.set_power(5e-6)
-    optimiz0r.optimize(dims=['x','y','z','x','y','z'])
-    GreenAOM.set_power(0e-6)
-    phase=90
-    loop_rep_ramsey_CORPSE(delay_time=100,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.25,phase=phase,reps=25)
-    phase=0
-    loop_rep_ramsey_CORPSE(delay_time=500,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.5,phase=phase,reps=25)
-    phase=90
-    loop_rep_ramsey_CORPSE(delay_time=500,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.25,phase=phase,reps=25)
+    #repelectronramseyCORPSE_loop(label='test',delay_time=500,repump_E=0,repump_A=1,
+    #    nr_of_hyperfine_periods=3,phase=90,reps=5)
+    msmnt_16may()
+
+'''
+GreenAOM.set_power(5e-6)
+optimiz0r.optimize(dims=['x','y','z','x','y','z'])
+GreenAOM.set_power(0e-6)
+phase=90
+loop_rep_ramsey_CORPSE(delay_time=100,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.25,phase=phase,reps=25)
+phase=0
+loop_rep_ramsey_CORPSE(delay_time=500,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.5,phase=phase,reps=25)
+phase=90
+loop_rep_ramsey_CORPSE(delay_time=500,repump_E=0,repump_A=0,nr_of_hyperfine_periods=0.25,phase=phase,reps=25)
 
 
-    delay_times=[1,5000,250,1000, 2000, 3000]
-    hyperfine=[3]
-    for hf in hyperfine:
-        for dt in delay_times:
-            GreenAOM.set_power(5e-6)
-            optimiz0r.optimize(dims=['x','y','z','x','y','z'])
-            GreenAOM.set_power(0e-6)
-            loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=1,nr_of_hyperfine_periods=hf,reps=50)
-            loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=1,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
-            loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
-    '''
+delay_times=[1,5000,250,1000, 2000, 3000]
+hyperfine=[3]
+for hf in hyperfine:
+    for dt in delay_times:
+        GreenAOM.set_power(5e-6)
+        optimiz0r.optimize(dims=['x','y','z','x','y','z'])
+        GreenAOM.set_power(0e-6)
+        loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=1,nr_of_hyperfine_periods=hf,reps=50)
+        loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=1,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
+        loop_rep_ramsey_CORPSE(delay_time=dt,repump_E=0,repump_A=0,nr_of_hyperfine_periods=hf,reps=50)
+'''
 

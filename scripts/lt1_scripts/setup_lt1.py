@@ -1,48 +1,28 @@
-print 'loading setup tools...'
-from measurement.scripts.lt1_scripts import stools
-reload(stools)
-
-print 'reload all modules...'
-execfile("D:/measuring/measurement/scripts/lt1_scripts/setup/reload_all.py")
-
-####
-print 'reload all measurement parameters and calibrations...'
-execfile("D:/measuring/measurement/scripts/lt1_scripts/setup/msmt_params.py")
-
+import os
 qt.current_setup='lt1'
+qt.reload_current_setup = os.path.join(qt.config['startdir'],"lt1_scripts/setup_lt1.py")
 
 qt.get_setup_instrument = lambda x: qt.instruments[x] \
     if qt.config['instance_name'][-3:] == qt.current_setup \
     else qt.instruments[x+'_'+qt.current_setup]
 
+print 'loading setup tools...'
+from measurement.scripts.lt1_scripts.tools import stools
+reload(stools)
+
+print 'reload all modules...'
+execfile(os.path.join(qt.config['startdir'],"reload_all.py"))
+
+####
+print 'reload all measurement parameters and calibrations...'
+from measurement.scripts.lt1_scripts.setup import msmt_params as mcfg
+reload(mcfg)
+qt.exp_params=mcfg.cfg
+
 ####
 print 'configure the setup-specific hardware...'
-ssro.AdwinSSRO.adwin_processes_key = 'adwin_lt1_processes'
-ssro.AdwinSSRO.E_aom = qt.instruments['MatisseAOM'] 
-ssro.AdwinSSRO.A_aom = qt.instruments['NewfocusAOM'] 
-ssro.AdwinSSRO.green_aom = qt.instruments['GreenAOM']
-ssro.AdwinSSRO.yellow_aom = qt.instruments['YellowAOM']
-ssro.AdwinSSRO.adwin = qt.instruments['adwin']
+# set all the static variables for lt1
+execfile(os.path.join(qt.config['startdir'],'lt1_scripts/setup/sequence.py'))
 
-if qt.cfgman.get('protocols/AdwinSSRO/yellow'):
-    ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.yellow_aom
-else:
-    ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.green_aom
-
-
-pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
-pulsar_msmt.PulsarMeasurement.mwsrc = qt.instruments['SMB100']
-
-
-#teleportation.Teleportation.adwin_processes_key = 'adwin_lt1_processes'
-#teleportation.Teleportation.E_aom = qt.instruments['Velocity1AOM']
-#teleportation.Teleportation.A_aom = qt.instruments['Velocity2AOM']
-#teleportation.Teleportation.green_aom = qt.instruments['GreenAOM']
-#teleportation.Teleportation.yellow_aom = qt.instruments['YellowAOM']
-#teleportation.Teleportation.adwin = qt.instruments['adwin']
-####
-
-print 'configure the pulsar sequencer and update pulses and elements...'
-execfile("D:/measuring/measurement/scripts/lt1_scripts/setup/sequence.py")
-
-
+# set all the static variables for lt1
+execfile(os.path.join(qt.config['startdir'],'lt1_scripts/setup/lt1_statics.py'))

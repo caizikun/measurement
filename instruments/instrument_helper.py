@@ -23,3 +23,12 @@ def make_f_set(ins,par):
     def f(val):
         setattr(ins,'_'+par,val)
     return f
+
+def create_get(ins,par_list):
+    for par,kw in par_list.items():
+        setattr(ins,'_'+par,kw.pop('val',None))
+        f_get=make_f_get(ins,par)
+        fgetname='do_get_' + par
+        f_get.__name__= fgetname  
+        setattr(ins,fgetname,f_get)
+        ins.add_parameter(par,**kw)

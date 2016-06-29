@@ -2,14 +2,14 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_SIL1_LT2'
-start_f = 1.9 #2.827 - 0.015 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.1 #2.827 + 0.015 #   2.864 #2.905 #   #in GHz
-steps   = 51
-mw_power = -5. #in dBm
-green_power = 50e-6
-int_time = 30       #in ms
-reps = 20
+name='ESR_SIL18_LT2_LT'
+start_f = 1.746-50e-3 #2.827 - 0.015 #   2.853 #2.85 #  #in GHz
+stop_f  = 1.746+50e-3 #2.827 + 0.015 #   2.864 #2.905 #   #in GHz
+steps   = 61
+mw_power = -8. #in dBm (has been -3 for hans as well)
+green_power = 30e-6
+int_time = 50       #in ms
+reps = 2
 
 #generate list of frequencies
 f_list = linspace(start_f*1e9, stop_f*1e9, steps)

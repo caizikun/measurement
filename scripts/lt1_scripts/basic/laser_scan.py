@@ -206,9 +206,11 @@ class YellowLaserScan(LabjackAdwinLaserScan):
 class RedLaserScan(LabjackAdwinLaserScan):
     def __init__(self, name, labjack_dac_nr):
         LabjackAdwinLaserScan.__init__(self, name,labjack_dac_nr)
-        self.set_laser_power = qt.instruments['Velocity2AOM'].set_power
+        self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
+        # self.set_laser_power = qt.instruments['Velocity2AOM'].set_power
         self.set_yellow_repump_power=qt.instruments['YellowAOM'].set_power
-        self.set_red_repump_power=qt.instruments['Velocity1AOM'].set_power
+        # self.set_red_repump_power=qt.instruments['Velocity1AOM'].set_power
+        self.set_red_repump_power=qt.instruments['MatisseAOM'].set_power
         self.set_repump_power = qt.instruments['GreenAOM'].set_power
             
     def repump_pulse(self):
@@ -411,14 +413,14 @@ def red_laser_scan(name):
     m = RedLaserScan(name,labjack_dac_nr)
     
     # Hardware setup
-    m.wm_channel = 2
+    m.wm_channel = 6
     m.frq_offset = 470400
     m.frq_factor = 1
     m.counter_channel = 0
 
     # MW setup
-    m.use_mw = True
-    m.mw_frq = qt.cfgman['samples']['sil2']['MW frq']
+    m.use_mw = False
+    # m.mw_frq = qt.cfgman['samples']['sil2']['MW frq']
     m.mw_power = -12
     
     # repump setup
@@ -426,7 +428,7 @@ def red_laser_scan(name):
     m.yellow_repump_power=500e-9
     m.red_repump_power=0e-9
     m.yellow_repump_duration=4 #seconds
-    m.repump_power = 50e-6
+    m.repump_power = 40e-6
     m.repump_duration = 2 # seconds
     m.use_repump_during = False
     m.repump_power_during = 0.5e-6
@@ -435,7 +437,7 @@ def red_laser_scan(name):
     m.laser_power = 3e-9
     m.start_voltage = -0.5
     m.stop_voltage = -1.6
-    m.pts = 1000
+    m.pts = 10
     m.integration_time = 40 # ms
     
     #Gate scan setup

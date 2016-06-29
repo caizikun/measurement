@@ -1,679 +1,901 @@
-import types
-import qt
-cfg = qt.cfgman
+import numpy as np
 
-cfg.remove_cfg('protocols')
-cfg.remove_cfg('samples')
-cfg.remove_cfg('setup')
-cfg.add_cfg('protocols')
-cfg.add_cfg('samples')
-cfg.add_cfg('setup')
+cfg={}
 
-cfg['samples']['current'] = 'the111-1-sil9'
-cfg['protocols']['current'] = 'the111-1-sil9-default'
+sample_name = 'Gretel'
+# sil_name = 'sil3'
+sil_name = 'sil2'
+name=sample_name+'_'+sil_name
+cfg['samples'] = {'current':sample_name}
+cfg['protocols'] = {'current':name}
 
-print 'updating msmt params for {}'.format(cfg['samples']['current'])
+cfg['protocols'][name] = {}
 
-##############################################################################
-##############################################################################
-### Protocols
-###
-### To make sure everything works fine, only leave the current sample
-### un-commented here (we use local variables here for convenience,
-### that WILL lead to trouble because the get overwritten in each sample 
-### section)
-##############################################################################
-##############################################################################
+
+cfg['protocols']['The111_no1_SIL1'] = {}
+cfg['protocols']['Hans_sil1'] = {}
+cfg['protocols']['Gretel_sil3'] = {}
+cfg['protocols']['Gretel_sil2'] = {}
+cfg['protocols']['Hans_sil4'] = {}
+
+
+print 'updating msmt params lt1 for {}'.format(cfg['samples']['current'])
+
 
 
 ##############################################################################
-### The111/2
 ##############################################################################
-
-# branch='samples/sil2/'
-
-# f_msm1_cntr = 2.826961e9
-# N_frq = 7.13429e6
-# N_HF_frq = 2.19290e6
-# cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
-# cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
-# cfg.set(branch+'N_HF_frq', N_HF_frq)
-# mw0 = 2.8e9
-# f0 = f_msm1_cntr - mw0
-# Nsplit = N_HF_frq
-# finit = f0 - Nsplit
-# fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
-# cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
-# cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
-# cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
-
-
-##############################################################################
-### HANS/4
-##############################################################################
-
-branch='samples/the111-1-sil9/'
-#branch='samples/hans-sil4/'
-f_msm1_cntr = 2.826455e9
-N_frq = 7.13377e6
-N_HF_frq = 2.19290e6
-cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
-cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
-cfg.set(branch+'N_HF_frq', N_HF_frq)
-mw0 = 2.8e9
-f0 = f_msm1_cntr - mw0
-Nsplit = N_HF_frq
-finit = f0 - Nsplit
-fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
-cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
-cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
-cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
-#branch='samples/hans-sil4/'
-#
-#f_msm1_cntr = 2.827962e9
-#N_frq = 7.13456e6
-#N_HF_frq = 2.19290e6
-#cfg.set(branch+'ms-1_cntr_frq', f_msm1_cntr)
-#cfg.set(branch+'N_0-1_splitting_ms-1', N_frq)
-#cfg.set(branch+'N_HF_frq', N_HF_frq)
-#mw0 = 2.8e9
-#f0 = f_msm1_cntr - mw0
-#Nsplit = N_HF_frq
-#finit = f0 - Nsplit
-#fmIp1 = f_msm1_cntr - mw0 + N_HF_frq
-#cfg.set(branch+'mIm1_mod_frq',  f_msm1_cntr - mw0 - N_HF_frq)
-#cfg.set(branch+'mI0_mod_frq',  f_msm1_cntr - mw0)
-#cfg.set(branch+'mIp1_mod_frq',  f_msm1_cntr - mw0 + N_HF_frq)
-
-##############################################################################
-##############################################################################
-### Protocols
+### General Settings for Protocols
 ##############################################################################
 ##############################################################################
 
-### General settings for AdwinSSRO
-branch='protocols/AdwinSSRO/'
-cfg.set(branch+        'AWG_done_DI_channel',          16)
-cfg.set(branch+        'AWG_event_jump_DO_channel',    14)
-cfg.set(branch+        'AWG_start_DO_channel',         10)
-cfg.set(branch+        'A_laser_DAC_channel',          6)
-cfg.set(branch+        'Ex_laser_DAC_channel',         7)
-cfg.set(branch+        'counter_channel',              1)
-cfg.set(branch+        'cycle_duration',               300)
-cfg.set(branch+        'green_laser_DAC_channel',      4)
-cfg.set(branch+        'green_off_amplitude',          0.0)
-cfg.set(branch+        'green_repump_amplitude',       50e-6)
-cfg.set(branch+        'green_repump_duration',        10)
-cfg.set(branch+        'send_AWG_start',               0)
-cfg.set(branch+        'sequence_wait_time',           1)
-cfg.set(branch+        'wait_after_RO_pulse_duration', 3)
-cfg.set(branch+        'wait_after_pulse_duration',    3)
-cfg.set(branch+        'cr_wait_after_pulse_duration', 1)
-cfg.set(branch+        'wait_for_AWG_done',            0)
-cfg.set(branch+        'green_off_voltage',            0)
-cfg.set(branch+        'repump_off_voltage',           0)
-cfg.set(branch+        'yellow_repump_amplitude',       50e-9)
-cfg.set(branch+        'yellow_repump_duration',        500)
-cfg.set(branch+        'yellow_repump_after_repetitions',100)
-cfg.set(branch+        'yellow_CR_repump',              1)
-cfg.set(branch+        'green_repump_after_repetitions',1)
-cfg.set(branch+        'green_CR_repump',               1000)
-cfg.set(branch+        'CR_probe_max_time',             1000000)
+    ######################################
+    ### General settings for AdwinSSRO ###
+    ######################################
 
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             50)
-cfg.set(branch+        'SSRO_repetitions',          1000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
+cfg['protocols']['AdwinSSRO']={
+    'AWG_done_DI_channel'       :       23,
+    'AWG_event_jump_DO_channel' :       2,
+    'AWG_start_DO_channel'      :       1,
+    'counter_channel'           :       1,
+    'cycle_duration'            :       300,
+    'green_off_amplitude'       :       0.0,
+    'green_repump_amplitude'    :       30e-6, # Previously 15e-6
+    'green_repump_duration'     :       15,
+    'send_AWG_start'            :       0,
+    'sequence_wait_time'        :       1,
+    'wait_after_RO_pulse_duration':     3,
+    'wait_after_pulse_duration' :       3,
+    'cr_wait_after_pulse_duration':     1,
+    'wait_for_AWG_done'         :       0,
+    'green_off_voltage'         :       0,
+    'Ex_off_voltage'            :       0.,
+    'A_off_voltage'             :       -0.0,
+    'repump_off_voltage'        :       0,
+    'yellow_repump_amplitude'   :       245e-9,#300e-9 if possible
+    'yellow_repump_duration'    :       500,
+    'yellow_CR_repump'          :       1,
+    'green_CR_repump'           :       1000,
+    'CR_probe_max_time'         :       1000000,
+    'SSRO_stop_after_first_photon': 0,}
 
-yellow=True
-cfg.set(branch + 'yellow', yellow)
+cfg['protocols']['AdwinSSRO']['cr_mod'] = False
+cfg['protocols']['cr_mod']={
+    'cr_mod_control_offset'     :   0.0,
+    'cr_mod_control_amp'        :   0.05, #V
+    'repump_mod_control_amp'    :   .5, #V
+    'repump_mod_DAC_channel'    :0,
+    'cr_mod_DAC_channel'    :0,
+    'repump_mod_control_offset'    :0,
+
+    }
+
+
+yellow = False
+
+cfg['protocols']['AdwinSSRO']['yellow'] = yellow
+
 if yellow:
-    cfg.set(branch + 'repump_duration',             cfg.get(branch+ 'yellow_repump_duration'))
-    cfg.set(branch + 'repump_amplitude',            cfg.get(branch+ 'yellow_repump_amplitude')) 
-    cfg.set(branch + 'CR_repump',                   cfg.get(branch+ 'yellow_CR_repump'))
-    cfg.set(branch + 'repump_after_repetitions',    cfg.get(branch+ 'yellow_repump_after_repetitions'))
+    cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
+    cfg['protocols']['AdwinSSRO']['repump_amplitude'] =  cfg['protocols']['AdwinSSRO']['yellow_repump_amplitude']
+    cfg['protocols']['AdwinSSRO']['CR_repump']        =  cfg['protocols']['AdwinSSRO']['yellow_CR_repump']
 else:
-    cfg.set(branch + 'repump_duration',             cfg.get(branch+ 'green_repump_duration'))
-    cfg.set(branch + 'repump_amplitude',            cfg.get(branch+ 'green_repump_amplitude')) 
-    cfg.set(branch + 'CR_repump',                   cfg.get(branch+ 'green_CR_repump'))
-    cfg.set(branch + 'repump_after_repetitions',    cfg.get(branch+ 'green_repump_after_repetitions'))
-
-### General settings for AdwinSSRO+espin
-branch='protocols/AdwinSSRO+espin/'
-cfg.set(branch+        'send_AWG_start',                 1)
-cfg.set(branch+        'MW_pulse_mod_risetime',          10e-9)
-cfg.set(branch+        'mw_frq',                         mw0)
-cfg.set(branch+        'mw_power',                       20)
-
-### General settings for AdwinSSRO+MBI
-branch='protocols/AdwinSSRO+MBI/'
-cfg.set(branch+        'AWG_wait_duration_before_MBI_MW_pulse',    1e-6)
-cfg.set(branch+        'AWG_wait_for_adwin_MBI_duration',  
-    np.array([15e-6]).tolist())
-cfg.set(branch+        'AWG_wait_duration_before_shelving_pulse',  100e-9)
-cfg.set(branch+        'nr_of_ROsequences',                        1)
-cfg.set(branch+        'MW_pulse_mod_risetime',                    10e-9)
-cfg.set(branch+        'AWG_to_adwin_ttl_trigger_duration',        5e-6)
-cfg.set(branch+        'max_MBI_attempts',                         1)
-cfg.set(branch+        'N_randomize_duration',                     50)
-cfg.set(branch+        'Ex_N_randomize_amplitude',                 0e-9)
-cfg.set(branch+        'A_N_randomize_amplitude',                  0e-9)
-cfg.set(branch+        'yellow_N_randomize_amplitude',             0e-9)
-
-##############################################################################
-##############################################################################
-### Specific sample settings for protocols
-##############################################################################
-##############################################################################
-
-
-#############################################################################
-## the 111/1 SIL9 --- SSRO
-#############################################################################
-branch='protocols/the111-1-sil9-default/AdwinSSRO/'  
-cfg.set(branch+        'A_CR_amplitude',            10e-9)
-cfg.set(branch+        'A_RO_amplitude',            0.)
-cfg.set(branch+        'A_SP_amplitude',            10e-9)
-cfg.set(branch+        'CR_duration',               100)
-cfg.set(branch+        'CR_preselect',              1000)
-cfg.set(branch+        'CR_probe',                  20)
-cfg.set(branch+        'CR_repump',                 1000)
-cfg.set(branch+        'Ex_CR_amplitude',           10e-9)
-cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',           0.)
-cfg.set(branch+        'SP_duration',               100)
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             25)
-cfg.set(branch+        'SSRO_repetitions',          5000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-
-cfg.set('protocols/the111-1-sil9-default/AdwinSSRO-integrated/SSRO_duration', 25)
-
-
-##############################################################################
-### HANS/13 --- SSRO
-##############################################################################
-
-#branch='protocols/hans-sil13-default/AdwinSSRO/'  
-#cfg.set(branch+        'A_CR_amplitude',            10e-9)
-#cfg.set(branch+        'A_RO_amplitude',            0.)
-#cfg.set(branch+        'A_SP_amplitude',            10e-9)
-#cfg.set(branch+        'CR_duration',               50)
-#cfg.set(branch+        'CR_preselect',              1000)
-#cfg.set(branch+        'CR_probe',                  20)
-#cfg.set(branch+        'CR_repump',                 1000)
-#cfg.set(branch+        'Ex_CR_amplitude',           10e-9)
-#cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
-#cfg.set(branch+        'Ex_SP_amplitude',           0.)
-#cfg.set(branch+        'SP_duration',               100)
-#cfg.set(branch+        'SP_filter_duration',        0)
-#cfg.set(branch+        'SSRO_duration',             25)
-#cfg.set(branch+        'SSRO_repetitions',          5000)
-#cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-#
-#cfg.set('protocols/hans-sil1-default/AdwinSSRO-integrated/SSRO_duration', 25)
-#
-
-###############################################################################
-#### HANS/1 --- SSRO
-###############################################################################
-#
-#branch='protocols/hans-sil1-default/AdwinSSRO/'  
-#cfg.set(branch+        'A_CR_amplitude',            15e-9)
-#cfg.set(branch+        'A_RO_amplitude',            0.)
-#cfg.set(branch+        'A_SP_amplitude',            15e-9)
-#cfg.set(branch+        'CR_duration',               50)
-#cfg.set(branch+        'CR_preselect',              1000)
-#cfg.set(branch+        'CR_probe',                  20)
-#cfg.set(branch+        'CR_repump',                 1000)
-#cfg.set(branch+        'Ex_CR_amplitude',           4e-9)
-#cfg.set(branch+        'Ex_RO_amplitude',           4e-9)
-#cfg.set(branch+        'Ex_SP_amplitude',           0.)
-#cfg.set(branch+        'SP_duration',               250)
-#cfg.set(branch+        'SP_filter_duration',        0)
-#cfg.set(branch+        'SSRO_duration',             50)
-#cfg.set(branch+        'SSRO_repetitions',          5000)
-#cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-#
-#cfg.set('protocols/hans-sil1-default/AdwinSSRO-integrated/SSRO_duration', 11)
-#
-###############################################################################
-#### HANS/1 --- MBI
-###############################################################################
-#
-#branch='protocols/hans-sil1-default/AdwinSSRO+MBI/'
-#cfg.set(branch+        'mw_frq',                        mw0)
-#cfg.set(branch+        'mw_power',                      20)
-#cfg.set(branch+        'Ex_MBI_amplitude',              4e-9)
-#cfg.set(branch+        'Ex_SP_amplitude',               10e-9)
-#cfg.set(branch+        'MBI_duration',                  4) #put back to 4 with gate
-#cfg.set(branch+        'max_MBI_attempts',              1)
-#cfg.set(branch+        'MBI_threshold',                 1)
-#cfg.set(branch+        'SP_E_duration',                 60)
-#cfg.set(branch+        'repump_after_MBI_duration',     15)
-#cfg.set(branch+        'repump_after_MBI_amplitude',    15e-9)
-#cfg.set(branch+        'repump_after_E_RO_duration',    15)
-#cfg.set(branch+        'repump_after_E_RO_amplitude',   15e-9)
-#
-## MBI pulse
-#cfg.set(branch+        'AWG_wait_duration_before_MBI_MW_pulse',     50e-9)
-#cfg.set(branch+        'AWG_wait_for_adwin_MBI_duration',           15e-6)
-#
-###############################################################################
-#### HANS/1 --- Pulses
-###############################################################################
-#
-#branch='protocols/hans-sil1-default/pulses/'
-#
-#cfg.set(branch+        'selective_pi_duration',     2500e-9)
-#cfg.set(branch+        'selective_pi_amp',          0.0166)
-#cfg.set(branch+        'selective_pi_mod_frq',      finit)
-#cfg.set(branch+        'AWG_MBI_MW_pulse_mod_frq',  
-#    finit)
-#cfg.set(branch+        'AWG_MBI_MW_pulse_ssbmod_frq',
-#    finit)
-#cfg.set(branch+        'AWG_MBI_MW_pulse_amp',      
-#    cfg.get(branch+        'selective_pi_amp'))
-#cfg.set(branch+        'AWG_MBI_MW_pulse_duration', 
-#    cfg.get(branch+        'selective_pi_duration'))
-#
-#cfg.set(branch+        'fast_pi_duration',         80e-9)
-#cfg.set(branch+        'fast_pi_amp',              0.816)
-#cfg.set(branch+        'fast_pi_mod_frq',          finit)
-#
-#cfg.set(branch+        'fast_pi2_duration',         40e-9)
-#cfg.set(branch+        'fast_pi2_amp',              0.816)
-#cfg.set(branch+        'fast_pi2_mod_frq',          finit)
-#
-#### CNOTs
-#cfg.set(branch+        'pi2pi_mIm1_duration',        396e-9)
-#cfg.set(branch+        'pi2pi_mIm1_amp',             0.109166)
-#cfg.set(branch+        'pi2pi_mIm1_mod_frq',         finit)
-#
-#### CORPSE used in the BSM
-#CORPSE_frq = 5e6
-#cfg.set(branch+        'CORPSE_pi_60_duration',     1./CORPSE_frq/6.)
-#cfg.set(branch+        'CORPSE_pi_m300_duration',   5./CORPSE_frq/6.)
-#cfg.set(branch+        'CORPSE_pi_420_duration',    7./CORPSE_frq/6.)
-#cfg.set(branch+        'CORPSE_pi_mod_frq',         finit + Nsplit/2.)
-#cfg.set(branch+        'CORPSE_pi_amp',             0.529)
-#
-## ### TODO
-#cfg.set(branch+        'CORPSE_pi_phase_shift',     104.0)
-#
-## ### TODO
-#cfg.set(branch+        'CORPSE_pi_center_shift',    0.e-9)
-#
-#### CORPSE for the full ms=-1 manifold, driven in the center 
-#### (resonant with mI = 0)
-#CORPSE_frq = 6.5e6
-#cfg.set(branch+        'msm1_CORPSE_pi_60_duration',     1./CORPSE_frq/6.)
-#cfg.set(branch+        'msm1_CORPSE_pi_m300_duration',   5./CORPSE_frq/6.)
-#cfg.set(branch+        'msm1_CORPSE_pi_420_duration',    7./CORPSE_frq/6.)
-#cfg.set(branch+        'msm1_CORPSE_pi_mod_frq',         f_msm1_cntr - mw0)
-#cfg.set(branch+        'msm1_CORPSE_pi_amp',             0.797641)
-#
-## cfg.set(branch+        'msm1_CORPSE_pi2_24p3_duration',     24.3/CORPSE_frq/360.)
-## cfg.set(branch+        'msm1_CORPSE_pi2_m318p6_duration',   318.6/CORPSE_frq/360.)
-## cfg.set(branch+        'msm1_CORPSE_pi2_384p3_duration',    384.3/CORPSE_frq/360.)
-## cfg.set(branch+        'msm1_CORPSE_pi2_mod_frq',           f_msm1_cntr - mw0)
-## cfg.set(branch+        'msm1_CORPSE_pi2_amp',               0.818) ###not calibrated
-#
-#cfg.set(branch+        'first_C_revival',                   50.90e-6)
-#
-#### Nitrogen pulses
-#cfg.set(branch+        'N_pi_duration', 47.3e-6)
-#cfg.set(branch+        'N_pi_amp', 1)
-#
-#cfg.set(branch+        'N_pi2_duration', 47.3e-6/2.)
-#cfg.set(branch+        'N_pi2_amp', 1)
-#
-#
-
-
-
-
-"""
-
-branch='protocols/sil2-default/pulses/'
-
-tof = 0#11e-9
-cfg.set(branch+        't_offset',                 tof)
-
-cfg.set(branch+        '4MHz_pi_duration',         tof + 125e-9)
-cfg.set(branch+        '4MHz_pi_amp',              0.599)
-cfg.set(branch+        '4MHz_pi_mod_frq',          finit)
-
-cfg.set(branch+        '4MHz_pi2_duration',          tof + 62e-9)
-cfg.set(branch+        '4MHz_pi2_amp',              0.599)
-cfg.set(branch+        '4MHz_pi2_mod_frq',          finit)
-
-cfg.set(branch+        'selective_pi_duration',      2600e-9)
-cfg.set(branch+        'selective_pi_amp',          0.02)
-cfg.set(branch+        'selective_pi_mod_frq',      finit)
-
-CORPSE_frq = 3.991e6
-cfg.set(branch+        'CORPSE_pi_60_duration',     tof/2. + 1./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_m300_duration',     5./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_420_duration',     tof/2. + 7./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_mod_frq',         finit + Nsplit/2.)
-cfg.set(branch+        'CORPSE_pi_amp',              0.703)
-cfg.set(branch+        'CORPSE_pi_phase_shift',     74.0)
-cfg.set(branch+        'CORPSE_pi_center_shift',     13e-9)
-
-cfg.set(branch+        'pi2pi_mIm1_duration',         tof + 395e-9)
-cfg.set(branch+        'pi2pi_mIm1_amp',             0.164)
-cfg.set(branch+        'pi2pi_mIm1_mod_frq',         finit)
-
-cfg.set(branch+        'pi2pi_mI0_duration',         tof + 395e-9)
-cfg.set(branch+        'pi2pi_mI0_amp',             0.170)
-cfg.set(branch+        'pi2pi_mI0_mod_frq',         f0)
-
-cfg.set(branch+        'pi2pi_mIp1_duration',         tof + 395e-9)
-cfg.set(branch+        'pi2pi_mIp1_amp',             0.185)
-cfg.set(branch+        'pi2pi_mIp1_mod_frq',         fmIp1)
-
-
-### set some other pulses that determinine their values from the ones above
-cfg.set(branch+        'AWG_N_CNOT_pulse_duration', 
-    cfg.get(branch+         'pi2pi_mIm1_duration'))
-cfg.set(branch+        'AWG_N_CNOT_pulse_amp',      
-    cfg.get(branch+         'pi2pi_mIm1_amp'))
-cfg.set(branch+        'AWG_N_CNOT_pulse_mod_frq',  
-    cfg.get(branch+        'pi2pi_mIm1_mod_frq'))
-
-cfg.set(branch+        'AWG_MBI_MW_pulse_mod_frq',  
-    finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_amp',      
-    cfg.get(branch+        'selective_pi_amp'))
-cfg.set(branch+        'AWG_MBI_MW_pulse_duration', 
-    cfg.get(branch+        'selective_pi_duration'))
-
-cfg.set(branch+        'AWG_shelving_pulse_duration',
-    cfg.get(branch+        '4MHz_pi_duration'))
-cfg.set(branch+        'AWG_shelving_pulse_amp',    
-    cfg.get(branch+        '4MHz_pi_amp'))
-
-### Nitrogen pulses
-cfg.set(branch+        'N_pi_duration', 91.1e-6)
-cfg.set(branch+        'N_pi_amp', 1)
-
-cfg.set(branch+        'N_pi2_duration', 91.1e-6/2.)
-cfg.set(branch+        'N_pi2_amp', 1)
-
-##############################################################################
-### The111/2 - SSRO
-##############################################################################
-
-branch='protocols/sil2-default/AdwinSSRO/'  
-cfg.set(branch+        'A_CR_amplitude',            10e-9)
-cfg.set(branch+        'A_RO_amplitude',            0.)
-cfg.set(branch+        'A_SP_amplitude',            10e-9)
-cfg.set(branch+        'CR_duration',               100)
-cfg.set(branch+        'CR_preselect',              40)
-cfg.set(branch+        'CR_probe',                  40)
-cfg.set(branch+        'CR_repump',                 1000)
-cfg.set(branch+        'Ex_CR_amplitude',           5e-9)
-cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',           0.)
-cfg.set(branch+        'SP_duration',               250)
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             50)
-cfg.set(branch+        'SSRO_repetitions',          1000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-
-### integrated SSRO
-cfg.set('protocols/sil2-default/AdwinSSRO-integrated/SSRO_duration', 15)
-
-##############################################################################
-### The111/2 - MBI
-##############################################################################
-
-branch='protocols/sil2-default/AdwinSSRO+MBI/'
-cfg.set(branch+        'mw_frq',                        mw0)
-cfg.set(branch+        'mw_power',                      20)
-cfg.set(branch+        'Ex_MBI_amplitude',              5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',               10e-9)
-cfg.set(branch+        'MBI_duration',                  4)
-cfg.set(branch+        'max_MBI_attempts',                     1)
-cfg.set(branch+        'MBI_threshold',                 1)
-cfg.set(branch+        'SP_E_duration',                 100)
-cfg.set(branch+        'repump_after_MBI_duration',     100)
-cfg.set(branch+        'repump_after_MBI_amplitude',    25e-9)
-cfg.set(branch+        'repump_after_E_RO_duration',    100)
-cfg.set(branch+        'repump_after_E_RO_amplitude',   25e-9)
-
-# MBI pulse
-cfg.set(branch+        'AWG_wait_duration_before_MBI_MW_pulse',     50e-9)
-cfg.set(branch+        'AWG_wait_for_adwin_MBI_duration',           15e-6)
-
-### sil2, BSM
-cfg.set('protocols/sil2-default/BSM/N_ref_frq', N_frq)
-cfg.set('protocols/sil2-default/BSM/e_ref_frq', finit)
-
-##############################################################################
-### HANS/1 --- Pulses
-##############################################################################
-
-branch='protocols/hans-sil1-default/pulses/'
-
-cfg.set(branch+        'selective_pi_duration',     2500e-9)
-cfg.set(branch+        'selective_pi_amp',          0.015)
-cfg.set(branch+        'selective_pi_mod_frq',      finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_mod_frq',  
-    finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_ssbmod_frq',
-    finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_amp',      
-    cfg.get(branch+        'selective_pi_amp'))
-cfg.set(branch+        'AWG_MBI_MW_pulse_duration', 
-    cfg.get(branch+        'selective_pi_duration'))
-
-##############################################################################
-### HANS/1 --- SSRO
-##############################################################################
-
-branch='protocols/hans-sil1-default/AdwinSSRO/'  
-cfg.set(branch+        'A_CR_amplitude',            15e-9)
-cfg.set(branch+        'A_RO_amplitude',            0.)
-cfg.set(branch+        'A_SP_amplitude',            15e-9)
-cfg.set(branch+        'CR_duration',               50)
-cfg.set(branch+        'CR_preselect',              1000)
-cfg.set(branch+        'CR_probe',                  20)
-cfg.set(branch+        'CR_repump',                 1000)
-cfg.set(branch+        'Ex_CR_amplitude',           5e-9)
-cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',           0.)
-cfg.set(branch+        'SP_duration',               250)
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             50)
-cfg.set(branch+        'SSRO_repetitions',          5000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-
-cfg.set('protocols/hans-sil1-default/AdwinSSRO-integrated/SSRO_duration', 15)
-
-##############################################################################
-### HANS/1 --- MBI
-##############################################################################
-
-branch='protocols/hans-sil1-default/AdwinSSRO+MBI/'
-cfg.set(branch+        'mw_frq',                        mw0)
-cfg.set(branch+        'mw_power',                      20)
-cfg.set(branch+        'Ex_MBI_amplitude',              5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',               15e-9)
-cfg.set(branch+        'MBI_duration',                  4)
-cfg.set(branch+        'max_MBI_attempts',              1)
-cfg.set(branch+        'MBI_threshold',                 1)
-cfg.set(branch+        'SP_E_duration',                 60)
-cfg.set(branch+        'repump_after_MBI_duration',     15)
-cfg.set(branch+        'repump_after_MBI_amplitude',    15e-9)
-cfg.set(branch+        'repump_after_E_RO_duration',    15)
-cfg.set(branch+        'repump_after_E_RO_amplitude',   15e-9)
-
-# MBI pulse
-cfg.set(branch+        'AWG_wait_duration_before_MBI_MW_pulse',     50e-9)
-cfg.set(branch+        'AWG_wait_for_adwin_MBI_duration',           15e-6)
-
-##############################################################################
-### HANS/7
-##############################################################################
-
-branch='protocols/hans-sil7-default/AdwinSSRO/'  
-cfg.set(branch+        'A_CR_amplitude',            10e-9)
-cfg.set(branch+        'A_RO_amplitude',            0.)
-cfg.set(branch+        'A_SP_amplitude',            10e-9)
-cfg.set(branch+        'CR_duration',               100)
-cfg.set(branch+        'CR_preselect',              15)
-cfg.set(branch+        'CR_probe',                  5)
-cfg.set(branch+        'CR_repump',                 1000)
-cfg.set(branch+        'Ex_CR_amplitude',           5e-9)
-cfg.set(branch+        'Ex_RO_amplitude',           5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',           0.)
-cfg.set(branch+        'SP_duration',               250)
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             50)
-cfg.set(branch+        'SSRO_repetitions',          5000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-
-cfg.set('protocols/hans-sil7-default/AdwinSSRO-integrated/SSRO_duration', 50)
-"""
-##############################################################################
-### HANS/4 --- SSRO
-##############################################################################
-
-branch='protocols/hans-sil4-default/AdwinSSRO/'  
-cfg.set(branch+        'A_CR_amplitude',            5e-9)
-cfg.set(branch+        'A_RO_amplitude',            0.)
-cfg.set(branch+        'A_SP_amplitude',            60e-9)
-cfg.set(branch+        'CR_duration',               50)
-cfg.set(branch+        'CR_preselect',              1000)
-cfg.set(branch+        'CR_probe',                  20)
-cfg.set(branch+        'CR_repump',                 1000)
-cfg.set(branch+        'Ex_CR_amplitude',           5e-9)
-cfg.set(branch+        'Ex_RO_amplitude',           10e-9)
-cfg.set(branch+        'Ex_SP_amplitude',           0.)
-cfg.set(branch+        'SP_duration',               9)
-cfg.set(branch+        'SP_filter_duration',        0)
-cfg.set(branch+        'SSRO_duration',             10)
-cfg.set(branch+        'SSRO_repetitions',          5000)
-cfg.set(branch+        'SSRO_stop_after_first_photon',  0)
-cfg.set('protocols/hans-sil4-default/AdwinSSRO-integrated/SSRO_duration', 10)
-
-cfg.set('protocols/hans-sil4-default/AdwinSSRO+espin/mw_frq', mw0)
-cfg.set('protocols/hans-sil4-default/AdwinSSRO+espin/mw_power', 20)
-
-##############################################################################
-### HANS/4 --- MBI
-##############################################################################
-
-branch='protocols/hans-sil4-default/AdwinSSRO+MBI/'
-cfg.set(branch+        'mw_frq',                        mw0)
-cfg.set(branch+        'mw_power',                      20)
-cfg.set(branch+        'Ex_MBI_amplitude',              5e-9)
-cfg.set(branch+        'Ex_SP_amplitude',               10e-9)
-cfg.set(branch+        'MBI_duration',                  4)
-cfg.set(branch+        'max_MBI_attempts',                     1)
-cfg.set(branch+        'MBI_threshold',                 1)
-cfg.set(branch+        'SP_E_duration',                 100)
-cfg.set(branch+        'repump_after_MBI_duration',     15)
-cfg.set(branch+        'repump_after_MBI_A_amplitude',  [5e-9])
-cfg.set(branch+        'repump_after_MBI_E_amplitude',  [0e-9])
-cfg.set(branch+        'repump_after_E_RO_duration',    15)
-cfg.set(branch+        'repump_after_E_RO_amplitude',   5e-9)
-
-# MBI pulse
-cfg.set(branch+        'AWG_wait_duration_before_MBI_MW_pulse',     50e-9)
-cfg.set(branch+        'AWG_wait_for_adwin_MBI_duration',           15e-6)
-
-### BSM
-cfg.set('protocols/hans-sil4-default/BSM/N_ref_frq', N_frq)
-cfg.set('protocols/hans-sil4-default/BSM/e_ref_frq', finit)
-cfg.set('protocols/hans-sil4-default/BSM/pi2_evolution_time', 51.086e-6)
-cfg.set('protocols/hans-sil4-default/BSM/H_evolution_time', 50.746e-6)
-cfg.set('protocols/hans-sil4-default/BSM/H_phase', 46)
-
-##############################################################################
-### HANS/4 --- Pulses
-##############################################################################
-
-branch='protocols/hans-sil4-default/pulses/'
-
-cfg.set(branch+        'selective_pi_duration',     2500e-9)
-cfg.set(branch+        'selective_pi_amp',          0.011)
-cfg.set(branch+        'selective_pi_mod_frq',      finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_mod_frq',  
-    finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_ssbmod_frq',
-    finit)
-cfg.set(branch+        'AWG_MBI_MW_pulse_amp',      
-    cfg.get(branch+        'selective_pi_amp'))
-cfg.set(branch+        'AWG_MBI_MW_pulse_duration', 
-    cfg.get(branch+        'selective_pi_duration'))
-
-cfg.set(branch+        'fast_pi_duration',         62e-9)
-cfg.set(branch+        'fast_pi_amp',              0.844)
-cfg.set(branch+        'fast_pi_mod_frq',          finit)
-
-cfg.set(branch+        'fast_pi2_duration',         33e-9)
-cfg.set(branch+        'fast_pi2_amp',              0.812)
-cfg.set(branch+        'fast_pi2_mod_frq',          finit)
-
-### CNOTs
-cfg.set(branch+        'pi2pi_mIm1_duration',        396e-9)
-cfg.set(branch+        'pi2pi_mIm1_amp',             0.083)
-cfg.set(branch+        'pi2pi_mIm1_mod_frq',         finit)
-
-### CORPSE used in the BSM
-CORPSE_frq = 7.5e6
-cfg.set(branch+        'CORPSE_pi_60_duration',     1./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_m300_duration',   5./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_420_duration',    7./CORPSE_frq/6.)
-cfg.set(branch+        'CORPSE_pi_mod_frq',         finit + Nsplit/2.)
-cfg.set(branch+        'CORPSE_pi_amp',             0.363)
-cfg.set(branch+        'CORPSE_pi2_24p3_duration',     24.3/CORPSE_frq/360.)
-cfg.set(branch+        'CORPSE_pi2_m318p6_duration',   318.6/CORPSE_frq/360.)
-cfg.set(branch+        'CORPSE_pi2_384p3_duration',    384.3/CORPSE_frq/360.)
-cfg.set(branch+        'CORPSE_pi2_mod_frq',           f_msm1_cntr - mw0)
-cfg.set(branch+        'CORPSE_pi2_amp',               0.55) ###not calibrated
-"""
-# ### TODO
-cfg.set(branch+        'CORPSE_pi_phase_shift',     104.0)
-
-# ### TODO
-cfg.set(branch+        'CORPSE_pi_center_shift',    0.e-9)
-
-### CORPSE for the full ms=-1 manifold, driven in the center 
-### (resonant with mI = 0)
-CORPSE_frq = 8e6
-cfg.set(branch+        'msm1_CORPSE_pi_60_duration',     1./CORPSE_frq/6.)
-cfg.set(branch+        'msm1_CORPSE_pi_m300_duration',   5./CORPSE_frq/6.)
-cfg.set(branch+        'msm1_CORPSE_pi_420_duration',    7./CORPSE_frq/6.)
-cfg.set(branch+        'msm1_CORPSE_pi_mod_frq',         f_msm1_cntr - mw0)
-cfg.set(branch+        'msm1_CORPSE_pi_amp',             0.782)
-
-cfg.set(branch+        'msm1_CORPSE_pi2_24p3_duration',     24.3/CORPSE_frq/360.)
-cfg.set(branch+        'msm1_CORPSE_pi2_m318p6_duration',   318.6/CORPSE_frq/360.)
-cfg.set(branch+        'msm1_CORPSE_pi2_384p3_duration',    384.3/CORPSE_frq/360.)
-cfg.set(branch+        'msm1_CORPSE_pi2_mod_frq',           f_msm1_cntr - mw0)
-cfg.set(branch+        'msm1_CORPSE_pi2_amp',               0.818) ###not calibrated
-
-cfg.set(branch+        'first_C_revival',                   50.90e-6)
-
-### Nitrogen pulses
-cfg.set(branch+        'N_pi_duration', 47.3e-6)
-cfg.set(branch+        'N_pi_amp', 1)
-
-cfg.set(branch+        'N_pi2_duration', 47.3e-6/2.)
-cfg.set(branch+        'N_pi2_amp', 1)
-
-"""
-
-##############################################################################
-##############################################################################
-##############################################################################
-### DONE
-##############################################################################
-##############################################################################
-##############################################################################
-
-cfg.save_all()
+    cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['green_repump_duration']
+    cfg['protocols']['AdwinSSRO']['repump_amplitude'] =  cfg['protocols']['AdwinSSRO']['green_repump_amplitude']
+    cfg['protocols']['AdwinSSRO']['CR_repump']        =  cfg['protocols']['AdwinSSRO']['green_CR_repump']
+
+
+############################################
+### General settings for AdwinSSRO+espin ###
+############################################
+
+mw_frq = 2.78e9
+mw_power = 20 
+cfg['protocols']['AdwinSSRO+espin'] = {
+        'mw_frq'                :     mw_frq, 
+        'mw_power'              :     mw_power,
+        'MW_switch_risetime'    :     500.00e-9, # Taken from LT2 msmt params (KvB 26-5-2015)
+        'send_AWG_start'        :     1,
+        'MW_pulse_mod_risetime' :     10e-9,
+        'MW_pulse_mod_frequency':     46e6,
+        }
+
+##########################################
+### General settings for AdwinSSRO+MBI ###
+##########################################
+
+
+cfg['protocols']['AdwinSSRO+MBI'] = {
+    'send_AWG_start'                        :    1,
+    'AWG_wait_duration_before_MBI_MW_pulse' :    1e-6,
+    'AWG_wait_for_adwin_MBI_duration'       :    15e-6,
+    'AWG_wait_duration_before_shelving_pulse':   100e-9,
+    'nr_of_ROsequences'                     :    1, #setting this on anything except on 1 crahses the adwin?
+    'MW_pulse_mod_risetime'                 :    10e-9,
+    'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
+    'max_MBI_attempts'                      :    1,
+    'N_randomize_duration'                  :    50,
+    'Ex_N_randomize_amplitude'              :    4e-9,
+    'A_N_randomize_amplitude'               :    4e-9,
+    'repump_N_randomize_amplitude'          :    4e-9,
+    
+    }
+
+
+cfg['protocols']['AdwinSSRO+PQ'] = {
+        'MAX_DATA_LEN':                             int(100e6),
+        'BINSIZE':                                  1, #2**BINSIZE*BASERESOLUTION
+        'MIN_SYNC_BIN':                             0,
+        'MAX_SYNC_BIN':                             1000,
+        'TTTR_read_count':                          1000, 
+        'measurement_time':                         1200,#sec
+        'measurement_abort_check_interval':         1,#sec
+        'pq_sync_length':                           75e-9,
+        'time_between_syncs':                       50e-9,
+        'syncs_per_sweep':                          2,
+        'summed_binsize':                           250,
+        'RO_start':                                 700,#ns
+        'RO_stop':                                  700+2110, # in ns, should be start of RO + integration time
+        'do_spatial_optimize':                      False,
+        }
+
+cfg['protocols']['GreenRO+PQ'] = {
+        'sync_counter_idx':4,   # counter channel on ADwin that recieves pulse from AWG everytime a sync is sent to PQ, to compare sync nr's
+        }
+cfg['protocols']['Magnetometry']={
+'ch1'                                   :   7,
+'ch2'                                   :   8,
+'ch3'                                   :   9,
+'ch4'                                   :   10,
+'ch5'                                   :   11,
+'ch6'                                   :   12,
+'ch7'                                   :   13,
+'ch8'                                   :   14,
+'AWG_to_adwin_ttl_trigger_duration'     :   5e-6,
+'threshold_majority_vote'               :   1}
+####################################################
+### NV and field parameters for a general sample ###
+####################################################
+
+# NOTE: F_MSM1_CNTR = SIL 2!!!
+f_msm1_cntr = (2.814333) *1e9#2.816464e9 #2.817393e9 #2.81558e9#2.817419e9#2.84628e9#2.845609e9#2.848291e9#2.847321e9 #2.845634e9 # 2.845256e9#2014-07-17- SIL1            #Electron spin ms=-1 frquency
+f_msp1_cntr = 2.941343e9#2.926302e9#3.753180e9            #Electron spin ms=+1 frequency
+
+zero_field_splitting = 2.877336e9
+N_frq    = 7.13429e6        #not calibrated
+N_HF_frq = 2.189e6 # from FM calibration msmnts#2.189e6        #calibrated 20140918/202617 # for Gretel
+C_split  = 0.847e6 
+
+cfg['samples'][sample_name] = {
+    'ms-1_cntr_frq' :       f_msm1_cntr,
+    'ms+1_cntr_frq' :       f_msp1_cntr,
+    'N_0-1_splitting_ms-1': N_frq,
+    'N_HF_frq'      :       N_HF_frq,
+    'C_split'       :       C_split,
+    'zero_field_splitting': zero_field_splitting,
+    'g_factor'      :       2.8025e6, #Hz/Gauss
+    'g_factor_C13'  :       1.0705e3, #Hz/Gauss
+    'g_factor_N14'  :       0.3077e3, #Hz/Gauss
+}
+
+
+
+
+
+cfg['protocols'][name]['AdwinSSRO'] = {
+    'SSRO_repetitions'  : 5000,
+    'SSRO_duration'     :  200,
+    'SSRO_stop_after_first_photon' : 0,
+    'A_CR_amplitude': 7e-9,# 13 nW #8nW
+    'A_RO_amplitude': 0,
+    'A_SP_amplitude': 20e-9,#20e-9, # Previously 20
+    'CR_duration' :  250,
+    'CR_preselect':  1000,
+    'CR_probe':      1000,
+    'CR_repump':     1000,
+    'Ex_CR_amplitude':  0.75e-9,#2.5e-9,#2.5e-9,#1nW
+    'Ex_RO_amplitude':  0.5e-9, #15e-9,
+    'Ex_SP_amplitude':  0.4e-9,
+    'SP_duration'        : 300, # was 300 with proper alignment of NewFocus
+    'SP_duration_ms0' : 300,
+    'SP_duration_ms1' : 300,
+    'SP_filter_duration' : 0 
+    }
+    
+
+cfg['protocols'][name]['AdwinSSRO-integrated'] = {
+    'SSRO_duration' : 50,
+    'Ex_SP_amplitude':  0e-9,}
+
+
+MBI_duration = 10
+cfg['protocols'][name]['AdwinSSRO+MBI'] ={
+    #Spin pump before MBI
+'Ex_SP_amplitude'           :           0.3e-9,
+'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet
+'SP_E_duration'             :           300,     #Duration for both Ex and A spin pumping
+
+    #MBI readout power and duration
+'Ex_MBI_amplitude'          :           0e-9,#NOTE 
+'MBI_duration'              :           MBI_duration,
+#'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
+
+#    #Repump after succesfull MBI
+'repump_after_MBI_duration' :           [300],   # repump duration + 4 us should always be larger than AWG MBI element duration
+'repump_after_MBI_A_amplitude':         [20e-9],#5nW NOTE
+'repump_after_MBI_E_amplitude':         [0e-9],
+
+    #MBI parameters
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
+'MBI_threshold'             :           0,
+'AWG_wait_for_adwin_MBI_duration':      10e-6+MBI_duration*1e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+'repump_after_E_RO_duration':           15,
+'repump_after_E_RO_amplitude':          4e-9,
+
+}
+cfg['protocols'][name]['AdwinSSRO+C13'] = {
+
+#C13-MBI  
+'C13_MBI_threshold_list':               [1],
+'C13_MBI_RO_duration':                  40,  
+'E_C13_MBI_RO_amplitude':               0.5e-9, #this was 0.3e-9 NK 20150316
+'SP_duration_after_C13':                10, #300 in case of swap init! 
+'A_SP_amplitude_after_C13_MBI':         0*10e-9, # was 15e-9
+'E_SP_amplitude_after_C13_MBI':         0e-9,
+'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
+                
+#C13-MBE  
+'MBE_threshold':                        1,
+'MBE_RO_duration':                      40, # was 40 20150329
+'E_MBE_RO_amplitude':                   0.5e-9, #this was 0.35e-9 NK 20150316
+'SP_duration_after_MBE':                30,
+'A_SP_amplitude_after_MBE':             0*10e-9,
+'E_SP_amplitude_after_MBE':             0e-9 ,
+
+#C13-parity msmnts
+'Parity_threshold':                     1,
+'Parity_RO_duration':                   108,
+'E_Parity_RO_amplitude':                0.3e-9,
+
+#Shutter
+'use_shutter':                          0, 
+'Shutter_channel':                      4, 
+'Shutter_rise_time':                    2500,    
+'Shutter_fall_time':                    2500,
+'Shutter_safety_time':                  50000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
+
+'min_phase_correct'   : 2,      # minimum phase difference that is corrected for by phase gates
+'min_dec_tau'         : 2.1e-6,#20e-9 + 140e-9,#140e-9 = fast_pi_duration (check pulselib below)
+'max_dec_tau'         : 2.4e-6,#2.5e-6,#Based on measurement for fingerprint at low tau
+'dec_pulse_multiple'  : 4      #4. 
+
+
+}
+
+###########
+# is this still used?
+###########
+'''
+CORPSE_frq = 9e6
+cfg['protocols'][name]['pulses'] = {
+        'CORPSE_rabi_frequency' : CORPSE_frq,
+        'CORPSE_amp' : 0.201 , #N.C.
+        'CORPSE_pi2_amp':0.770, #N.C.
+        'CORPSE_pulse_delay': 0e-9, #N.C.
+        'CORPSE_pi_amp': 0.713, #N.C. 
+        'Square_pi_amp': 0.406,# calib. 2014-07-17
+        'Square_pi_length': 40e-9,# calib. 2014-07-17
+        'Square_pi2_amp': 0.412,# calib 2014-07-17
+        'Square_pi2_length': 20e-9,# calib. 2014-07-17
+        'IQ_Square_pi_amp': 0.015,#N.C.
+        'IQ_Square_pi2_amp': 0.09,#N.C.
+        'Hermite_pi_length': 180e-9, 
+        'Hermite_pi_amp': 0.42018, #0.4645, # calib. 2014-07-24
+        'Hermite_pi2_length': 90e-9,
+        'Hermite_pi2_amp': 0.273,# 0.304276,# calib. 2014-07-24
+        'IQ_Hermite_pi_amp': 0.83398,#0.455, #0.775, # calib. 2014-07-15
+        'IQ_Hermite_pi2_amp': 0.415623,#0.455, #0.775, # calib. 2014-07-15
+        'extra_wait_final_pi2' : -30e-9
+        }
+'''
+
+
+
+
+
+
+######################
+#### SIL 2 ##########
+######################
+
+
+
+##### Pulses#######
+
+f_mod_0= 0 * 250e6#31e6
+
+
+# NOTE: ONLY FAST PI/2 PULSE (SQUARE) NOT CALIBRATED YET!!
+Hermite_fast_pi_duration   =  140e-9#137e-9#140e-9 
+Hermite_fast_pi_amp        =  0.2261#0.226#0.5735#0.218#0.202, #0.122140
+Hermite_fast_Xpi_amp        =  0.257#0.256
+Hermite_fast_pi_mod_frq    =  f_mod_0
+Hermite_fast_pi2_duration  =  72e-9
+Hermite_fast_pi2_amp       =  0.191#0.1794#0.184566 #0.092117
+Hermite_fast_pi2_mod_frq   =  f_mod_0 # NOTE: Hermite Pi pulse calibrated for 0 mod freq
+
+
+cfg['protocols']['Gretel_sil2']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'mw_power'      : 20,
+'Square_pi2_amp': 0.6,
+'Square_pi2_length': 1.219e-6,
+'RO_stop':          700+1940,
+'GreenAOM_pulse_length':3e-6,
+
+'X_phase'                   :   90,
+'Y_phase'                   :   0,
+
+# 'C13_X_phase' :0,
+# 'C13_Y_phase' :90,
+
+'C13_X_phase' :0,
+'C13_Y_phase' :270,
+
+'MW_pulse_mod_frequency' : f_mod_0,
+'mw_mod_freq' : f_mod_0,
+
+'MW_switch_risetime'    :   500e-9,
+'MW_switch_channel'     :   'None', ### if you want to activate the switch, put to MW_switch
+
+############
+#Pulse type
+###########
+'pulse_shape': 'Hermite',
+# 'pulse_shape': 'Square',
+
+'Hermite_pi_length'          :  Hermite_fast_pi_duration,#140e-9 # @ 100 MHz,    #250 MHz slow
+'Hermite_pi_amp'               :  Hermite_fast_pi_amp, 
+'Hermite_fast_Xpi_amp'               :  Hermite_fast_Xpi_amp, 
+'Hermite_fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
+
+'Hermite_pi2_length'         :  Hermite_fast_pi2_duration, 
+'Hermite_pi2_amp'              :  Hermite_fast_pi2_amp,
+'Hermite_fast_pi2_mod_frq'          :  Hermite_fast_pi2_mod_frq, 
+
+
+'fast_pi_duration'          :  115e-9,#Hermite_fast_pi_duration,
+'fast_pi_amp'               :  0.14,#Hermite_fast_pi_amp, 
+'fast_pi_mod_frq'           :  0,#Hermite_fast_pi_mod_frq,
+
+    ### Pi/2 pulses, fast & hard 
+# 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'fast_pi2_duration'         :   Hermite_fast_pi2_duration,
+'fast_pi2_amp'              :   Hermite_fast_pi2_amp, 
+'fast_pi2_mod_frq'          :   Hermite_fast_pi2_mod_frq,
+    
+    ### DESR pulses ###
+'desr_pulse_duration'       :   0.5*2.e-6,#2*2*3.956e-6,#(2.262e-6)/4.,
+'desr_pulse_amp'            :   2*0.0154,#0024 for ms+1
+'desr_modulation_frequency' : 40e6,
+'desr_MW_power'             : 5,#-12,
+
+    ### MBI pulses ###
+'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
+'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
+'AWG_MBI_MW_pulse_amp'      :   0.017,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
+# 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
+'AWG_MBI_MW_pulse_duration' :   2500e-9,
+
+
+### dummy params for second MW source
+'mw2_Hermite_pi_length' : 10e-9,
+'mw2_Hermite_pi2_length' : 10e-9,
+}
+
+###########################################
+### Gretel SIL2: nuclear spin params ###
+###########################################
+cfg['samples']['Gretel_sil2'] ={
+
+
+#XXXXX
+### dummy parameters for purification testing. delete when done.
+'Carbon_LDE_init_phase_correction_list'  : np.array([0.0]*11),
+'scascasdf'  : np.array([0.0]*11),
+'electron_transition' : '_m1',
+'C1_freq_m1'       :   (438753.54 + 413107.0)/2.,#24.618e3,
+'C1_freq_1_m1' : 413107.0,#24.543e3, 
+'C1_Ren_tau_m1'    :   [8.81e-6],#[30.652e-6],#[30.632e-6],#39.424e-6
+'C1_Ren_N_m1'      :   [28],#[164],#[184],#132
+'Carbon_LDE_phase_correction_list' : np.array([0]*10),
+'C1_Ren_extra_phase_correction_list_m1' : np.array([-19.64] * 10),
+
+#C13-params
+
+'C1_freq'       :   24.618e3, 
+'C1_freq_0' : 438757.84,#24.338e3, 
+'C1_freq_1' : 24.543e3, 
+'C1_Ren_tau'    :   [30.652e-6],#[30.632e-6],#39.424e-6
+'C1_Ren_N'      :   [164],#[184],#132
+'C1_Ren_extra_phase_correction_list' : np.array([-75] * 10),
+'C1_gate_optimize_tau_list' : [30.644e-6,30.652e-6,30.660e-6,30.668e-6,30.676e-6],#[30.668e-6]*5,
+'C1_gate_optimize_N_list': [164]*5,
+
+# 'C2_freq'       :   0*450.301e3, # not yet measured
+# 'C2_freq_0' : 0*431932.22,# not yet measured
+# 'C2_freq_1' : 0*469009.46,# not yet measured
+# 'C2_Ren_tau'    :   [31.440e-6],# NOTE: coarse calibration 2015-08-05
+# 'C2_Ren_N'      :   [300], # NOTE: coarse calibration 2015-08-05
+# 'C2_Ren_extra_phase_correction_list' : np.array([0] * 10),
+
+########
+##no C3 defined yet for gretel
+# 'C3_freq'       :   450.301e3,
+# 'C3_freq_0' : 431932.22,
+# 'C3_freq_1' : 469009.46,
+# 'C3_Ren_tau'    :   [11.976E-6],
+# 'C3_Ren_N'      :   [176/4], # NOTE: period actually 174 pulses 
+# 'C3_Ren_extra_phase_correction_list' : np.array([0] * 10)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################
+#### SIL 1 ##########
+######################
+
+f_mod_0=31e6
+#f_msm1_cntr = 2.838037e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil1']={}
+cfg['protocols']['Gretel_sil1']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.01125,
+'Square_pi2_length': 1.219e-6,
+'RO_stop':          700+780,
+'GreenAOM_pulse_length':2e-6,
+}
+######################
+#### SIL 3 ##########
+######################
+
+f_mod_0 = 0 * 250e6
+#f_msm1_cntr = 2.845266e9#2.838096e9         #Electron spin ms=-1 frquency, previously (30-01-2015) 2.838056
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+
+### center frequencies:
+# f_msm1_cntr = 2.817524e9
+# f_msp1_cntr = 2.93744e9
+
+# NOTE 24-04-2015: 
+# DynamicalDecoupling class has hardcoded pulse durations using the
+# keys of the square pulses ('fast_pi_duration', etc.).
+# Because SIL3 currently uses HERMITE PULSES, the square pulse keys are now overwritten 
+# using the Hermite pulse values
+
+Hermite_fast_pi_duration   =  140e-9 
+Hermite_fast_pi_amp        =  0.136 
+Hermite_fast_pi_mod_frq    =  f_mod_0
+Hermite_fast_pi2_duration  =  70e-9
+Hermite_fast_pi2_amp       =  0.10
+Hermite_fast_pi2_mod_frq   =  f_mod_0 # NOTE: Hermite Pi pulse calibrated for 0 mod freq
+
+
+
+
+
+cfg['protocols']['Gretel_sil3']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'mw_power'      : 20,
+'Square_pi2_amp': 0.6,
+'Square_pi2_length': 1.219e-6,
+'RO_stop':          700+1940,
+'GreenAOM_pulse_length':3e-6,
+'MW_modulation_frequency'   :   f_mod_0,
+
+'X_phase'                   :   90,
+'Y_phase'                   :   0,
+
+# 'C13_X_phase' :0,
+# 'C13_Y_phase' :90,
+
+'C13_X_phase' :0,
+'C13_Y_phase' :270,
+
+'MW_pulse_mod_frequency' : f_mod_0,
+
+############
+#Pulse type
+###########
+'pulse_shape': 'Hermite',
+
+############
+#SQUARE pulses
+###########
+
+
+
+# #     ### Pi pulses, fast & hard 
+# 'fast_pi_duration'          :  44e-9,# Previous value on 23-04-205: 200e-9,    #250 MHz slow
+# 'fast_pi_amp'               :  0.45,#  Previous value on 23-04-2015: 0.45,  #250 MHz, slow
+# 'fast_pi_mod_frq'           :   f_mod_0,
+
+#     ### Pi/2 pulses, fast & hard 
+# # 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+# 'fast_pi2_duration'         :   24e-9,#56e-9, #should be divisible by 4, slow
+# 'fast_pi2_amp'              :   0.49, # slow, only calibrated with 2 pulses
+# 'fast_pi2_mod_frq'          :   f_mod_0,
+
+
+############
+#Hermite pulses
+###########
+# #     ### Pi pulses, fast & hard 
+
+
+# Calibrated values for Hermite pulses:
+# 1) mod_fr1 = 100 MHz:
+# Hermite_fast_pi_duration = 140e-9
+# Hermite_fast_pi_amp = 0.196
+# RESULTING PI-PULSE FIDELITY: 0.98-0.99
+# 2) mod_frq = 250 MHz:
+# Hermite_fast_pi_duration = 160e-9
+# Hermite_fast_pi_amp = 0.2646
+# RESULTING PI-PULSE FIDELITY: 0.95
+# 3) mod_frq = 0 MHz
+# Hermite_fast_pi_duration = 140e-9
+# Hermite_fast_pi_amp = 0.136
+# RESULTING PI-PULSE FIDELITY: 0.994
+
+
+'Hermite_fast_pi_duration'          :  Hermite_fast_pi_duration,#140e-9 # @ 100 MHz,    #250 MHz slow
+'Hermite_fast_pi_amp'               :  Hermite_fast_pi_amp, 
+'Hermite_fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
+
+'Hermite_fast_pi2_duration'         :  Hermite_fast_pi2_duration, 
+'Hermite_fast_pi2_amp'              :  Hermite_fast_pi2_amp,
+'Hermite_fast_pi2_mod_frq'          :  Hermite_fast_pi2_mod_frq, 
+
+
+'fast_pi_duration'          :  Hermite_fast_pi_duration,
+'fast_pi_amp'               :  Hermite_fast_pi_amp, 
+'fast_pi_mod_frq'           :  Hermite_fast_pi_mod_frq,
+
+    ### Pi/2 pulses, fast & hard 
+# 'fast_pi2_duration'         :   32e-9, #should be divisible by 4
+'fast_pi2_duration'         :   Hermite_fast_pi2_duration,
+'fast_pi2_amp'              :   Hermite_fast_pi2_amp, 
+'fast_pi2_mod_frq'          :   Hermite_fast_pi2_mod_frq,
+
+
+    ### MBI pulses ###
+'AWG_MBI_MW_pulse_mod_frq'  :   f_mod_0,
+'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
+'AWG_MBI_MW_pulse_amp'      :   0.017,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
+# 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
+'AWG_MBI_MW_pulse_duration' :   2500e-9}
+
+
+
+'''
+cfg['protocols']['Gretel_sil3']['AdwinSSRO+MBI'] ={
+    #Spin pump before MBI
+'Ex_SP_amplitude'           :           0.1e-9,
+'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet
+'SP_E_duration'             :           300,     #Duration for both Ex and A spin pumping
+
+    #MBI readout power and duration
+'Ex_MBI_amplitude'          :           0e-9,#NOTE 
+'MBI_duration'              :           MBI_duration,
+#'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
+
+#    #Repump after succesfull MBI
+'repump_after_MBI_duration' :           [300],   # repump duration + 4 us should always be larger than AWG MBI element duration
+'repump_after_MBI_A_amplitude':         [5e-9],#5nW NOTE
+'repump_after_MBI_E_amplitude':         [0e-9],
+
+    #MBI parameters
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
+'MBI_threshold'             :           0,
+'AWG_wait_for_adwin_MBI_duration':      10e-6+MBI_duration*1e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+'repump_after_E_RO_duration':           15,
+'repump_after_E_RO_amplitude':          4e-9,
+
+}
+'''
+# NOTE (18-05-2015): COPIED & PASTED the AdwinSSRO+MBI data from SIL3 for SIL2
+
+
+
+######################
+#### SIL 4 ##########
+######################
+
+f_mod_0=31e6
+f_msm1_cntr = 2.837845e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil4']={}
+cfg['protocols']['Gretel_sil4']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.011,
+'Square_pi2_length': 0.853e-6,
+'RO_stop':          700+1100,
+'GreenAOM_pulse_length':2e-6,
+}
+
+######################
+#### SIL 6 ##########
+######################
+
+f_mod_0=31e6
+f_msm1_cntr = 2.838015e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil6']={}
+cfg['protocols']['Gretel_sil6']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.05/2.,
+'Square_pi2_length': 0.806e-6,
+'RO_stop':          700+2100,
+'GreenAOM_pulse_length': 3e-6
+}
+
+######################
+#### SIL 10 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.843440e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil10']={}
+cfg['protocols']['Gretel_sil10']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.04,
+'Square_pi2_length': 0.932e-6,
+'RO_stop':          700+990,
+'GreenAOM_pulse_length': 3e-6
+}
+
+
+######################
+#### SIL 11 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.843348e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil11']={}
+cfg['protocols']['Gretel_sil11']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.02,
+'Square_pi2_length': 1.25e-6,
+'RO_stop':          700+620,
+'GreenAOM_pulse_length': 3e-6
+}
+
+######################
+#### SIL 12 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.843296e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil12']={}
+cfg['protocols']['Gretel_sil12']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.0133,
+'Square_pi2_length': 1.381e-6,
+'RO_stop':          700+520,
+'GreenAOM_pulse_length': 3e-6
+}
+
+######################
+#### SIL 16 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.837778e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil16']={}
+cfg['protocols']['Gretel_sil16']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.02,
+'Square_pi2_length': 1.096e-6,
+'RO_stop':          700+1730,
+'GreenAOM_pulse_length': 3e-6
+}
+
+######################
+#### SIL 17 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.838088e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil17']={}
+cfg['protocols']['Gretel_sil17']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.03,
+'Square_pi2_length': 1.005e-6,
+'RO_stop':          700+1490,
+'GreenAOM_pulse_length': 3e-6
+}
+
+
+######################
+#### SIL 20 ##########
+######################
+f_mod_0=31e6
+f_msm1_cntr = 2.837888e9         #Electron spin ms=-1 frquency
+#f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil20']={}
+cfg['protocols']['Gretel_sil20']['pulses'] ={
+'MW_modulation_frequency'   :   f_mod_0,
+'mw_frq'        :      f_msm1_cntr - f_mod_0,#-N_HF_frq,
+'Square_pi2_amp': 0.03,
+'Square_pi2_length': 1.005e-6,
+'RO_stop':          700+1270,
+'GreenAOM_pulse_length': 3e-6
+}
+
+
+
+
+######################
+#### SIL 10 ##########
+######################
+
+MBI_duration = 70
+
+cfg['protocols']['Gretel_sil10']['AdwinSSRO+MBI'] ={
+    #Spin pump before MBI
+'Ex_SP_amplitude'           :           6.5e-9,
+'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet
+'SP_E_duration'             :           300,     #Duration for both Ex and A spin pumping
+
+    #MBI readout power and duration
+'Ex_MBI_amplitude'          :           0.1e-9,#NOTE 
+'MBI_duration'              :           MBI_duration,
+#'AWG_wait_for_adwin_MBI_duration': (4+10)*1e-6,
+
+#    #Repump after succesfull MBI
+'repump_after_MBI_duration' :           [50],   # repump duration + 4 us should always be larger than AWG MBI element duration
+'repump_after_MBI_A_amplitude':         [5e-9],#5nW NOTE
+'repump_after_MBI_E_amplitude':         [0e-9],
+
+    #MBI parameters
+'max_MBI_attempts'          :           10,    # The maximum number of MBI attempts before going back to CR check
+'MBI_threshold'             :           0,
+'AWG_wait_for_adwin_MBI_duration':      10e-6+MBI_duration*1e-6, # Added to AWG tirgger time to wait for ADWIN event. THT: this should just MBI_Duration + 10 us
+
+'repump_after_E_RO_duration':           15,
+'repump_after_E_RO_amplitude':          4e-9,
+
+}
+
+CORPSE_frq=  6.8e6
+MW_mod_magnetometry=31.234e6
+f_msm1_cntr = 0.292e6+2.845e9         #Electron spin ms=-1 frquency
+f_msp1_cntr = 2.900e9        #NOT CALIBRATED
+cfg['protocols']['Gretel_sil10']['Magnetometry'] ={
+'MW_modulation_frequency'   :   MW_mod_magnetometry,
+'mw_frq'        :      f_msm1_cntr - MW_mod_magnetometry,#-N_HF_frq,
+'FM_sensitivity':       ((((2.5e6*2*600/650.)/(2.012/2.188))/(2.191/2.189))/(2.190/2.189))/(2.197/2.189)/(2.193/2.189), # Hz/V, set manually in SMB; factor 2 is because of AWG output, 600/650 is to impedance match the MOD ext of SMB wrt AWG output (50ohm)
+'FM_delay'      :       40e-6,
+'mw_power'      :       7,
+'ms-1_cntr_frq':       f_msm1_cntr,
+'ms+1_cntr_frq':       f_msp1_cntr,
+'ms+1_mod_frq':        f_msp1_cntr-f_msm1_cntr + MW_mod_magnetometry, 
+### Laser duration and powers etc ###
+
+'SSRO_duration'     :  40.,
+'CR_duration'       : 120,
+'Ex_RO_amplitude': 3e-9,
+'A_CR_amplitude': 8e-9,
+'Ex_CR_amplitude': 5e-9,
+'A_SP_amplitude': 25e-9, #NOte: set back to 30nW?
+'A_SP_repump_amplitude':.5e-9,
+'SP_duration': 200, #!!!! 10
+'SP_repump_duration': 100,
+'SP_duration_ms0': 50,
+'SP_duration_ms1':300,
+
+'wait_after_RO_pulse_duration':2,
+'wait_after_pulse_duration':2,
+'A_SP_repump_voltage':0.3, # bit of a detour to avoid putting this variable in ssro.autoconfig.
+
+'SSRO_stop_after_first_photon':0,
+
+### Corpse pulses ###
+'CORPSE_pi2_amp'    :           .9,
+'CORPSE_frq'  :  CORPSE_frq,
+'CORPSE_pi_60_duration' :  1./CORPSE_frq/6.,
+'CORPSE_pi_m300_duration': 5./CORPSE_frq/6.,
+'CORPSE_pi_420_duration':  7./CORPSE_frq/6.,
+'CORPSE_pi2_24p3_duration': 24.3/CORPSE_frq/360.,
+'CORPSE_pi2_m318p6_duration': 318.6/CORPSE_frq/360.,
+'CORPSE_pi2_384p3_duration':  384.3/CORPSE_frq/360.,
+
+# For nitrogen initialization
+'N_0-1_splitting_ms-1': 7.13429e6,
+'init_repetitions':1,
+'AWG_MBI_MW_pulse_mod_frq'  :   MW_mod_magnetometry+1*N_HF_frq,#conventional MBI init line (?)
+'AWG_MBI_MW_pulse_ssbmod_frq':  MW_mod_magnetometry+1*N_HF_frq,#conventional MBI init line 
+'AWG_MBI_MW_pulse_amp'      :   0.008, #NOTE!
+'AWG_MBI_MW_pulse_duration' :   10788e-9,# NOTE!
+
+#MBI readout power and duration
+
+#RO on ms=0, +1
+'MW_pi_msp1_amp': 0.2,
+'MW_pi_msp1_dur': 40e-9,
+
+#'pi2pi_mI0_mod_frq':MW_mod_magnetometry,#+N_HF_frq,
+'MW_pi_msp1_dur': 40e-9,
+'MW_pi_msp1_amp': 0.2,
+'pi2pi_mIm1_amp':0.180,
+'pi2pi_mIp1_amp':0.168,
+'pi2pi_mI0_amp':0.1755,
+'pi2pi_mI0_duration':394e-9,
+'MW_pi_pulse_amp': 0.02,
+'MW_pi2_pulse_amp': 0.02,
+'AWG_pi2_duration': 1812e-9,
+'fpga_pi2_duration': 1812e-9,
+'fpga_phase_offset': 90-15,
+}

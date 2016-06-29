@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 1 - 4 as 
@@ -89,8 +89,8 @@ EVENT:
   PAR_44 = 0
   for i = 1 to avg_steps
     PAR_41 = PAR_41 + DATA_41[i]*1000/(avg_steps*int_time)
-    PAR_42 = PAR_42 + DATA_42[i]*1000/(avg_steps*int_time)
-    PAR_43 = PAR_43 + DATA_43[i]*1000/(avg_steps*int_time)
+    PAR_42 = PAR_42 + DATA_42[i]*1000/(avg_steps*int_time) 
+    PAR_43 = PAR_43 + DATA_41[i]*1000/(avg_steps*int_time) + DATA_42[i]*1000/(avg_steps*int_time) ' Hack sum countrates DATA_43[i]*1000/(avg_steps*int_time)
     PAR_44 = PAR_44 + DATA_44[i]*1000/(avg_steps*int_time)
   next i
   

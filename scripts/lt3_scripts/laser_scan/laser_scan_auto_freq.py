@@ -41,7 +41,7 @@ class LaserFrequencyScan:
     def finish_scan(self):
         pass
 
-    def scan_to_frequency(self, f, voltage_step_scan=0.05, dwell_time=0.01, tolerance=0.3, power = 0, **kw):
+    def scan_to_frequency(self, f, voltage_step_scan=0.03, dwell_time=0.1, tolerance=0.3, power = 0, **kw):
 
         set_voltage = kw.pop('set_voltage', self.set_red_laser_voltage)
         get_voltage = kw.pop('get_voltage', self.get_red_laser_voltage)
@@ -162,11 +162,11 @@ class LaserFrequencyScan:
 
 class Scan(LaserFrequencyScan):
 
-    def __init__(self, name='LT1', red_labjack_dac_nr=2, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
+    def __init__(self, name='LT3', red_labjack_dac_nr=2, yellow_labjack_dac_nr = 4, red_wm_channel = 1, yellow_wm_channel = 2):
         LaserFrequencyScan.__init__(self, name)
         
         self.adwin = qt.get_setup_instrument('adwin')
-        self.physical_adwin=qt.get_setup_instrument('physical_adwin_lt2')
+        self.physical_adwin=qt.get_setup_instrument('physical_adwin')
         self.mw = qt.get_setup_instrument('SMB100')
         self.labjack= qt.get_setup_instrument('labjack')
         self.wavemeter=qt.instruments['wavemeter']
@@ -182,7 +182,7 @@ class Scan(LaserFrequencyScan):
 
         self.set_repump_power = qt.get_setup_instrument('GreenAOM').set_power
 
-        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
+        self.get_frequency = lambda x : self.physical_adwin.Get_FPar(40+red_wm_channel)#lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         self.get_counts = self.adwin.measure_counts
         self.counter_channel = 0
         self.red_wm_channel = red_wm_channel
@@ -195,7 +195,7 @@ class Scan(LaserFrequencyScan):
         self.max_v = 9.
         self.min_v = -9.
 
-        self.set_gate_voltage = lambda x: qt.get_setup_instrument('ivvi').set_dac2(x)
+
 
     def yellow_scan(self, start_f, stop_f, power=0.5e-9, **kw):
         self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-521.22)*1000.
@@ -228,7 +228,7 @@ class Scan(LaserFrequencyScan):
             save = False)
 
     def red_scan(self, start_f, stop_f, power=0.5e-9, **kw):
-        self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
+        #self.get_frequency = lambda x : (self.wavemeter.Get_Frequency(x)-470.4)*1000.
         voltage_step = kw.pop('voltage_step', 0.005)
         integration_time_ms = kw.pop('integration_time_ms', 50)
         
@@ -491,7 +491,7 @@ def repeated_red_scans(**kw):
         else:
             ix=i
             if gate_scan: 
-                m.set_gate_voltage(gate_x[i])
+                set_gate_voltage(gate_x[i])
                 ix=gate_x[i]*45./1000
             m.yellow_red(60, 75, 0.03, 2e-9, 72, 94, 0.02, 20, 3e-9, 
                 red_data = red_data, 
@@ -504,7 +504,7 @@ def repeated_red_scans(**kw):
         plot3d_yellow.update()
 
     if gate_scan:
-        m.set_gate_voltage(0)
+        set_gate_voltage(0)
     m.mw.set_status('off')
     red_data.close_file()
     yellow_data.close_file()
@@ -512,38 +512,67 @@ def repeated_red_scans(**kw):
     plot3d_yellow.save_png()
     return ret
 
-def gate_scan_with_c_optimize():
-    if repeated_red_scans(gate_scan=True, gate_range=(0,1200),pts=19):
+def gate_scan_with_optimize():
+    if repeated_red_scans(gate_scan=True, gate_range=(0,1800),pts=19):
         qt.get_setup_instrument('GreenAOM').set_power(20e-6)
-        qt.get_setup_instrument('c_optimiz0r').optimize(xyz_range=[.2,.2,.5], cnt=1, int_time=50, max_cycles=20)
-        qt.get_setup_instrument('c_optimiz0r').optimize(xyz_range=[.05,.1,.2], cnt=1, int_time=50, max_cycles=20)
-        qt.get_setup_instrument('optimiz0r').optimize(cnt=1, dims=['x','y'], cycles=3, int_time=50)
+        qt.msleep(120)
+        #qt.get_setup_instrument('c_optimiz0r').optimize(xyz_range=[.2,.2,.5], cnt=1, int_time=50, max_cycles=20)
+        #qt.get_setup_instrument('c_optimiz0r').optimize(xyz_range=[.05,.1,.2], cnt=1, int_time=50, max_cycles=20)
+        qt.get_setup_instrument('optimiz0r').optimize(cnt=1, dims=['z','x','y'], cycles=6, int_time=50)
         qt.get_setup_instrument('GreenAOM').set_power(0e-6)
-        repeated_red_scans(gate_scan=True, gate_range=(0,-1200),pts=19)
+        repeated_red_scans(gate_scan=True, gate_range=(0,-1800),pts=19)
+
+def fast_gate_scan(name):
+    for v in np.linspace(0.,-1,6):
+        if (msvcrt.kbhit() and msvcrt.getch()=='c'): 
+                break
+        set_gate_voltage(v)
+        qt.instruments['counters'].set_is_running(True)
+        qt.instruments['YellowAOM'].turn_on()
+        while qt.instruments['adwin'].get_countrates()[0]<3000:
+            if (msvcrt.kbhit() and msvcrt.getch()=='q'): 
+                break
+            print 'countrates:',qt.instruments['adwin'].get_countrates()[0]
+            qt.msleep(0.1)
+        qt.instruments['YellowAOM'].turn_off()
+
+        vname=name+'_{:.1f}V'.format(v*45.)
+        print 'Running scan ', vname
+        single_scan(vname)
+        qt.msleep(1)
 
 def single_scan(name):
     m = Scan()
     m.name=name
-    do_MW=False
+    do_MW=True
     if do_MW:
-        m.mw.set_power(-7)
-        m.mw.set_frequency(2.810e9)
+        m.mw.set_power(-10)
+        m.mw.set_frequency(1.669252e9)
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
 
-    m.red_scan(55, 90, voltage_step=0.01, integration_time_ms=20, power = 2e-9)  #0.6e-9
+    #m.scan_to_frequency(65)
+    # m.red_scan(60, 80, voltage_step=0.01, integration_time_ms=20, power = 3e-9)  #0.6e-9
     #m.yellow_red(0,30, 0.02, 0.3e-9, 65, 75, 0.02, 20, 0.5e-9)
-    #m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
-    # m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
+    m.yellow_scan(0, 30, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.02)
+    #m.oldschool_red_scan(55, 75, 0.01, 20, 0.5e-9)
 
     if do_MW:
         m.mw.set_status('off')
 
-if __name__ == '__main__':
-    qt.get_setup_instrument('GreenAOM').set_power(0.4e-6)
+def set_gate_voltage(v):
+    if v>2. or v<-2.:
+        print 'Gate voltage too high:',v
+        return False
+    return qt.instruments['adwin'].set_dac_voltage(('gate',v))
 
-    single_scan('The111no2_SIL2_MM_with_Green')
+
+if __name__ == '__main__':
+    qt.get_setup_instrument('GreenAOM').set_power(0.000e-6)
+
+    single_scan('Pippin_SIL1')
+    #fast_gate_scan('Sam_SIL5_Green')
     #green_yellow_during_scan()
     #yellow_ionization_scan(13,20)
     # repeated_red_scans()

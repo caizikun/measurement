@@ -25,8 +25,8 @@ class linescan_counts(linescan):
         # make sure the counter is off, when not in resonant counting mode
         if self._counters.get_is_running():
             self._counter_was_running = True
-            if (self.get_scan_value() != 'counter_process') :
-                self._counters.set_is_running(False)
+        if (self.get_scan_value() != 'counter_process') :
+            self._counters.set_is_running(False)
 
     def _stop_running(self):
         linescan._stop_running(self)

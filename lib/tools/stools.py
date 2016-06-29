@@ -9,7 +9,7 @@ def turn_off_lasers(names):
     for l in names:
         qt.instruments[l].turn_off()
 
-def recalibrate_laser(name, servo, adwin, awg=False):
+def recalibrate_laser(name, servo, adwin, control = 'AOM', awg=False):
     qt.instruments[adwin].set_simple_counting()    
     if servo != None:
         qt.instruments[servo].move_in()
@@ -18,10 +18,18 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.msleep(1)
     print 'Calibrate', name
     qt.instruments[name].apply_voltage(0)
-    if awg: qt.instruments[name].set_cur_controller('AWG')
-    qt.instruments[name].calibrate(31)
+    previous_controller = qt.instruments[name].get_cur_controller()
+    
+    if awg: 
+        qt.instruments[name].set_cur_controller('AWG')
+        qt.instruments['AWG'].initialize_dc_waveforms()
+    else:    
+        qt.instruments[name].set_cur_controller('ADWIN')
+    
+    qt.instruments[name].calibrate(31, control = control)
+
     qt.instruments[name].apply_voltage(0)
-    if awg: qt.instruments[name].set_cur_controller('ADWIN')
+    qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
 
     qt.instruments[name].apply_voltage(0)

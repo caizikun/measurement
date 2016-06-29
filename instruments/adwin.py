@@ -19,23 +19,35 @@ class adwin(Instrument):
                 process_subfolder)
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
+
+
+        self._last_loaded_process = '' #this flag prevents double loading of processes.
+        self.add_function('get_latest_process')
+        self.add_function('set_latest_process')
+        # self.add_parameter('dacs',
+        #     type = types.IntType)
+        # self.add_parameter('adcs',
+        #     type = types.IntType)
+
         self.dacs = kw.get('dacs', {})
+        self.adcs = kw.get('adcs', {})
+
         self.use_cfg = use_cfg
 
         self._dac_voltages = {}
         for d in self.dacs:
             self._dac_voltages[d] = 0.
        
-        if kw.get('init', False):
-            self._load_programs()
-
         # the accessible functions
+        
         # initialization
         self.add_function('boot')
         self.add_function('load_programs')
+        self.add_function('init_data')
 
         # tools
         self.add_function('get_process_status')
+        
         self.add_function('process_path')
 
         # automatically generate process functions
@@ -44,22 +56,40 @@ class adwin(Instrument):
         # convenience functions that belong to processes
         self.add_function('set_dac_voltage')
         self.add_function('get_dac_voltage')
+        self.add_function('get_dac_voltages')
         self.add_function('get_dac_channels')
+        self.add_function('get_adc_channels')
+        self.add_function('get_adc_voltage')
 
         self.add_function('get_countrates')
         self.add_function('set_simple_counting')
+        self.add_function('linescan')
+        self.add_function('speed2px')
+        self.add_function('get_linescan_counts')
+        self.add_function('get_linescan_px_clock')
+        self.add_function('get_linescan_supplemental_data')
+        
+        self.add_function('move_to_xyz_U')
+        self.add_function('get_xyz_U')
+        self.add_function('move_to_dac_voltage')
+        self.add_function('measure_counts')
 
-        # set up config file
-        if self.use_cfg:
-            cfg_fn = os.path.abspath(os.path.join(qt.config['ins_cfg_path'], name+'.cfg'))
-            if not os.path.exists(cfg_fn):
-                _f = open(cfg_fn, 'w')
-                _f.write('')
-                _f.close()
+        if not 'remote' in self.get_tags():
 
-            self.ins_cfg = config.Config(cfg_fn)     
-            self.load_cfg()
-            self.save_cfg()
+            # set up config file
+            if self.use_cfg:
+                cfg_fn = os.path.abspath(os.path.join(qt.config['ins_cfg_path'], name+'.cfg'))
+                if not os.path.exists(cfg_fn):
+                    _f = open(cfg_fn, 'w')
+                    _f.write('')
+                    _f.close()
+
+                self.ins_cfg = config.Config(cfg_fn)     
+                self.load_cfg()
+                self.save_cfg()
+
+            if kw.get('init', False):
+                self.load_programs()
 
     ### config management
     def load_cfg(self, set_voltages=False):
@@ -79,8 +109,11 @@ class adwin(Instrument):
     ### end config management
     def boot(self):
         self.physical_adwin.Boot()
-        self.load_programs()  
+        self.load_programs()
+        self.init_data()  
         
+    
+    def init_data(self):
         if 'init_data' in self.processes:
             self.start_init_data(load=True)
     
@@ -105,7 +138,7 @@ class adwin(Instrument):
         funcname = 'load_' + pn
         while hasattr(self, funcname):
             funcname += '_'
-        
+
         def f():
             """
             this function is generated automatically by the logical
@@ -115,6 +148,9 @@ class adwin(Instrument):
             if self.physical_adwin.Process_Status(pidx):
                 self.physical_adwin.Stop_Process(pidx)
             self.physical_adwin.Load(os.path.join(self.process_dir, fn))
+            # SSRO processes have id 9
+            if pidx == 9:
+                self.set_latest_process(fn)
             return True
         
         f.__name__ = funcname
@@ -339,7 +375,7 @@ class adwin(Instrument):
                 else:
                     if 'include_cr_process' in proc:
                         return getattr(self, 'get_'+proc['include_cr_process']+'_var')(name,*arg,**kw)
-                    self._log_warning('Cannot get var: Unknown variable: ' + name)
+                    self._log_warning('Cannot get var: Unknown variable: ' + str(name))
                     return False
 
         f.__name__ = funcname
@@ -448,6 +484,9 @@ class adwin(Instrument):
     def get_dac_channels(self):
         return self.dacs.copy()
 
+    def get_adc_channels(self):
+        return self.adcs.copy()
+
     def set_dac_voltage(self, (name, value), timeout=1, **kw):
         if 'set_dac' in self.processes:
             self.start_set_dac(dac_no=self.dacs[name], 
@@ -465,7 +504,10 @@ class adwin(Instrument):
     
     def get_dac_voltages(self, names):
         return [ self.get_dac_voltage(n) for n in names ] 
-   
+
+    def get_adc_voltage(self, name):
+        self.start_read_adc (adc_no = adc_no)
+        return self.get_read_adc_var('adc_voltage')
    
     # counter
     def set_simple_counting(self, int_time=1, avg_periods=100,
@@ -481,12 +523,12 @@ class adwin(Instrument):
                 set_single_run=single_run)
 
     def get_countrates(self):
-        if not 'counter' in self.processes:
-            print 'Process for counting not configured.'
-            return False
+        #if not 'counter' in self.processes:
+        #    print 'Process for counting not configured.'
+        #    return False
 
-        if self.is_counter_running():
-            return self.get_counter_var('get_countrates')
+        #if self.is_counter_running():
+        return self.get_counter_var('get_countrates')
             
     
     def get_last_counts(self):
@@ -496,3 +538,169 @@ class adwin(Instrument):
 
         return self.get_counter_var('get_last_counts', start=1, length=4)        
  
+# linescan
+    def linescan(self, dac_names, start_voltages, stop_voltages, steps, 
+            px_time, value='counts', scan_to_start=False, blocking=False, 
+            abort_if_running=True):
+        """
+        Starts the multidimensional linescan on the adwin. 
+        
+        Arguments:
+                
+        dac_names : [ string ]
+            array of the dac names
+        start_voltages, stop_voltages: [ float ]
+            arrays for the corresponding start/stop voltages
+        steps : int
+            no of steps between these two points, incl start and stop
+        px_time : int
+            time in ms how long to measure per step
+        value = 'counts' : string id
+            one of the following, to indicate what to measure:
+            'counts' : let the adwin measure the counts per pixel
+            'none' : adwin only steps
+            'counts+suppl' : counts per pixel, plus adwin will record
+                the value of FPar #2 as supplemental data
+            'counter_process' : counts per pixel attained from counting process
+                which should be running on the adwin simultanious
+
+            in any case, the pixel clock will be incremented for each step.
+        scan_to_start = False : bool
+            if True, scan involved dacs to start first
+            right now, with default settings of speed2px()
+
+        blocking = False : bool
+            if True, do not return until finished
+
+        abort_if_running = True : bool
+            if True, check if linescan is running, and if so, quit right away
+        
+        """
+        if abort_if_running and self.is_linescan_running():
+            return
+               
+        if scan_to_start:
+            _steps,_pxtime = self.speed2px(dac_names, start_voltages)
+            self.linescan(dac_names, self.get_dac_voltages(dac_names),
+                    start_voltages, _steps, _pxtime, value='none', 
+                    scan_to_start=False)
+            while self.is_linescan_running():
+                time.sleep(0.005)
+            for i,n in enumerate(dac_names):
+                self._dac_voltages[n] = start_voltages[i]
+                self.save_cfg()
+            
+            # stabilize a bit, better for attocubes
+            time.sleep(0.05)
+
+        p = self.processes['linescan']
+        dacs = [ self.dacs[n] for n in dac_names ]
+        
+        # set all the required input params for the adwin process
+        # see the adwin process for details
+        self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
+        self.physical_adwin.Set_Par(p['par']['set_steps'], steps)
+        self.physical_adwin.Set_FPar(p['fpar']['set_px_time'], px_time)
+
+        self.physical_adwin.Set_Data_Long(np.array(dacs), p['data_long']\
+                ['set_dac_numbers'],1,len(dac_names))
+
+        self.physical_adwin.Set_Data_Float(start_voltages, 
+                p['data_float']['set_start_voltages'], 1, len(dac_names))
+        self.physical_adwin.Set_Data_Float(stop_voltages, 
+                p['data_float']['set_stop_voltages'], 1, len(dac_names))
+    
+        # what the adwin does on each px is int-encoded
+        px_actions = {
+                'none' : 0,
+                'counts' : 1,
+                'counts+suppl' : 2,
+                'counter_process' : 3,
+                }
+        self.physical_adwin.Set_Par(p['par']['set_px_action'],px_actions[value])
+        self.physical_adwin.Start_Process(p['index'])
+        
+        if blocking:
+            while self.is_linescan_running():
+                time.sleep(0.005)
+        
+        # FIXME here we might lose the information about the current voltage,
+        # if the scan is not finished properly
+        for i,n in enumerate(dac_names):
+            self._dac_voltages[n] = stop_voltages[i]
+        self.save_cfg()
+
+    def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,
+            minsteps=10):
+        """
+        Parameters:
+        - dac_names : [ string ]
+        - end_voltages : [ float ], one voltage per dac
+        - speed : float, (mV/s)
+        - pxtime : int, (ms)
+        - minsteps : int, never return less than this number for steps
+        """
+        current_voltages = self.get_dac_voltages(dac_names)
+        maxdiff = max([ abs(t-current_voltages[i]) for i,t in \
+                enumerate(target_voltages) ])
+        steps = int(1e6*maxdiff/(pxtime*speed)) # includes all unit conversions
+
+        return max(steps, minsteps), pxtime
+
+    def get_linescan_counts(self, steps):
+        p = self.processes['linescan']
+        c = []
+        
+        for i in p['data_long']['get_counts']:
+
+            #disregard the first value (see adwin program)
+            c.append(self.physical_adwin.Get_Data_Long(i, 1, steps+1)[1:])
+        return c
+
+    def get_linescan_supplemental_data(self, steps):
+        p = self.processes['linescan']
+        return self.physical_adwin.Get_Data_Float(
+                p['data_float']['get_supplemental_data'], 1, steps+1)[1:]
+        
+    def get_linescan_px_clock(self):
+        p = self.processes['linescan']
+        return self.physical_adwin.Get_Par(p['par']['get_px_clock'])
+
+    # end linescan            
+   
+    def get_xyz_U(self):
+        return self.get_dac_voltages(['atto_x','atto_y','atto_z'])
+
+    def move_to_xyz_U(self, target_voltages, speed=5000, blocking=False):
+        
+        current_voltages = self.get_xyz_U()
+        dac_names = ['atto_x','atto_y','atto_z']
+        steps, pxtime = self.speed2px(dac_names, target_voltages, speed)
+        self.linescan(dac_names, current_voltages, target_voltages,
+                steps, pxtime, value='none', scan_to_start=False,
+                blocking=blocking)
+        return
+
+    def move_to_dac_voltage(self, dac_name, target_voltage, speed=5000, 
+            blocking=False):
+
+        current_voltage = self.get_dac_voltage(dac_name)
+        steps, pxtime = self.speed2px([dac_name], [target_voltage], speed)
+        self.linescan([dac_name], [current_voltage], [target_voltage],
+                steps, pxtime, value='none', scan_to_start=False,
+                blocking=blocking)
+
+
+    def measure_counts(self, int_time):
+        self.start_counter(set_integration_time=int_time, set_avg_periods=1, set_single_run= 1)
+        while self.is_counter_running():
+            time.sleep(0.01)
+        return self.get_last_counts()
+
+
+    def get_latest_process(self):
+        return self._last_loaded_process
+
+    def set_latest_process(self,fn):
+        self._last_loaded_process = fn
+        return

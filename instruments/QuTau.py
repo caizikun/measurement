@@ -9,7 +9,7 @@ class QuTau(Instrument):
         Instrument.__init__(self, name)
 
         #Load the DLL
-        dll_dp = r'C:\Program Files\N-Hands\Daisy@quTau\userlib\lib'
+        dll_dp = r'C:\Program Files (x86)\qutools\quTAU\userlib\lib'
         #dll_dp = r'C:\Program Files\qutools\quTAU\userlib\lib'
         dll_name = 'tdcbase.dll'
         dir_before = os.getcwd()
@@ -36,10 +36,12 @@ class QuTau(Instrument):
         self.add_function('switch_termination')
         self.add_function('configure_selftest')
         self.add_function('get_histogram')
+        self.add_function('get_last_timestamps')
         self.add_function('clear_all_histograms')
         self.add_function('freeze_buffers')
         self.add_function('start_write_timestamps')
         self.add_function('stop_write_timestamps')
+        self.add_function('get_countrate')
 
         self.add_function('close')
 
@@ -77,13 +79,9 @@ class QuTau(Instrument):
 
         self.add_parameter('buffer_size', 
                            type = types.IntType, 
-                           flags = Instrument.FLAG_SET) 
+                           flags = Instrument.FLAG_GETSET) 
 
         self.add_parameter('coincidence_counters', 
-                           flags = Instrument.FLAG_GET)
-
-        self.add_parameter('last_timestamps', 
-                           type = types.TupleType, 
                            flags = Instrument.FLAG_GET)
 
         self.add_parameter('is_writing', 
@@ -166,6 +164,9 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         return self.err_dict[ans]
 
+    def get_countrate():
+        #self.initialize
+        return 0
 
     def switch_termination(self, on): #OK!
         """
@@ -657,10 +658,13 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         """
 
         size = ctypes.c_int32(int(val))
-
+        self._buffer_size=val
         ans = self.qutools_dll.TDC_setTimestampBufferSize(size)
 
         return self.err_dict[ans]
+
+    def do_get_buffer_size(self):
+        return self._buffer_size
 
 
     def do_get_coincidence_counters(self): #OK!
@@ -698,7 +702,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
             return dat
 
 
-    def do_get_last_timestamps(self, buffer_size, reset = True): #OK!
+    def get_last_timestamps(self, reset=True): #OK!
         """
         Retreive Last Timestamp Values.
 
@@ -708,7 +712,6 @@ Number of events on channel (%d, %d) = (%d, %d).'\
 
         Input:
 
-        buffer_size     Size of the buffer. Use set_buffer_size
         reset 	        If the data should be cleared after retreiving.
 
         Output:
@@ -727,8 +730,8 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         """
 
         reset = ctypes.c_bool(reset)
-        timestamps = ctypes.ARRAY(ctypes.c_int64, int(buffer_size))()
-        channels = ctypes.ARRAY(ctypes.c_int8, int(buffer_size))() 
+        timestamps = ctypes.ARRAY(ctypes.c_int64, int(self._buffer_size))()
+        channels = ctypes.ARRAY(ctypes.c_int8, int(self._buffer_size))() 
         valid = ctypes.c_int32()
 
         ans = self.qutools_dll.TDC_getLastTimestamps(reset, 
@@ -738,6 +741,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         if ans != 0:
             return self.err_dict[ans]
         else:
+
             return timestamps, channels, valid.value
             #return np.ctypeslib.as_array(timestamps), np.ctypeslib.as_array(channels), valid.value
     

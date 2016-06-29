@@ -132,7 +132,8 @@ class Tektronix_AWG5014(Instrument):
 
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address, timeout=8)
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address, timeout=20)
         self._values = {}
         self._values['files'] = {}
         self._clock = clock
@@ -210,6 +211,7 @@ class Tektronix_AWG5014(Instrument):
         self.add_function('set_sqel_event_jump_target_index')
         self.add_function('start')
         self.add_function('stop')
+        self.add_function('force_trigger')
         self.add_function('set_runmode')
         self.add_function('set_sq_length')
         self.add_function('get_state')
@@ -222,6 +224,7 @@ class Tektronix_AWG5014(Instrument):
         self.add_function('get_error')
         self.add_function('pack_waveform')
         self.add_function('clear_visa')
+        self.add_function('initialize_dc_waveforms')
 
         if reset:
             self.reset()
@@ -266,6 +269,9 @@ class Tektronix_AWG5014(Instrument):
 
     def start(self):
         self._visainstrument.write('AWGC:RUN')
+
+    def force_trigger(self):
+        self._visainstrument.write('*TRG')
 
     def stop(self):
         self._visainstrument.write('AWGC:STOP')
@@ -665,13 +671,13 @@ class Tektronix_AWG5014(Instrument):
     def import_and_load_waveform_file_to_channel(self, channel_no ,waveform_listname,waveform_filename,type='wfm'):
         self._import_and_load_waveform_file_to_channel(channel_no ,waveform_listname,waveform_filename)
     def _import_and_load_waveform_file_to_channel(self, channel_no ,waveform_listname,waveform_filename,type='wfm'):
-        self._visainstrument.write('mmem:imp "%s","%s",%s'%(waveform_listname, waveform_filename, type))
+        #self._visainstrument.write('mmem:imp "%s","%s",%s'%(waveform_listname, waveform_filename, type))
         self._visainstrument.write('sour%s:wav "%s"' %(channel_no,waveform_listname))
-        i=0
-        while not self._visainstrument.ask("sour%s:wav?" %channel_no) == '"%s"' %waveform_listname:
-            sleep(0.01)
-            i=i+1
-            print i
+        #i=0
+        #while not self._visainstrument.ask("sour%s:wav?" %channel_no) == '"%s"' %waveform_listname:
+        #    sleep(0.01)
+        #    i=i+1
+        #    print i
         return 1
 
 #AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
@@ -738,12 +744,7 @@ class Tektronix_AWG5014(Instrument):
                 head_str.write(self._pack_record(k,sequence_cfg[k],self.AWG_FILE_FORMAT_HEAD[k]))
             else:
                 logging.warning('AWG: ' + k + ' not recognized as valid AWG setting')
-        #head_str.write(self._pack_record('EVENT_JUMP_MODE',2,'h'))
-        #head_str.write(self._pack_record('TABLE_JUMP_STROBE',1,'h'))
-        #head_str.write(self._pack_record('TABLE_JUMP_DEFINITION',[2,3],'ll'))
-        #'EVENT_JUMP_MODE'           :   'h',#EVENT JUMP | DYNAMIC JUMP
-        #'TABLE_JUMP_STROBE'         :   'h',#On
-        #'TABLE_JUMP_DEFINITION'     :   'l' #
+
         #channel settings
         ch_record_str = StringIO()
         for k in channel_cfg.keys():
@@ -816,13 +817,15 @@ class Tektronix_AWG5014(Instrument):
         wflen = len(wf)
         packed_wf = np.zeros(wflen,dtype=np.uint16)
         packed_wf +=np.round(wf*8191)+8191+np.round(16384*m1)+np.round(32768*m2)
+        if len(np.where(packed_wf==-1)[0])>0:
+            print np.where(packed_wf==-1)
         return packed_wf
 
 #END AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
 #WAVEFORM FILE FUNCTIONS------------------------------------------------------------------------------------------------
 
     # Send waveform to the device
-    def send_waveform(self,w,m1,m2,filename,clock=1e9):
+    def send_waveform(self,w,m1,m2,filename,clock=None):
         '''
         Sends a complete waveform. All parameters need to be specified.
         See also: resend_waveform()
@@ -860,7 +863,10 @@ class Tektronix_AWG5014(Instrument):
         s1 = 'MMEM:DATA "%s",' % filename
         s3 = 'MAGIC 1000\n'
         s5 = ws
-        s6 = 'CLOCK %.10e\n' % clock
+        if clock != None:
+            s6 = 'CLOCK %.10e\n' % clock
+        else:
+            s6=''
 
         s4 = '#' + str(len(str(len(s5)))) + str(len(s5))
         lenlen=str(len(str(len(s6) + len(s5) + len(s4) + len(s3))))
@@ -1288,7 +1294,17 @@ class Tektronix_AWG5014(Instrument):
     def set_DC_state(self, state=False):
         self._visainstrument.write('AWGControl:DC:state %s' %(int(state)))
 
-
+    # A convenience function:
+    def initialize_dc_waveforms(self):
+        self.set_runmode('CONT')
+        self._visainstrument.write('SOUR1:WAV "*DC"')
+        self._visainstrument.write('SOUR2:WAV "*DC"')
+        self._visainstrument.write('SOUR3:WAV "*DC"')
+        self._visainstrument.write('SOUR4:WAV "*DC"')
+        self.set_ch1_status('on')
+        self.set_ch2_status('on')
+        self.set_ch3_status('on')
+        self.set_ch4_status('on')
 
 
 
