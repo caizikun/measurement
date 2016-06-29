@@ -57,7 +57,7 @@ class NewfocusVelocity(Instrument):
                            type=types.FloatType,
                            flags=Instrument.FLAG_GETSET,
                            units='mW',
-                           minval=0,maxval=15)
+                           minval=0,maxval=10)
 
         self.add_function('set_ready_mode')
 
