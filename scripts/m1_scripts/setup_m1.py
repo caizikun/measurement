@@ -1,4 +1,6 @@
 import os
+import qt
+
 qt.current_setup='m1'
 qt.reload_current_setup = os.path.join(qt.config['startdir'],"m1_scripts/setup_m1.py")
 
@@ -7,7 +9,7 @@ qt.get_setup_instrument = lambda x: qt.instruments[x] \
     else qt.instruments[x+'_'+qt.current_setup]
 
 print 'loading setup tools...'
-from measurement.scripts.m1_scripts.tools import stools
+from m1_scripts.tools import stools
 reload(stools)
 qt.stools=stools
 

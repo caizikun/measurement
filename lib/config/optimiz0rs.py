@@ -113,5 +113,25 @@ dimension_sets = {
                 'xyonly':['y','x'],
                 },
 
+            'm1' : {
+                'x' : {
+                    'scan_length' : 0.5,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'y' : {
+                    'scan_length' : 0.5,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'z' : {
+                    'scan_length' : 2.0,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'zyx' : ['z','y','x'],
+                'xyonly':['y','x'],
+                },
+
 
             }

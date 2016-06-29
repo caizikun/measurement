@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.0.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
 '<Header End>
 '#INCLUDE ADwinPro_All.inc
 '#INCLUDE configuration.inc
@@ -42,7 +43,7 @@ DIM DATA_45[4] AS LONG
 'Position optimizer
 DIM DATA_16[20] AS FLOAT
 
-'Singleshot adwin:
+'Singleshot adwin and CR check:
 DIM DATA_19[1000] AS FLOAT AT EM_LOCAL 
 DIM DATA_20[300] AS LONG
 DIM DATA_21[300] AS FLOAT

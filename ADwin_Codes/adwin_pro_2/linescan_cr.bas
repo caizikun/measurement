@@ -8,13 +8,14 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
 ' (including start and stop)
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
+'#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE .\cr_mod.inc
 
 #DEFINE max_scan_length 1000
@@ -106,25 +107,28 @@ LOWINIT:
   current_scan_direction = 1
   first = 0
   
-
+  ' again: what to do for each pixel; 
+  ' 1=counting, 0=nothing, 2=counting + record supplemental data per px from fpar2 3=read counters from par45-48 (for use with resonant counting);
+  
 EVENT:
   IF (timer = 0) THEN
-    PROCESSDELAY = 30000
-    DATA_11[CurrentStep] = DATA_11[CurrentStep] +counter1 
+    PROCESSDELAY = 30000 ' 1 cycle is now 100us
+    DATA_11[CurrentStep] = DATA_11[CurrentStep] +counter1 'save last value and reset counter value
     counter1=0
-    IF (PxAction = 2) THEN
+    IF (PxAction = 2) THEN   ' record supplemental data per px from fpar2
       DATA_15[CurrentStep] = FPar_2
     ENDIF    
     ' Set the voltage on all involved DACs
     FOR i = 1 TO NoOfDACs
       'Increase DAC voltage by one step (first value will be neglected)
-      DACVoltage = DATA_199[i] + (CurrentStep - 1) * DATA_197[i]
-      FPar_7 = DATA_199[i]
+      DACVoltage = DATA_199[i] + (CurrentStep - 1) * DATA_197[i]   'data 199 = start voltage, data_197= stepsize
+      FPar_7 = DATA_199[i] ' output current start voltage to FPar
       FPar_8 = CurrentStep-1
-      FPar_9 = DATA_197[i]   
+      FPar_9 = DATA_197[i]   ' stepsize
+      ' output on DAC
       DACBinaryVoltage = DACVoltage * 3276.8 + 32768
       P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
-      DATA_1[DATA_200[i]]   = DACVoltage
+      DATA_1[DATA_200[i]]   = DACVoltage ' data1: current pos; data_200: list of DACs
       FPar_5 = DACVoltage
     NEXT i
     

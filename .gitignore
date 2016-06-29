@@ -4,6 +4,7 @@
 *~
 *.cfg
 *.TB*
+*.T9*
 *.bak
 *.npz
 *.dll

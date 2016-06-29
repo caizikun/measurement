@@ -11,7 +11,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 400000
+#DEFINE max_repetitions 100000
 #DEFINE max_CR_duration   250
 #DEFINE max_repump_duration 2000
 
@@ -19,9 +19,9 @@
 DIM DATA_30[100] AS LONG               ' CR integer parameters
 DIM DATA_31[100] AS FLOAT              ' CR float parameters
 
-DIM DATA_15[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
-DIM DATA_16[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine for error signal calc   EM_local memory because conventional one is too full
-DIM DATA_17[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine for error signal calc
+DIM DATA_55[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
+DIM DATA_56[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine for error signal calc   EM_local memory because conventional one is too full
+DIM DATA_57[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine for error signal calc
 DIM DATA_18[max_repump_duration] AS FLOAT AT EM_LOCAL 'repump freq voltage sine
 DIM DATA_19[max_CR_duration] AS FLOAT AT EM_LOCAL 'CR gate voltage sine
 
@@ -84,16 +84,16 @@ SUB init_CR()
     DATA_26[cr_i] = 0
   NEXT cr_i
   
-  'fill data_17 and data_18 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
+  'fill DATA_57 and data_18 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO repump_duration
     DATA_18[cr_i] = 3277* (repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)+repump_mod_control_offset)+32768
-    DATA_15[cr_i] = 3277* (-repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)+repump_mod_control_offset)+32768
-    DATA_17[cr_i] = repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)
+    DATA_55[cr_i] = 3277* (-repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)+repump_mod_control_offset)+32768
+    DATA_57[cr_i] = repump_mod_control_amp* Sin(-3.14+2*3.14*cr_i/repump_duration)
   NEXT cr_i
   
   'fill data_19 with a sine for cr mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO CR_duration
-    DATA_16[cr_i] = Sin(-3.14+2*3.14*cr_i/CR_duration)
+    DATA_56[cr_i] = Sin(-3.14+2*3.14*cr_i/CR_duration)
     DATA_19[cr_i] = 3277*(cr_mod_control_amp*Sin(-3.14+2*3.14*cr_i/CR_duration)+cr_mod_control_offset)+32768
   NEXT cr_i
   
@@ -136,7 +136,9 @@ ENDSUB
 FUNCTION CR_check(first_cr, repetition_index) As LONG
 
   CR_check = 0 'return variable
-  
+  if (first_CR>0) then
+    cr_mode = 2  'skip modulation in frist cr after
+  endif
   IF (cr_wait_after_pulse > 0) THEN
     DEC(cr_wait_after_pulse)
   ELSE
@@ -182,7 +184,7 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               IF (cr_i = 0) THEN 'Every second execution, we set new voltages on AOM
                 cr_i = 2 ' cr_i is set to 0 at beginning of each repumping and decremented at the end of this loop. 
                 if (repump_mod_amplitude_invert>0) then
-                  P2_DAC_2(repump_mod_DAC_channel, DATA_15[cr_timer]) ' put current voltage on freq mod aom
+                  P2_DAC_2(repump_mod_DAC_channel, DATA_55[cr_timer]) ' put current voltage on freq mod aom
                 else
                   P2_DAC_2(repump_mod_DAC_channel, DATA_18[cr_timer]) ' put current voltage on freq mod aom
                 endif
@@ -190,16 +192,16 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
                 cr_r_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
                 ' calculation of the repump error signal, based on the change of the repump counts compared to the last run
                 ' The old value decays over time (FPar_78*0.9999), meaning that we're using an PI-controller with dominant I part
-                ' The P-part of the error signal is wheighted with the deviation from 0 (DATA_17[cr_timer]).
+                ' The P-part of the error signal is wheighted with the deviation from 0 (DATA_57[cr_timer]).
                 ' So extremal values of the modulation have the dominant part in wheighting: 
                 ' First, the modulation spends more time there
-                ' second, they are less attenuated by the Sin factor DATA_17[cr_timer]
+                ' second, they are less attenuated by the Sin factor DATA_57[cr_timer]
                 ' third, the shot noise is strongest here because the counts are smallest
                 ' XXX I'd expect that the locking is much improved if this is changed!
                 if (repump_mod_amplitude_invert>0) then
-                  FPar_78=FPar_78*0.9999-DATA_17[cr_timer]*(cr_r_counts-cr_r_old_counts) 
+                  FPar_78=FPar_78*0.9999-DATA_57[cr_timer]*(cr_r_counts-cr_r_old_counts) 
                 else
-                  FPar_78=FPar_78*0.9999+DATA_17[cr_timer]*(cr_r_counts-cr_r_old_counts)
+                  FPar_78=FPar_78*0.9999+DATA_57[cr_timer]*(cr_r_counts-cr_r_old_counts)
                 endif
                 
                 cr_r_old_counts=cr_r_counts ' remember for next repetition
@@ -211,28 +213,24 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
         
       CASE 1  ' ----cr modulation control before CR check
         IF (cr_timer = 0) THEN
-          if (first_CR>0) then
-            cr_timer = -1
-            cr_mode = 2  'skip modulation in frist cr after
-          else
-            'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
-            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
-            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
-            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
-            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
-            cr_old_counts = 0
-            IF (cr_mod_activated > 0) THEN
-              'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
-              'if cr_mod_amplitude_invert = 1 then
-              '  cr_mod_amplitude_invert = 0
-              'else
-              '  cr_mod_amplitude_invert = 1
-              'endif
-              cr_i=0
-            ELSE
-              cr_mode = 2 ' go to normal CR check
-            ENDIF
-          endif
+          'P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.    XXX nothing connected to dio 11 on both lt3 and lt4 ??
+          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
+          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
+          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    ' clear counter
+          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)    ' turn on counter
+          cr_old_counts = 0
+          IF (cr_mod_activated > 0) THEN
+            'cr_mod_control_amp = -1.0*cr_mod_control_amp   xxx inversion not used here. Why?
+            'if cr_mod_amplitude_invert = 1 then
+            '  cr_mod_amplitude_invert = 0
+            'else
+            '  cr_mod_amplitude_invert = 1
+            'endif
+            cr_i=0
+          ELSE
+            cr_mode = 2 ' go to normal CR check
+          ENDIF
+          
         ELSE
           IF (cr_timer = CR_duration) THEN
             cr_mode = 2 ' go to normal CR check
@@ -253,9 +251,9 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
               cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
               ' update error signal, sameprinciple as above
               if (cr_mod_amplitude_invert>0) then
-                FPar_79 = FPar_79*cr_mod_control_avg_part-DATA_16[cr_timer]*(cr_counts-cr_old_counts)
+                FPar_79 = FPar_79*cr_mod_control_avg_part-DATA_56[cr_timer]*(cr_counts-cr_old_counts)
               else
-                FPar_79 = FPar_79*cr_mod_control_avg_part+DATA_16[cr_timer]*(cr_counts-cr_old_counts)
+                FPar_79 = FPar_79*cr_mod_control_avg_part+DATA_56[cr_timer]*(cr_counts-cr_old_counts)
               endif
               cr_old_counts=cr_counts
             ENDIF

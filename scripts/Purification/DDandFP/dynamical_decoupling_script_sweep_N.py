@@ -36,7 +36,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['Final_Pulse'] ='-x' 
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
-
+    
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
     m.params['Number_of_pulses'] = Number_of_pulses
@@ -45,6 +45,8 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['sweep_name'] = 'Number of pulses'
     m.autoconfig()
 
+
+    m.params['DD_in_eigenstate'] = False
 
     funcs.finish(m, upload =True, debug=False)
 
@@ -56,10 +58,9 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 4.6e-6
-    NoP1=np.arange(2,16,2)
-
+    tau = 7.12e-6
+    NoP1=np.arange(2,48,4)
     SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
         NoP=NoP1,
         tau =tau, 
-        reps_per_ROsequence = 1000)
+        reps_per_ROsequence = 500)

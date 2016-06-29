@@ -15,8 +15,9 @@ def turn_off_all_lasers():
     #set_simple_counting(['adwin'])
     turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
 
-def recalibrate_laser(name, servo, adwin, awg=False):
+def recalibrate_laser(name, servo, adwin,nr_points = 31,control = 'DIODE', awg=False):
     #qt.instruments[adwin].set_simple_counting()
+    prevPos = qt.instruments[servo].get_position()
     qt.instruments[servo].move_in()
     qt.msleep(1)
 
@@ -24,13 +25,13 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     print 'Calibrate', name
     qt.instruments[name].turn_off()
     if awg: qt.instruments[name].set_cur_controller('AWG')
-    qt.instruments[name].calibrate(31)
+    qt.instruments[name].calibrate(nr_points,control = control)
     qt.instruments[name].turn_off()
     if awg: qt.instruments[name].set_cur_controller('ADWIN')
     qt.msleep(1)
 
     qt.instruments[name].turn_off()
-    qt.instruments[servo].move_out()
+    qt.instruments[servo].set_position(prevPos)
     qt.msleep(1)
 
 

@@ -20,6 +20,10 @@ class adwin(Instrument):
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
 
+
+        self._last_loaded_process = '' #this flag prevents double loading of processes.
+        self.add_function('get_latest_process')
+        self.add_function('set_latest_process')
         # self.add_parameter('dacs',
         #     type = types.IntType)
         # self.add_parameter('adcs',
@@ -43,6 +47,7 @@ class adwin(Instrument):
 
         # tools
         self.add_function('get_process_status')
+        
         self.add_function('process_path')
 
         # automatically generate process functions
@@ -51,11 +56,15 @@ class adwin(Instrument):
         # convenience functions that belong to processes
         self.add_function('set_dac_voltage')
         self.add_function('get_dac_voltage')
+        self.add_function('get_dac_voltages')
         self.add_function('get_dac_channels')
+        self.add_function('get_adc_channels')
+        self.add_function('get_adc_voltage')
 
         self.add_function('get_countrates')
         self.add_function('set_simple_counting')
         self.add_function('linescan')
+        self.add_function('speed2px')
         self.add_function('get_linescan_counts')
         self.add_function('get_linescan_px_clock')
         self.add_function('get_linescan_supplemental_data')
@@ -129,7 +138,7 @@ class adwin(Instrument):
         funcname = 'load_' + pn
         while hasattr(self, funcname):
             funcname += '_'
-        
+
         def f():
             """
             this function is generated automatically by the logical
@@ -139,6 +148,9 @@ class adwin(Instrument):
             if self.physical_adwin.Process_Status(pidx):
                 self.physical_adwin.Stop_Process(pidx)
             self.physical_adwin.Load(os.path.join(self.process_dir, fn))
+            # SSRO processes have id 9
+            if pidx == 9:
+                self.set_latest_process(fn)
             return True
         
         f.__name__ = funcname
@@ -472,9 +484,11 @@ class adwin(Instrument):
     def get_dac_channels(self):
         return self.dacs.copy()
 
+    def get_adc_channels(self):
+        return self.adcs.copy()
+
     def set_dac_voltage(self, (name, value), timeout=1, **kw):
         if 'set_dac' in self.processes:
-            # print name
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)
 
@@ -490,7 +504,10 @@ class adwin(Instrument):
     
     def get_dac_voltages(self, names):
         return [ self.get_dac_voltage(n) for n in names ] 
-   
+
+    def get_adc_voltage(self, name):
+        self.start_read_adc (adc_no = adc_no)
+        return self.get_read_adc_var('adc_voltage')
    
     # counter
     def set_simple_counting(self, int_time=1, avg_periods=100,
@@ -679,3 +696,11 @@ class adwin(Instrument):
         while self.is_counter_running():
             time.sleep(0.01)
         return self.get_last_counts()
+
+
+    def get_latest_process(self):
+        return self._last_loaded_process
+
+    def set_latest_process(self,fn):
+        self._last_loaded_process = fn
+        return

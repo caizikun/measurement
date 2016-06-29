@@ -54,7 +54,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['Ex_SP_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_SP_amplitude'])
         self.params['A_SP_voltage'] = self.A_aom.power_to_voltage(self.params['A_SP_amplitude'])
         self.params['Ex_RO_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_RO_amplitude'])
-        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])              
+        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])
         self.params['repump_voltage'] = self.repump_aom.power_to_voltage(self.params['repump_amplitude'])
         self.params['repump_off_voltage'] = self.repump_aom.get_pri_V_off()
         self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()
@@ -90,18 +90,6 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.E_aom.set_power(0.)
         self.A_aom.set_power(0.)        
     
-    def set_adwin_process_variable_from_params(self,key):
-        try:
-            # Here we can do some checks on the settings in the adwin
-            if np.isnan(self.params[key]):
-                raise Exception('Adwin process variable {} contains NAN'.format(key))
-            self.adwin_process_params[key] = self.params[key]
-        except:
-            logging.error("Cannot set adwin process variable '%s'" \
-                    % key)
-            raise Exception('Adwin process variable {} has not been set \
-                                in the measurement params dictionary!'.format(key))
-
     def run(self, autoconfig=True, setup=True):
         
         if autoconfig:
