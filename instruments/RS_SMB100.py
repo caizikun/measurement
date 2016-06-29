@@ -55,7 +55,8 @@ class RS_SMB100(Instrument):
         Instrument.__init__(self, name, tags=['physical'])
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address, timeout=300) #does this need to be so high (a 5 minuite wait after a wrong command?)
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address, timeout=300, read_termination='\n') #does this need to be so high (a 5 minuite wait after a wrong command?)
         print ' SMB timeout set to: %s s'%self._visainstrument.timeout
 
         self.add_parameter('frequency', type=types.FloatType,
@@ -103,7 +104,7 @@ class RS_SMB100(Instrument):
 
 
         # can be different from device to device, set by argument
-        self.set_max_cw_pwr(max_cw_pwr)
+        #self.set_max_cw_pwr(max_cw_pwr)
 
 
         self.add_function('reset')
@@ -111,11 +112,15 @@ class RS_SMB100(Instrument):
         self.add_function('get_all')
         self.add_function('get_errors')
         self.add_function('get_error_queue_length')
+        #self.add_function('get_visa')
 
         if reset:
             self.reset()
         else:
             self.get_all()
+
+    # def get_visa(self):
+    #     return self._visainstrument
 
     # Functions
     def reset(self):
@@ -350,6 +355,7 @@ class RS_SMB100(Instrument):
         elif stat == '0':
             return 'off'
         else:
+            print len(stat)
             raise ValueError('Output status not specified : %s' % stat)
 
     def _do_set_status(self,status):
