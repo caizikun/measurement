@@ -420,7 +420,6 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    load_TH_params(m)
 
     ### general params
     pts = 7
@@ -445,26 +444,21 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     # put sweep together:
     sweep_off_voltage = False
-    m.params['do_general_sweep']    = True
-    if sweep_off_voltage:
-        # m.params['general_sweep_name'] = 'eom_off_amplitude'
-        # print 'sweeping the', m.params['general_sweep_name']
-        # m.params['general_sweep_pts'] = np.linspace(-0.02,-0.02,pts)
-        # m.params['sweep_name'] = m.params['general_sweep_name'] 
-        # m.params['sweep_pts'] = m.params['general_sweep_pts']
-        m.params['general_sweep_name'] = 'eom_overshoot1'
-        print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.03,0.03,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
+    m.params['do_general_sweep']    = True
+
+    if sweep_off_voltage:
+        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(-0.02,-0.02,pts)
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(minval,maxval,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
+
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -690,7 +684,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -702,7 +696,7 @@ if __name__ == '__main__':
 
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    #TPQI(name+'_TPQI',debug = False,upload_only=False)
-    #TPQI(name+'_ionisation',debug = False,upload_only=False)
+    TPQI(name+'_TPQI',debug = False,upload_only=False)
+    # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
