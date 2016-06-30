@@ -2,8 +2,8 @@
 
 physical_adwin = qt.instruments.create('physical_adwin','ADwin_Gold_II',
                  address=336)
-adwin = qt.instruments.create('adwin', 'adwin_lt1', 
-        physical_adwin='physical_adwin', init=False, use_cfg=False)
+#adwin = qt.instruments.create('adwin', 'adwin_lt1', 
+#        physical_adwin='physical_adwin', init=False, use_cfg=False)
 
 physical_adwin_lt2 = qt.instruments.create('physical_adwin_lt2','ADwin_Pro_II',
         address=352)
@@ -12,8 +12,7 @@ physical_adwin_lt2 = qt.instruments.create('physical_adwin_lt2','ADwin_Pro_II',
 #             address='GPIB::8::INSTR')
 
 
-rotator = qt.instruments.create('rotator', 'NewportAgilisUC', 
-        address = 'COM9', ins_type='UC8')
+rotator = qt.instruments.create('rotator', 'NewportAgilisUC', address = 'COM10', ins_type='UC8')
 rejecter = qt.instruments.create('rejecter', 'laser_reject0r_v2', rotator='rotator',rotation_config_name='waveplates_lt1',
         adwin='adwin')
 
