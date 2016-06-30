@@ -92,7 +92,7 @@ class RS_SGS100A(Instrument):
         # else:
         rm = visa.ResourceManager()
         
-        self._visainstrument = rm.open_resource(address, timeout=60000)
+        self._visainstrument = rm.open_resource(address, timeout=60000, read_termination ='\n',write_termination ='\n')
         self.add_parameter(
             'frequency', type=types.FloatType, flags=Instrument.FLAG_GETSET,
             minval=1e9, maxval=20e9, units='Hz',  # format='%.12e',
