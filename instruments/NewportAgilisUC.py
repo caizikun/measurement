@@ -21,8 +21,8 @@ class NewportAgilisUC(Instrument):
         self._address = address
         rm = visa.ResourceManager()
         self._visa = rm.open_resource(self._address,
-                        baud_rate=921600, data_bits=8, stop_bits=visa.constants.StopBits.one,
-                        parity=visa.constants.Parity.none, write_termination='\r',read_termination = '\r')
+                        baud_rate=921600, data_bits=8, stop_bits=visa.constants.StopBits.one, 
+                        parity=visa.constants.Parity.none, write_termination='\r\n',read_termination = '\r\n')
         self._axes = (1,2) #this is the number of axes per channel          
 
         if ins_type == 'UC2':
@@ -184,11 +184,11 @@ class NewportAgilisUC(Instrument):
         Sets the currently active channel. Only available for the UC8 type controller
         """
         if self._ins_type == 'UC8':
-            ans = int(self._visa.ask_for_values('CC?')[0])
+            ans = self._visa.ask('CC?')
         else:
             logging.warning(self.get_name()+': This function is only available for the UC8 type controller')
             return False
-        return ans
+        return int(ans[2:])
 
     def do_set_jog(self, jogmode, channel): #OK!
         """
@@ -214,7 +214,8 @@ class NewportAgilisUC(Instrument):
         like models AG-LS25, AG-M050L and AG-M100L.
         """
         axis=channel
-        ans = self._visa.ask_for_values('%dMA'%axis)[0]
+        ans = self._visa.query('%dMA'%axis)
+        print ans
         return ans
 
 
@@ -335,7 +336,7 @@ class NewportAgilisUC(Instrument):
 
         return ans
 
-    def do_get_noof_steps(self, channel): #OK!
+    def do_get_noof_steps(self, channel): #OK! 
         """
         The TP command provides only limited information about the actual 
         position of the device. In particular, an Agilis device can be at 
@@ -345,11 +346,10 @@ class NewportAgilisUC(Instrument):
         Returns TPnn, where nn is the number of accumulated steps in forward 
         direction minus the number of steps in backward direction as Integer.
         """
-        axis=channel
-        self._visa.write('%dTP'%axis)
-        [ch_nr, ans] = self._visa.read_values()
 
-        return int(ans)
+        val = self._visa.query('%dTP'%channel) #val is a string of the form cTPXXXX c = channel, XXXX number of steps
+        return int(val[4:])
+
 
     def do_get_status(self, channel, return_type = 'cooked'): #OK!
         """
@@ -414,3 +414,4 @@ class NewportAgilisUC(Instrument):
         self.set('relative_position%d'%axis,steps)
         qt.msleep(abs(steps)/float(700))
         return True
+

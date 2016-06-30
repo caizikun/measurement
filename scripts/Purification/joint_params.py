@@ -12,7 +12,7 @@ name = qt.exp_params['protocols']['current']
 joint_params = {}
 ###
 joint_params['master_setup'] = 'lt4'
-joint_params['control_slave'] = True
+joint_params['control_slave'] = False
 
 ### default process settings
 

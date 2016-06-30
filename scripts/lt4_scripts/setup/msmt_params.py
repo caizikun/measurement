@@ -55,7 +55,7 @@ else:
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.582#0.608
+	hermite_pi2_amp = 0.571#0.608
 
 
 ### General settings for AdwinSSRO
