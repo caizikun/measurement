@@ -217,7 +217,7 @@ class AOM(Instrument):
             print 'U is not %.2f =< %.2f =< %.2f' % (V_min, U, V_max)
             return
         if controller in ('AWG'):
-            if self._ins_awg.get_runmode()[:-1] != u'CONT':
+            if self._ins_awg.get_runmode() != 'CONT':
                 logging.warning(self.get_name() + ' Warning: AWG not in continuous mode!')
            
             apply = {'ch1': self._ins_awg.set_ch1_offset,
@@ -245,7 +245,7 @@ class AOM(Instrument):
         controller = self.get_cur_controller()
         channel = self.get_channel()
         if controller in ('AWG'):
-            if self._ins_awg.get_runmode()[:-1] != 'CONT':
+            if self._ins_awg.get_runmode() != 'CONT':
                 logging.warning(self.get_name() + ' Warning: AWG not in continuous mode!')
            
             get_ch = {'ch1': self._ins_awg.get_ch1_offset,

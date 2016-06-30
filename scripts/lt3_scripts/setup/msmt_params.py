@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.688#0.534 # 06-02
+	hermite_pi_amp = 0.674#0.534 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.472 # 06-02 0.472
+	hermite_pi2_amp = 0.460 # 06-02 0.472
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -99,7 +99,7 @@ cfg['protocols']['AdwinSSRO']={
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
 		'yellow_repump_amplitude':      20e-9,#9e-9, #50e-9
-		'yellow_repump_duration':       250, # maximum is 1000 for CR_mod
+		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -472,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.8,#0.2
+        'aom_amplitude':					0.7,#0.2
 }
 
 

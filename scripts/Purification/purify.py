@@ -672,8 +672,7 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 125
-
+    m.joint_params['LDE_attempts'] = 250
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -694,19 +693,19 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
 
     ###### non-local measurements // purification parameters
-    #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
 
 
     ###### non-local measurements // Barrett Kok parameters
-    #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
+    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
     #TPQI(name+'_TPQI',debug = False,upload_only=False)
     # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
-    # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+    EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)

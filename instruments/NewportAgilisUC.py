@@ -22,7 +22,7 @@ class NewportAgilisUC(Instrument):
         rm = visa.ResourceManager()
         self._visa = rm.open_resource(self._address,
                         baud_rate=921600, data_bits=8, stop_bits=visa.constants.StopBits.one,
-                        parity=visa.constants.Parity.none, write_termination='\r',read_termination = '\r')
+                        parity=visa.constants.Parity.none, write_termination='\r\n',read_termination = '\r\n')
         self._axes = (1,2) #this is the number of axes per channel          
 
         if ins_type == 'UC2':
@@ -184,11 +184,11 @@ class NewportAgilisUC(Instrument):
         Sets the currently active channel. Only available for the UC8 type controller
         """
         if self._ins_type == 'UC8':
-            ans = int(self._visa.ask_for_values('CC?')[0])
+            ans= self._visa.ask('CC?')
         else:
             logging.warning(self.get_name()+': This function is only available for the UC8 type controller')
             return False
-        return ans
+        return int(ans[2:])
 
     def do_set_jog(self, jogmode, channel): #OK!
         """
@@ -347,6 +347,7 @@ class NewportAgilisUC(Instrument):
         """
         axis=channel
         self._visa.write('%dTP'%axis)
+        print self._visa.read()
         [ch_nr, ans] = self._visa.read_values()
 
         return int(ans)
