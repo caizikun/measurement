@@ -372,13 +372,13 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':				 6.0e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 45e-9,
+		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 70, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1.0e-9,#1.5e-9,
-		'Ex_RO_amplitude':				 5e-9,#5e-9, #5e-9
+		'Ex_RO_amplitude':				 1.5e-9,#5e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
 		'Ex_SP_calib_amplitude':		 12e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.

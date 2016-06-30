@@ -92,7 +92,7 @@ class RS_SGS100A(Instrument):
         # else:
         rm = visa.ResourceManager()
         
-        self._visainstrument = rm.open_resource(address, timeout=60000)
+        self._visainstrument = rm.open_resource(address, timeout=60000, read_termination ='\n',write_termination ='\n')
         self.add_parameter(
             'frequency', type=types.FloatType, flags=Instrument.FLAG_GETSET,
             minval=1e9, maxval=20e9, units='Hz',  # format='%.12e',
@@ -334,9 +334,9 @@ class RS_SGS100A(Instrument):
         logging.debug(__name__ + ' : reading status from instrument')
         stat = self._visainstrument.ask(':OUTP:STAT?')
 
-        if stat == '1':
+        if int(stat) == 1:
             return 'on'
-        elif stat == '0':
+        elif int(stat) == 0:
             return 'off'
         else:
             raise ValueError('Output status not specified : %s' % stat)

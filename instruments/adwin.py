@@ -148,7 +148,8 @@ class adwin(Instrument):
             if self.physical_adwin.Process_Status(pidx):
                 self.physical_adwin.Stop_Process(pidx)
             self.physical_adwin.Load(os.path.join(self.process_dir, fn))
-            # SSRO processes have id 9
+            
+            # SSRO processes have id 9 and are in general bulky / can cause memory problems on frequent loading
             if pidx == 9:
                 self.set_latest_process(fn)
             return True

@@ -39,4 +39,4 @@ if True:
             plot_name='nf_plot')
 
 if True:
-    bell_optimizer  = qt.instruments.create('purification_optimizer' , 'purification_optimizer', setup_name = 'lt3')
+    purification_optimizer  = qt.instruments.create('purification_optimizer' , 'purification_optimizer', setup_name = 'lt3')

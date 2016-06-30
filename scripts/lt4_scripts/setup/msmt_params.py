@@ -49,7 +49,7 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.956
+	hermite_pi_amp = 0.93
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
@@ -461,7 +461,7 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 3.5e-9,
+		'A_CR_amplitude':				 1.5e-9,
 		'CR_duration' :				 	 70,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,

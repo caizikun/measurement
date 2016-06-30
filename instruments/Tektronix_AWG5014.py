@@ -133,7 +133,7 @@ class Tektronix_AWG5014(Instrument):
 
         self._address = address
         rm = visa.ResourceManager()
-        self._visainstrument = rm.open_resource(self._address, timeout=20)
+        self._visainstrument = rm.open_resource(self._address, timeout=20000,write_termination = '\n',read_termination = '\n')
         self._values = {}
         self._values['files'] = {}
         self._clock = clock
@@ -799,7 +799,7 @@ class Tektronix_AWG5014(Instrument):
         s2 = '#' + str(len(str(len(awg_file)))) + str(len(awg_file))
 
         mes = s1+s2+awg_file
-        self._visainstrument.write(mes)
+        self._visainstrument.write_raw(mes)
 
     def load_awg_file(self, filename):
         s = 'AWGCONTROL:SRESTORE "%s"' %filename
