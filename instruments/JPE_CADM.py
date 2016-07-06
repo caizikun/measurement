@@ -20,7 +20,7 @@ class JPE_CADM(Instrument):
         self.type = 'PK1801'
         self.TRQFR = 1
 
-        self.pzknb_command = 'D:\measuring\measurement\hardware\jpe\pzknb_CMD\pzknb'
+        self.pzknb_command = 'D:\measuring\jpe\pzknb_CMD\pzknb'
 
         self.add_function('get_type')
         self.add_function('status')
@@ -70,7 +70,6 @@ class JPE_CADM(Instrument):
             print 'Specified address not available!'
             
     def move (self, addr, ch, steps, T, freq, rel_step):
-
         cw = int((np.sign(steps)+1)/2)
         steps = abs(steps)
         steps_int = int(steps)

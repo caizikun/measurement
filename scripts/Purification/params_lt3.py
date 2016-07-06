@@ -24,7 +24,7 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 1000e-9
+params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.254e-6 # XXX put repump AOM delay here!
@@ -60,8 +60,8 @@ params_lt3['remote_adwin_di_success_channel'] = 19
 params_lt3['remote_adwin_di_fail_channel'] = 18
 params_lt3['remote_adwin_do_success_channel'] = 13
 params_lt3['remote_adwin_do_fail_channel'] = 8
-params_lt3['adwin_comm_safety_cycles'] = 3
-params_lt3['adwin_comm_timeout_cycles'] = 1000 # 1ms 
+params_lt3['adwin_comm_safety_cycles'] = 15
+params_lt3['adwin_comm_timeout_cycles'] = 200000 # 1ms 
 params_lt3['remote_awg_trigger_channel'] = 1 # not used on slave
 params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt3['master_slave_awg_trigger_delay'] = 9 # times 10ns
@@ -119,10 +119,10 @@ params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interv
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['pulse_start_bin'] = 3014 - 55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['pulse_stop_bin'] = 3014+9-55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_start_bin'] = 3014+9-55 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_stop_bin'] = 3014+9-55+50 -params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_start_bin'] = 2950-params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_stop_bin'] = 2950+300-params_lt3['MIN_SYNC_BIN']
+params_lt3['tail_start_bin'] = 2950 -params_lt3['MIN_SYNC_BIN']
+params_lt3['tail_stop_bin'] = 2950+300 -params_lt3['MIN_SYNC_BIN']
 params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10

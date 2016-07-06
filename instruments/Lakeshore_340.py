@@ -29,7 +29,8 @@ class Lakeshore_340(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address)
+        rm = visa.ResourceManager()
+        self._visa = rm.open_resource(self._address)
         self._channels = ('A', 'B', 'C', 'D')
         
         self.add_parameter('identification',

@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.911
+	hermite_pi_amp = 0.93
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.565#0.608
+	hermite_pi2_amp = 0.571#0.608
 
 
 ### General settings for AdwinSSRO
@@ -66,8 +66,8 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       18e-6,
-		'green_repump_duration':        20,
+		'green_repump_amplitude':       66e-6,#18e-6
+		'green_repump_duration':        100,#20,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           0,
 		'wait_after_RO_pulse_duration': 3,
@@ -76,8 +76,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      35e-9,#80e-9, #50e-9 XXXXXXXXXXXX
-		'yellow_repump_duration':       300,
+		'yellow_repump_amplitude':      20e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -228,12 +228,12 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (416812.23+ 443393.29)/2,
-	'C4_freq_0' 		: 443416.22,
-	'C4_freq_1_m1' 		: 416815.78,
+	'C4_freq_0' 		: 443238.05,
+	'C4_freq_1_m1' 		: 416647.99,
 
 	'C4_Ren_tau_m1'    :   [6.384e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-100.61] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [-105.53] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
@@ -294,15 +294,15 @@ cfg['samples'][sample_name] = {
 
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 5e-9, #4e-9
+		'A_CR_amplitude':			 	 6e-9, #4e-9
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 20e-9,
-		'CR_duration' :				 	 50, 
+		'CR_duration' :				 	 80, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2e-9, #2e-9 
-		'Ex_RO_amplitude':				 4.5e-9, #used to 8e-9
+		'Ex_CR_amplitude':				 0.8e-9, #2e-9 
+		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 1e-9,
 		'SP_duration':					 100,
@@ -461,8 +461,8 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 2e-9,
-		'CR_duration' :				 	 80,
+		'A_CR_amplitude':				 1.5e-9,
+		'CR_duration' :				 	 70,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,

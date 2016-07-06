@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,86,86,88,88,198,198,341,341,342,342,357,357,581,581,650,650,836,837,838,845,846,847
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,205,205,352,352,353,353,368,368,595,595,666,666,857,858,859,866,867,868
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -94,6 +94,8 @@ DIM SSRO_result AS LONG
 DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO_is_ms0 AS LONG
 DIM digin_this_cycle AS long
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage AS FLOAT
+DIM time_spent_in_state_preparation, time_spent_in_sequence, time_spent_in_communication as LONG
+DIM duty_cycle as FLOAT
 
 ' Channels & triggers
 dim AWG_done_was_low, AWG_repcount_was_low, PLU_event_di_was_high, master_slave_awg_trigger_delay as long
@@ -101,6 +103,7 @@ DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_even
 DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
 dim sync_trigger_counter_channel, sync_trigger_counter_pattern as long
 DIM invalid_data_marker_do_channel AS LONG
+DIM duty_cycle as FLOAT
 
 ' MBI
 dim mbi_timer, trying_mbi as long
@@ -153,7 +156,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   is_mbi_readout      = 0
   RO_duration         = 0
   cumulative_awg_counts   = 0
-
+  
+  time_spent_in_state_preparation =0
+  time_spent_in_communication =0 
+  time_spent_in_sequence =0
+  duty_cycle = 0
+  
   AWG_done_was_low = 1
   AWG_repcount_was_low =1
   AWG_sequence_repetitions_first_attempt =0
@@ -287,12 +295,16 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_73 = repetition_counter     ' repetition counter
   PAR_74 = 0                      ' MBI failed
   PAR_77 = success_event_counter  ' number of successful runs
-  PAR_78 = 0                      ' MBI starts
-  PAR_1 = 0                      ' n_of_communication_timeouts for debugging
+  PAR_78 = 0                      ' MBI starts                    
   PAR_80 = 0                      ' n_of timeouts when waiting for AWG done
-  par_50 = -1 ' for debugging
-  PAR_62 = -1 ' for debugging
+  PAR_62 = 0                      ' n_of_communication_timeouts for debugging
   PAR_65 = -1 ' for debugging
+  par_10 = -1
+  par_11 = -1
+  par_12 = -1
+  par_13 = -1
+  par_14 = -1
+  par_15 = -1
   
 '''''''''''''''''''''''''
   ' flow control: 
@@ -372,12 +384,13 @@ EVENT:
         ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
 
         if (timer = 0) then ' forget values from previous runs
-
           adwin_timeout_requested = 0
           combined_success = 0
           adwin_comm_done = 0
           remote_success = 0
           remote_fail = 0
+          par_15=0
+          inc(PAR_65)
         endif
         
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
@@ -386,6 +399,7 @@ EVENT:
           else 'fail: go to fail mode
             mode = fail_mode_after_adwin_comm
           endif
+          time_spent_in_communication = time_spent_in_communication + timer
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
@@ -418,7 +432,7 @@ EVENT:
                 ' no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
-                  PAR_1 = n_of_comm_timeouts ' for debugging
+                  PAR_62 = n_of_comm_timeouts ' for debugging
                   combined_success = 0 ' just to be sure
                   adwin_comm_done = 1 ' below: reset everything and go on
                 endif                
@@ -443,7 +457,7 @@ EVENT:
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
                   combined_success = 0
                   inc(n_of_comm_timeouts) ' give to par for local debugging
-                  PAR_1 = n_of_comm_timeouts ' for debugging
+                  PAR_62 = n_of_comm_timeouts ' for debugging
                 ELSE ' should I request a timeout in the next round now?
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
@@ -479,6 +493,7 @@ EVENT:
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)  ' disable photon counter, keep sync trigger counter on
             wait_time = RO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase xxx to do: is this still accurate to the us?
+            time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
             SSRO_result = 1
             DATA_107[repetition_counter+1] = SSRO_result 'save as last electron readout
@@ -497,6 +512,7 @@ EVENT:
             if (timer = RO_duration) then ' no count after ssro duration -> failed  xxx to do: is this still accurate to the us?
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               P2_CNT_ENABLE(CTR_MODULE,sync_trigger_counter_pattern) 'disable photon counter, keep sync trigger counter on
+              time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
               IF (Success_of_SSRO_is_ms0 = 0) THEN
                 local_success = 1 'remember for adwin communication in next mode. Success_of_SSRO_is_ms0 is usually 1, but could be inverted here
@@ -514,10 +530,7 @@ EVENT:
    
 
       CASE 0 'CR check
-        if ((first_CR>0) and (timer = 0)) then
-          inc(par_50)
-        endif
-        
+      
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check. if first_CR is high, the result will be saved as CR_after. 
         'first_CR = 0 ' forget for next repetition... is done in cr_mod.inc
         
@@ -526,8 +539,9 @@ EVENT:
           END
         ENDIF
 
-        if ( cr_result > 0 ) then 
+        if ( cr_result > 0 ) then
           ' In case the result is not positive, the CR check will be repeated/continued
+          time_spent_in_state_preparation = time_spent_in_state_preparation + timer
           timer = -1     
           IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
             mode = 1 'go to spin pumping directly
@@ -561,6 +575,7 @@ EVENT:
             P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
             mode = mode_after_spinpumping
             wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
+            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
             timer = -1
           ENDIF
         ENDIF
@@ -597,6 +612,7 @@ EVENT:
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
           if ((digin_this_cycle and AWG_done_DI_pattern)>0) then ' AWG has done the MW pulses -> go to next step
             if (awg_done_was_low >0) then
+              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
               timer = -1
               IF (do_C_init_SWAP_wo_SSRO > 0) THEN 'no SSRO and no communication required
                 mode = 3 'go to MBI verification. Is required to send the jump trigger that signals Adwin is done with SSRO
@@ -651,7 +667,8 @@ EVENT:
             mode = 1 ' retry spinpumping and then MBI
             INC(current_MBI_attempt)
           ENDIF 
-        ENDIF               
+        ENDIF  
+        time_spent_in_state_preparation = time_spent_in_state_preparation + timer
         timer = -1      
         
       CASE 31 'tell the AWG to jump in case of a succesful MBI attempts
@@ -703,12 +720,14 @@ EVENT:
           '            endif        
           '          ENDIF
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
+          time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_LDE   
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
             if (awg_done_was_low =1) then
               DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
+              time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
               if (PLU_during_LDE = 0) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
@@ -753,6 +772,7 @@ EVENT:
         ENDIF
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) >0 )THEN  'awg trigger tells us it is done with the swap sequence.
+          time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           if (AWG_done_was_low >0) then ' prevents double jump in case the awg trigger is long
             IF (do_SSRO_after_electron_carbon_SWAP = 0) then
@@ -828,11 +848,13 @@ EVENT:
           'else
           '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20         
           mode = mode_after_LDE_2 'go on to next case
+          time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
           IF ((digin_this_cycle AND AWG_Done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
             if (awg_done_was_low > 0) then ' switched in this round
               DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
+              time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
               IF ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE_2
@@ -903,6 +925,7 @@ EVENT:
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+          time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_phase_correction
         ENDIF
@@ -931,6 +954,7 @@ EVENT:
         'check the done trigger
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (AWG_done_was_low > 0) then
+            time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
@@ -959,8 +983,8 @@ EVENT:
           
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low>0) then
+            time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1
-
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
             is_mbi_readout = 0
@@ -977,8 +1001,6 @@ EVENT:
         ENDIF
  
       CASE 10 'store the result of the tomography and the sync number counter
-        inc(success_event_counter)
-        PAR_77 = success_event_counter ' for the LabView live update
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
         DATA_108[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)         ' store value of the sync number counter. Redundant to the above, but this is really important
@@ -996,6 +1018,7 @@ EVENT:
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low>0) then
             mode = 200
+            time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1
             is_mbi_readout = 0
             success_mode_after_SSRO = 10 'used to be 12. Now we also go to case 10 in order to increment the rep counter and set first_CR to 0 before doing the cleanup
@@ -1041,8 +1064,15 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = 0 ' go to cr
+        time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
-
+        duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
+        FPAR_58 = duty_cycle
+        if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
+          time_spent_in_state_preparation = 0
+          time_spent_in_sequence = 0 
+          time_spent_in_communication = 0
+        endif
     endselect
     
     INC(timer)

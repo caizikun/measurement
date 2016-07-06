@@ -90,7 +90,9 @@ class RS_SGS100A(Instrument):
         # if address[:5] == 'TCPIP':
         #     self._visainstrument = SocketVisa(self._address[8:], 5025)
         # else:
-        self._visainstrument = visa.instrument(address, timeout=60)
+        rm = visa.ResourceManager()
+        
+        self._visainstrument = rm.open_resource(address, timeout=60000, read_termination ='\n',write_termination ='\n')
         self.add_parameter(
             'frequency', type=types.FloatType, flags=Instrument.FLAG_GETSET,
             minval=1e9, maxval=20e9, units='Hz',  # format='%.12e',
@@ -147,6 +149,8 @@ class RS_SGS100A(Instrument):
         self.set_max_cw_pwr(max_cw_pwr)
         self.add_function('reset')
         self.add_function('get_all')
+        self.add_function('get_errors')
+        self.add_function('get_error_queue_length')
 
         if reset:
             self.reset()
@@ -330,9 +334,9 @@ class RS_SGS100A(Instrument):
         logging.debug(__name__ + ' : reading status from instrument')
         stat = self._visainstrument.ask(':OUTP:STAT?')
 
-        if stat == '1':
+        if int(stat) == 1:
             return 'on'
-        elif stat == '0':
+        elif int(stat) == 0:
             return 'off'
         else:
             raise ValueError('Output status not specified : %s' % stat)
@@ -440,3 +444,38 @@ class RS_SGS100A(Instrument):
 
     # def do_get_pulsemod_source(self):
     #     return self._visainstrument.ask('SOUR:PULM:SOUR?')
+
+
+    def get_errors(self):
+        '''
+        This function is directly copied from the SMB100 driver.
+        Get all entries in the error queue and then delete them.
+
+        Input:
+            None
+
+        Output:
+            errors (string) : 0 No error, i.e the error queue is empty.
+                              Positive error numbers denote device-specific errors.
+                              Negative error numbers denote error messages defined by SCPI
+        '''
+        logging.debug(__name__ + ' : reading errors from instrument')
+        stat = self._visainstrument.ask('SYSTem:ERRor:ALL?')
+        return stat
+
+    def get_error_queue_length(self):
+        '''
+        This function is directly copied from the SMB100 driver.
+        Get all entries in the error queue and then delete them.
+
+        Input:
+            None
+
+        Output:
+            errors (string) : 0 No error, i.e the error queue is empty.
+                              Positive error numbers denote device-specific errors.
+                              Negative error numbers denote error messages defined by SCPI
+        '''
+        logging.debug(__name__ + ' : reading errors from instrument')
+        count = self._visainstrument.ask('SYSTem:ERRor:COUNt?')
+        return int(count)

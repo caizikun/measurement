@@ -56,11 +56,15 @@ class adwin(Instrument):
         # convenience functions that belong to processes
         self.add_function('set_dac_voltage')
         self.add_function('get_dac_voltage')
+        self.add_function('get_dac_voltages')
         self.add_function('get_dac_channels')
+        self.add_function('get_adc_channels')
+        self.add_function('get_adc_voltage')
 
         self.add_function('get_countrates')
         self.add_function('set_simple_counting')
         self.add_function('linescan')
+        self.add_function('speed2px')
         self.add_function('get_linescan_counts')
         self.add_function('get_linescan_px_clock')
         self.add_function('get_linescan_supplemental_data')
@@ -144,7 +148,8 @@ class adwin(Instrument):
             if self.physical_adwin.Process_Status(pidx):
                 self.physical_adwin.Stop_Process(pidx)
             self.physical_adwin.Load(os.path.join(self.process_dir, fn))
-            # SSRO processes have id 9
+            
+            # SSRO processes have id 9 and are in general bulky / can cause memory problems on frequent loading
             if pidx == 9:
                 self.set_latest_process(fn)
             return True
@@ -480,9 +485,11 @@ class adwin(Instrument):
     def get_dac_channels(self):
         return self.dacs.copy()
 
+    def get_adc_channels(self):
+        return self.adcs.copy()
+
     def set_dac_voltage(self, (name, value), timeout=1, **kw):
         if 'set_dac' in self.processes:
-            # print name
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)
 
@@ -498,7 +505,10 @@ class adwin(Instrument):
     
     def get_dac_voltages(self, names):
         return [ self.get_dac_voltage(n) for n in names ] 
-   
+
+    def get_adc_voltage(self, name):
+        self.start_read_adc (adc_no = adc_no)
+        return self.get_read_adc_var('adc_voltage')
    
     # counter
     def set_simple_counting(self, int_time=1, avg_periods=100,

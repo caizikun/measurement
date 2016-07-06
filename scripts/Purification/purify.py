@@ -9,6 +9,7 @@ import purify_slave, sweep_purification
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import DD_2
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+import copy
 reload(T2_tools_v3)
 reload(pq)
 reload(purify_slave);reload(sweep_purification)
@@ -85,6 +86,11 @@ class purify(PQPurifyMeasurement):
             h5_joint_params_group.attrs[k] = joint_params[k]
         self.h5data.flush()
 
+        self.AWG_RO_AOM.turn_off()
+        self.E_aom.turn_off()
+        self.A_aom.turn_off()
+        self.repump_aom.turn_off()
+
 
         PQPurifyMeasurement.finish(self)
 
@@ -100,7 +106,17 @@ class purify(PQPurifyMeasurement):
         if setup:
             self.setup()
 
-
+        # Experimental addition for remote running
+        if (self.current_setup == self.joint_params['master_setup']) and self.joint_params['control_slave']:
+            qt.instruments['lt3_helper'].set_is_running(False)
+            qt.msleep(0.5)
+            qt.instruments['lt3_helper'].set_measurement_name(name)
+            qt.instruments['lt3_helper'].set_script_path(r'D:/measuring/measurement/scripts/Purification/purify.py')
+            qt.instruments['lt3_helper'].execute_script()
+            qt.instruments['lt4_helper'].set_is_running(True)
+            
+            m.lt3_helper.set_is_running(True)
+            qt.msleep(2)
         ### this is now in autoconfig. NK 18-05-2016
         # for i in range(10):
         #     self.physical_adwin.Stop_Process(i+1)
@@ -150,6 +166,7 @@ class purify(PQPurifyMeasurement):
         
         hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
         self.hist = np.zeros((hist_length,2), dtype='u4')
+        self.hist_update = np.zeros((hist_length,2), dtype='u4')
         new_entanglement_markers = 0
         self.entanglement_markers = 0
 
@@ -168,14 +185,26 @@ class purify(PQPurifyMeasurement):
             _queue_sync_number = deque([],self.params['live_filter_queue_length'])
             _queue_newlength   = deque([],self.params['live_filter_queue_length'])
 
+        no_of_cycles_for_live_update_reset = 100
+        live_updates = 0
+        last_sync_number_update = 0
+        last_sync_number = 0
+
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 if self.measurement_process_running():
+                    live_updates += 1
+                    if live_updates > no_of_cycles_for_live_update_reset:
+                        self.hist_update = copy.deepcopy(self.hist)
+                        live_updates = 0
+                        last_sync_number_update = last_sync_number
+
                     self.print_measurement_progress()
                     self._keystroke_check('abort')
                     if self.keystroke('abort') in ['q','Q']:
                         print 'aborted.'
                         self.stop_measurement_process()
+
                 else:
                     #Check that all the measurement data has been transsfered from the PQ ins FIFO
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
@@ -184,22 +213,29 @@ class purify(PQPurifyMeasurement):
                     if (_length == 0) or (self.keystroke('abort') in ['x']) or ii>wait_for_late_data: 
                         break 
                 
-                print 'current sync, entanglement_markers, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
+                print 'current sync, marker_events, dset length:', last_sync_number,self.entanglement_markers, current_dset_length
+                pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
+                pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
+                tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
+                tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
+                print 'duty_cycle', self.physical_adwin.Get_FPar(58)
 
-                pulse_cts_ch0=np.sum(self.hist[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
-                pulse_cts_ch1=np.sum(self.hist[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
-                tail_cts_ch0=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
-                tail_cts_ch1=np.sum(self.hist[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-                if last_sync_number > 0:
+
+                #### update parameters in the adwin
+                if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
                     if qt.current_setup == 'lt3':
-                        self.physical_adwin.Set_Par(50, int(tail_cts_ch0))
-                        self.physical_adwin.Set_Par(51, int(tail_cts_ch1))
-                        self.physical_adwin.Set_Par(52, int(pulse_cts_ch1)) 
-                        print 'tail_counts PSB', float(tail_cts_ch0)/last_sync_number, 'tail_counts ZPL', float(tail_cts_ch1)/last_sync_number, 'pulse_counts', pulse_cts_ch1/last_sync_number
+
+                        tail_psb_lt3 = round(float(2*tail_cts_ch0*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        tail_psb_lt4 = round(float(2*tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        self.physical_adwin.Set_FPar(56, tail_psb_lt3)
+                        self.physical_adwin.Set_FPar(57, tail_psb_lt4)
+                         
+                        # print 'tail_counts PSB (lt3/lt4)', tail_psb_lt3,tail_psb_lt4
                     else:
-                        self.physical_adwin.Set_Par(51, int(tail_cts_ch0+tail_cts_ch1))
-                        self.physical_adwin.Set_Par(52, int(pulse_cts_ch0+pulse_cts_ch1))
-                        print 'tail_counts ZPL', float(tail_cts_ch0+ tail_cts_ch1)/last_sync_number, 'pulse_counts', float(pulse_cts_ch1 + pulse_cts_ch0)/last_sync_number
+                        ZPL_tail = round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        self.physical_adwin.Set_FPar(56, ZPL_tail)
+                        self.physical_adwin.Set_FPar(57, Pulse_counts)
 
 
                 _timer=time.time()
@@ -309,10 +345,7 @@ class purify(PQPurifyMeasurement):
 
     def stop_measurement_process(self):
         PQPurifyMeasurement.stop_measurement_process(self)
-        self.AWG_RO_AOM.turn_off()
-        self.E_aom.turn_off()
-        self.A_aom.turn_off()
-        self.repump_aom.turn_off()
+
 
 
 def load_TH_params(m):
@@ -391,18 +424,18 @@ def MW_Position(name,debug = False,upload_only=False):
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1., local = False):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = False):
     """
     Performs a tail_sweep in the LDE_1 element
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    load_TH_params(m)
 
     ### general params
     pts = 7
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
+
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -420,21 +453,22 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 1., lo
     # m.params['MAX_SYNC_BIN'] =       9000 
 
     # put sweep together:
-    sweep_off_voltage = True
+    sweep_off_voltage = False
+
     m.params['do_general_sweep']    = True
+
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.0,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
+        m.params['general_sweep_pts'] = np.linspace(-0.02,-0.02,pts)
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(minval,maxval,pts)
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
 
+
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -484,7 +518,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     # load_BK_params(m)
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 5000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -556,6 +590,9 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 50000
     sweep_purification.turn_all_sequence_elements_off(m)
 
+
+    m.params['MIN_SYNC_BIN'] =       1.5e6
+    m.params['MAX_SYNC_BIN'] =       9e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['do_general_sweep'] = 0
@@ -565,15 +602,60 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['LDE_element_length'] = 10e-6
     m.joint_params['opt_pi_pulses'] = 10
     m.joint_params['opt_pulse_separation'] = 700e-9
-    m.joint_params['LDE_attempts'] = 500
+    m.joint_params['LDE_attempts'] = 100
+
+    m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+    m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+    m.params['tail_start_bin'] = 2635e3 - m.params['MIN_SYNC_BIN']  
+    m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
+
+    if qt.current_setup == 'lt3':
+        m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2100e3 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2800e3  - m.params['MIN_SYNC_BIN'] 
+        m.params['MIN_SYNC_BIN'] =       1.5e3
+        m.params['MAX_SYNC_BIN'] =       9e3
+        m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
+        m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
+        m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
+
+    ### upload and run
+    # m.params['do_general_sweep'] = 1
+    # m.params['general_sweep_name'] = 'LDE_attempts'
+    # print 'sweeping the', m.params['general_sweep_name']
+    # m.params['general_sweep_pts'] = np.arange(2,503,50)
+    # m.params['pts'] = len(m.params['general_sweep_pts'])
+    # m.params['sweep_name'] = m.params['general_sweep_name'] 
+    # m.params['sweep_pts'] = m.params['general_sweep_pts']
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def EntangleZZ(name,debug = False,upload_only=False):
+
+    m = purify(name)
+    sweep_purification.prepare(m)
+   
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1000
+    sweep_purification.turn_all_sequence_elements_off(m)
+
+    load_BK_params(m)
+
+    m.params['do_general_sweep'] = 0
+    m.params['MW_during_LDE'] = 1
+
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 200
+
+    m.params['LDE_final_mw_amplitude'] = 0
 
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-
-def EntangleZZ(name,debug = False,upload_only=False):
-    pass
 
 def EntangleXX(name,debug = False,upload_only=False):
     m = purify(name)
@@ -590,9 +672,7 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    
-
-
+    m.joint_params['LDE_attempts'] = 250
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -613,17 +693,19 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.3, maxval=.7, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
 
     ###### non-local measurements // purification parameters
-    #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
 
 
     ###### non-local measurements // Barrett Kok parameters
     #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    #TPQI(name+'_TPQI',debug = False,upload_only=True)
-    EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+    #TPQI(name+'_TPQI',debug = False,upload_only=False)
+    # TPQI(name+'_ionisation',debug = False,upload_only=False)
+    #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
+    #EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
