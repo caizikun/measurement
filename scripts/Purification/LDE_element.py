@@ -323,7 +323,7 @@ def _LDE_rephasing_elt(msmt,Gate):
     """
     _create_wait_times(Gate)
     _create_syncs_and_triggers(msmt,Gate)
-    e = element.Element(Gate.name, pulsar = qt.pulsar)
+    e = element.Element(Gate.name, pulsar = qt.pulsar,min_samples = 20,granularity=2)
 
     ### we need to add some time for the following carbon gate to this rephasing element
     ### this time is tau_cut and is calculated below.
@@ -341,11 +341,21 @@ def _LDE_rephasing_elt(msmt,Gate):
 
     # LDE 2 does not need tau_cut because we do dynamic phase correction.
     if 'LDE_rephasing_2' in Gate.name:
-        tau_cut =0e-6#0e-6
+        tau_cut =0e-6 #0e-6
+        # print e.samples()
+
 
     ### avg. repump time + tau_cut gives the right amount of time.
     wait_duration = msmt.params['average_repump_time'] + tau_cut
-    e.add(pulse.cp(Gate.T_sync, length=wait_duration))
+
+    
+    test = pulse.cp(Gate.T, length=wait_duration,name='rephasing')
+    test.name = 'rephase'
+    e.add(test)
+
+
+    if 'LDE_rephasing_2' in Gate.name:
+        tau_cut =0e-6
 
     return e
 

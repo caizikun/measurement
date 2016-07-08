@@ -2740,6 +2740,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ###  single elements  ###
             #########################
             elif gate.scheme in single_elements_list :
+                # if 'rephasing' in gate.name:
+                #     print 'i did the thing', gate.name
+                #     gate.elements[0].print_overview()
                 e = gate.elements[0]
                 list_of_elements.append(e)
                 if gate.reps ==0:

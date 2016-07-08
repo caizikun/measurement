@@ -27,14 +27,14 @@ class ElectronT1_without_AWG(ssro.IntegratedSSRO):
 def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', 
         pump_to_1 = False, wait_times = np.linspace(1e3,200e3,15),
         debug = False):
-    print 'Hello1'
+
     m = pulsar_msmt.ElectronT1(name)
     ####dirty hack to switch our lasers around
     # E_aom = m.E_aom
     # A_aom = m.A_aom
     # m.E_aom = A_aom
     # m.A_aom = E_aom
-    print 'Hello2'
+
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])

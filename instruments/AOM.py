@@ -217,7 +217,7 @@ class AOM(Instrument):
             print 'U is not %.2f =< %.2f =< %.2f' % (V_min, U, V_max)
             return
         if controller in ('AWG'):
-            if self._ins_awg.get_runmode() != 'CONT':
+            if self._ins_awg.get_runmode() != u'CONT':
                 logging.warning(self.get_name() + ' Warning: AWG not in continuous mode!')
            
             apply = {'ch1': self._ins_awg.set_ch1_offset,

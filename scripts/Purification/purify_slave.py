@@ -545,8 +545,6 @@ class purify_single_setup(DD.MBI_C13):
             LDE_repump2.el_state_before_gate = '0'
 
             ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
-            #dynamic_phase_tau = round(1/self.params['C'+str(self.params['carbon'])+'_freq_0'],9)
-            # print 'this is the tau', dynamic_phase_tau
 
             dynamic_phase_correct = DD.Gate(
                     'C13_Phase_correct'+str(pt),
@@ -587,8 +585,14 @@ class purify_single_setup(DD.MBI_C13):
                 carbon_list         = [self.params['carbon']],
                 RO_basis_list       = ['X'])
 
-            #del carbon_purify_seq[-2] # get rid of the last pi/2 pulse.
+            ####
+            #### some variations of the purifcation gate for testing
+            ####
             
+            #uncomment for the investigation of our asymmetric RO:
+            # del carbon_purify_seq[-2] # get rid of the last pi/2 pulse.
+
+
             ### uncomment for testing the electron coherence after the purifying gate
             # elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
             #             Gate_operation='pi2',

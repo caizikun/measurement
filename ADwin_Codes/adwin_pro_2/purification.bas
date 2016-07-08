@@ -8,8 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,207,207,361,361,362,362,377,377,604,604,675,675,866,867,868,875,876,877
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,206,206,359,359,360,360,375,375,602,602,673,673,864,865,866,873,874,875
+' Foldings                       = 532,536,555,583,636,681,699,708,749,768,806,828,838
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,9 +44,9 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-'#INCLUDE .\cr_mod_Bell.inc
+#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
@@ -113,8 +114,7 @@ DIM is_mbi_readout as long
 DIM MBI_starts, MBI_failed AS LONG
 dim current_MBI_attempt, MBI_attempts_before_CR as long
 DIM C13_MBI_RO_duration, RO_duration as long 
-DIM purify_RO_is_MBI_RO as LONG
-
+DIM purify_RO_is_MBI_RO as long
 
 ' Phase compensation
 DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation AS FLOAT
@@ -317,11 +317,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     if (do_purifying_gate = 1) THEN
       mode_after_purification = 10
       purify_RO_is_MBI_RO = 0
-    else  
+    else
       mode_after_purification = 11 ' wait for trigger then do SSRO
-    ENDIF
+    endif
     
-      
   endif
   
   IF (do_purifying_gate = 1) THEN
@@ -900,7 +899,7 @@ EVENT:
               phase_to_compensate = phase_to_compensate - 360
             Until (phase_to_compensate  <= 360)
           endif
-        
+          FPAR_65 = phase_to_compensate
         ENDIF
                 
         IF (timer = 1) THEN
@@ -984,9 +983,9 @@ EVENT:
         IF (timer=0) THEN
           DATA_105[repetition_counter+1] = SSRO_result    
           if (SSRO_result = 1) then  ' send jump to awg in case the electron readout was ms=0. This is required for accurate gate phases
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) 
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0)
           endif
         ENDIF    
           
