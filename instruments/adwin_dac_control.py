@@ -85,7 +85,6 @@ class adwin_dac_control(Instrument):
     def _do_get_current_value(self):
         if self._check_valid_channel():
             voltage = self._adwin.get_dac_voltage(self.get_channel())
-            print voltage
             return voltage
     
     def step_up(self):

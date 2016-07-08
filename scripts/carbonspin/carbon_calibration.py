@@ -43,7 +43,7 @@ f_ms0 = True
 
 f_ms1 = True
 
-self_phase_calibration = False
+self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False

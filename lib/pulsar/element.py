@@ -142,7 +142,7 @@ class Element:
             name = self._auto_pulse_name(pulse.name)
 
         t0 = start - pulse.start_offset
-
+        # print pulse.name
         if refpulse != None:
             if refpoint == None:
                 refpoint = 'end'
