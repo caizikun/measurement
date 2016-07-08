@@ -197,7 +197,7 @@ class NewportAgilisUC(Instrument):
         else:
             logging.warning(self.get_name()+': This function is only available for the UC8 type controller')
             return False
-        return int(ans[2:])
+        return ans
 
     def do_set_jog(self, jogmode, channel): #OK!
         """

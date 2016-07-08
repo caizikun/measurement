@@ -183,6 +183,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 refpoint_new    = 'center',
                 name            = 'MW_RO_rotation')
 
+
             e.add(Gate.mw_X,
                 start           = -msmt.params['LDE_decouple_time'],
                 refpulse        = 'MW_RO_rotation',#'MW_Theta',
@@ -220,6 +221,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
     else:
+        print 'start of your favourite MW pulse'
+        print msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time'])
         # MW pi pulse
         e.add(pulse.cp(Gate.mw_X,amplitude=0),
             start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),

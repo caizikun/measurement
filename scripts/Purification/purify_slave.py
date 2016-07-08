@@ -774,8 +774,10 @@ class purify_single_setup(DD.MBI_C13):
                     #     wait_time = 20e-6)]
                     # gate_seq.extend(e_RO)
                 # print 'This is the tomography base', self.params['Tomography_bases']
+            
             else: #No carbon spin RO? Do espin RO!
-                gate_seq.extend(e_RO)
+                if self.params['do_purifying_gate'] == 0:
+                    gate_seq.extend(e_RO)
 
 
             ###############################################

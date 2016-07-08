@@ -9,7 +9,7 @@ import purify_slave, sweep_purification
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.measurement2.adwin_ssro import DD_2
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
-import copy
+import copy,msvcrt
 reload(T2_tools_v3)
 reload(pq)
 reload(purify_slave);reload(sweep_purification)
@@ -389,7 +389,7 @@ def MW_Position(name,debug = False,upload_only=False):
     sweep_purification.prepare(m)
 
     load_TH_params(m)
-    load_BK_params(m)
+    # load_BK_params(m)
     ### general params
     pts = 1
     m.params['pts'] = pts
@@ -404,19 +404,20 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_during_LDE'] = 1
 
     m.params['PLU_during_LDE'] = 0
-    m.joint_params['opt_pi_pulses'] = 2
+    m.joint_params['opt_pi_pulses'] = 1
     m.params['is_two_setup_experiment'] = 1
 
     m.joint_params['LDE_attempts'] = 250
 
-    m.params['LDE_SP_delay'] = 0e-6
+    #m.params['LDE_SP_delay'] = 0e-6
 
     ### prepare sweep / necessary for the measurement that we under go.
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
-    # m.params['general_sweep_pts'] = np.array([1.5e-6])
+    # m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
+    m.params['general_sweep_pts'] = np.array([1.5e-6])
+    # print m.params['general_sweep_pts']
     m.params['sweep_name'] = m.params['general_sweep_name']
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
@@ -465,6 +466,47 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(minval,maxval,pts)
+
+
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    ### upload
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+def optical_rabi(name,debug = True,upload_only=True, local = False):
+    """
+    Very similar to tail sweep.
+    """
+    m = purify(name)
+    sweep_purification.prepare(m)
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 10000
+
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    ### --> for this measurement: none.
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['MW_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 0
+    if local:
+        m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    else:
+        m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
+
+    # put sweep together:
+    m.params['do_general_sweep']    = True
+
+
+    m.params['general_sweep_name'] = 'eom_pulse_duration'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(39e-9,40e-9,pts)
+
 
 
     m.params['sweep_name'] = m.params['general_sweep_name'] 
@@ -557,7 +599,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
 
 
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['LDE_final_mw_amplitude'] = 0
+    # m.params['LDE_final_mw_amplitude'] = 0
 
     ### general params
     m.params['pts'] = 1
@@ -574,7 +616,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    m.params['is_two_setup_experiment'] = 1 # XXX this has to be changed once we use one EOM only
+    m.params['is_two_setup_experiment'] = 1 
 
     ### upload
 
@@ -600,8 +642,8 @@ def TPQI(name,debug = False,upload_only=False):
 
 
     m.joint_params['LDE_element_length'] = 10e-6
-    m.joint_params['opt_pi_pulses'] = 10
-    m.joint_params['opt_pulse_separation'] = 700e-9
+    m.joint_params['opt_pi_pulses'] = 5
+    m.joint_params['opt_pulse_separation'] = 1400e-9
     m.joint_params['LDE_attempts'] = 100
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
@@ -673,6 +715,13 @@ def EntangleXX(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
+
+
+    ### this can also be altered to the actual theta pulse by negating the if statement
+    if True:
+        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
     ### upload and run
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -691,9 +740,11 @@ def PurifyYY(name):
 if __name__ == '__main__':
 
     ########### local measurements
-    # MW_Position(name+'_MW_position',upload_only=False)
+    #MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False,local=False)
 
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -705,7 +756,19 @@ if __name__ == '__main__':
 
     ###### non-local measurements // Barrett Kok parameters
     # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    #TPQI(name+'_TPQI',debug = False,upload_only=False)
+    # TPQI(name+'_TPQI',debug = False,upload_only=False)
     # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
-    EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+    # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+
+
+    # for i in range(10):
+
+    #     print '-----------------------------------'            
+    #     print 'press q to stop measurement cleanly'
+    #     print '-----------------------------------'
+    #     qt.msleep(1)
+    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+    #         break
+
+    #     TPQI(name+'_TPQI_gate_noise'+str(i),debug = False,upload_only=False)

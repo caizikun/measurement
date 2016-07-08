@@ -181,10 +181,6 @@ class SSRO_MWInit(PulsarMeasurement):
                 'total_CR_counts'])
 
 
-    def autoconfig(self):
-        PulsarMeasurement.autoconfig(self)    
-
-
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         print self.params['pts']

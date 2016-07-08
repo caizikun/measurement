@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,205,205,352,352,353,353,368,368,595,595,666,666,857,858,859,866,867,868
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,207,207,361,361,362,362,377,377,604,604,675,675,866,867,868,875,876,877
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -113,6 +113,7 @@ DIM is_mbi_readout as long
 DIM MBI_starts, MBI_failed AS LONG
 dim current_MBI_attempt, MBI_attempts_before_CR as long
 DIM C13_MBI_RO_duration, RO_duration as long 
+DIM purify_RO_is_MBI_RO as LONG
 
 
 ' Phase compensation
@@ -156,6 +157,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   is_mbi_readout      = 0
   RO_duration         = 0
   cumulative_awg_counts   = 0
+  purify_RO_is_MBI_RO = 1
   
   time_spent_in_state_preparation =0
   time_spent_in_communication =0 
@@ -312,7 +314,14 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   if (do_carbon_readout = 1) then
     mode_after_purification = 9 ' Carbon tomography
   else
-    mode_after_purification = 11 ' wait for trigger then do SSRO
+    if (do_purifying_gate = 1) THEN
+      mode_after_purification = 10
+      purify_RO_is_MBI_RO = 0
+    else  
+      mode_after_purification = 11 ' wait for trigger then do SSRO
+    ENDIF
+    
+      
   endif
   
   IF (do_purifying_gate = 1) THEN
@@ -958,7 +967,7 @@ EVENT:
             timer = -1
             success_of_SSRO_is_ms0 = 1 'in case one wants to change this here or has changed it elsewhere
             mode = 200 'go to SSRO
-            is_mbi_readout = 1
+            is_mbi_readout = purify_RO_is_MBI_RO
             success_mode_after_SSRO = mode_after_purification
             fail_mode_after_SSRO = mode_after_purification   
           endif
