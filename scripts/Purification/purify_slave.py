@@ -546,6 +546,18 @@ class purify_single_setup(DD.MBI_C13):
 
             ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
 
+            start_dynamic_phase_correct = DD.Gate(
+                    'Start C13_Phase_correct'+str(pt),
+                    'Carbon_Gate',
+                    Carbon_ind          = self.params['carbon'], 
+                    event_jump          = 'second_next',
+                    tau                 = self.params['dynamic_phase_tau'],
+                    N                   = self.params['dynamic_phase_N'], #4 makes it sad
+                    no_connection_elt = True)
+            # additional parameters needed for DD_2.py
+            start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
+            #start_dynamic_phase_correct.reps = 1
+
             dynamic_phase_correct = DD.Gate(
                     'C13_Phase_correct'+str(pt),
                     'Carbon_Gate',
@@ -556,7 +568,7 @@ class purify_single_setup(DD.MBI_C13):
                     no_connection_elt = True)
             # additional parameters needed for DD_2.py
             dynamic_phase_correct.scheme = 'carbon_phase_feedback'
-            dynamic_phase_correct.reps = self.params['phase_correct_max_reps']-1
+            dynamic_phase_correct.reps = self.params['phase_correct_max_reps']-2
 
             final_dynamic_phase_correct = DD.Gate(
                     'Final C13_Phase_correct'+str(pt),
@@ -696,7 +708,7 @@ class purify_single_setup(DD.MBI_C13):
                     gate_seq.append(LDE_repump2)
 
             if self.params['do_phase_correction'] > 0 and self.params['phase_correct_max_reps']>0:
-                gate_seq.extend([dynamic_phase_correct,final_dynamic_phase_correct])
+                gate_seq.extend([start_dynamic_phase_correct, dynamic_phase_correct,final_dynamic_phase_correct])
 
             if self.params['do_purifying_gate'] > 0:
                 gate_seq.extend(carbon_purify_seq)

@@ -1814,8 +1814,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             if N not in [1,2,4,8,16]:
                 raise Exception('Gate.N has to be 1,2,4,8 or 16 and then repeated by Gate.reps')
 
-
-            decoupling_elt.append(T)
+            if 'start' in Gate.scheme:
+                decoupling_elt.append(T_out)
+            else:
+                decoupling_elt.append(T)  
 
             for n in range(N-1):
 
@@ -2699,7 +2701,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Debug print statement:
             # print 'Gate %s, \n  %s \n goto %s, \n jump %s' %(gate.name,gate.elements[0].name,gate.go_to,gate.event_jump)
 
-            single_elements_list = ['NO_Pulses','single_block','single_element','carbon_phase_feedback','carbon_phase_feedback_end_elt']
+            single_elements_list = ['NO_Pulses','single_block','single_element','carbon_phase_feedback','carbon_phase_feedback_end_elt','carbon_phase_feedback_start_elt']
             #####################
             ### 'special' elements ###
             #####################
