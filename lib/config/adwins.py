@@ -2819,6 +2819,8 @@ config['adwin_pro_processes'] = {
                     ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
                     ['phase_correct_max_reps'          ,   5],   
                     ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2830,7 +2832,7 @@ config['adwin_pro_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['phase_per_sequence_repetition'    , 0.],
                     ['phase_per_compensation_repetition', 0.],
-                    ['total_phase_offset_after_sequence', 0.],
+                    ['phase_feedback_resolution'        , 4.5],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,

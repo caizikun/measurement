@@ -91,26 +91,16 @@ class purify_single_setup(DD.MBI_C13):
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
 
+        if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
+            length = self.params['pts']
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 109, 1, length)
+        
+        elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
+            length = self.params['pts']
+            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']]), 109, 1, length)
+        
+        ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
-        '''
-        Potentially useful autoconfig AOM coonfiguration below:
-            - Yellow during LDE
-            - RO via the AWG/ PulseAOM
-        '''
-
-        # self.params['RO_voltage_AWG'] = \
-        #         self.AWG_RO_AOM.power_to_voltage(
-        #                 self.params['AWG_RO_power'], controller='sec')
-        # self.params['yellow_voltage_AWG'] = \
-        #         self.yellow_aom.power_to_voltage(
-        #                 self.params['AWG_yellow_power'], controller='sec')
-
-        #print 'setting AWG SP voltage:', self.params['SP_voltage_AWG']
-
-        # if self.params['LDE_yellow_duration'] > 0.:
-        #     qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
-        # else:
-        #     print self.mprefix, self.name, ': Ignoring yellow'
 
     def run(self, autoconfig=False, setup=False):
 
@@ -163,11 +153,7 @@ class purify_single_setup(DD.MBI_C13):
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
-                    # ('C13_MBI_attempts',1, reps), #DATA24
-                    # ('C13_MBI_starts', reps),  #DATA25
                     ('Phase_correction_repetitions',1, reps), 
-                    #('SSRO_result_after_Cinit',1,reps), #DATA27
-                    #('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
@@ -409,8 +395,57 @@ class purify_single_setup(DD.MBI_C13):
             elif setup != master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff > 0):
                 # adjust the length of the element of the slave RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
+                
 
-        seq = DD.MBI_C13.carbon_swap_gate_multi_options(self,**kw)
+        #### In case that we have a large discrepancy in duration for the swap we bridge time by decoupling the electron spin before the swap.
+        if self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait > 100e-6:
+            bridged_time = self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait
+            no_of_pulses_float = bridged_time/(2*self.params['dynamic_phase_tau']*2) ### I for now use the dynamic phase tau with an additional factor of 4. 
+            no_of_pulses_int = np.floor(no_of_pulses_float)
+            # we only allow an even amount of pulses
+            if no_of_pulses_int % 2 == 1:
+                no_of_pulses_int -= 1
+            # recalculate the trigger duration for the SWAP RO:
+            self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait + bridged_time - \
+                                                        no_of_pulses_int*4*self.params['dynamic_phase_tau']
+
+            ElectronDD = DD.Gate('electron_decoupling'+str(kw.get('pt',0)), 'Carbon_Gate',Carbon_ind = self.params['carbon'])
+            ElectronDD.N = no_of_pulses_int
+            ElectronDD.tau = self.params['dynamic_phase_tau']*2
+            self.params['ElectronDD_tau'] = ElectronDD.tau ### we create this parameter for communication with LDE element. See line 332 in LDE_element.py
+            ElectronDD.no_connection_elt = True
+
+            ### we rephase by hand here. not recommended usually but crucial to keep the timing correct for both setups!!!
+            pi_duration =  self.params['fast_pi_duration']
+            c_gate_tau = self.params['C'+str(self.params['carbon'])+'_Ren_tau'+self.params['electron_transition']][0]
+
+            pulse_tau_1              = c_gate_tau - pi_duration/2.0
+            n_wait_reps, tau_remaind_1 = divmod(round(2*pulse_tau_1*1e9),1e3) 
+            if n_wait_reps %2 == 0:
+                tau_cut_1 = 1e-6
+            else:
+                tau_cut_1 = 1.5e-6
+
+            pulse_tau_2              = ElectronDD.tau - pi_duration/2.0
+            n_wait_reps, tau_remaind_2 = divmod(round(2*pulse_tau_2*1e9),1e3) 
+
+            if n_wait_reps %2 == 0:
+                tau_cut_2 = 1e-6
+            else:
+                tau_cut_2 = 1.5e-6
+
+            rephase_wait = tau_cut_1+tau_cut_2
+
+            rephasing_wait_gate  = DD.Gate('Swap_connect_'+str(kw.get('pt',0)),'single_element',wait_time = rephase_wait)
+            rephasing_wait_gate.scheme = 'single_element'
+            rephasing_wait_gate.elements = [LDE_elt._LDE_rephasing_elt(self,rephasing_wait_gate,forced_wait_duration = rephase_wait)]
+
+            seq = [ElectronDD,rephasing_wait_gate]
+        else:
+            seq = []
+            
+
+        seq.extend(DD.MBI_C13.carbon_swap_gate_multi_options(self,**kw))
 
         ### restore the old value
         self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
@@ -423,7 +458,6 @@ class purify_single_setup(DD.MBI_C13):
         ### used in non-local msmts syncs master and slave AWGs
         ### uses the scheme 'single_element' --> this will throw a warning in DD_2.py
         
-
         Gate.elements = [LDE_elt._LDE_rephasing_elt(self,Gate)]
         Gate.wait_for_trigger = False
 
@@ -512,7 +546,6 @@ class purify_single_setup(DD.MBI_C13):
             ### LDE elements need rephasing or repumping elements
             LDE_rephase1 = DD.Gate('LDE_rephasing_1'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase1.scheme = 'single_element'
-            self.generate_LDE_rephasing_elt(LDE_rephase1)
 
             LDE_repump1 = DD.Gate('LDE_repump_1_'+str(pt),'Trigger')
             LDE_repump1.duration = 2e-6
@@ -536,7 +569,7 @@ class purify_single_setup(DD.MBI_C13):
             ### LDE elements need rephasing or RO elements afterwards
             LDE_rephase2 = DD.Gate('LDE_rephasing_2_'+str(pt),'single_element',wait_time = self.params['average_repump_time'])
             LDE_rephase2.scheme = 'single_element'
-            self.generate_LDE_rephasing_elt(LDE_rephase2)
+
 
             LDE_repump2 = DD.Gate('LDE_RO_2_'+str(pt),'Trigger')
             LDE_repump2.duration = 10e-6
@@ -678,16 +711,19 @@ class purify_single_setup(DD.MBI_C13):
                                 swap_type               = 'swap_w_init',
                                 RO_after_swap           = True)
 
-                ### need to write this method XXX
-                #swap_without_init = 
 
                 if self.params['do_carbon_init'] > 0:
-                    # put stens gate seq here
+                    ### important to realize that the tau_cut of a potential decoupling sequence can alter the
+                    ### electron rephasing element. --> Therefore the element has to be rebuilt
+                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+
                     gate_seq.extend(swap_with_init)
                 else:
-                    #do full swap: need to figure out the full gate sequence.
-                    #gate_seq.extend(swap_without_init)
-                    pass
+                    print '*'*20
+                    print 'Warning '*4
+                    print 'Swap without initialization not implemented'
+                    print '*'*20
+
 
             if self.params['do_LDE_2'] > 0:
                 if gate_seq == []:
@@ -701,6 +737,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 if (self.params['do_purifying_gate'] > 0 or self.params['do_phase_correction'] > 0) and self.params['do_repump_after_LDE2'] == 0:
                     # electron has to stay coherent after LDE attempts
+                    self.generate_LDE_rephasing_elt(LDE_rephase2)
                     gate_seq.append(LDE_rephase2)
 
                 else: # this is used if we sweep the number of repetitions for Qmemory testing.

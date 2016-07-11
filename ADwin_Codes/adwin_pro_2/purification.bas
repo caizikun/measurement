@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,88,88,90,90,206,206,359,359,360,360,375,375,602,602,673,673,864,865,866,873,874,875
-' Foldings                       = 532,536,555,583,636,681,699,708,749,768,806,828,838
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,90,90,92,92,213,213,367,367,368,368,383,383,609,609,680,680,871,872,873,880,881,882
+' Foldings                       = 539,543,562,590,643,688,706,715,756,775,813
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -79,6 +79,8 @@ DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts 
 DIM DATA_106[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts carbon spin readout after tomography 
 DIM DATA_107[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts last electron spin readout performed in the adwin seuqnece 
 DIM DATA_108[max_purification_repetitions] as long at DRAM_Extern' sync number of the current event to compare to hydra harp data 
+DIM DATA_109[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
+
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -133,6 +135,11 @@ DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
 DIM PLU_during_LDE as long
 DIM is_master,cumulative_awg_counts as long
+
+' Sweeping carbon phases in the adwin via dynamic feedback
+DIM current_ROseq, no_of_sweep_pts as LONG
+DIM phase_feedback_resolution as LONG
+
 
 ' Sequence flow control
 DIM do_carbon_init, do_C_init_SWAP_wo_SSRO AS LONG
@@ -194,7 +201,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   mbi_timer = 0
   trying_mbi = 0
       
-  
+  current_ROseq = 1
 ''''''''''''''''''''''''''''''''''''''
   'read params from python script 
 ''''''''''''''''''''''''''''''''''''''
@@ -234,6 +241,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   master_slave_awg_trigger_delay   = DATA_20[34]
   phase_correct_max_reps           = DATA_20[35]
   PLU_during_LDE                   = DATA_20[36]
+  no_of_sweep_pts                  = DATA_20[37] ' number of adwin related sweep pts
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -243,7 +251,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   A_RO_voltage                 = DATA_21[5]
   phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   phase_per_compensation_repetition = DATA_21[7] '
-  total_phase_offset_after_sequence = DATA_21[8] 'how much phase have we acquired during the pulses
+  phase_feedback_resolution         = DATA_21[8] ' 
               
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -398,7 +406,6 @@ EVENT:
           remote_success = 0
           remote_fail = 0
           par_15=0
-          inc(PAR_65)
         endif
         
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
@@ -440,7 +447,7 @@ EVENT:
                 ' no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
-                  PAR_62 = n_of_comm_timeouts ' for debugging
+                  par_62 = n_of_comm_timeouts
                   combined_success = 0 ' just to be sure
                   adwin_comm_done = 1 ' below: reset everything and go on
                 endif                
@@ -465,7 +472,7 @@ EVENT:
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
                   combined_success = 0
                   inc(n_of_comm_timeouts) ' give to par for local debugging
-                  PAR_62 = n_of_comm_timeouts ' for debugging
+                  par_62 = n_of_comm_timeouts
                 ELSE ' should I request a timeout in the next round now?
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
@@ -893,13 +900,12 @@ EVENT:
           required_phase_compensation_repetitions = 1
           awg_repcount_was_low = 0
           phase_compensation_repetitions =0
-          phase_to_compensate = total_phase_offset_after_sequence + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
+          phase_to_compensate = DATA_109[current_ROseq] + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
           if (phase_to_compensate > 360) then           ' The built in Mod function works only for integers and takes 0.44 us.
             Do                              
               phase_to_compensate = phase_to_compensate - 360
             Until (phase_to_compensate  <= 360)
           endif
-          FPAR_65 = phase_to_compensate
         ENDIF
                 
         IF (timer = 1) THEN
@@ -913,7 +919,7 @@ EVENT:
             IF (acquired_phase_during_compensation > 360) THEN
               acquired_phase_during_compensation =   acquired_phase_during_compensation-360
             ENDIF
-          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= 4.5) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
+          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= phase_feedback_resolution) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
                   
           Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
@@ -1018,6 +1024,11 @@ EVENT:
         inc(success_event_counter)
         PAR_77 = success_event_counter ' for the LabView live update
         
+        inc(current_ROseq)
+        IF (current_ROseq = no_of_sweep_pts+1) THEN
+          current_ROseq = 1
+
+        ENDIF
         
       CASE 11 ' in case one wants to jump to SSRO after the entanglement sequence
         ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.

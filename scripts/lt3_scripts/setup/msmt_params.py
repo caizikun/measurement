@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.719#681#0.667 # 06-02
+	hermite_pi_amp = 0.718#0.681#0.667 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.460 # 06-02 
+	hermite_pi2_amp = 0.482 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 344.6+1.2-17.55,#329.06,#4.162, #adwin needs positive values
-    'phase_per_compensation_repetition': 14.112, # adwin needs positive values
-    'total_phase_offset_after_sequence': 360-70.+11.3-5-5,#222.69, #68.386,#42.328,
+    'phase_per_sequence_repetition'    : 344.6+1.2-17.55+0.214,#329.06,#4.162, #adwin needs positive values
+    'phase_per_compensation_repetition': 14.067, # adwin needs positive values
+    'total_phase_offset_after_sequence': 180-85.+11.3,#222.69, #68.386,#42.328,
 
 	# #########################
 	# #####     SIL1      #####
@@ -267,7 +267,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447838.54,
+	'C1_freq_0' 		: 447834.54,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -275,12 +275,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447838.54,
-	'C1_freq_1_p1' 		: 425434.2,
+	'C1_freq_0' 		: 447834.54,
+	'C1_freq_1_p1' 		: 425436.75,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [46.8] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.18] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -369,7 +369,7 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 10.0e-9,#2.5e-9,
+		'A_CR_amplitude':				 6e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 
