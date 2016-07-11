@@ -547,9 +547,9 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 20
+    pts = 12
     
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 3000
 
     turn_all_sequence_elements_off(m)
 
@@ -575,7 +575,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
     ### calculate sweep array
     minReps = 2
-    maxReps = 20.
+    maxReps = 54.
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -619,9 +619,9 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     prepare(m)
 
     ### general params
-    pts = 24
+    pts = 12
     
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 2000
 
     turn_all_sequence_elements_off(m)
 
@@ -652,7 +652,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
 
     ### calculate sweep array
     minReps = 1
-    maxReps = 240.
+    maxReps = 200
     step = int((maxReps-minReps)/pts)+1
 
     ### define sweep
@@ -834,10 +834,10 @@ if __name__ == '__main__':
     #sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     #sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     #calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
+    #calibrate_dynamic_phase_correct(name+'_Phase_compensation_calibration',upload_only = False)
 
     #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
