@@ -317,46 +317,51 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #     raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
 
 
-def _LDE_rephasing_elt(msmt,Gate):
+def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     """waits the right amount of time after and LDE element for the 
     electron to rephase.
     """
     _create_wait_times(Gate)
     _create_syncs_and_triggers(msmt,Gate)
-    e = element.Element(Gate.name, pulsar = qt.pulsar,min_samples = 20,granularity=2)
 
-    ### we need to add some time for the following carbon gate to this rephasing element
-    ### this time is tau_cut and is calculated below.
-    c = str(msmt.params['carbon'])
-    e_trans = msmt.params['electron_transition']
-    tau = msmt.params['C'+c+'_Ren_tau'+e_trans][0]
-    ps.X_pulse(msmt)
-    fast_pi_duration        = msmt.params['fast_pi_duration'] # TODO make this depend on the X/Y_pi_pulse length ()for example from self._X_elt()
-    pulse_tau               = tau - fast_pi_duration/2.0
-    n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) 
-    if n_wait_reps %2 == 0:
-        tau_cut = 1e-6
+    if forced_wait_duration == 0:
+        e = element.Element(Gate.name, pulsar = qt.pulsar,min_samples = 20,granularity=2)
+
+        ### we need to add some time for the following carbon gate to this rephasing element
+        ### this time is tau_cut and is calculated below.
+        c = str(msmt.params['carbon'])
+        e_trans = msmt.params['electron_transition']
+
+        #### for concatenating LDE with a longer entangling sequence:
+        if 'ElectronDD_tau' in msmt.params.to_dict().keys():
+            tau = msmt.params['ElectronDD_tau']
+        else:
+            tau = msmt.params['C'+c+'_Ren_tau'+e_trans][0]
+        ps.X_pulse(msmt) # update pi pulse parameters
+        fast_pi_duration        = msmt.params['fast_pi_duration'] 
+        pulse_tau               = tau - fast_pi_duration/2.0
+        n_wait_reps, tau_remaind = divmod(round(2*pulse_tau*1e9),1e3) 
+        if n_wait_reps %2 == 0:
+            tau_cut = 1e-6
+        else:
+            tau_cut = 1.5e-6
+
+        # LDE 2 does not need tau_cut because we do dynamic phase correction.
+        if 'LDE_rephasing_2' in Gate.name:
+            tau_cut =0e-6 #0e-6
+            # print e.samples()
+
+
+        ### avg. repump time + tau_cut gives the right amount of time.
+        wait_duration = msmt.params['average_repump_time'] + tau_cut
+
+        
+        test = pulse.cp(Gate.T, length=wait_duration,name='rephasing')
+        test.name = 'rephase'
+        e.add(test)
+
     else:
-        tau_cut = 1.5e-6
-
-    # LDE 2 does not need tau_cut because we do dynamic phase correction.
-    if 'LDE_rephasing_2' in Gate.name:
-        tau_cut =0e-6 #0e-6
-        # print e.samples()
-
-
-    ### avg. repump time + tau_cut gives the right amount of time.
-    wait_duration = msmt.params['average_repump_time'] + tau_cut
-
-    
-    test = pulse.cp(Gate.T, length=wait_duration,name='rephasing')
-    test.name = 'rephase'
-    e.add(test)
-
-
-    if 'LDE_rephasing_2' in Gate.name:
-        tau_cut =0e-6
-
+        e = element.Element(Gate.name, pulsar = qt.pulsar)
+        test = pulse.cp(Gate.T,length=forced_wait_duration,name = 'rephase_with_known_wait')
+        e.add(test)
     return e
-
-

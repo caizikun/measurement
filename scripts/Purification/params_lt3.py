@@ -67,21 +67,6 @@ params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt3['master_slave_awg_trigger_delay'] = 9 # times 10ns
 
 
-# #eom pulse
-# params_lt3['eom_pulse_amplitude']		= 1.9 
-# params_lt3['eom_pulse_duration']        = 2e-9
-# params_lt3['eom_off_duration']          = 50e-9
-# params_lt3['eom_off_amplitude']         = -0.293 # calibration 2015-11-04 <--> should be calibrated 
-# params_lt3['eom_overshoot_duration1']   = 20e-9
-# params_lt3['eom_overshoot1']            = -0.04 # calibrate!
-# params_lt3['eom_overshoot_duration2']   = 4e-9
-# params_lt3['eom_overshoot2']            = -0.00 # calibrate!
-# params_lt3['aom_risetime']              = 17e-9
-# params_lt3['aom_amplitude']             = 0.57 #calibrate!
-
-
-params_lt3['AWG_wait_for_lt3_start'] =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
-
 params_lt3['sync_during_LDE']           = 1
 
 params_lt3['PLU_during_LDE']          = 1
