@@ -323,6 +323,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     """
     _create_wait_times(Gate)
     _create_syncs_and_triggers(msmt,Gate)
+    e = element.Element(Gate.name, pulsar = qt.pulsar)
 
     if forced_wait_duration == 0:
         e = element.Element(Gate.name, pulsar = qt.pulsar,min_samples = 20,granularity=2)
@@ -346,9 +347,10 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
         else:
             tau_cut = 1.5e-6
 
+
         # LDE 2 does not need tau_cut because we do dynamic phase correction.
         if 'LDE_rephasing_2' in Gate.name:
-            tau_cut =0e-6 #0e-6
+            tau_cut =1e-6 #0e-6
             # print e.samples()
 
 

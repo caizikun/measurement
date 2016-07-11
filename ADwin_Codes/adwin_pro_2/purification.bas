@@ -940,24 +940,24 @@ EVENT:
         
       CASE 8 ' Wait until purification gate is done. 
                 
-        IF (timer =0) THEN
-          if (is_two_setup_experiment = 0) then  ' give AWG trigger
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
-          else 
-            IF (is_master>0) THEN ' trigger own and remote AWG
-              'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
-              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
-              CPU_SLEEP(master_slave_awg_trigger_delay) 
-              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-              CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
-              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
-              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
-            ENDIF
-          endif 
-        ENDIF
+        '        IF (timer =0) THEN
+        '          if (is_two_setup_experiment = 0) then  ' give AWG trigger
+        '            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+        '            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        '            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+        '          else 
+        '            IF (is_master>0) THEN ' trigger own and remote AWG
+        '              'P2_Digout_Bits(DIO_MODULE, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel),0) ' xxx: Try if this works. Would eliminate delay between triggering
+        '              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+        '              CPU_SLEEP(master_slave_awg_trigger_delay) 
+        '              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+        '              CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        '              'P2_Digout_Bits(DIO_MODULE, 0, (2^AWG_start_DO_channel AND 2^remote_awg_trigger_channel)) ' xxx: Try if this works. Would eliminate delay between triggering
+        '              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
+        '              P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+        '            ENDIF
+        '          endif 
+        '        ENDIF
                 
         'check the done trigger
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
