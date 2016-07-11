@@ -91,26 +91,16 @@ class purify_single_setup(DD.MBI_C13):
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
 
+        if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
+            length = self.params['pts']
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 109, 1, length)
+        
+        elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
+            length = self.params['pts']
+            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']]), 109, 1, length)
+        
+        ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
-        '''
-        Potentially useful autoconfig AOM coonfiguration below:
-            - Yellow during LDE
-            - RO via the AWG/ PulseAOM
-        '''
-
-        # self.params['RO_voltage_AWG'] = \
-        #         self.AWG_RO_AOM.power_to_voltage(
-        #                 self.params['AWG_RO_power'], controller='sec')
-        # self.params['yellow_voltage_AWG'] = \
-        #         self.yellow_aom.power_to_voltage(
-        #                 self.params['AWG_yellow_power'], controller='sec')
-
-        #print 'setting AWG SP voltage:', self.params['SP_voltage_AWG']
-
-        # if self.params['LDE_yellow_duration'] > 0.:
-        #     qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['yellow_voltage_AWG'])
-        # else:
-        #     print self.mprefix, self.name, ': Ignoring yellow'
 
     def run(self, autoconfig=False, setup=False):
 
@@ -163,11 +153,7 @@ class purify_single_setup(DD.MBI_C13):
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
-                    # ('C13_MBI_attempts',1, reps), #DATA24
-                    # ('C13_MBI_starts', reps),  #DATA25
                     ('Phase_correction_repetitions',1, reps), 
-                    #('SSRO_result_after_Cinit',1,reps), #DATA27
-                    #('SSRO_after_electron_carbon_SWAP_result',1,reps), #DATA37
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  

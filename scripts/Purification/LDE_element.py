@@ -326,8 +326,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     e = element.Element(Gate.name, pulsar = qt.pulsar)
 
     if forced_wait_duration == 0:
-        e = element.Element(Gate.name, pulsar = qt.pulsar,min_samples = 20,granularity=2)
-
+        
         ### we need to add some time for the following carbon gate to this rephasing element
         ### this time is tau_cut and is calculated below.
         c = str(msmt.params['carbon'])

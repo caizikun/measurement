@@ -44,8 +44,7 @@ params_lt3['MBI_attempts_before_CR'] = 1
 # params_lt3['phase_per_sequence_repetition'] =0.
 # params_lt3['phase_per_compensation_repetition'] =0.
 # params_lt3['total_phase_offset_after_sequence'] =0.
-params_lt3['phase_correct_max_reps']    = 100 
-
+params_lt3['phase_correct_max_reps']    = 80 # do not put more than 80. otherwise to had to calculate for the adwin.
 
 # channels
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
@@ -89,6 +88,7 @@ params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
 params_lt3['dynamic_phase_tau'] = 2.312e-6
 params_lt3['dynamic_phase_N'] = 2 
+params_lt3['phase_feedback_resolution'] = 4.5
 
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
