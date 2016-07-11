@@ -222,8 +222,7 @@ class purification_optimizer(mo.multiple_optimizer):
             else:
                 self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running() and \
                                             'purify.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
-            if False:
-                print 'implement the measurement helpers in order to run the comments below.'
+
             if not self.script_running:
                 self.script_not_running_counter += 1
                 self.status_message = 'Purification script not running'

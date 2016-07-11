@@ -27,7 +27,7 @@ params_lt3['MW_during_LDE']             = 1
 params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['average_repump_time'] 		= 0.254e-6 # XXX put repump AOM delay here!
+params_lt3['average_repump_time'] 		= 0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 params_lt3['MW_opt_puls1_separation']   = 50e-9 # was 22 e-9. needs to be adjusted.
 
@@ -44,7 +44,7 @@ params_lt3['MBI_attempts_before_CR'] = 1
 # params_lt3['phase_per_sequence_repetition'] =0.
 # params_lt3['phase_per_compensation_repetition'] =0.
 # params_lt3['total_phase_offset_after_sequence'] =0.
-params_lt3['phase_correct_max_reps']    = 80 
+params_lt3['phase_correct_max_reps']    = 100 
 
 
 # channels
@@ -102,7 +102,7 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['carbon']                        = 1
 params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
-params_lt3['dynamic_phase_tau'] = 2.310e-6
+params_lt3['dynamic_phase_tau'] = 2.312e-6
 params_lt3['dynamic_phase_N'] = 2 
 
 ### Everything TimeHarp / this is imported from Bell.joint_params

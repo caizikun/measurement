@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4]
+carbons = [1]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -83,7 +83,7 @@ elif SETUP == 'lt3':
         '8' : detuning_basic}
 
 elif SETUP == 'lt4':
-    detuning_basic = 2e3
+    detuning_basic = 3e3
     detuning_dict = {
         '1' : detuning_basic,
         '3' : detuning_basic,
@@ -135,7 +135,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
+    m.params['pts'] = 25
     if carbon_nr == 6:
         m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
