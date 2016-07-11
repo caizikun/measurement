@@ -556,8 +556,7 @@ class purify_single_setup(DD.MBI_C13):
                     no_connection_elt = True)
             # additional parameters needed for DD_2.py
             start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
-            #start_dynamic_phase_correct.reps = 1
-
+            
             dynamic_phase_correct = DD.Gate(
                     'C13_Phase_correct'+str(pt),
                     'Carbon_Gate',

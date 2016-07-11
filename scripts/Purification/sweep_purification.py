@@ -574,7 +574,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
 
     ### calculate sweep array
-    minReps = 1
+    minReps = 2
     maxReps = 20.
     step = int((maxReps-minReps)/pts)+1
 
