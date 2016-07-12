@@ -987,7 +987,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                     elif g.C_phases_after_gate[iC] == 'reset':
                         g.C_phases_after_gate[iC] = 0
-                        # print g.name
+
 
 
                     elif g.C_phases_after_gate[iC] == None:
@@ -996,9 +996,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if g.C_phases_after_gate[iC] != None:
 
                         g.C_phases_after_gate[iC] += g.extra_phase_correction_list[iC]
+
                     #if (iC==1) and (g.C_phases_before_gate[iC] != None):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
-
+                        
             elif g.Gate_type =='electron_decoupling':
 
                  #print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
@@ -1772,16 +1773,23 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             Special decoupling sequence that provides adwin-controlled adaptive phase gates on carbons.
             
+            ############################################################################################################
+            WORKS WELL WITH XY-2!!! Watch out for even odd discrepancies! This is not the identity operation!!
+            for further information see also purify_slave.py and the adwin script purification.bas
+            ##############################################################################################################
+            
             These gates make use of an attribute called: Gate.no_connection_elt.
             If true then this attribute hinders the automatic insertion of carbon phase gates.
             
-            Needs the definition of two consecutive gates to function properly.
-            First gate (Gate.scheme contains carbon_phase_feedback): 
+            Needs the definition of at least three or more consecutive gates to function properly.
+            First gate is a starting element with tau_cut of 1 us
+
+            Second element is a combining element (Gate.scheme contains carbon_phase_feedback): 
                 decouple in sets of N pulses on the larmor revival. We employ XY8. 
                 Has repetitions according to g.reps.
                 Gives an adwin trigger for every repetition. 
                 Idea: The adwin counts the carbon phase and jumps out of this element as soon as the right time has elapsed.
-            Second element (Gate.scheme also contains 'end'):
+            Thrid element (Gate.scheme also contains 'end'):
                 is repeated once 
                 has one X pulse with the same timing.
                 has tau_cut of 1e-6 such that the follow up pi/2 pulse comes in on an echo
@@ -1855,6 +1863,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             elif N%8 in [0,1,7]:
                 final_pulse = X
                 P_type = 'X'
+
+            #### the ending elements in a XY-4 sequence need to adapt to the number of repetitions.
+            if 'end' in Gate.scheme and 'even' in Gate.name:
+                final_pulse = mX
+                P_type = 'X'
+            elif 'end' in Gate.scheme and 'odd' in Gate.name:
+                final_pulse = Y
+                P_type = 'Y'
 
             decoupling_elt.append(pulse.cp(final_pulse))
 
@@ -2673,7 +2689,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 elif gate.go_to == 'next':
                     gate.go_to = gate_seq[i+1].elements[0].name
                 elif gate.go_to == 'second_next':
-
                     gate.go_to = gate_seq[i+2].elements[0].name
                 elif gate.go_to == 'self': 
                     gate.go_to = gate.elements[0].name
@@ -2978,7 +2993,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         for g in Gate_sequence:
 
             if len(g.name) >= 30:
-                print "Gate " + g.name + "has a name longer than 30 characters. This will probably"
+                print "Gate " + g.name + "has a name longer than 30 characters. This will probably" \
                 + "break the AWG"
 
             if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
