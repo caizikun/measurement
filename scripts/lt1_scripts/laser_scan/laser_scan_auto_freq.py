@@ -146,7 +146,7 @@ class LaserFrequencyScan:
                 break
 
             set_voltage(v)
-            qt.msleep(stabilizing_time)
+            #qt.msleep(stabilizing_time)
 
             cur_f = self.get_frequency(wm_channel)
             if cur_f < -300: #######SvD: I changed this -100 -> -300. 
@@ -761,9 +761,9 @@ def single_scan(name):
     MW = False
 
     GreenAOM.set_power(100e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
-    optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
+    # optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
     qt.msleep(0.5)
-    GreenAOM.set_power(2.6e-6)
+    GreenAOM.set_power(2.e-6)
 
     if MW:
         m.mw.set_power(-15)
@@ -771,7 +771,7 @@ def single_scan(name):
         m.mw.set_iq('off')
         m.mw.set_pulm('off')
         m.mw.set_status('on')
-    m.red_scan(5,80, voltage_step=0.001, integration_time_ms=10, power = 47.e-9)
+    m.red_scan(60,100, voltage_step=0.005, integration_time_ms=10, power = 100.e-9)
     # m.red_scan(48,80, voltage_step=0.02, integration_time_ms=10, power = 2e-9)
     #m.yellow_red(62, 80, 0.02, 0.5e-9, 74, 92, 0.02, 20, 3e-9)
     #m.yellow_scan(5, 20, power = 2e-9, voltage_step=0.02, voltage_step_scan=0.03)
@@ -825,10 +825,12 @@ def long_scan(name):
 
         MW = False 
 
-        GreenAOM.set_power(100e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
-        #optimiz0r.optimize(dims = ['z','x','y'], cycles = 1, int_time = 100) 
-        qt.msleep(0.5)
-        GreenAOM.set_power(2.5e-6)
+        GreenAOM.set_power(600e-6) # previously (<18-05-2015) set to 70uW; not possible with current alignment
+        # opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
+        # mos_ins.set_z(mos_ins.get_z()+0.6)
+        # optimiz0r.optimize(dims = ['x','y'], cycles = 1, int_time = 100) 
+        qt.msleep(3)
+        GreenAOM.set_power(2.e-6)
 
         if MW:
             m.mw.set_power(-15)
@@ -838,7 +840,7 @@ def long_scan(name):
             m.mw.set_status('on')
 
 
-        m.red_scan_v(9,-9, voltage_step=0.005, integration_time_ms=10, power = 47.e-9)
+        m.red_scan_v(9,-9, voltage_step=0.005, integration_time_ms=10, power = 100.e-9)
        
         m.mw.set_status('off')
 
@@ -846,7 +848,7 @@ def long_scan(name):
 if __name__ == '__main__':
     #qt.get_setup_instrument('GreenAOM').set_power(.0e-6)
     # repeated_red_scans_hannes()
-    #single_scan('membrane_on_saphire_g_3p5uW_r_40nW')
+    single_scan('membrane_Harvard_g_2uW_r_100nW')
     #fast_gate_scan('The111no1_Sil8_dac3_on22',2000)
     #qt.get_setup_instrument('GreenAOM').set_power(10e-6)
     # qt.instruments['optimiz0r'].optimize(dims=['x','y','z','y','x'], cnt=1, int_time=50, cycles=3)
@@ -862,5 +864,5 @@ if __name__ == '__main__':
     #repeated_red_scans(gate_scan=True, gate_range=(0,50),pts=2)
     #gate_scan_with_c_optimize()
 
-    long_scan('membrane_long_v_scan_test_approx_cfrq_')
+    #long_scan('membrane_Harvard_longscan')
     #single_scan_v('membrane_scanv_test_g_2p5uW_r_49nW')

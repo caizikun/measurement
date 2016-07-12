@@ -5,18 +5,18 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Membrane_on_saphire_ZPL'
+name = 'Harvard_1'
 steps=21
-max_power=450e-6       #[w]
-counter=1  #number of counter
+max_power=700e-6       #[w]
+counter=3  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=-2          #delta x position of background [um]
-bg_y=+2            #delta y position of background [um]
+bg_x=-1          #delta x position of background [um]
+bg_y=+1            #delta y position of background [um]
 
 #instruments
 if PQ_count:
     current_PQ_ins=qt.instruments['TH_260N']
-
+     
 current_aom = qt.instruments['GreenAOM']
 current_mos = qt.instruments['master_of_space']
 current_adwin = qt.instruments['adwin']

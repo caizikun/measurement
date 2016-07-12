@@ -24,7 +24,8 @@ def NuclearRamseyWithInitialization(name,
         el_RO                 = 'positive',
         debug                 = False,
         C13_init_method       = 'MBI',
-        C13_MBI_RO_state      = 1):
+        C13_MBI_RO_state      = 1,
+        dyn_dec=False):
 
     m = DD.NuclearRamseyWithInitialization_v2(name)
     funcs.prepare(m)
@@ -102,9 +103,9 @@ def NuclearRamseyWithInitialization(name,
     funcs.finish(m, upload =True, debug=debug)
 
 if __name__ == '__main__':
-    NuclearRamseyWithInitialization(SAMPLE+'_positive__ms1',debug=False,carbon_nr =5,el_RO='postive',C13_MBI_RO_state=1)
-    NuclearRamseyWithInitialization(SAMPLE+'_positive__ms0',debug=False,carbon_nr =5,el_RO='postive',C13_MBI_RO_state=0)
-    NuclearRamseyWithInitialization(SAMPLE+'_negative__ms1',debug=False,carbon_nr =5,el_RO='negative',C13_MBI_RO_state=1)
-    NuclearRamseyWithInitialization(SAMPLE+'_negative__ms0',debug=False,carbon_nr =5,el_RO='negative',C13_MBI_RO_state=0)
+    NuclearRamseyWithInitialization(SAMPLE+'_positive__ms1',debug=False,carbon_nr =1,el_RO='postive',C13_MBI_RO_state=0)
+    #NuclearRamseyWithInitialization(SAMPLE+'_positive__ms0',debug=False,carbon_nr =1,el_RO='postive',C13_MBI_RO_state=0)
+    #NuclearRamseyWithInitialization(SAMPLE+'_negative__ms1',debug=False,carbon_nr =1,el_RO='negative',C13_MBI_RO_state=1)
+    #NuclearRamseyWithInitialization(SAMPLE+'_negative__ms0',debug=False,carbon_nr =1,el_RO='negative',C13_MBI_RO_state=0)
 
 

@@ -13,7 +13,7 @@ import qt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -112,7 +112,7 @@ def MBE(name, carbon            =   1,
     funcs.prepare(m)
 
 
-    m.params['el_after_init']                = '1'
+    m.params['el_after_init']                = '0'
 
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
@@ -202,10 +202,10 @@ if __name__ == '__main__':
     # el_after_init_list = [1,0,1]
     # shutter_list = [True, False, False]
 
-    carbon_list = [5]
-    el_RO_list = ['positive','negative']
-    el_after_init_list = [1,1]
-    shutter_list = [True, False]
+    carbon_list = [1]
+    el_RO_list = ['positive']
+    el_after_init_list = [0]
+    shutter_list = [False]
 
     for carbon in carbon_list:
         for ii, el_after_init in enumerate(el_after_init_list):
@@ -220,12 +220,12 @@ if __name__ == '__main__':
                     msmtstring =  '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+el_RO + '_SHUTTER'
                 else:
                     msmtstring =  '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+el_RO
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                ssrocalibration(SAMPLE)
-                GreenAOM.set_power(20e-6)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                optimiz0r.optimize(dims=['x','y','z','x','y'])
-                adwin.start_set_dio(dio_no=4,dio_val=0)
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
+                #ssrocalibration(SAMPLE)
+                #GreenAOM.set_power(10e-6)
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
+                #optimiz0r.optimize(dims=['x','y','z','x','y'])
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
                 # ssrocalibration(SAMPLE)
                 # adwin.start_set_dio(dio_no=4,dio_val=0)
                 # MBE(SAMPLE + '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+ el_RO + '_MBI', el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon],

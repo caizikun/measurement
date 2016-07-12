@@ -4,6 +4,7 @@
 *~
 *.cfg
 *.TB*
+*.T9*
 *.bak
 *.npz
 *.dll
@@ -19,7 +20,5 @@ CPLD
 *.bmp
 *.png
 /hardware/EDAC40
-/ADwin_Codes/adwin_pro_2/test_SetDac.bas
-/scripts/cav1_scripts/test_gui.py
-/scripts/cav1_scripts/test_scan.py
-/scripts/cav1_scripts/test_wavemeter_scan.py
+
+

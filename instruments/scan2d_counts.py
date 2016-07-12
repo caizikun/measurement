@@ -68,6 +68,11 @@ class scan2d_counts(scan):
                            flags=Instrument.FLAG_GETSET,
                            )
 
+        self.add_parameter('last_filepath',
+                           type=types.StringType,
+                           flags=Instrument.FLAG_GET,
+                           )
+
         # parameters to access the member instruments
         self.add_parameter('position', 
                 type = types.FloatType,
@@ -99,6 +104,7 @@ class scan2d_counts(scan):
 
         self._x = linspace(0,5,6)
         self._y = linspace(0,5,6)
+        self._last_filepath = ''
 
         # connect instruments
         def _mos_changed(unused, changes, *arg, **kw):
@@ -190,6 +196,7 @@ class scan2d_counts(scan):
         #if self._setup_controller != None:
         #    dat.attrs['name'] = self._setup_controller.get_keyword()
         m2.save_instrument_settings_file(dat)
+        self._last_filepath = dat.filepath()
         dat.close()
 
 
@@ -218,14 +225,15 @@ class scan2d_counts(scan):
         scan._start_running(self)
 
     def _stop_running(self):
-        print 'Executing the stop running func in scan2d'
+        #print 'Executing the stop running func in scan2d'
         if self._counter_was_running:
             if (self._linescan.get_scan_value() != 'counter_process'):
                 self._counters.set_is_running(True)
             self._counter_was_running = False
         self.save()
 
-
+    def _do_get_last_filepath(self):
+        return self._last_filepath
 
     def _setup_data(self):
         self.reset_data('countrates', (self._ysteps, self._xsteps))

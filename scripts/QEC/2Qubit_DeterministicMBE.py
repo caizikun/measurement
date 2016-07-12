@@ -9,9 +9,9 @@ import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def MBE(name, carbon_list   = [5,1],               
+def MBE(name, carbon_list   = [7,4],               
         
-        carbon_init_list        = [5,1],
+        carbon_init_list        = [7,4],
         carbon_init_states      = 2*['up'], 
         carbon_init_methods     = 2*['swap'], 
         carbon_init_thresholds  = 2*[0],  
@@ -57,12 +57,12 @@ def MBE(name, carbon_list   = [5,1],
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
 
-    m.params['Tomography Bases_1'] = ([
-            ['-X','I'],['Y','I'],['-Z','I'],
-            ['I','X'],['I','Y'],['I','Z'],
-            ['-X','X'],['-X','Y'],['-X','Z'],
-            ['Y','X'],['Y','Y'],['Y','Z'],
-            ['-Z','X'],['-Z','Y'],['-Z','Z']])
+    #m.params['Tomography Bases_1'] = ([
+    #        ['-X','I'],['Y','I'],['-Z','I'],
+    #       ['I','X'],['I','Y'],['I','Z'],
+    #      ['-X','X'],['-X','Y'],['-X','Z'],
+    #     ['Y','X'],['Y','Y'],['Y','Z'],
+    #    ['-Z','X'],['-Z','Y'],['-Z','Z']])
   
 
     # m.params['Tomography Bases_0'] = ([
@@ -80,13 +80,13 @@ def MBE(name, carbon_list   = [5,1],
     #         ['-Z','X'],['-Z','Y'],['-Z','Z']])
 
 
-    m.params['Tomography Bases_0'] =([
-            ['X','I'],['Y','I'],['Z','I'],
-            ['I','X'],['I','Y'],['I','Z']])
+    # m.params['Tomography Bases_0'] =([
+    #         ['X','I'],['Y','I'],['Z','I'],
+    #         ['I','X'],['I','Y'],['I','Z']])
 
-    m.params['Tomography Bases_1'] = ([
-            ['-X','I'],['Y','I'],['-Z','I'],
-            ['I','X'],['I','Y'],['I','Z']])
+    # m.params['Tomography Bases_1'] = ([
+    #         ['-X','I'],['Y','I'],['-Z','I'],
+    #         ['I','X'],['I','Y'],['I','Z']])
 
    
     ####################
@@ -102,7 +102,7 @@ def MBE(name, carbon_list   = [5,1],
     ###################################
 
     m.params['Nr_parity_msmts']     = number_of_parity_msmnts
-    m.params['Parity_threshold']    = parity_msmnts_threshold
+    m.params['Parity_threshold']    = parity_msmnts_threshold #THT: this is not used. Should be removed. REquires updating ADWIN scripts.
     
 
     ### Derive other parameters

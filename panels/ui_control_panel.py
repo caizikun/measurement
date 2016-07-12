@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'new_control_panel.ui'
 #
-# Created: Mon Feb 22 19:29:43 2016
+# Created: Mon Feb 22 20:38:09 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -108,9 +108,9 @@ class Ui_Panel(object):
         self.checkBox_wavemeter.setFont(font)
         self.checkBox_wavemeter.setObjectName(_fromUtf8("checkBox_wavemeter"))
         self.gridLayout.addWidget(self.checkBox_wavemeter, 3, 1, 1, 6)
-        self.dSBox_coarse_lambda_2 = QtGui.QDoubleSpinBox(Panel)
-        self.dSBox_coarse_lambda_2.setObjectName(_fromUtf8("dSBox_coarse_lambda_2"))
-        self.gridLayout.addWidget(self.dSBox_coarse_lambda_2, 2, 6, 1, 3)
+        self.dSBox_power = QtGui.QDoubleSpinBox(Panel)
+        self.dSBox_power.setObjectName(_fromUtf8("dSBox_power"))
+        self.gridLayout.addWidget(self.dSBox_power, 2, 6, 1, 3)
         self.label_power = QtGui.QLabel(Panel)
         font = QtGui.QFont()
         font.setFamily(_fromUtf8("Calibri"))
