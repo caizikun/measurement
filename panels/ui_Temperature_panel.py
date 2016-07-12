@@ -66,6 +66,9 @@ class Ui_Panel(object):
         self.cleargraphButton3 = QtGui.QPushButton(Panel)
         self.cleargraphButton3.setGeometry(QtCore.QRect(300, 705, 151, 23))
         self.cleargraphButton3.setObjectName(_fromUtf8("cleargraphButton3"))
+        self.cleargraphButton4 = QtGui.QPushButton(Panel)
+        self.cleargraphButton4.setGeometry(QtCore.QRect(300, 705, 151, 23))
+        self.cleargraphButton4.setObjectName(_fromUtf8("cleargraphButton4"))
         
         self.msgBox = QtGui.QMessageBox()
         self.msgBox.setWindowTitle('Warning')
@@ -89,6 +92,16 @@ class Ui_Panel(object):
         # self.plot2.marker = 'plus'
         # self.gridLayout.addWidget(self.plot2, 1, 1, 1, 1)
 
+
+        self.plot4 = TimeTracePlot(Panel)
+        self.plot4.setMinimumSize(QtCore.QSize(250, 200))
+        self.plot4.setGeometry(QtCore.QRect(60, 655, 501, 301))
+        self.plot4.setObjectName("plot4")
+        # self.plot2.bottom_axis.title = 'Temp [deg]'
+        self.plot4.left_axis.title = 'Power 637nm [uW]'
+        # self.plot2.marker = 'plus'
+        # self.gridLayout.addWidget(self.plot2, 1, 1, 1, 1)
+
         self.retranslateUi(Panel)       
         # QtCore.QObject.connect(self.t_range, QtCore.SIGNAL("valueChanged(int)"), self.plot1.set_display_time)
         # QtCore.QObject.connect(self.t_range, QtCore.SIGNAL("valueChanged(int)"), self.plot2.set_display_time)
@@ -103,6 +116,7 @@ class Ui_Panel(object):
         
         self.cleargraphButton2.setText(_translate("Panel", "Clear RT Graph", None))
         self.cleargraphButton3.setText(_translate("Panel", "Clear Temp Graph", None))
+        self.cleargraphButton4.setText(_translate("Panel", "Clear 637 Graph", None))
         
 
 class Ui_Panel2(object):

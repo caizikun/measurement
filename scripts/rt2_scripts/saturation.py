@@ -90,5 +90,5 @@ dat.close_file()
 current_mos.set_x(current_x)
 current_mos.set_y(current_y)
 
-AOM.set_power(1e-9)
+current_aom.turn_off()
 print 'Done with saturation scan!'

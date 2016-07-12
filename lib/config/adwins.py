@@ -2860,7 +2860,9 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
-                    'sync_number'               : 108, # current sync number to compare with HydraHarp data
+                    },
+                'data_float' : {
+                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon                 
                     },
                 },
         }
@@ -2902,6 +2904,7 @@ config['adwin_rt2_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
         'atto_z' : 3,
+        'green_aom': 4,
         'telecom_delta_temperature': 8
         }
 

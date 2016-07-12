@@ -194,7 +194,7 @@ class FastCom_P7889(Instrument): #1
 
 
     def Continue(self): #6
-        self._DP7889_win32.cont(0)
+        self._DP7889_win32.Continue(0)
 
     # Base communication tools
     def _Start_Server(self,Start_MCDWIN=False): #7
@@ -458,7 +458,7 @@ class FastCom_P7889(Instrument): #1
         return self.running
     def get_runtime(self):
         self.get_status()
-        return self.running
+        return self.runtime
     def get_total_sum(self):
         self.get_status()
         return self.totalsum
@@ -525,21 +525,34 @@ class FastCom_P7889(Instrument): #1
         self._DP7889_win32.LVGetCnt(time.ctypes.data,0)
         return types.FloatType(time)
     
-    def switch_to_counter_mode(self, integration_time = None):
-        if integration_time == None:
-            integration_time = self.integration_time
-        else:
-            pass   
-        self._disable_all_sweepmodes()
-        self._disable_all_presets()
-        self.set_binwidth(24) #sets it to 1677721.6 ns or 1.6 us
-        range = self._do_set_range(integration_time/1.6777216e-6)
-        self._do_set_ROI_max(range)
-        self.integration_time = 1.6777216e-6*range
-        self.set_sweepmode_software_start(True)
-        self.set_sweep_preset(True)
-        self.set_sweep_preset_number(1)
-        self.operation_mode = 'counter' 
+    def switch_to_counter_mode(self, int_time=50):
+        # if integration_time == None:
+        #     integration_time = self.integration_time
+        # else:
+        #     pass   
+        # self._disable_all_sweepmodes()
+        # self._disable_all_presets()
+        # self.set_binwidth(24) #sets it to 1677721.6 ns or 1.6 us
+        # range = self._do_set_range(integration_time/1.6777216e-6)
+        # self._do_set_ROI_max(range)
+        # self.integration_time = 1.6777216e-6*range
+        # self.set_sweepmode_software_start(True)
+        # self.set_sweep_preset(True)
+        # self.set_sweep_preset_number(1)
+        # self.operation_mode = 'counter' 
+        #self._disable_all_sweepmodes()
+        #self._disable_all_presets()
+        #self.set_binwidth(1)
+        #self.set_range(100)
+        self._last_t=0
+        self._last_sweep_count=0
+        self.Start()
+        sleep(int_time/1000.)
+        self.Stop()
+        sleep(0.3)
+        return float(self.get_Sweeps())/self.get_runtime()
+
+
 
     def _do_get_counts(self):
         if self.operation_mode is 'counter':
@@ -557,7 +570,8 @@ class FastCom_P7889(Instrument): #1
     def _do_get_count_rate(self):
         return self._do_get_counts()/self.integration_time  
 
-        
+    def get_count_rate(self):
+        return self._do_get_counts()/self.integration_time  
 
 
 

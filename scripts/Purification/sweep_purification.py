@@ -634,7 +634,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['Tomography_bases'] = ['X']
     m.params['do_purifying_gate'] = 1
     m.params['do_carbon_readout']  = 0
-    m.params['do_repump_after_LDE2'] = 1
+    m.params['do_repump_after_LDE2'] = 0 #### THIS SHOULD BE 1 !!!!! XXXXXXXXXX !!!!! change back!
 
     if PLU:
         m.params['PLU_during_LDE'] = 1
@@ -643,17 +643,18 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
-    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
     m.params['phase_detuning'] = 0.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
-
+    
     ### calculate sweep array
     minReps = 1
-    maxReps = 200.
+    maxReps = 15.
     step = int((maxReps-minReps)/pts)+1
+    step = 1
 
     ### define sweep
     m.params['do_general_sweep']    = 1
@@ -671,7 +672,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
 
     run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 
-def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
+def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X'):
     """
     Goal of this measurement: calibrate the phase offset after LDE attempts and phase correction.
     This is the last verification measurement.
@@ -707,19 +708,21 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False):
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Z' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'
+    m.params['input_el_state'] = 'Y' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'
     m.params['mw_first_pulse_phase'] = m.params['Y_phase'] #+ 180 #align with the phase of the purification gate.
-    m.params['Tomography_bases'] = 'X'
+    m.params['mw_first_pulse_amp'] = 0
+    m.params['Tomography_bases'] = tomo
+    # m.params['MW_during_LDE'] = 0
 
     ### define sweep
     m.params['do_general_sweep']    = 1
 
     m.params['general_sweep_name'] = 'total_phase_offset_after_sequence'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.,360.,pts)
+    m.params['general_sweep_pts'] = m.params['total_phase_offset_after_sequence']+np.linspace(0.,360.,pts)
     m.params['pts'] = len(m.params['general_sweep_pts'])
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_name'] = 'Phase offset after LDE2 (degrees)'
+    m.params['sweep_pts'] = m.params['general_sweep_pts']-m.params['total_phase_offset_after_sequence']
 
 
     ### loop over RO directions upload & run
@@ -840,7 +843,8 @@ if __name__ == '__main__':
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE',upload_only = False)
-
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     #full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     # full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
