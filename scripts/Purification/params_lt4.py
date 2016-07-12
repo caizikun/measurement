@@ -108,7 +108,7 @@ params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
 params_lt4['dynamic_phase_tau']			= 2.298e-6
 params_lt4['dynamic_phase_N']			= 2
-
+params_lt4['phase_feedback_resolution']	= 5
 
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)

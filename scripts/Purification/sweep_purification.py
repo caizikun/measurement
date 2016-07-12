@@ -547,7 +547,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    pts = 37
+    pts = 15
     
     m.params['reps_per_ROsequence'] = 1500
 
@@ -619,7 +619,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     prepare(m)
 
     ### general params
-    pts = 10
+    pts = 15
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -646,7 +646,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 0#2.5
+    m.params['phase_detuning'] = 0.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
@@ -688,7 +688,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 10
     
     m.params['reps_per_ROsequence'] = 1000
 
@@ -834,7 +834,7 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    #characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
