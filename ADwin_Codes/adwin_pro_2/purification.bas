@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,90,90,92,92,213,213,367,367,368,368,383,383,609,609,680,680,871,872,873,880,881,882
 ' Foldings                       = 539,543,562,590,643,688,706,715,756,775,813
 '<Header End>
@@ -913,6 +913,7 @@ EVENT:
           ' required count is repetitions - 1
           ' we want to be within two degrees from the desired state
           acquired_phase_during_compensation = phase_per_compensation_repetition
+          
           Do                              
             inc(required_phase_compensation_repetitions)
             acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
