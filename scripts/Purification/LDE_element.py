@@ -23,9 +23,16 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
     Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
-    if hasattr(Gate,'first_pulse_is_pi2'):
+    
+
+
+    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
+        if Gate.first_pulse_is_pi2:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
+    elif hasattr(Gate,'first_pulse_is_pi2'):
         if Gate.first_pulse_is_pi2:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
+
     if hasattr(Gate,'no_first_pulse'):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
@@ -326,7 +333,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     e = element.Element(Gate.name, pulsar = qt.pulsar)
 
     if forced_wait_duration == 0:
-        
+
         ### we need to add some time for the following carbon gate to this rephasing element
         ### this time is tau_cut and is calculated below.
         c = str(msmt.params['carbon'])

@@ -534,6 +534,16 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['input_el_state'] in ['X','mX','Y','mY']:
                     LDE1.first_pulse_is_pi2 = True
 
+                    #### define some phases:
+                    x_phase = self.params['X_phase']
+                    y_phase = self.params['Y_phase']
+                    first_mw_phase_dict = { 'X' :   y_phase, 
+                                            'mX':   y_phase + 180,
+                                            'Y' :   x_phase + 180, 
+                                            'mY':   x_phase}
+
+                    LDE1.first_mw_pulse_phase = first_mw_phase_dict[self.params['input_el_state']]
+
                 elif self.params['input_el_state'] in ['Z']:
                     LDE1.no_first_pulse = True
 
@@ -680,15 +690,15 @@ class purify_single_setup(DD.MBI_C13):
             # del carbon_purify_seq[0]
 
             ### uncomment for testing the electron coherence after the purifying gate
-            elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
-                        Gate_operation='pi2',
-                        phase = self.params['X_phase'])
-            e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
-                        wait_time = 80e-6,go_to = None, event_jump = None)  
-            carbon_purify_seq = [elec_toY,e_RO_puri]
+            #elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
+            #             Gate_operation='pi2',
+            #             phase = self.params['X_phase'])
+            # e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
+            #             wait_time = 80e-6,go_to = None, event_jump = None)  
+            # carbon_purify_seq = [elec_toY,e_RO_puri]
 
-            e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
-                wait_time = 10e-6)]
+            # e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
+            #     wait_time = 10e-6)]
 
 
             #######################################################################
@@ -886,8 +896,9 @@ class purify_single_setup(DD.MBI_C13):
 
             #### for carbon phase debbuging purposes.
             # for g in gate_seq:
-            #     print g.name
-            #     self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
+            #     if not 'corect' in g.name:
+            #         print g.name
+            #         self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
 
 
             ### Convert elements to AWG sequence and add to combined list

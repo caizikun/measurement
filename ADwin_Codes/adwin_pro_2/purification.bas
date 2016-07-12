@@ -906,9 +906,9 @@ EVENT:
               phase_to_compensate = phase_to_compensate - 360
             Until (phase_to_compensate  <= 360)
           endif
-        ENDIF
-                
-        IF (timer = 1) THEN
+          '        ENDIF
+          '                
+          '        IF (timer = 1) THEN
           ' minimum is two repetitions
           ' required count is repetitions - 1
           ' we want to be within two degrees from the desired state
