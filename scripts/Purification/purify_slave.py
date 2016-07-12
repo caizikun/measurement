@@ -93,7 +93,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 109, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 110, 1, length)
         
         elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
             length = self.params['pts']
@@ -163,6 +163,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
                     ('compensated_phase'                     ,1,reps),  
+                    ('min_phase_deviation'                     ,1,reps), 
                     'completed_reps'
                     ])
         return
@@ -680,15 +681,15 @@ class purify_single_setup(DD.MBI_C13):
             # del carbon_purify_seq[0]
 
             ### uncomment for testing the electron coherence after the purifying gate
-            elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
-                        Gate_operation='pi2',
-                        phase = self.params['X_phase'])
-            e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
-                        wait_time = 80e-6,go_to = None, event_jump = None)  
-            carbon_purify_seq = [elec_toY,e_RO_puri]
+            # elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
+            #             Gate_operation='pi2',
+            #             phase = self.params['X_phase'])
+            # e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
+            #             wait_time = 80e-6,go_to = None, event_jump = None)  
+            # carbon_purify_seq = [elec_toY,e_RO_puri]
 
-            e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
-                wait_time = 10e-6)]
+            # e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
+            #     wait_time = 10e-6)]
 
 
             #######################################################################

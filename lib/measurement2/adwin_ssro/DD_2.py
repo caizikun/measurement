@@ -1878,7 +1878,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 decoupling_elt.append(T)
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 2.5e-6, amplitude = 2)
-                decoupling_elt.add(adwin_sync,start=2000e-9)
+                decoupling_elt.add(adwin_sync,start=2500e-9)
             else:
                 decoupling_elt.append(T_out)  
 
