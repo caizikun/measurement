@@ -2786,6 +2786,7 @@ config['adwin_rt2_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
         'atto_z' : 3,
+        'green_aom': 4,
         'telecom_delta_temperature': 8
         }
 
