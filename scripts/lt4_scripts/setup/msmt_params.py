@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.937#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_amp = 0.946#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.575 
+	hermite_pi2_amp = 0.579 
 
 
 ### General settings for AdwinSSRO
@@ -195,9 +195,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :360-2.35,#350.776-14.472, #adwin needs positive values
-    'phase_per_compensation_repetition':16.0,#360-6.21, # adwin needs positive values
-    'total_phase_offset_after_sequence':90-34.0+180,#180.0,#42.328,
+    'phase_per_sequence_repetition'    :-2.35+(25-6.6)-0.5,#350.776-14.472, #adwin needs positive values
+    'phase_per_compensation_repetition':17.485,#360-6.21, # adwin needs positive values
+    'total_phase_offset_after_sequence':90-34.0+180-78.4+5.85+1,#180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############
@@ -228,12 +228,12 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : ( 416660.0+  443263.673)/2,
-	'C4_freq_0' 		: 443174.64,
-	'C4_freq_1_m1' 		: 416574.5,
+	'C4_freq_0' 		: 443166.55,
+	'C4_freq_1_m1' 		: 416581.23,
 
 	'C4_Ren_tau_m1'    :   [6.384e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [225.41] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [222.81] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
