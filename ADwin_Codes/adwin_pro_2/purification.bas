@@ -78,7 +78,7 @@ DIM DATA_104[max_purification_repetitions] AS LONG at DRAM_Extern' number of rep
 DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts electron readout after purification gate 
 DIM DATA_106[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts carbon spin readout after tomography 
 DIM DATA_107[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts last electron spin readout performed in the adwin seuqnece 
-DIM DATA_108[max_purification_repetitions] as long at DRAM_Extern' sync number of the current event to compare to hydra harp data 
+DIM DATA_108[max_purification_repetitions] as FLOAT at DRAM_Extern' required phase feedback on the nuclear spin. mainly for debugging 
 DIM DATA_109[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
 
 
@@ -276,7 +276,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' note: the MemCpy function only works for T11 processors.
   '  ' this is a faster way of filling up global data arrays in the external memory. See Adbasic manual
   array_step = 1
-  FOR i = 1 TO 520 ' 300 is derived from max_purification_length/100
+  FOR i = 1 TO 520 ' 520 is derived from max_purification_length/100
     MemCpy(Initializer[1],DATA_100[array_step],100)
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
@@ -923,6 +923,7 @@ EVENT:
                   
           Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
+          DATA_108[repetition_counter+1] = phase_to_compensate
         ENDIF 
                 
         
@@ -1017,7 +1018,7 @@ EVENT:
       CASE 10 'store the result of the tomography and the sync number counter
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
-        DATA_108[repetition_counter+1] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel)         ' store value of the sync number counter. Redundant to the above, but this is really important
+       
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
@@ -1064,7 +1065,6 @@ EVENT:
         '  ENDIF
         '  
         '  DATA_102[repetition_counter] = DATA_102[repetition_counter]+AWG_sequence_repetitions_first_attempt+AWG_sequence_repetitions_second_attempt+cumulative_awg_counts+1
-        '  DATA_108[repetition_counter] = P2_CNT_READ(CTR_MODULE, sync_trigger_counter_channel) ' repetition_counter has been incremented, therefore no +1
         '  
         'ELSE ' last run failed
         '  DATA_102[repetition_counter+1] = DATA_102[repetition_counter+1]+AWG_sequence_repetitions_first_attempt+AWG_sequence_repetitions_second_attempt

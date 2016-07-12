@@ -162,7 +162,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
-                    ('sync_number'                           ,1,reps),  
+                    ('compensated_phase'                     ,1,reps),  
                     'completed_reps'
                     ])
         return
@@ -577,48 +577,90 @@ class purify_single_setup(DD.MBI_C13):
             LDE_repump2.channel ='AOM_Newfocus'
             LDE_repump2.el_state_before_gate = '0'
 
-            ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
 
-            start_dynamic_phase_correct = DD.Gate(
-                    'Start C13_Phase_correct'+str(pt),
-                    'Carbon_Gate',
-                    Carbon_ind          = self.params['carbon'], 
-                    event_jump          = 'second_next',
-                    tau                 = self.params['dynamic_phase_tau'],
-                    N                   = self.params['dynamic_phase_N'], #4 makes it sad
-                    no_connection_elt = True)
-            # additional parameters needed for DD_2.py
-            start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
-            
-            dynamic_phase_correct = DD.Gate(
-                    'C13_Phase_correct'+str(pt),
-                    'Carbon_Gate',
-                    Carbon_ind          = self.params['carbon'], 
-                    event_jump          = 'next',
-                    tau                 = self.params['dynamic_phase_tau'],
-                    N                   = self.params['dynamic_phase_N'], #4 makes it sad
-                    no_connection_elt = True)
-            # additional parameters needed for DD_2.py
-            dynamic_phase_correct.scheme = 'carbon_phase_feedback'
-            dynamic_phase_correct.reps = self.params['phase_correct_max_reps']-2
+            ################################
+            ### Dynamic phase correction ###
+            ################################
 
-            final_dynamic_phase_correct = DD.Gate(
-                    'Final C13_Phase_correct'+str(pt),
+
+
+            final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
+                    'Final_C13_correct_even'+str(pt),
                     'Carbon_Gate',
                     Carbon_ind  = self.params['carbon'], 
                     tau         = self.params['dynamic_phase_tau'],
-                    N           = self.params['dynamic_phase_N'], #4 makes it sad
+                    N           = self.params['dynamic_phase_N'], 
+                    no_connection_elt = True,
+                    go_to = 'second_next')
+
+            final_dynamic_phase_correct_odd = DD.Gate( ### this gate does X - Y in order to finish off a clean XY-4 sequence
+                    'Final_C13_correct_odd'+str(pt),
+                    'Carbon_Gate',
+                    Carbon_ind  = self.params['carbon'], 
+                    tau         = self.params['dynamic_phase_tau'],
+                    N           = self.params['dynamic_phase_N'], 
                     no_connection_elt = True)
 
+            ### by definition the AWG does not have to do anything here. --> therefore we reset the phase
+            final_dynamic_phase_correct_even.scheme = 'carbon_phase_feedback_end_elt'
+            final_dynamic_phase_correct_even.C_phases_after_gate = [None]*10
+            final_dynamic_phase_correct_even.C_phases_after_gate[self.params['carbon']] = 'reset'
 
-            ### this really needs to be combined with the RO MW (not if tau_cut does it's job!)
-            #pulse
-            final_dynamic_phase_correct.scheme = 'carbon_phase_feedback_end_elt'
-            final_dynamic_phase_correct.C_phases_after_gate = [None]*10
-            final_dynamic_phase_correct.C_phases_after_gate[self.params['carbon']] = 'reset'
-            # print final_dynamic_phase_correct.C_phases_after_gate
+            final_dynamic_phase_correct_odd.scheme = 'carbon_phase_feedback_end_elt'
+            final_dynamic_phase_correct_odd.C_phases_after_gate = [None]*10
+            final_dynamic_phase_correct_odd.C_phases_after_gate[self.params['carbon']] = 'reset'
+            ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
 
-            ### comment we could include branching for the last tomography step.! otherwise the phase will be off upon measuring the wrong outcome (i.e. the dark state)
+            start_dynamic_phase_correct = DD.Gate(
+                    'Start_C13_Phase_correct'+str(pt),
+                    'Carbon_Gate',
+                    Carbon_ind          = self.params['carbon'], 
+                    event_jump          = final_dynamic_phase_correct_odd.name,
+                    tau                 = self.params['dynamic_phase_tau'],
+                    N                   = self.params['dynamic_phase_N'], 
+                    no_connection_elt = True)
+
+            # additional parameters needed for DD_2.py
+            start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
+
+            dynamic_phase_correct_list = [start_dynamic_phase_correct]
+
+            for i in range(self.params['phase_correct_max_reps']-2):
+
+                if (i+1) % 2 == 0:
+                    dynamic_phase_correct = DD.Gate(
+                            'C13_Phase_correct'+str(pt)+'_'+str(i),
+                            'Carbon_Gate',
+                            Carbon_ind          = self.params['carbon'], 
+                            event_jump          = final_dynamic_phase_correct_odd.name, ### odd because the starting element counts as the first correction
+                            tau                 = self.params['dynamic_phase_tau'],
+                            N                   = self.params['dynamic_phase_N'], 
+                            no_connection_elt = True)
+                else:
+                    dynamic_phase_correct = DD.Gate(
+                            'C13_Phase_correct'+str(pt)+'_'+str(i),
+                            'Carbon_Gate',
+                            Carbon_ind          = self.params['carbon'], 
+                            event_jump          = final_dynamic_phase_correct_even.name,
+                            tau                 = self.params['dynamic_phase_tau'],
+                            N                   = self.params['dynamic_phase_N'], 
+                            no_connection_elt = True)
+
+                # additional parameters needed for DD_2.py
+                dynamic_phase_correct.scheme = 'carbon_phase_feedback'
+                dynamic_phase_correct.reps = 1
+                ### append to list
+                dynamic_phase_correct_list.append(dynamic_phase_correct)
+
+            #### finish the list of phase correcting gates
+            dynamic_phase_correct_list.append(final_dynamic_phase_correct_even)
+            dynamic_phase_correct_list.append(final_dynamic_phase_correct_odd)
+
+
+            #######################
+            ##### purify gate #####
+            #######################
+
             carbon_purify_seq = self.readout_carbon_sequence(
                 prefix              = 'Purify',
                 pt                  = pt,
@@ -635,15 +677,15 @@ class purify_single_setup(DD.MBI_C13):
             
             #uncomment for the investigation of our asymmetric RO:
             # del carbon_purify_seq[-2] # get rid of the last pi/2 pulse.
-
+            # del carbon_purify_seq[0]
 
             ### uncomment for testing the electron coherence after the purifying gate
-            # elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
-            #             Gate_operation='pi2',
-            #             phase = self.params['X_phase']+180)
-            # e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
-            #             wait_time = 80e-6,go_to = None, event_jump = None)  
-            # carbon_purify_seq = [elec_toY,e_RO_puri]
+            elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
+                        Gate_operation='pi2',
+                        phase = self.params['X_phase'])
+            e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
+                        wait_time = 80e-6,go_to = None, event_jump = None)  
+            carbon_purify_seq = [elec_toY,e_RO_puri]
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
@@ -744,7 +786,7 @@ class purify_single_setup(DD.MBI_C13):
                     gate_seq.append(LDE_repump2)
 
             if self.params['do_phase_correction'] > 0 and self.params['phase_correct_max_reps']>0:
-                gate_seq.extend([start_dynamic_phase_correct, dynamic_phase_correct,final_dynamic_phase_correct])
+                gate_seq.extend(dynamic_phase_correct_list)
 
             if self.params['do_purifying_gate'] > 0:
                 gate_seq.extend(carbon_purify_seq)
