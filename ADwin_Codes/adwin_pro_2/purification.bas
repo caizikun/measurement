@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,92,92,94,94,215,215,403,403,404,404,419,419,645,645,716,716,909,910,911,918,919,920
-' Foldings                       = 575,598,626,679,724,742,751,792,811,849
+' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,418,418,419,419,434,434,660,660,731,731,924,925,926,933,934,935
+' Foldings                       = 590,613,641,694,739,757,766,807,826,864
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -83,7 +83,8 @@ DIM DATA_109[max_purification_repetitions] AS FLOAT at DRAM_Extern' minimum achi
 DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
 DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
- 
+DIM DATA_113[250] AS LONG at DRAM_Extern' lookup table for phase to compensate
+   
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
@@ -330,6 +331,20 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     
   Next phase_to_calculate     
 
+  For AWG_sequence_repetitions_second_attempt = 1 to 250
+    
+    phase_to_compensate = AWG_sequence_repetitions_second_attempt* phase_per_sequence_repetition
+    
+    IF (phase_to_compensate > 360) THEN
+      DO
+        phase_to_compensate = phase_to_compensate - 360
+      UNTIL (phase_to_compensate < 360)
+          
+    ENDIF
+    
+    Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate
+    
+  Next AWG_sequence_repetitions_second_attempt
 ''''''''''''''''''''''''''''
   ' init parameters
 ''''''''''''''''''''''''''''
@@ -938,14 +953,11 @@ EVENT:
   
           awg_repcount_was_low = 1
           phase_compensation_repetitions = 0
-          time = Read_Timer()
-          phase_to_compensate = DATA_110[current_ROseq] + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
-   
-          IF (phase_to_compensate > 360) THEN
-            DO
-              phase_to_compensate = phase_to_compensate - 360
-            UNTIL (phase_to_compensate < 360)
+
+          phase_to_compensate = DATA_110[current_ROseq] + DATA_113[AWG_sequence_repetitions_second_attempt]
           
+          IF (phase_to_compensate > 360) THEN
+            phase_to_compensate = phase_to_compensate - 360          
           ENDIF
           
           required_phase_compensation_repetitions = DATA_111[Round(phase_to_compensate)]
@@ -955,7 +967,6 @@ EVENT:
           DATA_108[repetition_counter+1] = phase_to_compensate
           
           
-          Par_65 = Read_Timer() - time
         ENDIF 
                 
         

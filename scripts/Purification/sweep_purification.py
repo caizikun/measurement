@@ -634,8 +634,8 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['Tomography_bases'] = ['X']
     m.params['do_purifying_gate'] = 1
     m.params['do_carbon_readout']  = 0
-    m.params['do_repump_after_LDE2'] = 0 #### THIS SHOULD BE 1 !!!!! XXXXXXXXXX !!!!! change back!
-
+    m.params['do_repump_after_LDE2'] = 1
+    
     if PLU:
         m.params['PLU_during_LDE'] = 1
 
@@ -654,7 +654,6 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     minReps = 1
     maxReps = 15.
     step = int((maxReps-minReps)/pts)+1
-    step = 1
 
     ### define sweep
     m.params['do_general_sweep']    = 1
