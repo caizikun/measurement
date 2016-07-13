@@ -162,7 +162,8 @@ class purify_single_setup(DD.MBI_C13):
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps),  
+                    ('compensated_phase'                     ,1,reps), 
+                    ('min_phase_deviation'                   ,1,reps), 
                     'completed_reps'
                     ])
         return
