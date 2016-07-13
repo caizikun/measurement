@@ -295,9 +295,10 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     refpulse = 'plu gate 3')
     
     #### gives a done trigger that has to be timed accordingly, is referenced to the PLU if the PLU is used by this setup.
-    if Gate.is_final and not ((msmt.params['LDE_1_is_init'] > 0) and 'LDE1' in Gate.name):
+    if Gate.is_final:
         ## one can time accurately if we use the plu during the experiment
-        if setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0:
+        boolean = (setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0)
+        if  boolean and not ((msmt.params['LDE_1_is_init'] > 0) and 'LDE1' in Gate.name):
             e.add(Gate.adwin_trigger_pulse,
                 start = 1000e-9, # should always come in later than the plu signal
                 refpulse = 'plu gate 3')
