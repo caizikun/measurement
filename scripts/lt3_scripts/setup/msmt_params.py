@@ -110,7 +110,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
 	'cr_mod_control_dac'		:	'gate_mod',
 	'cr_mod_control_offset'     :   0.0,
-	'cr_mod_control_amp'        :   0.05, #V
+	'cr_mod_control_amp'        :   0.07, #V
 	'cr_mod_control_avg_pts'	:   500000.,
 	'repump_mod_control_offset' :   5.4, #note, gets set automatically
 	'repump_mod_control_amp'    :   .5, #V

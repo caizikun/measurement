@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,90,90,92,92,213,213,367,367,368,368,383,383,609,609,680,680,871,872,873,880,881,882
-' Foldings                       = 539,543,562,590,643,688,706,715,756,775,813
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,90,90,92,92,213,213,367,367,368,368,383,383,609,609,680,680,867,868,869,876,877,878
+' Foldings                       = 539,543,562,590,643,688,706,715,756
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -823,9 +823,8 @@ EVENT:
         mode = mode_after_swap 'see flow control
         timer = -1
         
-      CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
+      CASE 6    '  wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
-          'DATA_37[repetition_counter+1] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -875,9 +874,6 @@ EVENT:
                 mode = mode_after_LDE_2
               ELSE ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check
-                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-                'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
               ENDIF
             endif
             awg_done_was_low = 0  ' remember

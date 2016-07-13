@@ -772,17 +772,15 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Y' #'Z' ### puts the carbon in 'X'
+
     m.params['mw_first_pulse_phase'] = m.params['Y_phase'] #align with the phase the first pi/2 of the purification gate.
 
     if do_Z:
-        print 'And here are the numbers'
-        print m.params['total_phase_offset_after_sequence']
-        m.params['total_phase_offset_after_sequence'] = (m.params['total_phase_offset_after_sequence']+90) % 360 #rotate the carbon
-
+        m.params['input_el_state'] = 'Y' #'Z' ### puts the carbon in 'X'
         m.params['Tomography_bases'] = ['Z']
     else:
-        m.params['Tomography_bases'] = ['Y']
+        m.params['input_el_state'] = 'Z' #'Z' ### puts the carbon in 'X'
+        m.params['Tomography_bases'] = ['X']
 
 
 
@@ -847,4 +845,4 @@ if __name__ == '__main__':
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
-    full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
+    full_sequence_local(name+'_full_sequence_local_Z', upload_only = True,do_Z = True)

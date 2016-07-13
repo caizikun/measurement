@@ -400,21 +400,23 @@ class purify_single_setup(DD.MBI_C13):
         #### In case that we have a large discrepancy in duration for the swap we bridge time by decoupling the electron spin before the swap.
         if self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait > 100e-6:
             bridged_time = self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait
-            no_of_pulses_float = bridged_time/(2*self.params['dynamic_phase_tau']*2) ### I for now use the dynamic phase tau with an additional factor of 4. 
+            no_of_pulses_float = bridged_time/(2*self.params['decouple_before_swap_tau']) ### I for now use the dynamic phase tau with an additional factor of 4. 
             no_of_pulses_int = np.floor(no_of_pulses_float)
+
             # we only allow an even amount of pulses
             if no_of_pulses_int % 2 == 1:
                 no_of_pulses_int -= 1
+
             # recalculate the trigger duration for the SWAP RO:
             self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait + bridged_time - \
-                                                        no_of_pulses_int*4*self.params['dynamic_phase_tau']
+                                                        no_of_pulses_int*2*self.params['decouple_before_swap_tau']
 
             ElectronDD = DD.Gate('electron_decoupling'+str(kw.get('pt',0)), 'Carbon_Gate',Carbon_ind = self.params['carbon'])
             ElectronDD.N = no_of_pulses_int
-            ElectronDD.tau = self.params['dynamic_phase_tau']*2
-            self.params['ElectronDD_tau'] = ElectronDD.tau ### we create this parameter for communication with LDE element. See line 332 in LDE_element.py
+            ElectronDD.tau = self.params['decouple_before_swap_tau']
+            self.params['ElectronDD_tau'] = ElectronDD.tau ### we create this parameter for communication with LDE element. See _LDE_rephasing_elt(...) in LDE_element.py
             ElectronDD.no_connection_elt = True
-
+            print 'number of pi pulses in the connection', ElectronDD.N
             ### we rephase by hand here. not recommended usually but crucial to keep the timing correct for both setups!!!
             pi_duration =  self.params['fast_pi_duration']
             c_gate_tau = self.params['C'+str(self.params['carbon'])+'_Ren_tau'+self.params['electron_transition']][0]
@@ -697,8 +699,8 @@ class purify_single_setup(DD.MBI_C13):
             #             wait_time = 80e-6,go_to = None, event_jump = None)  
             # carbon_purify_seq = [elec_toY,e_RO_puri]
 
-            # e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
-            #     wait_time = 10e-6)]
+            e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
+                wait_time = 10e-6)]
 
 
             #######################################################################
