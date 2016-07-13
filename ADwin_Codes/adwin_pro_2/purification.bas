@@ -950,7 +950,9 @@ EVENT:
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once a given phase has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
-  
+          
+          time = Read_Timer()
+          
           awg_repcount_was_low = 1
           phase_compensation_repetitions = 0
 
@@ -966,7 +968,7 @@ EVENT:
           DATA_109[repetition_counter+1] = DATA_112[Round(phase_to_compensate)]
           DATA_108[repetition_counter+1] = phase_to_compensate
           
-          
+          Par_65 = Read_Timer() - time
         ENDIF 
                 
         
