@@ -197,7 +197,7 @@ cfg['samples'][sample_name] = {
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
     'phase_per_sequence_repetition'    :(-2.35+(25-6.6)-0.5+0.24),#350.776-14.472, #adwin needs positive values
     'phase_per_compensation_repetition':17.557,#360-6.21, # adwin needs positive values
-    'total_phase_offset_after_sequence':65,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
+    'total_phase_offset_after_sequence':65-43-10.5,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############

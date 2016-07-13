@@ -93,11 +93,11 @@ class purify_single_setup(DD.MBI_C13):
 
         if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 109, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 110, 1, length)
         
         elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']]), 109, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']]), 110, 1, length)
         
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
@@ -162,7 +162,8 @@ class purify_single_setup(DD.MBI_C13):
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps),  
+                    ('compensated_phase'                     ,1,reps), 
+                    ('min_phase_deviation'                   ,1,reps), 
                     'completed_reps'
                     ])
         return
