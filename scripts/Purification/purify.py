@@ -566,19 +566,21 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
+    m.joint_params['do_final_mw_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
 
-    #m.params['LDE_decouple_time'] = #m.params['LDE_decouple_time'] + 500e-9
+    m.params['LDE_final_mw_amplitude'] = 0
+
+    #m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
     m.joint_params['LDE_element_length'] = 10e-6#m.joint_params['LDE_element_length']  + 1e-6
 
-    m.joint_params['do_final_mw_LDE'] = 1
-    m.params['LDE_final_mw_amplitude'] = 0
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+
 
     ### upload
 
@@ -737,7 +739,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
