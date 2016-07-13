@@ -94,10 +94,10 @@ params_lt3['decouple_before_swap_tau'] = 4.68e-6
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       2000
-params_lt3['MAX_SYNC_BIN'] =       3500
-params_lt3['MIN_HIST_SYNC_BIN'] =  2000
-params_lt3['MAX_HIST_SYNC_BIN'] =  3500
+params_lt3['MIN_SYNC_BIN'] =       2500
+params_lt3['MAX_SYNC_BIN'] =       5500
+params_lt3['MIN_HIST_SYNC_BIN'] =  2500
+params_lt3['MAX_HIST_SYNC_BIN'] =  5500
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec

@@ -243,7 +243,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    m.params['is_two_setup_experiment'] = 1
+    m.params['is_two_setup_experiment'] = 0
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
