@@ -626,7 +626,7 @@ class purify_single_setup(DD.MBI_C13):
 
             dynamic_phase_correct_list = [start_dynamic_phase_correct]
 
-            for i in range(self.params['phase_correct_max_reps']-2):
+            for i in range(int(self.params['phase_correct_max_reps'])-2):
 
                 if (i+1) % 2 == 0:
                     dynamic_phase_correct = DD.Gate(

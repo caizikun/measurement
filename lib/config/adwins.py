@@ -2832,6 +2832,7 @@ config['adwin_pro_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['phase_per_sequence_repetition'    , 0.],
                     ['phase_per_compensation_repetition', 0.],
+                    ['phase_feedback_resolution', 4.5],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
