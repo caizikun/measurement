@@ -93,11 +93,11 @@ class purify_single_setup(DD.MBI_C13):
 
         if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 110, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts'])%360, 110, 1, length)
         
         elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']]), 110, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
         
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
@@ -486,7 +486,7 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                     Gate.go_to = None
                     Gate.event_jump = None
-                elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+                elif (self.params['LDE_1_is_init'] > 0) and ('LDE1' in Gate.name):
                     Gate.go_to = None
                     Gate.event_jump = None
         else:
