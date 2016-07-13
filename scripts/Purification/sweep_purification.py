@@ -243,7 +243,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    m.params['is_two_setup_experiment'] = 0
+    m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
@@ -708,7 +708,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Z' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'; Y puts in Y
+    m.params['input_el_state'] = 'Y' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'; Y puts in Y
     m.params['mw_first_pulse_phase'] = m.params['Y_phase'] #+ 180 #align with the phase of the purification gate.
     # m.params['mw_first_pulse_amp'] = 0
     m.params['Tomography_bases'] = tomo
@@ -841,8 +841,8 @@ if __name__ == '__main__':
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 
-    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
-    #full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
