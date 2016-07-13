@@ -89,6 +89,7 @@ params_lt3['carbon_readout_orientation']    = 'positive'
 params_lt3['dynamic_phase_tau'] = 2.312e-6
 params_lt3['dynamic_phase_N'] = 2 
 params_lt3['phase_feedback_resolution'] = 4.5
+params_lt3['decouple_before_swap_tau'] = 4.68e-6
 
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6

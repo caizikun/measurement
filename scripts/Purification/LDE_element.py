@@ -228,8 +228,6 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
     else:
-        print 'start of your favourite MW pulse'
-        print msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time'])
         # MW pi pulse
         e.add(pulse.cp(Gate.mw_X,amplitude=0),
             start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
@@ -327,6 +325,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
 def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     """waits the right amount of time after and LDE element for the 
     electron to rephase.
+
+    NOTE: after developing the purification code for several one realizes that we should distinguish between LDE 1 and LDE 2.
+    The two elements are very different from each other.
     """
     _create_wait_times(Gate)
     _create_syncs_and_triggers(msmt,Gate)
@@ -339,7 +340,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
         c = str(msmt.params['carbon'])
         e_trans = msmt.params['electron_transition']
 
-        #### for concatenating LDE with a longer entangling sequence:
+        #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:
         if 'ElectronDD_tau' in msmt.params.to_dict().keys():
             tau = msmt.params['ElectronDD_tau']
         else:
@@ -354,7 +355,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
             tau_cut = 1.5e-6
 
 
-        # LDE 2 does not need tau_cut because we do dynamic phase correction.
+        # LDE 2 does not need tau_cut because we do dynamic phase correction with a fixed tau_cut.
         if 'LDE_rephasing_2' in Gate.name:
             tau_cut =1e-6 #0e-6
             # print e.samples()
