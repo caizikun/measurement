@@ -369,7 +369,7 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 6e-9,#2.5e-9,
+		'A_CR_amplitude':				 2.5e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 

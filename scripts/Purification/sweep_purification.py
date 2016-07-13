@@ -243,7 +243,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    m.params['is_two_setup_experiment'] = 0
+    m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
@@ -826,7 +826,7 @@ if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
 
-    #sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
+    sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     #sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
@@ -845,4 +845,4 @@ if __name__ == '__main__':
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
-    full_sequence_local(name+'_full_sequence_local_Z', upload_only = True,do_Z = True)
+    #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
