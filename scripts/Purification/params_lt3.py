@@ -27,7 +27,7 @@ params_lt3['MW_during_LDE']             = 1
 params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['average_repump_time'] 		= 0.27e-6#0.254e-6 # XXX put repump AOM delay here!
+params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 params_lt3['MW_opt_puls1_separation']   = 50e-9 # was 22 e-9. needs to be adjusted.
 
@@ -44,7 +44,7 @@ params_lt3['MBI_attempts_before_CR'] = 1
 # params_lt3['phase_per_sequence_repetition'] =0.
 # params_lt3['phase_per_compensation_repetition'] =0.
 # params_lt3['total_phase_offset_after_sequence'] =0.
-params_lt3['phase_correct_max_reps']    = 80 # do not put more than 80. otherwise to had to calculate for the adwin.
+params_lt3['phase_correct_max_reps']    = 72 # do not put more than 80. otherwise to had to calculate for the adwin.
 
 # channels
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
@@ -105,10 +105,10 @@ params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interv
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['pulse_start_bin'] = 2950-params_lt3['MIN_SYNC_BIN']
-params_lt3['pulse_stop_bin'] = 2950+300-params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_start_bin'] = 2950 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_stop_bin'] = 2950+300 -params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_start_bin'] = 2750-params_lt3['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['pulse_stop_bin'] = 2750+300-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['tail_start_bin'] = 2750 -params_lt3['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['tail_stop_bin'] = 2750+300 -params_lt3['MIN_SYNC_BIN']    #### BK: 2950
 params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10

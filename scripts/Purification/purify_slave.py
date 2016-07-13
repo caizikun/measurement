@@ -399,7 +399,7 @@ class purify_single_setup(DD.MBI_C13):
                 
 
         #### In case that we have a large discrepancy in duration for the swap we bridge time by decoupling the electron spin before the swap.
-        if self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait > 100e-6:
+        if self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait > 2000e-6:
             bridged_time = self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait
             no_of_pulses_float = bridged_time/(2*self.params['decouple_before_swap_tau']) ### I for now use the dynamic phase tau with an additional factor of 4. 
             no_of_pulses_int = np.floor(no_of_pulses_float)

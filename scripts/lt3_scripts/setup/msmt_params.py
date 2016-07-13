@@ -110,7 +110,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
 	'cr_mod_control_dac'		:	'gate_mod',
 	'cr_mod_control_offset'     :   0.0,
-	'cr_mod_control_amp'        :   0.07, #V
+	'cr_mod_control_amp'        :   0.06, #V
 	'cr_mod_control_avg_pts'	:   500000.,
 	'repump_mod_control_offset' :   5.4, #note, gets set automatically
 	'repump_mod_control_amp'    :   .5, #V
@@ -369,7 +369,7 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 2.5e-9,#2.5e-9,
+		'A_CR_amplitude':				 5.5e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 

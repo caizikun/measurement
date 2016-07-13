@@ -389,7 +389,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m = purify(name)
     sweep_purification.prepare(m)
 
-    load_TH_params(m)
+    # load_TH_params(m)
     #load_BK_params(m)
     ### general params
     pts = 1
@@ -416,8 +416,8 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    #m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
-    m.params['general_sweep_pts'] = np.array([2e-6])
+    m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
+    # m.params['general_sweep_pts'] = np.array([2e-6])
     m.params['sweep_name'] = m.params['general_sweep_name']
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
@@ -737,7 +737,7 @@ def PurifyYY(name):
 if __name__ == '__main__':
 
     ########### local measurements
-    # MW_Position(name+'_MW_position',upload_only=False)
+    MW_Position(name+'_MW_position',upload_only=False)
 
     #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
@@ -746,7 +746,7 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // purification parameters
-    SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
 
 
     ###### non-local measurements // Barrett Kok parameters
