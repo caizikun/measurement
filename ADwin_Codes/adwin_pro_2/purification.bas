@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,90,90,92,92,213,213,367,367,368,368,383,383,609,609,680,680,867,868,869,876,877,878
-' Foldings                       = 539,543,562,590,643,688,706,715,756
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,92,92,94,94,215,215,403,403,404,404,419,419,645,645,716,716,909,910,911,918,919,920
+' Foldings                       = 575,598,626,679,724,742,751,792,811,849
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -79,9 +79,11 @@ DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts 
 DIM DATA_106[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts carbon spin readout after tomography 
 DIM DATA_107[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts last electron spin readout performed in the adwin seuqnece 
 DIM DATA_108[max_purification_repetitions] as FLOAT at DRAM_Extern' required phase feedback on the nuclear spin. mainly for debugging 
-DIM DATA_109[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
-
-
+DIM DATA_109[max_purification_repetitions] AS FLOAT at DRAM_Extern' minimum achievable phase deviation
+DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
+DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
+DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
+ 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
@@ -120,7 +122,8 @@ DIM purify_RO_is_MBI_RO as long
 
 ' Phase compensation
 DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation AS FLOAT
-DIM phase_compensation_repetitions, required_phase_compensation_repetitions,phase_correct_max_reps as long
+DIM phase_to_calculate, phase_compensation_repetitions, required_phase_compensation_repetitions,phase_correct_max_reps, phase_repetitions as long
+DIM current_phase_deviation, min_phase_deviation, phase_feedback_resolution as float
 DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
 
 ' Communication with other Adwin
@@ -138,8 +141,6 @@ DIM is_master,cumulative_awg_counts as long
 
 ' Sweeping carbon phases in the adwin via dynamic feedback
 DIM current_ROseq, no_of_sweep_pts as LONG
-DIM phase_feedback_resolution as LONG
-
 
 ' Sequence flow control
 DIM do_carbon_init, do_C_init_SWAP_wo_SSRO AS LONG
@@ -149,6 +150,7 @@ DIM do_purifying_gate, do_carbon_readout as long
 
 DIM mode_after_spinpumping, mode_after_LDE, mode_after_LDE_2, mode_after_SWAP, mode_after_purification, mode_after_phase_correction as long
 
+Dim time as long
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
@@ -251,8 +253,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   A_RO_voltage                 = DATA_21[5]
   phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   phase_per_compensation_repetition = DATA_21[7] '
-  phase_feedback_resolution         = DATA_21[8] ' 
-              
+  phase_feedback_resolution = DATA_21[8]
+   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
   PLU_event_di_pattern = 2 ^ PLU_event_di_channel
@@ -285,7 +287,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_105[array_step],100)
     MemCpy(Initializer[1],DATA_106[array_step],100)
     MemCpy(Initializer[1],DATA_107[array_step],100)
-    MemCpy(Initializer[1],DATA_108[array_step],100)
+    '    MemCpy(Initializer[1],DATA_108[array_step],100)
+    '    MemCpy(Initializer[1],DATA_109[array_step],100)
+    
     array_step = array_step + 100
   NEXT i
   
@@ -295,6 +299,37 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   NEXT i
   
   
+''''''''''''''''''''''''''''
+  'Init lookup table
+'''''''''''''''''''''''''
+ 
+
+  For phase_to_calculate = 1 to 360
+    
+    min_phase_deviation = 361
+    acquired_phase_during_compensation = phase_per_compensation_repetition
+    phase_repetitions = 1
+    Do   
+      inc(phase_repetitions)                           
+      acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
+      IF (acquired_phase_during_compensation > 360) THEN
+        acquired_phase_during_compensation =   acquired_phase_during_compensation-360
+      ENDIF
+            
+      current_phase_deviation = Abs(phase_to_calculate-acquired_phase_during_compensation)
+      IF (current_phase_deviation  < min_phase_deviation) THEN
+        min_phase_deviation = current_phase_deviation
+        required_phase_compensation_repetitions = phase_repetitions
+      ENDIF
+    Until ((phase_repetitions = phase_correct_max_reps-1) or (min_phase_deviation <= phase_feedback_resolution))
+          
+    Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
+     
+    DATA_111[phase_to_calculate] = required_phase_compensation_repetitions
+    DATA_112[phase_to_calculate] = min_phase_deviation
+    
+  Next phase_to_calculate     
+
 ''''''''''''''''''''''''''''
   ' init parameters
 ''''''''''''''''''''''''''''
@@ -316,6 +351,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_14 = -1
   par_15 = -1
   
+  Par_62 = 0
 '''''''''''''''''''''''''
   ' flow control: 
 '''''''''''''''''''''''''
@@ -823,8 +859,9 @@ EVENT:
         mode = mode_after_swap 'see flow control
         timer = -1
         
-      CASE 6    '  wait and count repetitions of the entanglement AWG sequence as in case 4
+      CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
         IF (timer =0) THEN
+          'DATA_37[repetition_counter+1] = SSRO_result
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
@@ -854,6 +891,8 @@ EVENT:
           AWG_repcount_was_low = 1
         endif
         
+        
+        
         'check the PLU
         IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
@@ -874,6 +913,9 @@ EVENT:
                 mode = mode_after_LDE_2
               ELSE ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
+                'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
               ENDIF
             endif
             awg_done_was_low = 0  ' remember
@@ -893,40 +935,34 @@ EVENT:
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once a given phase has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
-          required_phase_compensation_repetitions = 1
-          awg_repcount_was_low = 0
-          phase_compensation_repetitions =0
-          phase_to_compensate = DATA_109[current_ROseq] + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
-          if (phase_to_compensate > 360) then           ' The built in Mod function works only for integers and takes 0.44 us.
-            Do                              
+  
+          awg_repcount_was_low = 1
+          phase_compensation_repetitions = 0
+          time = Read_Timer()
+          phase_to_compensate = DATA_110[current_ROseq] + AWG_sequence_repetitions_second_attempt * phase_per_sequence_repetition
+   
+          IF (phase_to_compensate > 360) THEN
+            DO
               phase_to_compensate = phase_to_compensate - 360
-            Until (phase_to_compensate  <= 360)
-          endif
-          '        ENDIF
-          '                
-          '        IF (timer = 1) THEN
-          ' minimum is two repetitions
-          ' required count is repetitions - 1
-          ' we want to be within two degrees from the desired state
-          acquired_phase_during_compensation = phase_per_compensation_repetition
+            UNTIL (phase_to_compensate < 360)
           
-          Do                              
-            inc(required_phase_compensation_repetitions)
-            acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
-            IF (acquired_phase_during_compensation > 360) THEN
-              acquired_phase_during_compensation =   acquired_phase_during_compensation-360
-            ENDIF
-          Until (( Abs(phase_to_compensate-acquired_phase_during_compensation)  <= phase_feedback_resolution) OR (required_phase_compensation_repetitions>phase_correct_max_reps-1))
-                  
-          Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
+          ENDIF
+          
+          required_phase_compensation_repetitions = DATA_111[Round(phase_to_compensate)]
+   
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
+          DATA_109[repetition_counter+1] = DATA_112[Round(phase_to_compensate)]
           DATA_108[repetition_counter+1] = phase_to_compensate
+          
+          
+          Par_65 = Read_Timer() - time
         ENDIF 
                 
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(phase_compensation_repetitions)  
+            'Par_65 = phase_compensation_repetitions
           endif
           awg_repcount_was_low = 0
         ELSE

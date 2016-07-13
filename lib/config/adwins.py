@@ -2832,7 +2832,7 @@ config['adwin_pro_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['phase_per_sequence_repetition'    , 0.],
                     ['phase_per_compensation_repetition', 0.],
-                    ['phase_feedback_resolution'        , 4.5],
+                    ['phase_feedback_resolution', 4.5],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2862,7 +2862,8 @@ config['adwin_pro_processes'] = {
                     'ssro_results'              : 107, # result of the last ssro in the adwin
                     },
                 'data_float' : {
-                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon                 
+                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
+                    'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
                     },
                 },
         }
