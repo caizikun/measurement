@@ -508,7 +508,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 6.0
+    m.params['phase_detuning'] = 5.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
@@ -750,12 +750,13 @@ if __name__ == '__main__':
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
     #full_sequence(name+'_full_sequence__Z', upload_only = False,do_Z = True)
 
