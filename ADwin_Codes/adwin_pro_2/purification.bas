@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,419,419,420,420,435,435,661,661,732,732,915,916,917,924,925,926
-' Foldings                       = 591,614,642,695,798,817,855
+' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,419,419,420,420,435,435,661,661,732,732,911,912,913,920,921,922
+' Foldings                       = 591,614,642,695,855
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -901,21 +901,17 @@ EVENT:
         
         'check the PLU
         IF ((digin_this_cycle AND PLU_event_di_pattern) > 0) THEN 'PLU signal received
-          DATA_103[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
-          'if ((digin_this_cycle AND PLU_which_di_pattern)>0) then
-          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+10 ' store which detector has clicked in second round. +10 or +20 to discriminate from first round
-          'else
-          '  DATA_102[repetition_counter+1]= DATA_102[repetition_counter+1]+20         
+          DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result     
           mode = mode_after_LDE_2 'go on to next case
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
         ELSE ' no plu signal:  check the done trigger     
           IF ((digin_this_cycle AND AWG_Done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
             if (awg_done_was_low > 0) then ' switched in this round
-              DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
               IF ((is_two_setup_experiment = 0) OR (PLU_during_LDE = 0)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+                DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
                 mode = mode_after_LDE_2
               ELSE ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check

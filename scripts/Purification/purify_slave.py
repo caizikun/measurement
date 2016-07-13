@@ -483,6 +483,9 @@ class purify_single_setup(DD.MBI_C13):
                 Gate.event_jump = 'next'
                 Gate.go_to = 'start'
                 
+                if self.params['PLU_during_LDE'] == 0:
+                    Gate.go_to = None
+                
                 if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                     Gate.go_to = None
                     Gate.event_jump = None
