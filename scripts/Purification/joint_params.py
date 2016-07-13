@@ -31,15 +31,15 @@ joint_params['slave_max_dec_tau'] = 0.255e-6
 joint_params['slave_dec_pulse_multiple'] = 4
 joint_params['slave_carbon_init_RO_wait'] = 75e-6
 
-joint_params['master_N'] = [28]
-joint_params['master_tau'] = [6.36e-6]
-joint_params['master_eigen_phase'] = 96.77
-joint_params['master_freq_0'] = 443271.93
-joint_params['master_freq_1'] = 416674.73
-joint_params['master_freq'] = (419823.82+ 446122.14)/2
+joint_params['master_N'] = [34]
+joint_params['master_tau'] = [6.406e-6]
+joint_params['master_eigen_phase'] = 128.68
+joint_params['master_freq_0'] = 443170.72
+joint_params['master_freq_1'] = 416569.36
+joint_params['master_freq'] = ( 416660.0+  443263.673)/2
 joint_params['master_min_phase_correct'] = 2
-joint_params['master_min_dec_tau'] = 2.1e-6
-joint_params['master_max_dec_tau'] = 2.4e-6
+joint_params['master_min_dec_tau'] = 2.0e-6
+joint_params['master_max_dec_tau'] = 2.5e-6
 joint_params['master_dec_pulse_multiple'] = 4
 joint_params['master_carbon_init_RO_wait'] = 90e-6
 

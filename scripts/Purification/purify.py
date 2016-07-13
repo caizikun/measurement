@@ -454,7 +454,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['MAX_SYNC_BIN'] =       7000e3
 
     # put sweep together:
-    sweep_off_voltage = True
+    sweep_off_voltage = False
 
     m.params['do_general_sweep']    = True
 
@@ -741,7 +741,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     #SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
