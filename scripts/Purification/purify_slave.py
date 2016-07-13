@@ -486,7 +486,7 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['do_phase_correction'] == 0 and 'LDE2' in Gate.name:
                     Gate.go_to = None
                     Gate.event_jump = None
-                elif self.params['LDE_1_is_init'] > 0 or self.params['do_swap_onto_carbon'] == 0 and 'LDE1' in Gate.name:
+                elif (self.params['LDE_1_is_init'] > 0) and ('LDE1' in Gate.name):
                     Gate.go_to = None
                     Gate.event_jump = None
         else:

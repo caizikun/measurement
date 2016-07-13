@@ -2820,6 +2820,7 @@ config['adwin_pro_processes'] = {
                     ['phase_correct_max_reps'          ,   5],   
                     ['PLU_during_LDE'                  ,   1],
                     ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
 
                     ],
                 'params_long_index'  : 20,

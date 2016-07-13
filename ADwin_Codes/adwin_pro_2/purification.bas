@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,418,418,419,419,434,434,660,660,731,731,924,925,926,933,934,935
-' Foldings                       = 590,613,641,694,739,757,766,807,826,864
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,419,419,420,420,435,435,661,661,732,732,915,916,917,924,925,926
+' Foldings                       = 591,614,642,695,798,817,855
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -137,7 +137,7 @@ DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins 
 DIM adwin_comm_timeout_cycles, wait_for_awg_done_timeout_cycles as long ' if one side fails completely, the other can go on
 DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
-DIM PLU_during_LDE as long
+DIM PLU_during_LDE,LDE_1_is_init as long
 DIM is_master,cumulative_awg_counts as long
 
 ' Sweeping carbon phases in the adwin via dynamic feedback
@@ -245,6 +245,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   phase_correct_max_reps           = DATA_20[35]
   PLU_during_LDE                   = DATA_20[36]
   no_of_sweep_pts                  = DATA_20[37] ' number of adwin related sweep pts
+  LDE_1_is_init                    = DATA_20[38] ' is the first LDE element for init? Then ignore the PLU
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -778,13 +779,6 @@ EVENT:
         endif
           
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          '          IF (is_master >0) THEN ' plu which only connected on lt4
-          '            if ((digin_this_cycle AND PLU_which_di_pattern) >0) then
-          '              DATA_102[repetition_counter+1]=1 ' store which detector has clicked in first round. Second round will be stored on next decimal (add 10 or 20)
-          '            else
-          '              DATA_102[repetition_counter+1]=2
-          '            endif        
-          '          ENDIF
           DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
@@ -795,13 +789,10 @@ EVENT:
               DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
-              if (PLU_during_LDE = 0) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+              if ((PLU_during_LDE = 0) or (LDE_1_is_init = 1)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence
                 mode = 12 ' finalize and go to cr check
-                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to beginning of MBI and wait for trigger
-                'CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-                'P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
               endif
             endif 
             awg_done_was_low = 0 ' remember
@@ -951,27 +942,27 @@ EVENT:
         ' Each adwin will count the number pulses and send a jump once a given phase has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
           
-          time = Read_Timer()
-          
           awg_repcount_was_low = 1
           phase_compensation_repetitions = 0
-
+          
+          ' DATA110 is the phase offset. It is precompiled in python to not exceed 360 degrees.
           phase_to_compensate = DATA_110[current_ROseq] + DATA_113[AWG_sequence_repetitions_second_attempt]
           
           IF (phase_to_compensate > 360) THEN
             phase_to_compensate = phase_to_compensate - 360          
           ENDIF
           
+          PAR_65 = phase_to_compensate
           required_phase_compensation_repetitions = DATA_111[Round(phase_to_compensate)]
    
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
           DATA_109[repetition_counter+1] = DATA_112[Round(phase_to_compensate)]
           DATA_108[repetition_counter+1] = phase_to_compensate
           
-          Par_65 = Read_Timer() - time
+          
+          
         ENDIF 
                 
-        
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(phase_compensation_repetitions)  
@@ -990,7 +981,6 @@ EVENT:
           timer = -1
           mode = mode_after_phase_correction
         ENDIF
-        
       CASE 8 ' Wait until purification gate is done. 
                 
         '        IF (timer =0) THEN
