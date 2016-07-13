@@ -93,7 +93,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
             length = self.params['pts']
-            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 110, 1, length)
+            self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts']), 109, 1, length)
         
         elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
             length = self.params['pts']
@@ -163,7 +163,6 @@ class purify_single_setup(DD.MBI_C13):
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
                     ('compensated_phase'                     ,1,reps),  
-                    ('min_phase_deviation'                     ,1,reps), 
                     'completed_reps'
                     ])
         return
@@ -535,6 +534,16 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['input_el_state'] in ['X','mX','Y','mY']:
                     LDE1.first_pulse_is_pi2 = True
 
+                    #### define some phases:
+                    x_phase = self.params['X_phase']
+                    y_phase = self.params['Y_phase']
+                    first_mw_phase_dict = { 'X' :   y_phase, 
+                                            'mX':   y_phase + 180,
+                                            'Y' :   x_phase + 180, 
+                                            'mY':   x_phase}
+
+                    LDE1.first_mw_pulse_phase = first_mw_phase_dict[self.params['input_el_state']]
+
                 elif self.params['input_el_state'] in ['Z']:
                     LDE1.no_first_pulse = True
 
@@ -626,7 +635,7 @@ class purify_single_setup(DD.MBI_C13):
 
             dynamic_phase_correct_list = [start_dynamic_phase_correct]
 
-            for i in range(int(self.params['phase_correct_max_reps'])-2):
+            for i in range(self.params['phase_correct_max_reps']-2):
 
                 if (i+1) % 2 == 0:
                     dynamic_phase_correct = DD.Gate(
@@ -681,7 +690,7 @@ class purify_single_setup(DD.MBI_C13):
             # del carbon_purify_seq[0]
 
             ### uncomment for testing the electron coherence after the purifying gate
-            # elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
+            #elec_toY = DD.Gate('Pi2onEL'+'_x_pt'+str(pt),'electron_Gate',
             #             Gate_operation='pi2',
             #             phase = self.params['X_phase'])
             # e_RO_puri =  DD.Gate('Puri_Trigger_'+str(pt),'Trigger',
@@ -887,8 +896,9 @@ class purify_single_setup(DD.MBI_C13):
 
             #### for carbon phase debbuging purposes.
             # for g in gate_seq:
-            #     print g.name
-            #     self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
+            #     if not 'corect' in g.name:
+            #         print g.name
+            #         self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
 
 
             ### Convert elements to AWG sequence and add to combined list
