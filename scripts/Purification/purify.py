@@ -746,7 +746,7 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // purification parameters
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
 
 
     ###### non-local measurements // Barrett Kok parameters
