@@ -12,6 +12,7 @@ import measurement.lib.measurement2.measurement as m2
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
 import LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
@@ -205,6 +206,10 @@ class purify_single_setup(DD.MBI_C13):
         Watch out:  partially overwrites connection element parameters 
                     and stores the old parameters in the msmt_params.
         """
+
+        ps.check_pulse_shape(self) ### this updates parameters for MW pulses.
+
+
         if master:
             prefix = 'master'
         else: 
@@ -227,6 +232,9 @@ class purify_single_setup(DD.MBI_C13):
         self.params['stored_dec_pulse_multiple']   = self.params['dec_pulse_multiple'] 
         self.params['stored_carbon_init_RO_wait']  = self.params['Carbon_init_RO_wait']
         self.params['stored_min_dec_duration']     = self.params['min_dec_duration']
+        self.params['stored_fast_pi_duration']     = self.params['fast_pi_duration']
+        self.params['stored_fast_pi2_duration']    = self.params['fast_pi2_duration']
+
         # overwrite parameters for phase gates for sequence calculation 
 
         self.params['min_phase_correct'] = self.joint_params[prefix + '_min_phase_correct']
@@ -235,6 +243,8 @@ class purify_single_setup(DD.MBI_C13):
         self.params['dec_pulse_multiple'] = self.joint_params[prefix + '_dec_pulse_multiple']
         self.params['Carbon_init_RO_wait'] = self.joint_params[prefix + '_carbon_init_RO_wait']
         self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
+        self.params['fast_pi_duration']     = self.joint_params[prefix + '_fast_pi_duration']
+        self.params['fast_pi2_duration']    = self.joint_params[prefix + '_fast_pi2_duration']
 
     def restore_msmt_parameters(self):
         """
@@ -245,7 +255,10 @@ class purify_single_setup(DD.MBI_C13):
         self.params['max_dec_tau']          = self.params['stored_max_dec_tau'] 
         self.params['dec_pulse_multiple']   = self.params['stored_dec_pulse_multiple'] 
         self.params['Carbon_init_RO_wait']  = self.params['stored_carbon_init_RO_wait']
-        self.params['min_dec_duration']    = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
+        self.params['min_dec_duration']     = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
+        self.params['fast_pi_duration']     = self.params['stored_fast_pi_duration']
+        self.params['fast_pi2_duration']    = self.params['stored_fast_pi2_duration']
+
 
 
     def calculate_sequence_duration(self,gate_seq,verbose = False,**kw):
@@ -257,6 +270,7 @@ class purify_single_setup(DD.MBI_C13):
 
         Known bug: The length of the first MW element depends on the used channel delays.
         If the Pulsemod delay is larger than 500 ns --> TROUBLE! don't do that!
+        Solution --> we implemented a parameter that accounts for this.
         """
 
         gate_seq = self.generate_AWG_elements(gate_seq,0)
@@ -268,13 +282,13 @@ class purify_single_setup(DD.MBI_C13):
 
         duration = 0
 
-        for e in gate_seq.elements[:-1]: #do not take the ro trigger into account --> delete the last element
+        for e in gate_seq.elements[:-1]: #do not take the ro trigger into account --> omit the last element
             for ee in list_of_elements:
                 if ee.name in e['wfname']:
                     duration+=ee.length()*e['repetitions']
 
                     if verbose:
-                        print ee.name,ee.ideal_length(),ee.length(),ee.samples(),e['repetitions'],duration
+                        print ee.name,ee.ideal_length(),ee.length(),ee.samples(),e['repetitions'],duration*1e6
         return duration
 
 
@@ -293,7 +307,10 @@ class purify_single_setup(DD.MBI_C13):
         #restore actual msmt params.
         self.restore_msmt_parameters()
 
-        return seq_duration
+        if master:
+            return seq_duration
+        else:
+            return seq_duration-self.joint_params['master_slave_AWG_first_element_delay']
 
     def calculate_C13_swap_duration(self,master=True,**kw):
         '''
@@ -301,16 +318,18 @@ class purify_single_setup(DD.MBI_C13):
         '''
         # load remote params and store current msmt params
         self.load_remote_carbon_params(master = master) # generate carbon 9 from the joint params
+        place_holder = kw.pop('addressed_carbon',9)
 
         # generate the list of gates in the remote setting
         if self.params['do_carbon_init'] > 0:#the carbon has been initialized. use a slight difference in the sequence
-            carbon_init_seq = DD.MBI_C13.carbon_swap_gate(self,go_to_element = 'start',
-                        prefix = 'C_swap', pt=0,
-                        addressed_carbon = 9)
+            carbon_init_seq = DD.MBI_C13.carbon_swap_gate_multi_options(self,
+                                                            prefix = 'C_swap',
+                                                            addressed_carbon = 9,**kw)
         else:
             # no C13 init, calculate the other gate sequence.
             # TODO make correct gate sequence in DD_2.py
             carbon_init_seq = []
+            print 'Warning: swap without prior initialization not implemented!' 
             return 0
 
 
@@ -344,7 +363,7 @@ class purify_single_setup(DD.MBI_C13):
         
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
-        # print master_seq_duration*1e6,slave_seq_duration*1e6
+        # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
         # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
         
         if self.params['is_two_setup_experiment'] > 0:
@@ -357,7 +376,7 @@ class purify_single_setup(DD.MBI_C13):
 
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
 
-        # print 'after calculating', self.params['Carbon_init_RO_wait']
+        # print 'after calculating for the slave:', (self.params['Carbon_init_RO_wait']+slave_seq_duration)*1e6
 
         ### prepare the actual sequence with adjusted trigger length.
         seq = DD.MBI_C13.initialize_carbon_sequence(self,**kw)
@@ -373,6 +392,10 @@ class purify_single_setup(DD.MBI_C13):
         only does this on the side of the setup with the shorter carbon gate time!
         additionally inserts a wait time to preserve the coherence of the electron state after the LDE element. 
         """
+        """
+        swap_type               = 'swap_w_init',
+        RO_after_swap           = True
+        """
         setup = qt.current_setup
         master_setup = self.joint_params['master_setup']
         # store this value as it is also important for the AWG/ADWIN communication
@@ -380,12 +403,15 @@ class purify_single_setup(DD.MBI_C13):
 
         # calculate sequence durations 
  
-        master_seq_duration = self.calculate_C13_swap_duration(master = True,verbose=False,**kw)
+        master_seq_duration = self.calculate_C13_swap_duration(master = True,verbose=True,**kw)
 
-        slave_seq_duration = self.calculate_C13_swap_duration(master= False,verbose=False,**kw)
+        slave_seq_duration = self.calculate_C13_swap_duration(master= False,verbose=True,**kw)
 
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
         
+        print 'master/slave durations'
+        print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
+        # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
 
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
@@ -417,7 +443,7 @@ class purify_single_setup(DD.MBI_C13):
             ElectronDD.tau = self.params['decouple_before_swap_tau']
             self.params['ElectronDD_tau'] = ElectronDD.tau ### we create this parameter for communication with LDE element. See _LDE_rephasing_elt(...) in LDE_element.py
             ElectronDD.no_connection_elt = True
-            print 'number of pi pulses in the connection', ElectronDD.N
+            # print 'number of pi pulses in the connection', ElectronDD.N
             ### we rephase by hand here. not recommended usually but crucial to keep the timing correct for both setups!!!
             pi_duration =  self.params['fast_pi_duration']
             c_gate_tau = self.params['C'+str(self.params['carbon'])+'_Ren_tau'+self.params['electron_transition']][0]
@@ -482,7 +508,7 @@ class purify_single_setup(DD.MBI_C13):
             else:
                 Gate.event_jump = 'next'
                 Gate.go_to = 'start'
-                
+
                 if self.params['PLU_during_LDE'] == 0:
                     Gate.go_to = None
                 

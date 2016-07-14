@@ -417,7 +417,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
-    # m.params['general_sweep_pts'] = np.array([2e-6])
+    m.params['general_sweep_pts'] = np.array([2e-6])
     m.params['sweep_name'] = m.params['general_sweep_name']
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
@@ -724,22 +724,32 @@ def EntangleXX(name,debug = False,upload_only=False):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def PurifyZZ(name):
+def PurifyZZ(name,debug = False,upload_only=False):
     pass
 
-def PurifyXX(name): 
-    pass
+def PurifyXX(name,debug = False,upload_only=False): 
+    m = purify(name)
+    sweep_purification.prepare(m)
+    
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['do_general_sweep'] = 0
+    m.params['Tomography_bases'] = ['X']
+    sweep_purification.turn_all_sequence_elements_on(m)
 
-def PurifyYY(name):
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+def PurifyYY(name,debug = False,upload_only=False):
     pass
 
 
 if __name__ == '__main__':
 
     ########### local measurements
-    MW_Position(name+'_MW_position',upload_only=False)
+    # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -747,10 +757,18 @@ if __name__ == '__main__':
 
     ###### non-local measurements // purification parameters
     #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    PurifyXX(name+'_Purify_XX_no_analysis',debug = False, upload_only = True)
+
+
+
+
+
+
+
 
 
     ###### non-local measurements // Barrett Kok parameters
-    #BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
+    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
     # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
