@@ -737,6 +737,9 @@ def PurifyXX(name,debug = False,upload_only=False):
     m.params['Tomography_bases'] = ['X']
     sweep_purification.turn_all_sequence_elements_on(m)
 
+    m.params['PLU_during_LDE'] = 0
+    m.joint_params['LDE_attempts'] = 20
+
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -757,7 +760,7 @@ if __name__ == '__main__':
 
     ###### non-local measurements // purification parameters
     #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
-    PurifyXX(name+'_Purify_XX_no_analysis',debug = False, upload_only = True)
+    PurifyXX(name+'_Purify_XX',debug = False, upload_only = True)
 
 
 

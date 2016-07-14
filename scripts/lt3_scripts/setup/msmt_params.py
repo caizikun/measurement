@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 327.464+1.64,#329.06,#4.162, #adwin needs positive values
+    'phase_per_sequence_repetition'    : 327.464+1.64-0.207,#329.06,#4.162, #adwin needs positive values
     'phase_per_compensation_repetition': 14.067, # adwin needs positive values
-    'total_phase_offset_after_sequence': 67-45.3,#222.69, #68.386,#42.328,
+    'total_phase_offset_after_sequence': 139.8,#67-45.3-61.9,#222.69, #68.386,#42.328,
 
 	# #########################
 	# #####     SIL1      #####
@@ -267,7 +267,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447834.54,
+	'C1_freq_0' 		: 447847.78,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -275,12 +275,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447834.54,
-	'C1_freq_1_p1' 		: 425436.75,
+	'C1_freq_0' 		: 447847.78,
+	'C1_freq_1_p1' 		: 425436.83,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.18] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [45.83] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -471,7 +471,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.55,#0.2
+        'aom_amplitude':					0.45,#0.2
 }
 
 
@@ -481,7 +481,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
-		'C13_MBI_RO_duration':                  25,  
+		'C13_MBI_RO_duration':                  40,  
 		'E_C13_MBI_RO_amplitude':               0.2e-9, 
 		'SP_duration_after_C13':                30, #use long repumping in case of swap init
 		'A_SP_amplitude_after_C13_MBI':         12e-9,

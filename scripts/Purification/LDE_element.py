@@ -156,14 +156,16 @@ def generate_LDE_elt(msmt,Gate, **kw):
     ### 2 syncs
 
     # 2a HH sync
-    if msmt.params['sync_during_LDE'] == 1 :
-        e.add(Gate.HHsync,
-            refpulse = 'initial_delay')
 
-        ### one awg has to sync all yime-tagging devices.
-        if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
-            # print 'i added the thing' 
-            e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
+    if 'LDE2' in Gate.name:
+        if msmt.params['sync_during_LDE'] == 1 :
+            e.add(Gate.HHsync,
+                refpulse = 'initial_delay')
+
+            ### one awg has to sync all yime-tagging devices.
+            if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
+                # print 'i added the thing' 
+                e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,

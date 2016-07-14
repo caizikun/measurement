@@ -21,15 +21,15 @@ print joint_params['LDE_final_mw_phase']
 ### joint carbon parameters. Need to be updated by hand.
 joint_params['slave_N'] = [12]
 joint_params['slave_tau'] = [10.886e-6]
-joint_params['slave_eigen_phase'] = 47.18
-joint_params['slave_freq_0'] = 447834.54
-joint_params['slave_freq_1'] = 425436.75
+joint_params['slave_eigen_phase'] = 45.83
+joint_params['slave_freq_0'] = 447847.78
+joint_params['slave_freq_1'] = 425436.83
 joint_params['slave_freq'] = 434615.6
 joint_params['slave_min_phase_correct'] = 2
 joint_params['slave_min_dec_tau'] = 30e-9 + 90e-9
 joint_params['slave_max_dec_tau'] = 0.255e-6
 joint_params['slave_dec_pulse_multiple'] = 4
-joint_params['slave_carbon_init_RO_wait'] = 75e-6 #50 us + C13_MBI RO duration
+joint_params['slave_carbon_init_RO_wait'] = 90e-6 #50 us + C13_MBI RO duration
 joint_params['slave_fast_pi_duration'] = 90e-9
 joint_params['slave_fast_pi2_duration'] = 46e-9
 
@@ -47,7 +47,7 @@ joint_params['master_carbon_init_RO_wait'] = 90e-6
 joint_params['master_fast_pi_duration'] = 94e-9
 joint_params['master_fast_pi2_duration'] = 50e-9
 
-joint_params['master_slave_AWG_first_element_delay'] = 500e-9 #DON'T CHANGE THIS! HIGHLY DEPENDENT ON DELAYS
+joint_params['master_slave_AWG_first_element_delay'] = -500e-9 #DON'T CHANGE THIS! HIGHLY DEPENDENT ON DELAYS
 
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False
