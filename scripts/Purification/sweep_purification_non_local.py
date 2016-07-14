@@ -750,7 +750,7 @@ if __name__ == '__main__':
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
 
 
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
@@ -759,5 +759,5 @@ if __name__ == '__main__':
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
     #full_sequence(name+'_full_sequence__Z', upload_only = False,do_Z = True)
 
-    # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
+    phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
