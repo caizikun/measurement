@@ -30,6 +30,8 @@ joint_params['slave_min_dec_tau'] = 30e-9 + 90e-9
 joint_params['slave_max_dec_tau'] = 0.255e-6
 joint_params['slave_dec_pulse_multiple'] = 4
 joint_params['slave_carbon_init_RO_wait'] = 75e-6 #50 us + C13_MBI RO duration
+joint_params['slave_fast_pi_duration'] = 90e-9
+joint_params['slave_fast_pi2_duration'] = 46e-9
 
 joint_params['master_N'] = [34]
 joint_params['master_tau'] = [6.406e-6]
@@ -42,7 +44,10 @@ joint_params['master_min_dec_tau'] = 2.0e-6
 joint_params['master_max_dec_tau'] = 2.5e-6
 joint_params['master_dec_pulse_multiple'] = 4
 joint_params['master_carbon_init_RO_wait'] = 90e-6
+joint_params['master_fast_pi_duration'] = 94e-9
+joint_params['master_fast_pi2_duration'] = 50e-9
 
+joint_params['master_slave_AWG_first_element_delay'] = 500e-9 #DON'T CHANGE THIS! HIGHLY DEPENDENT ON DELAYS
 
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False
@@ -63,17 +68,3 @@ joint_params['master_average_repump_time']  = params_lt4.params_lt4['average_rep
 
 joint_params['slave_LDE_decouple_time']     = params_lt3.params_lt3['LDE_decouple_time']
 joint_params['slave_average_repump_time']   = params_lt3.params_lt3['average_repump_time']
-
-
-### everything PQ is stored in local parameters
-# joint_params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-# joint_params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-# joint_params['MIN_SYNC_BIN'] =       0
-# joint_params['MAX_SYNC_BIN'] =       20000
-# joint_params['MIN_HIST_SYNC_BIN'] =  1
-# joint_params['MAX_HIST_SYNC_BIN'] =  15000
-# joint_params['TTTR_RepetitiveReadouts'] =  10 #
-# joint_params['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-# joint_params['measurement_abort_check_interval']    = 2. #sec
-# joint_params['wait_for_late_data'] = 5 #in units of measurement_abort_check_interval
-# joint_params['use_live_marker_filter']=True

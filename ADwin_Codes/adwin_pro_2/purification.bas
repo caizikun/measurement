@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,419,419,420,420,435,435,661,661,732,732,911,912,913,920,921,922
-' Foldings                       = 591,614,642,695,855
+' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
+' Foldings                       = 593,616,644,697,857
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -346,6 +346,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate
     
   Next AWG_sequence_repetitions_second_attempt
+  AWG_sequence_repetitions_second_attempt = 0 ' reinit. otherwise error
+  
 ''''''''''''''''''''''''''''
   ' init parameters
 ''''''''''''''''''''''''''''

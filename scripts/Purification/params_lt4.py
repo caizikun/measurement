@@ -38,7 +38,6 @@ params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sampl
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 
-
 #adwin params defs:
 params_lt4['SP_duration'] = 30 #10
 params_lt4['wait_after_pulse_duration'] = 1
