@@ -195,7 +195,7 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :(-2.35+(25-6.6)-0.5+0.24)-0.25,#350.776-14.472, #adwin needs positive values
+    'phase_per_sequence_repetition'    :(-2.35+(25-6.6)-0.5+0.24)-0.25+0.138,#350.776-14.472, #adwin needs positive values
     'phase_per_compensation_repetition':17.557,#360-6.21, # adwin needs positive values
     'total_phase_offset_after_sequence':65-43-10.5+90,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
 ###############
@@ -228,12 +228,12 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : ( 416660.0+  443263.673)/2,
-	'C4_freq_0' 		: 443170.72,
-	'C4_freq_1_m1' 		: 416569.36,
+	'C4_freq_0' 		: 443175.36,
+	'C4_freq_1_m1' 		: 416579.34,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [128.68] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [129.31] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],

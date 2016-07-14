@@ -71,7 +71,7 @@ params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 1e-9
 params_lt3['PLU_2_delay']             = 1e-9
 params_lt3['PLU_3_delay']             = 50e-9
-params_lt3['PLU_4_delay']             = 2000e-9 # don't change this
+params_lt3['PLU_4_delay']             = 2500e-9 # don't change this
 
 params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']

@@ -35,10 +35,10 @@ joint_params['slave_fast_pi2_duration'] = 46e-9
 
 joint_params['master_N'] = [34]
 joint_params['master_tau'] = [6.406e-6]
-joint_params['master_eigen_phase'] = 128.68
-joint_params['master_freq_0'] = 443170.72
-joint_params['master_freq_1'] = 416569.36
-joint_params['master_freq'] = ( 416660.0+  443263.673)/2
+joint_params['master_eigen_phase'] = 129.31
+joint_params['master_freq_0'] =  443175.36
+joint_params['master_freq_1'] = 416579.34
+joint_params['master_freq'] = (  416579.34,+  443175.36)/2
 joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.0e-6
 joint_params['master_max_dec_tau'] = 2.5e-6
@@ -47,7 +47,7 @@ joint_params['master_carbon_init_RO_wait'] = 90e-6
 joint_params['master_fast_pi_duration'] = 94e-9
 joint_params['master_fast_pi2_duration'] = 50e-9
 
-joint_params['master_slave_AWG_first_element_delay'] = 500e-9 #DON'T CHANGE THIS! HIGHLY DEPENDENT ON DELAYS
+joint_params['master_slave_AWG_first_element_delay'] = -500e-9 #DON'T CHANGE THIS! HIGHLY DEPENDENT ON DELAYS
 
 ### parameters for LDE timing:
 joint_params['TPQI_normalisation_measurement'] = False
