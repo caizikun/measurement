@@ -7,22 +7,30 @@ from lib.network import object_sharer as objsh
 import logging
 from lib import config
 import os
+import gobject
 
 class remote_measurement_helper(Instrument):
     
     def __init__(self, name, exec_qtlab_name, **kw):
         Instrument.__init__(self, name)
         self._exec_qtlab_name = exec_qtlab_name
-        ins_pars  = {'measurement_name'    :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
-                    'is_running'       :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
-                    'data_path'         :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
-                    'script_path'       :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
-                    }           
+        ins_pars  = {'measurement_name'     :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
+                    'is_running'            :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},
+                    'data_path'             :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
+                    'script_path'           :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
+                    'live_plot_interval'    :   {'type':types.FloatType, 'val':2,'flags':Instrument.FLAG_GETSET},
+                    'do_live_plotting'      :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET}
+                    }
         instrument_helper.create_get_set(self,ins_pars)
         
         self.add_function('execute_script')
         self.add_function('get_measurement_params')
         self.add_function('set_measurement_params')
+
+        self.add_function('start_adwin_live_plotting')
+        self.add_function('get_adwin_data')
+        self.add_function('plot_adwin_data')
+        self.add_function('stop_adwin_live_plotting')
 
         self._measurement_params = {}
 
@@ -73,6 +81,40 @@ class remote_measurement_helper(Instrument):
             logging.warning(self.get_name() + ': Remote qtlab instance ' + self._exec_qtlab_name +' not found, client disconnected?')
         return True
 
+    def start_adwin_live_plotting(self):
+        if not self.get_do_live_plotting():
+            self.set_do_live_plotting(True)
+            gobject.timeout_add(int(self.get_live_plot_interval()*1e3),self.plot_adwin_data)
+        else:
+            print 'WARNING: Live plotting is already running!'
+
+    def get_adwin_data(self,index,start,length):
+        pass
+
+    def plot_adwin_data(self):
+
+        if not self.get_do_live_plotting():
+            return False
+
+        if self.get_is_running():
+            try:
+                self.sweep_pts = self._measurement_params['sweep_pts']
+                self.total_reps = self._measurement_params['repetitions']
+                print 'these are the total reps',self.total_reps
+
+            except:
+                print 'Measurement helper: No sweep points found for live plotting'
+
+                
+            return True
+
+        else:
+            self.sweep_pts = []
+            self.ssro_results = []
+            self.total_reps = 1
+            return True
+    def stop_adwin_live_plotting(self):
+        self.set_do_live_plotting(False)
 
     def get_measurement_params(self):
         return self._measurement_params       

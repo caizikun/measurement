@@ -740,7 +740,6 @@ def PurifyZZ(name,debug = False,upload_only=False):
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
-
 def PurifyXX(name,debug = False,upload_only=False): 
     m = purify(name)
     sweep_purification.prepare(m)
@@ -767,7 +766,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
     tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
-    #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
+    # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
@@ -776,7 +775,6 @@ if __name__ == '__main__':
     #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
     # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
-
 
 
 
@@ -811,5 +809,5 @@ if __name__ == '__main__':
             qt.msleep(1)
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                break
-
+               
             PurifyXX(name+'_Purify_XX_'+str(i),debug = False, upload_only = False)
