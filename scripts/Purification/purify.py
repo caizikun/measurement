@@ -725,7 +725,21 @@ def EntangleXX(name,debug = False,upload_only=False):
 
 
 def PurifyZZ(name,debug = False,upload_only=False):
-    pass
+    m = purify(name)
+    sweep_purification.prepare(m)
+    
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['do_general_sweep'] = 0
+    m.params['Tomography_bases'] = ['Z']
+    sweep_purification.turn_all_sequence_elements_on(m)
+
+    # m.params['PLU_during_LDE'] = 0
+    # m.joint_params['LDE_attempts'] = 20
+
+
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 def PurifyXX(name,debug = False,upload_only=False): 
     m = purify(name)
@@ -737,8 +751,8 @@ def PurifyXX(name,debug = False,upload_only=False):
     m.params['Tomography_bases'] = ['X']
     sweep_purification.turn_all_sequence_elements_on(m)
 
-    m.params['PLU_during_LDE'] = 0
-    m.joint_params['LDE_attempts'] = 20
+    # m.params['PLU_during_LDE'] = 0
+    # m.joint_params['LDE_attempts'] = 20
 
 
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
@@ -752,7 +766,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     #optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -760,7 +774,8 @@ if __name__ == '__main__':
 
     ###### non-local measurements // purification parameters
     #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
-    PurifyXX(name+'_Purify_XX',debug = False, upload_only = True)
+    # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
+    # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
 
 
 
@@ -779,13 +794,22 @@ if __name__ == '__main__':
 
 
 
+    if False:
+        for i in range(5):
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(1)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+               break
 
-    # for i in range(10):
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(1)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #        break
+            PurifyZZ(name+'_Purify_ZZ_'+str(i),debug = False, upload_only = False)
 
-    #     TPQI(name+'_TPQI_gate_noise'+str(i),debug = False,upload_only=False)
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(1)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+               break
+
+            PurifyXX(name+'_Purify_XX_'+str(i),debug = False, upload_only = False)

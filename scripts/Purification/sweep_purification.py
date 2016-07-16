@@ -582,7 +582,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['do_general_sweep']    = 1
     m.params['general_sweep_name'] = 'phase_correct_max_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['general_sweep_pts'] = np.arange(minReps,int(maxReps),step)
     m.params['pts'] = len(m.params['general_sweep_pts'])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
@@ -835,7 +835,7 @@ if __name__ == '__main__':
     #characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
+    calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
     #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
@@ -844,5 +844,5 @@ if __name__ == '__main__':
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
-    full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
+    # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
