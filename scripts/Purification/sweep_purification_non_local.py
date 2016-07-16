@@ -549,7 +549,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     prepare(m)
 
     ### general params
-    pts = 8
+    pts = 10
     
     m.params['reps_per_ROsequence'] = 1000
 
@@ -755,9 +755,9 @@ if __name__ == '__main__':
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
-    #full_sequence(name+'_full_sequence__Z', upload_only = False,do_Z = True)
+    full_sequence(name+'_full_sequence_Z', upload_only = False,do_Z = True)
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 

@@ -44,6 +44,10 @@ class purify_single_setup(DD.MBI_C13):
 
     def autoconfig(self):
 
+        #testing
+        
+        self.remote_helper.set_is_running(False)
+
         self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
                                     'ch1m2': 'ch1_marker2',
                                     'ch2m1': 'ch2_marker1',
@@ -123,6 +127,7 @@ class purify_single_setup(DD.MBI_C13):
         self.start_adwin_process(load=False)
         qt.msleep(0.1)
         self.start_keystroke_monitor('abort')
+        # self.remote_helper.set_is_running(True)
 
         while self.adwin_process_running():
 
@@ -142,6 +147,8 @@ class purify_single_setup(DD.MBI_C13):
             pass # means it's already stopped
 
         self.stop_adwin_process()
+        # self.remote_helper.set_is_running(False)
+
         reps_completed = self.adwin_var('completed_reps')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['repetitions']))
@@ -343,7 +350,7 @@ class purify_single_setup(DD.MBI_C13):
         if master:
             seq_duration += self.joint_params['master_average_repump_time']
         else:
-            seq_duration += self.joint_params['slave_average_repump_time']
+            seq_duration += self.joint_params['slave_average_repump_time']+self.joint_params['master_slave_AWG_first_element_delay']
 
         return seq_duration
 
@@ -358,28 +365,41 @@ class purify_single_setup(DD.MBI_C13):
         store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
 
         # calculate sequence durations 
-        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=True,**kw)
-        slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=True,**kw)
+        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
+        slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
         
         init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
 
         # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
         # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
-        
+
+        do_wait = False
+        ### determine whether or not to wait for the other setup
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + slave_seq_duration - master_seq_duration - init_RO_wait_diff
+                time_diff = slave_seq_duration - master_seq_duration - init_RO_wait_diff
             
             elif setup != master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff > 0):
                 # adjust the length of the element of the slave RO wait time.
-
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
+                
+                # time_diff = master_seq_duration - slave_seq_duration + init_RO_wait_diff
 
+                # microseconds,nanoseconds = divmod(time_diff*1e9,1e3)
+                # self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + nanoseconds*1e-9
+                # wait_for_other_setup = DD.Gate('wait_for_others_init_'+str(kw.get('pt',0)),'passive_elt',wait_time = (microseconds+2)*1e-6) #+2 because DD_2 thinks it is smart.
+                # do_wait = True
         # print 'after calculating for the slave:', (self.params['Carbon_init_RO_wait']+slave_seq_duration)*1e6
 
         ### prepare the actual sequence with adjusted trigger length.
         seq = DD.MBI_C13.initialize_carbon_sequence(self,**kw)
+
+
+        if do_wait:
+            seq[-1].event_jump = 'next'
+            seq.append(wait_for_other_setup)
 
         ### restore the old value
         self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
@@ -412,6 +432,7 @@ class purify_single_setup(DD.MBI_C13):
         # print 'master/slave durations'
         # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
         # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
+        do_wait = False
 
         if self.params['is_two_setup_experiment'] > 0:
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
@@ -422,10 +443,16 @@ class purify_single_setup(DD.MBI_C13):
             elif setup != master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff > 0):
                 # adjust the length of the element of the slave RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + master_seq_duration - slave_seq_duration + init_RO_wait_diff
-                
+                # time_diff = master_seq_duration - slave_seq_duration + init_RO_wait_diff
+
+                # microseconds,nanoseconds = divmod(time_diff*1e9,1e3)
+                # self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + nanoseconds*1e-9
+                # wait_for_other_setup = DD.Gate('wait_for_others_swap_'+str(kw.get('pt',0)),'passive_elt',wait_time = (microseconds+2)*1e-6) #+2 because DD_2 thinks it is smart.
+                # do_wait = True
 
         #### In case that we have a large discrepancy in duration for the swap we bridge time by decoupling the electron spin before the swap.
         if self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait > 2000e-6:
+            print 'WARNING: Decoupling before Swap gate. I AM BROKEN!!! FIX ME!!!'
             bridged_time = self.params['Carbon_init_RO_wait'] - store_C_init_RO_wait
             no_of_pulses_float = bridged_time/(2*self.params['decouple_before_swap_tau']) ### I for now use the dynamic phase tau with an additional factor of 4. 
             no_of_pulses_int = np.floor(no_of_pulses_float)
@@ -474,8 +501,11 @@ class purify_single_setup(DD.MBI_C13):
             seq = []
             
 
-        seq.extend(DD.MBI_C13.carbon_swap_gate_multi_options(self,**kw))
 
+        seq.extend(DD.MBI_C13.carbon_swap_gate_multi_options(self,**kw))
+        if do_wait:
+            seq[-1].event_jump = 'next'
+            seq.append(wait_for_other_setup)
         ### restore the old value
         self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
 
