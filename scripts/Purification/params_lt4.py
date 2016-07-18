@@ -105,7 +105,7 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
-params_lt4['dynamic_phase_tau']			= 2.298e-6
+params_lt4['dynamic_phase_tau']			= 2.299e-6#2.298e-6
 params_lt4['dynamic_phase_N']			= 2
 params_lt4['phase_feedback_resolution']	= 4.5
 

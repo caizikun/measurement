@@ -44,10 +44,6 @@ class purify_single_setup(DD.MBI_C13):
 
     def autoconfig(self):
 
-        #testing
-        
-        self.remote_helper.set_is_running(False)
-
         self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
                                     'ch1m2': 'ch1_marker2',
                                     'ch2m1': 'ch2_marker1',
@@ -59,6 +55,8 @@ class purify_single_setup(DD.MBI_C13):
 
 
         #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
+        # this is most of the time only necessary if you made a programming error ;)
+        # check variable declarations and definitions
 
         qt.msleep(0.5)
 

@@ -290,9 +290,9 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.394e-6,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :16e-9, # steps of 2e-9
-										'C_N' 		: [28,24,26,30], 
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.394e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  :10e-9, # steps of 2e-9
+										'C_N' 		: [34],#,24,26,30], 
 										'C_N_steps' : 14} # steps of 2 	
 
 
@@ -321,7 +321,7 @@ if __name__ == '__main__':
 	for c in carbons:
 
 		#get on NV before we start
-		optimize()
+		# optimize()
 
 		breakst = show_stopper()
 		if breakst: break
@@ -394,6 +394,6 @@ if __name__ == '__main__':
 										N_list = current_N_list,
 										debug = False)
 
-					optimize()
+					# optimize()
 
 			
