@@ -137,6 +137,10 @@ class purify_single_setup(DD.MBI_C13):
                 break
 
             reps_completed = self.adwin_var('completed_reps')
+            # try:
+            #     self.remote_helper.set_completed_reps(reps_completed)
+            # except:
+            #     print 'this remote helper thing does not work'
             print('completed %s / %s readout repetitions' % \
                     (reps_completed, self.params['repetitions']))
             qt.msleep(1)

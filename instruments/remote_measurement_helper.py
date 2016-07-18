@@ -19,7 +19,8 @@ class remote_measurement_helper(Instrument):
                     'data_path'             :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'script_path'           :   {'type':types.StringType,'val':'','flags':Instrument.FLAG_GETSET},
                     'live_plot_interval'    :   {'type':types.FloatType, 'val':2,'flags':Instrument.FLAG_GETSET},
-                    'do_live_plotting'      :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET}
+                    'do_live_plotting'      :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},
+                    'completed_reps'        :   {'type':types.IntType, 'val':0,'flags':Instrument.FLAG_GETSET}
                     }
         instrument_helper.create_get_set(self,ins_pars)
         
@@ -100,12 +101,15 @@ class remote_measurement_helper(Instrument):
             try:
                 self.sweep_pts = self._measurement_params['sweep_pts']
                 self.total_reps = self._measurement_params['repetitions']
-                print 'these are the total reps',self.total_reps
+                # print 'these are the total reps',self.total_reps
 
             except:
                 print 'Measurement helper: No sweep points found for live plotting'
+                return True
 
-                
+
+            #### SSRO results are always assumed to be at DATA_27!
+
             return True
 
         else:

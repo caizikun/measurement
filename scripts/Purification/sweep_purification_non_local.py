@@ -623,18 +623,17 @@ def full_sequence(name,debug=False,upload_only = False,do_Z = False):
     m.params['is_two_setup_experiment'] = 1
     m.params['do_carbon_init'] = 1
     m.params['do_swap_onto_carbon'] = 1
-    m.params['do_C_init_SWAP_wo_SSRO'] = 1 # we still have to decide on this
+    m.params['do_C_init_SWAP_wo_SSRO'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     m.params['do_LDE_2'] = 1
     m.params['do_phase_correction'] = 1
     m.params['do_purifying_gate'] = 1
     m.params['do_carbon_readout']  = 1
-    m.params['is_two_setup_experiment'] = 0
     # m.joint_params['LDE_attempts'] = 20
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
-    m.joint_params['opt_pi_pulses'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0
 
     m.params['mw_first_pulse_phase'] = m.params['Y_phase'] #align with the phase the first pi/2 of the purification gate.
 
@@ -755,9 +754,9 @@ if __name__ == '__main__':
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
-    full_sequence(name+'_full_sequence_Z', upload_only = False,do_Z = True)
+    # full_sequence(name+'_full_sequence_Z', upload_only = False,do_Z = True)
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
