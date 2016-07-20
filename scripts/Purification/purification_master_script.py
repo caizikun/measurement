@@ -24,8 +24,10 @@ def optimize():
         return False
    
     qt.msleep(3)
+    print 'mash q now to stop the measurement'
     optimize_ok = False
     for i in range(1):
+
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
         if qt.current_setup=='lt4':
@@ -84,13 +86,13 @@ def check_smb_errors():
     return ret_val
 
 if __name__ == '__main__':
-    if qt.current_setup=='lt4':
+    if qt.current_setup=='lt4' or qt.current_setup == 'lt3':
     	#stools.start_bs_counter()
         start_index = 1
         
         skip_first=True
 
-        cycles=300
+        cycles=5
 
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -99,39 +101,39 @@ if __name__ == '__main__':
                 qt.bell_name_index = i
                 qt.bell_succes=False
                 execfile(r'purify.py')
-                output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
-                output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
-                        not(qt.bell_succes)                     or \
-                        (output_lt4 == 'purification_optimizer_failed') or \
-                        (output_lt3 == 'purification_optimizer_failed'): 
-                    break
-                qt.msleep(20)
+                # output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
+                # output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
+                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
+                #         not(qt.bell_succes)                     or \
+                #         (output_lt4 == 'purification_optimizer_failed') or \
+                #         (output_lt3 == 'purification_optimizer_failed'): 
+                #     break
+                # qt.msleep(20)
             skip_first=False
 
             print 'starting the measurement at lt3'
-            lt3_helper = qt.instruments['lt3_helper']
-            lt3_helper.set_is_running(False)
-            lt3_helper.set_measurement_name('optimizing')
-            lt3_helper.set_script_path(r'Y:/measurement/scripts/Purification/purification_master_script.py')
-            lt3_helper.execute_script()
+            # lt3_helper = qt.instruments['lt3_helper']
+            # lt3_helper.set_is_running(False)
+            # lt3_helper.set_measurement_name('optimizing')
+            # lt3_helper.set_script_path(r'Y:/measurement/scripts/Purification/purification_master_script.py')
+            # lt3_helper.execute_script()
             print 'Loading CR linescan'
             execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
             lt4_succes = optimize()
             qt.msleep(5)
             #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
             #qt.msleep(5)
-            while lt3_helper.get_is_running():
-                if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
-                    print 'Measurement aborted while waiting for lt3'
-                    lt3_succes= False
-                    break
-            qt.msleep(5)
-            output = lt3_helper.get_measurement_name()         
-            lt3_success = (output == 'True')
-            print 'Was lt3 successfully optimized? ', lt3_success
+            # while lt3_helper.get_is_running():
+            #     if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
+            #         print 'Measurement aborted while waiting for lt3'
+            #         lt3_succes= False
+            #         break
+            # qt.msleep(5)
+            # output = lt3_helper.get_measurement_name()         
+            # lt3_success = (output == 'True')
+            # print 'Was lt3 successfully optimized? ', lt3_success
             #lt3_success = True 
-            if not(lt4_succes) or not(lt3_success):
+            if not(lt4_succes):# or not(lt3_success):
                 break  #cycle is ~1 Hour
         #stools.stop_bs_counter()
 
@@ -142,6 +144,6 @@ if __name__ == '__main__':
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
         qt.msleep(10) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
-        qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
-        qt.instruments['remote_measurement_helper'].set_is_running(False)
+        # qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
+        # qt.instruments['remote_measurement_helper'].set_is_running(False)
         print 'All done. Ready to run Purification.'
