@@ -407,7 +407,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['is_two_setup_experiment'] = 2
 
-    m.joint_params['LDE_attempts'] = 250
+    m.joint_params['LDE1_attempts'] = 250
 
     m.params['LDE_SP_delay'] = 0e-6
 
@@ -440,6 +440,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
+    m.params['LDE1_attempts'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
@@ -533,7 +534,7 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 0
-    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['LDE1_attempts'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
@@ -554,10 +555,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     m = purify(name)
     sweep_purification.prepare(m)
-    # if qt.current_setup == 'lt3':
-    #     print 'I am lt3 and therefore I am using the timeharp'
-    #     load_TH_params(m)
-    # load_BK_params(m)
+
     ### general params
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 5000
@@ -566,9 +564,10 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 250
+    m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
+    m.joint_params['LDE1_attempts'] = 250
 
-    m.params['LDE_final_mw_amplitude'] = 0
+    
 
     #m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
     m.joint_params['LDE_element_length'] = 10e-6#m.joint_params['LDE_element_length']  + 1e-6
@@ -579,7 +578,7 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-
+    m.joint_params['LDE1_attempts'] = 250
 
     ### upload
 
@@ -642,7 +641,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['LDE_element_length'] = 10e-6
     m.joint_params['opt_pi_pulses'] = 5
     m.joint_params['opt_pulse_separation'] = 1400e-9
-    m.joint_params['LDE_attempts'] = 100
+    m.joint_params['LDE1_attempts'] = 100
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
@@ -662,13 +661,6 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
     ### upload and run
-    # m.params['do_general_sweep'] = 1
-    # m.params['general_sweep_name'] = 'LDE_attempts'
-    # print 'sweeping the', m.params['general_sweep_name']
-    # m.params['general_sweep_pts'] = np.arange(2,503,50)
-    # m.params['pts'] = len(m.params['general_sweep_pts'])
-    # m.params['sweep_name'] = m.params['general_sweep_name'] 
-    # m.params['sweep_pts'] = m.params['general_sweep_pts']
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
@@ -688,7 +680,7 @@ def EntangleZZ(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 200
+    m.joint_params['LDE1_attempts'] = 250
 
     m.params['LDE_final_mw_amplitude'] = 0
 
@@ -712,7 +704,7 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 250
+    m.joint_params['LDE1_attempts'] = 250
     ### upload and run
 
     ### this can also be altered to the actual theta pulse by negating the if statement
@@ -758,13 +750,7 @@ def PurifyXX(name,debug = False,upload_only=False):
 def PurifyYY(name,debug = False,upload_only=False):
     pass
 
-def optimize_position():
-    """
-    does not work!!!!
-    """
-    execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
-    qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
-    qt.instruments['optimiz0r'].optimize(dims=['z','x','y'], cycles =2)
+
 if __name__ == '__main__':
 
     ########### local measurements
@@ -777,7 +763,7 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // purification parameters
-    #SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
     # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
 
