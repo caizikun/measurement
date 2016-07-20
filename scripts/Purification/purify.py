@@ -558,14 +558,14 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
 
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 5000
+    m.params['reps_per_ROsequence'] = 2000
 
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE1_attempts'] = 500
 
     
 
@@ -756,7 +756,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -783,7 +783,7 @@ if __name__ == '__main__':
 
 
 
-    if False:
+    if qt.master_script_is_running:
         for i in range(2):
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -792,7 +792,7 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                break
 
-            PurifyZZ(name+'_Purify_ZZ_'+str(i),debug = False, upload_only = False)
+            PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index),debug = False, upload_only = False)
 
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
@@ -801,6 +801,6 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                break
             
-            PurifyXX(name+'_Purify_XX_'+str(i),debug = False, upload_only = False)
+            PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index),debug = False, upload_only = False)
 
 
