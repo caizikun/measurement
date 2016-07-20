@@ -158,6 +158,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_repump_after_LDE2']    = 0
     m.params['PLU_during_LDE']          = 0
     m.params['is_TPQI']                 = 0
+    m.params['force_LDE_attempts_before_init'] = 0
 
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
@@ -183,7 +184,7 @@ def turn_all_sequence_elements_on(m):
     m.params['do_repump_after_LDE2']    = 0
     m.params['PLU_during_LDE']          = 1
     m.params['is_TPQI']                 = 0
-
+    m.params['force_LDE_attempts_before_init'] = 0 ### this is only needed sweep LDE attempts + swap + tomo
 
 def repump_speed(name,debug = False,upload_only=False):
     """
@@ -208,7 +209,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 0
-    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['LDE1_attempts'] = 1
 
     # m.params['is_two_setup_experiment'] = 1
 
@@ -251,7 +252,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1 
 
-    m.joint_params['LDE_attempts'] = 75
+    m.joint_params['LDE1_attempts'] = 75
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] =1
 
@@ -268,7 +269,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     autoconfig = True
     if do_Z:
         for t in ['Z']:
-            m.joint_params['LDE_attempts'] = 800
+            m.joint_params['LDE1_attempts'] = 800
             if breakst:
                 break
             for ro in ['positive','negative']:
@@ -430,7 +431,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['input_el_state'] = 'Z'
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
     m.params['mw_first_pulse_amp'] = 0
-    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['LDE2_attempts'] = 1
 
 
     ### calculate sweep array
@@ -518,7 +519,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
 
     ### define sweep
     m.params['do_general_sweep']    = 1
-    m.params['general_sweep_name'] = 'LDE_attempts'
+    m.params['general_sweep_name'] = 'LDE2_attempts'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
     m.params['pts'] = len(m.params['general_sweep_pts'])
@@ -564,7 +565,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     m.params['do_phase_correction'] = 1
     m.params['do_purifying_gate'] = 1
     m.params['do_carbon_readout']  = 1
-    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['LDE2_attempts'] = 1
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
@@ -656,7 +657,7 @@ def full_sequence(name,debug=False,upload_only = False,do_Z = False):
 
     ### define sweep
     m.params['do_general_sweep']    = 1
-    m.params['general_sweep_name'] = 'LDE_attempts'
+    m.params['general_sweep_name'] = 'LDE2_attempts'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
     m.params['pts'] = len(m.params['general_sweep_pts'])
@@ -723,7 +724,7 @@ def phase_compensation_with_PLU(name,debug=False,upload_only = False,PLU = False
 
     ### define sweep
     m.params['do_general_sweep']    = 1
-    m.params['general_sweep_name'] = 'LDE_attempts'
+    m.params['general_sweep_name'] = 'LDE2_attempts'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.array([50])
     m.params['pts'] = len(m.params['general_sweep_pts'])
@@ -745,6 +746,8 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+
+    
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 

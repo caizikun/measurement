@@ -102,7 +102,6 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.MW_pi = pulse.cp(ps.Xpi2_pulse(m),phase = 0)
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
-
 def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):
     m = pulsar_msmt.General_mw2_PiCalibrationSingleElement(name)
     
@@ -401,7 +400,7 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
 
 if __name__ == '__main__':
     # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =15, debug = False, mw2=False)
-    calibrate_theta_pulse(SAMPLE_CFG + 'theta', debug = False, rng = 0.05)
+    calibrate_theta_pulse(SAMPLE_CFG + 'theta',rng = 0.05)
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)

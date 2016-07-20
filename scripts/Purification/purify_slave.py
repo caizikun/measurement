@@ -78,8 +78,9 @@ class purify_single_setup(DD.MBI_C13):
             print 'Omitting adwin load!!! Be wary of your changes!'
             # exec(loadstr)
 
-        self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
-
+        self.params['LDE1_attempts'] = self.joint_params['LDE1_attempts']
+        self.params['LDE2_attempts'] = self.joint_params['LDE2_attempts']
+        
         DD.MBI_C13.autoconfig(self)
 
         self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration'])*1e-6+50e-6
@@ -580,8 +581,8 @@ class purify_single_setup(DD.MBI_C13):
             LDE1 = DD.Gate('LDE1'+str(pt),'LDE')
             LDE1.el_state_after_gate = 'sup'
 
-            if self.params['LDE_attempts'] > 1:
-                LDE1.reps = self.params['LDE_attempts']-1
+            if self.params['LDE1_attempts'] > 1:
+                LDE1.reps = self.params['LDE1_attempts']-1
                 LDE1.is_final = False
                 LDE1_final = DD.Gate('LDE1_final_'+str(pt),'LDE')
                 LDE1_final.el_state_after_gate = 'sup'
@@ -590,13 +591,19 @@ class purify_single_setup(DD.MBI_C13):
             else:
                 LDE1.is_final = True
 
-            ### if statement to decide what LDE1 does: init or entangling.
+            ### if statement to decide what LDE1 does: init of the carbon via swap or entangling.
             if self.params['LDE_1_is_init'] >0:
-                LDE1.reps = 1
-                LDE1.is_final = True
+                if self.params['force_LDE_attempts_before_init'] == 0 or self.params['LDE1_attempts'] == 1: 
+                    LDE1.reps = 1
+                    LDE1.is_final = True
+
+                    manipulated_LDE_elt = copy.deepcopy(LDE1)
+                else:
+                    manipulated_LDE_elt = copy.deepcopy(LDE1_final)
+                    LDE1.reps = self.params['LDE1_attempts'] - 1
 
                 if self.params['input_el_state'] in ['X','mX','Y','mY']:
-                    LDE1.first_pulse_is_pi2 = True
+                    manipulated_LDE_elt.first_pulse_is_pi2 = True
 
                     #### define some phases:
                     x_phase = self.params['X_phase']
@@ -606,14 +613,21 @@ class purify_single_setup(DD.MBI_C13):
                                             'Y' :   x_phase + 180, 
                                             'mY':   x_phase}
 
-                    LDE1.first_mw_pulse_phase = first_mw_phase_dict[self.params['input_el_state']]
+                    manipulated_LDE_elt.first_mw_pulse_phase = first_mw_phase_dict[self.params['input_el_state']]
 
                 elif self.params['input_el_state'] in ['Z']:
-                    LDE1.no_first_pulse = True
+                    manipulated_LDE_elt.no_first_pulse = True
+
+
+                ### clean up by casting the manipulation back onto the original object:
+                if self.params['force_LDE_attempts_before_init'] == 0 or self.params['LDE1_attempts'] == 1: 
+                    LDE1 = manipulated_LDE_elt
+                else:
+                    LDE1_final = manipulated_LDE_elt
 
             ### if more than 1 reps then we need to take the final element into account
-            elif self.params['LDE_attempts'] != 1:
-                LDE1.reps = self.params['LDE_attempts'] - 1
+            elif self.params['LDE1_attempts'] != 1:
+                LDE1.reps = self.params['LDE1_attempts'] - 1
             
 
 
@@ -630,9 +644,9 @@ class purify_single_setup(DD.MBI_C13):
             ### Second LDE element goes here.
             LDE2 = DD.Gate('LDE2'+str(pt),'LDE')
             LDE2.el_state_after_gate = 'sup'
-            if self.params['LDE_attempts']>1:
+            if self.params['LDE2_attempts']>1:
                 LDE2.is_final = False
-                LDE2.reps = self.params['LDE_attempts']-1
+                LDE2.reps = self.params['LDE2_attempts']-1
                 LDE2_final = DD.Gate('LDE2_final_'+str(pt),'LDE')
                 LDE2_final.el_state_after_gate = 'sup'
                 LDE2_final.reps = 1
@@ -851,7 +865,7 @@ class purify_single_setup(DD.MBI_C13):
                 gate_seq.append(LDE2)
 
                 # need a final element for adwin communication
-                if self.params['LDE_attempts']> 1:
+                if self.params['LDE2_attempts']> 1:
                     gate_seq.append(LDE2_final)
 
                 if (self.params['do_purifying_gate'] > 0 or self.params['do_phase_correction'] > 0) and self.params['do_repump_after_LDE2'] == 0:

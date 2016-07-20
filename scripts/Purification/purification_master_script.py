@@ -24,6 +24,7 @@ def optimize():
         return False
    
     qt.msleep(3)
+    print 'mash q now to stop the measurement'
     optimize_ok = False
     for i in range(1):
         print 'press q now to stop measuring!'
@@ -85,7 +86,7 @@ def check_smb_errors():
     return ret_val
 
 if __name__ == '__main__':
-    if qt.current_setup=='lt4':
+    if qt.current_setup=='lt4' or qt.current_setup == 'lt3':
     	#stools.start_bs_counter()
         start_index = 1
         
@@ -146,6 +147,6 @@ if __name__ == '__main__':
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
         qt.msleep(10) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
-        qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
-        qt.instruments['remote_measurement_helper'].set_is_running(False)
+        # qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
+        # qt.instruments['remote_measurement_helper'].set_is_running(False)
         print 'All done. Ready to run Purification.'

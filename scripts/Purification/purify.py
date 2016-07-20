@@ -7,7 +7,6 @@ from collections import deque
 import measurement.lib.measurement2.measurement as m2
 import purify_slave, sweep_purification
 import measurement.lib.measurement2.pq.pq_measurement as pq
-from measurement.lib.measurement2.adwin_ssro import DD_2
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
@@ -815,13 +814,7 @@ if __name__ == '__main__':
             qt.msleep(1)
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                break
-              
+            
             PurifyXX(name+'_Purify_XX_'+str(i),debug = False, upload_only = False)
 
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(1)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-               break
 
