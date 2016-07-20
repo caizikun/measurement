@@ -759,7 +759,13 @@ def PurifyXX(name,debug = False,upload_only=False):
 def PurifyYY(name,debug = False,upload_only=False):
     pass
 
-
+def optimize_position():
+    """
+    does not work!!!!
+    """
+    execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
+    qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
+    qt.instruments['optimiz0r'].optimize(dims=['z','x','y'], cycles =2)
 if __name__ == '__main__':
 
     ########### local measurements
@@ -793,7 +799,7 @@ if __name__ == '__main__':
 
 
     if False:
-        for i in range(5):
+        for i in range(2):
             print '-----------------------------------'            
             print 'press q to stop measurement cleanly'
             print '-----------------------------------'
@@ -809,5 +815,13 @@ if __name__ == '__main__':
             qt.msleep(1)
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                break
-               
+              
             PurifyXX(name+'_Purify_XX_'+str(i),debug = False, upload_only = False)
+
+            print '-----------------------------------'            
+            print 'press q to stop measurement cleanly'
+            print '-----------------------------------'
+            qt.msleep(1)
+            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+               break
+

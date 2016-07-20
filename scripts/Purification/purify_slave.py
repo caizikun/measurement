@@ -835,6 +835,9 @@ class purify_single_setup(DD.MBI_C13):
 
                     gate_seq.extend(swap_with_init)
                 else:
+                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+
+                    gate_seq.extend(swap_with_init)
                     print '*'*20
                     print 'Warning '*4
                     print 'Swap without initialization not implemented'

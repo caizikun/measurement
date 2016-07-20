@@ -319,9 +319,8 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['is_two_setup_experiment'] = 1
     m.params['do_general_sweep']    = 1
-    m.params['do_carbon_init']  = 1 # 
+    m.params['do_carbon_init']  = 1# 
     m.params['do_C_init_SWAP_wo_SSRO'] = 1 # 
     m.params['do_carbon_readout']  = 1 
     m.params['do_swap_onto_carbon'] = 1
@@ -749,12 +748,12 @@ if __name__ == '__main__':
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
 
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
     # full_sequence(name+'_full_sequence_Z', upload_only = False,do_Z = True)
 

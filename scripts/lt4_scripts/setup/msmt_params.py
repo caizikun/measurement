@@ -49,13 +49,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.91#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_amp = 0.942#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.570 
+	hermite_pi2_amp = 0.585
 
 
 ### General settings for AdwinSSRO
@@ -195,9 +195,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :15.98,#350.776-14.472, #adwin needs positive values
+    'phase_per_sequence_repetition'    :15.98-0.26-0.17-0.18,#350.776-14.472, #adwin needs positive values
     'phase_per_compensation_repetition':16.74,#17.324#360-6.21, # adwin needs positive values
-    'total_phase_offset_after_sequence':65-43-10.5+90-15.23+17.8+10.1+3.5,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
+    'total_phase_offset_after_sequence':90.57,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############
@@ -227,13 +227,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : ( 416645.12+  443241.12)/2,
-	'C4_freq_0' 		: 443223.53,
-	'C4_freq_1_m1' 		: 416634.26,
+	'C4_freq_m1'        : ( 416597.73+  443194.65)/2,
+	'C4_freq_0' 		: 443194.65,
+	'C4_freq_1_m1' 		: 416597.73,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [137.63] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [134.24] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_unc_N_m1'		:  [40],
 	'C4_unc_tau_m1'		:  [6.93e-6],
@@ -422,6 +422,9 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
+        'Hermite_theta_amp':		0.83,
+
+
         'Square_pi_length' :		square_pi_length, # 2014-12-01
       	'Square_pi_amp' :			square_pi_amp , #  2014-12-01
       	'IQ_Square_pi_amp' :		0.03 , # calib. for 2 us pi pulse, 2014-07-25 
