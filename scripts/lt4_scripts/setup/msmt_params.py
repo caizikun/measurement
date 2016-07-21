@@ -76,7 +76,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      44e-9,#30e-9,#80e-9, #50e-9 XXXXXXXXXXXX
+		'yellow_repump_amplitude':      30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -206,12 +206,12 @@ cfg['samples'][sample_name] = {
 	# # C1 (A~ -350)#
 	# ###############
 	'C1_freq_m1'        : (441045.84+8165920)/2.,
-	'C1_freq_0' 		: 446128.33,
-	'C1_freq_1_m1' 		: 8165920,
+	'C1_freq_0' 		: 446434.69,
+	'C1_freq_1_m1' 		: 8166020.65,
 
 	'C1_Ren_tau_m1'    :   [5.97e-6],
 	'C1_Ren_N_m1'      :   [28],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [150.2] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [135.74] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	###############
 	# C3 (A ~ -55)#
@@ -228,17 +228,17 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : ( 416597.73+  443194.65)/2,
-	'C4_freq_0' 		: 443194.65,
-	'C4_freq_1_m1' 		: 416597.73,
+	'C4_freq_0' 		: 443240.81,
+	'C4_freq_1_m1' 		: 416636.49,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [134.24] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [138.89] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C4_unc_N_m1'		:  [40],
-	'C4_unc_tau_m1'		:  [6.93e-6],
-	'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [139.34] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-	'C4_unc_phase_offset_m1' : 126.74,
+	# 'C4_unc_N_m1'		:  [40],
+	# 'C4_unc_tau_m1'		:  [6.93e-6],
+	# 'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [139.34] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C4_unc_phase_offset_m1' : 126.74,
 	###############
 	# C5 (A ~ -26) #
 	###############
@@ -294,14 +294,14 @@ cfg['samples'][sample_name] = {
 
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 4e-9,#6e-9, #4e-9
+		'A_CR_amplitude':			 	 3e-9,#4e-9, #4e-9
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 20e-9,
 		'CR_duration' :				 	 60, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.3e-9,#1.8e-9, #2e-9 
+		'Ex_CR_amplitude':				 1.3e-9,#1.3e-9, #2e-9 
 		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 1e-9,
