@@ -21,9 +21,9 @@ print joint_params['LDE_final_mw_phase']
 ### joint carbon parameters. Need to be updated by hand.
 joint_params['slave_N'] = [12]
 joint_params['slave_tau'] = [10.886e-6]
-joint_params['slave_eigen_phase'] = 44.52
-joint_params['slave_freq_0'] = 447837.24
-joint_params['slave_freq_1'] = 425444.71
+joint_params['slave_eigen_phase'] = 45.6
+joint_params['slave_freq_0'] = 447841.39
+joint_params['slave_freq_1'] = 425437.16
 joint_params['slave_freq'] = 434615.6
 joint_params['slave_min_phase_correct'] = 2
 joint_params['slave_min_dec_tau'] = 30e-9 + 90e-9
@@ -35,7 +35,7 @@ joint_params['slave_fast_pi2_duration'] = 46e-9
 
 joint_params['master_N'] = [34]
 joint_params['master_tau'] = [6.406e-6]
-joint_params['master_eigen_phase'] = 139.34
+joint_params['master_eigen_phase'] = 134.24
 joint_params['master_freq_0'] =  443194.65
 joint_params['master_freq_1'] = 416597.73
 joint_params['master_freq'] = (  416597.73 + 443194.65)/2

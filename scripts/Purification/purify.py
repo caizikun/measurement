@@ -756,7 +756,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -782,25 +782,25 @@ if __name__ == '__main__':
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
 
 
+    if hasattr(qt,'master_script_is_running'):
+        if qt.master_script_is_running:
+            for i in range(2):
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                   break
 
-    if qt.master_script_is_running:
-        for i in range(2):
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(1)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-               break
+                PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
-            PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index),debug = False, upload_only = False)
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                   break
+                
+                PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
-            print '-----------------------------------'            
-            print 'press q to stop measurement cleanly'
-            print '-----------------------------------'
-            qt.msleep(1)
-            if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-               break
-            
-            PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index),debug = False, upload_only = False)
-
-
+            qt.master_script_is_running = False

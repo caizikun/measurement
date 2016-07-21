@@ -1,4 +1,4 @@
-if True:
+if False:
 
     _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(54)
     _getnorm_rej = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(73)
@@ -18,12 +18,22 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
+# if True:
+#     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
+#     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+#     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
+#     _getnorm = lambda: qt.instruments['physical_adwin'].Get_Par(71)
+#     yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'simple_optimizer',  
+#             set_control_f=_setctrl_yellow_freq , get_control_f=_getctrl_yellow_freq,
+#             get_value_f=_getval, get_norm_f=_getnorm, 
+#             plot_name='yellow_plot')
+
 if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
     _getnorm = lambda: qt.instruments['physical_adwin'].Get_Par(71)
-    yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'simple_optimizer',  
+    yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'extended_optimizer',  
             set_control_f=_setctrl_yellow_freq , get_control_f=_getctrl_yellow_freq,
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')

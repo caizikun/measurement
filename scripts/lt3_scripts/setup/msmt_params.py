@@ -110,7 +110,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
 	'cr_mod_control_dac'		:	'gate_mod',
 	'cr_mod_control_offset'     :   0.0,
-	'cr_mod_control_amp'        :   0.09, #V
+	'cr_mod_control_amp'        :   0.15, #V
 	'cr_mod_control_avg_pts'	:   500000.,
 	'repump_mod_control_offset' :   5.4, #note, gets set automatically
 	'repump_mod_control_amp'    :   .5, #V
@@ -267,7 +267,7 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447837.24,
+	'C1_freq_0' 		: 447841.39,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
@@ -275,12 +275,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447837.24,
-	'C1_freq_1_p1' 		: 425444.71,
+	'C1_freq_0' 		: 447841.39,
+	'C1_freq_1_p1' 		: 425437.16,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [44.52] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [45.6] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
