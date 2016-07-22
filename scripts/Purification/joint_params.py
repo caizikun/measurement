@@ -12,7 +12,7 @@ name = qt.exp_params['protocols']['current']
 joint_params = {}
 ###
 joint_params['master_setup'] = 'lt4'
-joint_params['control_slave'] = False
+joint_params['control_slave'] = True
 
 ### default process settings
 
@@ -35,9 +35,9 @@ joint_params['slave_fast_pi2_duration'] = 46e-9
 
 joint_params['master_N'] = [34]
 joint_params['master_tau'] = [6.406e-6]
-joint_params['master_eigen_phase'] = 138.89
-joint_params['master_freq_0'] =  443240.81
-joint_params['master_freq_1'] = 416636.49
+joint_params['master_eigen_phase'] = 131.76
+joint_params['master_freq_0'] =  443192.45
+joint_params['master_freq_1'] = 416604.06
 joint_params['master_freq'] = ( 416597.73+  443194.65)/2
 joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.0e-6

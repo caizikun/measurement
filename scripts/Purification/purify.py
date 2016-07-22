@@ -106,17 +106,7 @@ class purify(PQPurifyMeasurement):
         if setup:
             self.setup()
 
-        # Experimental addition for remote running
-        if (self.current_setup == self.joint_params['master_setup']) and self.joint_params['control_slave']:
-            qt.instruments['lt3_helper'].set_is_running(False)
-            qt.msleep(0.5)
-            qt.instruments['lt3_helper'].set_measurement_name(name)
-            qt.instruments['lt3_helper'].set_script_path(r'D:/measuring/measurement/scripts/Purification/purify.py')
-            qt.instruments['lt3_helper'].execute_script()
-            qt.instruments['lt4_helper'].set_is_running(True)
-            
-            qt.instruments['lt3_helper'].set_is_running(True)
-            qt.msleep(2)
+
         ### this is now in autoconfig. NK 18-05-2016
         # for i in range(10):
         #     self.physical_adwin.Stop_Process(i+1)
@@ -440,7 +430,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_purification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
-    m.params['LDE1_attempts'] = 250
+    m.joint_params['LDE1_attempts'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
@@ -756,7 +746,7 @@ if __name__ == '__main__':
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -784,6 +774,18 @@ if __name__ == '__main__':
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
+            # Experimental addition for remote running
+            if (qt.current_setup == 'lt4'): ## i moved this here, otherwise the loop would crash. NK
+                qt.instruments['lt3_helper'].set_is_running(False)
+                qt.msleep(0.5)
+                qt.instruments['lt3_helper'].set_measurement_name(str(qt.purification_name_index))
+                qt.instruments['lt3_helper'].set_script_path(r'D:/measuring/measurement/scripts/Purification/purify.py')
+                qt.msleep(0.5)
+                qt.instruments['lt3_helper'].execute_script()
+                qt.instruments['lt4_helper'].set_is_running(True)
+                qt.instruments['lt3_helper'].set_is_running(True)
+                qt.msleep(2)
+
             for i in range(2):
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
@@ -804,3 +806,4 @@ if __name__ == '__main__':
                 PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
             qt.master_script_is_running = False
+            qt.purification_succes = True
