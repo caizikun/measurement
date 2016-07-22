@@ -1,4 +1,4 @@
-if False:
+if True:
 
     _getval_rej  = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(54)
     _getnorm_rej = lambda: qt.instruments['physical_adwin_lt4'].Get_Par(73)
