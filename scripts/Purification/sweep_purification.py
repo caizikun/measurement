@@ -638,12 +638,13 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     m.params['do_phase_correction'] = 1
     m.params['Tomography_bases'] = ['X']
     m.params['do_carbon_readout']  = 1
-    m.params['MW_during_LDE'] = 1
+
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
+    m.params['MW_during_LDE'] = 1
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
     m.params['mw_first_pulse_amp'] = 0
     m.joint_params['LDE2_attempts'] = 1
@@ -695,7 +696,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     prepare(m)
 
     ### general params
-    pts = 15
+    pts = 25
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -722,13 +723,13 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 0.0
+    m.params['phase_detuning'] = 5.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 15.
+    maxReps = 200.
     step = int((maxReps-minReps)/pts)+1
 
 
@@ -908,14 +909,14 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 

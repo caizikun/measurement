@@ -738,7 +738,15 @@ def PurifyXX(name,debug = False,upload_only=False):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def PurifyYY(name,debug = False,upload_only=False):
-    pass
+    m = purify(name)
+    sweep_purification.prepare(m)
+    
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['do_general_sweep'] = 0
+    m.params['Tomography_bases'] = ['Z']
+    sweep_purification.turn_all_sequence_elements_on(m)
+
 
 
 if __name__ == '__main__':
@@ -790,15 +798,24 @@ if __name__ == '__main__':
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
             for i in range(2):
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                   break
+                # print '-----------------------------------'            
+                # print 'press q to stop measurement cleanly'
+                # print '-----------------------------------'
+                # qt.msleep(1)
+                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                #    break
 
-                PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                # PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
+                # print '-----------------------------------'            
+                # print 'press q to stop measurement cleanly'
+                # print '-----------------------------------'
+                # qt.msleep(1)
+                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                #    break
+                
+                # PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
@@ -806,7 +823,7 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                    break
                 
-                PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                PurifyYY(name+'_Purify_YY_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
             qt.master_script_is_running = False
             qt.purification_succes = True
