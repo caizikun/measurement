@@ -321,7 +321,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
-    m.params['do_carbon_init']  = 1# 
+    m.params['do_carbon_init']  = 1 # 
     m.params['do_C_init_SWAP_wo_SSRO'] = 1 # 
     m.params['do_carbon_readout']  = 1 
     m.params['do_swap_onto_carbon'] = 1
@@ -745,7 +745,7 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     
 

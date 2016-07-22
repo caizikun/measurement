@@ -785,7 +785,10 @@ if __name__ == '__main__':
                 qt.instruments['lt4_helper'].set_is_running(True)
                 qt.instruments['lt3_helper'].set_is_running(True)
                 qt.msleep(2)
-
+            else:
+                print 'i am the measurement name', qt.instruments['remote_measurement_helper'].get_measurement_name()
+                ### synchronize the measurement name index.
+                qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
             for i in range(2):
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
@@ -807,3 +810,4 @@ if __name__ == '__main__':
 
             qt.master_script_is_running = False
             qt.purification_succes = True
+            

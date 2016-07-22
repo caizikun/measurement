@@ -88,11 +88,11 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
 
-        start_index = 14
+        start_index = 9
         
         skip_first=False
 
-        cycles=5
+        cycles = 5
 
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -100,6 +100,7 @@ if __name__ == '__main__':
             if not(skip_first):
                 qt.purification_name_index = i*2
                 qt.master_script_is_running = True
+                
                 execfile(r'purify.py')
                 output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
                 output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
@@ -143,10 +144,13 @@ if __name__ == '__main__':
     else:
     	qt.instruments['remote_measurement_helper'].set_is_running(True)
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
+        qt.instruments['ZPLServo'].move_in()
         lt3_succes = optimize()
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
+        qt.instruments['ZPLServo'].move_out()
         qt.msleep(10) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
+
         qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
         qt.instruments['remote_measurement_helper'].set_is_running(False)
         qt.master_script_is_running = True
