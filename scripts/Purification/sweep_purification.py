@@ -787,10 +787,10 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'; Y puts in Y
     m.params['mw_first_pulse_phase'] = m.params['Y_phase'] #+ 180 #align with the phase of the purification gate.
-    # m.params['mw_first_pulse_amp'] = 0
+    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
     m.params['Tomography_bases'] = tomo
 
-
+    
     ### define sweep
     m.params['do_general_sweep']    = 1
 

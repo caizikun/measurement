@@ -744,17 +744,17 @@ def PurifyYY(name,debug = False,upload_only=False):
     pts = 1
     m.params['reps_per_ROsequence'] = 1000
     m.params['do_general_sweep'] = 0
-    m.params['Tomography_bases'] = ['Z']
+    m.params['Tomography_bases'] = ['Y']
     sweep_purification.turn_all_sequence_elements_on(m)
 
-
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 if __name__ == '__main__':
 
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -794,10 +794,12 @@ if __name__ == '__main__':
                 qt.instruments['lt3_helper'].set_is_running(True)
                 qt.msleep(2)
             else:
-                print 'i am the measurement name', qt.instruments['remote_measurement_helper'].get_measurement_name()
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
             for i in range(2):
+
+
+                #### ZZ measurement
                 # print '-----------------------------------'            
                 # print 'press q to stop measurement cleanly'
                 # print '-----------------------------------'
@@ -807,6 +809,8 @@ if __name__ == '__main__':
 
                 # PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
+
+                #### XX measurement
                 # print '-----------------------------------'            
                 # print 'press q to stop measurement cleanly'
                 # print '-----------------------------------'
@@ -816,6 +820,8 @@ if __name__ == '__main__':
                 
                 # PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
                 
+
+                #### YY measurement
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
