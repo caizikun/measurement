@@ -195,9 +195,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :15.98-0.26-0.17-0.18+0.53,#350.776-14.472, #adwin needs positive values
+    'phase_per_sequence_repetition'    :15.98-0.26-0.17-0.18+0.53-0.32,#350.776-14.472, #adwin needs positive values
     'phase_per_compensation_repetition':16.74,#17.324#360-6.21, # adwin needs positive values
-    'total_phase_offset_after_sequence':90.57 + 18.73-11.4,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
+    'total_phase_offset_after_sequence':90.57 + 18.73-11.4-1.49,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
 ###############
 ### SIL2    ###
 ###############
@@ -227,13 +227,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : ( 416597.73+  443194.65)/2,
-	'C4_freq_0' 		: 443192.45,
-	'C4_freq_1_m1' 		: 416604.06,
+	'C4_freq_m1'        : ( 416590.43+  443186.64)/2,
+	'C4_freq_0' 		: 443180.29,
+	'C4_freq_1_m1' 		: 416584.72,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [131.76] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [129.67] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# 'C4_unc_N_m1'		:  [40],
 	# 'C4_unc_tau_m1'		:  [6.93e-6],
@@ -301,7 +301,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.8e-9,#1.3e-9, #2e-9 
+		'Ex_CR_amplitude':				 1.3e-9,#1.3e-9, #2e-9 
 		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 1e-9,

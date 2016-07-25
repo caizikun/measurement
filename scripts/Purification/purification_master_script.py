@@ -51,7 +51,7 @@ def bell_check_powers():
     prot_name = qt.exp_params['protocols']['current']
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
-    setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
+    setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude']+5e-9,
                 700e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.15,0.15,0.15]
@@ -88,7 +88,7 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
 
-        start_index = 9
+        start_index = 10
         
         skip_first=False
 
