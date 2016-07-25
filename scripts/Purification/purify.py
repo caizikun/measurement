@@ -749,7 +749,7 @@ def PurifyYY(name,debug = False,upload_only=False):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-
+    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 if __name__ == '__main__':
 
@@ -796,10 +796,12 @@ if __name__ == '__main__':
                 qt.instruments['lt3_helper'].set_is_running(True)
                 qt.msleep(2)
             else:
-                print 'i am the measurement name', qt.instruments['remote_measurement_helper'].get_measurement_name()
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
             for i in range(2):
+
+
+                #### ZZ measurement
                 # print '-----------------------------------'            
                 # print 'press q to stop measurement cleanly'
                 # print '-----------------------------------'
@@ -809,6 +811,8 @@ if __name__ == '__main__':
 
                 # PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
+
+                #### XX measurement
                 # print '-----------------------------------'            
                 # print 'press q to stop measurement cleanly'
                 # print '-----------------------------------'
@@ -818,6 +822,8 @@ if __name__ == '__main__':
                 
                 # PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
                 
+
+                #### YY measurement
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
