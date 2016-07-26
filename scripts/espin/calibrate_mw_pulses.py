@@ -82,6 +82,14 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['pts'] = pts
     
+    if pulse_shape == 'Square':
+    
+        print 'This hasnt been written yet!'
+    
+    elif pulse_shape == 'Hermite':
+
+        m.params['Hermite_pi_length'] =  m.params['Hermite_theta_length'] 
+
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
     m.params['repetitions'] = 5000
