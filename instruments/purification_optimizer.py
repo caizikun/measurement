@@ -417,8 +417,8 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def optimize_nf(self):
         self.set_pid_e_primer_running(False)
-        qt.instruments['nf_optimizer'].optimize()
-        # qt.instruments['auto_optimizer'].optimize_newfocus()
+        # qt.instruments['nf_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_newfocus()
         qt.msleep(2.5)
         self.set_pid_e_primer_running(True)
 
@@ -426,29 +426,29 @@ class purification_optimizer(mo.multiple_optimizer):
         e_primer_was_running = self.get_pid_e_primer_running()
         self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
-        # self.set_pidgate_running(False)        
-        qt.instruments['yellowfrq_optimizer'].optimize()
-        # qt.instruments['auto_optimizer'].optimize_yellow();
+        self.set_pidgate_running(False)        
+        # qt.instruments['yellowfrq_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_yellow();
         qt.msleep(2.5)
         self.set_pidyellowfrq_running(True)
-        # self.set_pidgate_running(True)        
+        self.set_pidgate_running(True)        
         self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_gate(self):
-        self.set_pidgate_running(False)
-        qt.instruments['gate_optimizer'].optimize()
+        # self.set_pidgate_running(False)
+        # qt.instruments['gate_optimizer'].optimize()
+        # qt.msleep(0.5)
+        # self.set_pidgate_running(True)
+        e_primer_was_running = self.get_pid_e_primer_running()
+        self.set_pid_e_primer_running(False)
+        self.set_pidyellowfrq_running(False)
+        self.set_pidgate_running(False)        
+        #qt.instruments['yellowfrq_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_gate();
         qt.msleep(0.5)
-        self.set_pidgate_running(True)
-        # e_primer_was_running = self.get_pid_e_primer_running()
-        # self.set_pid_e_primer_running(False)
-        # self.set_pidyellowfrq_running(False)
-        # self.set_pidgate_running(False)        
-        # #qt.instruments['yellowfrq_optimizer'].optimize()
-        # qt.instruments['auto_optimizer'].optimize_gate();
-        # qt.msleep(2.5)
-        # self.set_pidyellowfrq_running(True)
-        # self.set_pidgate_running(True)        
-        # self.set_pid_e_primer_running(e_primer_was_running)        
+        self.set_pidyellowfrq_running(True)
+        self.set_pidgate_running(True)        
+        self.set_pid_e_primer_running(e_primer_was_running)        
 
     def auto_optimize(self):
         self.set_pid_e_primer_running(False)
