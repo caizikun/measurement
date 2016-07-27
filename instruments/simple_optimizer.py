@@ -71,7 +71,7 @@ class simple_optimizer(Instrument):
             self.ins_cfg[param] = value
             
     def scan(self):
-        
+        print 'Hi'
         initial_setpoint = self._get_control_f()
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.

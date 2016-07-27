@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.685#0.7058#0.681#0.667 # 06-02
+	hermite_pi_amp = 0.717#0.7058#0.681#0.667 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.479 # 06-02 
+	hermite_pi2_amp = 0.477 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      23e-9,#20e-9, #50e-9
+		'yellow_repump_amplitude':      28e-9,#20e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 327.464+1.67-0.207+0.1,#329.06,#4.162, #adwin needs positive values
+    'phase_per_sequence_repetition'    : 327.464+1.67-0.207+0.1+0.11,#329.06,#4.162, #adwin needs positive values
     'phase_per_compensation_repetition': 13.472, # adwin needs positive values
-    'total_phase_offset_after_sequence': 101.62+11.38-5.5+7.67+12.5+2.59, # adwin needs positive values
+    'total_phase_offset_after_sequence': 125.26, # adwin needs positive values
 
 	# #########################
 	# #####     SIL1      #####
@@ -267,20 +267,20 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447841.28,
+	'C1_freq_0' 		: 447839.59,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447841.28,
-	'C1_freq_1_p1' 		: 425440.69,
+	'C1_freq_p1'        : 433914.,#434257.72, 
+	'C1_freq_0' 		: 447839.59,
+	'C1_freq_1_p1' 		: 425431.77,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.51] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.86] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -441,7 +441,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		0.67,
+        'Hermite_theta_amp':		0.29,#0.68,
+		'Hermite_theta_length':		46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 

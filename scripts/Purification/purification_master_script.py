@@ -88,9 +88,9 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
 
-        start_index = -1
+        start_index = 0
         
-        skip_first=True
+        skip_first=False
 
         cycles = 5
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break
             if not(skip_first):
-                qt.purification_name_index = i*4
+                qt.purification_name_index = i*2
                 qt.master_script_is_running = True
                 
                 execfile(r'purify.py')

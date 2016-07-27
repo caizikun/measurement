@@ -751,7 +751,7 @@ if __name__ == '__main__':
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
 
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
