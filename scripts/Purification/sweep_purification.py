@@ -159,7 +159,7 @@ def turn_all_sequence_elements_off(m):
     m.params['PLU_during_LDE']          = 0
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
-
+    m.params['no_repump_after_LDE1']    = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -185,7 +185,8 @@ def turn_all_sequence_elements_on(m):
     m.params['PLU_during_LDE']          = 1
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
-
+    m.params['no_repump_after_LDE1']    = 0
+    
 def repump_speed(name,debug = False,upload_only=False):
     """
     Initializes the electron in ms = -1 
@@ -909,19 +910,19 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    #characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)

@@ -83,7 +83,7 @@ DIM DATA_109[max_purification_repetitions] AS FLOAT at DRAM_Extern' minimum achi
 DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
 DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
-DIM DATA_113[250] AS LONG at DRAM_Extern' lookup table for phase to compensate
+DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
    
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -332,7 +332,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     
   Next phase_to_calculate     
 
-  For AWG_sequence_repetitions_second_attempt = 1 to 250
+  For AWG_sequence_repetitions_second_attempt = 1 to 600
     
     phase_to_compensate = AWG_sequence_repetitions_second_attempt* phase_per_sequence_repetition
     
@@ -950,7 +950,6 @@ EVENT:
             phase_to_compensate = phase_to_compensate - 360          
           ENDIF
           
-          PAR_65 = phase_to_compensate
           required_phase_compensation_repetitions = DATA_111[Round(phase_to_compensate)]
    
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions

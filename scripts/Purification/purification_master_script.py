@@ -88,7 +88,7 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
 
-        start_index = 10
+        start_index = 0
         
         skip_first=False
 
