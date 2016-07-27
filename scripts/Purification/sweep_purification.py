@@ -159,6 +159,7 @@ def turn_all_sequence_elements_off(m):
     m.params['PLU_during_LDE']          = 0
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
+    m.params['no_repump_after_LDE1']    = 0
 
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
@@ -185,6 +186,7 @@ def turn_all_sequence_elements_on(m):
     m.params['PLU_during_LDE']          = 1
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
+    m.params['no_repump_after_LDE1']    = 0
 
 def repump_speed(name,debug = False,upload_only=False):
     """
@@ -388,7 +390,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] =500
 
     turn_all_sequence_elements_off(m)
 
@@ -696,7 +698,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     prepare(m)
 
     ### general params
-    pts = 25
+    pts = 15
     
     m.params['reps_per_ROsequence'] = 350
 
@@ -729,7 +731,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 200.
+    maxReps = 150.
     step = int((maxReps-minReps)/pts)+1
 
 
@@ -916,12 +918,12 @@ if __name__ == '__main__':
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
     #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
 
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)

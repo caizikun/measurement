@@ -574,6 +574,38 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
 
     sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
 
+
+def Determine_eta(name, debug = False, upload_only = False):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    """
+    m = purify(name)
+    sweep_purification.prepare(m)
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 10000
+
+    sweep_purification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.joint_params['do_final_mw_LDE'] = 1
+    #m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack    
+
+    m.joint_params['LDE_element_length'] = 10e-6#m.joint_params['LDE_element_length']  + 1e-6
+
+
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+    m.joint_params['LDE1_attempts'] = 250
+    m.params['no_repump_after_LDE1']    = 1
+    ### upload
+
+    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+
 def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
@@ -749,22 +781,24 @@ def PurifyYY(name,debug = False,upload_only=False):
     sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
-
 if __name__ == '__main__':
 
     ########### local measurements
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
 
     ###### non-local measurements // purification parameters
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
-    # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
+    # qt.instruments['ZPLServo'].move_in()
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+    # qt.instruments['ZPLServo'].move_out()
+    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    # Determine_eta(name+'_eta_XX_75percent',debug = False,upload_only=False)
+    #PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
 
 
@@ -798,7 +832,7 @@ if __name__ == '__main__':
             else:
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
-            for i in range(2):
+            for i in range(4):
 
 
                 #### ZZ measurement
@@ -807,6 +841,8 @@ if __name__ == '__main__':
                 # print '-----------------------------------'
                 # qt.msleep(1)
                 # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                #    qt.purification_succes = False
+                #    qt.master_script_is_running = False
                 #    break
 
                 # PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
@@ -818,6 +854,8 @@ if __name__ == '__main__':
                 # print '-----------------------------------'
                 # qt.msleep(1)
                 # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                #    qt.purification_succes = False
+                #    qt.master_script_is_running = False
                 #    break
                 
                 # PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
@@ -829,7 +867,9 @@ if __name__ == '__main__':
                 print '-----------------------------------'
                 qt.msleep(1)
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                   break
+                    qt.purification_succes = False
+                    qt.master_script_is_running = False
+                    break
                 
                 PurifyYY(name+'_Purify_YY_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 

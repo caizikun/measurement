@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
 ' Foldings                       = 593,616,644,697,857
 '<Header End>
@@ -83,7 +83,7 @@ DIM DATA_109[max_purification_repetitions] AS FLOAT at DRAM_Extern' minimum achi
 DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
 DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
-DIM DATA_113[250] AS LONG at DRAM_Extern' lookup table for phase to compensate
+DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
    
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -332,7 +332,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     
   Next phase_to_calculate     
 
-  For AWG_sequence_repetitions_second_attempt = 1 to 250
+  For AWG_sequence_repetitions_second_attempt = 1 to 600
     
     phase_to_compensate = AWG_sequence_repetitions_second_attempt* phase_per_sequence_repetition
     
@@ -939,7 +939,7 @@ EVENT:
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once a given phase has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
-          
+
           awg_repcount_was_low = 1
           phase_compensation_repetitions = 0
           
@@ -950,7 +950,6 @@ EVENT:
             phase_to_compensate = phase_to_compensate - 360          
           ENDIF
           
-          PAR_65 = phase_to_compensate
           required_phase_compensation_repetitions = DATA_111[Round(phase_to_compensate)]
    
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
@@ -964,7 +963,7 @@ EVENT:
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(phase_compensation_repetitions)  
-            'Par_65 = phase_compensation_repetitions
+            Par_65 = phase_compensation_repetitions
           endif
           awg_repcount_was_low = 0
         ELSE

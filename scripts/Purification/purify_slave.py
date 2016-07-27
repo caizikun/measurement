@@ -828,7 +828,7 @@ class purify_single_setup(DD.MBI_C13):
                 if self.params['do_swap_onto_carbon'] > 0:
                     gate_seq.append(LDE_rephase1)
 
-                elif self.params['LDE_1_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2:
+                elif self.params['LDE_1_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2 and self.params['no_repump_after_LDE1'] == 0:
                     gate_seq.append(LDE_repump1)
                     # gate_seq.append(DD.Gate('LDE_1_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 

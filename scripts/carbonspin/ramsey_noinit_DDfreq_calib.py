@@ -47,14 +47,14 @@ def Carbon_Ramsey(name,tau = None,N=None, carbon = 1, evolution_times = [],debug
         m.params['C_Ren_tau'+m.params['electron_transition']] = tau 
 
     m.autoconfig()
-    funcs.finish(m, upload =False, debug=False)
+    funcs.finish(m, upload =True, debug=False)
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
 
     evolution_times1 = np.linspace(2e3,5e3,20).astype(int)*1e-9
     evolution_times2 = np.linspace(10e3,13e3,20).astype(int)*1e-9
-    evolution_times3 = np.linspace(18e3,21e3,20).astype(int)*1e-9
+    evolution_times3 = np.linspace(18e3,20e3,20).astype(int)*1e-9
 
     # for decoupling on the larmor revival
     # evolution_times1 = np.linspace(22e3,28e3,20).astype(int)*1e-9

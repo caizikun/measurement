@@ -80,15 +80,17 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     pulse_shape = m.params['pulse_shape']
     pts = 12
 
-    m.params['pts'] = pts
-    
+        
     if pulse_shape == 'Square':
     
         print 'This hasnt been written yet!'
     
     elif pulse_shape == 'Hermite':
 
-        m.params['Hermite_pi_length'] =  m.params['Hermite_theta_length'] 
+        m.params['Hermite_pi2_length'] =  m.params['Hermite_theta_length'] 
+      
+      
+    m.params['pts'] = pts
 
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
@@ -97,7 +99,7 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['MW_pulse_amplitudes'] = m.params['Hermite_theta_amp'] + np.linspace(-rng, rng, pts)  
             
-            
+  
     
     m.params['multiplicity'] = np.ones(pts)*multiplicity
     m.params['delay_reps'] = 0
@@ -408,9 +410,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
 
 if __name__ == '__main__':
     # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =15, debug = False, mw2=False)
-    calibrate_theta_pulse(SAMPLE_CFG + 'theta',rng = 0.05)
+    # calibrate_theta_pulse(SAMPLE_CFG + 'theta',rng = 0.05)
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
+    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
     #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)
