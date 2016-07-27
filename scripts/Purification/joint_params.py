@@ -35,10 +35,10 @@ joint_params['slave_fast_pi2_duration'] = 46e-9
 
 joint_params['master_N'] = [34]
 joint_params['master_tau'] = [6.406e-6]
-joint_params['master_eigen_phase'] = 129.67
-joint_params['master_freq_0'] =  443180.29
-joint_params['master_freq_1'] = 416584.72
-joint_params['master_freq'] = (416584.72+  443180.29)/2
+joint_params['master_eigen_phase'] = 132.22
+joint_params['master_freq_0'] =  443188.84
+joint_params['master_freq_1'] = 416598.75
+joint_params['master_freq'] = ( 443188.84+ 416598.75)/2
 joint_params['master_min_phase_correct'] = 2
 joint_params['master_min_dec_tau'] = 2.0e-6
 joint_params['master_max_dec_tau'] = 2.5e-6

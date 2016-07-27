@@ -44,7 +44,7 @@ class extended_optimizer(Instrument):
         self.add_function('scan')
         self.add_function('optimize')
         self.add_function('get_value')
-        
+       
     # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
         if not os.path.exists(cfg_fn):
@@ -102,7 +102,9 @@ class extended_optimizer(Instrument):
                         time_axis = np.append(time_axis, time.time() - initial_time);
                         if values[-1] > self.get_good_value():
                             finished = 1
-                            print 'Finished, current red:', sp, 'current white:', self._get_control_f(), 'last measured f: ', true_udrange[-1]
+                            print 'Finished, current red:', sp, 'current white:', self._get_control_f(), 'last measured f: ', true_udrange[-1], 'max white:', true_udrange[np.argmax(values)] 
+                            qt.msleep(0.4) # Stupid waiting time to correct for delayed readout of frequency                                                    
+                            self._set_control_f(self._get_control_f());
                             break;
             else:
                 
@@ -134,7 +136,7 @@ class extended_optimizer(Instrument):
         
         return (true_udrange,values)
     
-    def optimize_OLD(self):
+    def optimize(self):
         value_before=self.get_value()
         x,y=self.scan()
         if y[-1] > self.get_good_value():
@@ -178,215 +180,6 @@ class extended_optimizer(Instrument):
             return float((v2-v1))/(n2-n1)
         else:
             return 0.
-
-    def get_value_ext(self,dwell,source):
-        # Set parameters
-        self._get_counts_yellow = lambda: qt.instruments['physical_adwin'].Get_Par(76);
-        self._get_counts_gate = lambda: qt.instruments['physical_adwin'].Get_Par(70);
-        self._get_attemps_yellow = lambda: qt.instruments['physical_adwin'].Get_Par(71);
-        self._get_attemps_gate = lambda: qt.instruments['physical_adwin'].Get_Par(72);
-
-        if source == 0: # gate
-            get_counts = self._get_counts_gate;
-            get_attemps = self._get_attemps_gate;
-        elif source == 1: # yellow
-            get_counts = self._get_counts_yellow;
-            get_attemps = self._get_attemps_yellow;
-        elif source == 2: # newfocus (= gate)
-            get_counts = self._get_counts_gate;
-            get_attemps = self._get_attemps_gate;
-
-        v1,n1=get_counts(), get_attemps();
-        qt.msleep(dwell)
-        v2,n2=get_counts(), get_attemps();
-        if (n2-n1)!=0:
-            return float((v2-v1))/(n2-n1)
-        else:
-            return 0.  
-
-    def optimize(self):  
-        # Set parameters
-        self._get_freq_yellow = lambda: qt.instruments['physical_adwin'].Get_FPar(42)
-        self._set_freq_yellow = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
-        self._opt_yellow_scan_min = self._scan_min;
-        self._opt_yellow_scan_max = self._scan_max;
-        self._opt_yellow_step = self._control_step_size;
-        self._opt_yellow_good = self.get_good_value();
-
-        self._get_freq_gate = lambda: qt.instruments['adwin'].get_dac_voltage('gate')
-        self._set_freq_gate = lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
-        self._opt_gate_scan_min = -0.1;
-        self._opt_gate_scan_max = 0.1;
-        self._opt_gate_step = 0.01;
-        self._opt_gate_good = 15;       
-
-        self._data_time = 0.04;
-
-        # Initialize
-        initial_time = time.time();        
-
-        # Create yellow sweep            
-        yellow_start = self._get_freq_yellow();
-        scan_min = yellow_start + self._opt_yellow_scan_min/2.
-        scan_max = yellow_start + self._opt_yellow_scan_max/2.
-        steps=int((scan_max - scan_min) / self._opt_yellow_step)
-        yellow_sweep=np.append(np.linspace(yellow_start,scan_min+self._opt_yellow_step,int(steps/2.)),
-                np.linspace(scan_min, scan_max, steps))
-        yellow_sweep=np.append(yellow_sweep,np.linspace(scan_max-self._opt_yellow_step,yellow_start,int(steps/2.)))
-
-        # Create gate sweep
-        gate_start = self._get_freq_gate();
-        scan_min = gate_start + self._opt_gate_scan_min/2.
-        scan_max = gate_start + self._opt_gate_scan_max/2.
-        steps=int((scan_max - scan_min) / self._opt_gate_step)
-        gate_sweep=np.append(np.linspace(gate_start,scan_min+self._opt_gate_step,int(steps/2.)),
-                np.linspace(scan_min, scan_max, steps))
-        gate_sweep=np.append(gate_sweep,np.linspace(scan_max-self._opt_gate_step,gate_start,int(steps/2.))) 
-
-        # Initialize data arrays
-        yellow_x = np.array([]);
-        yellow_y = np.array([]);
-        yellow_t = np.array([]);
-        gate_x = np.array([]);
-        gate_y = np.array([]);
-        gate_t = np.array([]);
-
-        finishedYellow = False;
-        finishedGate = False;
-
-        # Start yellow sweep
-        currentYellowStep = 0;
-        currentGateStep = 0;
-        currentTime = time.time();
-        currentYellowFreq = yellow_start;
-        currentGateFreq = gate_start;
-        yellowStepTime = time.time();
-        gateStepTime = time.time();
-
-        # Each for iteration is one sweep step (dwell)
-        for currentYellowStep,currentYellowFreq in enumerate(yellow_sweep):
-            # Set current yellow frequency to yellow sweep step            
-            self._set_freq_yellow(currentYellowFreq)
-            yellowStepTime = time.time()   
-            # Debug
-            print 'Starting yellow iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;           
-
-            # Each while iteration is one yellow sweep substep
-            while (time.time() - yellowStepTime <= self._dwell_time) and not finishedYellow:
-                # Check if we are still in NV0: more than 1 zero in last 10 vals on gate
-                if (sum(gate_y[-min(10,len(gate_y)):]<0.0001) > 1 or len(gate_y) < 10):  
-                    # Debug
-                    print 'Currently in NV0, checking yellow'
-
-                    # Get yellow val
-                    yellow_x = np.append(yellow_x,self._get_freq_yellow())
-                    yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
-                    yellow_t = np.append(yellow_t, time.time() - initial_time);
-                    # Get gate val
-                    gate_x = np.append(gate_x,self._get_freq_gate())
-                    gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
-                    gate_t = np.append(gate_t, time.time() - initial_time);
-
-                    if yellow_y[-1] > self._opt_yellow_good:
-                        finishedYellow = True
-                        break;
-                else: # We are in NV-. Check if gate is good
-                    # Debug
-                    print 'Currently in NV-'
-                    print 'NV-, gate good:', gate_y[-min(5,len(gate_y)):], np.mean(gate_y[-min(5,len(gate_y)):])>self._opt_gate_good
-
-                    if np.mean(gate_y[-min(5,len(gate_y)):])>self._opt_gate_good or finishedGate: # Gate is good. Continue yellow
-                        # Debug
-                        print 'Currently in NV-, but gate is OK, so go on checking yellow'
-
-                        # Get yellow val
-                        yellow_x = np.append(yellow_x,self._get_freq_yellow())
-                        yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
-                        yellow_t = np.append(yellow_t, time.time() - initial_time);
-                        # Get gate val
-                        gate_x = np.append(gate_x,self._get_freq_gate())
-                        gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
-                        gate_t = np.append(gate_t, time.time() - initial_time);
-
-                        if yellow_y[-1] > self._opt_yellow_good:
-                            self._set_freq_yellow(yellow_x[-1])
-                            finishedYellow = True
-                            break;
-                    else: # Gate is bad. Optimize gate where we ended last time
-                        # Debug
-                        print 'Currently in NV-, gate is bad, optimize gate'
-                        print 'NV-, gate bad:', currentGateStep < len(gate_sweep),finishedGate,gate_y[-min(10,len(gate_y)):],sum(gate_y[-min(10,len(gate_y)):]<0.0001) <= 1
-
-                        while currentGateStep < len(gate_sweep) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]<0.0001) <= 1):                           
-                            # Set current gate frequency to gate sweep step
-                            currentGateFreq = gate_sweep[currentGateStep];
-                            self._set_freq_gate(currentGateFreq);
-                            gateStepTime = time.time();
-
-                            # Debug
-                            print 'Currently in NV0, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
-
-                            while (time.time() - gateStepTime <= self._dwell_time) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]<0.0001) <= 1):
-                                # Get yellow val
-                                yellow_x = np.append(yellow_x,self._get_freq_yellow())
-                                yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
-                                yellow_t = np.append(yellow_t, time.time() - initial_time);
-                                # Get gate val
-                                gate_x = np.append(gate_x,self._get_freq_gate())
-                                gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
-                                gate_t = np.append(gate_t, time.time() - initial_time);
-
-                                if gate_y[-1] > self._opt_gate_good:
-                                    self._set_freq_gate(gate_x[-1])
-                                    finishedGate = True
-                                    break; 
-                            currentGateStep = currentGateStep + 1; 
-
-            if finishedYellow:
-                break;                                                            
-
-        if finishedGate:
-            print 'Gate: good value during scan, at', gate_y[-1]/self._opt_gate_good, 'times threshold at frequency', gate_x[-1];
-        else:
-            self._set_freq_gate(gate_x[np.argmax(gate_y)]);
-            print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
-
-        if finishedYellow:
-            print 'Yellow: good value during scan, at', yellow_y[-1]/self._opt_yellow_good, 'times threshold at frequency', yellow_x[-1];
-        else:
-            self._set_freq_yellow(yellow_x[np.argmax(yellow_y)]);
-            print 'Yellow: scan failed, set to best value ', max(yellow_y), 'at frequency', gate_x[np.argmax(yellow_y)];
-
-        if self.get_do_plot(): 
-            # Sweeps plot
-            p1 = plt.plot(name=(self._plot_name+'_sweeps'))
-            p1.clear()
-            print 'Start plotting sweep'
-            #plt.subplot(211)
-            plt.plot(np.arange(len(yellow_sweep))*self._dwell_time,yellow_sweep,'O',name=(self._plot_name+'_sweeps'))     
-            #plt.subplot(212)                   
-            plt.plot(np.arange(len(gate_sweep))*self._dwell_time,gate_sweep,'O',name=(self._plot_name+'_sweeps'))            
-            print 'Finished plotting sweep'
-            # Yellow plot
-            p2 = plt.plot(name=(self._plot_name+'_yellow'))
-            p2.clear()
-            print 'Start plotting yellow'
-            #plt.subplot(211)
-            plt.plot(yellow_t,yellow_x,'O',name=(self._plot_name+'_yellow')) 
-            plt.plot(np.arange(len(yellow_sweep))*self._dwell_time, yellow_sweep,'O',name=(self._plot_name+'_yellow'))             
-            #plt.subplot(212)
-            plt.plot(yellow_t,yellow_y,'O',name=(self._plot_name+'_yellow'))  
-            print 'Finished plotting yellow'            
-            # Gate plot
-            p3 = plt.plot(name=(self._plot_name+'_gate'))
-            p3.clear()
-            print 'Start plotting gate'            
-            #plt.subplot(211)
-            plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
-            plt.plot(np.arange(len(gate_sweep))*self._dwell_time, gate_sweep,'O',name=(self._plot_name+'_gate'))             
-            #plt.subplot(212)
-            plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))             
-            print 'Finished plotting gate'            
 
     def _fit(self,X,Y):
         #fit_gauss(g_a, g_A, g_x0, g_sigma)
