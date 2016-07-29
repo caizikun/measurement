@@ -19,9 +19,10 @@ class Attocube_ANC300(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address,
-                        baud_rate=9600, data_bits=8, stop_bits=1,
-                        parity=visa.no_parity, term_chars='\r\n')
+        rm = visa.ResourceManager()
+        self._visa = rm.open_resource(self._address,
+                        baud_rate=9600, data_bits=8, stop_bits=visa.constants.StopBits.one,
+                        parity=visa.constants.Parity.none, write_termination='\r\n',read_termination = '\r\n')
 
         self.Echo('off')
         self._visa.read()

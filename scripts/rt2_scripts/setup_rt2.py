@@ -14,9 +14,9 @@ qt.current_setup='rt2'
 #    if qt.config['instance_name'][-3:] == qt.current_setup \
 #    else qt.instruments[x+'_'+qt.current_setup]
 
-#print 'loading setup tools...'
-#from measurement.scripts.lt1_scripts.tools import stools
-#reload(stools)
+print 'loading setup tools...'
+from measurement.scripts.rt2_scripts.tools import stools
+reload(stools)
 
 #print 'reload all modules...'
 #execfile(os.path.join(qt.config['startdir'],"reload_all.py"))

@@ -30,7 +30,6 @@ def MBE(name, carbon            =   1,
         carbon_init_states      =   ['up'], 
         carbon_init_methods     =   ['swap'], 
         carbon_init_thresholds  =   [0],  
-
         el_RO               = 'positive',
         debug               = False):
 
@@ -93,7 +92,7 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1,2]
+    carbons = [1]
     debug = False
     breakst = False
     init_method = 'both'
@@ -128,4 +127,20 @@ if __name__ == '__main__':
 
             MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
                                                 ,carbon_init_methods     =   ['MBI'], carbon_init_thresholds  =   [1])
+
+    if init_method == 'MBI_w_gate':
+        for c in carbons:
+
+            breakst = show_stopper()
+            if breakst: 
+                break
+            
+
+            MBE(SAMPLE + 'positive_'+str(c)+'_MBI', el_RO= 'positive', carbon = c, carbon_init_list = [c],debug = debug
+                                                ,carbon_init_methods     =   ['MBI_w_gate'],
+                                                 carbon_init_thresholds  =   [1,1])
+
+            MBE(SAMPLE + 'negative_'+str(c)+'_MBI', el_RO= 'negative', carbon = c, carbon_init_list = [c],debug = debug
+                                                ,carbon_init_methods     =   ['MBI_w_gate'],
+                                                 carbon_init_thresholds  =   [1,1])
 

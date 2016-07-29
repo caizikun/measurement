@@ -15,9 +15,9 @@ class monitor_cryo(MonitorInstrument):
     def __init__(self, name, monitor_lt1=False, **kw):
 		
         MonitorInstrument.__init__(self, name)
-		
-        self._levelmeter = visa.instrument('GPIB::8::INSTR')
-        self._keithley =  visa.instrument('GPIB::11::INSTR')
+		rm = visa.ResourceManager()
+        self._levelmeter = rm.open_resource('GPIB::8::INSTR')
+        self._keithley =  rm.open_resource('GPIB::11::INSTR')
         self._mailer = qt.instruments['gmailer']
         
         self._keithleyMM = qt.instruments['keithleyMM']
@@ -274,7 +274,7 @@ class monitor_cryo(MonitorInstrument):
                       'This is below minimum values (LHe2 < %.3f'%(self.get_he2_lvl_min()) + ' cm'+ ', LHe1 < %.3f'%(self.get_he1_lvl_min()) +\
                       ', voltage < %.3f'%(self.get_temp_voltage_min()) + 'V ( = 6 K)). \n' + \
                       'Please help me!!!\n xxx LT2'
-            recipients  = ['M.S.Blok@tudelft.nl', 'julia.cramer@gmail.com','t.h.taminiau@tudelft.nl', 'N.Kalb@tudelft.nl', 'M.A.Bakker-1@student.tudelft.nl', 'S.B.vanDam@tudelft.nl']
+            recipients  = ['M.S.Blok@tudelft.nl', 'julia.cramer@gmail.com','t.h.taminiau@tudelft.nl', 'N.Kalb@tudelft.nl', 'S.B.vanDam@tudelft.nl','arianstolk@gmail.com']
             #recipients  = 'B.J.Hensen@tudelft.nl'
             print message
             if self.get_send_email():

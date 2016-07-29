@@ -182,6 +182,10 @@ class bell_optimizer(mo.multiple_optimizer):
 
     def check(self):
 
+        '''
+        The Bell optimizer has been extended by the following is_purification_optimizer Boolean to remove unnecessary stuff for this project. AR 
+        AR 20
+        '''
         try:
             
             par_counts, par_laser, dt, qrng_voltage = self.update_values()

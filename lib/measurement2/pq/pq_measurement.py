@@ -28,7 +28,7 @@ class PQMeasurement(m2.Measurement):
             self.PQ_ins.set_Binning(self.params['BINSIZE'])
         else:
             raise(Exception('Picoquant instrument '+self.PQ_ins.get_name()+ ' cannot be opened: Close the gui?'))
-
+ 
     def start_measurement_process(self):
         pass
 
@@ -66,6 +66,7 @@ class PQMeasurement(m2.Measurement):
         self.stop_measurement_process()
 
     def run(self, autoconfig=True, setup=True, debug=False):
+
         if debug:
             self.run_debug()
             return
@@ -94,7 +95,7 @@ class PQMeasurement(m2.Measurement):
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
 
-        print 'run PQ measurement, TTTR_read_count ', TTTR_read_count
+        print 'run PQ measurement, TTTR_read_count ', TTTR_read_count, ' TTTR_RepetitiveReadouts' , TTTR_RepetitiveReadouts
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
         dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
             (0,), 'u8', maxshape=(None,))

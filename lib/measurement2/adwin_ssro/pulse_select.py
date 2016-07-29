@@ -19,9 +19,6 @@ Edited by NK and SK 20160128
 
 def check_pulse_shape(msmt):
 
-	# try:
-	# 	pulse_shape = msmt.params['pulse_shape']
-
 	pulse_shape = msmt.params['pulse_shape']
 	if pulse_shape == 'Square':
 		#print 'pulse select selected square pulses'
@@ -30,6 +27,7 @@ def check_pulse_shape(msmt):
 		msmt.params['fast_pi_amp'] = msmt.params['Square_pi_amp']
 		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Square_pi_length']
 		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Square_pi2_length']
+		msmt.params['mw2_fast_pi_amp'] = msmt.params['mw2_Square_pi_amp']
 	elif pulse_shape == 'Hermite':
 		#print 'pulse select selected hermite pulses'
 		msmt.params['fast_pi_duration'] = msmt.params['Hermite_pi_length']
@@ -37,6 +35,7 @@ def check_pulse_shape(msmt):
 		msmt.params['fast_pi_amp'] = msmt.params['Hermite_pi_amp']
 		msmt.params['mw2_fast_pi_duration'] = msmt.params['mw2_Hermite_pi_length']
 		msmt.params['mw2_fast_pi2_duration'] = msmt.params['mw2_Hermite_pi2_length']
+		msmt.params['mw2_fast_pi_amp'] = msmt.params['mw2_Hermite_pi_amp']
 	else:
 		raise Exception('Error in pulse select: '), sys.exc_info()[0]
 
@@ -214,15 +213,15 @@ def desr_pulse(msmt):
 	return desr
 
 
-def pi_pulse_MW2(msmt):
+def mw2_X_pulse(msmt):
 	'''
 	pi pulse on MW source No2
 	'''	
 	pulse_shape = check_pulse_shape(msmt)
-	print 'doing Squares on MW2'
 	if pulse_shape == 'Square':
+		print 'doing Squares on MW2'
 		X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-			I_channel='MW_Imod', Q_channel='MW_Qmod',
+			I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
 			PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
 			frequency = 0.,
 			PM_risetime = msmt.params['mw2_pulse_mod_risetime'],
@@ -233,10 +232,9 @@ def pi_pulse_MW2(msmt):
    
 	
 	elif pulse_shape == 'Hermite':
-		print 'doing hermites on MW2'
 		X = pulselib.HermitePulse_Envelope_IQ('Hermite pi-pulse',
-						 I_channel='MW_Imod',
-						 Q_channel='MW_Qmod',
+						 I_channel='mw2_MW_Imod',
+						 Q_channel='mw2_MW_Qmod',
 						 PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
 						 frequency = msmt.params['mw2_mod_freq'],
 						 amplitude = msmt.params['mw2_Hermite_pi_amp'],
@@ -250,12 +248,77 @@ def pi_pulse_MW2(msmt):
 
 	return X
 
+def mw2_mX_pulse(msmt):
+	'''
+	-X pi pulse on source no2
+	'''
+
+	return pulse.cp(mw2_X_pulse(msmt),phase = msmt.params['X_phase']+180)
+
+def mw2_Xpi2_pulse(msmt):
+	'''
+	pi/2 pulse on MW source No2, did not exist so copy pasted it AS 07042016
+	'''	
+	pulse_shape = check_pulse_shape(msmt)
+	if pulse_shape == 'Square':
+		X = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
+			I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
+			PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
+			frequency = 0.,
+			PM_risetime = msmt.params['mw2_pulse_mod_risetime'],
+			Sw_risetime = msmt.params['MW_switch_risetime'],
+			length = msmt.params['mw2_Square_pi2_length'],
+			phase =  msmt.params['X_phase'],
+			amplitude = msmt.params['mw2_Square_pi2_amp'])
+   
+	
+	elif pulse_shape == 'Hermite':
+		X = pulselib.HermitePulse_Envelope_IQ('Hermite Pi/2-pulse',
+						 I_channel='mw2_MW_Imod',
+						 Q_channel='mw2_MW_Qmod',
+						 PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
+						 frequency = msmt.params['mw2_mod_freq'],
+						 amplitude = msmt.params['mw2_Hermite_pi2_amp'],
+						 length = msmt.params['mw2_Hermite_pi2_length'],
+						 PM_risetime = msmt.params['mw2_pulse_mod_risetime'],
+						 Sw_risetime = msmt.params['MW_switch_risetime'],
+						 phase = msmt.params['X_phase'],
+						 pi2_pulse = False)
+	else:
+		print 'mw2 no valid pulse'
+
+	return X	
+
+def mw2_mXpi2_pulse(msmt):
+	'''
+	pi/2 pulse around mX
+	'''
+	return pulse.cp(mw2_Xpi2_pulse(msmt), phase = msmt.params['X_phase']+180)
+
+
+def mw2_Ypi2_pulse(msmt):
+	return pulse.cp(mw2_Xpi2_pulse(msmt), phase = msmt.params['Y_phase'])
+
+def mw2_mYpi2_pulse(msmt):
+	return pulse.cp(mw2_Xpi2_pulse(msmt), phase = msmt.params['Y_phase']+180)
+
+def mw2_Y_pulse(msmt):
+	return pulse.cp(mw2_X_pulse(msmt), phase = msmt.params['Y_phase'])
+
+def mw2_mY_pulse(msmt):
+	'''
+	Pi pulse around mY
+	'''
+	return pulse.cp(mw2_X_pulse(msmt),phase = msmt.params['Y_phase']+180)
+'''
+These are not needed anymore AS 08042016
+'''
 def mw2_squareX(msmt):
 	'''
 	pi pulse on MW source No2
 	'''	
 	X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-		I_channel='MW_Imod', Q_channel='MW_Qmod',
+		I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
 		PM_channel='mw2_pulsemod', Sw_channel = msmt.params['MW_switch_channel'],
 		frequency = 0.,
 		PM_risetime = msmt.params['mw2_pulse_mod_risetime'],

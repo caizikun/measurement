@@ -26,13 +26,15 @@ import msvcrt
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 EL_TRANS = qt.exp_params['samples'][SAMPLE]['electron_transition']
-print EL_TRANS
 
-def interrupt_script(wait = 5):
-    print 'press q now to exit measurement script'
-    qt.msleep(wait)
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-        sys.exit()
+        return True
+    else: return False
 
 def optimize_NV(cycles = 1):
     qt.msleep(2)
@@ -62,6 +64,11 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2, mbi = False, final
     #     optimize_NV()
 
     for kk in range(tot):
+
+        ## Option to stop the measurement cleanly
+        print 'press q now to cleanly exit measurement loop'
+        breakst = show_stopper()
+        if breakst: break
 
         ### Set experimental parameters ###
         # m.params['reps_per_ROsequence'] = 1000
@@ -131,37 +138,35 @@ def SimpleDecoupling(name, N, step_size,tot, start_point = 2, mbi = False, final
             m.run(setup=True, autoconfig=False)
             m.save(msmt_name)
 
-                ## Option to stop the measurement cleanly
-        print 'press q now to cleanly exit measurement loop'
-        qt.msleep(3)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            n = 0
-            breakq
-            
+
+                
     m.finish()
 
+breakst = False
 if __name__ == '__main__':
     print 'Looping over N'
-    
-    print 'press q now to cleanly exit measurement loop'
-    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            n = 0
-            breakq
-    # every single_tau_block is pts*step_size = 200 us. 100 blocks is thus from 3.5 to 23.5
-    single_tau_blocks = 100
-    pulse_list = [8,16]
+
+    # print 'press q now to cleanly exit measurement loop'
+    # breakst = show_stopper()
+    # if breakst: break
+
+    # every single_tau_block is pts*step_size = 200 ns. 100 blocks is thus from 3.5 to 23.5
+    single_tau_blocks = 50
+    pulse_list = [16,32,64]#[8,16,32,64]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
+
+
         print 'N = ' + str(N)
 
         print 'press q now to cleanly exit measurement loop'
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-            n = 0
-            breakq
+        breakst = show_stopper()
+        if breakst: break
+
         
         SimpleDecoupling('Hermite_Fingerprint_ms'+ EL_TRANS[-2:] + '_' + SAMPLE + '_' + str(N),
             N = N, step_size = 4e-9, start_point= 0, tot = single_tau_blocks, 
-            final_pulse = '-x', optimize=True, reps_per_RO = 1000)
+            final_pulse = '-x', optimize=True, reps_per_RO = 500)
 
 
     n = 0
