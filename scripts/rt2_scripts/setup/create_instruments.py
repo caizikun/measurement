@@ -7,7 +7,8 @@ adwin = qt.instruments.create('adwin', 'adwin_rt2',
 # edac40 = qt.instruments.create('edac40','EDAC40',MAC_address='\x00\x04\xA3\x13\xDA\x94')
 # okotech_dm = qt.instruments.create('okotech_dm', 'OKOTech_DM',dac=qt.instruments['edac40'])
 
-powermeter = qt.instruments.create('powermeter','Thorlabs_PM100D', address='USB0::0x1313::0x8078::PM002587::INSTR')#P0007639
+#powermeter = qt.instruments.create('powermeter','Thorlabs_PM100D', address='USB0::0x1313::0x8078::PM002587::INSTR')#P0007639
+powermeter = qt.instruments.create('powermeter','Thorlabs_PM100', address='ASRL2::INSTR')
 
 AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014', address='GPIB::1::INSTR',reset=False, numpoints=1e3)
 
