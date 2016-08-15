@@ -1878,7 +1878,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 decoupling_elt.append(T)
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 2.5e-6, amplitude = 2)
-                decoupling_elt.add(adwin_sync,start=2000e-9)
+                decoupling_elt.add(adwin_sync,start=2500e-9)
             else:
                 decoupling_elt.append(T_out)  
 
@@ -4190,7 +4190,7 @@ class MBI_C13(DynamicalDecoupling):
             addressed_carbon        = 1,
             el_RO_result            = '0',
             do_wait_after_pi        = False,
-            RO_after_swap           = True):
+            RO_after_swap           = True, **kw):
         #el_RO_result, not important.. only for RO trigger. Just as el_after_init is not important and do_wait_after_pi.
         '''
         By SK
@@ -4271,7 +4271,8 @@ class MBI_C13(DynamicalDecoupling):
             el_RO_result            = '0',
             do_wait_after_pi        = False,
             RO_after_swap           = True,
-            swap_type               = 'swap_w_init'):
+            swap_type               = 'swap_w_init',
+            **kw):
         #el_RO_result, not important.. only for RO trigger. Just as el_after_init is not important and do_wait_after_pi.
         '''
         By SK and PeeeeeH
@@ -4338,23 +4339,25 @@ class MBI_C13(DynamicalDecoupling):
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase']+180)
 
-        ########################
-        # Un-conditional gates #
-        ########################
 
-        C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
-            Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_Y_phase'])
-
-        C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
-            Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_X_phase'])
 
         #print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
             carbon_swap_seq = [C_Ren_y,e_x,C_Ren_x,e_ym]
             
         elif swap_type  ==  'swap_wo_init':
+            ########################
+            # Un-conditional gates #
+            ########################
+
+            C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
+                Carbon_ind  = addressed_carbon,
+                phase       = self.params['C13_Y_phase'])
+
+            C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
+                Carbon_ind  = addressed_carbon,
+                phase       = self.params['C13_X_phase'])
+            
             carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
 
         elif swap_type == 'prob_init':

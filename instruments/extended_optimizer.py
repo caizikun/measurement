@@ -10,7 +10,7 @@ from lib import config
 from analysis.lib.fitting import fit, common
 import instrument_helper
 
-class simple_optimizer(Instrument):
+class extended_optimizer(Instrument):
 
     def __init__(self, name, get_control_f=None, set_control_f=None, get_value_f=None, get_norm_f=None, plot_name=''):
         Instrument.__init__(self, name)        
@@ -44,7 +44,7 @@ class simple_optimizer(Instrument):
         self.add_function('scan')
         self.add_function('optimize')
         self.add_function('get_value')
-        
+       
     # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
         if not os.path.exists(cfg_fn):
@@ -71,8 +71,8 @@ class simple_optimizer(Instrument):
             self.ins_cfg[param] = value
             
     def scan(self):
-        print 'Hi'
         initial_setpoint = self._get_control_f()
+        initial_time = time.time();
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.
         steps=int((scan_max - scan_min) / self._control_step_size)
@@ -83,6 +83,7 @@ class simple_optimizer(Instrument):
         #print udrange #XXXXXX
         values=np.array([])#np.zeros(len(udrange))
         true_udrange=np.array([])#np.zeros(len(udrange))
+        time_axis = np.array([]);
         finished = 0
         for i,sp in enumerate(udrange):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -96,13 +97,15 @@ class simple_optimizer(Instrument):
                 st = time.time()
                 if self._dwell_time > 0.04:
                     while (time.time() - st <= self._dwell_time) and (finished == 0):
-                        qt.msleep(0.02)
-
                         true_udrange = np.append(true_udrange,self._get_control_f())
-                        values = np.append(values,self.get_value())
-
+                        values = np.append(values,self.get_value_timed(0.02))
+                        time_axis = np.append(time_axis, time.time() - initial_time);
                         if values[-1] > self.get_good_value():
                             finished = 1
+                            print 'Finished, current red:', sp, 'current white:', self._get_control_f(), 'last measured f: ', true_udrange[-1], 'max white:', true_udrange[np.argmax(values)] 
+                            qt.msleep(0.4) # Stupid waiting time to correct for delayed readout of frequency                                                    
+                            self._set_control_f(self._get_control_f());
+                            break;
             else:
                 
                 qt.msleep(self._dwell_time)
@@ -114,24 +117,34 @@ class simple_optimizer(Instrument):
                     finished = 1
                     
             if finished == 1: 
-                print "Found good value"
+                print 'Found good value during scan, at', values[-1]/self.get_good_value(), 'times threshold at frequency', true_udrange[-1];
                 break
 
         valid_i=np.where(values>self._min_value)
+
+        if self.get_do_plot(): 
+            # Time scan plot
+            p1 = plt.plot(name=(self._plot_name+'_time'))
+            p1.clear()
+            plt.plot(time_axis,true_udrange,'O',name=(self._plot_name+'_time'))            
+            plt.plot(time_axis,values,'O',name=(self._plot_name+'_time'))          
+            plt.plot(np.arange(len(udrange))*self._dwell_time, udrange,'O',name=(self._plot_name+'_time'))             
+            # Frequency scan plot
+            p2 = plt.plot(name=(self._plot_name+'_frequency'))
+            p2.clear()
+            plt.plot(true_udrange,values,'O', name=(self._plot_name+'_frequency'))   
         
-        if self.get_do_plot():
-            p=plt.plot(name=self._plot_name)
-            p.clear()
-            plt.plot(true_udrange[valid_i],values[valid_i],'O',name=self._plot_name)
-        
-        return (true_udrange[valid_i],values[valid_i])
+        return (true_udrange,values)
     
     def optimize(self):
         value_before=self.get_value()
         x,y=self.scan()
-        success = False
+        if y[-1] > self.get_good_value():
+            success = True
+        else:
+            success = False
         #print 'x,y',x,y
-        if len(y)>0:
+        if len(y)>0 and not success:
             maxx=x[np.argmax(y)]
             if self.get_do_fit() and len(x)>5:
                 fit_maxx=self._fit(x,y)
@@ -140,23 +153,28 @@ class simple_optimizer(Instrument):
                     maxx = fit_maxx
             variance=np.sum(np.abs(np.ediff1d(y)))
             self.set_variance(variance)
-            print 'variance: ', variance
             maxy=np.max(y)
             self.set_last_max(maxy)
-            print 'Value at initial position: {:.1f}, maximum scanned value {:.1f} at control {:.2f} '.format(value_before,maxy, maxx)
             if maxy>value_before:
-                print self.get_name(),'setting new control (old,new,delta): {:.2f},{:.2f},{:.2f}'.format(self._get_control_f(),maxx,maxx-self._get_control_f())
+                print 'No value higher than threshold found during scan. Best value of scan,', maxy/self.get_good_value(), 'times theshold at frequency', maxx, ', is better than initial value', value_before, 'so go there.'
                 self._set_control_f(maxx)
                 success = True
             else:
-                print 'Initial value was better, keeping old control'
-        else:
-            print 'Scan failed: no valid data points (value > min_value) found'
+                print 'No value higher than threshold found during scan. Best value of scan,', maxy/self.get_good_value(), 'times theshold at frequency', maxx, ', is worse than initial value', value_before,'so go back.'
         return success 
             
     def get_value(self):
         v1,n1=self._get_value_f(),self._get_norm_f()
         qt.msleep(self._dwell_time)
+        v2,n2=self._get_value_f(),self._get_norm_f()
+        if (n2-n1)!=0:
+            return float((v2-v1))/(n2-n1)
+        else:
+            return 0.
+
+    def get_value_timed(self,dwell):
+        v1,n1=self._get_value_f(),self._get_norm_f()
+        qt.msleep(dwell)
         v2,n2=self._get_value_f(),self._get_norm_f()
         if (n2-n1)!=0:
             return float((v2-v1))/(n2-n1)

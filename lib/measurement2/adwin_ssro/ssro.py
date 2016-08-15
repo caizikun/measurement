@@ -173,7 +173,9 @@ class AdwinSSROAlternCR(AdwinSSRO):
 class IntegratedSSRO(AdwinSSRO):
     adwin_process = 'integrated_ssro'
     mprefix = 'IntegratedSSRO'
-    
+
+    # remote_helper = None
+
     def __init__(self, name):
         AdwinSSRO.__init__(self, name)
         
@@ -184,7 +186,11 @@ class IntegratedSSRO(AdwinSSRO):
         self.params['sweep_length'] = self.params['pts']
         
         AdwinSSRO.autoconfig(self)
-           
+        
+        ### broadcast msmt_params to QT Monitor for live plotting
+        ### needs a working instance of a remote_msmt_helper & qtlab monitor otherwise error!
+        # self.remote_helper.set_measurement_params(self.params)
+
     def save(self, name='ssro'):
         reps = self.adwin_var('completed_reps')
         self.save_adwin_data(name,

@@ -23,9 +23,16 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
     Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
-    if hasattr(Gate,'first_pulse_is_pi2'):
+    
+
+
+    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
+        if Gate.first_pulse_is_pi2:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
+    elif hasattr(Gate,'first_pulse_is_pi2'):
         if Gate.first_pulse_is_pi2:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
+
     if hasattr(Gate,'no_first_pulse'):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
@@ -149,6 +156,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
     ### 2 syncs
 
     # 2a HH sync
+
+
     if msmt.params['sync_during_LDE'] == 1 :
         e.add(Gate.HHsync,
             refpulse = 'initial_delay')
@@ -221,8 +230,6 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
     else:
-        print 'start of your favourite MW pulse'
-        print msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time'])
         # MW pi pulse
         e.add(pulse.cp(Gate.mw_X,amplitude=0),
             start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
@@ -242,57 +249,58 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #4 opt. pi pulses
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
 
+    if not ((msmt.params['LDE_1_is_init'] > 0) and 'LDE1' in Gate.name):
+
+        if msmt.params['is_TPQI'] > 0:
+            initial_reference = 'spinpumping'
+            msmt.params['MW_opt_puls1_separation'] = 1e-6
+        else:
+            initial_reference = 'MW_Theta'
+        for i in range(msmt.joint_params['opt_pi_pulses']):
+            name = 'opt pi {}'.format(i+1)
+            refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
+            start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
+            refpoint = 'start' if i > 0 else 'end'
+
+            e.add(Gate.eom_pulse,        
+                name = name,
+                start = start,
+                refpulse = refpulse,
+                refpoint = refpoint,)
 
 
-    if msmt.params['is_TPQI'] > 0:
-        initial_reference = 'spinpumping'
-        msmt.params['MW_opt_puls1_separation'] = 1e-6
-    else:
-        initial_reference = 'MW_Theta'
-    for i in range(msmt.joint_params['opt_pi_pulses']):
-        name = 'opt pi {}'.format(i+1)
-        refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
-        start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
-        refpoint = 'start' if i > 0 else 'end'
+        #5 Plu gates
+        if msmt.params['PLU_during_LDE'] == 1 :
+            e.add(Gate.plu_gate, name = 'plu gate 1', 
+                refpulse = 'opt pi 1',
+                start = msmt.params['PLU_1_delay'])
 
-        e.add(Gate.eom_pulse,        
-            name = name,
-            start = start,
-            refpulse = refpulse,
-            refpoint = refpoint,)
+            plu_ref_name = 'plu gate 1'
 
+            if msmt.joint_params['opt_pi_pulses'] > 1:
+                e.add(Gate.plu_gate, 
+                    name = 'plu gate 2',
+                    refpulse = 'opt pi {}'.format(msmt.joint_params['opt_pi_pulses']),
+                    start = msmt.params['PLU_2_delay']) 
+                plu_ref_name = 'plu gate 2'
 
-    #5 Plu gates
-    if msmt.params['PLU_during_LDE'] == 1 :
-        e.add(Gate.plu_gate, name = 'plu gate 1', 
-            refpulse = 'opt pi 1',
-            start = msmt.params['PLU_1_delay'])
+            e.add(pulse.cp(Gate.plu_gate, 
+                    length = msmt.params['PLU_gate_3_duration']), 
+                name = 'plu gate 3', 
+                start = msmt.params['PLU_3_delay'], 
+                refpulse = plu_ref_name)
 
-        plu_ref_name = 'plu gate 1'
-
-        if msmt.joint_params['opt_pi_pulses'] > 1:
-            e.add(Gate.plu_gate, 
-                name = 'plu gate 2',
-                refpulse = 'opt pi {}'.format(msmt.joint_params['opt_pi_pulses']),
-                start = msmt.params['PLU_2_delay']) 
-            plu_ref_name = 'plu gate 2'
-
-        e.add(pulse.cp(Gate.plu_gate, 
-                length = msmt.params['PLU_gate_3_duration']), 
-            name = 'plu gate 3', 
-            start = msmt.params['PLU_3_delay'], 
-            refpulse = plu_ref_name)
-
-        e.add(pulse.cp(Gate.plu_gate, 
-                length = msmt.params['PLU_gate_3_duration']), 
-                name = 'plu gate 4', 
-                start = msmt.params['PLU_4_delay'],
-                refpulse = 'plu gate 3')
+            e.add(pulse.cp(Gate.plu_gate, 
+                    length = msmt.params['PLU_gate_3_duration']), 
+                    name = 'plu gate 4', 
+                    start = msmt.params['PLU_4_delay'],
+                    refpulse = 'plu gate 3')
     
-    #### gives a done trigger that has to be timed accordingly
+    #### gives a done trigger that has to be timed accordingly, is referenced to the PLU if the PLU is used by this setup.
     if Gate.is_final:
         ## one can time accurately if we use the plu during the experiment
-        if setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0:
+        boolean = (setup == 'lt3' and msmt.params['PLU_during_LDE'] > 0)
+        if  boolean and not ((msmt.params['LDE_1_is_init'] > 0) and 'LDE1' in Gate.name):
             e.add(Gate.adwin_trigger_pulse,
                 start = 1000e-9, # should always come in later than the plu signal
                 refpulse = 'plu gate 3')
@@ -320,19 +328,22 @@ def generate_LDE_elt(msmt,Gate, **kw):
 def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
     """waits the right amount of time after and LDE element for the 
     electron to rephase.
+
+    NOTE: after developing the purification code for several one realizes that we should distinguish between LDE 1 and LDE 2.
+    The two elements are very different from each other.
     """
     _create_wait_times(Gate)
     _create_syncs_and_triggers(msmt,Gate)
     e = element.Element(Gate.name, pulsar = qt.pulsar)
 
     if forced_wait_duration == 0:
-        
+
         ### we need to add some time for the following carbon gate to this rephasing element
         ### this time is tau_cut and is calculated below.
         c = str(msmt.params['carbon'])
         e_trans = msmt.params['electron_transition']
 
-        #### for concatenating LDE with a longer entangling sequence:
+        #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:
         if 'ElectronDD_tau' in msmt.params.to_dict().keys():
             tau = msmt.params['ElectronDD_tau']
         else:
@@ -347,7 +358,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
             tau_cut = 1.5e-6
 
 
-        # LDE 2 does not need tau_cut because we do dynamic phase correction.
+        # LDE 2 does not need tau_cut because we do dynamic phase correction with a fixed tau_cut.
         if 'LDE_rephasing_2' in Gate.name:
             tau_cut =1e-6 #0e-6
             # print e.samples()
