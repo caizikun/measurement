@@ -1,6 +1,6 @@
 import os
 qt.current_setup='cav1'
-qt.reload_current_setup = os.path.join(qt.config['startdir'],"cav1_scripts/setup_lt3.py")
+qt.reload_current_setup = os.path.join(qt.config['startdir'],"cav1_scripts/setup_cav1.py")
 
 qt.get_setup_instrument = lambda x: qt.instruments[x] \
     if qt.config['instance_name'][-3:] == qt.current_setup \

@@ -38,11 +38,12 @@ optimiz0r = qt.instruments.create('optimiz0r', 'optimiz0r', opt1d_ins=
         opt1d_counts, mos_ins=master_of_space, dimension_set='cav1')
 
 
-
 newfocus1 = qt.instruments.create('newfocus1', 'NewfocusVelocity', address='GPIB0::10::INSTR')
 
 master_of_cavity = qt.instruments.create('master_of_cavity','master_of_cavity', 
         jpe= 'jpe', adwin='adwin', laser = 'newfocus1', use_cfg = True)
+
+master_of_char_cavity = qt.instruments.create('master_of_char_cavity','master_of_char_cavity', adwin='adwin')
 
 cavity_scan_manager = qt.instruments.create('cavity_scan_manager', 'cavity_scan_manager', adwin='adwin', physical_adwin='physical_adwin')
 

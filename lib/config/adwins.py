@@ -3489,10 +3489,11 @@ config['adwin_cav1_dacs'] = {
         'newfocus_freqmod': 5,
         'scan_mirror_x' : 6,
         'scan_mirror_y': 7,
+        'PI_fine_tuning': 8,
         }
 
-config['adwin_cav1_dios'] = {
-        }
+# config['adwin_cav1_dios'] = {
+#         }
 
 config['adwin_cav1_adcs'] = {
         'photodiode': 16,
@@ -3502,7 +3503,6 @@ config['adwin_cav1_adcs'] = {
 config['adwin_cav1_dios'] = {
         'montana_sync_ch': 21,
         }
-
 
 config['adwin_cav1_processes'] = {
 
