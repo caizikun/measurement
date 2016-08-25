@@ -622,6 +622,7 @@ class purify_single_setup(DD.MBI_C13):
                     manipulated_LDE_elt.no_mw_pulse = True
 
 
+
                 ### clean up by casting the manipulation back onto the original object:
                 if self.params['force_LDE_attempts_before_init'] == 0 or self.params['LDE1_attempts'] == 1: 
                     LDE1 = manipulated_LDE_elt

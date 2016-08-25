@@ -26,7 +26,7 @@ qt.pulsar = pulsar.Pulsar()
 
 # MW
 
-qt.pulsar.define_channel(id='ch2_marker1', name='MW_pulsemod', type='marker', 
+qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=(44+165-8)*1e-9, active=True)
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+165)*1e-9, active=True)
@@ -34,13 +34,16 @@ qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+165)*1e-9, active=True)
 
 # p7889 start trigger
-qt.pulsar.define_channel(id='ch1_marker1', name='p7889_start', type='marker', 
-    high=0.5, low=0, offset=0., delay=0., active=True)
-
+qt.pulsar.define_channel(id='ch1_marker2', name='katana_trg', type='marker', 
+    high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch3_marker1', name='sync0', type='marker', 
+    high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch3_marker2', name='sync1', type='marker', 
+    high=2.0, low=0, offset=0., delay=0., active=True)
 
 # light (green)
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Green', type='marker', 
-    high=0.3, low=0, offset=0., delay=0, active=True)
+    high=0.3, low=0., offset=0., delay=0, active=True)
 
 
 #RND
@@ -64,7 +67,7 @@ qt.pulsar.AWG_sequence_cfg={
         'EXTERNAL_REFERENCE_TYPE'   :   1,    # Fixed | Variable
         'REFERENCE_CLOCK_FREQUENCY_SELECTION':1, #10 MHz | 20 MHz | 100 MHz
         'TRIGGER_SOURCE'            :   1,    # External | Internal
-        'TRIGGER_INPUT_IMPEDANCE'   :   1,    # 50 ohm | 1 kohm
+        'TRIGGER_INPUT_IMPEDANCE'   :   2,    # 50 ohm | 1 kohm
         'TRIGGER_INPUT_SLOPE'       :   1,    # Positive | Negative
         'TRIGGER_INPUT_POLARITY'    :   1,    # Positive | Negative
         'TRIGGER_INPUT_THRESHOLD'   :   0.6,  # V

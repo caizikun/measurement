@@ -77,5 +77,18 @@ if True:
             set_control_f=_setctrl_nf, get_control_f=_getctrl_nf, 
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
+
+if True:
+    _get_freq_yellow=lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    _get_freq_gate=lambda: qt.instruments['adwin'].get_dac_voltage('gate')
+    _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
+    # Logger takes '__name__' parameter as column header
+    _get_freq_yellow.__name__ = 'yellow_freq'
+    _get_freq_gate.__name__ = 'gate_voltage'
+    _get_freq_newfocus.__name__ = 'newfocus_freq'
+    _function_list = [_get_freq_yellow, _get_freq_gate, _get_freq_newfocus]
+    frequency_logger = qt.instruments.create('frequency_logger', 'triggered_logger', function_list = _function_list)            
+
+
 if True:
     purification_optimizer  = qt.instruments.create('purification_optimizer' , 'purification_optimizer', setup_name='lt4')

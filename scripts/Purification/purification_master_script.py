@@ -51,7 +51,7 @@ def bell_check_powers():
     prot_name = qt.exp_params['protocols']['current']
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
-    setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude']+5e-9,
+    setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
                 700e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.15,0.15,0.15]
@@ -88,17 +88,20 @@ def check_smb_errors():
 if __name__ == '__main__':
     if qt.current_setup=='lt4':
 
-        start_index = -1
+        lt3_helper = qt.instruments['lt3_helper']
+
+        start_index = 24
         
         skip_first=True
 
-        cycles = 5
+        cycles = 41
+
 
         for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break
             if not(skip_first):
-                qt.purification_name_index = i*2
+                qt.purification_name_index = i
                 qt.master_script_is_running = True
                 
                 execfile(r'purify.py')
@@ -114,19 +117,25 @@ if __name__ == '__main__':
             skip_first=False
 
             print 'starting the measurement at lt3'
-            lt3_helper = qt.instruments['lt3_helper']
-            lt3_helper.set_is_running(False)
-            lt3_helper.set_measurement_name('optimizing')
+            
+            # lt3_helper.set_is_running(False)
+            # lt3_helper.set_measurement_name('optimizing')
+            
             lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/Purification/purification_master_script.py')
+            qt.msleep(15)
+            print 'trying to execute optimization script'
             lt3_helper.execute_script()
+            qt.msleep(5)
             print 'Loading CR linescan'
             execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
             qt.instruments['ZPLServo'].move_in()
             lt4_succes = optimize()
-            qt.msleep(5)
+            #qt.msleep(5)
             #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
             #qt.msleep(5)
             while lt3_helper.get_is_running():
+                qt.msleep(1)
+                print 'waiting for LT3',lt3_helper.get_is_running()
                 if(msvcrt.kbhit() and msvcrt.getch()=='q'): 
                     print 'Measurement aborted while waiting for lt3'
                     lt3_succes= False
@@ -143,8 +152,6 @@ if __name__ == '__main__':
 
     else:
     	qt.instruments['remote_measurement_helper'].set_is_running(True)
-        print 'is running???'
-        print qt.instruments['remote_measurement_helper'].get_is_running(True)
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
         qt.instruments['ZPLServo'].move_in()
         lt3_succes = optimize()

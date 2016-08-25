@@ -68,7 +68,7 @@ class pid_controller_v4(Instrument):
                     'min_value_deviation'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_coarse_step'       :   {'type':types.FloatType, 'val':0.05,'flags':Instrument.FLAG_GETSET},
                     'do_plot'                  :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
-                    'do_save_data'              :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},                    
+                    'do_save_data'              :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},
                     }
         instrument_helper.create_get_set(self,ins_pars)
         self.add_function('start')
@@ -227,8 +227,16 @@ class pid_controller_v4(Instrument):
         
         self._time = time.time() - self._t0
         if self.get_do_save_data():
-            self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
+            try:
+                self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
                     self._setpoint, self._control_parameter)
+            except NameError:
+                self._dat = qt.Data(name=self._name)
+                self._dat.add_coordinate('time')
+                self._dat.add_value('raw frequency')
+                self._dat.add_value('avg frequency')
+                self._dat.add_value('setpoint')
+                self._dat.add_value('control parameter')
 
         new_control_parameter = self._control_parameter + pval + dval + ival
 

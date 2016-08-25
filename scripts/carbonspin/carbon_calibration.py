@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -51,7 +51,7 @@ check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
-# Note that wont save to file if debug is on.
+# Note that you wont save to msmt params if debug is on.
 debug = False 
 
 ### repetitions per data point.

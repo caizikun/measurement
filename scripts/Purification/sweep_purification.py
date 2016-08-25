@@ -716,27 +716,26 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = input_state
+    m.params['input_el_state'] =  input_state
 
-    tomo_dict = {
-    'Z' : ['X'],
-    'mZ': ['X'],
-    'Y' : ['Y'],
-    'mY': ['Y'],
-    'X' : ['Z'],
-    'mX': ['Z']
-    }
+    tomo_dict = { 'X' : ['Z'],
+                  'mX': ['Z'],
+                  'Y' : ['Y'],
+                  'mY': ['Y'],
+                  'Z' : ['X'],
+                  'mZ': ['X']}
+
     m.params['Tomography_bases'] = tomo_dict[input_state]
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 5.0 #0.0
+    m.params['phase_detuning'] = 3.0#5.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 200.
+    maxReps = 450.
     step = int((maxReps-minReps)/pts)+1
 
 

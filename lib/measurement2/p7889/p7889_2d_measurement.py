@@ -7,70 +7,43 @@ import msvcrt
 import hdf5_data as h5
 
 import sys
-sys.path.insert(0,'D:/measuring/measurement/lib/pulsar')
-import pulse, pulselib, element, pulsar
 
-import measurement as m2
-DP = qt.instruments['p7889']
-ADWIN =  qt.instruments['adwin']
-AWG = qt.instruments['AWG']
-SMB = qt.instruments['SMB100']
-Green = qt.instruments['GreenAOM']
+
+
+from measurement.lib.measurement2 import measurement as m2
 
 class P7889Measurement2D(m2.Measurement):
 
     def __init__(self, name):
         m2.Measurement.__init__(self, name)
-        self.params['p7889_use_dma'] = False
-        self.params['p7889_sweep_preset_number'] = 1
-        self.params['p7889_number_of_cycles'] = 1
-        self.params['p7889_number_of_sequences'] = 10000
-        self.params['p7889_ROI_min'] = 1
-        self.params['p7889_ROI_max'] = 6000
-        self.params['p7889_range'] = 4000
-        self.params['p7889_binwidth'] = 3
-        self.stepsize=1
-
-        self.ROI_min = self.params['p7889_ROI_min'] 
-        self.ROI_max = self.params['p7889_ROI_max']
     
     def autoconfig(self):
         self._init_p7889()
 
-        
-        SMB.set_power(self.params['MW_power'])
-        SMB.set_frequency(self.params['mw_frq'])
-        SMB.set_pulm('on')
-        SMB.set_status('on')
-        SMB.set_iq('on')
-        
-
-
     def _init_p7889(self):
-        DP.set_binwidth(self.params['p7889_binwidth'])
-        DP.set_range(self.params['p7889_range'])
-        DP.set_ROI_min(self.params['p7889_ROI_max'])
-        DP.set_ROI_max(self.params['p7889_ROI_min'])
+        self.p7889.set_binwidth(self.params['p7889_binwidth'])
+        self.p7889.set_range(self.params['p7889_range'])
+        self.p7889.set_ROI_min(self.params['p7889_ROI_max'])
+        self.p7889.set_ROI_max(self.params['p7889_ROI_min'])
         
-        DP.set_starts_preset(True)
-        DP.set_sweepmode_start_event_generation(True)
-        DP.set_sweepmode_sequential(True)
-        DP.set_sweepmode_wrap_around(False)
-        DP.set_sweepmode_DMA(self.params['p7889_use_dma'])
-        DP.set_number_of_cycles(self.params['p7889_number_of_cycles'])
-        DP.set_number_of_sequences(self.params['p7889_number_of_sequences'])
-        DP.set_sweep_preset_number(self.params['p7889_sweep_preset_number'])
-        DP.set_starts_preset(True)
+        self.p7889.set_starts_preset(True)
+        self.p7889.set_sweepmode_start_event_generation(True)
+        self.p7889.set_sweepmode_sequential(True)
+        self.p7889.set_sweepmode_wrap_around(False)
+        self.p7889.set_sweepmode_DMA(self.params['p7889_use_dma'])
+        self.p7889.set_number_of_cycles(self.params['p7889_number_of_cycles'])
+        self.p7889.set_number_of_sequences(self.params['p7889_number_of_sequences'])
+        self.p7889.set_sweep_preset_number(self.params['p7889_sweep_preset_number'])
+        self.p7889.set_starts_preset(True)
 
     def _get_p7889_data(self):
-        return DP.get_2Ddata()
+        return self.p7889.get_2Ddata()
 
-    def measure(self):
-        DP.Start()
+    def run(self):
+        self.p7889.Start()
         qt.msleep(0.5)
-        AWG.start()
 
-        while DP.get_state(): 
+        while self.p7889.get_state(): 
             qt.msleep(0.1)
             if msvcrt.kbhit():
                 kb_char=msvcrt.getch()
@@ -81,7 +54,7 @@ class P7889Measurement2D(m2.Measurement):
 
     def save_2D_data(self, timename='t (ns)', sweepname='sweep_value', ret=False):
 
-        grp=h5.DataGroup('raw data',self.h5data,base=self.h5base)
+        grp=h5.DataGroup('p7889_raw_data',self.h5data,base=self.h5base)
         self.save_params(grp=grp.group)
 
         x,yint,z = self._get_p7889_data()
@@ -135,20 +108,77 @@ class P7889Measurement2D(m2.Measurement):
         else:
             self.h5data.flush()
 
-    def set_sweep_time_ns(self, val):
-        self.p7889_range = val/0.1/2**self.p7889_binwidth
 
-    def get_sweep_time_ns(self):
-        return 0.1 * 2**self.p7889_binwidth * self.p7889_range
 
-    def finish(self):
-        self.AWG.stop()
-        self.AWG.set_runmode('CONT')
-        """
-        self.SMB.set_status('off')
-        self.SMB.set_iq('off')
-        self.SMB.set_pulm('off')
-        """
+
+class P7889PulsarMeasurement(P7889Measurement2D):
+    mprefix = 'P7889PulsarMeasurement'
+    awg = None
+    mwsrc = None 
+    mwsrc2 = None
+
+    def __init__(self, name):
+        P7889Measurement2D.__init__(self, name)
+        self.params['measurement_type'] = self.mprefix
+
+    def setup(self, mw=True, **kw):
+        ssro.IntegratedSSRO.setup(self)
+        # print 'this is the mw frequency!', self.params['mw_frq']
+        self.mwsrc.set_iq('on')
+        self.mwsrc.set_pulm('on')
+        self.mwsrc.set_frequency(self.params['mw_frq'])
+        self.mwsrc.set_power(self.params['mw_power'])
+        self.mwsrc.set_status('on')
+
+        print 'AWG state before start'
+        print self.awg.get_state()
+        
+   
+    def run(self):
+        self.p7889.Start()
+        qt.msleep(0.5)
+        self.awg.start()
+        while self.p7889.get_state(): 
+            qt.msleep(0.1)
+            if msvcrt.kbhit():
+                kb_char=msvcrt.getch()
+                if kb_char == "q": 
+                    stop = True
+                    break
+
+    def generate_sequence(self):
+        pass
+
+    def stop_sequence(self):
+        self.awg.stop()
+
+    def save(self,**kw):
+        ssro.IntegratedSSRO.save(self, **kw)
+
+        grp=self.h5basegroup.create_group('pulsar_settings')
+        pulsar = kw.pop('pulsar', qt.pulsar)
+
+        for k in pulsar.channels:
+            grpc=grp.create_group(k)
+            for ck in pulsar.channels[k]:
+                grpc.attrs[ck] = pulsar.channels[k][ck]
+
+        grpa=grp.create_group('AWG_sequence_cfg')
+        for k in pulsar.AWG_sequence_cfg:
+            grpa.attrs[k] = pulsar.AWG_sequence_cfg[k]
+
+
+        self.h5data.flush()
+
+    def finish(self,**kw):
+        P7889Measurement2D.finish(self,**kw)
+
+        self.awg.stop()
+        self.awg.set_runmode('CONT')
+
+        self.mwsrc.set_status('off')
+        self.mwsrc.set_iq('off')
+        self.mwsrc.set_pulm('off')
 
 
 class DarkESR_p7889(P7889Measurement2D):
@@ -292,9 +322,17 @@ class Rabi_p7889(P7889Measurement2D):
 
 
 
+    def test_p7789_pulsar_msmt(name):
 
-
-
+        m = AdwinSSRO('SSROCalibration_'+name)
+        m.params['p7889_use_dma'] = False
+        m.params['p7889_sweep_preset_number'] = 1
+        m.params['p7889_number_of_cycles'] = 1
+        m.params['p7889_number_of_sequences'] = 10000
+        m.params['p7889_ROI_min'] = 1
+        m.params['p7889_ROI_max'] = 6000
+        m.params['p7889_range'] = 4000
+        m.params['p7889_binwidth'] = 1 #100 ps
 
 
 

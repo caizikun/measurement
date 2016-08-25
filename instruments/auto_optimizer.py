@@ -41,6 +41,7 @@ class auto_optimizer(Instrument):
        
         ins_pars  ={'do_plot'               :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'plot_name'             :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
+                    'external_break'        :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},                                                            
  
                     'detect_cycles'         :   {'type':types.IntType,    'val':10,'flags':Instrument.FLAG_GETSET},
                     'data_time'             :   {'type':types.FloatType,  'val':0.05,'flags':Instrument.FLAG_GETSET},
@@ -73,9 +74,9 @@ class auto_optimizer(Instrument):
                     'opt_yellow_step'       :   {'type':types.FloatType,  'val':0.04,'flags':Instrument.FLAG_GETSET},                    
                     'opt_nf_step'           :   {'type':types.FloatType,  'val':0.02,'flags':Instrument.FLAG_GETSET},                                        
 
-                    'max_gate_iterations'   :   {'type':types.IntType,  'val':5,'flags':Instrument.FLAG_GETSET},                    
-                    'max_yellow_iterations' :   {'type':types.IntType,  'val':5,'flags':Instrument.FLAG_GETSET},                    
-                    'max_nf_iterations'     :   {'type':types.IntType,  'val':1,'flags':Instrument.FLAG_GETSET},                                        
+                    'max_gate_iterations'   :   {'type':types.IntType,    'val':5,'flags':Instrument.FLAG_GETSET},                    
+                    'max_yellow_iterations' :   {'type':types.IntType,    'val':5,'flags':Instrument.FLAG_GETSET},                    
+                    'max_nf_iterations'     :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},                                        
                     }
         
         instrument_helper.create_get_set(self,ins_pars)
@@ -85,7 +86,7 @@ class auto_optimizer(Instrument):
         self.add_function('optimize_newfocus')
         self.add_function('flow')
         
-        # override from config       
+    # override from config       
         cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
         if not os.path.exists(cfg_fn):
             _f = open(cfg_fn, 'w')
@@ -119,10 +120,10 @@ class auto_optimizer(Instrument):
         datastream = datastream[datastream > -1];
         # If there are many points without CR check: gate is fine
         if (len(datastream) < self._detect_cycles / 2): 
-            # print len(datastream), '<', self._detect_cycles / 2, ': few cr checks needed, gate is fine.'                                
+            print len(datastream), '<', self._detect_cycles / 2, ': few cr checks needed, gate is fine.'                                
             return False;   
         # If average of datastream < threshold: low gate detected
-        # print 'Low gate:', np.mean(datastream), '<', self._check_gate_threshold
+        print 'Low gate:', np.mean(datastream), '<', self._check_gate_threshold
         if (np.mean(datastream) < self._check_gate_threshold):
             return True;
         else:
@@ -137,10 +138,10 @@ class auto_optimizer(Instrument):
         datastream = datastream[datastream > -1];
         # If there are many points without CR check: ionization is fine
         if (len(datastream) < self._detect_cycles / 2):       
-            # print len(datastream), '<', self._detect_cycles / 2, ': few cr checks needed, ionization is fine.'                                    
+            print len(datastream), '<', self._detect_cycles / 2, ': few cr checks needed, ionization is fine.'                                    
             return False;        
         # If more than one zero in datastream: deionization (NV0) detected
-        # print 'Deionization:', np.sum(datastream == 0), '>', self._NV0_zeros
+        print 'Deionization:', np.sum(datastream == 0), '>', self._NV0_zeros
         if (np.sum(datastream==0) > self._NV0_zeros):
             return True;
         else:
@@ -155,11 +156,11 @@ class auto_optimizer(Instrument):
         datastream = datastream[datastream > -1];
         # If there are many points without repump: yellow is fine
         if (len(datastream) <= 2):  
-            # print len(datastream), '<=', 2, ': few repumps needed, yellow is fine.'                                         
+            print len(datastream), '<=', 2, ': few repumps needed, yellow is fine.'                                         
             return False;
         datastream_sorted = np.sort(datastream);
         # If lower half of data < threshold: low yellow detected
-        # print 'Low yellow:', np.mean(datastream_sorted[0:(np.floor(len(datastream)/2))]), '<', self._check_yellow_threshold      
+        print 'Low yellow:', np.mean(datastream_sorted[0:(np.floor(len(datastream)/2))]), '<', self._check_yellow_threshold      
         if (np.mean(datastream_sorted[0:(np.floor(len(datastream)/2))]) < self._check_yellow_threshold):
             return True;
         else:
@@ -174,11 +175,11 @@ class auto_optimizer(Instrument):
         datastream = datastream[datastream > -1];
         # If there are many points without repump: yellow is fine
         if (len(datastream) <= 2):     
-            # print len(datastream), '<=', 2, ': few repumps needed, yellow is fine.'           
+            print len(datastream), '<=', 2, ': few repumps needed, yellow is fine.'           
             return True;
         datastream_sorted = np.sort(datastream);
         # If higher half of data > threshold: low yellow detected
-        # print 'High yellow:', np.mean(datastream_sorted[(np.floor(len(datastream)/2)):]), '>', self._check_yellow_threshold      
+        print 'High yellow:', np.mean(datastream_sorted[(np.floor(len(datastream)/2)):]), '>', self._check_yellow_threshold      
         if (np.mean(datastream_sorted[(np.floor(len(datastream)/2)):]) > self._check_yellow_threshold):
             return True;
         else:
@@ -193,10 +194,10 @@ class auto_optimizer(Instrument):
         datastream = datastream[datastream > -1];
         # If there are no valid data points: no measurement is running, so never optimize newfocus
         if len(datastream) == 0:                       
-            # print 'No valid data. No ongoing measurement, so do not optimize newfocus'
+            print 'No valid data. No ongoing measurement, so do not optimize newfocus'
             return False;
         # If max(yellow) > yellow_good but also zeros on newfocus: detuned repump laser (newfocus) detected
-        # print 'Detuned repump:', max(datastream), '>', self._opt_yellow_good, 'AND', np.sum(datastream==0) , '>', self._check_newfocus_zeros;
+        print 'Detuned repump:', max(datastream), '>', self._opt_yellow_good, 'AND', np.sum(datastream==0) , '>', self._check_newfocus_zeros;
         if (max(datastream) > self._opt_yellow_good) and (np.sum(abs(datastream)<0.1) > self._check_newfocus_zeros):
             return True;
         else:
@@ -236,26 +237,26 @@ class auto_optimizer(Instrument):
             # Start the real flowchart
             self.flow(state = 1);
         if state == 1:                
-            # print 'Low counts on gate?'
+            print 'Low counts on gate?'
             # Check if there are low counts on the gate
             if self.check_low_gate():
-                # print 'YES'
+                print 'YES'
                 return self.flow(state = 2);
             else:  
-                # print 'NO'              
+                print 'NO'              
                 return self.flow(state = 5);                
         elif state == 2:
-            # print 'Zero counts on gate?'
+            print 'Zero counts on gate?'
             # Check if there are zero counts on the gate
             if self.check_deionization():
-                # print 'YES'
+                print 'YES'
                 return self.flow(state = 3);
             else:
-                # print 'NO'
+                print 'NO'
                 return self.flow(state = 4);
         elif state == 3:
             if (self._yellow_iterations == self._max_yellow_iterations):
-                # print 'Should optimize yellow, but maximum', self._max_yellow_iterations, 'is reached. Try one newfocus optimization, then exit.'
+                print 'Should optimize yellow, but maximum', self._max_yellow_iterations, 'is reached. Try one newfocus optimization, then exit.'
                 if self.optimize_newfocus():
                     # Allow laser to follow before going on
                     qt.msleep(self._flow_sleep)                          
@@ -288,22 +289,22 @@ class auto_optimizer(Instrument):
                     # User exited ('q') optimization
                     return self.flow(state = -1);
         elif state == 5:
-            # print 'High counts on yellow?'
+            print 'High counts on yellow?'
             # Check if there are high counts on yellow
             if self.check_high_yellow():
-                # print 'YES'
+                print 'YES'
                 return self.flow(state = 6);
             else:
-                # print 'NO'
+                print 'NO'
                 return self.flow(state = 3);
         elif state == 6:
-            # print 'High counts and zeros on yellow?'
+            print 'High counts and zeros on yellow?'
             # Check if there are zeros and high counts on yellow
             if self.check_detuned_repump():
-                # print 'YES'
+                print 'YES'
                 return self.flow(state = 7)
             else:
-                # print 'NO'
+                print 'NO'
                 return self.flow(state = 8)
         elif state == 7:
             if (self._newfocus_iterations == self._max_nf_iterations):
@@ -328,13 +329,13 @@ class auto_optimizer(Instrument):
 
     def optimize_newfocus(self):
         self._newfocus_iterations += 1;
-        # print 'Newfocus iters:', self._newfocus_iterations
+        print 'Newfocus iters:', self._newfocus_iterations
 
         # Set initial time
         initial_time = time.time();
         # Create newfocus sweep            
         nf_start = self._get_freq_newfocus();
-        # print nf_start;
+        print nf_start;
         scan_min = nf_start + self._opt_nf_scan_min/2.
         scan_max = nf_start + self._opt_nf_scan_max/2.
         steps=int((scan_max - scan_min) / self._opt_nf_step)
@@ -362,7 +363,7 @@ class auto_optimizer(Instrument):
             self._set_freq_newfocus(currentNFFreq)
             NFStepTime = time.time()   
             # Debug
-            # print 'Starting NF iteration', currentNFStep, 'out of', len(nf_sweep), 'at frequency', currentNFFreq;           
+            print 'Starting NF iteration', currentNFStep, 'out of', len(nf_sweep), 'at frequency', currentNFFreq;           
 
             # Each while iteration is one gate sweep substep
             while (time.time() - NFStepTime <= self._opt_nf_dwell) and not finishedNF:
@@ -383,10 +384,10 @@ class auto_optimizer(Instrument):
                 break; 
 
         if finishedNF:
-            # print 'Newfocus: good value during scan, at', nf_y[-1]/self._opt_nf_good, 'times threshold at frequency', nf_x[-1];
+            print 'Newfocus: good value during scan, at', nf_y[-1]/self._opt_nf_good, 'times threshold at frequency', nf_x[-1];
         else:
             self._set_freq_newfocus(nf_x[np.argmax(nf_y)]);
-            # print 'Newfocus: scan failed, set to best value ', max(nf_y), 'at frequency', nf_x[np.argmax(nf_y)];
+            print 'Newfocus: scan failed, set to best value ', max(nf_y), 'at frequency', nf_x[np.argmax(nf_y)];
 
         if self.get_do_plot(): 
             # Sweeps plot
@@ -396,12 +397,12 @@ class auto_optimizer(Instrument):
             plt.plot(np.arange(len(nf_sweep))*self._opt_nf_dwell, nf_sweep,'O',name=(self._plot_name+'_nf'))             
             plt.plot(nf_t,nf_y,'O',name=(self._plot_name+'_nf'))  
 
-        # print 'Finished NewFocus optimization'
+        print 'Finished NewFocus optimization'
         return True;            
        
     def optimize_gate(self):  
         self._gate_iterations += 1;
-        # print 'Gate iters:', self._gate_iterations
+        print 'Gate iters:', self._gate_iterations
 
         # Initialize
         initial_time = time.time();        
@@ -459,7 +460,7 @@ class auto_optimizer(Instrument):
             self._set_freq_gate(currentGateFreq)
             gateStepTime = time.time()   
             # Debug
-            # print 'Starting gate iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;           
+            print 'Starting gate iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;           
 
             # Each while iteration is one gate sweep substep
             while (time.time() - gateStepTime <= self._opt_gate_dwell) and not finishedGate:
@@ -493,7 +494,7 @@ class auto_optimizer(Instrument):
                 else: # We are in NV0. Check if yellow is good
                     if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
                         # Debug
-                        # print 'Currently in NV0, but yellow is OK, so go on checking gate'
+                        print 'Currently in NV0, but yellow is OK, so go on checking gate'
 
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
@@ -510,10 +511,7 @@ class auto_optimizer(Instrument):
                             break;
                     else: # Yellow is bad. Optimize yellow where we ended last time
                         # Debug
-                        # print 'Currently in NV0, yellow is bad, optimize yellow'
-
-                        # Try to hold gate on resonance
-                        qt.instruments['pidgate'].start()
+                        print 'Currently in NV0, yellow is bad, optimize yellow'
 
                         while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
                             # Allow to break
@@ -528,7 +526,7 @@ class auto_optimizer(Instrument):
                             yellowStepTime = time.time();
 
                             # Debug
-                            # print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
+                            print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
 
                             while (time.time() - yellowStepTime <= self._opt_yellow_dwell) and not finishedYellow and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):
                                 # Allow to break
@@ -562,18 +560,15 @@ class auto_optimizer(Instrument):
                                 self._set_freq_yellow(yellow_start);
                             else:
                                 print 'Yellow: scan failed, set to best value ', max(yellow_y), 'at frequency', optFreq;
-                                self._set_freq_yellow(optFreq);   
-
-                        qt.instruments['pidgate'].stop()
-
+                                self._set_freq_yellow(optFreq);                            
             if finishedGate:
                 break;                                                            
 
         if finishedGate:
-            # print 'Gate: good value during scan, at', gate_y[-1]/self._opt_gate_good, 'times threshold at frequency', gate_x[-1];
+            print 'Gate: good value during scan, at', gate_y[-1]/self._opt_gate_good, 'times threshold at frequency', gate_x[-1];
         else:
             self._set_freq_gate(gate_x[np.argmax(gate_y)]);
-            # print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
+            print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
 
         if gate_x[np.argmax(gate_y)] > gate_start:
             self._gate_went_up = True;
@@ -609,7 +604,7 @@ class auto_optimizer(Instrument):
 
     def optimize_yellow(self):  
         self._yellow_iterations += 1;
-        # print 'Yellow iters:', self._yellow_iterations
+        print 'Yellow iters:', self._yellow_iterations
 
         # Initialize
         initial_time = time.time();        
@@ -669,9 +664,7 @@ class auto_optimizer(Instrument):
             self._set_freq_yellow(currentYellowFreq)
             yellowStepTime = time.time()   
             # Debug
-            # print 'Starting yellow iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;           
-
-            qt.instruments['pidgate'].start()
+            print 'Starting yellow iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;           
 
             # Each while iteration is one yellow sweep substep
             while (time.time() - yellowStepTime <= self._opt_yellow_dwell) and not finishedYellow:
@@ -706,7 +699,7 @@ class auto_optimizer(Instrument):
                 else: # We are in NV-. Check if gate is good
                     if max(gate_y[-min(5,len(gate_y)):])>self._opt_gate_good or finishedGate or currentGateStep == len(gate_sweep): # Gate is good. Continue yellow
                         # Debug
-                        # print 'Currently in NV-, but gate is OK, so go on checking yellow'
+                        print 'Currently in NV-, but gate is OK, so go on checking yellow'
 
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
@@ -724,9 +717,7 @@ class auto_optimizer(Instrument):
                             break;
                     else: # Gate is bad. Optimize gate where we ended last time
                         # Debug
-                        qt.instruments['pidgate'].stop()
-
-                        # print 'Currently in NV-, gate is bad, optimize gate'
+                        print 'Currently in NV-, gate is bad, optimize gate'
 
                         while currentGateStep < len(gate_sweep) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):                           
                             # Allow to break
@@ -742,7 +733,7 @@ class auto_optimizer(Instrument):
                             gateStepTime = time.time();
 
                             # Debug
-                            # print 'Currently in NV-, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
+                            print 'Currently in NV-, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
 
                             while (time.time() - gateStepTime <= self._opt_gate_dwell) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):
                                 # Allow to break
@@ -770,9 +761,6 @@ class auto_optimizer(Instrument):
                             # Scan didn't exceed threshold at any point. Take optimum value from scan.
                             self._set_freq_gate(gate_x[np.argmax(gate_y)]);
                             print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
-
-                        qt.instruments['pidgate'].start()
-                        
             if finishedYellow:
                 break;                                                            
 
@@ -782,7 +770,7 @@ class auto_optimizer(Instrument):
             self._gate_went_up = False;
 
         if finishedYellow:
-            # print 'Yellow: good value during scan, at', yellow_y[-1]/self._opt_yellow_good, 'times threshold at frequency', yellow_x[-1];
+            print 'Yellow: good value during scan, at', yellow_y[-1]/self._opt_yellow_good, 'times threshold at frequency', yellow_x[-1];
         else:
             # Scan didn't exceed threshold at any point. Take optimum value from scan, taking delay into account.
             optTime = yellow_t[np.argmax(yellow_y)] + self._yellow_delay;

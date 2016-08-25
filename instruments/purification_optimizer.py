@@ -81,6 +81,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.deque_par_laser    = deque([], self.history_length)
         self.deque_t            = deque([], self.history_length)
         self.deque_fpar_laser    = deque([], self.history_length)
+        self.deque_repump_counts = deque(self.history_length*[-1], self.history_length)
         
         self.init_counters()  
 
@@ -421,11 +422,12 @@ class purification_optimizer(mo.multiple_optimizer):
             return False
 
     def optimize_nf(self):
+        e_primer_was_running = self.get_pid_e_primer_running()        
         self.set_pid_e_primer_running(False)
         # qt.instruments['nf_optimizer'].optimize()
         qt.instruments['auto_optimizer'].optimize_newfocus()
-        qt.msleep(2.5)
-        self.set_pid_e_primer_running(True)
+        qt.msleep(0.5)
+        self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_yellow(self):
         e_primer_was_running = self.get_pid_e_primer_running()
@@ -434,7 +436,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pidgate_running(False)        
         #qt.instruments['yellowfrq_optimizer'].optimize()
         qt.instruments['auto_optimizer'].optimize_yellow();
-        qt.msleep(2.5)
+        qt.msleep(4.0)
         self.set_pidyellowfrq_running(True)
         self.set_pidgate_running(True)        
         self.set_pid_e_primer_running(e_primer_was_running)

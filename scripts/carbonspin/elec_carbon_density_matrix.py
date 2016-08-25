@@ -140,8 +140,8 @@ if __name__ == '__main__':
             if breakst:
                 break
 
-            MBE(SAMPLE + 'el_13C_dm_'+pulse+'_'+el_RO, el_RO= el_RO,carbon_list = [1],
-                                carbon_init_list = [1],number_of_MBE_steps=1,
+            MBE(SAMPLE + 'el_13C_dm_'+pulse+'_'+el_RO, el_RO= el_RO,carbon_list = [4],
+                                carbon_init_list = [4],number_of_MBE_steps=1,
                                 carbon_init_methods=['MBI'],e_RO_pulse=pulse,
                                 carbon_init_thresholds = [1],debug=False)
 

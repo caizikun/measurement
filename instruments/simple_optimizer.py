@@ -56,10 +56,6 @@ class simple_optimizer(Instrument):
         self.load_cfg()
         self.save_cfg()
         
-    def get_all_cfg(self):
-        for n in self._parlist:
-            self.get(n)
-        
     def load_cfg(self):
         params_from_cfg = self.ins_cfg.get_all()
         for p in params_from_cfg:
