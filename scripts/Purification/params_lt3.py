@@ -27,10 +27,9 @@ params_lt3['MW_during_LDE']             = 1
 params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['average_repump_time'] 		= 0.27e-6#0.254e-6 # XXX put repump AOM delay here!
+params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
-params_lt3['MW_opt_puls1_separation']   = 50e-9 # was 22 e-9. needs to be adjusted.
-
+params_lt3['MW_opt_puls1_separation']   = 70e-9 #
 
 #adwin params defs:
 params_lt3['SP_duration'] = 30#10 #10
@@ -41,10 +40,8 @@ params_lt3['E_RO_durations']  = [params_lt3['Dynamical_stop_ssro_duration']] # o
 params_lt3['Dynamical_stop_ssro_threshold'] = 1
 params_lt3['MBI_attempts_before_CR'] = 1 
 
-# params_lt3['phase_per_sequence_repetition'] =0.
-# params_lt3['phase_per_compensation_repetition'] =0.
-# params_lt3['total_phase_offset_after_sequence'] =0.
-params_lt3['phase_correct_max_reps']    = 80 # do not put more than 80. otherwise to had to calculate for the adwin.
+
+params_lt3['phase_correct_max_reps']    = 72 # do not put more than 80. otherwise to had to calculate for the adwin.
 
 # channels
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
@@ -74,7 +71,7 @@ params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 1e-9
 params_lt3['PLU_2_delay']             = 1e-9
 params_lt3['PLU_3_delay']             = 50e-9
-params_lt3['PLU_4_delay']             = 2000e-9 # don't change this
+params_lt3['PLU_4_delay']             = 2500e-9 # don't change this
 
 params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
@@ -86,17 +83,18 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['carbon']                        = 1
 params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
-params_lt3['dynamic_phase_tau'] = 2.312e-6
+params_lt3['dynamic_phase_tau'] = 2.311e-6
 params_lt3['dynamic_phase_N'] = 2 
 params_lt3['phase_feedback_resolution'] = 4.5
+params_lt3['decouple_before_swap_tau'] = 4.68e-6
 
 ### Everything TimeHarp / this is imported from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       2000
-params_lt3['MAX_SYNC_BIN'] =       3500
-params_lt3['MIN_HIST_SYNC_BIN'] =  2000
-params_lt3['MAX_HIST_SYNC_BIN'] =  3500
+params_lt3['MIN_SYNC_BIN'] =       0#2500
+params_lt3['MAX_SYNC_BIN'] =       8500
+params_lt3['MIN_HIST_SYNC_BIN'] =  0#2500
+params_lt3['MAX_HIST_SYNC_BIN'] =  8500
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec
@@ -104,10 +102,10 @@ params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interv
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['pulse_start_bin'] = 2950-params_lt3['MIN_SYNC_BIN']
-params_lt3['pulse_stop_bin'] = 2950+300-params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_start_bin'] = 2950 -params_lt3['MIN_SYNC_BIN']
-params_lt3['tail_stop_bin'] = 2950+300 -params_lt3['MIN_SYNC_BIN']
+params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
+params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['tail_start_bin'] = 2050 -params_lt3['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['tail_stop_bin'] = 2050+2000 -params_lt3['MIN_SYNC_BIN']    #### BK: 2950
 params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10

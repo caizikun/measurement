@@ -244,6 +244,8 @@ class optimize1d_counts(CyclopeanInstrument):
         #print('Get the data')
         return_position_change = kw.pop('return_position_change', False)
         return_data = kw.pop('return_data', False)
+        return_fitresult = kw.pop('return_fitresult', False)
+        fit_double_gaussian = kw.pop('fit_double_gaussian', False)
 
         self.set_data('points', self._linescan.get_points()[0])
         qt.msleep(0.1)
@@ -322,5 +324,7 @@ class optimize1d_counts(CyclopeanInstrument):
                 return (self._opt_pos*1E3-self._opt_pos_prev*1E3)
             elif return_data:
                 return p,cr
+            elif return_fitresult:
+                return gaussian_fit
         return ret
 

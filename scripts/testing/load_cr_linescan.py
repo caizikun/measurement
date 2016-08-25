@@ -4,6 +4,7 @@ LT1/2 script for adwin ssro.
 import numpy as np
 import qt
 
+
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
@@ -15,6 +16,10 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 class CR_linescan(ssro.AdwinSSRO):
 
     adwin_process = 'cr_linescan'
+
+    # def __init__(self,name):
+    #     print 'do ing the init'
+    #     m2.AdwinControlledMeasurement.__init__(self,name)
 
     def run(self, autoconfig=True, setup=True):
         if autoconfig:

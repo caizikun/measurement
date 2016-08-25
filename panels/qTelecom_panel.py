@@ -42,6 +42,7 @@ class TempCtrlPanel (Panel):
        
         self.ui.cleargraphButton2.clicked.connect(self.ui.plot2.reset)
         self.ui.cleargraphButton3.clicked.connect(self.ui.plot3.reset)
+        self.ui.cleargraphButton4.clicked.connect(self.ui.plot4.reset)
         
 
         # self.check_knob_temperature()
@@ -79,6 +80,12 @@ class TempCtrlPanel (Panel):
             # print "plotting"
             # self.ui.plot2.add_point(changes['dfg_channel2_plot_DFG_values2'])
             self.ui.plot3.add_point(changes['temperature_channel2_plot_DFG_values2'])
+            # print "Something is happening"
+
+        if changes.has_key('temperature_channel2_plot_DFG_values2'):
+            # print "plotting"
+            # self.ui.plot2.add_point(changes['dfg_channel2_plot_DFG_values2'])
+            self.ui.plot3.add_point(changes['red_channel2_plot_DFG_values2'])
             # print "Something is happening"
 
 

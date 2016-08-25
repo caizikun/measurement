@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.718#0.681#0.667 # 06-02
+	hermite_pi_amp = 0.717#0.7058#0.681#0.667 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.482 # 06-02 
+	hermite_pi2_amp = 0.477 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -110,7 +110,7 @@ cfg['protocols']['AdwinSSRO']['cr_mod'] = True
 cfg['protocols']['cr_mod']={
 	'cr_mod_control_dac'		:	'gate_mod',
 	'cr_mod_control_offset'     :   0.0,
-	'cr_mod_control_amp'        :   0.05, #V
+	'cr_mod_control_amp'        :   0.15, #V
 	'cr_mod_control_avg_pts'	:   500000.,
 	'repump_mod_control_offset' :   5.4, #note, gets set automatically
 	'repump_mod_control_amp'    :   .5, #V
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 344.6+1.2-17.55+0.214,#329.06,#4.162, #adwin needs positive values
-    'phase_per_compensation_repetition': 14.067, # adwin needs positive values
-    'total_phase_offset_after_sequence': 180-85.+11.3,#222.69, #68.386,#42.328,
+    'phase_per_sequence_repetition'    : 327.464+1.67-0.207+0.1+0.11,#329.06,#4.162, #adwin needs positive values
+    'phase_per_compensation_repetition': 13.472, # adwin needs positive values
+    'total_phase_offset_after_sequence': 125.26, # adwin needs positive values
 
 	# #########################
 	# #####     SIL1      #####
@@ -267,20 +267,20 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447834.54,
+	'C1_freq_0' 		: 447839.59,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434615.6,#434257.72, 
-	'C1_freq_0' 		: 447834.54,
-	'C1_freq_1_p1' 		: 425436.75,
+	'C1_freq_p1'        : 433914.,#434257.72, 
+	'C1_freq_0' 		: 447839.59,
+	'C1_freq_1_p1' 		: 425431.77,
 
-	'C1_Ren_tau_p1'    :   [10.886e-6],#10.886e-6], #8.608e-6
+	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.18] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.86] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -369,7 +369,7 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 6e-9,#2.5e-9,
+		'A_CR_amplitude':				 5.5e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 
@@ -441,6 +441,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
+        'Hermite_theta_amp':		0.29,#0.68,
+		'Hermite_theta_length':		46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -471,7 +473,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.4,#0.2
+        'aom_amplitude':					0.55,#0.2
 }
 
 
@@ -481,7 +483,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
-		'C13_MBI_RO_duration':                  25,  
+		'C13_MBI_RO_duration':                  40,  
 		'E_C13_MBI_RO_amplitude':               0.2e-9, 
 		'SP_duration_after_C13':                30, #use long repumping in case of swap init
 		'A_SP_amplitude_after_C13_MBI':         12e-9,

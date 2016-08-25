@@ -56,10 +56,6 @@ class simple_optimizer(Instrument):
         self.load_cfg()
         self.save_cfg()
         
-    def get_all_cfg(self):
-        for n in self._parlist:
-            self.get(n)
-        
     def load_cfg(self):
         params_from_cfg = self.ins_cfg.get_all()
         for p in params_from_cfg:
@@ -71,7 +67,7 @@ class simple_optimizer(Instrument):
             self.ins_cfg[param] = value
             
     def scan(self):
-        
+        print 'Hi'
         initial_setpoint = self._get_control_f()
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.

@@ -38,7 +38,6 @@ params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sampl
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 
-
 #adwin params defs:
 params_lt4['SP_duration'] = 30 #10
 params_lt4['wait_after_pulse_duration'] = 1
@@ -97,7 +96,7 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 200e-9
 
-params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] #### needs to be changed back to regular pi/2 for most calibrations
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
@@ -106,23 +105,23 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
-params_lt4['dynamic_phase_tau']			= 2.298e-6
+params_lt4['dynamic_phase_tau']			= 2.299e-6#2.298e-6
 params_lt4['dynamic_phase_N']			= 2
-
+params_lt4['phase_feedback_resolution']	= 4.5
 
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(2e6) #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(3.5e6) #15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3)
+params_lt4['MIN_SYNC_BIN']        =   int(2.5e6) #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(5.5e6) #15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.5e6) #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(5500*1e3)
 params_lt4['entanglement_marker_number'] = 1
 
-params_lt4['pulse_start_bin'] = 2490e3 -params_lt4['MIN_SYNC_BIN']  
-params_lt4['pulse_stop_bin'] = 2499e3 - params_lt4['MIN_SYNC_BIN']  
-params_lt4['tail_start_bin'] = 2499e3 - params_lt4['MIN_SYNC_BIN']  
-params_lt4['tail_stop_bin'] = 2570e3 - params_lt4['MIN_SYNC_BIN']  
+params_lt4['pulse_start_bin'] = 2753e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
+params_lt4['pulse_stop_bin'] = 2774e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_start_bin'] = 2774e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_stop_bin'] = 2790e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H

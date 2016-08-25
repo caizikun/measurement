@@ -987,7 +987,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                     elif g.C_phases_after_gate[iC] == 'reset':
                         g.C_phases_after_gate[iC] = 0
-                        # print g.name
+
 
 
                     elif g.C_phases_after_gate[iC] == None:
@@ -996,9 +996,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if g.C_phases_after_gate[iC] != None:
 
                         g.C_phases_after_gate[iC] += g.extra_phase_correction_list[iC]
+
                     #if (iC==1) and (g.C_phases_before_gate[iC] != None):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
-
+                        
             elif g.Gate_type =='electron_decoupling':
 
                  #print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
@@ -1772,16 +1773,23 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             Special decoupling sequence that provides adwin-controlled adaptive phase gates on carbons.
             
+            ############################################################################################################
+            WORKS WELL WITH XY-2!!! Watch out for even odd discrepancies! This is not the identity operation!!
+            for further information see also purify_slave.py and the adwin script purification.bas
+            ##############################################################################################################
+            
             These gates make use of an attribute called: Gate.no_connection_elt.
             If true then this attribute hinders the automatic insertion of carbon phase gates.
             
-            Needs the definition of two consecutive gates to function properly.
-            First gate (Gate.scheme contains carbon_phase_feedback): 
+            Needs the definition of at least three or more consecutive gates to function properly.
+            First gate is a starting element with tau_cut of 1 us
+
+            Second element is a combining element (Gate.scheme contains carbon_phase_feedback): 
                 decouple in sets of N pulses on the larmor revival. We employ XY8. 
                 Has repetitions according to g.reps.
                 Gives an adwin trigger for every repetition. 
                 Idea: The adwin counts the carbon phase and jumps out of this element as soon as the right time has elapsed.
-            Second element (Gate.scheme also contains 'end'):
+            Thrid element (Gate.scheme also contains 'end'):
                 is repeated once 
                 has one X pulse with the same timing.
                 has tau_cut of 1e-6 such that the follow up pi/2 pulse comes in on an echo
@@ -1856,13 +1864,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 final_pulse = X
                 P_type = 'X'
 
+            #### the ending elements in a XY-4 sequence need to adapt to the number of repetitions.
+            if 'end' in Gate.scheme and 'even' in Gate.name:
+                final_pulse = mX
+                P_type = 'X'
+            elif 'end' in Gate.scheme and 'odd' in Gate.name:
+                final_pulse = Y
+                P_type = 'Y'
+
             decoupling_elt.append(pulse.cp(final_pulse))
 
             if (not 'end' in Gate.scheme):
                 decoupling_elt.append(T)
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 2.5e-6, amplitude = 2)
-                decoupling_elt.add(adwin_sync,start=2000e-9)
+                decoupling_elt.add(adwin_sync,start=2500e-9)
             else:
                 decoupling_elt.append(T_out)  
 
@@ -2673,7 +2689,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 elif gate.go_to == 'next':
                     gate.go_to = gate_seq[i+1].elements[0].name
                 elif gate.go_to == 'second_next':
-
                     gate.go_to = gate_seq[i+2].elements[0].name
                 elif gate.go_to == 'self': 
                     gate.go_to = gate.elements[0].name
@@ -2978,7 +2993,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         for g in Gate_sequence:
 
             if len(g.name) >= 30:
-                print "Gate " + g.name + "has a name longer than 30 characters. This will probably"
+                print "Gate " + g.name + "has a name longer than 30 characters. This will probably" \
                 + "break the AWG"
 
             if g.Gate_type =='Carbon_Gate' or g.Gate_type =='electron_decoupling':
@@ -4175,7 +4190,7 @@ class MBI_C13(DynamicalDecoupling):
             addressed_carbon        = 1,
             el_RO_result            = '0',
             do_wait_after_pi        = False,
-            RO_after_swap           = True):
+            RO_after_swap           = True, **kw):
         #el_RO_result, not important.. only for RO trigger. Just as el_after_init is not important and do_wait_after_pi.
         '''
         By SK
@@ -4256,7 +4271,8 @@ class MBI_C13(DynamicalDecoupling):
             el_RO_result            = '0',
             do_wait_after_pi        = False,
             RO_after_swap           = True,
-            swap_type               = 'swap_w_init'):
+            swap_type               = 'swap_w_init',
+            **kw):
         #el_RO_result, not important.. only for RO trigger. Just as el_after_init is not important and do_wait_after_pi.
         '''
         By SK and PeeeeeH
@@ -4323,23 +4339,25 @@ class MBI_C13(DynamicalDecoupling):
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase']+180)
 
-        ########################
-        # Un-conditional gates #
-        ########################
 
-        C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
-            Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_Y_phase'])
-
-        C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
-            Carbon_ind  = addressed_carbon,
-            phase       = self.params['C13_X_phase'])
 
         #print 'swap_type = ' + swap_type 
         if swap_type    == 'swap_w_init':
             carbon_swap_seq = [C_Ren_y,e_x,C_Ren_x,e_ym]
             
         elif swap_type  ==  'swap_wo_init':
+            ########################
+            # Un-conditional gates #
+            ########################
+
+            C_unc_y = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
+                Carbon_ind  = addressed_carbon,
+                phase       = self.params['C13_Y_phase'])
+
+            C_unc_x = self.unconditional_carbon_gate(prefix+str(addressed_carbon)+'_unc_y_pt'+str(pt),
+                Carbon_ind  = addressed_carbon,
+                phase       = self.params['C13_X_phase'])
+            
             carbon_swap_seq = [C_Ren_y, e_ym, C_Ren_x, C_unc_y, e_xm, C_Ren_x_2] #for actual swap, need zm rotation on both electron and carbon at the end
 
         elif swap_type == 'prob_init':
