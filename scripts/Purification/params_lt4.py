@@ -96,8 +96,8 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 200e-9
 
-params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] #### needs to be changed back to regular pi/2 for most calibrations
-params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
+params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
+params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
@@ -105,7 +105,7 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
-params_lt4['dynamic_phase_tau']			= 2.299e-6#2.298e-6
+params_lt4['dynamic_phase_tau']			= 2.298e-6#2.298e-6
 params_lt4['dynamic_phase_N']			= 2
 params_lt4['phase_feedback_resolution']	= 4.5
 
@@ -118,10 +118,10 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.5e6) #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(5500*1e3)
 params_lt4['entanglement_marker_number'] = 1
 
-params_lt4['pulse_start_bin'] = 2753e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
-params_lt4['pulse_stop_bin'] = 2774e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_start_bin'] = 2774e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_stop_bin'] = 2790e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
+params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
+params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
