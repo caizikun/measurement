@@ -6,9 +6,9 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Membrane_Sophie'#'The111No2_enlarged_SIL2_DM_off'
+name = 'Fritz_green'#'The111No2_enlarged_SIL2_DM_off'
 steps=16
-max_power=900e-6       #[w]
+max_power=250e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
 bg_x=2.         #delta x position of background [um]
