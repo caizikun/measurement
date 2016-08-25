@@ -115,8 +115,6 @@ class scan(CyclopeanInstrument):
 
         # line index of course without the dimensions in which we scan
         self._current_line = ndx[:-1]
-
-        print self._current_line
         
         for i in dim_lines_flat:
             i = linspace(self._linescan_starts[ndx],
@@ -175,7 +173,6 @@ class scan(CyclopeanInstrument):
         pass
 
     def _next_line(self):
-
         self._linescan.set_dimensions(self._linescan_dimensions)
         self._linescan.set_starts(tuple(self._linescan_starts\
                 [self._current_line]))
