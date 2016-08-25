@@ -6,7 +6,7 @@ def fast_laser_scan(name,grpower,redpower):
     dac_names = ['newfocus_frq']
     start_voltages = [9]
     stop_voltages = [-9]
-    steps = int(90e9/100e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
+    steps = int(90e9/20e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
     px_time= 100#ms
     plot_voltage=True
     adwin_ins = qt.instruments['adwin']
@@ -79,14 +79,14 @@ def long_fast_laser_scan(name,grpower,redpower):
     #wls = np.linspace(637.26,637.22,2)
     print wls
     for ii,wl in enumerate(wls):
-        GreenAOM.set_power(200e-6)
-        mos_ins.set_x(mos_ins.get_x()-1)
-        opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
+        #GreenAOM.set_power(200e-6)
+        #mos_ins.set_x(mos_ins.get_x()-1)
+        #opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
         #opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
-        mos_ins.set_x(mos_ins.get_x()+1)
-        mos_ins.set_z(mos_ins.get_z()+0.6)
-        qt.msleep(1)
-        opt_ins.optimize(dims=['x','y'], cycles = 2, int_time = 100)
+        #mos_ins.set_x(mos_ins.get_x()+1)
+        #mos_ins.set_z(mos_ins.get_z()+0.6)
+        #qt.msleep(1)
+        #opt_ins.optimize(dims=['x','y'], cycles = 2, int_time = 100)
 
         NewfocusLaser.set_wavelength(wl)
         print 'laser wavelength set to',NewfocusLaser.get_wavelength()
@@ -96,9 +96,9 @@ def long_fast_laser_scan(name,grpower,redpower):
             break
     counters.set_is_running(True)        
 if __name__ == '__main__':
-    grpower = 2e-6
-    redpower = 30.e-9
-    name = '_Harvard_membrane_NV1_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
+    grpower = 0e-6
+    redpower = 15.e-9
+    name = '_Sophie_area_7_NV1'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
     #long_fast_laser_scan(name,grpower,redpower)
     counters.set_is_running(False)
-    fast_laser_scan('Harvard_membrane',2e-6,100e-9)
+    fast_laser_scan(name,grpower,redpower)
