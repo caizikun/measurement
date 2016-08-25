@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
 ' Foldings                       = 593,616,644,697,857
 '<Header End>
@@ -955,15 +955,14 @@ EVENT:
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
           DATA_109[repetition_counter+1] = DATA_112[Round(phase_to_compensate)]
           DATA_108[repetition_counter+1] = phase_to_compensate
-          
-          
+          FPAR_61 = phase_to_compensate
           
         ENDIF 
                 
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(phase_compensation_repetitions)  
-            Par_65 = phase_compensation_repetitions
+            'Par_65 = phase_compensation_repetitions
           endif
           awg_repcount_was_low = 0
         ELSE

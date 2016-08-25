@@ -58,6 +58,17 @@ if True:
             get_freq_newfocus = _get_freq_newfocus, set_freq_newfocus = _set_freq_newfocus, plot_name='opt_plot')                
 
 if True:
+    _get_freq_yellow=lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    _get_freq_gate=lambda: qt.instruments['adwin'].get_dac_voltage('gate')
+    _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
+    # Logger takes '__name__' parameter as column header
+    _get_freq_yellow.__name__ = 'yellow_freq'
+    _get_freq_gate.__name__ = 'gate_voltage'
+    _get_freq_newfocus.__name__ = 'newfocus_freq'
+    _function_list = [_get_freq_yellow, _get_freq_gate, _get_freq_newfocus]
+    frequency_logger = qt.instruments.create('frequency_logger', 'triggered_logger', function_list = _function_list)  
+
+if True:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
     _getctrl_nf = lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(70)

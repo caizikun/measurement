@@ -53,13 +53,13 @@ def NuclearHahnWithInitialization(name,
     m.params['add_wait_gate'] = True
 
     if el_after_init == 0:
-        m.params['reps_per_ROsequence'] = 200
-        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,5) #np.arange(2e-3, 60e-3, 4e-3)
+        m.params['reps_per_ROsequence'] = 500
+        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,12) #np.arange(2e-3, 60e-3, 4e-3)
         m.params['pts'] = len(m.params['free_evolution_time'])
     if el_after_init == 1:
         # m.params['free_evolution_time'] = np.r_[4e-3,25e-3, 50e-3,100e-3, 200e-3, 350e-3, 600e-3, 1.]
-        m.params['reps_per_ROsequence'] = 200
-        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,5)
+        m.params['reps_per_ROsequence'] = 500
+        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,12)
         m.params['pts'] = len(m.params['free_evolution_time'])
         
     
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     # shutter_list = [True, False, False]
 
     carbon_list = [1]
-    el_RO_list = ['positive']
+    el_RO_list = ['positive','negative']
     el_after_init_list = [0,1]
 
     for carbon in carbon_list:

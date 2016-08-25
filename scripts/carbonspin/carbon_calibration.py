@@ -39,7 +39,7 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = False
+f_ms0 = True
 
 f_ms1 = True
 
@@ -55,7 +55,7 @@ cross_phase_steps       = 1
 debug = False 
 
 ### repetitions per data point.
-freq_reps = 500
+freq_reps = 750
 phase_reps = 500
 crosstalk_reps = 500
 

@@ -37,6 +37,13 @@ def _create_mw_pulses(msmt,Gate):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
 
+    if hasattr(Gate,'no_mw_pulse'):
+        if Gate.no_mw_pulse:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+   
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
 
@@ -173,7 +180,6 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
 
         
-    #3 MW pulses
     if msmt.params['MW_during_LDE'] == 1: # and not ('LDE2' in Gate.name):
         
         # we choose to build the MW pulses up from the end of the element.

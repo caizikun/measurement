@@ -498,7 +498,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         for g in Gate_sequence_in:
             ## only change the composition of a carbon gate if it was not predefined.
-
             if g.Gate_type =='Carbon_Gate' and g.N == None and g.tau == None:
                 #found a carbon gate. Is it a composite gate?
                 
@@ -8444,3 +8443,125 @@ class Sweep_Carbon_Gate_COMP(MBI_C13):
 
         else:
             print 'upload = false, no sequence uploaded to AWG' 
+
+
+class electron_carbon_density_matrix(MBI_C13):
+    '''
+    Sequence: |N-MBI| -|Cinit|-|MBE|^N1-|Tomography|
+    ''' 
+    mprefix = 'probabablistic_MBE_Tomography'
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialize empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('e_13C_dm')
+
+
+
+        for pt in range(pts): ### Sweep over RO basis
+
+            gate_seq = []
+
+            ### Nitrogen MBI
+            mbi = Gate('MBI_'+str(pt),'MBI')
+            mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            ### Carbon initialization
+            init_wait_for_trigger = True
+            
+            for kk in range(self.params['Nr_C13_init']):
+                # print self.params['init_method_list'][kk]
+                # print self.params['init_state_list'][kk]
+                # print self.params['carbon_init_list'][kk]
+                # print 
+
+                if self.params['el_after_init']                == '1':
+                    self.params['do_wait_after_pi']            = True
+                else: 
+                    self.params['do_wait_after_pi']            = False
+
+                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                    prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
+                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                    initialization_method = self.params['init_method_list'][kk],
+                    C_init_state          = self.params['init_state_list'][kk],
+                    addressed_carbon      = self.params['carbon_init_list'][kk],
+                    el_after_init         = self.params['el_after_init'],
+                    do_wait_after_pi      = self.params['do_wait_after_pi'])
+                gate_seq.extend(carbon_init_seq)
+                init_wait_for_trigger = False
+
+
+
+            ePi = Gate('X_pt_'+str(pt),'electron_Gate',
+                        Gate_operation='pi')
+
+            wait_for_e = Gate('wait_for_e_'+str(pt),'passive_elt', wait_time = 3e-6)
+
+            electron_RO_pulse_dict = {'x' : self.params['X_phase'],
+                                        'mx' : self.params['X_phase']+180,
+                                        'y' : self.params['Y_phase'],
+                                        'my' : self.params['Y_phase']+180,
+                                        'X' : ePi,
+                                        'none' : wait_for_e
+                                        }
+
+            if (self.params['electron_RO_pulse'] == 'none') or (self.params['electron_RO_pulse'] == 'X'):
+                ePi2X = electron_RO_pulse_dict[self.params['electron_RO_pulse']]
+            else:
+                ePi2X = Gate('x_pi2_pt_'+str(pt),'electron_Gate',
+                            Gate_operation='pi2',phase = electron_RO_pulse_dict[self.params['electron_RO_pulse']])
+
+            ### MBE - measurement based entanglement
+            for kk in range(self.params['Nr_MBE']):
+
+                probabilistic_MBE_seq = self.logic_init_seq(
+                        prefix              = 'Ent_' + str(kk+1),
+                        pt                  =  pt,
+                        carbon_list         = self.params['carbon_list'],
+                        RO_basis_list       = self.params['MBE_bases'],
+                        RO_trigger_duration = 150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['logical_state'] ,
+                        go_to_element       = mbi,
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                probabilistic_MBE_seq[-2] = ePi2X
+                
+                gate_seq.extend(probabilistic_MBE_seq)
+
+            carbon_tomo_seq = self.readout_carbon_sequence(
+                    prefix              = 'Tomo',
+                    pt                  = pt,
+                    go_to_element       = None,
+                    event_jump_element  = None,
+                    RO_trigger_duration = 10e-6,
+                    carbon_list         = self.params['carbon_list'],
+                    RO_basis_list       = self.params['Tomography Bases'][pt],
+                    readout_orientation = self.params['electron_readout_orientation'])
+            gate_seq.extend(carbon_tomo_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt)
+
+            ### Convert elements to AWG sequence and add to combined list`
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+
+            if debug:
+                for g in gate_seq:
+                    print g.name
+                    self.print_carbon_phases(g,self.params['carbon_list'])
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'

@@ -182,6 +182,7 @@ class purify(PQPurifyMeasurement):
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
+                # qt.msleep(0.1,exact = True) # handle events??
                 if self.measurement_process_running():
                     live_updates += 1
                     if live_updates > no_of_cycles_for_live_update_reset:
@@ -589,7 +590,7 @@ def Determine_eta(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 1
-    #m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
+    # m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
        
 
     #m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
@@ -743,7 +744,7 @@ def PurifyZZ(name,debug = False,upload_only=False):
     sweep_purification.prepare(m)
     
     pts = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
     m.params['do_general_sweep'] = 0
     m.params['Tomography_bases'] = ['Z']
     sweep_purification.turn_all_sequence_elements_on(m)
@@ -759,7 +760,7 @@ def PurifyXX(name,debug = False,upload_only=False):
     sweep_purification.prepare(m)
     
     pts = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
     m.params['do_general_sweep'] = 0
     m.params['Tomography_bases'] = ['X']
     sweep_purification.turn_all_sequence_elements_on(m)
@@ -775,7 +776,7 @@ def PurifyYY(name,debug = False,upload_only=False):
     sweep_purification.prepare(m)
     
     pts = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
     m.params['do_general_sweep'] = 0
     m.params['Tomography_bases'] = ['Y']
     sweep_purification.turn_all_sequence_elements_on(m)
@@ -787,28 +788,25 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
     # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+
+
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
 
-    ###### non-local measurements // purification parameters
+    # ###### non-local measurements // purification parameters
+  
     # qt.instruments['ZPLServo'].move_out()
     # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_in()
     # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
-    # Determine_eta(name+'_eta_XX_75percent',debug = False,upload_only=False)
+    Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
     # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
-
-
-
-
-
-
 
 
     ###### non-local measurements // Barrett Kok parameters
@@ -818,7 +816,7 @@ if __name__ == '__main__':
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
     # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
 
-
+    # qt.mstart()
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
             # Experimental addition for remote running
@@ -831,36 +829,45 @@ if __name__ == '__main__':
                 qt.instruments['lt3_helper'].execute_script()
                 qt.instruments['lt4_helper'].set_is_running(True)
                 qt.instruments['lt3_helper'].set_is_running(True)
-                qt.msleep(2)
+                
             else:
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
-            for i in range(2):
+            
+            AWG.clear_visa()
+            qt.msleep(2)
+            qt.instruments['purification_optimizer'].start_babysit()
+            qt.purification_succes = True
+            
+            for i in range(1):
 
-
-                #### ZZ measurement
                 # print '-----------------------------------'            
                 # print 'press q to stop measurement cleanly'
                 # print '-----------------------------------'
                 # qt.msleep(1)
                 # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                 #    break
+                # # 
+                # qt.instruments['ZPLServo'].move_out()
+                # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+                # qt.instruments['ZPLServo'].move_in()
+                # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+                # qt.instruments['ZPLServo'].move_out()
 
-                # PurifyZZ(name+'_Purify_ZZ_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
+                ## XY measurement
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    qt.purification_succes = False
+                    break
 
-                #### XX measurement
-                # print '-----------------------------------'            
-                # print 'press q to stop measurement cleanly'
-                # print '-----------------------------------'
-                # qt.msleep(1)
-                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                #    break
-                
-                # PurifyXX(name+'_Purify_XX_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                
+                PurifyXX(name+'_Purify25_LT3X_LT4Y_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
 
-                #### YY measurement
+                AWG.clear_visa()
+                ## XZ measurement
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
@@ -869,8 +876,57 @@ if __name__ == '__main__':
                     qt.purification_succes = False
                     break
                 
-                PurifyYY(name+'_Purify_YY_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-
+                PurifyXX(name+'_Purify25_LT3X_LT4Z_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                
+                AWG.clear_visa()
+                ## YX measurement
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    qt.purification_succes = False
+                    break
+                
+                PurifyYY(name+'_Purify25_LT3Y_LT4X_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                
+                AWG.clear_visa()
+                ## YZ measurement
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    qt.purification_succes = False
+                    break
+                
+                PurifyYY(name+'_Purify25_LT3Y_LT4Z_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                AWG.clear_visa()
+                ## ZX measurement
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    qt.purification_succes = False
+                    break
+                
+                PurifyZZ(name+'_Purify25_LT3Z_LT4X_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                AWG.clear_visa()
+                ## ZY measurement
+                print '-----------------------------------'            
+                print 'press q to stop measurement cleanly'
+                print '-----------------------------------'
+                qt.msleep(1)
+                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                    qt.purification_succes = False
+                    break
+                
+                PurifyZZ(name+'_Purify25_LT3Z_LT4Y_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                AWG.clear_visa()
+            qt.instruments['purification_optimizer'].set_stop_optimize(True)
+            qt.instruments['purification_optimizer'].stop_babysit() 
             qt.master_script_is_running = False
-            qt.purification_succes = True
-            
+
+    # qt.mend()
+

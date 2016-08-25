@@ -618,6 +618,9 @@ class purify_single_setup(DD.MBI_C13):
                 elif self.params['input_el_state'] in ['Z']:
                     manipulated_LDE_elt.no_first_pulse = True
 
+                elif self.params['input_el_state'] in ['mZ']:
+                    manipulated_LDE_elt.no_mw_pulse = True
+
 
                 ### clean up by casting the manipulation back onto the original object:
                 if self.params['force_LDE_attempts_before_init'] == 0 or self.params['LDE1_attempts'] == 1: 

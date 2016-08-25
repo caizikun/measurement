@@ -117,7 +117,7 @@ if __name__ == '__main__':
             lt3_helper = qt.instruments['lt3_helper']
             lt3_helper.set_is_running(False)
             lt3_helper.set_measurement_name('optimizing')
-            lt3_helper.set_script_path(r'Y:/measurement/scripts/Purification/purification_master_script.py')
+            lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/Purification/purification_master_script.py')
             lt3_helper.execute_script()
             print 'Loading CR linescan'
             execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
@@ -143,6 +143,8 @@ if __name__ == '__main__':
 
     else:
     	qt.instruments['remote_measurement_helper'].set_is_running(True)
+        print 'is running???'
+        print qt.instruments['remote_measurement_helper'].get_is_running(True)
         execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
         qt.instruments['ZPLServo'].move_in()
         lt3_succes = optimize()
