@@ -19,7 +19,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 
 f_msm1_cntr = 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.049479e9 #Electron spin ms=+1 frequency
+f_msp1_cntr = 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.717#0.7058#0.681#0.667 # 06-02
+	hermite_pi_amp = 0.7087#0.70#0.694#0.7058#0.681#0.667 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.477 # 06-02 
+	hermite_pi2_amp = 0.480#0.483 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 	### Please uncomment the SIL you are working on
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 327.464+1.67-0.207+0.1+0.11,#329.06,#4.162, #adwin needs positive values
-    'phase_per_compensation_repetition': 13.472, # adwin needs positive values
-    'total_phase_offset_after_sequence': 125.26, # adwin needs positive values
+    'phase_per_sequence_repetition'    : 328.057+1.-0.09, #adwin needs positive values
+    'phase_per_compensation_repetition': 12.551, # adwin needs positive values
+    'total_phase_offset_after_sequence': 148.72+13.9-1.7+1.15+3.5+2.13, # adwin needs positive values
 
 	# #########################
 	# #####     SIL1      #####
@@ -267,20 +267,19 @@ cfg['samples'][sample_name] = {
 	#### C1 ~ -35 ###
 	################
 	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_0' 		: 447839.59,
 	'C1_freq_1_m1' 		: 483714,
 
 	'C1_Ren_tau_m1'    :   [4.822e-6],
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 433914.,#434257.72, 
-	'C1_freq_0' 		: 447839.59,
-	'C1_freq_1_p1' 		: 425431.77,
+	'C1_freq_p1'        : 434421.63, #### don't change this unless you measure it! 
+	'C1_freq_0' 		: 447734.89,
+	'C1_freq_1_p1' 		: 425345.88,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [47.86] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [33.97] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -376,8 +375,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.8e-9,#0.7e-9,#1.5e-9,
-		'Ex_RO_amplitude':				 4e-9,#5e-9, #5e-9
+		'Ex_CR_amplitude':				 2.0e-9,#2.0e-9,
+		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
 		'Ex_SP_calib_amplitude':		 12e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
@@ -441,7 +440,7 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		0.29,#0.68,
+        'Hermite_theta_amp':		0.585,#0.68,
 		'Hermite_theta_length':		46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
@@ -473,7 +472,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.55,#0.2
+        'aom_amplitude':					0.58,#0.2
 }
 
 
@@ -531,8 +530,8 @@ cfg['protocols'][name]['AdwinSSRO-integrated'] = {
 
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 2e-9,
-		'CR_duration' :				 	 100,
+		'A_CR_amplitude':				 3e-9,
+		'CR_duration' :				 	 80,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,

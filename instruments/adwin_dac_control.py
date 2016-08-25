@@ -46,6 +46,8 @@ class adwin_dac_control(Instrument):
         self.ins_cfg = config.Config(cfg_fn)
         self.load_cfg()
         self.save_cfg()
+
+        self._do_get_current_value()
         
     def get_all_cfg(self):
         for n in self._parlist:

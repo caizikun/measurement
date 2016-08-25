@@ -2,17 +2,17 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='Harvard membrane'
+name='Sophie Area 5 NV 1'
 
-start_f = 2.878 - 0.020#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 2.878 + 0.020#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+start_f = 2.87 - 0.10#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz ZFS =2.878 "lt & RT"
+stop_f  = 2.87 + 0.10#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
 steps = 201
 f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
 zoom_around_three_lines = False
 
 mw_power = 20#in dBm
 green_power = 600e-6
-int_time = 40       #in ms
+int_time = 30       #in ms
 reps = 250
 
 if zoom_around_three_lines:
@@ -30,7 +30,7 @@ if zoom_around_three_lines:
 ins_smb = qt.instruments['SMB100']
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
-counter = 3
+counter = 2
 MW_power = mw_power
 
 ins_counters.set_is_running(1)
@@ -55,22 +55,26 @@ for cur_rep in range(reps):
     print 'sweep %d/%d ...' % (cur_rep+1, reps)
     
     for i,cur_f in enumerate(f_list):
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
-            stop_scan=True
-            break
+        if msvcrt.kbhit():
+            ch = msvcrt.getch()
+            if ch == 'q': 
+                stop_scan=True
+            elif ch == 'x':
+                stop_scan=True
+                break
             
         ins_smb.set_frequency(cur_f)
         
         
-        qt.msleep(0.2)
+        qt.msleep(0.1)
 
-        #total_cnts[i]+=ins_adwin.measure_counts(int_time)[counter-1]
-        total_cnts[i]+=ins_adwin.get_countrates()[counter-1]
+        total_cnts[i]+=ins_adwin.measure_counts(int_time)[counter-1]
+        #total_cnts[i]+=ins_adwin.get_countrates()[counter-1]
         # qt.msleep(0.01)
     if stop_scan: break
     p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
-    if cur_rep%5==0:
-        optimiz0r.optimize(dims=['x','y'], cycles = 1, int_time = 100, cnt=3)
+    if cur_rep%5==0 and cur_rep!= 0:
+        optimiz0r.optimize(dims=['z','x','y'], cycles = 1, int_time = 100, cnt=2)
         qt.msleep(1)
     
     

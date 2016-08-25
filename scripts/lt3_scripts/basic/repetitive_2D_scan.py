@@ -7,11 +7,11 @@ AOM = qt.instruments['GreenAOM']
 
 # counter = [0, 1, 2]
 # counter = [0]
-z_start = [2.06]*10
-xstart = [-7]*len(z_start)
-xstop = [9]*len(z_start)
-ystart = [-7]*len(z_start)
-ystop = [9]*len(z_start)
+z_start = [2.88]*3
+xstart = [-7.5]*len(z_start)
+xstop = [5]*len(z_start)
+ystart = [-0]*len(z_start)
+ystop = [9.7]*len(z_start)
 xpx = 201
 ypx = 201
 

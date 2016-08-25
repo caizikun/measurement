@@ -955,7 +955,7 @@ EVENT:
           DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
           DATA_109[repetition_counter+1] = DATA_112[Round(phase_to_compensate)]
           DATA_108[repetition_counter+1] = phase_to_compensate
-          
+          FPAR_61 = phase_to_compensate
           
           
         ENDIF 
@@ -963,7 +963,7 @@ EVENT:
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(phase_compensation_repetitions)  
-            Par_65 = phase_compensation_repetitions
+            'Par_65 = phase_compensation_repetitions
           endif
           awg_repcount_was_low = 0
         ELSE
