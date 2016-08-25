@@ -821,9 +821,7 @@ class Tektronix_AWG5014(Instrument):
         '''
         wflen = len(wf)
         packed_wf = np.zeros(wflen,dtype=np.uint16)
-        packed_wf +=np.round(wf*8191)+8191+np.round(16384*m1)+np.round(32768*m2)
-        if len(np.where(packed_wf==-1)[0])>0:
-            print np.where(packed_wf==-1)
+        packed_wf +=np.round(wf*8191).astype(np.uint16)+8191+np.round(16384*m1).astype(np.uint16)+np.round(32768*m2).astype(np.uint16)
         return packed_wf
 
 #END AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
