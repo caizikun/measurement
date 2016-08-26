@@ -25,14 +25,16 @@ powermeter = qt.instruments.create('powermeter','Thorlabs_PM100', address='ASRL5
 TemperatureController = qt.instruments.create('TemperatureController', 
      'Lakeshore_340', address = 'GPIB::12::INSTR')
 
-AttoPositioner = qt.instruments.create('AttoPositioner', 'Attocube_ANC350')
+#AttoPositioner = qt.instruments.create('AttoPositioner', 'Attocube_ANC350')
 # Velocity1 = qt.instruments.create('Velocity1', 'NewfocusVelocity', address='GPIB::8::INSTR')
 
 #ivvi = qt.instruments.create('ivvi', 'IVVI', address = 'ASRL1::INSTR', numdacs = 4)
 servo_ctrl=qt.instruments.create('ServoController', 'ParallaxServoController', address=3)
 ZPLServo=qt.instruments.create('ZPLServo','ServoMotor', servo_controller='ServoController')
 PMServo=qt.instruments.create('PMServo','ServoMotor', servo_controller='ServoController')
-#qutau = qt.instruments.create('QuTau', 'QuTau') # will give issues when combined with Attocube_ANC350
+qutau = qt.instruments.create('qutau', 'QuTau') # will give issues when combined with Attocube_ANC350
+qutau_counter = qt.instruments.create('qutau_counter','qutau_simple_counter', qutau = 'qutau', physical_adwin='physical_adwin', qutau_apd_channel=2, qutau_sync_channel=1)
+
 if not lt1_remote:
 
     AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014', 
@@ -62,9 +64,12 @@ if not lt1_remote:
             'linescan_counts',  adwin='adwin', mos='master_of_space',
             counters='counters')
     
-    scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
-             linescan='linescan_counts', mos='master_of_space',
-            xdim='x', ydim='y', counters='counters')
+    #scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
+    #         linescan='linescan_counts', mos='master_of_space',
+    #        xdim='x', ydim='y', counters='counters')
+    #scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space', timetagger = 'PH_300',xdim='x', ydim='y', counters='counters', setup_controller='setup_controller', pixelclk_channel=1, apd_channel=1, sync_channel=0)
+    scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space', timetagger = 'qutau',xdim='x', ydim='y', counters='counters', setup_controller='setup_controller', pixelclk_channel=0, apd_channel=2, sync_channel=1)
+
      
     opt1d_counts = qt.instruments.create('opt1d_counts', 
              'optimize1d_counts', linescan='linescan_counts', 
