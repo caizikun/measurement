@@ -99,8 +99,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         except:
             logging.error("Cannot set adwin process variable '%s'" \
                     % key)
-            raise Exception('Adwin process variable {} has not been set \
-                                in the measurement params dictionary!'.format(key))
+            raise Exception('Adwin process variable {} has not been set in the measurement params dictionary!'.format(key))
 
     def run(self, autoconfig=True, setup=True):
         

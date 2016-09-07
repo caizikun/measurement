@@ -2,7 +2,7 @@ import qt
 import time
 import msvcrt
 
-mm = qt.instruments['keithleyMM']
+mm = qt.instruments['kei2000']
 temp_calib = None
 
 def init():
@@ -20,7 +20,7 @@ def init():
 def get_temperature():
     global temp_calib
 
-    v = mm.get_readlastval()
+    v = kei2000.get_readlastval()
     idx = np.argmin(abs(v-temp_calib[:,1]))
     dv = v - temp_calib[idx,1]
     t = temp_calib[idx,0] + dv/(temp_calib[idx,2]*1e-3)
@@ -56,3 +56,4 @@ if temp_calib != None:
 
         qt.msleep(10)
 
+me

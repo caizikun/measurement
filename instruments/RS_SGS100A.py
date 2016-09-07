@@ -103,7 +103,7 @@ class RS_SGS100A(Instrument):
             'power',
             type=types.FloatType,
             flags=Instrument.FLAG_GETSET | Instrument.FLAG_GET_AFTER_SET,
-            minval=-120, maxval=25, units='dBm',
+            minval=-120, maxval=20, units='dBm',
             tags=['sweep'])
         self.add_parameter(
             'status', type=types.StringType,
@@ -391,10 +391,14 @@ class RS_SGS100A(Instrument):
         if (state.upper() == 'ON'):
             state_s = 'ON'
         elif (state.upper() == 'OFF'):
-            state_s = 'OFF'
+            power = self.get_power()
+            if power < self.get_max_cw_pwr():
+                state_s = 'OFF'
+            else:
+                state_s = 'ON'
+                print 'Power exceeds max cw power. The pulse modulation can not be switched off.'
         else:
-            logging.error(__name__ + ' : Unable to set pulsed mode to %s,\
-                                         expected "ON" or "OFF"' % state)
+            logging.error(__name__ + ' : Unable to set pulsed mode to %s, expected "ON" or "OFF"' % state)
 
         self._visainstrument.write(':PULM:SOUR EXT')
         self._visainstrument.write(':SOUR:PULM:STAT %s' % state_s)

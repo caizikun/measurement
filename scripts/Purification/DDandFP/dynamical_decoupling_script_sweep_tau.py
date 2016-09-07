@@ -68,4 +68,4 @@ if __name__ == '__main__':
         tau_min=8.7e-6,
         tau_max=8.8e-6,
         tau_step = 4e-9,
-        N=32)
+        N=1)
