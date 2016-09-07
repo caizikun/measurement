@@ -30,7 +30,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -51,11 +51,11 @@ check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
-# Note that wont save to file if debug is on.
+# Note that you wont save to msmt params if debug is on.
 debug = False 
 
 ### repetitions per data point.
-freq_reps = 500
+freq_reps = 750
 phase_reps = 500
 crosstalk_reps = 500
 
@@ -135,7 +135,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
+    m.params['pts'] = 25
     if carbon_nr == 6:
         m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])

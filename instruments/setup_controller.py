@@ -7,7 +7,10 @@ from cyclopean_instrument import CyclopeanInstrument
 import types
 import logging
 
-from measurement.wp_setup import state,control
+#from measurement.wp_setup import state,control
+
+class control:
+    pass
 
 class setup_controller(CyclopeanInstrument):
     def __init__(self, name, use={}):
@@ -26,30 +29,32 @@ class setup_controller(CyclopeanInstrument):
                            flags=Instrument.FLAG_GETSET,
                            units='' )
 
-        self.add_function('set_control_variable')
-        self.add_function('get_control_variable')
+        #self.add_function('set_control_variable')
+        #self.add_function('get_control_variable')
+
+        self.keyword = ''
 
     def do_get_keyword(self):
-        return state.info['keyword']
+        return self.keyword# state.info['keyword']
 
 
     def do_set_keyword(self, val):
-        state.info['keyword'] = val
+        self.keyword = val
 
 
-    def set_control_variable(self, var_name, val):
-        l = logging.getLogger('experiment')
-        try:
-            setattr(control, var_name, val)
-            l.info('set control variable %s to %s' % (var_name, val))
-        except:
-            l.error('could not get control variable %s' % var_name)
-            return
+    # def set_control_variable(self, var_name, val):
+    #     l = logging.getLogger('experiment')
+    #     try:
+    #         setattr(control, var_name, val)
+    #         l.info('set control variable %s to %s' % (var_name, val))
+    #     except:
+    #         l.error('could not get control variable %s' % var_name)
+    #         return
 
-    def get_control_variable(self, var_name):
-        try:
-            return getattr(control, var_name)
-        except:
-            l = logging.getLogger('experiment')
-            l.error('could not get control variable %s' % var_name)
-            return
+    # def get_control_variable(self, var_name):
+    #     try:
+    #         return getattr(control, var_name)
+    #     except:
+    #         l = logging.getLogger('experiment')
+    #         l.error('could not get control variable %s' % var_name)
+    #         return

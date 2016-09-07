@@ -217,7 +217,7 @@ class AOM(Instrument):
             print 'U is not %.2f =< %.2f =< %.2f' % (V_min, U, V_max)
             return
         if controller in ('AWG'):
-            if self._ins_awg.get_runmode() != 'CONT':
+            if self._ins_awg.get_runmode() != u'CONT':
                 logging.warning(self.get_name() + ' Warning: AWG not in continuous mode!')
            
             apply = {'ch1': self._ins_awg.set_ch1_offset,
@@ -484,14 +484,14 @@ class AOM(Instrument):
     def do_set_cur_controller(self, val):
         # print val
         
-        try:
-            if self.get_power() > 1e-10:
-                logging.warning('Changing '+self.get_name()+ ' controller, but output is not 0:')
-                logging.warning('Current '+self.get_name()+ ' output:'+ str(self.get_voltage())+ 'V')
-                #print 'Controller not changed.'
-                #return
-        except:
-                pass
+        #try:
+        if self.get_channel()!='not_set' and self.get_power() > 1e-10:
+            logging.warning('Changing '+self.get_name()+ ' controller, but output is not 0:')
+            logging.warning('Current '+self.get_name()+ ' output:'+ str(self.get_voltage())+ 'V')
+            #print 'Controller not changed.'
+            #return
+        #except:
+        #        pass
                 #logging.warning('Error getting power of '+self.get_name())
 
         if (val != self._pri_controller) & (val != self._sec_controller):
@@ -512,14 +512,14 @@ class AOM(Instrument):
     def do_set_power_control(self, val):
         # print val
         
-        try:
-            if self.get_power() > 1e-10:
-                logging.warning('Changing '+self.get_name()+ ' controller, but output is not 0:')
-                logging.warning('Current '+self.get_name()+ ' output:'+ str(self.get_voltage())+ 'V')
-                #print 'Controller not changed.'
-                #return
-        except:
-                pass
+        #try:
+        if self.get_channel()!='not_set' and self.get_power() > 1e-10:
+            logging.warning('Changing '+self.get_name()+ ' controller, but output is not 0:')
+            logging.warning('Current '+self.get_name()+ ' output:'+ str(self.get_voltage())+ 'V')
+            #print 'Controller not changed.'
+            #return
+        #except:
+        #        pass
                 #logging.warning('Error getting power of '+self.get_name())
 
 

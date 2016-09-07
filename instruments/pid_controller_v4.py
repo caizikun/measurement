@@ -68,6 +68,7 @@ class pid_controller_v4(Instrument):
                     'min_value_deviation'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_coarse_step'       :   {'type':types.FloatType, 'val':0.05,'flags':Instrument.FLAG_GETSET},
                     'do_plot'                  :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
+                    'do_save_data'              :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},
                     }
         instrument_helper.create_get_set(self,ins_pars)
         self.add_function('start')
@@ -171,18 +172,19 @@ class pid_controller_v4(Instrument):
         
         self._t0 = time.time()
 
-        self._dat = qt.Data(name=self._name)
-        self._dat.add_coordinate('time')
-        self._dat.add_value('raw frequency')
-        self._dat.add_value('avg frequency')
-        self._dat.add_value('setpoint')
-        self._dat.add_value('control parameter')
-        self._dat.create_file()
-        if self.get_do_plot():
-            self._plt = qt.Plot2D(self._dat, 'r-', name=self._name, coorddim=0, 
-                    valdim=1, maxpoints=100, clear=True)
-            self._plt.add(self._dat, 'b-', coorddim=0, valdim=2, maxpoints=100)
-            self._plt.add(self._dat, 'k-', coorddim=0, valdim=3, maxpoints=100)
+        if self.get_do_save_data():
+            self._dat = qt.Data(name=self._name)
+            self._dat.add_coordinate('time')
+            self._dat.add_value('raw frequency')
+            self._dat.add_value('avg frequency')
+            self._dat.add_value('setpoint')
+            self._dat.add_value('control parameter')
+            self._dat.create_file()
+            if self.get_do_plot():
+                self._plt = qt.Plot2D(self._dat, 'r-', name=self._name, coorddim=0, 
+                        valdim=1, maxpoints=100, clear=True)
+                self._plt.add(self._dat, 'b-', coorddim=0, valdim=2, maxpoints=100)
+                self._plt.add(self._dat, 'k-', coorddim=0, valdim=3, maxpoints=100)
         if not(self._get_stabilizor == None): self._stabilizor_value = self._get_stabilizor()
         self.get_control_parameter()
         self.get_control_parameter_coarse()             
@@ -224,8 +226,17 @@ class pid_controller_v4(Instrument):
         self._integrator = self._integrator + self._error
         
         self._time = time.time() - self._t0
-        self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
-                self._setpoint, self._control_parameter)
+        if self.get_do_save_data():
+            try:
+                self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
+                    self._setpoint, self._control_parameter)
+            except NameError:
+                self._dat = qt.Data(name=self._name)
+                self._dat.add_coordinate('time')
+                self._dat.add_value('raw frequency')
+                self._dat.add_value('avg frequency')
+                self._dat.add_value('setpoint')
+                self._dat.add_value('control parameter')
 
         new_control_parameter = self._control_parameter + pval + dval + ival
 
@@ -251,7 +262,7 @@ class pid_controller_v4(Instrument):
                         
         if not(self.set_control_parameter(new_control_parameter)):
             if self.set_control_parameter_coarse(self.get_control_parameter_coarse()+ \
-                    numpy.copysign(self._control_coarse_step,new_control_parameter-self._control_parameter)):
+                    self._control_coarse_step*numpy.copysign(1,new_control_parameter-self._control_parameter)):
                 self.set_control_parameter(0)
             else:
                 return False

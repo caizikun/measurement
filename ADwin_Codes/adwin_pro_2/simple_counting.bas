@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 1 - 4 as 
@@ -34,7 +34,7 @@ DIM i AS LONG               ' tmp index
 DIM DATA_41[10000] AS LONG  ' for floating average of counter 1
 DIM DATA_42[10000] AS LONG  ' .. counter 2
 'DIM DATA_43[10000] AS LONG  ' .. counter 3
-'DIM DATA_44[10000] AS LONG  ' .. counter 4
+DIM DATA_44[10000] AS LONG  ' .. counter 4
 DIM DATA_45[4] AS LONG     ' for the counts of the last int_time period
 
 
@@ -51,7 +51,7 @@ INIT:
     DATA_41[counter_index] = 0
     DATA_42[counter_index] = 0
     'DATA_43[counter_index] = 0
-    'DATA_44[counter_index] = 0
+    DATA_44[counter_index] = 0
   next counter_index
 
   PROCESSDELAY = 300000*int_time  '[ms]      
@@ -73,11 +73,11 @@ EVENT:
   DATA_41[counter_index] = P2_CNT_READ_LATCH(CTR_MODULE, 1)
   DATA_42[counter_index] = P2_CNT_READ_LATCH(CTR_MODULE, 2)
   'DATA_43[counter_index] = P2_CNT_READ_LATCH(CTR_MODULE, 3)
-  'DATA_44[counter_index] = P2_CNT_READ_LATCH(CTR_MODULE, 4)
+  DATA_44[counter_index] = P2_CNT_READ_LATCH(CTR_MODULE, 4)
   DATA_45[1] = DATA_41[counter_index]
   DATA_45[2] = DATA_42[counter_index]
   'DATA_45[3] = DATA_43[counter_index]
-  'DATA_45[4] = DATA_44[counter_index]
+  DATA_45[4] = DATA_44[counter_index]
   P2_CNT_ENABLE(CTR_MODULE,0000b)
   P2_CNT_CLEAR(CTR_MODULE,1111b)
   P2_CNT_ENABLE(CTR_MODULE,1111b)
@@ -86,12 +86,12 @@ EVENT:
   PAR_41 = 0
   PAR_42 = 0
   'PAR_43 = 0
-  'PAR_44 = 0
+  PAR_44 = 0
   for i = 1 to avg_steps
     PAR_41 = PAR_41 + DATA_41[i]*1000/(avg_steps*int_time)
     PAR_42 = PAR_42 + DATA_42[i]*1000/(avg_steps*int_time)
     'PAR_43 = PAR_43 + DATA_43[i]*1000/(avg_steps*int_time)
-    'PAR_44 = PAR_44 + DATA_44[i]*1000/(avg_steps*int_time)
+    PAR_44 = PAR_44 + DATA_44[i]*1000/(avg_steps*int_time)
   next i
   
   if (single_run > 0) then

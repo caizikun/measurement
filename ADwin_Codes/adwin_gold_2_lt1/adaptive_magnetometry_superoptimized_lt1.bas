@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\tud277246
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 '<Header End>
 'This code implements adaptive magnetometry protocols.
 '--------------------------------------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ LowINIT:
   CNT_ENABLE(0000b)'turn off all counters
   CNT_MODE(counter_channel,00001000b) 'configure counter
 
-  CONF_DIO(0011b)  'configure DIO 00:07 as output, all other ports as input
+  CONF_DIO(0011b)  'configure DIO 00:14 as output, all other ports as input
   DIGOUT(AWG_start_DO_channel,0)
   DIGOUT(AWG_event_jump_DO_channel,0)
   

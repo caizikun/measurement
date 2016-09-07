@@ -5,6 +5,7 @@
 *.cfg
 *.TB*
 *.TC*
+*.T9*
 *.bak
 *.npz
 *.dll
@@ -20,4 +21,5 @@ CPLD
 *.bmp
 *.png
 /hardware/EDAC40
+
 

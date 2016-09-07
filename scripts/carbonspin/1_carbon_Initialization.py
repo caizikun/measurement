@@ -62,7 +62,7 @@ def MBE(name, carbon            =   1,
     m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
     # m.params['Tomography Bases'] = [['X'],['Y'],['Z']]
     # m.params['Tomography Bases'] = [['X'],['Y']]
-    # m.params['Tomography Bases'] = [['Z']]
+    # m.params['Tomography Bases'] = [['X']]
         
     ####################
     ### MBE settings ###
@@ -92,7 +92,7 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [1]
+    carbons = [4]
     debug = False
     breakst = False
     init_method = 'both'

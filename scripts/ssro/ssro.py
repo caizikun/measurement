@@ -88,15 +88,17 @@ def RO_saturation_power(name):
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+
 
     m.params['SSRO_repetitions'] = 2000
-    m.params['pts'] = 15
+    m.params['pts'] = 20
     pts = m.params['pts']
-    step = 1e-9
+    step = 0.3e-9
 
     m.params['CR_preselect'] = 1000
-    m.params['CR_probe'] = 10
-    m.params['A_SP_amplitude'] =  10e-9
+    m.params['CR_probe'] = 1000
+    m.params['A_SP_amplitude'] =  20e-9
     m.params['Ex_SP_amplitude'] = 0.
     m.params['Ex_RO_amplitudes'] = np.arange(pts) * step + step
     m.params['SSRO_duration'] = 50
@@ -113,19 +115,20 @@ def RO_saturation_power(name):
 
     m.finish()
 
-def SP_saturation_power(name, yellow=False):
+def SP_saturation_power(name, yellow=True):
     m = ssro.AdwinSSRO('SP_saturation_power_'+name)
 
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
 
     m.params['SSRO_repetitions'] = 5000
     m.params['pts'] = 10
     pts = m.params['pts']
-    step = 1.5e-9
+    step = 1e-9
 
     #repump settings
-    _set_repump_settings(m,yellow)
+    # _set_repump_settings(m,yellow)
 
     m.params['CR_preselect'] = 1000
     m.params['CR_probe'] = 10
@@ -288,8 +291,8 @@ def max_probe_time_calibration(name, yellow=False):
 #     m.finish()
 
 if __name__ == '__main__':
-    RO_saturation_power('sil1_Ey_saturation')
-    #SP_saturation_power('hans-sil4_SP_saturation', yellow=False)
+    RO_saturation_power('sil2_Ey_saturation')
+    # SP_saturation_power('111no2-sil2_SP_saturation', yellow=True)
     #threshold_calibration('hans-sil4_probe', yellow=False)
     #max_probe_time_calibration('hans-sil4', yellow=False)
 

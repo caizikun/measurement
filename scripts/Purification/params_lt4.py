@@ -30,14 +30,13 @@ params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 1000e-9
+params_lt4['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 200e-9#250e-9#350e-9#213e-9 
-params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_1_m1'],9)+100e-9
+params_lt4['average_repump_time'] 		= 0.2e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
-
 
 #adwin params defs:
 params_lt4['SP_duration'] = 30 #10
@@ -66,8 +65,8 @@ params_lt4['remote_adwin_di_success_channel'] = 22
 params_lt4['remote_adwin_di_fail_channel'] = 23
 params_lt4['remote_adwin_do_success_channel'] = 14
 params_lt4['remote_adwin_do_fail_channel'] = 15
-params_lt4['adwin_comm_safety_cycles'] = 3
-params_lt4['adwin_comm_timeout_cycles'] = 1000 # 1 ms
+params_lt4['adwin_comm_safety_cycles'] = 15
+params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
@@ -97,8 +96,8 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 200e-9
 
-params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
+params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
+params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
@@ -106,24 +105,24 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['carbon']                    = 4
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
-params_lt4['dynamic_phase_tau']			= 2.3e-6
+params_lt4['dynamic_phase_tau']			= 2.298e-6#2.298e-6
 params_lt4['dynamic_phase_N']			= 2
-
+params_lt4['phase_feedback_resolution']	= 4.5
 
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(2e6) #5 us #XXX was 5us
-params_lt4['MAX_SYNC_BIN']        =   int(3.5e6) #15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(2e6) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(3500*1e3) #XXXXX was 5560*1e3
+params_lt4['MIN_SYNC_BIN']        =   int(2.5e6) #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(5.5e6) #15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.5e6) #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(5500*1e3)
 params_lt4['entanglement_marker_number'] = 1
 
-params_lt4['pulse_start_bin'] = (3014 - 55)*1e3
-params_lt4['pulse_stop_bin'] = (3014+9-55)*1e3
-params_lt4['tail_start_bin'] = (3014+9-55)*1e3
-params_lt4['tail_stop_bin'] = (3014+9-55+50)*1e3
-params_lt4['PQ_ch1_delay'] = 55e3
+params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
+params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
+params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
+params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
 params_lt4['measurement_abort_check_interval']    = 1 #sec

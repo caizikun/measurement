@@ -29,7 +29,8 @@ class NewfocusVelocity(Instrument):
         Instrument.__init__(self, name, tags=['physical'])
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address)
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address)
 
         self.add_parameter('wavelength',
                            type=types.FloatType,
@@ -56,7 +57,7 @@ class NewfocusVelocity(Instrument):
                            type=types.FloatType,
                            flags=Instrument.FLAG_GETSET,
                            units='mW',
-                           minval=0,maxval=15)
+                           minval=0,maxval=10)
 
         self.add_function('set_ready_mode')
 

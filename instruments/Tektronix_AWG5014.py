@@ -132,7 +132,9 @@ class Tektronix_AWG5014(Instrument):
 
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address, timeout=20)
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address, timeout=40000,write_termination = '\n',read_termination = '\n')
+        
         self._values = {}
         self._values['files'] = {}
         self._clock = clock
@@ -234,13 +236,17 @@ class Tektronix_AWG5014(Instrument):
 
     def clear_visa(self):
         self._visainstrument.clear()
+        current_timeout = self._visainstrument.timeout
+        self._visainstrument.timeout = 5000
         for i in range(5):
             try:
                 self._visainstrument.read()
             except(visa.VisaIOError):
                 #print 'reset complete'
+                self._visainstrument.timeout = current_timeout
                 break
-
+        self._visainstrument.timeout = current_timeout
+        
     def reset(self):
         '''
         Resets the instrument to default values
@@ -798,7 +804,7 @@ class Tektronix_AWG5014(Instrument):
         s2 = '#' + str(len(str(len(awg_file)))) + str(len(awg_file))
 
         mes = s1+s2+awg_file
-        self._visainstrument.write(mes)
+        self._visainstrument.write_raw(mes)
 
     def load_awg_file(self, filename):
         s = 'AWGCONTROL:SRESTORE "%s"' %filename
@@ -815,9 +821,7 @@ class Tektronix_AWG5014(Instrument):
         '''
         wflen = len(wf)
         packed_wf = np.zeros(wflen,dtype=np.uint16)
-        packed_wf +=np.round(wf*8191)+8191+np.round(16384*m1)+np.round(32768*m2)
-        if len(np.where(packed_wf==-1)[0])>0:
-            print np.where(packed_wf==-1)
+        packed_wf +=np.round(wf*8191).astype(np.uint16)+8191+np.round(16384*m1).astype(np.uint16)+np.round(32768*m2).astype(np.uint16)
         return packed_wf
 
 #END AWG FILE FUNCTIONS------------------------------------------------------------------------------------------------
