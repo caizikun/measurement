@@ -423,7 +423,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_purification.prepare(m)
 
     ### general params
-    pts = 7
+    pts = 13
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -778,7 +778,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    # tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -792,10 +792,10 @@ if __name__ == '__main__':
     # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
-    Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
+    # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
-    # PurifyXX(name+'_Purify_XX_upside_down',debug = False, upload_only = False)
-    # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = False)
+    # PurifyYY(name+'_Purify_YY',debug = True, upload_only = False)
+    #PurifyZZ(name+'_Purify_ZZ',debug = True, upload_only = False)
 
     ###### non-local measurements // Barrett Kok parameters
     # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)

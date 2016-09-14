@@ -141,7 +141,7 @@ def take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=2,Single_Block=False,sh
     # GreenAOM.set_power(20e-6)
     # counters.set_is_running(1)
     # optimiz0r.optimize(dims = ['x','y','z','x','y'], int_time = 120)
-    # stools.turn_off_all_lt2_lasers()
+    # stools.turn_off_all_lasers()
 
     Continue_bool = True 
 
@@ -159,7 +159,7 @@ def take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=2,Single_Block=False,sh
                 GreenAOM.set_power(7e-6)
                 counters.set_is_running(1)
                 optimiz0r.optimize(dims = ['x','y','z'], int_time = 120)
-                stools.turn_off_all_lt2_lasers()
+                stools.turn_off_all_lasers()
 
             print 'n', n
             nr_list = np.arange(larmor_min+n*larmor_steps,larmor_min+(n+1)*larmor_steps,larmor_step)
@@ -187,7 +187,7 @@ def take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=2,Single_Block=False,sh
             GreenAOM.set_power(7e-6)
             counters.set_is_running(1)
             optimiz0r.optimize(dims = ['x','y','z','x','y'], int_time = 120)
-            stools.turn_off_all_lt2_lasers()
+            stools.turn_off_all_lasers()
 
         print 'nr_list', nr_list
         if Single_Block:

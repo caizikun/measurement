@@ -55,7 +55,7 @@ INIT:
     DATA_44[counter_index] = 0
   next counter_index
 
-  PROCESSDELAY = 300000*int_time  '[ms]      
+  PROCESSDELAY = 1000000*int_time  '[ms]      
     
   ' init counter
   P2_CNT_ENABLE(CTR_MODULE, 0000b)

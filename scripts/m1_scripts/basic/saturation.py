@@ -5,14 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Pippin_SIL3_PSB_optm_CR'
+name = 'Sil18'
 steps=21
-max_power=180e-6       #[w]
+max_power=700e-6       #[w]
 counter=1 #number of counter
-PQ_count= True    # counting with the HH, assumes apd on channel 0
-do_bg=True
-bg_x=0          #delta x position of background [um]
-bg_y=2.0           #delta y position of background [um]
+PQ_count= False    # counting with the HH, assumes apd on channel 0
+bg_x=0.25         #delta x position of background [um]
+bg_y=-0.75          #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -43,14 +42,14 @@ for i,pwr in enumerate(x):
     else:
         y_NV[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
     print 'step %s, counts %s'%(i,y_NV[i])
-if not br and do_bg:        
-    current_mos.set_x(current_x + bg_x)
-    qt.msleep(1)
-    current_mos.set_y(current_y + bg_y)
-    qt.msleep(1)
-    current_aom.set_power(0)
-    qt.msleep(1)
-
+        
+current_mos.set_x(current_x + bg_x)
+qt.msleep(1)
+current_mos.set_y(current_y + bg_y)
+qt.msleep(1)
+current_aom.set_power(0)
+qt.msleep(1)
+if not br:
     for i,pwr in enumerate(x):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         current_aom.set_power(pwr)
@@ -87,8 +86,8 @@ plt.set_legend(False)
 
 plt.save_png(dat.get_filepath()+'png')
 dat.close_file()
-if not br and do_bg:
-    current_mos.set_x(current_x)
-    qt.msleep(1)
-    current_mos.set_y(current_y)
-    qt.msleep(1)
+current_aom.set_power(0)
+current_mos.set_x(current_x)
+qt.msleep(1)
+current_mos.set_y(current_y)
+qt.msleep(1)
