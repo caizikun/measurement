@@ -5,26 +5,25 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.0.0
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Stacksize                      = 1000
-' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
+' Info_Last_Save                 = TUD276198  DASTUD\tud276198
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
 ' (including start and stop)
-#INCLUDE ADwinPro_All.inc
-#INCLUDE .\configuration.inc
+
+#INCLUDE ADwinGoldII.inc
+' #INCLUDE configuration.inc
 
 ' scan settings
 DIM NoOfDACs, i, CurrentStep, NoOfSteps AS INTEGER
 DIM PxTime, StepSize AS FLOAT
 
-' what to do for each pixel; 
-' 1=counting, 0=nothing, 2=counting + record supplemental data per px from fpar2 3=read counters from par45-48 (for use with resonant counting);
+' what to do for each pixel; 1=counting, 0=nothing, 2=counting + record supplemental data per px from fpar2;
+' 3 counting on counter process
 DIM PxAction AS INTEGER
-dim gate_good_phase as integer
 
 ' The numbers of the involved DACs (adwin only has 8)
 DIM DATA_200[8] AS INTEGER
@@ -50,15 +49,10 @@ DIM DACBinaryVoltage AS INTEGER
 DIM DATA_11[100000] AS LONG
 DIM DATA_12[100000] AS LONG
 DIM DATA_13[100000] AS LONG
-DIM DATA_14[100000] AS LONG
+
 ' supplemental data; used when PxAction is set to 2
 DIM DATA_15[100000] AS FLOAT
 
-dim timer as integer
-dim counter1 as integer
-dim counter2 as integer
-dim counter3 as integer
-dim counter4 as integer
 INIT:
   
   CurrentStep = 1
@@ -73,13 +67,13 @@ INIT:
   PxAction = PAR_3
    
   'Processtime is in units of clockcycles for pixeltime in ms
-  PROCESSDELAY = PxTime * 10000    ' Note: this depends on the ADWIN processor
+  PROCESSDELAY = PxTime * 300000    
   
   FOR i = 1 TO NoOfDACs
     DACVoltage = DATA_199[i]
     DACBinaryVoltage = DACVoltage * 3276.8 + 32768    
     
-    P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
+    DAC(DATA_200[i], DACBinaryVoltage)
     DATA_1[DATA_200[i]]   = DACVoltage 
     DATA_197[i] = (DATA_198[i] - DATA_199[i]) / (NoOfSteps - 1) 
   
@@ -89,86 +83,77 @@ INIT:
 
   NEXT i
   
-  FOR i = 1 TO 100000
+  
+  FOR i = 1 to 100000
     DATA_11[i] = 0
     DATA_12[i] = 0
     DATA_13[i] = 0
-    DATA_14[i] = 0
+    
     DATA_15[i] = 0
   NEXT i
+   
   
   IF ((PxAction = 1) OR (PxAction = 2)) THEN
-    P2_CNT_ENABLE(CTR_Module,000b)                                        'Stop counter 1, 2 and 3
-    P2_CNT_MODE(CTR_Module,1, 000010000b)                                  '
-    P2_CNT_MODE(CTR_Module,2, 000010000b)
-    P2_CNT_MODE(CTR_Module,3, 000010000b)
-    P2_SE_DIFF(CTR_Module,000b)                                           'All counterinputs single ended (not differential)
-    P2_CNT_CLEAR(CTR_Module,111b)                                         'Set all counters to zero
-    P2_CNT_ENABLE(CTR_Module,111b)                                        'Start counter 1 and 2 
+    CNT_ENABLE(000b)                                        'Stop counter 1, 2 and 3
+    CNT_MODE(1, 00001000b)                                  '
+    CNT_MODE(2, 00001000b)
+    CNT_MODE(3, 00001000b)
+    CNT_SE_DIFF(000b)                                           'All counterinputs single ended (not differential)
+    CNT_CLEAR(111b)                                         'Set all counters to zero
+    CNT_ENABLE(111b)                                        'Start counter 1 and 2
   ENDIF
+  
   IF (PxAction = 3) THEN
     Par_45 = 0                                                             'clear counts from par
     Par_46 = 0 
     Par_47 = 0 
-    Par_48 = 0 
     Par_49 = 1
     Par_50 = 0                                                            'tell resonant counting process to sum its data into par 45-48
   ENDIF
-  'par_65 = 1                      ' turn phase locking off 1 is off
-  'par_67 = 0                      ' which phase to lock on
   
-  timer = -1
-  counter1=0
-  counter2=0
-  counter3=0
-  counter4=0
   
+    
+ 
 EVENT:
-
-  Inc(timer)
-  IF ((PxAction = 1) OR (PxAction = 2)) THEN
-    P2_CNT_LATCH(CTR_Module,111b)  
-    counter1=counter1+P2_CNT_READ_LATCH(CTR_Module,1)                 'read latch A of counter 1
-    counter2=counter2+P2_CNT_READ_LATCH(CTR_Module,2)                 'read latch A of counter 2
-    counter3=counter3+P2_CNT_READ_LATCH(CTR_Module,3)                 'read latch A of counter 3
-    counter4=counter4+P2_CNT_READ_LATCH(CTR_Module,4)                 'read latch A of counter 4
-    P2_CNT_ENABLE(CTR_Module,000b)                                    'Stop counters
-    P2_CNT_CLEAR(CTR_Module,111b)                                     'Clear counters
-    P2_CNT_ENABLE(CTR_Module,111b)                                    'Start counters again
-  endif
   
-  if (timer >= 100) then
-    IF ((PxAction = 1) OR (PxAction = 2)) THEN
-      ' DEBUG FPar_23 = 42.0
-      ' Read out counters 1, 2 and 3 and reset them
-   
-      'latch counters
-      DATA_11[CurrentStep] = counter1 
-      DATA_12[CurrentStep] = counter2 
-      DATA_13[CurrentStep] = counter3 
-      DATA_14[CurrentStep] = counter4
-      counter1=0
-      counter2=0
-      counter3=0
-      counter4=0
+  IF ((PxAction = 1) OR (PxAction = 2)) THEN
+    ' DEBUG FPar_23 = 42.0
+    ' Read out counters 1, 2 and 3 and reset them
+    TimeCntROStart = READ_TIMER()
+    CNT_LATCH(111b)                                         'latch counters
+    DATA_11[CurrentStep] = CNT_READ_LATCH(1)                 'read latch A of counter 1
+    DATA_12[CurrentStep] = CNT_READ_LATCH(2)                 'read latch A of counter 2
+    DATA_13[CurrentStep] = CNT_READ_LATCH(3)                 'read latch A of counter 3
+    CNT_ENABLE(000b)                                        'Stop counters
+    CNT_CLEAR(111b)                                         'Clear counters
+    CNT_ENABLE(111b)                                        'Start counters again
+    TimeCntROStop = READ_TIMER()
+    FPar_21 = (TimeCntROStart - TimeCntROStop) / 300.0      ' Time the RO took in us
+    'pixel clock output on dac5 for synchrhonisation with awg for flim
+    IF (CurrentStep > 1) then
+      DAC(5,2 * 3276.8 + 32768)
+      CPU_sleep(1000)
+      DAC(5,0 * 3276.8 + 32768)
+      Inc(Par_80)
+    ENDIF
     ENDIF
     IF (PxAction = 2) THEN
       ' DEBUG FPar_24 = 42.0
       DATA_15[CurrentStep] = FPar_2
     ENDIF
+  
     IF (PxAction = 3) THEN
-      ' DEBUG FPar_24 = 42.0
       DATA_11[CurrentStep] = Par_41      'read counts from par (resonant counting ctr1)
       DATA_12[CurrentStep] = Par_42      'read counts from par (resonant counting ctr2)
       DATA_13[CurrentStep] = Par_43      'read counts from par (resonant counting ctr3)
-      DATA_14[CurrentStep] = Par_44      'read counts from par (resonant counting ctr4)
       Par_45 = Par_41
       Par_46 = Par_42 
       Par_47 = Par_43 
-      Par_48 = Par_44
       Par_50 = 0
     ENDIF
     
+  
+
     ' Set the voltage on all involved DACs
     FOR i = 1 TO NoOfDACs
       'Increase DAC voltage by one step (first value will be neglected)
@@ -177,13 +162,14 @@ EVENT:
       FPar_8 = CurrentStep-1
       FPar_9 = DATA_197[i]   
       DACBinaryVoltage = DACVoltage * 3276.8 + 32768
-      P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
+      DAC(DATA_200[i], DACBinaryVoltage)
       DATA_1[DATA_200[i]]   = DACVoltage
       FPar_5 = DACVoltage
 
     NEXT i
-
     inc(CurrentStep)
+  
+
     
     IF (CurrentStep > NoOfSteps + 1) THEN                     ' Stop when end of line is reached
       'FOR i = 1 TO NoOfDACs
@@ -199,9 +185,6 @@ EVENT:
     ' update the pixel clock; put after the line end check so we have a maximum
     ' that corresponds to the number of steps
     Par_4 = CurrentStep - 1
-    timer = 0
-  endif
-   
-    
+  
 FINISH:  
-  Par_49 = 0  'tell resonant counting process to stop summing its data into par 45-48  
+  par_49 = 0   'tell resonant counting process to stop summing its data into par 45-48  

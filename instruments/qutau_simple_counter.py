@@ -175,7 +175,7 @@ class qutau_simple_counter(Instrument):
 
         self._total_countrate = float(total_counts)/(t1- self._t0)
         self._roi_countrate = float(roi_counts)/(t1- self._t0)
-        self._cpsh = float(roi_counts)/max(len(sync_idxs),1)
+        self._cpsh = 1e4*float(roi_counts)/max(len(sync_idxs),1)
         self.get_countrate()
         self.get_countrate_roi()
         self.get_cpsh()

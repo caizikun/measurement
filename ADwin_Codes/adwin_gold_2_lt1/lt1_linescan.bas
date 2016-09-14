@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\tud277246
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -101,6 +101,8 @@ INIT:
     CNT_SE_DIFF(000b)                                           'All counterinputs single ended (not differential)
     CNT_CLEAR(111b)                                         'Set all counters to zero
     CNT_ENABLE(111b)                                        'Start counter 1 and 2
+    CONF_DIO(0011b)  'configure DIO 00:14 as output, all other ports as input
+    DIGOUT(14,0)
   ENDIF
   
   IF (PxAction = 3) THEN
@@ -127,6 +129,12 @@ EVENT:
     CNT_ENABLE(111b)                                        'Start counters again
     TimeCntROStop = READ_TIMER()
     FPar_21 = (TimeCntROStart - TimeCntROStop) / 300.0      ' Time the RO took in us
+    IF (CurrentStep > 1) then
+      DIGOUT(14,1)  ' AWG trigger
+      CPU_SLEEP(100)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+      DIGOUT(14,0)
+      Inc(Par_80)
+    ENDIF
   ENDIF
   IF (PxAction = 2) THEN
     ' DEBUG FPar_24 = 42.0

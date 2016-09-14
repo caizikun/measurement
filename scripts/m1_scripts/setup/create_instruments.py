@@ -1,3 +1,6 @@
+###############################
+#                M1
+###############################
 
 
 physical_adwin = qt.instruments.create('physical_adwin','ADwin_Pro_II',
@@ -18,8 +21,8 @@ AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014_09',
 
 wavemeter = qt.instruments.create('wavemeter','WSU_WaveMeter')
 
-SGS100A_1 = qt.instruments.create('SGS100A_1', 'RS_SGS100A', address='TCPIP0::192.168.0.116', reset=False,max_cw_pwr = -5) #still think of maximum power allowed
-SGS100A_2 = qt.instruments.create('SGS100A_2', 'RS_SGS100A', address='TCPIP0::192.168.0.115', reset=False,max_cw_pwr = -5)
+SGS100A_1 = qt.instruments.create('SGS100A_1', 'RS_SGS100A', address='TCPIP0::192.168.0.116', reset=False,max_cw_pwr = -15) #still think of maximum power allowed
+SGS100A_2 = qt.instruments.create('SGS100A_2', 'RS_SGS100A', address='TCPIP0::192.168.0.115', reset=False,max_cw_pwr = -10)
 
 powermeter = qt.instruments.create('powermeter', 'Thorlabs_PM100D',
     address='USB0::0x1313::0x8072::P2005677::INSTR')
@@ -56,10 +59,15 @@ setup_controller = qt.instruments.create('setup_controller',
         use = { 'master_of_space' : 'mos'} )
 
 # Magnet
-### conex_scanner_1
-### conex_scanner_2
-### conex_scanner_3
+if 1:
+    conex_scanner_Z = qt.instruments.create('conex_scanner_Z', 'NewportConexCC', address = 'COM16')
+    conex_scanner_X = qt.instruments.create('conex_scanner_X', 'NewportConexCC', address = 'COM17')
+    conex_scanner_X.SetPositiveLimit(2.)
+    conex_scanner_Y = qt.instruments.create('conex_scanner_Y', 'NewportConexCC', address = 'COM18')
+    conex_scanner_Y.SetPositiveLimit(2.)
+
 ### master_of_magnet
+    # maxter_of_magnet = qt.instruments.create('master_of_magnet', 'MagnetXaxis', 'MagnetYaxis', 'MagnetZaxis')
 
 # servo controller and power meter
 if 1:
@@ -69,8 +77,15 @@ if 1:
     PMServo = qt.instruments.create('PMServo','ServoMotor',servo_controller='ServoController', min_pos=3900, max_pos=4800)
     PMServo.move_out()
 
-if 0:
-    x_motor = qt.instruments.create('MagnetXaxis', 'NewportConexCC', address = 'com5')
-
-
 #execfile('D:\measuring\measurement\scripts\lt3_scripts\setup_m1.py')
+
+### Keithley 2000 DMM for monitoring temperatures
+kei2000 = qt.instruments.create('kei2000', 'Keithley_2000', address = 'GPIB::16::INSTR')
+kei2000.set_mode_fres()
+kei2000.set_range(100)
+kei2000.set_nplc(10)
+kei2000.set_trigger_continuous(True)
+kei2000.set_averaging(True)
+kei2000.set_averaging_type('moving')
+kei2000.set_averaging_count(50)
+

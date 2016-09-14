@@ -1,5 +1,8 @@
 import numpy as np
 
+#### M1 Params ####
+
+
 cfg={}
 
 #############################
@@ -14,6 +17,17 @@ cfg['protocols'][sample_name] = {}
 
 print 'updating msmt params M1 for {}'.format(cfg['samples']['current'])
 
+###################################
+### General settings for magnet ###
+###################################
+
+### Assumes a cylindrical magnet
+cfg['magnet']={
+'nm_per_step'       :   38.85, ## Z-movement, for 18 V and 200 Hz 
+'radius'            :   5.,     ## millimetersy
+'thickness'         :   4.,     ## millimeters
+'strength_constant' :   1.3}    ## Tesla
+
 #################
 ### Protocols ###
 #################
@@ -23,10 +37,10 @@ cfg['protocols']['AdwinSSRO']={
 'AWG_event_jump_DO_channel' :       14,
 'AWG_start_DO_channel'      :       15,
 'counter_channel'           :       1,
-'cycle_duration'            :       300,
+'cycle_duration'            :       1000,   ## in units of the ADWIN processor clock
 'green_off_amplitude'       :       0.0,
-'green_repump_amplitude'    :       0.3e-6,
-'green_repump_duration'     :       40,
+'green_repump_amplitude'    :       5e-6,
+'green_repump_duration'     :       50,
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
 'wait_after_RO_pulse_duration':     3,   
@@ -70,7 +84,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 'send_AWG_start'        :          1,
 'MW_switch_risetime'    :     500e-9,
 'MW_pulse_mod_risetime' :      10e-9,
-'MW2_pulse_mod_risetime' :     20e-9,
+'MW2_pulse_mod_risetime' :     10e-9,
 'use_shutter'           :          0,
 'Shutter_channel'       :          4,
 'Shutter_opening_time'  :       3000,
@@ -91,7 +105,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'MW_pulse_mod_risetime'                 :    10e-9,
 'MW2_pulse_mod_risetime'                :    10e-9,
 'MW_switch_risetime'                    :    500e-9, #500e-9  XXXX
-'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
+'AWG_to_adwin_ttl_trigger_duration'     :    5e-6, 
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
 'Ex_N_randomize_amplitude'              :    13e-9,#15e-9, #15e-9
@@ -107,30 +121,31 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
     #####################################
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
-'A_CR_amplitude' : 10e-9, 
-'A_RO_amplitude' : 0.,
-'A_SP_amplitude' : 10e-9,  
-'CR_duration'    : 50,     
+'A_CR_amplitude' : 5e-9, 
+'A_RO_amplitude' :0e-9,
+'A_SP_amplitude' : 80e-9,  
+'CR_duration'    : 150,     
 'CR_preselect'   : 1000,
+
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
-'Ex_CR_amplitude': 10e-9,   
-'Ex_RO_amplitude': 2.0e-9, 
+'Ex_CR_amplitude': 0.5e-9, #0.5e-9  
+'Ex_RO_amplitude': 1e-9, #2
 'Ex_SP_amplitude': 0e-9,   # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
-'SP_duration'    : 50,     # THT: Hardcoded in the ADWIN to be maximum 500 
-'SP_duration_ms0': 500,    # only for specific scripts
-'SP_duration_ms1': 500,    # only for specific scripts
-'SP_filter_duration' : 0,
-'SSRO_repetitions'  : 50000,
-'SSRO_duration'     :  150,
-'SSRO_stop_after_first_photon' : 1} 
+'SP_duration'    : 100,    #50 # THT: Hardcoded in the ADWIN to be maximum 500 
+'SP_duration_ms0': 100,    # only for specific scripts
+'SP_duration_ms1': 100,    # only for specific scripts
+'SP_filter_duration':  0,
+'SSRO_repetitions'  :  5000,
+'SSRO_duration'     :  50,
+'SSRO_stop_after_first_photon' : 0} 
 
 	##################################
     ### Integrated SSRO parameters ###
     ##################################
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
-'SSRO_duration'  : 45,
+'SSRO_duration'  : 20,
 'Ex_SP_amplitude': 0 }
 
     ##################################################
@@ -138,17 +153,20 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
     ##################################################
 
 mw_power  = 20
-mw2_power = 20
-f_msm1_cntr =   1.746666e9 	#Electron spin ms=-1 frequency 
+mw2_power = -20
+f_msm1_cntr =   1.746666e9 	#Electron spin ms=-1 frequency
 f_msp1_cntr =   4.008621e9	#Electron spin ms=+1 frequency 
-                
-zero_field_splitting = 2.877623e9  # not calibrated # contains + 2*N_hf
+
+zero_field_splitting = 2.877623e9  # not calibrated # contains + 2*N_hf?
 
 N_frq    = 7.13429e6      # not calibrated
 N_HF_frq = 2.182e6 		  # was 2.196e6       
 Q        = 4.938e6        # not calibrated
 
 electron_transition = '-1'
+multiple_source = False
+
+pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
 pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
 
 if electron_transition == '-1':
@@ -165,13 +183,13 @@ if electron_transition == '-1':
     
     AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
     
-    Hermite_pi_length 	= 160e-9    
-    Hermite_pi_amp 		= 1 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_length 	= 200e-9    
+    Hermite_pi_amp 		= 0.804 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
-    Hermite_pi2_length 	= 65e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp 	= 0.447 # 0.501
+    Hermite_pi2_length 	= 100e-9 # 56e-9 # divsible by 2
+    Hermite_pi2_amp 	= 0.646 # 0.501
 
-    Square_pi_length 	= 116e-9   #250 MHz slow
+    Square_pi_length 	= 40e-9   #250 MHz slow
     Square_pi_amp 		= 0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
 
     Square_pi2_length 	= 56e-9 #should be divisible by 4, slow
@@ -213,6 +231,8 @@ else:
 
 cfg['samples']['111_1_sil18'] = {
 'electron_transition' : electron_transition_string,
+'electron_transition_used' : electron_transition_string,
+'multiple_source'   :   multiple_source,
 'mw_mod_freq'   :       mw_mod_frequency,
 'mw_frq'        :       mw_freq_MBI, # this is automatically changed to mw_freq if hermites are selected. THT:where?
 'mw2_frq'        :      mw2_freq,
@@ -587,16 +607,16 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           15e-9,   #15e-9,#15e-9,    #18e-9
-'A_SP_amplitude_before_MBI' :           0e-9,    #does not seem to work yet?
-'SP_E_duration'             :           250,     #Duration for both Ex and A spin pumping
+'Ex_SP_amplitude'           :           0e-9,   #15e-9,#15e-9,    #18e-9
+'A_SP_amplitude_before_MBI' :           0,    #does not seem to work yet?
+'SP_E_duration'             :           50,     #Duration for both Ex and A spin pumping
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           0.65e-9,
-'MBI_duration'              :           40,
+'MBI_duration'              :           10,
 
     #Repump after succesfull MBI
-'repump_after_MBI_duration' :           [250],
-'repump_after_MBI_A_amplitude':         [10e-9],  #18e-9
+'repump_after_MBI_duration' :           [200],
+'repump_after_MBI_A_amplitude':         [12e-9],  #18e-9
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
