@@ -980,10 +980,10 @@ class purify_single_setup(DD.MBI_C13):
 
 
             #### for carbon phase debbuging purposes.
-            # for g in gate_seq:
-            #     if not 'corect' in g.name:
-            #         print g.name
-            #         self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
+            for g in gate_seq:
+                if not 'corect' in g.name:
+                    print g.name
+                    self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
 
 
             ### Convert elements to AWG sequence and add to combined list
