@@ -1,4 +1,4 @@
-ssro.AdwinSSRO.adwin_processes_key = 'adwin_m1_processes'
+measurement.AdwinControlledMeasurement.adwin_processes_key = 'adwin_m1_processes'
 ssro.AdwinSSRO.E_aom = qt.instruments['NewfocusAOM']
 ssro.AdwinSSRO.A_aom = qt.instruments['DLProAOM']
 ssro.AdwinSSRO.green_aom = qt.instruments['GreenAOM']

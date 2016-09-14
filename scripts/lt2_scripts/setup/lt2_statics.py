@@ -1,6 +1,6 @@
 qt.exp_params=mcfg.cfg
 
-ssro.AdwinSSRO.adwin_processes_key = 'adwin_lt2_processes'
+measurement.AdwinControlledMeasurement.adwin_processes_key = 'adwin_lt2_processes'
 ssro.AdwinSSRO.E_aom = qt.instruments['MatisseAOM']
 ssro.AdwinSSRO.A_aom = qt.instruments['NewfocusAOM']
 ssro.AdwinSSRO.green_aom = qt.instruments['GreenAOM']
