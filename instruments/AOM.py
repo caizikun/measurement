@@ -141,6 +141,9 @@ class AOM(Instrument):
                            option_list = ('AOM', 'DIODE'), 
                            flags = Instrument.FLAG_GETSET)
 
+        self.add_function('turn_on')
+        self.add_function('turn_off')
+
         self._ins_adwin=qt.instruments[use_adwin]
         self._ins_awg=qt.instruments[use_awg]
         self._ins_pm=qt.instruments[use_pm]

@@ -13,6 +13,7 @@ import qt
 import hdf5_data as h5
 import measurement.lib.measurement2.measurement as m2
 
+
 class scan2d_counts(scan):
     def __init__(self, name, linescan, mos, xdim='x', ydim='y', counters=None, setup_controller=None):
         scan.__init__(self, name, linescan, mos)
@@ -200,7 +201,6 @@ class scan2d_counts(scan):
 
 	# internal functions
     def _start_running(self):
-
         if self._counters.get_is_running():
             self._counter_was_running = True
             if self._linescan.get_scan_value() != 'counter_process':

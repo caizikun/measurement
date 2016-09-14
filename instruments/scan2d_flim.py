@@ -4,6 +4,7 @@
 from instrument import Instrument
 from cyclopean_instrument import CyclopeanInstrument
 from scan2d_counts import scan2d_counts
+# import scan2d_counts; reload(scan2d_counts)
 import msvcrt
 import types
 import gobject
@@ -161,6 +162,7 @@ class scan2d_flim(scan2d_counts):
 
     def _init_qutau(self):
         #self._temp_program_awg()
+        print 'init qutau'
         self._qutau.get_last_timestamps()
 
     def _retrieve_qutau_data(self):
@@ -201,7 +203,7 @@ class scan2d_flim(scan2d_counts):
 
     def _process_flim_data(self, event_time, channel, valid_length, pixel_clk_idxs):
         last_pixel_clk_idx = 0
-        for i,pixel_clk_idx in enumerate(np.append(pixel_clk_idxs,valid_length)): #we also take the data at the end, belonging to the next pixel.
+        for i,pixel_clk_idx in enumerate(np.append(pixel_clk_idxs,valid_length)): #we also take the data at the end, belonging to the next pixel. 
             tp,cp = event_time[last_pixel_clk_idx:pixel_clk_idx], channel[last_pixel_clk_idx:pixel_clk_idx]
             #Because we have to be fast here, we count only events where one photon directly followed a sync pulse.
             ph_idxs   = np.where(cp == self._apd_channel)[0]
