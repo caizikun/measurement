@@ -11,7 +11,7 @@ f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
 zoom_around_three_lines = False
 
 mw_power = 20#in dBm
-green_power = 600e-6
+green_power = 200e-6
 int_time = 30       #in ms
 reps = 250
 
@@ -74,7 +74,7 @@ for cur_rep in range(reps):
     if stop_scan: break
     p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
     if cur_rep%5==0 and cur_rep!= 0:
-        optimiz0r.optimize(dims=['z','x','y'], cycles = 1, int_time = 100, cnt=2)
+        optimiz0r.optimize(dims=['z','x','y'], cycles = 2, int_time = 100, cnt=2)
         qt.msleep(1)
     
     
