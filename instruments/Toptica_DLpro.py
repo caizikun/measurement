@@ -191,7 +191,7 @@ class toptica_DLpro(Instrument):
     def _do_get_piezo_voltage(self):
 
         logging.debug(__name__ + ' : reading piezo_voltage from DLpro laser1')
-        cmd = "(param-ref 'laser1:dl:pc:voltage-act)\n"
+        cmd = "(param-ref 'laser1:dl:pc:voltage-set)\n"
         self._piezo_voltage = float(self._send_recv(cmd))
         return self._piezo_voltage
      

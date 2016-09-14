@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.0.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\tud277299
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
 '<Header End>
 ' MBI with the adwin, with dynamic CR-preparation, dynamic MBI-success/fail
 ' recognition, dynamic initialization and MBEand SSRO at the end.
@@ -128,7 +129,6 @@ DIM case_success AS LONG
 DIM Current_C_init as LONG
 DIM MBE_counter as LONG
 DIM Parity_msmnt_counter as LONG
-DIM Nr_C13_init as LONG
 
 DIM MBE_threshold AS LONG
 DIM MBE_RO_duration AS LONG
@@ -254,7 +254,7 @@ INIT:
   P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off Ex laser
 
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
-  P2_CNT_MODE(CTR_MODULE,counter_channel,000010000b) 'configure counter
+  P2_CNT_MODE(CTR_MODULE,counter_channel,000000000b) 'configure counter
 
   P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)

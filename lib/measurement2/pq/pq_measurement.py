@@ -222,8 +222,9 @@ class PQMeasurement(m2.Measurement):
 def PQ_decode(data):
     """
     Decode the binary data into event time (absolute, highest precision),
-    channel number and special bit. See PicoQuant (HydraHarp, TimeHarp, PicoHarp) 
+    channel number and special bit. See PicoQuant (HydraHarp, TimeHarp) 
     documentation about the details.
+    This function does not work for the PicoHarp (different format!)
     """
     event_time = np.bitwise_and(data, 2**25-1)
     channel = np.bitwise_and(np.right_shift(data, 25), 2**6 - 1)

@@ -4,14 +4,14 @@ from analysis.lib.fitting import fit as fit
 from analysis.lib.fitting import fit,esr
 from numpy import array
 
-name_gen    ='ESR_SIL18_111_No1_LT'
-steps   = 101         #101
-mw_power = -10        #in dBm
-green_power = 30e-6  
-int_time = 100        # in ms
-reps = 20
-center_f_list =  [1.755, 4.005]    # in GHz #Ms = -1 #Ms = +1
-range_f  =  0.070           # in GHz
+name_gen    ='ESR_SIL18_111_No1_LT_M1'
+steps   = 61         #101
+mw_power = 11.       #in dBm ##NOTE: NO AMP IN
+green_power = 70e-6  
+int_time = 50        # in ms
+reps = 4
+center_f_list =  [1.74, 4.01]    # in GHz #Ms = -1 #Ms = +1
+range_f  =  0.030           # in GHz
 
 
 f0 = [0,0]
@@ -24,7 +24,7 @@ for ii in range(size(center_f_list)):
 
     name = name_gen + '_' + str(ii)
 
-    ins_smb = qt.instruments['SMB100']
+    ins_smb = qt.instruments['SGS100A_2']
     ins_adwin = qt.instruments['adwin']
     ins_counters = qt.instruments['counters']
     ins_aom = qt.instruments['GreenAOM']
@@ -116,7 +116,7 @@ for ii in range(size(center_f_list)):
     qt.mend()
 
     ins_counters.set_is_running(1)
-    GreenAOM.set_power(2e-6)
+    # GreenAOM.set_power(2e-6)
 
     print fit_result['params_dict']['x0']
 
