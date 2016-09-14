@@ -11,7 +11,7 @@ import zernike
 
 current_adwin = qt.instruments['adwin']
 counter=2
-int_time= 200 # in ms XXXXXXXXXX 200
+int_time= 500 # in ms XXXXXXXXXX 200
 
 def measure_counts(): #fro remote opt.
     if counter == 3:
@@ -222,10 +222,10 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     return max_cnts, opt_amp
 
 if __name__ == '__main__':
-    #green_power = 150e-6
-    #GreenAOM.set_power(green_power)
+    green_power = 100e-6
+    GreenAOM.set_power(green_power)
 
-    name = 'PippinSil2_lt3_local_new_dm'
+    name = 'PippinSil3_lt3_local_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')

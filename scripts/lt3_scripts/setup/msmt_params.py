@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL2'
+sil_name = 'SIL3'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -465,14 +465,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					50e-9, # 50e-9
-        'eom_off_amplitude':				-0.02, #-0.02
+        'eom_off_amplitude':				-0.025, #-0.02
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.58,#0.2
+        'aom_amplitude':					0.700,#0.2
 }
 
 
