@@ -29,7 +29,7 @@ class ElectronRabiHermite(pulsar_msmt.PulsarMeasurement):
         pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True):
-        #print 'test'
+        # print 'test'
         # define the necessary pulses
 
         # X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
@@ -43,7 +43,7 @@ class ElectronRabiHermite(pulsar_msmt.PulsarMeasurement):
                          'MW_Imod',
                          'MW_Qmod',
                          'MW_pulsemod',
-                         Sw_channel = 'MW_switch',
+                         Sw_channel = 'None', #'MW_switch',
                          frequency = self.params['Hermite_fast_pi_mod_frq'],
                          PM_risetime = self.params['MW_pulse_mod_risetime'],
                          Sw_risetime = self.params['MW_switch_risetime'],
@@ -95,9 +95,9 @@ def erabi_hermite(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
     
-    m.params['pts'] = 18
+    m.params['pts'] = 21
     pts = m.params['pts']
-    m.params['repetitions'] = 300
+    m.params['repetitions'] = 1000
     m.params['reps_per_ROsequence'] = m.params['repetitions']
     m.params['Ex_SP_amplitude']=0
 
@@ -110,7 +110,9 @@ def erabi_hermite(name):
 
     if sweep_param == 'length':
         m.params['MW_pulse_durations'] =  np.linspace(0, 4*m.params['Hermite_pi_length'], pts) #* 1e-9
+        m.params['MW_pulse_durations'] =  np.linspace(0, 400, pts)* 1e-9
         m.params['MW_pulse_amplitudes'] = np.ones(pts) *m.params['Hermite_pi_amp'] # * 0.05 #*0.49
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) *0.9 # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         
@@ -128,7 +130,7 @@ def erabi_hermite(name):
 
     print m.params['sweep_pts']
 
-    m.autoconfig() #Redundant because executed in m.run()? Tim
+    m.autoconfig() 
     m.generate_sequence(upload=True)
     if True:
         m.run()

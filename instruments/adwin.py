@@ -20,15 +20,6 @@ class adwin(Instrument):
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
 
-
-        self._last_loaded_process = '' #this flag prevents double loading of processes.
-        self.add_function('get_latest_process')
-        self.add_function('set_latest_process')
-        # self.add_parameter('dacs',
-        #     type = types.IntType)
-        # self.add_parameter('adcs',
-        #     type = types.IntType)
-
         self.dacs = kw.get('dacs', {})
         self.adcs = kw.get('adcs', {})
 
@@ -697,11 +688,3 @@ class adwin(Instrument):
         while self.is_counter_running():
             time.sleep(0.01)
         return self.get_last_counts()
-
-
-    def get_latest_process(self):
-        return self._last_loaded_process
-
-    def set_latest_process(self,fn):
-        self._last_loaded_process = fn
-        return

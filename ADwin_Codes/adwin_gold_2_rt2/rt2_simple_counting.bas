@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  TUD277246\localadmin
+' Info_Last_Save                 = TUD276198  DASTUD\tud276198
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 1 - 4 as 

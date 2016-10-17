@@ -6,13 +6,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Horst_SIL6_MM_detection'#'The111No2_enlarged_SIL2_DM_off'
-steps=15
-max_power=300e-6       #[w]
+name = 'Fritz_green'#'The111No2_enlarged_SIL2_DM_off'
+steps=16
+max_power=250e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
-bg_x=-1.0          #delta x position of background [um]
-bg_y=1.0            #delta y position of background [um]
+bg_x=2.         #delta x position of background [um]
+bg_y=-1.            #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -90,5 +90,5 @@ dat.close_file()
 current_mos.set_x(current_x)
 current_mos.set_y(current_y)
 
-AOM.set_power(1e-9)
+current_aom.turn_off()
 print 'Done with saturation scan!'

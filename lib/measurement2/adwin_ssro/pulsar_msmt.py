@@ -31,15 +31,13 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.mwsrc.set_power(self.params['mw_power'])
         self.mwsrc.set_status('on')
 
-        try:
+        if mw2:
             print 'switching second mw source on'
             self.mwsrc2.set_iq('on')
             self.mwsrc2.set_pulm('on')            
             self.mwsrc2.set_frequency(self.params['mw2_frq'])
             self.mwsrc2.set_power(self.params['mw2_power'])
             self.mwsrc2.set_status('on')
-        except:
-            print 'no second mw source ',  sys.exc_info()
 
         print 'AWG state before start'
         print self.awg.get_state()
@@ -179,10 +177,6 @@ class SSRO_MWInit(PulsarMeasurement):
                 ('statistics', 10),
                 'completed_reps',
                 'total_CR_counts'])
-
-
-    def autoconfig(self):
-        PulsarMeasurement.autoconfig(self)    
 
 
     def generate_sequence(self, upload=True, **kw):

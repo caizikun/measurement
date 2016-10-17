@@ -79,7 +79,6 @@ class FastCom_P7889(Instrument): #1
      4) debugged seepmode section
 
     TODO:
-     - Check why get_range is defined as range/number_of_cycles 20110902
      - add Eventpreset, acq. delay, and holdaftersweep control
      - add control over inputs thresholds
     '''
@@ -134,7 +133,12 @@ class FastCom_P7889(Instrument): #1
         self.add_function('Stop')
         self.add_function('Continue')
 
-        self.add_function('manual_get_timebase')
+        self.add_function('get_range_ns')
+        self.add_function('set_range_ns')
+        self.add_function('get_binsize_ns')
+        self.add_function('set_ROI_ns')
+
+        self.add_function('get_timebase_ns')
 
         self.get_all()
         self.get_range()
@@ -194,7 +198,7 @@ class FastCom_P7889(Instrument): #1
 
 
     def Continue(self): #6
-        self._DP7889_win32.cont(0)
+        self._DP7889_win32.Continue(0)
 
     # Base communication tools
     def _Start_Server(self,Start_MCDWIN=False): #7
@@ -304,11 +308,7 @@ class FastCom_P7889(Instrument): #1
         '''        
         if get_from_dll:
             settings = self._get_settings()
-            try:
-                self.a_range=settings.range/settings.cycles
-            except ZeroDivisionError:
-                self.a_range = 0.
-                print 'self.arange set to 0'
+            self.a_range=settings.range
         else:
             pass
         return self.a_range
@@ -382,11 +382,12 @@ class FastCom_P7889(Instrument): #1
         self.RunCmd('sequences=%s' %numberofsequences)
         self.a_number_of_sequences=self._do_get_number_of_sequences()
 
-    def _do_set_binwidth(self,bitshift): #33
+    def _do_set_binwidth(self,binwidth): #33
         '''
         Sets the time bin width, be carefull
         SETS POWERS OF TWO (Binwidth: 0=>1, 1=>2, 2=>4, 3=>8, etc.
         '''
+        bitshift = numpy.log2(binwidth)
         self.RunCmd('bitshift=%s' %bitshift)
         binwidth=2**bitshift
         #print __name__ + 'Binwidth set to: 0.1x%s ns' %binwidth
@@ -458,7 +459,7 @@ class FastCom_P7889(Instrument): #1
         return self.running
     def get_runtime(self):
         self.get_status()
-        return self.running
+        return self.runtime
     def get_total_sum(self):
         self.get_status()
         return self.totalsum
@@ -485,16 +486,15 @@ class FastCom_P7889(Instrument): #1
     def _do_get_timebase(self): #17
         length          =       int(self._do_get_range())
         delta_t         =       self._do_get_binwidth()*0.1 #binwidth in ns
-        timerange       =       numpy.linspace(0, length*delta_t, length, False)
-        self.a_timebase =       timerange, length
+        timerange       =       numpy.arange(length,dtype='int')#numpy.linspace(0, length, length, False)
+        self.a_timebase =       timerange
         return self.a_timebase
 
-    def manual_get_timebase(self): #17
-        length          =       int(self._do_get_range())
+    def get_timebase_ns(self): #17
+        
         delta_t         =       self._do_get_binwidth()*0.1 #binwidth in ns
-        timerange       =       numpy.linspace(0, length*delta_t, length, False)
-        self.a_timebase =       timerange, length
-        return self.a_timebase
+        timerange       =       self.get_timebase()*delta_t
+        return timerange
 
     def get_1Ddata(self,plot_data=False,time=0.2): #18
         '''
@@ -525,21 +525,34 @@ class FastCom_P7889(Instrument): #1
         self._DP7889_win32.LVGetCnt(time.ctypes.data,0)
         return types.FloatType(time)
     
-    def switch_to_counter_mode(self, integration_time = None):
-        if integration_time == None:
-            integration_time = self.integration_time
-        else:
-            pass   
-        self._disable_all_sweepmodes()
-        self._disable_all_presets()
-        self.set_binwidth(24) #sets it to 1677721.6 ns or 1.6 us
-        range = self._do_set_range(integration_time/1.6777216e-6)
-        self._do_set_ROI_max(range)
-        self.integration_time = 1.6777216e-6*range
-        self.set_sweepmode_software_start(True)
-        self.set_sweep_preset(True)
-        self.set_sweep_preset_number(1)
-        self.operation_mode = 'counter' 
+    def switch_to_counter_mode(self, int_time=50):
+        # if integration_time == None:
+        #     integration_time = self.integration_time
+        # else:
+        #     pass   
+        # self._disable_all_sweepmodes()
+        # self._disable_all_presets()
+        # self.set_binwidth(24) #sets it to 1677721.6 ns or 1.6 us
+        # range = self._do_set_range(integration_time/1.6777216e-6)
+        # self._do_set_ROI_max(range)
+        # self.integration_time = 1.6777216e-6*range
+        # self.set_sweepmode_software_start(True)
+        # self.set_sweep_preset(True)
+        # self.set_sweep_preset_number(1)
+        # self.operation_mode = 'counter' 
+        #self._disable_all_sweepmodes()
+        #self._disable_all_presets()
+        #self.set_binwidth(1)
+        #self.set_range(100)
+        self._last_t=0
+        self._last_sweep_count=0
+        self.Start()
+        sleep(int_time/1000.)
+        self.Stop()
+        sleep(0.3)
+        return float(self.get_Sweeps())/self.get_runtime()
+
+
 
     def _do_get_counts(self):
         if self.operation_mode is 'counter':
@@ -557,7 +570,8 @@ class FastCom_P7889(Instrument): #1
     def _do_get_count_rate(self):
         return self._do_get_counts()/self.integration_time  
 
-        
+    def get_count_rate(self):
+        return self._do_get_counts()/self.integration_time  
 
 
 
@@ -587,8 +601,8 @@ class FastCom_P7889(Instrument): #1
         traces              =       int(self._do_get_number_of_cycles())
         #print 'traces extracted'
         sleep(0.1)
-        tracearray          =       numpy.array(numpy.linspace(0, traces-1, traces))
-        data                =       numpy.array(numpy.zeros((traces, length)), dtype = numpy.uint32)
+        tracearray          =       numpy.linspace(0, traces-1, traces, dtype='int')
+        data                =       numpy.zeros((traces, length), dtype = numpy.uint32)
         #print 'exctracting actual data'
         self._DP7889_win32.LVGetDat(data.ctypes.data,0)
         #data = self.fake_data(traces, length)
@@ -943,5 +957,15 @@ class FastCom_P7889(Instrument): #1
         self._disable_all_presets()
         self._disable_all_sweepmodes()
 
+    def get_binsize_ns(self):
+        return 0.1 * 2**(self.get_binwidth()-1)
 
+    def set_range_ns(self, val):
+        self.set_range(val/self.get_binsize_ns())
 
+    def get_range_ns(self):
+        return self.get_binsize_ns() * self.get_range()
+
+    def set_ROI_ns(self,min_ns,max_ns):
+        self.set_ROI_min(min_ns/self.get_binsize_ns())
+        self.set_ROI_max(max_ns/self.get_binsize_ns())

@@ -14,7 +14,7 @@ physical_adwin = qt.instruments.create('physical_adwin','ADwin_Gold_II',
 
 SMB100 = qt.instruments.create('SMB100', 'RS_SMB100', 
         address='GPIB::28::INSTR', reset=False)
-
+SMB100.set_max_cw_pwr(20)
 #PH_300 = qt.instruments.create('PH_300', 'PicoHarp_PH300')
 #TH_260N=qt.instruments.create('TH_260N', 'TimeHarp_TH260N')
 powermeter = qt.instruments.create('powermeter','Thorlabs_PM100', address='ASRL5::INSTR')
@@ -25,14 +25,18 @@ powermeter = qt.instruments.create('powermeter','Thorlabs_PM100', address='ASRL5
 TemperatureController = qt.instruments.create('TemperatureController', 
      'Lakeshore_340', address = 'GPIB::12::INSTR')
 
-AttoPositioner = qt.instruments.create('AttoPositioner', 'Attocube_ANC350')
+#AttoPositioner = qt.instruments.create('AttoPositioner', 'Attocube_ANC350')
 # Velocity1 = qt.instruments.create('Velocity1', 'NewfocusVelocity', address='GPIB::8::INSTR')
 
 #ivvi = qt.instruments.create('ivvi', 'IVVI', address = 'ASRL1::INSTR', numdacs = 4)
 servo_ctrl=qt.instruments.create('ServoController', 'ParallaxServoController', address=3)
 ZPLServo=qt.instruments.create('ZPLServo','ServoMotor', servo_controller='ServoController')
 PMServo=qt.instruments.create('PMServo','ServoMotor', servo_controller='ServoController')
-#qutau = qt.instruments.create('QuTau', 'QuTau') # will give issues when combined with Attocube_ANC350
+PMServo.move_out()
+
+qutau = qt.instruments.create('qutau', 'QuTau') # will give issues when combined with Attocube_ANC350
+qutau_counter = qt.instruments.create('qutau_counter','qutau_simple_counter', qutau = 'qutau', physical_adwin='physical_adwin', qutau_apd_channel=2, qutau_sync_channel=1)
+
 if not lt1_remote:
 
     AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014', 
@@ -62,9 +66,10 @@ if not lt1_remote:
             'linescan_counts',  adwin='adwin', mos='master_of_space',
             counters='counters')
     
-    scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
-             linescan='linescan_counts', mos='master_of_space',
-            xdim='x', ydim='y', counters='counters')
+    scan2d = qt.instruments.create('scan2d', 'scan2d_counts',linescan='linescan_counts', mos='master_of_space',xdim='x', ydim='y', counters='counters')
+    #scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space', timetagger = 'PH_300', xdim='x', ydim='y', counters='counters', setup_controller='setup_controller', pixelclk_channel=1, apd_channel=1, sync_channel=0)
+    #scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space', timetagger = 'qutau',  xdim='x', ydim='y', counters='counters', setup_controller='setup_controller', pixelclk_channel=0, apd_channel=2, sync_channel=1)
+
      
     opt1d_counts = qt.instruments.create('opt1d_counts', 
              'optimize1d_counts', linescan='linescan_counts', 
@@ -102,7 +107,7 @@ if objsh.start_glibtcp_client('192.168.0.80', port=12002, nretry=3):
     remote_name='NewfocusLT1_1', inssrv=remote_ins_server)
     #ivvi = qt.instruments.create('ivvi', 'Remote_Instrument', remote_name='ivvi', inssrv=remote_ins_server)
 
-if objsh.start_glibtcp_client('localhost', port=12003, nretry=2):
+if False and objsh.start_glibtcp_client('localhost', port=12003, nretry=2):
     remote_ins_server_mon = objsh.helper.find_object('qtlab_monitor_lt1:instrument_server')
     remote_measurement_helper = qt.instruments.create('remote_measurement_helper', 'Remote_Instrument',
             remote_name='lt1_measurement_helper', inssrv=remote_ins_server_mon)
@@ -111,4 +116,4 @@ if objsh.start_glibtcp_client('localhost', port=12003, nretry=2):
 #        address = 'COM14')
 #rejecter = qt.instruments.create('rejecter', 'laser_reject0r')
 
-
+execfile('D:\measuring\measurement\scripts\lt1_scripts\setup_lt1.py')

@@ -29,6 +29,8 @@ class purification_optimizer(mo.multiple_optimizer):
                     'min_tail_counts'            :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':3.5},
                     'max_strain_splitting'       :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':2.1},
                     'max_cr_counts_avg'          :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':36},
+                    'babysitting'                :   {'type':types.BooleanType,'flags':Instrument.FLAG_GETSET, 'val':False},
+                    'stop_optimize'              :   {'type':types.BooleanType,'flags':Instrument.FLAG_GETSET, 'val':False},
                     }           
         instrument_helper.create_get_set(self,ins_pars)
 
@@ -52,19 +54,21 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 
-        self.add_function('rejecter_half_plus')
-        self.add_function('rejecter_half_min')
-        self.add_function('rejecter_quarter_plus')
-        self.add_function('rejecter_quarter_min')
+        # self.add_function('rejecter_half_plus')
+        # self.add_function('rejecter_half_min')
+        # self.add_function('rejecter_quarter_plus')
+        # self.add_function('rejecter_quarter_min')
         self.add_function('toggle_pid_gate')
         self.add_function('toggle_pid_nf')
         self.add_function('toggle_pid_yellowfrq')
-
-
+        self.add_function('auto_optimize')
+        self.add_function('start_babysit')
+        self.add_function('stop_babysit')  
+        self.add_function('stop_optimize_now')         
 
         self.setup_name = setup_name
 
-
+        self._busy = False;
 
         self._taper_index = 4 if 'lt3' in setup_name else 3
 
@@ -77,6 +81,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.deque_par_laser    = deque([], self.history_length)
         self.deque_t            = deque([], self.history_length)
         self.deque_fpar_laser    = deque([], self.history_length)
+        self.deque_repump_counts = deque(self.history_length*[-1], self.history_length)
         
         self.init_counters()  
 
@@ -109,12 +114,14 @@ class purification_optimizer(mo.multiple_optimizer):
 
     #--------------get_set   
 
-   
+    #### no fiddling around wit adwin values yet. would not be a good idea!
     def _do_set_invalid_data_marker(self, value):
-        qt.instruments['physical_adwin'].Set_Par(55,value)
+        pass
+        # qt.instruments['physical_adwin'].Set_Par(55,value)
 
     def _do_get_invalid_data_marker(self):
-        return qt.instruments['physical_adwin'].Get_Par(55)
+        pass
+        # return qt.instruments['physical_adwin'].Get_Par(55)
 
 
     def publish_values(self):
@@ -188,17 +195,19 @@ class purification_optimizer(mo.multiple_optimizer):
         return True    
 
     def set_failed(self):
-        if 'lt4' in self.setup_name:
-            qt.instruments['lt4_measurement_helper'].set_measurement_name('purification_optimizer_failed')    
-        else:
-            qt.instruments['lt3_measurement_helper'].set_measurement_name('purification_optimizer_failed')
+        print 'would set everything to failed now'
+        # if 'lt4' in self.setup_name:
+        #     qt.instruments['lt4_measurement_helper'].set_measurement_name('purification_optimizer_failed')    
+        # else:
+        #     qt.instruments['lt3_measurement_helper'].set_measurement_name('purification_optimizer_failed')
 
 
     def stop_measurement(self):
-        if 'lt4' in self.setup_name:
-            qt.instruments['lt4_measurement_helper'].set_is_running(False)
-        else:
-            qt.instruments['lt3_measurement_helper'].set_is_running(False)
+        print 'would stop the measurement now!' 
+        # if 'lt4' in self.setup_name:
+        #     qt.instruments['lt4_measurement_helper'].set_is_running(False)
+        # else:
+        #     qt.instruments['lt3_measurement_helper'].set_is_running(False)
 
     def calculate_difference(self, avg_len):
 
@@ -222,15 +231,14 @@ class purification_optimizer(mo.multiple_optimizer):
             else:
                 self.script_running = qt.instruments['lt3_measurement_helper'].get_is_running() and \
                                             'purify.py' in qt.instruments['lt3_measurement_helper'].get_script_path()
-            if False:
-                print 'implement the measurement helpers in order to run the comments below.'
+
             if not self.script_running:
                 self.script_not_running_counter += 1
                 self.status_message = 'Purification script not running'
                  
                             
                 if self.script_not_running_counter > self.max_counter_for_waiting_time :
-                    self.send_error_email(subject = 'ERROR : Purification sequence not running')
+                    # self.send_error_email(subject = 'ERROR : Purification sequence not running')
                     self.stop()
                     return False
                 else:
@@ -284,32 +292,11 @@ class purification_optimizer(mo.multiple_optimizer):
 
                 print 'Cr counts / Yellow counts ', self.cr_counts, self.repump_counts
                 
-
-                ## WM check.
-                # if len(np.unique(fpar_laser_array[:,self._taper_index])) == 1:  
-                #     self.set_invalid_data_marker(1)
-                #     subject = 'ERROR : The {} frequency of the taper laser is not updated'.format(self.setup_name)
-                #     text= 'The taper laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,self._taper_index],fpar_laser_array[-1,self._taper_index])
-                #     self.status_message += text 
-                #     self.send_error_email(subject = subject, text = text)
-                # if len(np.unique(fpar_laser_array[:,1])) == 1: # New focus value not updated
-                #     self.set_invalid_data_marker(1)
-                #     subject = 'ERROR : The {} frequency of the new-focus laser is not updated'.format(self.setup_name)
-                #     text ='The new-focus laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,1],fpar_laser_array[-1,1])
-                #     self.status_message += text 
-                #     self.send_error_email(subject = subject, text = text)
-                # if len(np.unique(fpar_laser_array[:,2])) == 1: # Yellow value not updated
-                #     self.set_invalid_data_marker(1)
-                #     subject = 'ERROR : The {} frequency of the yellow laser is not updated'.format(self.setup_name)
-                #     text ='The yellow laser frequency is not updated : {:.6f} & {:.6f}  GHz. Check the wavemeter or the laser.\n'.format(fpar_laser_array[0,2],fpar_laser_array[-1,2])
-                #     self.status_message += text 
-                #     self.send_error_email(subject = subject, text = text)
-
                 if self.cr_checks <= 50:
                     self.waiting_for_other_setup_counter += 1
                     self.status_message += 'Waiting for the other setup to come back\n'
-                    if self.waiting_for_other_setup_counter > self.max_counter_for_waiting_time:
-                        self.send_error_email(subject = 'ERROR : Bell sequence waiting for other setup', text = 'waiting too long')
+                    # if self.waiting_for_other_setup_counter > self.max_counter_for_waiting_time:
+                    #     self.send_error_email(subject = 'ERROR : Purification sequence sequence waiting for other setup', text = 'waiting too long')
 
                 elif self.wait_counter > 0:
                     self.status_message+='Waiting for another {:d} rounds'.format(int(self.wait_counter))
@@ -323,6 +310,7 @@ class purification_optimizer(mo.multiple_optimizer):
                         self.set_invalid_data_marker(1)
                         self.gate_optimize_counter +=1
                         if self.gate_optimize_counter <= self.get_max_counter_optimize() :
+
                             self.optimize_gate()
                             self.wait_counter = 1
                             self.need_to_optimize_nf = True
@@ -346,6 +334,7 @@ class purification_optimizer(mo.multiple_optimizer):
                         self.yellow_optimize_counter +=1
                         if self.yellow_optimize_counter <= self.get_max_counter_optimize() :
                             if self.yellow_optimize_counter > self.get_max_counter_optimize()-2:
+
                                 self.optimize_nf()
                                 qt.msleep(3)
                             self.optimize_yellow()
@@ -372,7 +361,7 @@ class purification_optimizer(mo.multiple_optimizer):
                     self.status_message += text
                     subject = 'ERROR : Too high strain splitting with {} setup'.format(self.setup_name)
                     self.send_error_email(subject = subject, text = text)
-                    self.set_invalid_data_marker(1)
+                    # self.set_invalid_data_marker(1)
                     self.wait_counter = 2
                     self.need_to_optimize_nf = True
 
@@ -425,7 +414,7 @@ class purification_optimizer(mo.multiple_optimizer):
 
         except Exception as e:
             self.set_invalid_data_marker(1)
-            text = 'Errror in bell optimizer: ' + str(e)
+            text = 'Errror in purification optimizer: ' + str(e)
             print text
             traceback.print_exc()
             subject = 'ERROR : Bell optimizer crash {} setup'.format(self.setup_name)
@@ -433,25 +422,54 @@ class purification_optimizer(mo.multiple_optimizer):
             return False
 
     def optimize_nf(self):
+        e_primer_was_running = self.get_pid_e_primer_running()        
         self.set_pid_e_primer_running(False)
-        qt.instruments['nf_optimizer'].optimize()
-        qt.msleep(2.5)
-        self.set_pid_e_primer_running(True)
+        # qt.instruments['nf_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_newfocus()
+        qt.msleep(0.5)
+        self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_yellow(self):
         e_primer_was_running = self.get_pid_e_primer_running()
         self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
-        qt.instruments['yellowfrq_optimizer'].optimize()
-        qt.msleep(2.5)
+        self.set_pidgate_running(False)        
+        #qt.instruments['yellowfrq_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_yellow();
+        qt.msleep(4.0)
         self.set_pidyellowfrq_running(True)
+        self.set_pidgate_running(True)        
         self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_gate(self):
-        self.set_pidgate_running(False)
-        qt.instruments['gate_optimizer'].optimize()
+        # self.set_pidgate_running(False)
+        # qt.instruments['gate_optimizer'].optimize()
+        # qt.msleep(0.5)
+        # self.set_pidgate_running(True)
+        e_primer_was_running = self.get_pid_e_primer_running()
+        self.set_pid_e_primer_running(False)
+        self.set_pidyellowfrq_running(False)
+        self.set_pidgate_running(False)        
+        #qt.instruments['yellowfrq_optimizer'].optimize()
+        qt.instruments['auto_optimizer'].optimize_gate();
         qt.msleep(0.5)
-        self.set_pidgate_running(True)
+        self.set_pidyellowfrq_running(True)
+        self.set_pidgate_running(True)        
+        self.set_pid_e_primer_running(e_primer_was_running)        
+
+    def auto_optimize(self):
+        e_primer_was_running = self.get_pid_e_primer_running()        
+        self.set_pid_e_primer_running(False)
+        self.set_pidyellowfrq_running(False)
+        self.set_pidgate_running(False)           
+        # if qt.instruments['auto_optimizer'].flow():
+        #     print 'Success!'
+        # else:
+        #     print 'Finished before end'
+        qt.msleep(3.0)
+        self.set_pidyellowfrq_running(True)
+        self.set_pidgate_running(True)        
+        self.set_pid_e_primer_running(e_primer_was_running)            
 
     def _do_get_pid_e_primer_running(self):
         return qt.instruments['e_primer'].get_is_running()
@@ -475,7 +493,6 @@ class purification_optimizer(mo.multiple_optimizer):
         return qt.instruments['pidgate'].get_is_running()
 
     def _do_set_pidgate_running(self, val):
-        print val
         if val:
             qt.instruments['pidgate'].start()
         else:
@@ -502,6 +519,83 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def rejecter_quarter_min(self):
         qt.instruments['rejecter'].move('zpl_quarter',-self.get_rejecter_step(),quick_scan=True)
+
+    def start_babysit(self):
+        print 'Start'
+        if self._babysitting:
+            print 'Already running'
+            return
+        self._babysitting = True            
+        self.set_stop_optimize(False)
+
+        # Start running babysitter
+        self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),self._babysit)
+
+    def stop_babysit(self):
+        # print 'Stop'
+        # if not self._babysitting:
+        #     print 'Not running'
+        self._babysitting = False
+        return gobject.source_remove(self._timer)        
+
+    def _babysit(self):
+        # print 'Check if all is OK'
+        if not self._babysitting:
+            return False   
+        
+        # Read values
+        self.update_values()
+        par_counts , par_laser, dt = self.calculate_difference(1)
+        par_counts_avg , par_laser_avg, _tmp1 = self.calculate_difference(self.avg_length)
+        fpar_laser_array=np.array(self.deque_fpar_laser)
+       
+        self.dt = dt
+        self.cr_checks = par_counts[2]
+        self.cr_counts = 0 if self.cr_checks ==0 else np.float(par_counts[0])/self.cr_checks
+        self.repumps = par_counts[1]
+        self.repump_counts = self.repump_counts if self.repumps == 0 else np.float(par_counts[6])/self.repumps
+
+        # If all lasers are on resonance: write to logger
+        if (self.cr_counts > self.get_min_cr_counts() ) and (self.repump_counts > self.get_min_repump_counts()):
+            # print self.cr_counts, '>', self.get_min_cr_counts(), 'and', self.repump_counts, '>', self.get_min_repump_counts(), 'so logging frequencies'
+            qt.instruments['frequency_logger'].log()            
+            
+        # If one of the lasers is off and the optimizer is not already running: run optimizer
+        if self._busy:
+            # print 'Optimizer is running, so do not do anything'
+        else:
+            if (self.cr_counts < self.get_min_cr_counts() or self.repump_counts < self.get_min_repump_counts()):
+                if (self.cr_counts == 0):
+                    print 'No measurement running atm!'
+                else:
+                    print self.cr_counts, '<', self.get_min_cr_counts(), 'or', self.repump_counts, '<', self.get_min_repump_counts(), 'so start optimizer'
+                    self.busy = True
+                    e_primer_was_running = self.get_pid_e_primer_running()        
+                    self.set_pid_e_primer_running(False)
+                    self.set_pidyellowfrq_running(False)
+                    self.set_pidgate_running(False)   
+                    # if qt.instruments['auto_optimizer'].flow():
+                    #     print 'Success!'
+                    # else:
+                    #     print 'Exited before end'
+                    qt.msleep(2)
+                    self.set_pidyellowfrq_running(True)
+                    self.set_pidgate_running(True)        
+                    self.set_pid_e_primer_running(e_primer_was_running) 
+                    self._busy = False
+            else:
+                # Even if all counts are fine, the newfocus might still be off
+                if qt.instruments['auto_optimizer'].check_detuned_repump():
+                    self.busy = True                    
+                    self.optimize_nf()
+                    self._busy = False                    
+                else:
+                    print 'Everything OK'
+        return True;
+
+    def stop_optimize_now(self):
+        self._stop_optimize = True;
+
 
     def start(self):
         print 'Starting'
