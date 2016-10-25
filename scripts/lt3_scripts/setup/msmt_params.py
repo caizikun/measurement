@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL3'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.7087#0.70#0.694#0.7058#0.681#0.667 # 06-02
+	hermite_pi_amp = 0.675#0.70 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.480#0.483 # 06-02 
+	hermite_pi2_amp = 0.486#0.483 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#20e-9, #50e-9
+		'yellow_repump_amplitude':      28e-9,#28e-9, #50e-9
 		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -225,8 +225,8 @@ cfg['samples'][sample_name] = {
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
     'phase_per_sequence_repetition'    : 328.057+1.-0.09, #adwin needs positive values
-    'phase_per_compensation_repetition': 12.551, # adwin needs positive values
-    'total_phase_offset_after_sequence': 148.72+13.9-1.7+1.15+3.5+2.13, # adwin needs positive values
+    'phase_per_compensation_repetition': 12.583, # adwin needs positive values
+    'total_phase_offset_after_sequence': 159.77, # adwin needs positive values
 
 	# #########################
 	# #####     SIL1      #####
@@ -274,12 +274,12 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_freq_p1'        : 434421.63, #### don't change this unless you measure it! 
-	'C1_freq_0' 		: 447734.89,
-	'C1_freq_1_p1' 		: 425345.88,
+	'C1_freq_0' 		: 447747.11,
+	'C1_freq_1_p1' 		: 425341.4,
 
 	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
 	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [33.97] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [36.64] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C1_unc_tau_p1'    :   [9.132e-6],
 	'C1_unc_N_p1'      :   [12],
@@ -465,14 +465,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					50e-9, # 50e-9
-        'eom_off_amplitude':				-0.025, #-0.02
+        'eom_off_amplitude':				-0.02, #-0.02
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.700,#0.2
+        'aom_amplitude':					0.39,#0.2
 }
 
 
