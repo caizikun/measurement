@@ -423,7 +423,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_purification.prepare(m)
 
     ### general params
-    pts = 13
+    pts = 15
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -452,7 +452,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.1,0.06,pts)#(-0.04,-0.02,pts)
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -778,7 +778,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    tail_sweep(name+'_tail_Sweep',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=False)
+    tail_sweep(name+'_tail_Sweep_tel1',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -794,7 +794,7 @@ if __name__ == '__main__':
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
-    # PurifyYY(name+'_Purify_YY',debug = True, upload_only = False)
+    #PurifyYY(name+'_Purify_YY',debug = True, upload_only = True)
     #PurifyZZ(name+'_Purify_ZZ',debug = True, upload_only = False)
 
     ###### non-local measurements // Barrett Kok parameters

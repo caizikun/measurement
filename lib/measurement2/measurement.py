@@ -355,6 +355,7 @@ class AdwinControlledMeasurement(Measurement):
     def __init__(self, name, save=True):
         
         Measurement.__init__(self, name, save=save)
+        qt.current_meas_name = name
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
 

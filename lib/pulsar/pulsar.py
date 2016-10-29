@@ -8,7 +8,7 @@
 import time
 import numpy as np
 import logging
-
+import qt
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
 # scales, but the time unit we use is seconds. therefore we need a suitably chosen digit on which
@@ -372,6 +372,18 @@ class Pulsar:
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
         allow_non_zero_first_point_on_trigger_wait=kw.pop('allow_first_zero',False)
+
+        try:
+            print qt.dump_AWG_seq
+            print 'hihi'
+            if qt.dump_AWG_seq == True:
+                import pickle as pkl
+                with open('D:\measuring\AWG_seqs_'+qt.current_meas_name+'.pickle', 'wb') as f:  # Python 3: open(..., 'wb')
+                    pkl.dump([sequence,elements], f)
+                    f.close()
+        except:
+            pass
+
         elt_cnt = len(elements)
         chan_ids = self.get_used_channel_ids()
         packed_waveforms={}
