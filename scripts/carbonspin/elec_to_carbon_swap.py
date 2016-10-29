@@ -120,7 +120,7 @@ if __name__ == '__main__':
     breakst     = False
     carbons     = [1]
     #el_state    = ['X','mX','Y','mY','Z','mZ']
-    el_state    = ['Z','mZ']
+    el_state    = ['X','Y','Z']
     
     debug = False
     RO_after_swap = True
@@ -192,15 +192,15 @@ if __name__ == '__main__':
             if breakst:
                 break
 
-            SWAP(SAMPLE + '_carbon' + str(c) +'_'+'negative'+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
-                el_RO= 'negative', 
-                carbon = c,
-                debug = debug, 
-                elec_init_state = e,
-                RO_after_swap = RO_after_swap,
-                carbon_init_thresholds = c_i_t,
-                carbon_init_methods = carbon_init_methods,
-                swap_type = swap_type)
+            # SWAP(SAMPLE + '_carbon' + str(c) +'_'+'negative'+ '_elState'+str(e)+'_swapRO_'+str(RO_after_swap), 
+            #     el_RO= 'negative', 
+            #     carbon = c,
+            #     debug = debug, 
+            #     elec_init_state = e,
+            #     RO_after_swap = RO_after_swap,
+            #     carbon_init_thresholds = c_i_t,
+            #     carbon_init_methods = carbon_init_methods,
+            #     swap_type = swap_type)
 
     print 'Done with loop part' 
   
