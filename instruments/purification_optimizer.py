@@ -562,8 +562,7 @@ class purification_optimizer(mo.multiple_optimizer):
             
         # If one of the lasers is off and the optimizer is not already running: run optimizer
         if self._busy:
-            # print 'Optimizer is running, so do not do anything'
-            pass
+            print 'Optimizer is running, so do not do anything'
         else:
             if (self.cr_counts < self.get_min_cr_counts() or self.repump_counts < self.get_min_repump_counts()):
                 if (self.cr_counts == 0):

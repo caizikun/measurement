@@ -104,7 +104,7 @@ def show_stopper(breakst):
 if __name__ == '__main__':
 
     breakst = False
-    el_RO_pulse = ['mx']#,'x','y','my','none','X']
+    el_RO_pulse = ['none','X']#'mx','x','y','my',
     el_RO_directions = ['positive','negative']
 
     for pulse in el_RO_pulse:
@@ -118,16 +118,16 @@ if __name__ == '__main__':
             if breakst:
                 break
 
-            # MBE(SAMPLE + 'el_13C_full_sequence_dm_'+pulse+'_'+el_RO, el_RO= el_RO,carbon_list = [4],
-            #                     carbon_init_list = [4,4],number_of_MBE_steps=1,
-            #                     carbon_init_methods=['swap','MBI'],e_RO_pulse=pulse,
-            #                     carbon_init_thresholds = [0,1],debug=False)
-
-
-            MBE(SAMPLE + 'el_13C_full_sequence_dm_noMBE'+'_'+el_RO, el_RO= el_RO,carbon_list = [4],
-                                carbon_init_list = [4,4],number_of_MBE_steps=0,
+            MBE(SAMPLE + 'el_13C_full_sequence_dm_'+pulse+'_'+el_RO, el_RO= el_RO,carbon_list = [1],
+                                carbon_init_list = [1,1],number_of_MBE_steps=1,
                                 carbon_init_methods=['swap','MBI'],e_RO_pulse=pulse,
                                 carbon_init_thresholds = [0,1],debug=False)
+
+
+            # MBE(SAMPLE + 'el_13C_full_sequence_dm_noMBE'+'_'+el_RO, el_RO= el_RO,carbon_list = [1],
+            #                     carbon_init_list = [1,1],number_of_MBE_steps=0,
+            #                     carbon_init_methods=['swap','MBI'],e_RO_pulse=pulse,
+            #                     carbon_init_thresholds = [0,1],debug=False)
 
 
 

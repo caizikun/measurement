@@ -27,7 +27,7 @@ INIT:
   FIFO_CLEAR(10)
   FIFO_CLEAR(11)   
   PAR_9 = 10000 
-  processtime=PAR_9*40 'PAR_is cycletime in us, multiply by 40 to get cycle time in ADWIN clockcycles (units of 25ns)
+  processtime=PAR_9*40 'PAR_9 is cycletime in us, multiply by 40 to get cycle time in ADWIN clockcycles (units of 25ns)
   GLOBALDELAY=processtime
   
 EVENT:
@@ -58,7 +58,7 @@ EVENT:
   'Done
   
   'calculate count rate for counter 1 and put in data10
-  idletime1=(time_2-time_1)*25./1000.0: FPAR_16=idletime1 'This is the time the counter was not counting because of readout and reset
+  idletime1=(time_2-time_1)*25./1000.0: FPAR_16=idletime1 'This is the time in us the counter was not counting because of readout and reset
   val1=val AND 0000111111111111b     : PAR_16=val1 - 1    'This selects only the last 12 bits which are those of counter1
   Counts1=val1-1  
   frequency1=Counts1/(processtime*25.0/1000.0-idletime1)*1000000
@@ -69,7 +69,7 @@ EVENT:
   'calculate count rate for counter 2 and put in data11
   temp1=retval1*2^4   'This shifts the values by 4 bits
   temp2=retval2*2^(-12)  'This shifts the values by -12 bits  
-  idletime2=(time_4-time_3)*25./1000.0: FPAR_17=idletime2 'This is the time the counter was not counting because of readout and reset
+  idletime2=(time_4-time_3)*25./1000.0: FPAR_17=idletime2 'This is the time in us the counter was not counting because of readout and reset
   Counts2=temp2+temp1-1    : PAR_17 = Counts2 'This gives the counts  
   frequency2=Counts2/(processtime*25.0/1000.0-idletime2)*1000000
   DATA_11=frequency2

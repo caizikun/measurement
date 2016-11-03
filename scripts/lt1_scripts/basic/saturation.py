@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Fritz_sil5'
+name = 'Harry_Scan1_NV2'
 steps=21
-max_power=150e-6       #[w]
+max_power=200e-6       #[w]
 counter=2  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=1.5          #delta x position of background [um]
-bg_y=1            #delta y position of background [um]
+bg_x=0        #delta x position of background [um]
+bg_y=1          #delta y position of background [um]
 
 #instruments
 if PQ_count:

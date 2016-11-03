@@ -6,9 +6,6 @@ import numpy as np
 import logging
 
 import qt
-import hdf5_data as h5
-import measurement.lib.config.adwins as adwins_cfg
-reload(adwins_cfg)
 
 import measurement.lib.measurement2.measurement as m2
 reload(m2)
@@ -20,8 +17,6 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     max_SP_bins = 500
     max_SSRO_dim = 1000000
     adwin_process = 'singleshot'
-    adwin_dict = adwins_cfg.config
-    adwin_processes_key = ''
     E_aom = None
     A_aom = None
     repump_aom = None
@@ -60,18 +55,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()
         self.params['Ex_off_voltage'] = self.E_aom.get_pri_V_off()
 
-       
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
-            self.set_adwin_process_variable_from_params(key)
-
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            
-            self.set_adwin_process_variable_from_params(key)
-
-        if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key][self.adwin_process]:
-            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_long']:              
-                self.set_adwin_process_variable_from_params(key)
-            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_float']:              
-                self.set_adwin_process_variable_from_params(key)
+        m2.AdwinControlledMeasurement.autoconfig(self)
 
 
     def setup(self):
@@ -155,23 +139,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                     'completed_reps',
                     'total_CR_counts'])
 
-    def finish(self, save_params=True, save_stack=True, 
-            stack_depth=4, save_cfg=True, save_ins_settings=True):
-      
-        if save_params:
-            self.save_params()
-            
-        if save_stack:
-            self.save_stack(depth=stack_depth)
-           
-        if save_ins_settings:
-            self.save_instrument_settings_file()
+    def finish(self, **kw):
 
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
 
-        m2.AdwinControlledMeasurement.finish(self)
+        m2.AdwinControlledMeasurement.finish(self, **kw)
 
 class AdwinSSROAlternCR(AdwinSSRO):   
     adwin_process = 'singleshot_altern_CR'

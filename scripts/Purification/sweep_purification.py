@@ -729,13 +729,13 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 3.0#5.0
+    m.params['phase_detuning'] = 3.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 450.
+    maxReps = 350.
     step = int((maxReps-minReps)/pts)+1
 
 
@@ -923,7 +923,7 @@ if __name__ == '__main__':
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
     apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    # AWG.clear_visa()
+    AWG.clear_visa()
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')

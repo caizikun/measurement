@@ -51,6 +51,7 @@ config['adwin_lt1_processes'] = {
                 },
             },
 
+
         'counter' : {
 
             'doc' : '',
@@ -394,6 +395,46 @@ config['adwin_lt1_processes'] = {
                 'completed_reps'    : 73,
             },
         },
+
+        'laserscan_green_red' : {
+
+            'index' : 9,
+            'file' : 'laserscan_green_red.TB9',
+            'params_long' : [
+                ['freq_dac_channel'         ,   7],
+                ['green_aom_dac_channel'    ,   8 ],
+                ['red_aom_dac_channel'      ,   5], 
+                ['noof_pixels'              ,   200],
+                ['pixel_time'               , 100000], #us
+                ['green_time'               , 10], #us
+                ['red_time'                 , 100], #us
+                ['wait_after_green_time'    , 10], #us
+            ],
+            'params_long_index'  : 20,
+            'params_float' : [
+                    ['green_voltage'        , 0.8],
+                    ['red_voltage'          , 0.8],
+                   
+                    ['scan_start_voltage'   , 0. ],
+                    ['scan_stop_voltage'    , 0. ],
+                    ['green_off_voltage'    , 0.],
+                    ['red_off_voltage'      , 0.],
+                    ],
+            'params_float_index'  : 21,
+            'par' : {
+                'pixel_clock' : 4,
+                },
+            'fpar' : {
+                'laser_freq' : 46,
+                },
+            'data_long' : {
+                'counts' : [11,12,13],
+                },
+            'data_float' : {
+                'laser_frequencies' : 15,
+                'voltages' : 16
+                },
+            },
 
         'integrated_ssro_msp1' : {
                 'index' : 9,
