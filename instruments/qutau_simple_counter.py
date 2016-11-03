@@ -129,8 +129,9 @@ class qutau_simple_counter(Instrument):
             self._is_running = True
             self._t0 = time.time()
             self._qutau.get_last_timestamps()
-            hist_binsize_ns = 0.1# 1 ns
-            self._hist_bins = np.linspace(self.get_roi_min(), self.get_roi_max(),np.round((self.get_roi_max()-self.get_roi_min())/hist_binsize_ns))
+            self._hist_binsize_ns = 0.1# ns
+            self._plot_extra_range = 10 #ns
+            self._hist_bins = np.linspace((self.get_roi_min()- self._plot_extra_range)/self._hist_binsize_ns, (self.get_roi_max()+ self._plot_extra_range)/self._hist_binsize_ns,np.round((self.get_roi_max()-self.get_roi_min()+2*self._plot_extra_range)/self._hist_binsize_ns))
             self._hist = np.zeros(len(self._hist_bins)-1, dtype =np.int)
             self._timer_id = gobject.timeout_add(int(self.get_integration_time()*1e3), self._update_countrates)
         
@@ -168,14 +169,14 @@ class qutau_simple_counter(Instrument):
         ph_sync_idxs = np.intersect1d(ph_idxs-1,sync_idxs)
         dts = self._ts[ph_sync_idxs+1]-self._ts[ph_sync_idxs]
         
-        self._dts_ns = dts*1e9*self._qutau.get_timebase()
+        self._dts_ns = dts*0.1#1e9*self._qutau.get_timebase()
         self._hist += np.histogram(self._dts_ns,bins = self._hist_bins)[0]#np.min(dts[dts>0]),np.max(dts),pts))
 
         roi_counts = np.sum((self._dts_ns>self.get_roi_min()) & (self._dts_ns <=self.get_roi_max()))
 
         self._total_countrate = float(total_counts)/(t1- self._t0)
         self._roi_countrate = float(roi_counts)/(t1- self._t0)
-        self._cpsh = float(roi_counts)/max(len(sync_idxs),1)
+        self._cpsh = 1e4*float(roi_counts)/max(len(sync_idxs),1)
         self.get_countrate()
         self.get_countrate_roi()
         self.get_cpsh()
@@ -193,17 +194,19 @@ class qutau_simple_counter(Instrument):
         self._update_countrates(manual=True)
 
     def plot_last_histogram(self):
-        y,x = self._hist, self._hist_bins[1:]#np.histogram(self._dts_ns, bins = np.linspace(self.get_roi_min(), self.get_roi_max(),pts))#np.min(dts[dts>0]),np.max(dts),pts))
+        y,x = self._hist, self._hist_bins[1:]*self._hist_binsize_ns#np.histogram(self._dts_ns, bins = np.linspace(self.get_roi_min(), self.get_roi_max(),pts))#np.min(dts[dts>0]),np.max(dts),pts))
         plotname = self.get_name()+'_histogram'
         qt.plot(x,y, name=plotname, clear=True)
         f = common.fit_exp_decay_shifted_with_offset
         #A * exp(-(x-x0)/tau) + a
         #['g_a', 'g_A', 'g_tau', 'g_x0']
         args=[1,np.max(y)*0.1,12,x[np.argmax(y)+2.]]
-        fitres = fit.fit1d(x, y, f,*args, fixed = [0],
+        first_fit_bin =  int(np.round(self._plot_extra_range/self._hist_binsize_ns))
+        xf,yf=x[first_fit_bin:],y[first_fit_bin:]
+        fitres = fit.fit1d(xf,yf, f,*args, fixed = [0],
                    do_print = False, ret = True, maxfev=100)
         plot_pts=200
-        x_p=np.linspace(min(x),max(x),plot_pts)
+        x_p=np.linspace(min(xf),max(xf),plot_pts)
         if fitres['success']:
             y_p = fitres['fitfunc'](x_p)
             print 'fit success'

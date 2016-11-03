@@ -4279,7 +4279,7 @@ class MBI_C13(DynamicalDecoupling):
         Possible states: X, -X, Y, -Y, Z, -Z
         Does one of two types of swaps:
             1) swap_w_init:  C13 has been initialised in |Z|, swap sequence requires less gates
-                |Ren_-y| - |y| - |Ren_x| - |-y| 
+                |Ren_y| - |x| - |Ren_x| - |-y| 
             2) swap_wo_init: C13 in mixed state, put C13 in rotated basis after swap. The full sequence
                 |Ren_y| - |ym| - |Ren_x| - |xm, y_c| - |Ren_x|
                  
@@ -8482,17 +8482,26 @@ class electron_carbon_density_matrix(MBI_C13):
                     self.params['do_wait_after_pi']            = True
                 else: 
                     self.params['do_wait_after_pi']            = False
+                if kk == 0:
+                    carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                        prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
+                        wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                        initialization_method = self.params['init_method_list'][kk],
+                        C_init_state          = self.params['init_state_list'][kk],
+                        addressed_carbon      = self.params['carbon_init_list'][kk],
+                        el_after_init         = self.params['el_after_init'],
+                        do_wait_after_pi      = self.params['do_wait_after_pi'])
 
-                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
-                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
-                    initialization_method = self.params['init_method_list'][kk],
-                    C_init_state          = self.params['init_state_list'][kk],
-                    addressed_carbon      = self.params['carbon_init_list'][kk],
-                    el_after_init         = self.params['el_after_init'],
-                    do_wait_after_pi      = self.params['do_wait_after_pi'])
+                else:
+                    carbon_init_seq = self.carbon_swap_gate_multi_options(go_to_element = mbi,
+                        pt = pt,
+                        addressed_carbon      = self.params['carbon_init_list'][kk],
+                        swap_type             = 'swap_w_init')
+
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
+
+            ##### if you want to include the actual swap. do so here!
 
 
 

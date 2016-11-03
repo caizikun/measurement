@@ -981,7 +981,7 @@ class purify_single_setup(DD.MBI_C13):
 
             #### for carbon phase debbuging purposes.
             # for g in gate_seq:
-            #     if not 'corect' in g.name:
+            #     if not 'correct' in g.name:
             #         print g.name
             #         self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
 
@@ -998,7 +998,12 @@ class purify_single_setup(DD.MBI_C13):
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
 
         else:
+
             print 'upload = false, no sequence uploaded to AWG'
+            import pickle as pkl
+            with open('D:\measuring\AWG_seqs.pickle', 'wb') as f:  # Python 3: open(..., 'wb')
+                pkl.dump([combined_seq,combined_list_of_elements], f)
+                f.close() 
 
 
 

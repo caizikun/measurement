@@ -2,7 +2,7 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='Sophie Area 5 NV 1'
+name='Harry Scan 1 NV2'
 
 start_f = 2.87 - 0.10#2.838-0.05#2.823#2.878 - 0.08 #   2.853 #2.85 #  #in GHz ZFS =2.878 "lt & RT"
 stop_f  = 2.87 + 0.10#2.838+0.05#2.853#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
@@ -10,8 +10,8 @@ steps = 201
 f_list=np.linspace(start_f*1e9,stop_f*1e9,steps)
 zoom_around_three_lines = False
 
-mw_power = 20#in dBm
-green_power = 600e-6
+mw_power = 15#in dBm
+green_power = 200e-6
 int_time = 30       #in ms
 reps = 250
 
@@ -74,7 +74,7 @@ for cur_rep in range(reps):
     if stop_scan: break
     p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
     if cur_rep%5==0 and cur_rep!= 0:
-        optimiz0r.optimize(dims=['z','x','y'], cycles = 1, int_time = 100, cnt=2)
+        optimiz0r.optimize(dims=['x','y','z'], cycles = 1, int_time = 100, cnt=2)
         qt.msleep(1)
     
     
@@ -97,3 +97,4 @@ p_c.save_png(filename+'.png')
 qt.mend()
 
 ins_counters.set_is_running(1)
+GreenAOM.turn_off()

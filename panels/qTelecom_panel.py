@@ -45,6 +45,8 @@ class TempCtrlPanel (Panel):
         self.ui.cleargraphButton4.clicked.connect(self.ui.plot4.reset)
         
 
+        self.ui.plot2.display_time = 20
+        self.ui.plot3.display_time = 20
         # self.check_knob_temperature()
         # self.read_temperature()
         # self.read_DFG_power()

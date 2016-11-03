@@ -4,6 +4,7 @@
 *~
 *.cfg
 *.TB*
+*.TC*
 *.T9*
 *.bak
 *.npz
@@ -22,3 +23,5 @@ CPLD
 /hardware/EDAC40
 
 
+
+.DS_Store
