@@ -62,7 +62,7 @@ class LaserScanGreenRed(m2.AdwinControlledMeasurement):
         self.dat.add_coordinate('Frequency [GHz]')
         self.dat.add_value('Counts [Hz]')
         self.dat.create_file(filepath=os.path.splitext(self.h5data.filepath())[0]+'.dat')
-        self.plt = qt.Plot2D(self.dat, 'rO', name='laser_scan', coorddim=1, valdim=2, 
+        self.plt = qt.Plot2D(self.dat, 'r-', name='laser_scan', coorddim=1, valdim=2, 
                         clear=True)
         if self.params['plot_voltage']:
             self.plt.add_data(self.dat,coorddim=1, valdim=0, right=True)
@@ -121,18 +121,18 @@ def laser_scan_green_red(name):
     m.params['freq_dac_channel'] = m.adwin.get_dac_channels()['newfocus_frq']
     m.params['plot_voltage'] = True
 
-    m.params['scan_start_voltage'] = 8
-    m.params['scan_stop_voltage'] = -9
-    m.params['noof_pixels'] = int(90e9/50e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
-    m.params['pixel_time'] = 200 * 1000 #us
+    m.params['scan_start_voltage'] = 0.5
+    m.params['scan_stop_voltage'] = -4
+    m.params['noof_pixels'] = int(20e9/10e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
+    m.params['pixel_time'] = 100 *1000 #us
 
     m.params['green_time'] = 10 # us
-    m.params['wait_after_green_time'] = 50 #us
-    m.params['red_time'] =  500 # us
+    m.params['wait_after_green_time'] = 10 #us
+    m.params['red_time'] =  50 # us
     
     m.params['mw'] = False
-    m.params['green_amplitude'] = 200e-6
-    m.params['red_amplitude'] = 40e-9
+    m.params['green_amplitude'] = 12.5e-6
+    m.params['red_amplitude'] = 5e-9
 
     print 'expected time:', float(m.params['noof_pixels'])*m.params['pixel_time']*1e-6/60., 'minutes'
 
@@ -149,30 +149,33 @@ def long_fast_laser_scan_green_red(name):
     opt1d_ins = qt.instruments['opt1d_counts']
     mos_ins = qt.instruments['master_of_space']
 
-    fs = np.arange(-350,350,50)
+    #fs = np.arange(-400,400,50)
     #wls = np.linspace(637.26,637.22,2)
-    print fs
-    for ii,f in enumerate(fs):
-        for j in range(3):
-            set_nf_frequency_coarse(f)
-            qt.msleep(1)
+    #print fs
+    for ii in range(0,50):
+        # for j in range(3):
+        #     set_nf_frequency_coarse(f)
+        #     qt.msleep(1)
 
-        #GreenAOM.set_power(200e-6)
+        
+        #qt.msleep(1)
+        laser_scan_green_red(name+'_'+str(ii))
         #mos_ins.set_x(mos_ins.get_x()-1)
         #opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
         #opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
         #mos_ins.set_x(mos_ins.get_x()+1)
         #mos_ins.set_z(mos_ins.get_z()+0.6)
         #qt.msleep(1)
-        #opt_ins.optimize(dims=['x','y'], cycles = 2, int_time = 100)
+        GreenAOM.set_power(180e-6)
+        opt_ins.optimize(dims=['x','y','z','x','y'], cycles = 1, int_time = 100, cnt=2)
 
-        laser_scan_green_red(name+'_'+str(ii))
+        
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break 
 
 
 if __name__ == '__main__':
-   name = '_Sophie_area_5_NV1'
+   name = '_Harry_Scan1_NV2'
    laser_scan_green_red(name)
    #long_fast_laser_scan_green_red(name)
 

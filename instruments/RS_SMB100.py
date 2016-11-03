@@ -18,7 +18,7 @@
 #
 # 2012/09
 # modification by Wolfgang Pfaff <wolfgangpfff@gmail.com>:
-# added parameter max_cw_power: can not be surpassed if pulse-modulation is
+# added parameter max_cw_power: can not be surpassed if pulse-modulatmasion is
 # turned off.
 
 from instrument import Instrument
