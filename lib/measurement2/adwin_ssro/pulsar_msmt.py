@@ -4,7 +4,7 @@ import qt
 import hdf5_data as h5
 import logging
 import sys
-
+import os
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
@@ -22,8 +22,12 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         ssro.IntegratedSSRO.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
+
         ssro.IntegratedSSRO.setup(self)
+
+        self.dump_AWG_seq()
+        
         # print 'this is the mw frequency!', self.params['mw_frq']
         self.mwsrc.set_iq('on')
         self.mwsrc.set_pulm('on')
@@ -76,6 +80,19 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def generate_sequence(self):
         pass
+
+    def dump_AWG_seq(self):
+
+        try:
+            if qt.dump_AWG_seq == True:
+                import pickle as pkl
+                sequence = qt.pulsar.last_programmed_sequence
+                elements = qt.pulsar.last_programmed_elements
+                with open(os.path.join(self.datafolder,self.name+'.pickle'), 'wb') as f:  # Python 3: open(..., 'wb')
+                    pkl.dump([sequence,elements], f)
+                    f.close()
+        except:
+            pass
 
     def stop_sequence(self):
         self.awg.stop()

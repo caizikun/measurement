@@ -196,7 +196,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
-
+        
         self.params = MeasurementParameters()
         
         if save:

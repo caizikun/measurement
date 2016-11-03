@@ -2501,7 +2501,7 @@ config['adwin_pro_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro.TB9',
+                'file' : 'integrated_ssro_AWG_controlled.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -2516,6 +2516,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
+                    ['AWG_controlled_readout'      ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -3023,6 +3024,7 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_2' : 9, #D
         'gate_mod': 10, #D
         'yellow_aom_frq':11, #D
+        'phase_aom':12, #D
         }
 
 config['adwin_m1_dacs'] = {

@@ -60,26 +60,6 @@ def MBE(name, carbon_list   = [1],
     m.params['electron_RO_pulse'] = e_RO_pulse
 
 
-    # m.params['Tomography Bases'] = ([
-    #         ['X','X'],['X','Y'],['X','Z'],
-    #         ['Y','X'],['Y','Y'],['Y','Z'],
-    #         ['Z','X'],['Z','Y'],['Z','Z']])
-    
-    # m.params['Tomography Bases'] = ([
-    #         ['X','X'],['Y','Y'],['Z','Z']])
-
-
-    # m.params['Tomography Bases'] = ([
-    #         ['X','I'],['Y','I'],['Z','I']])
-
-    # m.params['Tomography Bases'] = ([
-    #         ['X','I','I'],['Y','I','I'],['Z','I','I'],
-    #         ['I','X','I'],['I','Y','I'],['I','Z','I'],
-    #         ['I','I','X'],['I','I','Y'],['I','I','Z']])
-
-
-    # m.params['Tomography Bases'] = TD.get_tomo_bases(nr_of_qubits = 1)
-        
     ####################
     ### MBE settings ###
     ####################
