@@ -31,7 +31,7 @@ def finish(m, upload=True, debug=False):
     m.params['sequence_wait_time']  = [0]
     print upload
     m.generate_sequence(upload=upload, debug=debug)
-
+    m.dump_AWG_seq()
 
     if not debug:
         m.run(setup=True, autoconfig=False)
