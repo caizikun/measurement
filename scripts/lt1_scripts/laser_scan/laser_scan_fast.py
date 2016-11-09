@@ -1,13 +1,15 @@
 import qt
 import msvcrt
 import time
+import scipy
+import numpy as np
 
-def fast_laser_scan(name,grpower,redpower):
+def fast_laser_scan(name,grpower,redpower,mw):
     dac_names = ['newfocus_frq']
-    start_voltages = [9]
-    stop_voltages = [-9]
-    steps = int(90e9/100e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
-    px_time= 100#ms
+    start_voltages = [0]
+    stop_voltages = [-4]
+    steps = int(20e9/100e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
+    px_time= 1000#ms
     plot_voltage=True
     adwin_ins = qt.instruments['adwin']
 
@@ -22,7 +24,7 @@ def fast_laser_scan(name,grpower,redpower):
     dat.add_coordinate('Frequency [GHz]')
     dat.add_value('Counts [Hz]')
     dat.create_file()
-    plt = qt.Plot2D(dat, 'rO', name='laser_scan', coorddim=1, valdim=2, 
+    plt = qt.Plot2D(dat, 'r-', name='laser_scan', coorddim=1, valdim=2, 
                     clear=True)
     if plot_voltage:
         plt.add_data(dat,coorddim=1, valdim=0, right=True)
@@ -35,6 +37,11 @@ def fast_laser_scan(name,grpower,redpower):
                 abort_if_running=True)
     print GreenAOM.get_power()
 
+    if mw:
+        print 'MW!'
+        SMB100.set_frequency(2.878e9)
+        SMB100.set_power(15)
+        SMB100.set_status('on')
     prev_px_clock = 0
     while 1:
         px_clock = adwin_ins.get_linescan_var('get_px_clock')
@@ -44,6 +51,7 @@ def fast_laser_scan(name,grpower,redpower):
             
             f = adwin_ins.get_linescan_var('get_supplemental_data', start =start, length=length)
             valid_range = f>-3000
+            #print valid_range
             v = V[start-1:start+length-1]
             cs = adwin_ins.get_linescan_var('get_counts', start =start, length=length)
             c = (cs[0]+cs[1])/(px_time*1.e-3)
@@ -66,8 +74,10 @@ def fast_laser_scan(name,grpower,redpower):
 
     dat.close_file()
     plt.save_png(dat.get_filepath()+'png')
+    if mw:
+        SMB100.set_status('off')
 
-def long_fast_laser_scan(name,grpower,redpower):
+def long_fast_laser_scan(name,grpower,redpower,mw):
     '''
     Repeats full voltage range scans for coarse wavelength steps
     '''
@@ -75,30 +85,51 @@ def long_fast_laser_scan(name,grpower,redpower):
     opt1d_ins = qt.instruments['opt1d_counts']
     mos_ins = qt.instruments['master_of_space']
 
-    wls = np.linspace(637.07,636.72,6)
+
+    #fs = np.arange(200,350,75)
     #wls = np.linspace(637.26,637.22,2)
-    print wls
-    for ii,wl in enumerate(wls):
-        GreenAOM.set_power(200e-6)
-        mos_ins.set_x(mos_ins.get_x()-1)
-        opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
-        #opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
-        mos_ins.set_x(mos_ins.get_x()+1)
-        mos_ins.set_z(mos_ins.get_z()+0.6)
+    #print fs
+    for ii in range(0,50):
+        # for j in range(3):
+        #     set_nf_frequency_coarse(f)
+        #     qt.msleep(1)
+        fast_laser_scan(name+'_'+str(ii),grpower,redpower,mw)
+        GreenAOM.set_power(20e-6)
         qt.msleep(1)
-        opt_ins.optimize(dims=['x','y'], cycles = 2, int_time = 100)
-
-        NewfocusLaser.set_wavelength(wl)
-        print 'laser wavelength set to',NewfocusLaser.get_wavelength()
-
-        fast_laser_scan(name+'_'+str(ii),grpower,redpower)
+        opt_ins.optimize(dims=['x','y','z','x','y'], cycles = 1, int_time = 100, cnt=2)
+        qt.msleep(1)
+        
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-    counters.set_is_running(True)        
+    
+def set_nf_frequency_coarse(f): # GHz wrt 470.4 THz
+
+    cur_f = get_cur_frequency()
+    print cur_f
+    delta_f = f-cur_f
+    cur_wl_nf = NewfocusLaser.get_wavelength()
+    cur_f_nf = scipy.constants.c/(cur_wl_nf*1e-9)
+    new_f_nf  = cur_f_nf + delta_f*1e9
+    new_wl_nf = scipy.constants.c/new_f_nf*1e9
+    print 'current: {:.2f}, new: {:.2f}'.format(cur_wl_nf,new_wl_nf)
+    NewfocusLaser.set_wavelength(new_wl_nf)
+    
+
+def get_cur_frequency():
+    cur_f = physical_adwin.Get_FPar(46)
+    return cur_f
+
 if __name__ == '__main__':
-    grpower = 2e-6
-    redpower = 30.e-9
-    name = '_Harvard_membrane_NV1_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
-    #long_fast_laser_scan(name,grpower,redpower)
+    mw=True
+    grpower = 0e-6
+    redpower = 2e-9
+    name = 'Harry_Scan1_NV2'+'_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
+    
     counters.set_is_running(False)
-    fast_laser_scan('Harvard_membrane',2e-6,100e-9)
+    if mw:
+        GreenAOM.set_power(100e-6)
+        qt.msleep(1)
+        GreenAOM.set_power(0e-6)
+    fast_laser_scan(name,grpower,redpower,mw)
+    #long_fast_laser_scan(name,grpower,redpower,mw)
+    

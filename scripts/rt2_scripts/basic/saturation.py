@@ -6,13 +6,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Horst_SIL6_MM_detection'#'The111No2_enlarged_SIL2_DM_off'
-steps=15
-max_power=300e-6       #[w]
+name = 'Harrye_scan2_spot3_bleaches'#'The111No2_enlarged_SIL2_DM_off'
+steps=16
+max_power=500e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
-bg_x=-1.0          #delta x position of background [um]
-bg_y=1.0            #delta y position of background [um]
+bg_x=1.         #delta x position of background [um]
+bg_y=-1.            #delta y position of background [um]
 
 #instruments
 if PQ_count:

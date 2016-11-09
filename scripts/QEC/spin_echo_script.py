@@ -22,7 +22,7 @@ def spin_echo(name):
     #############
     pts = 21
     tau_start = 4e-6  #!!! Measurement class has minimal tau of 4us
-    tau_final = 200e-6
+    tau_final = 8e-6
     m.params['reps_per_ROsequence'] = 2500 #Repetitions of each data point
 
 
@@ -43,7 +43,7 @@ def spin_echo(name):
     m.params['sweep_name'] = '2*N*tau (us)'
     m.autoconfig()
 
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 if __name__ == '__main__':
     spin_echo(SAMPLE+'_spin_echo_'+'N=1')

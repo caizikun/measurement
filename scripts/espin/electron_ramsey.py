@@ -5,7 +5,7 @@ import qt
 import numpy as np
 
 #reload all parameters and modules
-execfile(qt.reload_current_setup)
+
 
 from measurement.scripts.espin import espin_funcs as funcs
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
@@ -15,9 +15,12 @@ reload(funcs)
 # from darkesr, use of some of these is hidden. Not relevant
 import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
+
 from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
+
+execfile(qt.reload_current_setup)
 #reload(funcs)
 
 #name = 'HANS_sil4'
@@ -111,21 +114,24 @@ def electronramseyHermite(name, debug = False):
     m.params['pulse_type'] = 'Hermite'
 
     m.params['Ex_SP_amplitude']=0
-    m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6
+    m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6  # commenting this out gives an erro
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
 
-    pts = 41
+    pts = 61
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 1500
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0,2000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0,7000e-9,pts)
 
     # MW pulses
+    m.params['detuning']  = 0.5e6
     X_pi2 = ps.Xpi2_pulse(m)
     m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * m.params['X_phase']    # First pi/2 = +X
-    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase'] + 180.)   # Second pi/2 = mX
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase'] )   # Second pi/2 = mX
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times'] + m.params['Hermite_pi2_length']) * m.params['detuning'])
+
 
     # for the autoanalysis
     m.params['sweep_name'] = 'evolution time (ns)'

@@ -44,10 +44,16 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_count', type='marker',
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
 
+qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Matisse', type='marker',
+    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
+
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
+
+qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,

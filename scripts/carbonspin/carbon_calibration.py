@@ -41,7 +41,7 @@ use_queue = False
 
 f_ms0 = False
 
-f_ms1 = True
+f_ms1 = False
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False
@@ -51,11 +51,11 @@ check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
-# Note that wont save to file if debug is on.
+# Note that you wont save to msmt params if debug is on.
 debug = False 
 
 ### repetitions per data point.
-freq_reps = 500
+freq_reps = 750
 phase_reps = 500
 crosstalk_reps = 500
 

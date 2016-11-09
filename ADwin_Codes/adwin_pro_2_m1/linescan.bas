@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.0.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD277931  DASTUD\TUD277931
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -71,8 +72,8 @@ INIT:
   PxTime = FPAR_1
   PxAction = PAR_3
    
-  'Processtime is in units of clockcycles for pixeltime in msXXXXXXXXXXXXXXXXXXXXXXX
-  PROCESSDELAY = PxTime * 3000    
+  'Processtime is in units of clockcycles for pixeltime in ms
+  PROCESSDELAY = PxTime * 10000    ' Note: this depends on the ADWIN processor
   
   FOR i = 1 TO NoOfDACs
     DACVoltage = DATA_199[i]

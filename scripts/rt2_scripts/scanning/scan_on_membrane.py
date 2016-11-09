@@ -6,9 +6,12 @@ import numpy as np
 import os
 import h5py
 import sys
+import hdf5_data as h5
+
 
 from analysis.lib.fitting import fit, common
 reload(common)
+reload(fit)
 
 
 def get_signal_to_noise():
@@ -20,24 +23,26 @@ def get_signal_to_noise():
     fitargs= (np.min(y), np.max(y), x[np.argmax(y)], 0.1)
             #print fitargs, len(p)
     gaussian_fit = fit.fit1d(x, y,common.fit_gauss_pos, *fitargs, do_print=False,ret=True)
+    
 
 
     print gaussian_fit['success']
 
     p0=  gaussian_fit['params_dict']
-    plot(x,y,name='sn_measurement',clear=True)
-    xp=linspace(min(x),max(x),100)
-    plot(xp,gaussian_fit['fitfunc'](xp), name='sn_measurement')
+    # plot(x,y,name='sn_measurement',clear=True)
+    # xp=linspace(min(x),max(x),100)
+    # plot(xp,gaussian_fit['fitfunc'](xp), name='sn_measurement')
 
     print 'signal/noise : {:.0f}/{:.0f}  = {:.2f}'.format(p0['A'],p0['a'],p0['A']/p0['a'])
     return gaussian_fit
 
-def go_to_membrane(where):
-    
+def go_to_membrane(where,**kw):
+    save_fit = kw.pop('save_fit',False)
+
     opt_ins = qt.instruments['opt1d_counts']
     mos_ins = qt.instruments['master_of_space']
 
-    x,y = opt_ins.run(dimension='z', scan_length=6, nr_of_points=40, pixel_time=40, return_data=True, gaussian_fit=False)
+    x,y = opt_ins.run(dimension='z', scan_length=8, nr_of_points=61, pixel_time=80, return_data=True, gaussian_fit=False)
 
     Dx = 1.5
     #g_a1, g_A1, g_x01, g_sigma1, g_A2, g_Dx, g_sigma2
@@ -45,11 +50,14 @@ def go_to_membrane(where):
                 #print fitargs, len(p)
     gaussian_fit = fit.fit1d(x, y,common.fit_offset_double_gauss, *fitargs,fixed =[5], do_print=False,ret=True)
 
+    if type(gaussian_fit)!=dict:
+        print 'double gaussian fit failed'
+        return
     print gaussian_fit['success']
-    plot(x,y,name='test',clear=True)
-    xp=linspace(min(x),max(x),100)
-    plot(xp,gaussian_fit['fitfunc'](xp), name='test')
-
+    
+    # plot(x,y,name='test',clear=True)
+    # xp=linspace(min(x),max(x),100)
+    # plot(xp,gaussian_fit['fitfunc'](xp), name='test')
 
     fits=gaussian_fit['params_dict']
     
@@ -66,6 +74,18 @@ def go_to_membrane(where):
         mos_ins.set_z(fits['x01']+D)
     else:
         mos_ins.set_z(mos_ins.get_z()+D)
+    
+
+    # fdir = os.path.join(self.datafolder, self.FILES_DIR)
+    # if not os.path.isdir(fdir):
+    #     os.makedirs(fdir)
+
+    if save_fit:
+        dat = h5.HDF5Data(name='optimize_z_double_gauss_fit')
+        print dat.filepath()
+        fit.write_to_hdf(gaussian_fit,dat.filepath())
+        dat.close()
+
     qt.msleep(1)
     return gaussian_fit
 
@@ -75,335 +95,150 @@ def go_to_membrane(where):
 #     zfocus.run(dims=['z'], cycles=1, , int_time=50)
 #     time.sleep(0.5)
 
-def movey(ums):
-    stepper=qt.instruments['AttoPositioner']
-    ins=stepper.GetPosition(1)
-    cur=ins
-    if ums>0:
-        ums=ums/10
-        ydirec=1
-    else: 
-        ums=ums/10
-        ydirec=-1
-    while (abs(ins-cur) <= abs(ums)):
-        if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
-            aborted=True
-            break
-        stepper.MoveNSteps(1,ydirec)
-        time.sleep(0.1)
-        cur=stepper.GetPosition(1)
 
-
-def movez(ums):
-    stepper=qt.instruments['AttoPositioner']
-    ins=stepper.GetPosition(0)
-    if ums>0:
-        ums=ums/10000
-        zdirec=1
-    else: 
-        ums=ums/50000
-        zdirec=-1
-    while (abs(ins-stepper.GetPosition(0)) <= abs(ums)):
-        if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
-            aborted=True
-            break
-        stepper.MoveNSteps(0,zdirec)
-        time.sleep(0.5)
-
-
-
-
-def movex(ums):
-    stepper=qt.instruments['AttoPositioner']
-    ums=ums/10
-    if ums>0:
-        for x in xrange(0,abs(ums)):
-            stepper.MoveNSteps(2,3)
-            time.sleep(0.1)
-            if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
-                aborted=True
-                break
-    else:
-        for x in xrange(0,abs(ums)):
-            stepper.MoveNSteps(2,-3)
-            time.sleep(0.1)
-            if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
-                aborted=True
-                break
-
-def do_long_scan(blocknumx,blocknumy):
-
-    stepper=qt.instruments['Attocube_ANC350']
+def do_long_scan(bleaching_scan = False,save_fits=False, name = ''):
     scan2d_ins=qt.instruments['scan2d'] 
     save=qt.instruments['setup_controller']
     mos_ins = qt.instruments['master_of_space']
-    Green = qt.instruments['GreenAOM']
-
-    ystart=10
-    ystop=20
-    xstart=10
-    xstop=20
-    ystep=101
-    xstep=101
-
-    scan2d_ins.set_ystart(ystart)
-    scan2d_ins.set_xstart(xstart)
-    scan2d_ins.set_ystop(ystop)
-    scan2d_ins.set_xstop(xstop)
-    scan2d_ins.set_ysteps(ystep)
-    scan2d_ins.set_xsteps(xstep)
-
-    ii=0
-    aborted=False
-    for x_step in range(blocknumx):
-        ydirec= 1 if ii%2==0 else -1 
-        for y_step in range(blocknumy):
-            save.set_keyword('x=%d,y=%d'%(x_step,y_step))
-            fit_ress = go_to_membrane('surface')
-            scan2d_ins.set_pixel_time(100)
-            Green.turn_on()
-            scan2d_ins.set_is_running(True)
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    aborted=True
-                    break
-                qt.msleep(1)
-            qt.msleep(1)            
-            last_fp = scan2d_ins.get_last_filepath()
-            fit.write_to_hdf(fit_ress,last_fp)
-            mos_ins.set_x(xstart)
-            qt.msleep(0.5)
-            mos_ins.set_y(ystart)
-            qt.msleep(0.5)
-
-            fit_res=go_to_membrane('middle')
-            scan2d_ins.set_pixel_time(10)
-            Green.set_power(100e-6)
-            scan2d_ins.set_is_running(True)
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
-                    aborted=True
-                    break
-                qt.msleep(1)
-            qt.msleep(1)
-            last_fp = scan2d_ins.get_last_filepath()
-            fit.write_to_hdf(fit_res,last_fp)
-            mos_ins.set_x(xstart)
-            qt.msleep(0.5)
-            mos_ins.set_y(ystart)
-            qt.msleep(0.5)
-            movey((ystop-ystart)*ydirec)
-            if aborted:
-                break
-        ii+=1
-        if blocknumx > 1:
-            movex(xstop-xstart)
-        if aborted:
-            break
-
-    # Move stepper back to original position 
-
-    # movex((xstop-xstart)*9)
-    # if blocknumy%2==1:
-    #     movey(ystop-ystart)
-
-#if __name__=='__main__':
-#    do_long_scan()
-
-'''def markerscan(where):
-
-    stepper=qt.instruments['Attocube_ANC350']
-    scan2d_ins=qt.instruments['scan2d'] 
-    save=qt.instruments['setup_controller']
-    mos_ins = qt.instruments['master_of_space']
-    Green = qt.instruments['GreenAOM']
-
-    if where == 'left':
-        pos=0
-    elif where == 'right':
-        pos=1
-    elif where == 'up':
-        pos=2
-    elif where == 'down':
-        pos=3
-    else:
-        sys.exit('Give: \'left\' \'right\' \'up\' or \'down\'')
-          
-    xstart = [[5,15,25],[0,10,20],[2.5,12.5,22.5],[2.5,12.5,22.5]]
-    xstop = [[15,25,35],[10,20,30],[12.5,22.5,32.5],[12.5,22.5,32.5]]
-    ystart = [[2.5,12.5,22.5],[2.5,12.5,22.5],[5,15,25],[0,10,20]]
-    ystop = [[12.5,22.5,32.5],[12.5,22.5,32.5],[15,25,35],[10,20,30]]
-    xstep = 101
-    ystep = 101
-
-   
-    scan2d_ins.set_ysteps(ystep)
-    scan2d_ins.set_xsteps(xstep)
-
-    aborted=False
-    for x in range(2):
-        for y in range(2):
-            save.set_keyword('x=%d,y=%d'%(x,y))
-
-            xstartit=xstart[pos][x]
-            xstopit=xstop[pos][x]
-            ystartit=ystart[pos][y]
-            ystopit=ystop[pos][y]
-
-            scan2d_ins.set_ystart(ystartit)
-            scan2d_ins.set_xstart(xstartit)
-            scan2d_ins.set_ystop(ystopit)
-            scan2d_ins.set_xstop(xstopit)
-
-            scan2d_ins.set_pixel_time(10)
-
-            fit_ress = go_to_membrane('surface')
-            Green.turn_on()
-            scan2d_ins.set_is_running(True)
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    aborted=True
-                    break
-                qt.msleep(1)
-            qt.msleep(1)
-            last_fp = scan2d_ins.get_last_filepath()
-            fit.write_to_hdf(fit_ress,last_fp)
-            mos_ins.set_x(xstart)
-            qt.msleep(0.5)
-            mos_ins.set_y(ystart)
-            qt.msleep(0.5)
-            
-
-            fit_res = go_to_membrane('middle')
-            Green.set_power(100e-6)
-            scan2d_ins.set_is_running(True)
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch()== 'q')):
-                    aborted=True
-                    break
-                qt.msleep(1)
-            qt.msleep(1)
-            last_fp = scan2d_ins.get_last_filepath()
-            fit.write_to_hdf(fit_ress,last_fp)
-            if aborted:
-                break
-        if aborted:
-            break'''
-
-
-def markerscan(xy,rlud):
-
-    
-    scan2d_ins=qt.instruments['scan2d'] 
-    save=qt.instruments['setup_controller']
-    mos_ins = qt.instruments['master_of_space']
-    Green = qt.instruments['GreenAOM']
-    opt_ins = qt.instruments['optimiz0r']
+    GreenAOM = qt.instruments['GreenAOM']
     opt1d_ins = qt.instruments['opt1d_counts']
 
-    maxy = 25
-    if rlud == 'right':
-        xspace = xy
-        yspace = maxy
-        xscan = [xy-10,xy]
-        xdirec=-1
-        yscan = [2.5,12.5]
-        ydirec = 1
-    elif rlud == 'left':
-        xspace = maxy-xy
-        yspace = maxy
-        xscan = [xy,xy+10]
-        xdirec = 1
-        yscan = [2.5,12.5]
-        ydirec = 1
-    elif rlud == 'down':
-        xspace = maxy
-        yspace = maxy-xy
-        xscan = [2.5,12.5]
-        xdirec=1
-        yscan = [xy,xy+10]
-        ydirec = 1
-    elif rlud == 'up':
-        xspace = maxy
-        yspace = xy
-        xscan = [2.5,12.5]
-        xdirec = 1
-        yscan = [xy-10,xy]
-        ydirec = -1
-    else:
-        sys.exit('Give the x or y coordinate and location (\'left\', \'right\', \'up\' or \'down\') of the marker')
+    ystarts=[20,40,60,80]#np.linspace(-10,70,5)
+    delta_y = 20
+    xstarts=[-60]#np.linspace(-90,-10,5)
+    delta_x = 20
+    ystep=delta_y*10+1
+    xstep=delta_x*10+1
+    bleaching_time = 20
+    depths = np.array([0,-2,-3])
 
-    xstep = 101
-    ystep = 101
+    aborted = False
 
-    Green.turn_on()
-    scan2d_ins.set_ysteps(ystep)
-    scan2d_ins.set_xsteps(xstep)
+    #testing
+    # ystarts=np.linspace(-20,0,2)
+    # xstarts=np.linspace(-100,-80,2)
+    # ystep=21
+    # xstep=21
+    # bleaching_time = 10
 
-    blockn=0
-    aborted=False
-    for x in range(xspace//10):
-        for y in range(yspace//10):
-            save.set_keyword('x=%d,y=%d'%(xscan[0],yscan[0]))
+    for ystart in ystarts: 
+        print 'y start=',ystart
+        ystop = ystart+delta_y
 
+        for xstart in xstarts: 
+            print 'x start=',xstart
+            xstop = xstart+delta_x
+
+            scan2d_ins.set_ystart(ystart)
+            scan2d_ins.set_xstart(xstart)
+            scan2d_ins.set_ystop(ystop)
+            scan2d_ins.set_xstop(xstop)
+            scan2d_ins.set_ysteps(ystep)
+            scan2d_ins.set_xsteps(xstep)
+
+            mos_ins.set_x(xstart)
             qt.msleep(1)
-            opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
-            qt.msleep(3)
-
-            scan2d_ins.set_xstart(xscan[0])
-            scan2d_ins.set_ystart(yscan[0])
-            scan2d_ins.set_xstop(xscan[1])
-            scan2d_ins.set_ystop(yscan[1])
-            scan2d_ins.set_pixel_time(100)
-
+            mos_ins.set_y(ystart)
+            qt.msleep(1)
             
-            scan2d_ins.set_is_running(True)
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    aborted=True
-                    break
-                qt.msleep(1)
-            qt.msleep(1)
+            GreenAOM.set_power(400.e-6)
 
-            # last_fp = scan2d_ins.get_last_filepath()
-            # fit.write_to_hdf(fit_ress,last_fp)
+            #if xstart == xstarts[0]:
+            #    qt.msleep(4)
+            #    fitres = opt1d_ins.run(dimension='z', scan_length=15, nr_of_points=101, pixel_time=100, gaussian_fit=False, return_fitresult = False)
+            #    qt.msleep(4)
 
-            mos_ins.set_x(xscan[0])
-            qt.msleep(0.5)
-            mos_ins.set_y(yscan[0])
-            qt.msleep(2)
-            
-            opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
+            #    if save_fits and type(fitres)==dict:
+            #        dat = h5.HDF5Data(name='optimize_z_gauss_fit'+'_y_'+str(ystart))
+            #        print dat.filepath()
+            #        fit.write_to_hdf(fitres,dat.filepath())
+            #        dat.close()
+
             qt.msleep(3)
-            mos_ins.set_z(mos_ins.get_z()+0.6)
-            qt.msleep(1)
-            # Green.set_power(100e-6)
-            scan2d_ins.set_pixel_time(10)
-            scan2d_ins.set_is_running(True)
+            opt1d_ins.run(dimension='z', scan_length=15, nr_of_points=151, pixel_time=100, gaussian_fit=False)
+            qt.msleep(5)
+            # fitres = opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=51, pixel_time=100, gaussian_fit=True, return_fitresult = True)
+            # qt.msleep(2)
+            z_surface = mos_ins.get_z()
 
-            while scan2d_ins.get_is_running():
-                if (msvcrt.kbhit() and (msvcrt.getch()== 'q')):
-                    aborted=True
+
+
+            if save_fits and type(fitres)==dict:
+                dat = h5.HDF5Data(name='optimize_z_gauss_fit'+'_y_'+str(ystart)+'_x_'+str(xstart))
+                print dat.filepath()
+                fit.write_to_hdf(fitres,dat.filepath())
+                dat.close()
+
+            # fit_ress = go_to_membrane('surface',save_fit=True)
+ 
+
+
+            for depth in depths:
+                print 'depth under surface', depth
+                mos_ins.set_z(z_surface+depth)
+
+
+                if bleaching_scan:
+                    save.set_keyword(name+'_bleaching_x=%d,y=%d,z=%.1f+%.1f'%(xstart,ystart,z_surface,depth))
+                    scan2d_ins.set_pixel_time(bleaching_time)
+
+                    GreenAOM.turn_on()
+                    scan2d_ins.set_is_running(True)
+                    while scan2d_ins.get_is_running():
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                            aborted=True
+                            break
+                        qt.msleep(1)
+                    qt.msleep(3)   
+                    if aborted==True:
+                        break
+
+                mos_ins.set_x(xstart)
+                qt.msleep(0.5)
+                mos_ins.set_y(ystart)
+                qt.msleep(0.5)
+
+
+                save.set_keyword(name+'x=%d,y=%d,z=%.1f+%.1f'%(xstart,ystart,z_surface,depth))
+
+                # fit_res=go_to_membrane('middle', save_fit = True)
+                # qt.msleep(2)
+
+                scan2d_ins.set_pixel_time(10)
+                GreenAOM.set_power(400e-6)
+
+                scan2d_ins.set_is_running(True)
+                while scan2d_ins.get_is_running():
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+                        aborted=True
+                        break
+                    qt.msleep(1)
+                qt.msleep(3)
+                if aborted==True:
                     break
-                qt.msleep(1)
 
-            qt.msleep(1)
-            # last_fp = scan2d_ins.get_last_filepath()
-            # fit.write_to_hdf(fit_res,last_fp)
+                mos_ins.set_x(xstart)
+                qt.msleep(0.5)
+                mos_ins.set_y(ystart)
+                qt.msleep(0.5)
 
-            yscan[0]=yscan[0]+10*ydirec
-            yscan[1]=yscan[1]+10*ydirec
+            #set z back so that for the next scan it will be easier to find the surface
+            mos_ins.set_z(z_surface)
 
-            if aborted:
+            if aborted==True:
                 break
 
-        yscan[0]=yscan[0]-10*ydirec*(y+1)
-        yscan[1]=yscan[1]-10*ydirec*(y+1)
+                mos_ins.set_x(xstart)
+                qt.msleep(0.5)
+                mos_ins.set_y(ystart)
+                qt.msleep(0.5)
 
-        xscan[0]=xscan[0]+10*xdirec
-        xscan[1]=xscan[1]+10*xdirec
-        if aborted:
+        if aborted==True:
             break
+
+
+
+  
 
 
 def depthscan(zmin,zmax,steps):
@@ -423,6 +258,9 @@ def depthscan(zmin,zmax,steps):
     mos_ins.set_z(zmin)
     for x in range(steps):
         qt.msleep(1)
+        current_z = mos_ins.get_z()
+        save.set_keyword('z=%.2f'%(current_z))
+        qt.msleep(1)
         scan2d_ins.set_is_running(True)
         while scan2d_ins.get_is_running():
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
@@ -430,7 +268,7 @@ def depthscan(zmin,zmax,steps):
                 break
             qt.msleep(1)
         qt.msleep(1)
-        mos_ins.set_z(mos_ins.get_z()+zstep)
+        mos_ins.set_z(current_z+zstep)
         if aborted: 
             break
 
@@ -459,3 +297,63 @@ def contopt(interval):
         if aborted==True:
             break
         x=x+1
+
+
+
+
+
+# def movey(ums):
+#     stepper=qt.instruments['AttoPositioner']
+#     ins=stepper.GetPosition(1)
+#     cur=ins
+#     if ums>0:
+#         ums=ums/10
+#         ydirec=1
+#     else: 
+#         ums=ums/10
+#         ydirec=-1
+#     while (abs(ins-cur) <= abs(ums)):
+#         if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
+#             aborted=True
+#             break
+#         stepper.MoveNSteps(1,ydirec)
+#         time.sleep(0.1)
+#         cur=stepper.GetPosition(1)
+
+
+# def movez(ums):
+#     stepper=qt.instruments['AttoPositioner']
+#     ins=stepper.GetPosition(0)
+#     if ums>0:
+#         ums=ums/10000
+#         zdirec=1
+#     else: 
+#         ums=ums/50000
+#         zdirec=-1
+#     while (abs(ins-stepper.GetPosition(0)) <= abs(ums)):
+#         if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
+#             aborted=True
+#             break
+#         stepper.MoveNSteps(0,zdirec)
+#         time.sleep(0.5)
+
+
+
+
+# def movex(ums):
+#     stepper=qt.instruments['AttoPositioner']
+#     ums=ums/10
+#     if ums>0:
+#         for x in xrange(0,abs(ums)):
+#             stepper.MoveNSteps(2,3)
+#             time.sleep(0.1)
+#             if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
+#                 aborted=True
+#                 break
+#     else:
+#         for x in xrange(0,abs(ums)):
+#             stepper.MoveNSteps(2,-3)
+#             time.sleep(0.1)
+#             if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
+#                 aborted=True
+#                 break

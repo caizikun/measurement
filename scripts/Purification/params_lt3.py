@@ -68,13 +68,13 @@ params_lt3['sync_during_LDE']           = 1
 params_lt3['PLU_during_LDE']          = 1
 params_lt3['PLU_gate_duration']       = 100e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
-params_lt3['PLU_1_delay']             = 1e-9
-params_lt3['PLU_2_delay']             = 1e-9
+params_lt3['PLU_1_delay']             = 18e-9+18e-9
+params_lt3['PLU_2_delay']             = 18e-9+18e-9
 params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 2500e-9 # don't change this
 
-params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
+params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp']
+params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
@@ -83,12 +83,12 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['carbon']                        = 1
 params_lt3['carbon_init_method']            = 'swap'
 params_lt3['carbon_readout_orientation']    = 'positive'
-params_lt3['dynamic_phase_tau'] = 2.311e-6
+params_lt3['dynamic_phase_tau'] = 2.310e-6
 params_lt3['dynamic_phase_N'] = 2 
 params_lt3['phase_feedback_resolution'] = 4.5
 params_lt3['decouple_before_swap_tau'] = 4.68e-6
 
-### Everything TimeHarp / this is imported from Bell.joint_params
+### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       0#2500

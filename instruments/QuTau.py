@@ -730,12 +730,14 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         """
 
         reset = ctypes.c_bool(reset)
-        timestamps = ctypes.ARRAY(ctypes.c_int64, int(self._buffer_size))()
-        channels = ctypes.ARRAY(ctypes.c_int8, int(self._buffer_size))() 
+        timestamps = np.zeros(int(self._buffer_size),dtype=np.int64)
+        #timestamps = ctypes.ARRAY(ctypes.c_int64, int(self._buffer_size))()
+        channels = np.zeros(int(self._buffer_size),dtype=np.int8)
+        #channels = ctypes.ARRAY(ctypes.c_int8, int(self._buffer_size))() 
         valid = ctypes.c_int32()
 
         ans = self.qutools_dll.TDC_getLastTimestamps(reset, 
-                ctypes.byref(timestamps), ctypes.byref(channels),
+                timestamps.ctypes.data, channels.ctypes.data,
                 ctypes.byref(valid))
 
         if ans != 0:

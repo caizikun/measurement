@@ -24,6 +24,7 @@ import qt
 import hdf5_data as h5
 from lib.misc import dict_to_ordered_tuples
 
+from ..config import adwins as adwins_cfg
 
 # FIXME type checking of max/min vals?
 # FIXME how to check after updating type,max/minval?
@@ -196,7 +197,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
-
+        
         self.params = MeasurementParameters()
         
         if save:
@@ -296,10 +297,23 @@ class Measurement(object):
         else:
             return False
     
-    def finish(self):
+    def finish(self, save_params=True, save_cfg_files=False, save_stack=True, 
+            stack_depth=4, save_ins_settings=True):
         '''
-        closes the hd5 data object
+        Optionally saves params dictionary, cfg files, instrument settings and script stack, then closes the hd5 data object
         '''
+        if save_params:
+            self.save_params()
+            
+        if save_stack:
+            self.save_stack(depth=stack_depth)
+           
+        if save_ins_settings:
+            self.save_instrument_settings_file()
+      
+        if save_cfg_files:
+            self.save_cfg_files()
+
         self.h5data.close()
 
     # TODO - have monitors react only to certain keys
@@ -334,11 +348,14 @@ class Measurement(object):
 class AdwinControlledMeasurement(Measurement):
     
     mprefix = 'AdwinMeasurement'
+    adwin_dict = adwins_cfg.config
     adwin_process = ''
+    adwin_processes_key = ''
 
     def __init__(self, name, save=True):
         
         Measurement.__init__(self, name, save=save)
+        qt.current_meas_name = name
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
 
@@ -371,12 +388,35 @@ class AdwinControlledMeasurement(Measurement):
             grp.group.attrs[k] = adwinparams[k]
 
         self.h5data.flush()
+
+    def autoconfig(self):
+        '''
+        Fills the adwin process parameters (called params_long and params_float in the 
+        adwin config file, ../lib/config/adwins.py) from the measurement params dictionary.
+        Throws an exception if it cannot find one of the keys there.
+
+        If the adwin process has a 'include_cr_process' flag in the config, the 
+        corresponding cr_process parameters are also set from the measurement params dictionary.
+
+        '''
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
+            self.set_adwin_process_variable_from_params(key)
+
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            
+            self.set_adwin_process_variable_from_params(key)
+
+        if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key][self.adwin_process]:
+            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_long']:              
+                self.set_adwin_process_variable_from_params(key)
+            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_float']:              
+                self.set_adwin_process_variable_from_params(key)
     
     def set_adwin_process_variable_from_params(self,key):
         try:
             # Here we can do some checks on the settings in the adwin
             if np.isnan(self.params[key]):
-                raise Exception('Adwin process variable {} contains NAN'.format(key))
+                logging.error('Adwin process variable {} contains NAN'.format(key))
+                raise Exception('')
             self.adwin_process_params[key] = self.params[key]
         except:
             logging.error("Cannot set adwin process variable '%s'" \

@@ -7,7 +7,8 @@ adwin = qt.instruments.create('adwin', 'adwin_rt2',
 # edac40 = qt.instruments.create('edac40','EDAC40',MAC_address='\x00\x04\xA3\x13\xDA\x94')
 # okotech_dm = qt.instruments.create('okotech_dm', 'OKOTech_DM',dac=qt.instruments['edac40'])
 
-powermeter = qt.instruments.create('powermeter','Thorlabs_PM100D', address='USB0::0x1313::0x8078::PM002587::INSTR')#P0007639
+#powermeter = qt.instruments.create('powermeter','Thorlabs_PM100D', address='USB0::0x1313::0x8078::PM002587::INSTR')#P0007639
+powermeter = qt.instruments.create('powermeter','Thorlabs_PM100', address='ASRL2::INSTR')
 
 AWG = qt.instruments.create('AWG', 'Tektronix_AWG5014', address='GPIB::1::INSTR',reset=False, numpoints=1e3)
 
@@ -27,9 +28,9 @@ setup_controller = qt.instruments.create('setup_controller',
          'setup_controller',
         use = { 'master_of_space' : 'mos'} )
 
-scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
-         linescan='linescan_counts', mos='master_of_space',
-        xdim='x', ydim='y', counters='counters', setup_controller='setup_controller')
+#scan2d = qt.instruments.create('scan2d', 'scan2d_counts',
+#         linescan='linescan_counts', mos='master_of_space',
+#        xdim='x', ydim='y', counters='counters', setup_controller='setup_controller')
  
 opt1d_counts = qt.instruments.create('opt1d_counts', 
          'optimize1d_counts', linescan='linescan_counts', 
@@ -41,15 +42,19 @@ optimiz0r = qt.instruments.create('optimiz0r', 'optimiz0r', opt1d_ins=
 c_optimiz0r = qt.instruments.create('c_optimiz0r', 'convex_optimiz0r', 
     mos_ins=master_of_space, adwin_ins = adwin)
 
-GreenAOM = qt.instruments.create('GreenAOM', 'AOM', 
-        use_adwin='adwin', use_pm= 'powermeter')
+GreenAOM = qt.instruments.create('GreenAOM', 'AOM', use_adwin='adwin', use_pm= 'powermeter')
+
+PulsedAOM = qt.instruments.create('PulsedAOM', 'AOM', use_adwin='adwin', use_pm= 'powermeter')
 
 p7889 = qt.instruments.create('p7889','FastCom_P7889')
 
+qutau=qt.instruments.create('qutau','QuTau')
+qutau_counter = qt.instruments.create('qutau_counter','qutau_simple_counter', qutau = 'qutau', physical_adwin='physical_adwin')
 
-
+scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space',qutau = 'qutau',xdim='x', ydim='y', counters='counters', setup_controller='setup_controller')
 # ###############
 # # Start setup #
 # ###############
 
-# execfile(os.path.join(qt.config['startdir'],'rt2_scripts/setup_rt2.py'))
+execfile(os.path.join(qt.config['startdir'],'rt2_scripts/setup_rt2.py'))
+

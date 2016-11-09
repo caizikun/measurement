@@ -51,6 +51,7 @@ config['adwin_lt1_processes'] = {
                 },
             },
 
+
         'counter' : {
 
             'doc' : '',
@@ -394,6 +395,46 @@ config['adwin_lt1_processes'] = {
                 'completed_reps'    : 73,
             },
         },
+
+        'laserscan_green_red' : {
+
+            'index' : 9,
+            'file' : 'laserscan_green_red.TB9',
+            'params_long' : [
+                ['freq_dac_channel'         ,   7],
+                ['green_aom_dac_channel'    ,   8 ],
+                ['red_aom_dac_channel'      ,   5], 
+                ['noof_pixels'              ,   200],
+                ['pixel_time'               , 100000], #us
+                ['green_time'               , 10], #us
+                ['red_time'                 , 100], #us
+                ['wait_after_green_time'    , 10], #us
+            ],
+            'params_long_index'  : 20,
+            'params_float' : [
+                    ['green_voltage'        , 0.8],
+                    ['red_voltage'          , 0.8],
+                   
+                    ['scan_start_voltage'   , 0. ],
+                    ['scan_stop_voltage'    , 0. ],
+                    ['green_off_voltage'    , 0.],
+                    ['red_off_voltage'      , 0.],
+                    ],
+            'params_float_index'  : 21,
+            'par' : {
+                'pixel_clock' : 4,
+                },
+            'fpar' : {
+                'laser_freq' : 46,
+                },
+            'data_long' : {
+                'counts' : [11,12,13],
+                },
+            'data_float' : {
+                'laser_frequencies' : 15,
+                'voltages' : 16
+                },
+            },
 
         'integrated_ssro_msp1' : {
                 'index' : 9,
@@ -2501,7 +2542,7 @@ config['adwin_pro_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro.TB9',
+                'file' : 'integrated_ssro_AWG_controlled.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -2516,6 +2557,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
+                    ['AWG_controlled_readout'      ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -3023,6 +3065,7 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_2' : 9, #D
         'gate_mod': 10, #D
         'yellow_aom_frq':11, #D
+        'phase_aom':12, #D
         }
 
 config['adwin_m1_dacs'] = {

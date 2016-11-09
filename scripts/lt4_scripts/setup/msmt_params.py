@@ -29,6 +29,7 @@ C_split  = 0.847e6
 pulse_shape = 'Hermite'
 electron_transition = '-1'
 
+
 if electron_transition == '+1':
 	electron_transition_string = '_p1'
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
@@ -48,14 +49,14 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.94#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_length = 98e-9
+	hermite_pi_amp = 0.812#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.569
+	hermite_pi2_amp = 0.56
 
 
 ### General settings for AdwinSSRO
@@ -66,7 +67,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       17e-6,#18e-6
+		'green_repump_amplitude':       18e-6,#18e-6
 		'green_repump_duration':        100,#20,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           0,
@@ -195,9 +196,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    :15.42,#350.776-14.472, #adwin needs positive values
-    'phase_per_compensation_repetition':16.74,#17.324#360-6.21, # adwin needs positive values
-    'total_phase_offset_after_sequence':90.57 + 18.73-11.4-1.49+3.8,#90-34.0+180-78.4+5.85+1+10,#180.0,#42.328,
+    'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03, #adwin needs positive values
+    'phase_per_compensation_repetition': 17.484,# adwin needs positive values
+    'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
 ###############
@@ -227,13 +228,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : ( 443180.29+ 416598.75)/2,
-	'C4_freq_0' 		: 443188.84,
-	'C4_freq_1_m1' 		: 416598.75,
+	'C4_freq_m1'        : (443172.12 + 416572.34)/2,
+	'C4_freq_0' 		: 443172.12,
+	'C4_freq_1_m1' 		: 416572.34,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [132.22] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [129.55] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# 'C4_unc_N_m1'		:  [40],
 	# 'C4_unc_tau_m1'		:  [6.93e-6],
@@ -294,23 +295,24 @@ cfg['samples'][sample_name] = {
 
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':			 	 4.5e-9,#4e-9, #4e-9
+		'A_CR_amplitude':			 	 4.5e-9,#4.5e-9, #4e-9
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 20e-9,
 		'CR_duration' :				 	 60, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.3e-9,#1.3e-9, #2e-9 
-		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
+		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
+		'Ex_RO_amplitude':				 4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
-		'Ex_SP_calib_amplitude':		 1e-9,
+		'Ex_SP_calib_amplitude':		 5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 1000,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
-		'SSRO_repetitions':				 5000, 
+		'SSRO_repetitions':				 5000,
+		'AWG_controlled_readout':		 0, 
 		}
 
 ###
@@ -422,8 +424,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
-        'Hermite_theta_amp':		0.35,#0.84,#0.83/3+0.07,
-		'Hermite_theta_length':		50e-9,#0.84,#0.83/3+0.07,
+        'Hermite_theta_amp':		0.7,#0.84,#0.83/3+0.07,
+		'Hermite_theta_length':		50e-9,
 
 
         'Square_pi_length' :		square_pi_length, # 2014-12-01
@@ -465,7 +467,7 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 1.5e-9,
+		'A_CR_amplitude':				 4.5e-9,
 		'CR_duration' :				 	 70,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,

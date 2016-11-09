@@ -389,7 +389,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
 
@@ -683,7 +683,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
     m.finish()
 
-def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = False):
+def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_state = 'Z'):
     """
     combines all carbon parts of the sequence in order to 
     verify that all parts of the sequence work correctly.
@@ -691,15 +691,14 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     Here the adwin performs dynamic phase correction such that an
     initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
     Has the option to either sweep the repetitions of LDE2 (easy mode)
-    Or use the plu to trigger events. <-- still needs to be programmed.
     """
-    m = purify_slave.purify_single_setup(name)
+    m = purify_slave.purify_single_setup(name+'_'+input_state)
     prepare(m)
 
     ### general params
-    pts = 25
+    pts = 17
     
-    m.params['reps_per_ROsequence'] = 350
+    m.params['reps_per_ROsequence'] = 1050
 
     turn_all_sequence_elements_off(m)
 
@@ -709,28 +708,34 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,PLU = Fa
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     m.params['do_LDE_2'] = 1
     m.params['do_phase_correction'] = 1
-    m.params['Tomography_bases'] = ['X']
+    
     m.params['do_purifying_gate'] = 1
     m.params['do_carbon_readout']  = 0
     m.params['do_repump_after_LDE2'] = 1
     
-    if PLU:
-        m.params['PLU_during_LDE'] = 1
-
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] = 'Z'
+    m.params['input_el_state'] =  input_state
+
+    tomo_dict = { 'X' : ['Z'],
+                  'mX': ['Z'],
+                  'Y' : ['Y'],
+                  'mY': ['Y'],
+                  'Z' : ['X'],
+                  'mZ': ['X']}
+
+    m.params['Tomography_bases'] = tomo_dict[input_state]
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 5.0
+    m.params['phase_detuning'] = 3.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 200.
+    maxReps = 350.
     step = int((maxReps-minReps)/pts)+1
 
 
@@ -910,19 +915,17 @@ if __name__ == '__main__':
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    #characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    #apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
-    #apply_dynamic_phase_correction(name+'_Compensate_LDE_phase', PLU = True)
-
-
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    AWG.clear_visa()
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)

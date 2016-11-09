@@ -199,7 +199,7 @@ class HydraHarp_HH400(Instrument): #1
         self.set_SyncChannelOffset(0)
 
         self.set_Channel(0)
-        self.set_InputCFDLevel(200)
+        self.set_InputCFDLevel(40)
         self.set_InputCFDZeroCross(10)
         self.set_InputChannelOffset(0)
         
