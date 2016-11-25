@@ -1000,11 +1000,6 @@ class purify_single_setup(DD.MBI_C13):
         else:
 
             print 'upload = false, no sequence uploaded to AWG'
-            import pickle as pkl
-            with open('D:\measuring\AWG_seqs.pickle', 'wb') as f:  # Python 3: open(..., 'wb')
-                pkl.dump([combined_seq,combined_list_of_elements], f)
-                f.close() 
-
-
+            
 
 

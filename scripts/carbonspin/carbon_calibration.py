@@ -24,13 +24,14 @@ electron_transition_string = qt.exp_params['samples'][SAMPLE]['electron_transiti
 
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
+reload(funcs)
 n = 1
 
 #######################################################
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+carbons = [4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -39,9 +40,9 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = False
+f_ms0 = True
 
-f_ms1 = False
+f_ms1 = True
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False

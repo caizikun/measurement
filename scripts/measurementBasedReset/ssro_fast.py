@@ -102,7 +102,7 @@ def fast_ssro_calibration(name):
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
 
-    m.params['E_RO_amplitudes_AWG'] =   70e-9
+    m.params['E_RO_amplitudes_AWG'] =   30e-9
     m.params['E_RO_durations_AWG']  =    np.linspace(0,1.,pts)*5e-6
 
     m.params['sweep_name'] = 'Readout duration [mus]'

@@ -396,7 +396,6 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.finish()
 
 
-
 def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     """
     same as calibrate LDE_phase but here we add a dynamic phase correct element and
@@ -811,8 +810,6 @@ if __name__ == '__main__':
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    
-
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
@@ -826,5 +823,5 @@ if __name__ == '__main__':
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
-    for inputstate in ['X','Y','Z']:
-        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
+    # for inputstate in ['X','Y','Z']:
+    #     check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

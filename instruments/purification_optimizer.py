@@ -462,10 +462,10 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
         self.set_pidgate_running(False)           
-        # if qt.instruments['auto_optimizer'].flow():
-        #     print 'Success!'
-        # else:
-        #     print 'Finished before end'
+        if qt.instruments['auto_optimizer'].flow():
+            print 'Success!'
+        else:
+            print 'Finished before end'
         qt.msleep(3.0)
         self.set_pidyellowfrq_running(True)
         self.set_pidgate_running(True)        

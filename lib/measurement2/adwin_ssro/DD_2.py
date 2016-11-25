@@ -15,7 +15,6 @@ import pulse_select as ps; reload(ps)
 
 
 
-
 class Gate(object):
     '''
     The class for Gate objects that are used routinely in generating gate sequences.
