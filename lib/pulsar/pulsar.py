@@ -32,6 +32,8 @@ class Pulsar:
 
     def __init__(self):
         self.channels = {}
+        self.last_programmed_sequence = None
+        self.last_programmed_elements = None
 
     ### channel handling
     def define_channel(self, id, name, type, delay, offset,
@@ -365,7 +367,7 @@ class Pulsar:
         since sequence information is sent to the AWG in a single file.
 
         """
-        
+
         verbose=kw.pop('verbose',False)
 
         debug=kw.pop('debug', False)
@@ -389,6 +391,9 @@ class Pulsar:
         packed_waveforms={}
 
         elements_with_non_zero_first_points=[]
+
+        self.last_programmed_sequence = sequence
+        self.last_programmed_elements = elements
 
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary

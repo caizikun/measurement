@@ -6,10 +6,10 @@ import numpy as np
 
 def fast_laser_scan(name,grpower,redpower,mw):
     dac_names = ['newfocus_frq']
-    start_voltages = [9]
-    stop_voltages = [-9]
-    steps = int(90e9/50e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
-    px_time= 200#ms
+    start_voltages = [0]
+    stop_voltages = [-4]
+    steps = int(20e9/100e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
+    px_time= 1000#ms
     plot_voltage=True
     adwin_ins = qt.instruments['adwin']
 
@@ -40,7 +40,7 @@ def fast_laser_scan(name,grpower,redpower,mw):
     if mw:
         print 'MW!'
         SMB100.set_frequency(2.878e9)
-        SMB100.set_power(20)
+        SMB100.set_power(15)
         SMB100.set_status('on')
     prev_px_clock = 0
     while 1:
@@ -51,6 +51,7 @@ def fast_laser_scan(name,grpower,redpower,mw):
             
             f = adwin_ins.get_linescan_var('get_supplemental_data', start =start, length=length)
             valid_range = f>-3000
+            #print valid_range
             v = V[start-1:start+length-1]
             cs = adwin_ins.get_linescan_var('get_counts', start =start, length=length)
             c = (cs[0]+cs[1])/(px_time*1.e-3)
@@ -84,24 +85,20 @@ def long_fast_laser_scan(name,grpower,redpower,mw):
     opt1d_ins = qt.instruments['opt1d_counts']
     mos_ins = qt.instruments['master_of_space']
 
-    fs = np.arange(-350,350,50)
+
+    #fs = np.arange(200,350,75)
     #wls = np.linspace(637.26,637.22,2)
-    print fs
-    for ii,f in enumerate(fs):
-        for j in range(3):
-            set_nf_frequency_coarse(f)
-            qt.msleep(1)
-
-        #GreenAOM.set_power(200e-6)
-        #mos_ins.set_x(mos_ins.get_x()-1)
-        #opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
-        #opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
-        #mos_ins.set_x(mos_ins.get_x()+1)
-        #mos_ins.set_z(mos_ins.get_z()+0.6)
-        #qt.msleep(1)
-        #opt_ins.optimize(dims=['x','y'], cycles = 2, int_time = 100)
-
+    #print fs
+    for ii in range(0,50):
+        # for j in range(3):
+        #     set_nf_frequency_coarse(f)
+        #     qt.msleep(1)
         fast_laser_scan(name+'_'+str(ii),grpower,redpower,mw)
+        GreenAOM.set_power(20e-6)
+        qt.msleep(1)
+        opt_ins.optimize(dims=['x','y','z','x','y'], cycles = 1, int_time = 100, cnt=2)
+        qt.msleep(1)
+        
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
     
@@ -123,16 +120,16 @@ def get_cur_frequency():
     return cur_f
 
 if __name__ == '__main__':
-    mw=False
-    grpower = 1.5e-6
-    redpower = 30.e-9
-    name = '_Sophie_area_5_NV1'+'_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
+    mw=True
+    grpower = 0e-6
+    redpower = 2e-9
+    name = 'Harry_Scan1_NV2'+'_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
     
     counters.set_is_running(False)
     if mw:
         GreenAOM.set_power(100e-6)
         qt.msleep(1)
         GreenAOM.set_power(0e-6)
-    #fast_laser_scan(name,grpower,redpower,mw)
+    fast_laser_scan(name,grpower,redpower,mw)
     #long_fast_laser_scan(name,grpower,redpower,mw)
     

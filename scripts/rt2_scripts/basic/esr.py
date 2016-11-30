@@ -2,12 +2,12 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_Sophie_sc16_spot11_23dBm_400uW'
+name='ESR_Harry_e_scan1_spot9'
 start_f = 2.87 -0.1 # #0.0#    2.853 #2.85 #  #in GHz
 stop_f  = 2.87 +0.1 # #0.05#   2.864 #2.905 #   #in GHz
 steps   = 200
-mw_power = 23#15 #in dBm
-green_power = 300e-6 #20e-6
+mw_power = 18#15 #in dBm
+green_power = 400e-6 #20e-6
 int_time = 30       #in ms
 reps = 250
 
@@ -61,9 +61,9 @@ for cur_rep in range(reps):
     p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
 
     
-    if cur_rep%20 == 0 and cur_rep!=0:
+    if cur_rep%40 == 0 and cur_rep!=0:
         qt.msleep(2)
-        opt_ins.optimize(dims=['z','x','y'], cycles=2)
+        opt_ins.optimize(dims=['x','y'], cycles=1)
         qt.msleep(2)
 
 
