@@ -12,7 +12,7 @@ import copy
 import msvcrt
 reload(T2_tools_v3)
 reload(pq)
-# reload(purify_slave);reload(sweep_purification)
+reload(purify_slave);reload(sweep_purification)
 
 name = qt.exp_params['protocols']['current']
 
@@ -778,7 +778,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    # tail_sweep(name+'_tail_Sweep_tel1',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

@@ -170,8 +170,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpulse = 'initial_delay')
 
         ### one awg has to sync all yime-tagging devices.
-        if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
-            # print 'i added the thing' 
+        if setup == 'lt3': #and msmt.params['is_two_setup_experiment'] > 0: 
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization

@@ -88,6 +88,8 @@ params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
 params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt3['maximum_meas_time_in_min'] = 60
+params_lt3['do_green_reset'] = False
 
 params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
 params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
