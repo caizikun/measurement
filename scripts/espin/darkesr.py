@@ -129,7 +129,7 @@ def Generaldarkesr(name):
     m.params['MW_pi_duration'] = m.params['desr_pulse_duration']
     m.autoconfig()
     #m.params['sweep_pts']=m.params['pts']
-    #print m.params['MW_pi_duration']
+    #print m.params['MW_pi_duration']ex
     m.generate_sequence(upload=True,pulse_pi = desr_pi)
     m.run()
     m.save()

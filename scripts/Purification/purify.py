@@ -778,7 +778,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    tail_sweep(name+'_tail_Sweep_tel1',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -794,8 +794,9 @@ if __name__ == '__main__':
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
-    #PurifyYY(name+'_Purify_YY',debug = True, upload_only = True)
-    #PurifyZZ(name+'_Purify_ZZ',debug = True, upload_only = False)
+    PurifyXX(name+'_Purify_XX',debug = False, upload_only = True)
+    PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
+    PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 
     ###### non-local measurements // Barrett Kok parameters
     # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)

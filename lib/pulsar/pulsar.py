@@ -374,9 +374,9 @@ class Pulsar:
         allow_non_zero_first_point_on_trigger_wait=kw.pop('allow_first_zero',False)
 
         try:
-            print qt.dump_AWG_seq
-            print 'hihi'
+            
             if qt.dump_AWG_seq == True:
+                print 'Dumping sequence'
                 import pickle as pkl
                 with open('D:\measuring\AWG_seqs_'+qt.current_meas_name+'.pickle', 'wb') as f:  # Python 3: open(..., 'wb')
                     pkl.dump([sequence,elements], f)

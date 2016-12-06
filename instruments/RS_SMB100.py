@@ -104,7 +104,7 @@ class RS_SMB100(Instrument):
 
 
         # can be different from device to device, set by argument
-        #self.set_max_cw_pwr(max_cw_pwr)
+        self.set_max_cw_pwr(max_cw_pwr)
 
 
         self.add_function('reset')

@@ -2,9 +2,9 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_Pippin_SIL2_LT_HighField'
-start_f = 1.68#4.02#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-stop_f  = 1.72#4.07#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+name='ESR_Pippin_SIL3_LT_HighField'
+start_f = 1.65#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+stop_f  = 1.75#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
 steps   = 51
 mw_power = -16 #in dBm, never above -10
 green_power = 10e-6 #20e-6
@@ -14,7 +14,7 @@ reps = 25
 #generate list of frequencies
 f_list = linspace(start_f*1e9, stop_f*1e9, steps)
 
-ins_smb = qt.instruments['SGS100A']
+ins_smb = qt.instruments['SMB100']
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
 counter = 1

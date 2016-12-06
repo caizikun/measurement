@@ -345,7 +345,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['X','mX','Y','mY','Z']
+    el_state_list = ['Z']
     
 
     x_phase = m.params['X_phase']
@@ -378,7 +378,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     for el_state in el_state_list:
         if breakst:
             break
-        for ro in ['positive','negative']:
+        for ro in ['positive']:
             breakst = show_stopper()
             if breakst:
                 break
@@ -790,7 +790,7 @@ def check_classical_correlations(name,debug=False,upload_only = False,inputState
     ### loop over RO directions upload & run
     breakst = False
     autoconfig = True
-    for ro in ['positive','negative']:
+    for ro in ['positive']:
         breakst = show_stopper()
         if breakst:
             break
@@ -809,7 +809,7 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    characterize_el_to_c_swap(name+'_Swap_el_to_C',upload_only=True)
 
     
 
@@ -826,5 +826,5 @@ if __name__ == '__main__':
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
-    for inputstate in ['X','Y','Z']:
-        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = False, inputState = inputstate)
+    #for inputstate in ['X','Y','Z']:
+    #    check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

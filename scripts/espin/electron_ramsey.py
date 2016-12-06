@@ -17,8 +17,6 @@ import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
 
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
-from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 
 execfile(qt.reload_current_setup)
 #reload(funcs)
@@ -118,19 +116,19 @@ def electronramseyHermite(name, debug = False):
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
 
-    pts = 61
+    pts = 81
     m.params['pts'] = pts
-    m.params['repetitions'] = 1500
+    m.params['repetitions'] = 1000
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0,7000e-9,pts)
+    m.params['evolution_times'] = np.linspace(0,5000e-9,pts)
 
     # MW pulses
-    m.params['detuning']  = 0.5e6
+    m.params['detuning']  = 0.0e6
     X_pi2 = ps.Xpi2_pulse(m)
     m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * m.params['X_phase']    # First pi/2 = +X
-    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase'] )   # Second pi/2 = mX
-    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times'] + m.params['Hermite_pi2_length']) * m.params['detuning'])
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['Y_phase'] )   # Second pi/2 = mX
+    # m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times'] + m.params['Hermite_pi2_length']) * m.params['detuning'])
 
 
     # for the autoanalysis

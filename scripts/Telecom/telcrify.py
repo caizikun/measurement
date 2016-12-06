@@ -167,6 +167,7 @@ class Telcrify(PQTelcrifyMeasurement):
         self.PQ_ins.StartMeas(int(self.params['measurement_time'] * 1e3)) # this is in ms
         self.start_measurement_process()
         _timer=time.time()
+        _starting_time = time.time()
         ii=0
         k_error_message = 0
 
@@ -219,8 +220,8 @@ class Telcrify(PQTelcrifyMeasurement):
                 if (last_sync_number > 0) and (last_sync_number != last_sync_number_update): 
                     if qt.current_setup == 'lt3':
 
-                        tail_psb_lt3 = round(float(2*tail_cts_ch0*1e4)/float(last_sync_number-last_sync_number_update),3)
-                        tail_psb_lt4 = round(float(2*tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(last_sync_number-last_sync_number_update),3)
+                        tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(last_sync_number-last_sync_number_update),3)
                         self.physical_adwin.Set_FPar(56, tail_psb_lt3)
                         self.physical_adwin.Set_FPar(57, tail_psb_lt4)
                          
@@ -324,6 +325,11 @@ class Telcrify(PQTelcrifyMeasurement):
                     current_dset_length = 0
 
                     self.h5data.flush()
+                #if (time.time()-_starting_time )>(self.params['maximum_meas_time_in_min']*60):
+                #    print 'Measurement time exceeding the maximum time of {} min, I abort the measurement.'.format(self.params['maximum_meas_time_in_min'])
+                #    self.params['do_green_reset'] = True
+                #    self.stop_measurement_process()
+
 
         dset_hist = self.h5data.create_dataset('PQ_hist', data=self.hist, compression='gzip')
         self.h5data.flush()
@@ -373,7 +379,7 @@ def load_BK_params(m):
 
 
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = False):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = True):
     """
     Performs a tail_sweep in the LDE_1 element
     """
@@ -383,7 +389,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 13
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 3000
+    m.params['reps_per_ROsequence'] = 1000
+
+    #m.params['maximum_meas_time_in_min'] = 2
 
 
     sweep_purification.turn_all_sequence_elements_off(m)
@@ -410,7 +418,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.06,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.05,0.02,pts)#(-0.04,-0.02,pts)
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -505,8 +513,9 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 50000
     sweep_purification.turn_all_sequence_elements_off(m)
 
+    #m.params['maximum_meas_time_in_min'] = 1
 
-    m.params['MIN_SYNC_BIN'] =      2.0e6
+    m.params['MIN_SYNC_BIN'] =      0.0e6
     m.params['MAX_SYNC_BIN'] =       5.5e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 0
@@ -517,7 +526,7 @@ def TPQI(name,debug = False,upload_only=False):
 
     m.params['LDE_element_length'] = 6e-6
     m.params['opt_pi_pulses'] = 15
-    m.params['opt_pulse_separation'] = 200e-9
+    m.params['opt_pulse_separation'] = 197e-9 #199e-9 for the red , 190e-9 for telecom
     m.params['LDE1_attempts'] = 250
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
@@ -528,10 +537,10 @@ def TPQI(name,debug = False,upload_only=False):
     if qt.current_setup == 'lt3':
         m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
         m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
-        m.params['tail_start_bin'] = 2100e3 - m.params['MIN_SYNC_BIN']  
-        m.params['tail_stop_bin'] = 2800e3  - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2380e3 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2480e3  - m.params['MIN_SYNC_BIN'] 
         m.params['MIN_SYNC_BIN'] =       2.38e3
-        m.params['MAX_SYNC_BIN'] =       2.483
+        m.params['MAX_SYNC_BIN'] =       2.48e3
         m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
         m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
         m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
@@ -551,8 +560,8 @@ if __name__ == '__main__':
 
     ########### local measurements
 
-
-    #tail_sweep(name[:-1]+'3_Sweep_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name[:-1]+'3_tail_telecom',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -568,16 +577,18 @@ if __name__ == '__main__':
 
     # qt.mstart()
     if hasattr(qt,'master_script_is_running'):
+        print 'STATUS :',  qt.master_script_is_running
         if qt.master_script_is_running:
             # Experimental addition for remote running
             if (qt.current_setup == 'lt3'): ## i moved this here (from the run function of the class purify), otherwise the loop would crash. NK
                 qt.instruments['tel1_helper'].set_is_running(False)
-                qt.msleep(1.5)
+                # qt.msleep(1.5)
                 qt.instruments['tel1_helper'].set_measurement_name(str(qt.telcrify_name_index))
-                qt.instruments['tel1_helper'].set_script_path(r'D:/measuring/measurement/scripts/tel1_scripts/pq_acquisition.py')
-                qt.msleep(1.5)
+                qt.instruments['tel1_helper'].set_script_path(r'D:/measuring/measurement/scripts/tel1_scripts/pq_telecom.py')
+                # qt.msleep(1.5)
+                print qt.instruments['tel1_helper']
                 qt.instruments['tel1_helper'].execute_script()
-                qt.msleep(1.5)
+                # qt.msleep(1.5)
             #     qt.instruments['lt4_helper'].set_is_running(True)
                 qt.instruments['tel1_helper'].set_is_running(True)
                 
@@ -587,8 +598,8 @@ if __name__ == '__main__':
 
             AWG.clear_visa
             qt.msleep(2)
-            qt.instruments['purification_optimizer'].start_babysit()
-            #qt.telcrification_success = True
+            # qt.instruments['purification_optimizer'].start_babysit()
+            # #qt.telcrification_success = True
             
             for i in range(1):
 
@@ -618,7 +629,7 @@ if __name__ == '__main__':
 
 
 
-                TPQI(name+'_HBT_red_'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
+                TPQI(name+'_TPQI_telecom_'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
                 AWG.clear_visa()
                 ## XZ measurement
                 print '-----------------------------------'            
@@ -631,8 +642,8 @@ if __name__ == '__main__':
 
                 
 
-            qt.instruments['purification_optimizer'].set_stop_optimize(True)
-            qt.instruments['purification_optimizer'].stop_babysit()
+            # qt.instruments['purification_optimizer'].set_stop_optimize(True)
+            # qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False
             qt.telcrification_success = True
     # qt.mend()
