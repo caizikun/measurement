@@ -27,7 +27,7 @@ N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
 C_split  = 0.847e6 
 pulse_shape = 'Hermite'
-electron_transition = '+1'
+electron_transition = '-1'
 
 
 if electron_transition == '+1':
@@ -232,9 +232,9 @@ cfg['samples'][sample_name] = {
 	'C4_freq_0' 		: 443141.64,
 	'C4_freq_1_m1' 		: 416544.29,
 
-	'C4_Ren_tau_m1'    :   [6.404e-6],#[6.406e-6],##[6.386e-6],
-	'C4_Ren_N_m1'      :   [32], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [89.51] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
+	'C4_Ren_N_m1'      :   [34], #28
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [130.41] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# 'C4_unc_N_m1'		:  [40],
 	# 'C4_unc_tau_m1'		:  [6.93e-6],

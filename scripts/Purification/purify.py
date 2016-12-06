@@ -794,8 +794,9 @@ if __name__ == '__main__':
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
+    PurifyXX(name+'_Purify_XX',debug = False, upload_only = True)
     PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
-    #PurifyZZ(name+'_Purify_ZZ',debug = True, upload_only = False)
+    PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 
     ###### non-local measurements // Barrett Kok parameters
     # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
