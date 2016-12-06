@@ -12,7 +12,7 @@ import copy
 import msvcrt
 reload(T2_tools_v3)
 reload(pq)
-reload(purify_slave);reload(sweep_purification)
+# reload(purify_slave);reload(sweep_purification)
 
 name = qt.exp_params['protocols']['current']
 

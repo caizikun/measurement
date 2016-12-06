@@ -138,28 +138,23 @@ if __name__ == '__main__':
             qt.instruments['ZPLServo'].move_out()
 
     else:
-        
+
         #### XXXX Yo dude, this has to be copied from tel1 - I didnt't have time to do the push-pull !! AD
         if False:
-                qt.instruments['remote_measurement_helper'].set_is_running(True)
-            #     execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
-            #     qt.instruments['ZPLServo'].move_in()
-            #     lt3_succes = optimize()
-            #     #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
-            #     qt.instruments['ZPLServo'].move_out()
-                qt.msleep(10) # when you resetart bell to early, it will crash
+            qt.instruments['remote_measurement_helper'].set_is_running(True)
+
+            # qt.msleep(10) # when you resetart bell to early, it will crash
             #     print 'Did the optimization procedure succeed? ', lt3_succes
 
-                qt.instruments['remote_measurement_helper'].set_measurement_name(True)
-                qt.instruments['remote_measurement_helper'].set_is_running(False)
-                qt.master_script_is_running = True
+            # qt.instruments['remote_measurement_helper'].set_measurement_name(True)
+            qt.instruments['remote_measurement_helper'].set_is_running(False)
+            qt.master_script_is_running = True
             #     print 'All done. Ready to run Purification.'
 
         else:
 
                 qt.instruments['lt4_helper'].set_is_running(True)
-                qt.msleep(10) # when you resetart bell to early, it will crash
-
+                # qt.msleep(10) # when you resetart bell to early, it will crash
                 qt.instruments['lt4_helper'].set_measurement_name(True)
-                qt.instruments['lt4_helper'].set_is_running(False)
+                # qt.instruments['lt4_helper'].set_is_running(False)
                 qt.master_script_is_running = True
