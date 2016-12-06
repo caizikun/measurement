@@ -541,3 +541,4 @@ class PQ_Threaded_Measurement(PQMeasurement):
         except KeyError:
             pass # means it's already stopped
         self.stop_measurement_process()
+

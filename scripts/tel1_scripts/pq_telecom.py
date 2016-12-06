@@ -323,18 +323,17 @@ def run_HBT(name) :
 if __name__ == '__main__':
 
     seq = 'TPQI'
-
     if seq =='HBT':
-        if qt.instruments['tel1_measurement_helper'].get_is_running : 
-            name_index = int(qt.instruments['tel1_measurement_helper'].get_measurement_name())
+        if qt.instruments['lt4_helper'].get_is_running : 
+            name_index = int(qt.instruments['lt4_helper'].get_measurement_name())
             name = 'HBT_telecom' + str(name_index)
             print '\n', name, '\n'
         else : 
             name = 'HBT_telecom' 
         run_HBT(name) 
     elif seq =='TPQI':
-        if qt.instruments['tel1_measurement_helper'].get_is_running : 
-            name_index = int(qt.instruments['tel1_measurement_helper'].get_measurement_name())
+        if qt.instruments['lt4_helper'].get_is_running : 
+            name_index = int(qt.instruments['lt4_helper'].get_measurement_name())
             name = 'TPQI_telecom' + str(name_index)
             print '\n', name, '\n'
         else : 

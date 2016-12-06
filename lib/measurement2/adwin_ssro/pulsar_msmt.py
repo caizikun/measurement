@@ -10,7 +10,8 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 import pulse_select as ps; reload(ps)
-
+import analysis.lib.sim.pulse_sim.pulse_sim as pulse_sim
+reload(pulse_sim)
 
 class PulsarMeasurement(ssro.IntegratedSSRO):
     mprefix = 'PulsarMeasurement'
@@ -25,8 +26,6 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
     def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
 
         ssro.IntegratedSSRO.setup(self)
-
-        self.dump_AWG_seq()
         
         # print 'this is the mw frequency!', self.params['mw_frq']
         self.mwsrc.set_iq('on')
@@ -83,12 +82,11 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
         try:
             if qt.dump_AWG_seq == True:
-                import pickle as pkl
+                print('Saving pulse sequence')
                 sequence = qt.pulsar.last_programmed_sequence
                 elements = qt.pulsar.last_programmed_elements
-                with open(os.path.join(self.datafolder,self.name+'.pickle'), 'wb') as f:  # Python 3: open(..., 'wb')
-                    pkl.dump([sequence,elements], f)
-                    f.close()
+                grouped_seq = pulse_sim.group_seq_elems(sequence,elements)
+                pulse_sim.save_grouped_pulses_to_open_h5file(self.h5data,grouped_seq)
         except:
             pass
 

@@ -345,7 +345,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
-    el_state_list = ['Z']
+    el_state_list = ['X','mX','Y','mY','Z']
     
 
     x_phase = m.params['X_phase']
@@ -378,7 +378,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     for el_state in el_state_list:
         if breakst:
             break
-        for ro in ['positive']:
+        for ro in ['positive','negative']:
             breakst = show_stopper()
             if breakst:
                 break
@@ -394,7 +394,6 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
             autoconfig = False
 
     m.finish()
-
 
 
 def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
@@ -809,9 +808,7 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C',upload_only=True)
-
-    
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
@@ -826,10 +823,5 @@ if __name__ == '__main__':
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
-<<<<<<< HEAD
-    #for inputstate in ['X','Y','Z']:
-    #    check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
-=======
-    for inputstate in ['X','Y','Z']:
-        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
->>>>>>> 1bf1975b8e39c9a7ea4fe93b9026cc36c3a538ae
+    # for inputstate in ['X','Y','Z']:
+    #     check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

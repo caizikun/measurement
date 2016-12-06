@@ -114,7 +114,8 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
         m.autoconfig()    
 
     m.generate_sequence()
-
+    m.dump_AWG_seq()
+    
     if upload_only:
         return
 
@@ -332,7 +333,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 200
+    maxReps = 1000
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE1_attempts'
@@ -471,6 +472,90 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
 
     m.finish()
 
+def characterize_el_to_c_swap_success(name, upload_only = False,debug=False):
+    """
+    runs the measurement for X and Y tomography. Also does positive vs. negative RO
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    m.params['reps_per_ROsequence'] = 1000
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['is_two_setup_experiment'] = 0
+    m.params['PLU_during_LDE'] = 0
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_general_sweep'] = 0
+    m.params['do_carbon_init']  = 1 # 
+    m.params['do_C_init_SWAP_wo_SSRO'] = 1 # 
+    m.params['do_carbon_readout']  = 0 
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+    # m.params['do_C_init_SWAP_wo_SSRO'] = 0
+    m.params['LDE_1_is_init'] = 1 # only use a preparational value
+    # m.params['MW_during_LDE'] = 0
+
+    m.joint_params['opt_pi_pulses'] = 0 # no pi pulses in this sequence.
+
+
+    # m.params['is_two_setup_experiment'] = 1
+    # m.params['PLU_during_LDE'] = 0
+
+    m.params['pts'] = 1
+
+    ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
+    el_state_list =  ['X','mX','Y','mY','Z','mZ']
+    
+
+    x_phase = m.params['X_phase']
+    y_phase = m.params['Y_phase']
+
+    first_mw_phase_dict = { 'X' :   y_phase, 
+                            'mX':   y_phase + 180,
+                            'Y' :   x_phase + 180, 
+                            'mY':   x_phase, 
+                            'Z' :   x_phase + 180, 
+                            'mZ':   x_phase + 180}
+
+    first_mw_amp_dict = {   'X' :   m.params['Hermite_pi2_amp'], 
+                            'mX':   m.params['Hermite_pi2_amp'],
+                            'Y' :   m.params['Hermite_pi2_amp'], 
+                            'mY':   m.params['Hermite_pi2_amp'], 
+                            'Z' :   0, 
+                            'mZ':   m.params['Hermite_pi_amp']}
+
+    first_mw_length_dict = {'X' :   m.params['Hermite_pi2_length'], 
+                            'mX':   m.params['Hermite_pi2_length'],
+                            'Y' :   m.params['Hermite_pi2_length'], 
+                            'mY':   m.params['Hermite_pi2_length'], 
+                            'Z' :   m.params['Hermite_pi_length'], 
+                            'mZ':   m.params['Hermite_pi_length']}                        
+
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    autoconfig = True
+    for el_state in el_state_list:
+        if breakst:
+            break
+       
+        breakst = show_stopper()
+        if breakst:
+            break
+
+        save_name = 'el_state_'+ el_state
+        m.params['input_el_state'] = el_state
+        m.params['mw_first_pulse_amp'] = first_mw_amp_dict[el_state]
+        m.params['mw_first_pulse_length'] = first_mw_length_dict[el_state]
+        m.params['mw_first_pulse_phase'] = first_mw_phase_dict[el_state]
+        
+        run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig)
+        autoconfig = False
+
+    m.finish()
 
 def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
     """
@@ -909,22 +994,23 @@ if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
 
-    #sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
-    #sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
+    # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    #sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    AWG.clear_visa()
-    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    # AWG.clear_visa()
+    # #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)

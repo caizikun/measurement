@@ -533,7 +533,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),self._babysit)
 
     def stop_babysit(self):
-        # print 'Stop'
+        print 'Stop'
         # if not self._babysitting:
         #     print 'Not running'
         self._babysitting = False
@@ -571,7 +571,7 @@ class purification_optimizer(mo.multiple_optimizer):
                 else:
                     print self.cr_counts, '<', self.get_min_cr_counts(), 'or', self.repump_counts, '<', self.get_min_repump_counts(), 'so start optimizer'
                     self.busy = True
-                    e_primer_was_running = self.get_pid_e_primer_running()        
+                    # e_primer_was_running = self.get_pid_e_primer_running()
                     self.set_pid_e_primer_running(False)
                     self.set_pidyellowfrq_running(False)
                     self.set_pidgate_running(False)   
@@ -582,7 +582,7 @@ class purification_optimizer(mo.multiple_optimizer):
                     qt.msleep(2)
                     self.set_pidyellowfrq_running(True)
                     self.set_pidgate_running(True)        
-                    self.set_pid_e_primer_running(e_primer_was_running) 
+                    #self.set_pid_e_primer_running(e_primer_was_running) 
                     self._busy = False
             else:
                 # Even if all counts are fine, the newfocus might still be off

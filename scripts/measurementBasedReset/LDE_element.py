@@ -227,7 +227,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
             #mw pi/2 pulse or 'theta'
             e.add(Gate.mw_first_pulse,
-                start           = -msmt.params['LDE_decouple_time'],
+                start           = -msmt.params['LDE_decouple_time']-msmt.params['average_repump_time'],
                 refpulse        = 'MW_pi',#'opt pi 1', 
                 refpoint        = 'center', 
                 refpoint_new    = 'center',
@@ -248,7 +248,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
         #mw pi/2 pulse or 'theta'
         e.add(pulse.cp(Gate.mw_first_pulse,amplitude=0),
-            start           = -msmt.params['LDE_decouple_time'],
+            start           = -msmt.params['LDE_decouple_time']-msmt.params['average_repump_time'],
             refpulse        = 'MW_pi',#'opt pi 1', 
             refpoint        = 'center', 
             refpoint_new    = 'center',
