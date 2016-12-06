@@ -4,7 +4,7 @@ import qt
 import hdf5_data as h5
 import logging
 import sys
-
+import os
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
@@ -22,8 +22,12 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         ssro.IntegratedSSRO.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
+
         ssro.IntegratedSSRO.setup(self)
+
+        self.dump_AWG_seq()
+        
         # print 'this is the mw frequency!', self.params['mw_frq']
         self.mwsrc.set_iq('on')
         self.mwsrc.set_pulm('on')
@@ -74,6 +78,19 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def generate_sequence(self):
         pass
+
+    def dump_AWG_seq(self):
+
+        try:
+            if qt.dump_AWG_seq == True:
+                import pickle as pkl
+                sequence = qt.pulsar.last_programmed_sequence
+                elements = qt.pulsar.last_programmed_elements
+                with open(os.path.join(self.datafolder,self.name+'.pickle'), 'wb') as f:  # Python 3: open(..., 'wb')
+                    pkl.dump([sequence,elements], f)
+                    f.close()
+        except:
+            pass
 
     def stop_sequence(self):
         self.awg.stop()
@@ -1728,6 +1745,68 @@ class GeneralPiCalibration(PulsarMeasurement):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
+
+
+class SSRO_MWInit(GeneralPiCalibration):
+
+    def generate_sequence(self, upload=True, **kw):
+        # electron manipulation pulses
+        for SSRO_duration in self.params(['SSRO_duration_list']):
+
+            self.params['SSRO_duration'] = SSRO_duration
+
+            T = pulse.SquarePulse(channel='MW_Imod',
+                length = 15000e-9, amplitude = 0)
+
+            X=kw.get('pulse_pi', None)
+            if X==None:
+                print 'WARNING: No valid X Pulse'
+            if hasattr(X,'Sw_channel'):
+                print 'this is the MW switch channel: ', X.Sw_channel
+            else:
+                print 'no switch found'
+            wait_1us = element.Element('1us_delay', pulsar=qt.pulsar)
+            wait_1us.append(pulse.cp(T, length=1e-6))
+
+            sync_elt = element.Element('adwin_sync', pulsar=qt.pulsar)
+            adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+                length = 10e-6, amplitude = 2)
+            sync_elt.append(adwin_sync)
+            if type(self.params['multiplicity']) ==int:
+                self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
+
+            e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
+            #redundant
+            for j in range(int(self.params['multiplicity'][i])):
+                e.append(T,
+                    pulse.cp(X,
+                        amplitude=self.params['MW_pulse_amplitudes'][i]
+                        ))
+            e.append(T)
+            elements.append(e)
+
+            # sequence
+            seq = pulsar.Sequence('{} pi calibration'.format(self.params['pulse_type']))
+            for i,e in enumerate(elements):           
+                # for j in range(self.params['multiplicity']):
+                seq.append(name = e.name+'-{}'.format(j), 
+                    wfname = e.name,
+                    trigger_wait = True)
+                # seq.append(name = 'wait-{}-{}'.format(i,j), 
+                #     wfname = wait_1us.name, 
+                #     repetitions = self.params['delay_reps'])
+                seq.append(name='sync-{}'.format(i),
+                     wfname = sync_elt.name)
+            # elements.append(wait_1us)
+            elements.append(sync_elt)
+            # upload the waveforms to the AWG
+            if upload:
+                if upload=='old_method':
+                    qt.pulsar.upload(*elements)
+                    qt.pulsar.program_sequence(seq)
+                else:
+                    qt.pulsar.program_awg(seq,*elements)
+
 
 class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 

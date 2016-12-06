@@ -105,14 +105,15 @@ EVENT:
       ENDIF
       
     CASE 1 'red pulse and count
-      IF (timer = 0) THEN
-        DAC(red_aom_dac_channel, 3277*red_voltage+32768) ' turn on green laser
-      ELSE
-        IF (timer = wait_after_green_time) THEN
-          CNT_ENABLE(111b)                                        'Start counters again
-        ELSE 
-          IF (timer = red_time) THEN
-            DAC(red_aom_dac_channel, 3277*0+32768) ' turn off green laser
+      IF (timer = wait_after_green_time-2) THEN
+        CNT_ENABLE(111b)     
+        'Start counters again
+      ELSE 
+        IF (timer = wait_after_green_time) THEN 
+          DAC(red_aom_dac_channel, 3277*red_voltage+32768) 'turn on red lasers
+        ELSE
+          IF (timer = red_time+wait_after_green_time) THEN
+            DAC(red_aom_dac_channel, 3277*red_off_voltage+32768) ' turn off green laser
             CNT_LATCH(111b)                                         'latch counters
             DATA_11[current_pixel] = DATA_11[current_pixel] +  CNT_READ_LATCH(1)                 'read latch A of counter 1
             DATA_12[current_pixel] = DATA_12[current_pixel] +  CNT_READ_LATCH(2)                 'read latch A of counter 2
@@ -124,8 +125,7 @@ EVENT:
           ENDIF
         ENDIF
       ENDIF
-      
-      
+            
     CASE 2   ' check if the pixel time is reached and move to  next pixel voltage if neccesary
       IF (pixel_timer >= pixel_time) THEN
         DATA_15[current_pixel] = FPar_46

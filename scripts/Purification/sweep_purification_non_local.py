@@ -738,6 +738,7 @@ def phase_compensation_with_PLU(name,debug=False,upload_only = False,PLU = False
 
     run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 
+
 def check_classical_correlations(name,debug=False,upload_only = False,inputState = 'X'):
     """
     Does the full sequence in non-local mode.
@@ -801,7 +802,6 @@ def check_classical_correlations(name,debug=False,upload_only = False,inputState
         autoconfig = False
 
     m.finish()
-
 if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
@@ -818,7 +818,7 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
 
 
-    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
+    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
@@ -826,5 +826,10 @@ if __name__ == '__main__':
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
+<<<<<<< HEAD
     #for inputstate in ['X','Y','Z']:
     #    check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
+=======
+    for inputstate in ['X','Y','Z']:
+        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
+>>>>>>> 1bf1975b8e39c9a7ea4fe93b9026cc36c3a538ae
