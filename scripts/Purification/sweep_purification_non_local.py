@@ -823,5 +823,5 @@ if __name__ == '__main__':
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
-    # for inputstate in ['X','Y','Z']:
-    #     check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)
+    for inputstate in ['X','Y','Z']:
+        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

@@ -38,7 +38,7 @@ class auto_optimizer(Instrument):
         self._newfocus_iterations = 0;
         self._gate_iterations = 0;
         self._yellow_iterations = 0; 
-       
+
         ins_pars  ={'do_plot'               :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'plot_name'             :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
                     'external_break'        :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},                                                            
@@ -77,6 +77,7 @@ class auto_optimizer(Instrument):
                     'max_gate_iterations'   :   {'type':types.IntType,    'val':5,'flags':Instrument.FLAG_GETSET},                    
                     'max_yellow_iterations' :   {'type':types.IntType,    'val':5,'flags':Instrument.FLAG_GETSET},                    
                     'max_nf_iterations'     :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},                                        
+                    'is_pidgate_running'    :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},
                     }
         
         instrument_helper.create_get_set(self,ins_pars)
@@ -227,6 +228,9 @@ class auto_optimizer(Instrument):
             state = -1;
             return False;               
         # No switch statement in python :(
+        print 'Sleeping'
+        qt.msleep(self._flow_sleep)
+
         if state == 0:
             # Allow to run
             qt.instruments['purification_optimizer'].set_stop_optimize(False)
@@ -283,7 +287,9 @@ class auto_optimizer(Instrument):
                 # Optimize gate
                 if self.optimize_gate():
                     # Allow laser to follow before going on
-                    qt.msleep(self._flow_sleep)              
+                    qt.msleep(self._flow_sleep)
+                    self.optimize_newfocus()
+                    qt.msleep(self._flow_sleep)             
                     return self.flow(state = 1);
                 else:
                     # User exited ('q') optimization
@@ -322,10 +328,10 @@ class auto_optimizer(Instrument):
                     return self.flow(state = -1);
         elif state == 8:
             print 'Auto optimization successful.'
-            return True;
+            return True
         elif state == -1:
             print 'Auto optimization exited before completion.'
-            return False;            
+            return False         
 
     def optimize_newfocus(self):
         self._newfocus_iterations += 1;
@@ -351,7 +357,11 @@ class auto_optimizer(Instrument):
         finishedNF = False;  
         currentNFStep = 0;
         currentNFFreq = nf_start;
-        NFStepTime = time.time();    
+        NFStepTime = time.time();
+
+        self.set_is_pidgate_running(True)
+        qt.msleep(0.1)
+
         # Each for iteration is one sweep step (dwell)
         for currentNFStep,currentNFFreq in enumerate(nf_sweep):
             # Allow to break
@@ -447,6 +457,9 @@ class auto_optimizer(Instrument):
         currentGateFreq = gate_start;
         yellowStepTime = time.time();
         gateStepTime = time.time();
+
+        self.set_is_pidgate_running(False)
+        qt.msleep(0.1)
 
         # Each for iteration is one sweep step (dwell)
         for currentGateStep,currentGateFreq in enumerate(gate_sweep):
@@ -651,8 +664,11 @@ class auto_optimizer(Instrument):
         currentGateFreq = gate_start;
         yellowStepTime = time.time();
         gateStepTime = time.time();
-
+        print 'Hello!'
+        self.set_is_pidgate_running(True)
+        qt.msleep(0.1)
         # Each for iteration is one sweep step (dwell)
+
         for currentYellowStep,currentYellowFreq in enumerate(yellow_sweep):
             # Allow to break
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -718,7 +734,8 @@ class auto_optimizer(Instrument):
                     else: # Gate is bad. Optimize gate where we ended last time
                         # Debug
                         print 'Currently in NV-, gate is bad, optimize gate'
-
+                        self.set_is_pidgate_running(False)
+                        qt.msleep(0.1)
                         while currentGateStep < len(gate_sweep) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):                           
                             # Allow to break
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -754,6 +771,8 @@ class auto_optimizer(Instrument):
                                 if gate_y[-1] > self._opt_gate_good:
                                     self._set_freq_gate(gate_x[-1])
                                     finishedGate = True
+                                    self.set_is_pidgate_running(True)
+                                    qt.msleep(0.1)
                                     break; 
                             currentGateStep = currentGateStep + 1; 
                         # If gate sweep has finished without exceeding the threshold: immediately set gate to optimal value.
@@ -761,6 +780,8 @@ class auto_optimizer(Instrument):
                             # Scan didn't exceed threshold at any point. Take optimum value from scan.
                             self._set_freq_gate(gate_x[np.argmax(gate_y)]);
                             print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
+                            self.set_is_pidgate_running(True)
+                            qt.msleep(0.1)
             if finishedYellow:
                 break;                                                            
 
@@ -829,3 +850,13 @@ class auto_optimizer(Instrument):
             # When there are zero attemps, should be distinguishable from zero counts
             return -1.  
         
+    def _do_set_is_pidgate_running(self,val):
+        print 'hello'
+        if val:
+            qt.instruments['pidgate'].start()
+        else:
+            qt.instruments['pidgate'].stop()
+
+
+    def _do_get_is_pidgate_running(self):
+        return qt.instruments['pidgate'].get_is_running()
