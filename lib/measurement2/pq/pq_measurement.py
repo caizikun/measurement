@@ -148,23 +148,23 @@ class PQMeasurement(m2.Measurement):
                     ii+=1
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
                     self._keystroke_check('abort')
-                    if _length == 0 or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
+                    if self.PQ_ins_params[PQ_ins_key]._length == 0 or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
                         break 
                 print 'current sync,marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
 
                 _timer=time.time()
 
-            #_length, _data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-            _length = 0
-            _data = np.array([],dtype = 'uint32')
+            #self.PQ_ins_params[PQ_ins_key]._length, self.PQ_ins_params[PQ_ins_key]._data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
+            self.PQ_ins_params[PQ_ins_key]._length = 0
+            self.PQ_ins_params[PQ_ins_key]._data = np.array([],dtype = 'uint32')
             for j in range(TTTR_RepetitiveReadouts):
                 cur_length, cur_data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-                _length += cur_length 
-                _data = np.hstack((_data,cur_data[:cur_length]))
+                self.PQ_ins_params[PQ_ins_key]._length += cur_length 
+                self.PQ_ins_params[PQ_ins_key]._data = np.hstack((self.PQ_ins_params[PQ_ins_key]._data,cur_data[:cur_length]))
            
-            #ll[_length]+=1 #XXX
-            if _length > 0:
-                if _length == T2_READMAX or _length ==  TTTR_RepetitiveReadouts * TTTR_read_count:
+            #ll[self.PQ_ins_params[PQ_ins_key]._length]+=1 #XXX
+            if self.PQ_ins_params[PQ_ins_key]._length > 0:
+                if self.PQ_ins_params[PQ_ins_key]._length == T2_READMAX or self.PQ_ins_params[PQ_ins_key]._length ==  TTTR_RepetitiveReadouts * TTTR_read_count:
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
 
@@ -178,7 +178,7 @@ class PQMeasurement(m2.Measurement):
                     print 'Aborting the measurement: SyncLost flag is high.'
                     break
 
-                _t, _c, _s = PQ_decode(_data[:_length])
+                _t, _c, _s = PQ_decode(self.PQ_ins_params[PQ_ins_key]._data[:self.PQ_ins_params[PQ_ins_key]._length])
 
                 
 
@@ -276,7 +276,7 @@ class PQMultiDeviceMeasurement(PQMeasurement):
         if debug:
             return
         
-        selected_ins = kw.pop('selected_PQ_ins', None)
+        selected_ins = self.params['selected_PQ_ins']
 
         if not(isinstance(selected_ins,list)) and selected_ins == None:
             self.PQ_instruments = self.available_PQ_ins
@@ -304,6 +304,10 @@ class PQMultiDeviceMeasurement(PQMeasurement):
         if setup:
             self.setup()
 
+        wait_for_late_data= self.params['wait_for_late_data'] if self.params.parameters.has_key('wait_for_late_data') else 1e8 
+
+        num_PQ = len(self.PQ_instruments)
+
         self.PQ_ins_params = {}
         for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
             self.PQ_ins_params[PQ_ins_key] = PQins()
@@ -319,28 +323,29 @@ class PQMultiDeviceMeasurement(PQMeasurement):
             self.PQ_ins_params[PQ_ins_key].MAX_HIST_SYNC_BIN = np.uint64(self.params[PQ_ins_key]['MAX_HIST_SYNC_BIN'])
             self.PQ_ins_params[PQ_ins_key].count_marker_channel = self.params[PQ_ins_key]['count_marker_channel']
             self.PQ_ins_params[PQ_ins_key].TTTR_read_count = self.params[PQ_ins_key]['TTTR_read_count']
-            self.PQ_ins_params[PQ_ins_key].TTTR_RepetitiveReadouts = self.params[PQ_ins_key]['TTTR_RepetitiveReadouts']
             self.PQ_ins_params[PQ_ins_key].T2_WRAPAROUND = np.uint64(self.PQ_ins.get_T2_WRAPAROUND())
             self.PQ_ins_params[PQ_ins_key].T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
             self.PQ_ins_params[PQ_ins_key].T2_READMAX = self.PQ_ins.get_T2_READMAX()
 
-            print PQ_ins_key + ' run PQ measurement, TTTR_read_count ', self.PQ_ins_params[PQ_ins_key].TTTR_read_count, ' TTTR_RepetitiveReadouts' , self.PQ_ins_params[PQ_ins_key].TTTR_RepetitiveReadouts
+            print PQ_ins_key + ' run PQ measurement, TTTR_read_count ', self.PQ_ins_params[PQ_ins_key].TTTR_read_count, ' TTTR_RepetitiveReadouts' , self.params['TTTR_RepetitiveReadouts']
             # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
             rawdata_idx = self.PQ_ins_params[PQ_ins_key].rawdata_idx
 
-            self.PQ_ins_params[PQ_ins_key].dset_hhtime = self.h5data.create_dataset(PQ_ins_key + '/PQ_time-{}'.format(rawdata_idx), 
+            pref = (PQ_ins_key + '/') if num_PQ !=  1 else ''
+
+            self.PQ_ins_params[PQ_ins_key].dset_hhtime = self.h5data.create_dataset(pref + 'PQ_time-{}'.format(rawdata_idx), 
                 (0,), 'u8', maxshape=(None,))
-            self.PQ_ins_params[PQ_ins_key].dset_hhchannel = self.h5data.create_dataset(PQ_ins_key + '/PQ_channel-{}'.format(rawdata_idx), 
+            self.PQ_ins_params[PQ_ins_key].dset_hhchannel = self.h5data.create_dataset(pref + 'PQ_channel-{}'.format(rawdata_idx), 
                 (0,), 'u1', maxshape=(None,))
-            self.PQ_ins_params[PQ_ins_key].dset_hhspecial = self.h5data.create_dataset(PQ_ins_key + '/PQ_special-{}'.format(rawdata_idx), 
+            self.PQ_ins_params[PQ_ins_key].dset_hhspecial = self.h5data.create_dataset(pref + 'PQ_special-{}'.format(rawdata_idx), 
                 (0,), 'u1', maxshape=(None,))
-            self.PQ_ins_params[PQ_ins_key].dset_hhsynctime = self.h5data.create_dataset(PQ_ins_key + '/PQ_sync_time-{}'.format(rawdata_idx), 
+            self.PQ_ins_params[PQ_ins_key].dset_hhsynctime = self.h5data.create_dataset(pref + 'PQ_sync_time-{}'.format(rawdata_idx), 
                 (0,), 'u8', maxshape=(None,))
-            self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber = self.h5data.create_dataset(PQ_ins_key + '/PQ_sync_number-{}'.format(rawdata_idx), 
+            self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber = self.h5data.create_dataset(pref + 'PQ_sync_number-{}'.format(rawdata_idx), 
                 (0,), 'u4', maxshape=(None,))
 
             self.PQ_ins_params[PQ_ins_key].hist_length = np.uint64(self.params[PQ_ins_key]['MAX_HIST_SYNC_BIN'] - self.params[PQ_ins_key]['MIN_HIST_SYNC_BIN'])
-            self.PQ_ins_params[PQ_ins_key].hist = np.zeros((self.hist_length,2), dtype='u4')
+            self.PQ_ins_params[PQ_ins_key].hist = np.zeros((self.PQ_ins_params[PQ_ins_key].hist_length,2), dtype='u4')
       
             self.PQ_ins_params[PQ_ins_key].current_dset_length = 0
 
@@ -379,7 +384,10 @@ class PQMultiDeviceMeasurement(PQMeasurement):
                     ii+=1
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
                     self._keystroke_check('abort')
-                    if _length == 0 or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
+
+                    all_finished = not(np.any([self.PQ_ins_params[PQ_ins_key]._length for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems()]))
+
+                    if all_finished == True or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
                         break 
                 
                 for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
@@ -390,15 +398,19 @@ class PQMultiDeviceMeasurement(PQMeasurement):
 
             for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
 
-                _length = 0
-                _data = np.array([],dtype = 'uint32')
-                for j in range(self.PQ_ins_params[PQ_ins_key].TTTR_RepetitiveReadouts):
+                self.PQ_ins_params[PQ_ins_key]._length = 0
+                self.PQ_ins_params[PQ_ins_key]._data = np.array([],dtype = 'uint32')
+
+            for j in range(self.params['TTTR_RepetitiveReadouts']):
+                for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
                     cur_length, cur_data = PQ_ins.get_TTTR_Data(count = self.PQ_ins_params[PQ_ins_key].TTTR_read_count)
-                    _length += cur_length 
-                    _data = np.hstack((_data,cur_data[:cur_length]))
-               
-                if _length > 0:
-                    if _length == self.PQ_ins_params[PQ_ins_key].T2_READMAX or _length ==  self.PQ_ins_params[PQ_ins_key].TTTR_RepetitiveReadouts * self.PQ_ins_params[PQ_ins_key].TTTR_read_count:
+                    self.PQ_ins_params[PQ_ins_key]._length += cur_length 
+                    self.PQ_ins_params[PQ_ins_key]._data = np.hstack((self.PQ_ins_params[PQ_ins_key]._data,cur_data[:cur_length]))
+            
+            for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
+
+                if self.PQ_ins_params[PQ_ins_key]._length > 0:
+                    if self.PQ_ins_params[PQ_ins_key]._length ==  self.params['TTTR_RepetitiveReadouts'] * self.PQ_ins_params[PQ_ins_key].TTTR_read_count:
                         logging.warning('TTTR record length is maximum length, \
                                 could indicate too low transfer rate resulting in buffer overflow.')
 
@@ -412,12 +424,15 @@ class PQMultiDeviceMeasurement(PQMeasurement):
                         print 'Aborting the measurement: SyncLost flag is high.'
                         break
 
-                    _t, _c, _s = PQ_decode(_data[:_length])
+                    _t, _c, _s = PQ_decode(self.PQ_ins_params[PQ_ins_key]._data[:self.PQ_ins_params[PQ_ins_key]._length])
 
                     hhtime, hhchannel, hhspecial, sync_time, self.PQ_ins_params[PQ_ins_key].hist, sync_number, \
-                                newlength, t_ofl, t_lastsync, self.PQ_ins_params[PQ_ins_key].last_sync_number, counted_markers = \
-                                T2_tools_v3.T2_live_filter(_t, _c, _s, self.PQ_ins_params[PQ_ins_key].hist, t_ofl, t_lastsync, self.PQ_ins_params[PQ_ins_key].last_sync_number,
-                                MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,count_marker_channel)
+                                newlength, self.PQ_ins_params[PQ_ins_key].t_ofl, self.PQ_ins_params[PQ_ins_key].t_lastsync, self.PQ_ins_params[PQ_ins_key].last_sync_number, counted_markers = \
+                                T2_tools_v3.T2_live_filter(_t, _c, _s, self.PQ_ins_params[PQ_ins_key].hist, self.PQ_ins_params[PQ_ins_key].t_ofl,\
+                                self.PQ_ins_params[PQ_ins_key].t_lastsync, self.PQ_ins_params[PQ_ins_key].last_sync_number,
+                                self.PQ_ins_params[PQ_ins_key].MIN_SYNC_BIN, self.PQ_ins_params[PQ_ins_key].MAX_SYNC_BIN, self.PQ_ins_params[PQ_ins_key].MIN_HIST_SYNC_BIN,\
+                                self.PQ_ins_params[PQ_ins_key].MAX_HIST_SYNC_BIN, self.PQ_ins_params[PQ_ins_key].T2_WRAPAROUND,\
+                                self.PQ_ins_params[PQ_ins_key].T2_TIMEFACTOR,self.PQ_ins_params[PQ_ins_key].count_marker_channel)
                     
                     if newlength > 0:
 
@@ -457,11 +472,11 @@ class PQMultiDeviceMeasurement(PQMeasurement):
                             self.PQ_ins_params[PQ_ins_key].dset_hhsynctime.resize((current_dset_length+newlength,))
                             self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber.resize((current_dset_length+newlength,))
 
-                            self.PQ_ins_params[PQ_ins_key].dset_hhtime[current_dset_length:] = self.PQ_ins_params[PQ_ins_key].hhtime
-                            self.PQ_ins_params[PQ_ins_key].dset_hhchannel[current_dset_length:] = self.PQ_ins_params[PQ_ins_key].hhchannel
-                            self.PQ_ins_params[PQ_ins_key].dset_hhspecial[current_dset_length:] = self.PQ_ins_params[PQ_ins_key].hhspecial
-                            self.PQ_ins_params[PQ_ins_key].dset_hhsynctime[current_dset_length:] = self.PQ_ins_params[PQ_ins_key].sync_time
-                            self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber[current_dset_length:] = self.PQ_ins_params[PQ_ins_key].sync_number
+                            self.PQ_ins_params[PQ_ins_key].dset_hhtime[current_dset_length:] = hhtime
+                            self.PQ_ins_params[PQ_ins_key].dset_hhchannel[current_dset_length:] = hhchannel
+                            self.PQ_ins_params[PQ_ins_key].dset_hhspecial[current_dset_length:] = hhspecial
+                            self.PQ_ins_params[PQ_ins_key].dset_hhsynctime[current_dset_length:] = sync_time
+                            self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber[current_dset_length:] = sync_number
 
                             self.PQ_ins_params[PQ_ins_key].current_dset_length += newlength
                             self.h5data.flush()
@@ -469,24 +484,31 @@ class PQMultiDeviceMeasurement(PQMeasurement):
                     if self.PQ_ins_params[PQ_ins_key].current_dset_length > self.params[PQ_ins_key]['MAX_DATA_LEN']:
                         self.PQ_ins_params[PQ_ins_key].rawdata_idx += 1
                         rawdata_idx = self.PQ_ins_params[PQ_ins_key].rawdata_idx
-                        self.PQ_ins_params[PQ_ins_key].dset_hhtime = self.h5data.create_dataset(PQ_ins_key + '/PQ_time-{}'.format(rawdata_idx), 
+
+                        pref = (PQ_ins_key + '/') if num_PQ !=  1 else ''
+
+                        self.PQ_ins_params[PQ_ins_key].dset_hhtime = self.h5data.create_dataset(pref+'PQ_time-{}'.format(rawdata_idx), 
                             (0,), 'u8', maxshape=(None,))
-                        self.PQ_ins_params[PQ_ins_key].dset_hhchannel = self.h5data.create_dataset(PQ_ins_key + '/PQ_channel-{}'.format(rawdata_idx), 
+                        self.PQ_ins_params[PQ_ins_key].dset_hhchannel = self.h5data.create_dataset(pref+'PQ_channel-{}'.format(rawdata_idx), 
                             (0,), 'u1', maxshape=(None,))
-                        self.PQ_ins_params[PQ_ins_key].dset_hhspecial = self.h5data.create_dataset(PQ_ins_key + '/PQ_special-{}'.format(rawdata_idx), 
+                        self.PQ_ins_params[PQ_ins_key].dset_hhspecial = self.h5data.create_dataset(pref+'PQ_special-{}'.format(rawdata_idx), 
                             (0,), 'u1', maxshape=(None,))
-                        self.PQ_ins_params[PQ_ins_key].dset_hhsynctime = self.h5data.create_dataset(PQ_ins_key + '/PQ_sync_time-{}'.format(rawdata_idx), 
+                        self.PQ_ins_params[PQ_ins_key].dset_hhsynctime = self.h5data.create_dataset(pref+'PQ_sync_time-{}'.format(rawdata_idx), 
                             (0,), 'u8', maxshape=(None,))
-                        self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber = self.h5data.create_dataset(PQ_ins_key + '/PQ_sync_number-{}'.format(rawdata_idx), 
+                        self.PQ_ins_params[PQ_ins_key].dset_hhsyncnumber = self.h5data.create_dataset(pref+'PQ_sync_number-{}'.format(rawdata_idx), 
                             (0,), 'u4', maxshape=(None,))         
                         self.PQ_ins_params[PQ_ins_key].current_dset_length = 0
 
                         self.h5data.flush()
 
-        dset_hist = self.h5data.create_dataset('PQ_hist', data=self.hist, compression='gzip')
-        self.h5data.flush()
+        
+        for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():
 
-        for PQ_ins_key, PQ_ins in self.PQ_instruments.iteritems():  
+            pref = (PQ_ins_key + '/') if num_PQ !=  1 else ''
+
+            dset_hist = self.h5data.create_dataset(pref+'PQ_hist', data=self.PQ_ins_params[PQ_ins_key].hist, compression='gzip')
+            self.h5data.flush()
+  
             PQ_ins.StopMeas()
         
             print 'PQ total datasets, events last datase, last sync number:', self.PQ_ins_params[PQ_ins_key].rawdata_idx, self.PQ_ins_params[PQ_ins_key].current_dset_length, self.PQ_ins_params[PQ_ins_key].last_sync_number
@@ -564,11 +586,11 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
 
                 _timer=time.time()
 
-            _length, _data = self.PQ_ins.get_TTTR_Data()
+            self.PQ_ins_params[PQ_ins_key]._length, self.PQ_ins_params[PQ_ins_key]._data = self.PQ_ins.get_TTTR_Data()
                 
-            if _length > 0:
+            if self.PQ_ins_params[PQ_ins_key]._length > 0:
 
-                if _length == T2_READMAX:
+                if self.PQ_ins_params[PQ_ins_key]._length == T2_READMAX:
                     logging.warning('TTTR record length is maximum length, \
                             could indicate too low transfer rate resulting in buffer overflow.')
 
@@ -582,7 +604,7 @@ class PQMeasurementIntegrated(PQMeasurement):#T2_tools_v2 only!
                     print 'Aborting the measurement: SyncLost flag is high.'
                     break
                 
-                _t, _c, _s = PQ_decode(_data[:_length])
+                _t, _c, _s = PQ_decode(self.PQ_ins_params[PQ_ins_key]._data[:self.PQ_ins_params[PQ_ins_key]._length])
 
                 hist0, hist1, \
                     newlength, t_ofl, t_lastsync, last_sync_number = \
@@ -801,9 +823,9 @@ class PQ_Threaded_Measurement(PQMeasurement):
                         break
                 _timer=time.time()
 
-            _length, _data = self.PQ_ins.get_TTTR_Data( TTTR_read_count )
-            if _length > 0:
-                FifoQueue.put( (_length, _data) ) 
+            self.PQ_ins_params[PQ_ins_key]._length, self.PQ_ins_params[PQ_ins_key]._data = self.PQ_ins.get_TTTR_Data( TTTR_read_count )
+            if self.PQ_ins_params[PQ_ins_key]._length > 0:
+                FifoQueue.put( (self.PQ_ins_params[PQ_ins_key]._length, self.PQ_ins_params[PQ_ins_key]._data) ) 
 
         self.PQ_ins.StopMeas()
         

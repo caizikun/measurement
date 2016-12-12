@@ -103,6 +103,9 @@ class purify(PQPurifyMeasurement):
             self.hist_update = np.zeros((self.hist_length,2), dtype='u4')
             self.last_sync_number_update = 0
             self.measurement_progress_first_run = False
+            self.live_updates = 0
+        
+        self.live_updates += 1
 
         if self.live_updates > self.no_of_cycles_for_live_update_reset:
             self.hist_update = copy.deepcopy(self.hist)

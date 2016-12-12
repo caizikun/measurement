@@ -83,8 +83,7 @@ params_lt3['TH_260N'] = {
  	'MAX_SYNC_BIN' :       8500,
  	'MIN_HIST_SYNC_BIN' :  0,#2500
  	'MAX_HIST_SYNC_BIN' :  8500,
- 	'TTTR_RepetitiveReadouts' :  10, #
- 	'TTTR_read_count' : 	1000, #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+ 	'TTTR_read_count' : 	qt.instruments['TH_260N'].get_T2_READMAX(), #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
  	'count_marker_channel' : 4, ##### put plu marker on HH here! needs to be kept!
 }
 
@@ -95,23 +94,23 @@ params_lt3['HH_400'] = {
  	'MAX_SYNC_BIN' :       int(5.7e6),
  	'MIN_HIST_SYNC_BIN' :  int(2e6),#2500
  	'MAX_HIST_SYNC_BIN' :  int(5.7e6),
- 	'TTTR_RepetitiveReadouts' :  10, #
- 	'TTTR_read_count' : 	 qt.instruments['TH_260N'].get_T2_READMAX(), #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+ 	'TTTR_read_count' : 	 qt.instruments['HH_400'].get_T2_READMAX(), #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
  	'count_marker_channel' : 1, ##### put plu marker on HH here! needs to be kept!
 }
 
-
+params_lt3['selected_PQ_ins'] =  ['TH_260N','HH_400']
 params_lt3['measurement_abort_check_interval']    = 2. #sec
+params_lt3['TTTR_RepetitiveReadouts']			  =  1
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
 params_lt3['maximum_meas_time_in_min'] = 60
 params_lt3['do_green_reset'] = False
 
-params_lt3['pulse_start_bin'] = 2050-params_lt3['TH_260N']['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
-params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
-params_lt3['tail_start_bin'] = 2050 -params_lt3['TH_260N']['MIN_SYNC_BIN']       #### BK: 2950
-params_lt3['tail_stop_bin'] = 2050+2000 -params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
-params_lt3['PQ_ch1_delay'] = 55
+params_lt3['TH_260N']['pulse_start_bin'] = 2050-params_lt3['TH_260N']['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
+params_lt3['TH_260N']['pulse_stop_bin'] = 2050+2000-params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['TH_260N']['tail_start_bin'] = 2050 -params_lt3['TH_260N']['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['TH_260N']['tail_stop_bin'] = 2050+2000 -params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['TH_260N']['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10
 

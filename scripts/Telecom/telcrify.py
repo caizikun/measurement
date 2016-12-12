@@ -36,7 +36,7 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement 
 
     def setup(self, **kw):
         telcrify_slave.purify_single_setup.setup(self,**kw)
-        pq.PQMultiDeviceMeasurement.setup(self,selected_PQ_ins = ['TH_260N'],**kw)
+        pq.PQMultiDeviceMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
         qt.msleep(.5)
@@ -72,47 +72,43 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement 
         self.A_aom.turn_off()
         self.repump_aom.turn_off()
 
-
-        PQTelcrifyMeasurement.finish(self)
+        telcrify_slave.purify_single_setup.finish(self)
 
     def live_update_callback(self):
         ''' This is called when the measurement progress is printed in the PQMeasurement run function'''
+        pass
+        # PQ_ins_key = 'TH_260N'
+
+        # if self.measurement_progress_first_run:
         
-        if self.measurement_progress_first_run:
-        
-            self.no_of_cycles_for_live_update_reset = 100
-            self.hist_update = np.zeros((self.hist_length,2), dtype='u4')
-            self.last_sync_number_update = 0
-            self.measurement_progress_first_run = False
+        #     self.no_of_cycles_for_live_update_reset = 100
+        #     self.hist_update = np.zeros((self.PQ_ins_params[PQ_ins_key].hist_length,2), dtype='u4')
+        #     self.last_sync_number_update = 0
+        #     self.measurement_progress_first_run = False
+        #     self.live_updates = 0
 
-        if self.live_updates > self.no_of_cycles_for_live_update_reset:
-            self.hist_update = copy.deepcopy(self.hist)
-            self.last_sync_number_update = self.last_sync_number
+        # self.live_updates += 1
 
-        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
-        pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
-        pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
-        tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
-        tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
-        print 'duty_cycle', self.physical_adwin.Get_FPar(58)
+        # if self.live_updates > self.no_of_cycles_for_live_update_reset:
+        #     self.hist_update = copy.deepcopy(self.PQ_ins_params[PQ_ins_key].hist)
+        #     self.last_sync_number_update = self.PQ_ins_params[PQ_ins_key].last_sync_number
+
+        # print 'current sync, marker_events, dset length:', self.PQ_ins_params[PQ_ins_key].last_sync_number,self.PQ_ins_params[PQ_ins_key].total_counted_markers, self.PQ_ins_params[PQ_ins_key].current_dset_length
+        # pulse_cts_ch0=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['pulse_start_bin']:self.params[PQ_ins_key]['pulse_stop_bin'],0])
+        # pulse_cts_ch1=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['pulse_start_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'] : self.params[PQ_ins_key]['pulse_stop_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'],1])
+        # tail_cts_ch0=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['tail_start_bin']  : self.params[PQ_ins_key]['tail_stop_bin'],0])
+        # tail_cts_ch1=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['tail_start_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'] : self.params[PQ_ins_key]['tail_stop_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'],1])
+        # print 'duty_cycle', self.physical_adwin.Get_FPar(58)
 
 
-        #### update parameters in the adwin
-        if (self.last_sync_number > 0) and (self.last_sync_number != self.last_sync_number_update): 
-            if qt.current_setup == 'lt3':
-
-                tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
-                tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
-                self.physical_adwin.Set_FPar(56, tail_psb_lt3)
-                self.physical_adwin.Set_FPar(57, tail_psb_lt4)
-                 
-                # print 'tail_counts PSB (lt3/lt4)', tail_psb_lt3,tail_psb_lt4
-            else:
-                ZPL_tail = round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
-                Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
-                self.physical_adwin.Set_FPar(56, ZPL_tail)
-                self.physical_adwin.Set_FPar(57, Pulse_counts)
-
+        # #### update parameters in the adwin
+        # if (self.PQ_ins_params[PQ_ins_key].last_sync_number > 0) and (self.PQ_ins_params[PQ_ins_key].last_sync_number != self.last_sync_number_update): 
+            
+        #         tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(self.PQ_ins_params[PQ_ins_key].last_sync_number-self.last_sync_number_update),3)
+        #         tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(self.PQ_ins_params[PQ_ins_key].last_sync_number-self.last_sync_number_update),3)
+        #         self.physical_adwin.Set_FPar(56, tail_psb_lt3)
+        #         self.physical_adwin.Set_FPar(57, tail_psb_lt4)
+            
     
 
 

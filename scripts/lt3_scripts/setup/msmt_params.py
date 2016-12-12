@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL3'
+sil_name = 'SIL2'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
