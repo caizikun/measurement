@@ -3578,7 +3578,7 @@ config['adwin_cav1_processes'] = {
             'file' : 'SetDac.TB3',
             'par' : {
                 'dac_no' : 20,
-                },
+                                },
             'fpar' : {
                 'dac_voltage' : 20,
                 },
@@ -3622,29 +3622,32 @@ config['adwin_cav1_processes'] = {
                     ['sync_ch'                     ,   1],
                     ['nr_steps'                    ,   1],
                     ['nr_scans'                    ,   1],                    
-                    ['wait_cycles'                 ,  50],
+                    ['wait_cycles'                 ,  10],
                     ['delay_us'                    ,   0],
-                    ['ADC_averaging_cycles'        ,   50],
-                    ['scan_auto_reverse'           ,   50],
+                    ['ADC_averaging_cycles'        ,   1],
+                    ['scan_auto_reverse'           ,    0],
+                    ['cycle_duration'              ,  1000], #1000 corresponds to 300kHz in adwin. this is slow enough for ADC
+                    ['save_cycles'                 ,  100]
                     ],
-                'params_long_index'  : 20,
-                'params_long_length' : 15,
-                'params_float' : [
-                    ['start_voltage_1'            ,  0.0],
-                    ['start_voltage_2'            ,  0.0],
-                    ['start_voltage_3'            ,  0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'laser_frequency' : 13,
-                    },
-                'data_long'   : {
-                    'timestamps' : 12,
+            'params_long_index'  : 20,
+            'params_long_length' : 100,
+            'params_float' : [
+                ['start_voltage_1'            ,  0.0],
+                ['start_voltage_2'            ,  0.0],
+                ['start_voltage_3'            ,  0.0],
+                ['voltage_step'               , 0.01],
+                ],
+            'params_float_index'  : 21,
+            'params_float_length' : 100,
+            'par' : {
+                },
+            'data_float' : {
+                'photodiode_voltage' : 24,
+                'laser_frequency' : 25,
+                'photodiode_voltage_ms' :27,
+                },
+            'data_long'   : {
+                'timestamps' : 26,
                 },
             },
 

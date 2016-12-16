@@ -594,7 +594,7 @@ class adwin(Instrument):
             time.sleep(0.05)
 
         p = self.processes['linescan']
-        dacs = [ self.dacs[n] for n in dac_names ]
+        dacs = [ self.dacs[n] for n in dac_names ] 
         
         # set all the required input params for the adwin process
         # see the adwin process for details

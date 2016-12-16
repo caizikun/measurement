@@ -163,6 +163,7 @@ class ADwin_Pro_II(Instrument): #1
         success = self._adwin32.e_Get_Data(data.ctypes.data,5,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
             error_text= str(ErrorMsg.value) + ':' + self.Get_Error_Text(ErrorMsg.value)
+            print 'Get_Data_Float: index:',index, 'data:', data, ', count; ', count
             logging.warning(self.get_name() + ' : error in ADwin.Get_Data_Float: %s'%error_text)
         return data
 
