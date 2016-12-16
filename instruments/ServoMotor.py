@@ -40,9 +40,9 @@ class ServoMotor(Instrument):
         #defaults
         self.set_channel(0)
         self.set_speed(20)
-        self._position = 700
+        self._position = 706
         self.set_in_position(810)
-        self.set_out_position(700)
+        self.set_out_position(706)
         
         # override from config       
         cfg_fn = os.path.abspath(

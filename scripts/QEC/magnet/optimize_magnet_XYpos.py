@@ -1,10 +1,12 @@
 """
 Script for fine optimization of the magnet XY-position (using the average ms=-1, ms=+1 freq).
-Fine optimization measures only the center resonance
+Fine optimization measures only a single of th ethree 14N lines 
 Important: choose the right domain for the range of positions in get_magnet_position in magnet tools!
+
+NOTE by THT: these scripts were previously only used in LT2 with an attocube magnet scanner. Now they are also used with
+othe rmagnet scanner, but the script is not yet fully cleaned up.
 """
 import time
-
 import numpy as np
 import qt
 import msvcrt
@@ -33,19 +35,17 @@ f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
 N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
 ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
-qt.exp_params['protocols'][SAMPLE]['AdwinSSRO']['SP_duration'] = 50 #XXXXXXXXXXXXXXXXXX
-
 if __name__ == '__main__':
     
     ######################
     ## Input parameters ##
     ######################
 
-    axis = 'Y_axis'               # X usually moves 2x slower than Y (current settings)  
-    #scan_range       = 200        # From -scan range/2 to +scan range/2, Y  
+    axis = 'Y_axis'                     # X usually moves 2x slower than Y (current settings)  
+    #scan_range       = 200             # From -scan range/2 to +scan range/2, Y  
     #no_of_steps      = 5               # with a total of no_of_steps measurment points.
-    min_counts_before_optimize = 5e4    #optimize position if counts are below this
-    # mom.set_mode(axis, 'stp')     # turn on or off the stepper
+    min_counts_before_optimize = 5e4    # optimize position if counts are below this
+    # mom.set_mode(axis, 'stp')         # turn on or off the stepper
     laser_power = 10e-6
     save_plots = True
     fine_only = False

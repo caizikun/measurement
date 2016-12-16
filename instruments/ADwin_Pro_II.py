@@ -122,7 +122,7 @@ class ADwin_Pro_II(Instrument): #1
         return ret
 
     def Load(self, filename):
-        # print 'filename', filename
+        #print 'filename', filename
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADBload(filename,self._address,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:

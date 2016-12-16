@@ -41,17 +41,17 @@ dimension_sets = {
 
             'lt3' : {
                 'x' : {
-                    'scan_length' : 1.0,
+                    'scan_length' : 1.50,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 0.8,
+                    'scan_length' : 1.50,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 3.0,
+                    'scan_length' : 1.5,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
@@ -66,12 +66,12 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 1.1,
+                    'scan_length' : 1.3,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 1.3,
+                    'scan_length' : 2.,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },

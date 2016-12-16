@@ -4,10 +4,6 @@
 
 from panel import Panel
 from ui_counters import Ui_Panel
-import qt
-import adwins as adwinscfg
-# import adwin
-
 
 from PyQt4 import QtCore
 
@@ -18,20 +14,6 @@ class CounterPanel(Panel):
         # designer ui:
         self.ui = Ui_Panel()
         self.ui.setupUi(self)
-
-        # self._adwin = qt.instruments[adwin]
-
-        # adwin = qt.instruments['adwin']
-        physical_adwin = qt.instruments.create('physical_adwin','ADwin_Gold_I',address=1)
-        # physical_adwin = qt.instruments.create('physical_adwin','adwin',address=1)
-
-        adwin = qt.instruments.create('adwin', 'adwin', 
-                adwin=physical_adwin,
-                processes = adwinscfg.config['adwin_telecom_processes'],
-                default_processes = ['set_dac', 'read_adc'], 
-                dacs = adwinscfg.config['adwin_telecom_dacs'],
-                tags = ['virtual'],
-                process_subfolder = 'adwin_gold_1',)
 
         for p in [self.ui.plot1, self.ui.plot2]:
             p.left_axis.title = 'counts [Hz]'
@@ -52,7 +34,7 @@ class CounterPanel(Panel):
         self.ui.plot1.display_time = 20
         self.ui.plot2.display_time = 20
         self.ui.t_range.setValue(20)
-        print "Test2"
+
         # print adwin.Get_FPar(14)
         # print adwin.get_read_adc_var('fpar')[0][1]
         

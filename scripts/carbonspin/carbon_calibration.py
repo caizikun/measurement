@@ -24,6 +24,7 @@ electron_transition_string = qt.exp_params['samples'][SAMPLE]['electron_transiti
 
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
+reload(funcs)
 n = 1
 
 #######################################################
@@ -43,7 +44,7 @@ f_ms0 = True
 
 f_ms1 = True
 
-self_phase_calibration = False
+self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
@@ -51,11 +52,11 @@ check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = False
 cross_phase_steps       = 1
 
-# Note that wont save to file if debug is on.
+# Note that you wont save to msmt params if debug is on.
 debug = False 
 
 ### repetitions per data point.
-freq_reps = 500
+freq_reps = 750
 phase_reps = 500
 crosstalk_reps = 500
 
@@ -135,7 +136,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
-    m.params['pts'] = 21
+    m.params['pts'] = 25
     if carbon_nr == 6:
         m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])

@@ -28,7 +28,8 @@ class Thorlabs_PM100D(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address)
+        rm = visa.ResourceManager('C:/Windows/system32/visa32.dll')
+        self._visa = rm.open_resource(self._address)
 
         self.add_parameter('identification',
             flags=Instrument.FLAG_GET,
@@ -48,6 +49,10 @@ class Thorlabs_PM100D(Instrument):
             type=types.FloatType,
             units='nm')
 
+        self.add_parameter('autoranging',
+            flags = Instrument.FLAG_GETSET,
+            type = types.BooleanType)
+
         if reset:
             self.reset()
         else:
@@ -60,6 +65,7 @@ class Thorlabs_PM100D(Instrument):
         self.get_power()
         self.get_head_info()
         self.get_wavelength()
+        self.get_autoranging()
 
     def do_get_identification(self):
         return self._visa.ask('*IDN?')
@@ -80,3 +86,10 @@ class Thorlabs_PM100D(Instrument):
         valnm=val*1e9
         self._visa.write('CORR:WAV %e' % valnm)
 
+
+    def do_get_autoranging(self):
+        ans = self._visa.ask('POW:RANG:AUTO?')
+        return bool(int(ans))
+
+    def do_set_autoranging(self, val):
+        self._visa.write('POW:RANG:AUTO %i' % int(val))

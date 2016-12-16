@@ -1,4 +1,4 @@
-ssro.AdwinSSRO.adwin_processes_key = 'adwin_lt1_processes'
+measurement.adwin_processes_key = 'adwin_lt1_processes'
 
 # REGULAR SETTING: A = NF, E = Matisse
 ssro.AdwinSSRO.E_aom = qt.instruments['MatisseAOM_lt1']

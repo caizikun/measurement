@@ -122,10 +122,12 @@ class Attocube_ANC350(Instrument): #1
         self._attodll.PositionerGetPosition(self._device,c_int(axis),byref(Position))
         return float(Position.value)/1000.
 
-    def MoveNSteps(self,axis, direction, steps):
+    def MoveNSteps(self,axis, steps):
         '''
-        Move given axis given number of steps in given direction (0:forward/1:backward)
+        Move given axis given number of steps in given direction (negative:backward, positive:forward (into sample at LT1))
         '''
+        direction = 1 if steps<0 else 0
+        steps  = abs(steps)
         status = self._attodll.PositionerStepCount(self._device,c_int(axis),c_int(steps))
         if self._handle_error(status):
             status = self._attodll.PositionerMoveSingleStep(self._device,c_int(axis),c_int(direction))

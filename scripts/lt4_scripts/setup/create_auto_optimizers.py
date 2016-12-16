@@ -18,15 +18,55 @@ if True:
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='gate_plot')
 
+# if True:
+#     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
+#     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+#     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
+#     _getnorm = lambda: qt.instruments['physical_adwin'].Get_Par(71)
+#     yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'simple_optimizer',  
+#             set_control_f=_setctrl_yellow_freq , get_control_f=_getctrl_yellow_freq,
+#             get_value_f=_getval, get_norm_f=_getnorm, 
+#             plot_name='yellow_plot')
+
 if True:
     _setctrl_yellow_freq = lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
     _getctrl_yellow_freq=  lambda: qt.instruments['physical_adwin'].Get_FPar(42)
     _getval  = lambda: qt.instruments['physical_adwin'].Get_Par(76)
     _getnorm = lambda: qt.instruments['physical_adwin'].Get_Par(71)
-    yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'simple_optimizer',  
+    yellowfrq_optimizer = qt.instruments.create('yellowfrq_optimizer', 'extended_optimizer',  
             set_control_f=_setctrl_yellow_freq , get_control_f=_getctrl_yellow_freq,
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='yellow_plot')
+
+if True:
+    _get_freq_yellow=lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    _set_freq_yellow=lambda x: qt.instruments['physical_adwin'].Set_FPar(52,x)
+    _get_counts_yellow=lambda: qt.instruments['physical_adwin'].Get_Par(76)
+    _get_attemps_yellow=lambda: qt.instruments['physical_adwin'].Get_Par(71)
+
+    _get_freq_gate=lambda: qt.instruments['adwin'].get_dac_voltage('gate')
+    _set_freq_gate=lambda x: qt.instruments['adwin'].set_dac_voltage(('gate',x))
+    _get_counts_gate=lambda: qt.instruments['physical_adwin'].Get_Par(70)
+    _get_attemps_gate=lambda: qt.instruments['physical_adwin'].Get_Par(72)
+
+    _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
+    _set_freq_newfocus=lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
+
+    auto_optimizer = qt.instruments.create('auto_optimizer', 'auto_optimizer_2',  
+            get_freq_yellow = _get_freq_yellow, set_freq_yellow = _set_freq_yellow, get_counts_yellow = _get_counts_yellow, get_attemps_yellow = _get_attemps_yellow,
+            get_freq_gate = _get_freq_gate, set_freq_gate = _set_freq_gate, get_counts_gate = _get_counts_gate, get_attemps_gate = _get_attemps_gate,
+            get_freq_newfocus = _get_freq_newfocus, set_freq_newfocus = _set_freq_newfocus, plot_name='opt_plot')                
+
+if True:
+    _get_freq_yellow=lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    _get_freq_gate=lambda: qt.instruments['adwin'].get_dac_voltage('gate')
+    _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
+    # Logger takes '__name__' parameter as column header
+    _get_freq_yellow.__name__ = 'yellow_freq'
+    _get_freq_gate.__name__ = 'gate_voltage'
+    _get_freq_newfocus.__name__ = 'newfocus_freq'
+    _function_list = [_get_freq_yellow, _get_freq_gate, _get_freq_newfocus]
+    frequency_logger = qt.instruments.create('frequency_logger', 'triggered_logger', function_list = _function_list)  
 
 if True:
     _setctrl_nf = lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
@@ -37,5 +77,18 @@ if True:
             set_control_f=_setctrl_nf, get_control_f=_getctrl_nf, 
             get_value_f=_getval, get_norm_f=_getnorm, 
             plot_name='nf_plot')
+
+if True:
+    _get_freq_yellow=lambda: qt.instruments['physical_adwin'].Get_FPar(42)
+    _get_freq_gate=lambda: qt.instruments['adwin'].get_dac_voltage('gate')
+    _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
+    # Logger takes '__name__' parameter as column header
+    _get_freq_yellow.__name__ = 'yellow_freq'
+    _get_freq_gate.__name__ = 'gate_voltage'
+    _get_freq_newfocus.__name__ = 'newfocus_freq'
+    _function_list = [_get_freq_yellow, _get_freq_gate, _get_freq_newfocus]
+    frequency_logger = qt.instruments.create('frequency_logger', 'triggered_logger', function_list = _function_list)            
+
+
 if True:
     purification_optimizer  = qt.instruments.create('purification_optimizer' , 'purification_optimizer', setup_name='lt4')

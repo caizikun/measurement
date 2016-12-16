@@ -35,7 +35,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr.inc
+'#INCLUDE .\cr.inc
+#INCLUDE .\cr_mod.inc
 
 #DEFINE max_SP_bins       500 ' not used anymore? Machiel 23-12-'13
 #DEFINE max_sequences     100

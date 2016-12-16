@@ -23,10 +23,10 @@ class adwin_rt2(adwin):
 
         # print self.adcs['telecom_temperature']
         # linescanning
-        self.add_parameter('dacs',
-            type = types.TupleType)
-        self.add_parameter('adcs',
-            type = types.TupleType)
+        # self.add_parameter('dacs',
+        #     type = types.TupleType)
+        # self.add_parameter('adcs',
+        #     type = types.TupleType)
 
         self.add_function('linescan')
         self.add_function('get_linescan_counts')

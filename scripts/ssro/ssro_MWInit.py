@@ -63,17 +63,24 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
 
     for mult, mw2, s in zip(multiplicity, mw2, el_states):
         #selecting correct parameters
+        if s == 'msm1':
+            m.params['Hermite_pi_length'] = 100e-9
+            m.params['Hermite_pi_amp'] = 0.368
+            m.params['electron_transition'] = '_m1'
+            m.params['mw_frq'] = 1.705328e9
+
         m.params['multiplicity'] = mult
         ### need to select the correct frequency
 
 
         m.MW_pi = pulse.cp(ps.pi_pulse_MW2(m), phase = 0) if mw2 else pulse.cp(ps.X_pulse(m), phase = 0)
-        m.autoconfig() 
-        m.generate_sequence(upload=True, pulse_pi = m.MW_pi)
 
+        m.autoconfig()
+        m.generate_sequence(upload=True, pulse_pi = m.MW_pi)
+        m.setup()
         if not debug:
             print 'electron state: ' + str(s)
-            m.run(autoconfig=False)
+            m.run(setup = False,autoconfig=False)
             m.save(s)
     m.finish()
 
@@ -81,13 +88,13 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
 
 if __name__ == '__main__':
 
-    mult = [0,1]#,1]
-    mw2  = [False, False]#,True]
-    el_states = ['ms0','msp1']#,'msm1']
+    mult = [0,1,1]
+    mw2  = [False, False,False]
+    el_states = ['ms0','msp1','msm1']
     debug = False
 
     stools.turn_off_all_lasers()
-    ssro_MWInit(SAMPLE_CFG + '_ssro_MWInit', 
+    ssro_MWInit(SAMPLE_CFG + '_SSROCalibration_MWInit', 
             multiplicity = mult, 
             debug = debug, 
             mw2= mw2, 

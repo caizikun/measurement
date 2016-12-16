@@ -13,7 +13,14 @@ def turn_off_lasers(names):
 
 def turn_off_all_lasers():
     #set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])#,'PulseAOM']) ### XXX Still have to add and pulse
+    
+    if 'PhaseAOM' in qt.instruments.get_instrument_names():
+        turn_off_lasers(['PhaseAOM'])
+
+    if 'PulseAOM' in qt.instruments.get_instrument_names():
+        turn_off_lasers(['PulseAOM'])
 
 def turn_off_all_lt4_lasers():
     turn_off_all_lasers()

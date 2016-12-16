@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD276629  TUD276629\localadmin
+' Info_Last_Save                 = TUD277246  DASTUD\tud277246
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -94,6 +94,8 @@ INIT:
    
   
   IF ((PxAction = 1) OR (PxAction = 2)) THEN
+    CONF_DIO(0011b)  'configure DIO 00:14 as output, all other ports as input
+    DIGOUT(14,0)
     CNT_ENABLE(000b)                                        'Stop counter 1, 2 and 3
     CNT_MODE(1, 00001000b)                                  '
     CNT_MODE(2, 00001000b)
@@ -110,8 +112,6 @@ INIT:
     Par_49 = 1
     Par_50 = 0                                                            'tell resonant counting process to sum its data into par 45-48
   ENDIF
-  
-  
     
  
 EVENT:
@@ -123,16 +123,22 @@ EVENT:
     CNT_LATCH(111b)                                         'latch counters
     DATA_11[CurrentStep] = CNT_READ_LATCH(1)                 'read latch A of counter 1
     DATA_12[CurrentStep] = CNT_READ_LATCH(2)                 'read latch A of counter 2
-    DATA_13[CurrentStep] = CNT_READ_LATCH(3)                 'read latch A of counter 3
+    DATA_13[CurrentStep] =CNT_READ_LATCH(3)              'read latch A of counter 3' DATA_11[CurrentStep]+ DATA_12[CurrentStep]'  Hack sum countrates    
     CNT_ENABLE(000b)                                        'Stop counters
     CNT_CLEAR(111b)                                         'Clear counters
     CNT_ENABLE(111b)                                        'Start counters again
     TimeCntROStop = READ_TIMER()
     FPar_21 = (TimeCntROStart - TimeCntROStop) / 300.0      ' Time the RO took in us
+    IF (CurrentStep > 1) then
+      DIGOUT(14,1)  ' AWG trigger
+      CPU_SLEEP(100)               ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+      DIGOUT(14,0)
+      Inc(Par_80)
+    ENDIF
   ENDIF
   IF (PxAction = 2) THEN
     ' DEBUG FPar_24 = 42.0
-    DATA_15[CurrentStep] = FPar_2
+    DATA_15[CurrentStep] = FPar_5 'FPar_46
   ENDIF
   
   IF (PxAction = 3) THEN

@@ -4,7 +4,7 @@ config['adwin_lt1_dacs'] = {
         'atto_y' : 2,
         'atto_z' : 8,  # dac 3 is no longer working with the ATTO CONTROLLER!
         'yellow_aom_frq': 4,
-        'gate_mod' : 5, #not yet N
+        'newfocus_frq' : 5, #not yet N
         'velocity1_aom' : 6,
         'velocity2_aom' : 7,
         'yellow_aom' : 3, #IT WORKS FINE FOR THE AOM CONTROLLER THOUGH.
@@ -50,6 +50,7 @@ config['adwin_lt1_processes'] = {
                 'get_supplemental_data' : 15,
                 },
             },
+
 
         'counter' : {
 
@@ -394,6 +395,46 @@ config['adwin_lt1_processes'] = {
                 'completed_reps'    : 73,
             },
         },
+
+        'laserscan_green_red' : {
+
+            'index' : 9,
+            'file' : 'laserscan_green_red.TB9',
+            'params_long' : [
+                ['freq_dac_channel'         ,   7],
+                ['green_aom_dac_channel'    ,   8 ],
+                ['red_aom_dac_channel'      ,   5], 
+                ['noof_pixels'              ,   200],
+                ['pixel_time'               , 100000], #us
+                ['green_time'               , 10], #us
+                ['red_time'                 , 100], #us
+                ['wait_after_green_time'    , 10], #us
+            ],
+            'params_long_index'  : 20,
+            'params_float' : [
+                    ['green_voltage'        , 0.8],
+                    ['red_voltage'          , 0.8],
+                   
+                    ['scan_start_voltage'   , 0. ],
+                    ['scan_stop_voltage'    , 0. ],
+                    ['green_off_voltage'    , 0.],
+                    ['red_off_voltage'      , 0.],
+                    ],
+            'params_float_index'  : 21,
+            'par' : {
+                'pixel_clock' : 4,
+                },
+            'fpar' : {
+                'laser_freq' : 46,
+                },
+            'data_long' : {
+                'counts' : [11,12,13],
+                },
+            'data_float' : {
+                'laser_frequencies' : 15,
+                'voltages' : 16
+                },
+            },
 
         'integrated_ssro_msp1' : {
                 'index' : 9,
@@ -2501,7 +2542,7 @@ config['adwin_pro_processes'] = {
 
         'integrated_ssro' : {
                 'index' : 9,
-                'file' : 'integrated_ssro.TB9',
+                'file' : 'integrated_ssro_AWG_controlled.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['AWG_start_DO_channel'        ,  16],
@@ -2516,6 +2557,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
+                    ['AWG_controlled_readout'      ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
@@ -2819,6 +2861,9 @@ config['adwin_pro_processes'] = {
                     ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
                     ['phase_correct_max_reps'          ,   5],   
                     ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
+
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2830,7 +2875,7 @@ config['adwin_pro_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['phase_per_sequence_repetition'    , 0.],
                     ['phase_per_compensation_repetition', 0.],
-                    ['total_phase_offset_after_sequence', 0.],
+                    ['phase_feedback_resolution', 4.5],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2845,20 +2890,29 @@ config['adwin_pro_processes'] = {
                 'data_long' : {
                     'CR_before'      : 22,
                     'CR_after'       : 23,
-                    # 'C13_MBI_starts'   : 24,  # number of MBI attempts
-                    # 'C13_MBI_attempts' : 25,  # number of MBI attempts needed in the successful cycle
-                    # 'SSRO_result_after_Cinit'   : 27, # SSRO result after mbi / swap step
                     'SP_hist'                   : 29,    #SP histogram
                     'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
                     'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
-                    # 'SSRO_after_electron_carbon_SWAP_result' : 37,  # SSRO_after_electron_carbon_SWAP_result
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
-                    'sync_number'               : 108, # current sync number to compare with HydraHarp data
+                    },
+                'data_float' : {
+                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
+                    'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
+                    },
+                },
+                'test_sin_scan' : {
+                'index' : 8,
+                'file' : 'test_sin_scan_wavelength.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'amp'           : 12, # Amplification of sin
                     },
                 },
         }
@@ -2900,6 +2954,7 @@ config['adwin_rt2_dacs'] = {
         'atto_x' : 1,
         'atto_y' : 2,
         'atto_z' : 3,
+        'green_aom': 4,
         'telecom_delta_temperature': 8
         }
 
@@ -3020,6 +3075,8 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_2' : 9, #D
         'gate_mod': 10, #D
         'yellow_aom_frq':11, #D
+        'phase_aom':12, #D
+        'yellow_current':13 #D
         }
 
 config['adwin_m1_dacs'] = {

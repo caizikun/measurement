@@ -19,9 +19,10 @@ class NewportAgilisUC(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address,
-                        baud_rate=921600, data_bits=8, stop_bits=1,
-                        parity=visa.no_parity, term_chars='\r')
+        rm = visa.ResourceManager()
+        self._visa = rm.open_resource(self._address,
+                        baud_rate=921600, data_bits=8, stop_bits=visa.constants.StopBits.one,
+                        parity=visa.constants.Parity.none, write_termination='\r',read_termination = '\r\n',query_delay=0.1)
         self._axes = (1,2) #this is the number of axes per channel          
 
         if ins_type == 'UC2':
@@ -57,14 +58,13 @@ class NewportAgilisUC(Instrument):
                 channels=self._axes)
 
         self.add_parameter('absolute_position',
-                flags=Instrument.FLAG_SET,
+                flags=Instrument.FLAG_GETSET,
                 type=types.IntType,
                 channels=self._axes)
 
         self.add_parameter('limit_status',
                 flags=Instrument.FLAG_GET,
-                type=types.StringType,
-                channels=self._axes)
+                type=types.StringType)
 
         self.add_parameter('relative_position',
                 flags=Instrument.FLAG_SET,
@@ -110,6 +110,7 @@ class NewportAgilisUC(Instrument):
         self.add_function('reset')
         self.add_function('stop_moving')
         self.add_function('set_zero_position')
+        self.add_function('jog_mode_string')
 
         #example convienience usage functions
         self.add_function('quick_scan')
@@ -146,12 +147,18 @@ class NewportAgilisUC(Instrument):
             self._visa.write('%dZP'%axis)
             print 'Zero position axis %d set to current position.'%axis
 
+    def visa_ask(self,cmd):
+        try:
+            ans = self._visa.ask(cmd)[len(cmd)-1:]
+        except visa.VisaIOError as e:
+            if e.error_code == visa.constants.VI_ERROR_TMO and cmd != 'TE?':
+                err = self.get_error()
+                raise(Exception(self.get_name() + ': device error: ' + err))
+            else:
+                raise e
+        return ans
 
-    def do_get_jog(self, channel): #OK!
-        """
-        Returns the speed during a jog session.
-        """
-        axis=channel
+    def jog_mode_string(self,jogmode):
         jog_dict = {-4 : 'Negative direction, 666 steps/s at defined step amplitude.',
                     -3 : 'Negative direction, 1700 steps/s at max. step amplitude.',
                     -2 : 'Negative direction, 100 step/s at max. step amplitude.',
@@ -161,12 +168,15 @@ class NewportAgilisUC(Instrument):
                     2 : 'Positive direction, 100 steps/s at max. step amplitude.',
                     3 : 'Positive direction, 1700 steps/s at max. step amplitude.',
                     4 : 'Positive direction, 666 steps/s at defined step amplitude.'}
-        try:
-            [ch, rawans] = self._visa.ask_for_values('%dJA?'%axis)
-            ans = jog_dict[rawans]
-        except:
-            logging.warning(self.get_name() +': '+ self.get_error())
-            return -1
+        return jog_dict[int(jogmode)]
+        
+
+    def do_get_jog(self, channel): #OK!
+        """
+        Returns the speed during a jog session.
+        """
+        axis=channel
+        ans = self.visa_ask('%dJA?'%axis)
         return ans
 
     def do_set_current_channel(self,channel):
@@ -183,7 +193,7 @@ class NewportAgilisUC(Instrument):
         Sets the currently active channel. Only available for the UC8 type controller
         """
         if self._ins_type == 'UC8':
-            ans = int(self._visa.ask_for_values('CC?')[0])
+            ans = int(self.visa_ask('CC?'))
         else:
             logging.warning(self.get_name()+': This function is only available for the UC8 type controller')
             return False
@@ -213,7 +223,7 @@ class NewportAgilisUC(Instrument):
         like models AG-LS25, AG-M050L and AG-M100L.
         """
         axis=channel
-        ans = self._visa.ask_for_values('%dMA'%axis)[0]
+        ans = int(self.visa_ask('%dMA?'%axis))
         return ans
 
 
@@ -243,7 +253,7 @@ class NewportAgilisUC(Instrument):
         limit switch like models AG-LS25, AG-M050L and AG-M100L.
         """
         axis=channel
-        ans = self._visa.ask('%dPA?'%axis)
+        ans = self.visa_ask('%dPA?'%axis)
         return ans
 
     def do_set_absolute_position(self, target_position, channel): #DON'T USE WITH PR100
@@ -262,14 +272,13 @@ class NewportAgilisUC(Instrument):
         PH2 Limit switch of axis #2 is active, limit switch of axis #1 is not active
         PH3 Limit switch of axis #1 and axis #2 are active
         """        
-        self._visa.write('PH')
-        rawans = self._visa.read_values()[0]
+        rawans = self.visa_ask('PH?')
         status_dict = {0 : 'No limit switch is active',
                 1 : 'Limit switch of axis #1 is active, limit switch of axis #2 is not active',
                 2 : 'Limit switch of axis #2 is active, limit switch of axis #1 is not active',
                 3 : 'Limit switch of axis #1 and axis #2 are active'}
 
-        return status_dict[rawans]
+        return status_dict[int(rawans)]
 
     def do_set_relative_position(self, noof_steps, channel, verbose = False): #OK!
         """
@@ -300,7 +309,7 @@ class NewportAgilisUC(Instrument):
         direction = '+' or '-' for positive or negative direction
         """
         axis=channel
-        [ch, ans] = self._visa.ask_for_values('%dSU%s?'%(axis,direction))
+        ans = self.visa_ask('%dSU%s?'%(axis,direction))
         return int(ans)
 
     def do_set_step_amplitude(self, step_amplitude, channel): #OK!
@@ -318,7 +327,7 @@ class NewportAgilisUC(Instrument):
         """
         Returns error of the previous command.
         """  
-        rawans = self._visa.ask('TE')
+        rawans = self.visa_ask('TE?')
         err_dict = {0 : 'No error', 
                     -1 : 'Unknown command',
                     -2 : 'Axis out of range (must be 1 or 2, or must not be specified)',
@@ -326,11 +335,8 @@ class NewportAgilisUC(Instrument):
                     -4 : 'Parameter nn out of range',
                     -5 : 'Not allowed in local mode',
                     -6 : 'Not allowed in current state'}
-        
-        try:
-            ans = err_dict[int(rawans[2:len(rawans)])]
-        except:
-            ans = 'No error'
+    
+        ans = err_dict[int(rawans)]
 
         return ans
 
@@ -345,9 +351,7 @@ class NewportAgilisUC(Instrument):
         direction minus the number of steps in backward direction as Integer.
         """
         axis=channel
-        self._visa.write('%dTP'%axis)
-        [ch_nr, ans] = self._visa.read_values()
-
+        ans = self.visa_ask('%dTP?'%axis)
         return int(ans)
 
     def do_get_status(self, channel, return_type = 'cooked'): #OK!
@@ -363,7 +367,7 @@ class NewportAgilisUC(Instrument):
         3   Moving to limit (currently executing MV, MA, PA commands)
         """
         axis=channel
-        [ch, rawans] = self._visa.ask_for_values('%dTS'%axis)
+        rawans = self.visa_ask('%dTS?'%axis)
         status_dict = {0 : 'Ready (not moving)',
                 1 : 'Stepping (currently executing a PR command)',
                 2 :  'Jogging (currently executing a JA command with command parameter different than 0).', 
@@ -372,7 +376,7 @@ class NewportAgilisUC(Instrument):
         if return_type == 'raw':
             ret = int(rawans)
         else:
-            ret = status_dict[rawans]
+            ret = status_dict[int(rawans)]
 
         return ret
 

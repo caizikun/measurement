@@ -56,10 +56,6 @@ class simple_optimizer(Instrument):
         self.load_cfg()
         self.save_cfg()
         
-    def get_all_cfg(self):
-        for n in self._parlist:
-            self.get(n)
-        
     def load_cfg(self):
         params_from_cfg = self.ins_cfg.get_all()
         for p in params_from_cfg:
@@ -71,7 +67,7 @@ class simple_optimizer(Instrument):
             self.ins_cfg[param] = value
             
     def scan(self):
-        
+        print 'Hi'
         initial_setpoint = self._get_control_f()
         scan_min = initial_setpoint + self._scan_min/2.
         scan_max = initial_setpoint + self._scan_max/2.
@@ -93,17 +89,18 @@ class simple_optimizer(Instrument):
 
             if self.get_dwell_after_set():
 
-                #st = time.time()
+                st = time.time()
+                if self._dwell_time > 0.04:
+                    while (time.time() - st <= self._dwell_time) and (finished == 0):
+                        qt.msleep(0.02)
 
-                # while (time.time() - st <= self._dwell_time) and (finished == 0):
-                #     qt.msleep(0.02)
+                        true_udrange = np.append(true_udrange,self._get_control_f())
+                        values = np.append(values,self.get_value())
 
-                #     true_udrange = np.append(true_udrange,self._get_control_f())
-                #     values = np.append(values,self.get_value())
-
-                #     if values[-1] > self.get_good_value():
-                #         finished = 1
-
+                        if values[-1] > self.get_good_value():
+                            finished = 1
+            else:
+                
                 qt.msleep(self._dwell_time)
 
                 true_udrange = np.append(true_udrange,self._get_control_f())

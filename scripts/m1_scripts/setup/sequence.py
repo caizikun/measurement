@@ -14,14 +14,16 @@ qt.pulsar = pulsar.Pulsar()
 qt.pulsar.AWG_type = 'opt09'
 qt.pulsar.clock = 1e9
 
+print 'using the sequence.py of M1 and reloaded it'
+
 ### MW (Still calibrate delays)
-qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=2, #name = 'MW_1'
-    low=-2.0, offset=0., delay=200e-9, active=True)
-qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=2,  #name = 'MW_2'
-    low=-2.0, offset=0., delay=200e-9, active=True)
+qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1, #name = 'MW_1'
+    low=-1.0, offset=0., delay=200e-9, active=True)
+qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1,  #name = 'MW_2'
+    low=-1.0, offset=0., delay=200e-9, active=True)
 
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=267e-9, active=True) 
+    high=2.0, low=0, offset=0., delay=240e-9, active=True) 
 
 ### RF (Still calibrate delays)
 qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
