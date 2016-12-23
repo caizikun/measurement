@@ -175,7 +175,7 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.running_task = None
         
 
-        self.cycle_duration = 1000
+        self.cycle_duration = 1000 #means running at 300 kHz ;  3000 here corresponds to 100 kHz
 
         self.data = None
         self.PD_signal = None
@@ -790,14 +790,14 @@ class cavity_scan_manager(CyclopeanInstrument):
 
 
     def scan_photodiode(self, scan_type, nr_steps = 100, nr_scans = 5, wait_cycles = 50, 
-            start_voltage = -3, end_voltage = 3, initial_voltage =0, use_sync = 0, \
+            start_voltage = -3, end_voltage = 3, initial_voltage =0, use_sync = 0, 
             delay_ms = 0, scan_to_start=False, ADC_averaging_cycles = 50,scan_auto_reverse=1,
             cycle_duration=1000,**kw):
         voltage_step = abs((end_voltage - start_voltage))/float(nr_steps-1)
         montana_sync_ch = adcfg.config['adwin_cav1_dios']['montana_sync_ch']
         ADC_ch = self._adwin.get_adc_channels()['photodiode']
 
-        delay_cycles = int(delay_ms/3.3e-6) # running at 100 kHz. 
+        delay_cycles = int(delay_ms/3.3e-6) # assumes running at 300 kHz (SvD: doesn't make sense to me that this is correct. should be 3.3e-3).
         save_cycles = 100 #Hardcoded now -> save every ms. SvD. Solve better later?
         nr_ms_per_point = int(ADC_averaging_cycles/save_cycles)
         print 'nr_ms_per_point',nr_ms_per_point
