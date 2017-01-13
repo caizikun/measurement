@@ -996,15 +996,10 @@ class purify_single_setup(DD.MBI_C13):
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-
+            self.dump_AWG_seq()
         else:
 
             print 'upload = false, no sequence uploaded to AWG'
-            import pickle as pkl
-            with open('D:\measuring\AWG_seqs.pickle', 'wb') as f:  # Python 3: open(..., 'wb')
-                pkl.dump([combined_seq,combined_list_of_elements], f)
-                f.close() 
-
-
+            
 
 

@@ -197,7 +197,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
-
+        
         self.params = MeasurementParameters()
         
         if save:
@@ -251,7 +251,16 @@ class Measurement(object):
 
         params = self.params.to_dict()
         for k in params:
-            grp.attrs[k] = params[k]
+
+            if isinstance(params[k],dict): # Added by PH to deal with dicts
+                for key, val in params[k].iteritems():
+                    if grp.get(k+ '_' + key,None) != None:
+                        print logging.warning('Duplicate parameter in params dict')
+                    grp.attrs[k+ '_' + key] = val
+            else:
+                if grp.get(k,None) != None:
+                    print logging.warning('Duplicate parameter in params dict')
+                grp.attrs[k] = params[k]
         
         self.h5data.flush()
 

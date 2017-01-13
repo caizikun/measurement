@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  TUD277299\localadmin
+' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -70,7 +70,10 @@ INIT:
   NoOfSteps = PAR_2
   PxTime = FPAR_1
   PxAction = PAR_3
-   
+  
+  'debug
+  PAR_6 = DATA_200[1]
+  
   'Processtime is in units of clockcycles for pixeltime in msXXXXXXXXXXXXXXXXXXXXXXX
   PROCESSDELAY = PxTime * 3000    
   
@@ -85,7 +88,7 @@ INIT:
     ' debug;
     PAR_5 = DATA_200[i]
     FPar_5 = DATA_199[i]
-
+    FPar_6 = DATA_197[i]
   NEXT i
   
   FOR i = 1 TO 100000
@@ -147,7 +150,7 @@ EVENT:
       DATA_13[CurrentStep] = counter3 
       DATA_14[CurrentStep] = counter4
       counter1=0
-      counter2=0
+      counter2=0 
       counter3=0
       counter4=0
     ENDIF

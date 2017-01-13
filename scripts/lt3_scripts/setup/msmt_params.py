@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.675#0.70 # 06-02
+	hermite_pi_length = 120e-9 #even
+	hermite_pi_amp = 0.658#0.70 # 06-02
 	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.486#0.483 # 06-02 
+	hermite_pi2_amp = 0.466#0.483 # 06-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.368
+	hermite_pi_amp = 0.517
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.189
+	hermite_pi2_amp = 0.208
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 
@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#28e-9, #50e-9
-		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      28e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -273,7 +273,7 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434421.63, #### don't change this unless you measure it! 
+	'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
 	'C1_freq_0' 		: 447747.11,
 	'C1_freq_1_p1' 		: 425341.4,
 
@@ -464,15 +464,15 @@ cfg['protocols'][name]['pulses'] = {
     	'mw2_Square_pi2_amp' :		mw2_square_pi_amp,
 
     	'eom_pulse_duration':				2e-9,
-        'eom_off_duration':					50e-9, # 50e-9
-        'eom_off_amplitude':				-0.02, #-0.02
+        'eom_off_duration':					44e-9, # 50e-9
+        'eom_off_amplitude':				-0.018, # for 44 ns of off duration #-0.02
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.5,#0.2
+        'aom_amplitude':					0.8,#0.2
 }
 
 

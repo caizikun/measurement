@@ -108,8 +108,8 @@ class E_primer(Instrument):
         Ex, Ey = nvlevels.get_ExEy_from_Eprime_and_Ex_or_Ey(E_prime_0,self._F_E_0,Ex_or_Ey = ms0_level, precision=self.get_precision())
         self._strain_split_0 = Ex-Ey
         self._strain_splitting = Ex-Ey
-        print 'Values taken for calculation :', E_prime_0, self._F_E_0
-        print 'strain splitting: {:.2f}, (Ex, Ey) = ({:.2f},{:.2f})'.format(self._strain_splitting, Ex, Ey)
+        #print 'Values taken for calculation :', E_prime_0, self._F_E_0
+        #print 'strain splitting: {:.2f}, (Ex, Ey) = ({:.2f},{:.2f})'.format(self._strain_splitting, Ex, Ey)
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
             self._optimize)
         #return True

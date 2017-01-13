@@ -10,7 +10,7 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
-' Foldings                       = 593,616,644,697,857
+' Foldings                       = 593,616,644,697
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -835,7 +835,7 @@ EVENT:
           timer = -1
           if (AWG_done_was_low >0) then ' prevents double jump in case the awg trigger is long
             IF (do_SSRO_after_electron_carbon_SWAP = 0) then
-              mode = mode_after_swap ' see flow control
+              mode = 51 ' see flow control
             ELSE
               mode = 200   ' dsSSRO
               is_mbi_readout = 1 ' ... in MBI mode

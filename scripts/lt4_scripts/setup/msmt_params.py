@@ -20,8 +20,8 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.716222e9#1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 4.039757e9 #4.044206e9  #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.717e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -29,33 +29,34 @@ C_split  = 0.847e6
 pulse_shape = 'Hermite'
 electron_transition = '-1'
 
+
 if electron_transition == '+1':
 	electron_transition_string = '_p1'
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 290e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.873 #Not calibrated
+	hermite_pi_length = 200e-9#100e-9 #Not calibrated
+	hermite_pi_amp = 0.823 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
 
 	hermite_pi2_length = 76e-9 #Not calibrated
-	hermite_pi2_amp = 0.840 #Not calibrated
+	hermite_pi2_amp = 0.941 #Not calibrated
 
 else:
 	electron_transition_string = '_m1'
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 94e-9
-	hermite_pi_amp = 0.952#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_length = 98e-9
+	hermite_pi_amp = 0.896#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.581#0.569
+	hermite_pi2_amp = 0.591
 
 
 ### General settings for AdwinSSRO
@@ -66,7 +67,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       17e-6,#18e-6
+		'green_repump_amplitude':       22e-6,#18e-6
 		'green_repump_duration':        100,#20,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           0,
@@ -196,7 +197,7 @@ cfg['samples'][sample_name] = {
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
     'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03, #adwin needs positive values
-    'phase_per_compensation_repetition': 17.527,# adwin needs positive values
+    'phase_per_compensation_repetition': 17.484,# adwin needs positive values
     'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
@@ -227,13 +228,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 26) #
 	###############
-	'C4_freq_m1'        : (443178.5 + 416577.29)/2,
-	'C4_freq_0' 		: 443165.2,
-	'C4_freq_1_m1' 		: 416570.85,
+	'C4_freq_m1'        : (443141.64 + 416544.29)/2,
+	'C4_freq_0' 		: 443141.64,
+	'C4_freq_1_m1' 		: 416544.29,
 
 	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [125.11] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [130.41] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# 'C4_unc_N_m1'		:  [40],
 	# 'C4_unc_tau_m1'		:  [6.93e-6],
@@ -302,7 +303,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
-		'Ex_RO_amplitude':				 4.5e-9, #used to be 8e-9
+		'Ex_RO_amplitude':				 4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 5e-9,
 		'SP_duration':					 100,
@@ -310,7 +311,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'SP_duration_ms1':				 1000,
 		'SP_filter_duration':			 0,
 		'SSRO_duration':				 40,
-		'SSRO_repetitions':				 5000, 
+		'SSRO_repetitions':				 5000,
+		'AWG_controlled_readout':		 0, 
 		}
 
 ###
@@ -422,7 +424,7 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
-        'Hermite_theta_amp':		0.7,#0.84,#0.83/3+0.07,
+        'Hermite_theta_amp':		0.84,#0.84,#0.83/3+0.07,
 		'Hermite_theta_length':		50e-9,
 
 

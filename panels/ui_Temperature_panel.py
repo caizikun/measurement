@@ -9,7 +9,7 @@
 
 from PyQt4 import QtCore, QtGui
 from chaco_plot import TracePlot, TimeTracePlot
-from enthought.chaco.api import PlotAxis
+from chaco.api import PlotAxis
 # from panel import HugeDisplay
 
 try:

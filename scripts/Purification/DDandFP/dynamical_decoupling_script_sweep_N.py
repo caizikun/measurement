@@ -8,7 +8,7 @@ import qt
 execfile(qt.reload_current_setup)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
-
+reload(funcs)
 reload(DD)
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -58,8 +58,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 7.12e-6
-    NoP1=np.arange(2,48,4)
+    tau = 6.406e-6
+    NoP1=np.arange(2,48,2)
     SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
         NoP=NoP1,
         tau =tau, 

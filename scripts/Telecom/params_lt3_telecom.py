@@ -99,7 +99,7 @@ params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_
 params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
-params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
 params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
 params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950

@@ -1,5 +1,5 @@
 """
-Towards empty PQ measurement performed for the QTelecom project
+PQ measurement performed for the QTelecom project
 """
 
 
@@ -29,7 +29,7 @@ class PQTelecomMeasurement (pq.PQMeasurement) :
         pq.PQMeasurement.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
         self.PQ_ins=qt.instruments['HH_400']
-
+        self.params['do_check_tel1_helper']= False
 
     def run(self, autoconfig=True, setup=True, debug=False):
 
@@ -86,7 +86,7 @@ class PQTelecomMeasurement (pq.PQMeasurement) :
         ii=0
         abort_cond = False
 
-        while(self.PQ_ins.get_MeasRunning()):
+        while(self.PQ_ins.get_MeasRunning() and last_sync_number<self.params['total_sync_number']):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                 self._keystroke_check('abort')
                 if (self.keystroke('abort')  not in ['q','Q']) and not abort_cond:
@@ -172,6 +172,14 @@ class PQTelecomMeasurement (pq.PQMeasurement) :
                     current_dset_length = 0
 
                     self.h5data.flush()
+                if hasattr(self, 'total_sync_number'):
+                    if last_sync_number >= self.total_sync_number :
+                        break
+
+                #if self.params['do_check_tel1_helper'] : 
+                #    if qt.instruments['tel1_measurement_helper'].get_is_running():
+                #        print 'Abort measurement, LT3 is not running' 
+                #        break
 
         dset_hist = self.h5data.create_dataset('PQ_hist', data=self.hist, compression='gzip')
         self.h5data.flush()
@@ -186,7 +194,7 @@ class PQTelecomMeasurement (pq.PQMeasurement) :
         self.stop_measurement_process()
 
     def finish(self):
-        self.save_instrument_settings_file()
+        #self.save_instrument_settings_file()
         self.save_params()
         pq.PQMeasurement.finish(self)
 
@@ -234,6 +242,10 @@ def run_for_sweep_tail(name) :
     m = PQTelecomMeasurement(name)
 
     #m.PQ_ins == qt.instruments['HH_400']
+    m.params['total_sync_number'] = 1e8
+    print 'total sync number to reach : ', m.params['total_sync_number']
+
+
 
     m.params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
     m.params['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
@@ -249,6 +261,7 @@ def run_for_sweep_tail(name) :
     m.params['use_live_marker_filter'] = False
     m.params['measurement_time'] = 10000 #1200 #sec
     m.params['count_marker_channel'] = 1
+
 
     #m.params['use_live_marker_filter']=False
 
@@ -266,8 +279,68 @@ def run_for_sweep_tail(name) :
     #m.PQ_ins.StopMeas()
 
 
+def run_HBT(name) :   
+
+    m = PQTelecomMeasurement(name)
+
+    m.params['total_sync_number'] = 50000*250
+    print 'total sync number to reach : ', m.params['total_sync_number']
+
+    m.params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
+    m.params['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       int(2e6)#1500
+    m.params['MAX_SYNC_BIN'] =       int(5.7e6)#3000
+    m.params['MIN_HIST_SYNC_BIN'] =  int(2e6)#2600
+    m.params['MAX_HIST_SYNC_BIN'] =  int(5.7e6)#2900
+    m.params['TTTR_RepetitiveReadouts'] =  10 #
+    m.params['TTTR_read_count'] =   m.PQ_ins.get_T2_READMAX() #(=131072)
+    m.params['measurement_abort_check_interval']    = 2 #sec
+    m.params['wait_for_late_data'] = 2 #in units of measurement_abort_check_interval
+    
+    m.params['use_live_marker_filter'] = False
+    m.params['measurement_time'] = 10000 #1200 #sec
+    m.params['count_marker_channel'] = 1
+
+    m.params['do_check_tel1_helper'] = True
+
+    #m.params['use_live_marker_filter']=False
+
+    m.PQ_ins.start_T2_mode()
+    m.PQ_ins.calibrate()
+    #m.PQ_ins.StartMeas(int(m.params['measurement_time'] * 1e3))
+    #for i in np.arange(30):
+    #    print i
+    #    cur_length, cur_data = m.PQ_ins.get_TTTR_Data(count = int(512*200))
+    #    print cur_length
+    #    qt.msleep(1)
+
+    m.run( )
+    m.finish()
+    #m.PQ_ins.StopMeas(
+
 
 
 if __name__ == '__main__':
-    run_HH('HBT_tail') 
-    #run_for_sweep_tail('Tail_red')
+
+    seq = 'TPQI'
+    if seq =='HBT':
+        if qt.instruments['lt4_helper'].get_is_running : 
+            name_index = int(qt.instruments['lt4_helper'].get_measurement_name())
+            name = 'HBT_telecom' + str(name_index)
+            print '\n', name, '\n'
+        else : 
+            name = 'HBT_telecom' 
+        run_HBT(name) 
+    elif seq =='TPQI':
+        if qt.instruments['lt4_helper'].get_is_running : 
+            name_index = int(qt.instruments['lt4_helper'].get_measurement_name())
+            name = 'TPQI_telecom' + str(name_index)
+            print '\n', name, '\n'
+        else : 
+            name = 'TPQI_telecom' 
+        run_HBT(name) 
+
+    elif seq == 'tail' :
+        run_for_sweep_tail('tail_telecom_200mW_9d05')
+
+    #elif seq == 'HOM_test' :

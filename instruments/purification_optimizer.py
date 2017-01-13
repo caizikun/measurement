@@ -73,7 +73,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self._taper_index = 4 if 'lt3' in setup_name else 3
 
         self.max_cryo_half_rot_degrees  = 3
-        self.nb_min_between_nf_optim = 7
+        self.nb_min_between_nf_optim = 4
         
         self.history_length = 10
         self.avg_length = 9
@@ -462,10 +462,10 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
         self.set_pidgate_running(False)           
-        # if qt.instruments['auto_optimizer'].flow():
-        #     print 'Success!'
-        # else:
-        #     print 'Finished before end'
+        if qt.instruments['auto_optimizer'].flow():
+            print 'Success!'
+        else:
+            print 'Finished before end'
         qt.msleep(3.0)
         self.set_pidyellowfrq_running(True)
         self.set_pidgate_running(True)        
@@ -503,7 +503,8 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pidgate_running(not self._do_get_pidgate_running())
 
     def toggle_pid_nf(self):
-        self.set_pid_e_primer_running(not self._do_get_pid_e_primer_running())
+       self.set_pid_e_primer_running(not self._do_get_pid_e_primer_running())
+
 
     def toggle_pid_yellowfrq(self):
         self.set_pidyellowfrq_running(not self._do_get_pidyellowfrq_running())
@@ -532,7 +533,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),self._babysit)
 
     def stop_babysit(self):
-        # print 'Stop'
+        print 'Stop'
         # if not self._babysitting:
         #     print 'Not running'
         self._babysitting = False
@@ -570,18 +571,18 @@ class purification_optimizer(mo.multiple_optimizer):
                 else:
                     print self.cr_counts, '<', self.get_min_cr_counts(), 'or', self.repump_counts, '<', self.get_min_repump_counts(), 'so start optimizer'
                     self.busy = True
-                    e_primer_was_running = self.get_pid_e_primer_running()        
+                    # e_primer_was_running = self.get_pid_e_primer_running()
                     self.set_pid_e_primer_running(False)
                     self.set_pidyellowfrq_running(False)
                     self.set_pidgate_running(False)   
-                    # if qt.instruments['auto_optimizer'].flow():
-                    #     print 'Success!'
-                    # else:
-                    #     print 'Exited before end'
+                    if qt.instruments['auto_optimizer'].flow():
+                        print 'Success!'
+                    else:
+                        print 'Exited before end'
                     qt.msleep(2)
                     self.set_pidyellowfrq_running(True)
                     self.set_pidgate_running(True)        
-                    self.set_pid_e_primer_running(e_primer_was_running) 
+                    #self.set_pid_e_primer_running(e_primer_was_running) 
                     self._busy = False
             else:
                 # Even if all counts are fine, the newfocus might still be off
