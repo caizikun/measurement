@@ -60,4 +60,3 @@ scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_
 # ###############
 
 execfile(os.path.join(qt.config['startdir'],'rt2_scripts/setup_rt2.py'))
-

@@ -348,7 +348,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
         c = str(msmt.params['carbon'])
         e_trans = msmt.params['electron_transition']
 
-        #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:
+        #### for concatenating LDE with a longer entangling sequence, see also telcrify_slave, function carbon_swap_gate:
         if 'ElectronDD_tau' in msmt.params.to_dict().keys():
             tau = msmt.params['ElectronDD_tau']
         else:

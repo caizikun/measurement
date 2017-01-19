@@ -69,8 +69,7 @@ class ControlPanel (Panel):
         self.ui.doubleSpinBox_p1.setSingleStep (0.001)
         self.ui.doubleSpinBox_p1.setValue(self.p1_V)
         self.ui.doubleSpinBox_p1.valueChanged.connect(self.set_p1)
-        #SvD: can the range -2000 to 10000 work?
-        self.ui.horizontalSlider_p1.setRange (-2000, 10000)#(0,10000)
+        self.ui.horizontalSlider_p1.setRange (-2000, 10000)
         self.ui.horizontalSlider_p1.setSingleStep (1)        
         self.ui.horizontalSlider_p1.valueChanged.connect(self.set_slide_p1)
         self.set_p1 (self.p1_V)
@@ -143,17 +142,13 @@ class ControlPanel (Panel):
 
     def set_p1 (self, value):
         self._ins.set_fine_piezo_voltages(v1 = value, v2 = value, v3 = value)
-        self.ui.horizontalSlider_p1.setValue (int(value*1000))# (int(10000*(value+2.)/12.))
+        self.ui.horizontalSlider_p1.setValue (int(value*1000))
 
     def set_slide_p1 (self, value):
-        value_V = value/1000. #convert slider position to voltage #12*value/10000.-2.
+        value_V = value/1000. #convert slider position (-2000 to 10000) to voltage  
         self._ins.set_fine_piezo_voltages(v1 = value_V, v2 = value_V, v3 = value_V)
         self.ui.doubleSpinBox_p1.setValue(value_V)
  
-    #remove this function; it is now incorporated in the two above.
-    # def set_fine_piezos (self, value):
-    #     self._moc.set_fine_piezo_voltages (v1 = self.p1_V, v2 = self.p1_V, v3 = self.p1_V)
-
     def set_rel_step_size(self, value):
         self._ins.set_rel_step_size(value)
 

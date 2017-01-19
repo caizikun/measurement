@@ -424,7 +424,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
 
     ### prepare phases and pulse amplitudes for LDE1 (i.e. the initialization of the electron spin)
     el_state_list = ['X','mX','Y','mY','Z']
-    
+    el_state_list = ['X','Y','Z']
 
     x_phase = m.params['X_phase']
     y_phase = m.params['Y_phase']
@@ -456,7 +456,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     for el_state in el_state_list:
         if breakst:
             break
-        for ro in ['positive','negative']:
+        for ro in ['positive']:
             breakst = show_stopper()
             if breakst:
                 break
@@ -998,9 +998,9 @@ if __name__ == '__main__':
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
     #sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
-    sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    # characterize_el_to_c_swap(name+'_Swap_el_to_C')
+    characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = True)
     # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)

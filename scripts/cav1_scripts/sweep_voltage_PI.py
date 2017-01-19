@@ -4,24 +4,22 @@ import win32com.client as comclt
 import numpy as np
 import msvcrt
 
-steps = 51 #number of steps
+steps = 11 #number of steps
 v_start = 0
-v_stop = 10
+v_stop = 1
 
 waiting = 1 # waitcycle between steps and data acquisition (seconds)
-it = 2 #integration time of spectrometer (seconds) #not
+it = 4 #integration time of spectrometer (seconds)
 
-moc = qt.instruments['master_of_cavity']
+adwin = qt.instruments['adwin']
 sweep_voltage = np.linspace(v_start,v_stop,steps)
 wsh= comclt.Dispatch("WScript.Shell")
 
 for v in sweep_voltage:
-    moc.set_fine_piezo_voltages (v,v,v) # setting a step with the fine piezos
-    time.sleep(2*waiting)
-    print 'activating lightfield'
-    wsh.AppActivate("Untitled Experiment - LightField")
+    adwin.set_dac_voltage('PI_fine_tuning',v) # setting a step with the fine piezos
+    time.sleep(waiting)
+    wsh.AppActivate("G300_CW640_ROI4060_F13 - LightField")
     wsh.SendKeys("{F10}")
-    print 'measurement started'
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     time.sleep(it)
@@ -30,8 +28,3 @@ for v in sweep_voltage:
         print "You hit q, stopping wait time"
         break 
     print 'step', v, 'executed at', st
-
-
-
-
-

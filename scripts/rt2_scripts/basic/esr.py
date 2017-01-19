@@ -2,14 +2,14 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='ESR_Harry_e_scan1_spot9'
-start_f = 2.87 -0.1 # #0.0#    2.853 #2.85 #  #in GHz
-stop_f  = 2.87 +0.1 # #0.05#   2.864 #2.905 #   #in GHz
-steps   = 200
+name='Hillary_scan3_spot5'
+start_f = 2.807 -0.02 # #0.0#    2.853 #2.85 #  #in GHz
+stop_f  = 2.807 +0.02 # #0.05#   2.864 #2.905 #   #in GHz
+steps   = 120
 mw_power = 18#15 #in dBm
-green_power = 400e-6 #20e-6
+green_power = 250e-6 #20e-6
 int_time = 30       #in ms
-reps = 250
+reps = 500
 
 #generate list of frequencies
 f_list = linspace(start_f*1e9, stop_f*1e9, steps)
@@ -58,10 +58,12 @@ for cur_rep in range(reps):
         total_cnts[i]+=ins_adwin.measure_counts(int_time)[counter-1]
         # qt.msleep(0.01)
 
-    p_c = qt.Plot2D(f_list, total_cnts, 'bO-', name=name, clear=True)
+    p_c = qt.Plot2D(name=name, clear=True)
+    p_c.add(f_list, total_cnts, 'bO',yerr = np.sqrt(total_cnts) )
+    p_c.add(f_list, total_cnts, 'b-')
 
     
-    if cur_rep%40 == 0 and cur_rep!=0:
+    if cur_rep%5 == 0 and cur_rep!=0:
         qt.msleep(2)
         opt_ins.optimize(dims=['x','y'], cycles=1)
         qt.msleep(2)
@@ -84,7 +86,9 @@ filename=d.get_filepath()[:-4]
 
 d.add_data_point(f_list, total_cnts)
 d.close_file()
-p_c = qt.Plot2D(d, 'bO-', coorddim=0, name=name, valdim=1, clear=True)
+p_c = qt.Plot2D(name=name, clear=True)
+p_c.add(f_list, total_cnts, 'bO',yerr = np.sqrt(total_cnts) )
+p_c.add(f_list, total_cnts, 'b-')
 p_c.save_png(filename+'.png')
 
 qt.mend()
