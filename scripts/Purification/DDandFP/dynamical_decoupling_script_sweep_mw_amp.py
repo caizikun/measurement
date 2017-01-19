@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True):
+def SimpleDecoupling_swp_mw_amp(name,tau=None,N=None, mw_amps=np.arange(0.6,0.8,0.01),reps_per_ROsequence=1000, mbi = True):
 
     m = DD.SimpleDecoupling(name+'_tau_'+str(tau*1e9))
 
@@ -22,27 +22,26 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     funcs.prepare(m)
     #input parameters
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
-    Number_of_pulses =NoP
 
-    pts = len(Number_of_pulses)
+    pts = len(mw_amps)
 
-    if tau == None: 
-        tau = m.params['C3_Ren_tau'][0] 
     tau_list = tau*np.ones(pts)
-    print 'tau_list =' + str(tau_list)
-
+    N_list = N*np.ones(pts)
+        
     #inital and final pulse
     m.params['Initial_Pulse'] ='y'
     m.params['Final_Pulse'] ='-y' 
     #Method to construct the sequence
-    m.params['Decoupling_sequence_scheme'] = 'AXY8' # repeating_T_elt
+    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt' # repeating_T_elt
     
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
-    m.params['Number_of_pulses'] = Number_of_pulses
-    m.params['sweep_pts'] = Number_of_pulses
-    print m.params['sweep_pts']
-    m.params['sweep_name'] = 'Number of pulses'
+    m.params['Number_of_pulses'] = N_list
+    m.params['sweep_pts'] = mw_amps
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'Hermite_pi_length'
+    m.params['general_sweep_pts'] = mw_amps
+    m.params['sweep_name'] = 'Hermite_pi_length'
     m.autoconfig()
 
 
@@ -58,9 +57,11 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 10.67e-6 #6.406e-6 
-    NoP1=np.arange(2,80,2)
-    SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
-        NoP=NoP1,
+    tau = 3.17e-6 #6.406e-6 
+    N = 100
+    mw_amps=np.arange(70e-9,110e-9,5e-9)
+    SimpleDecoupling_swp_mw_amp(SAMPLE+'_sweep_N',
+        mw_amps=mw_amps,
         tau =tau, 
+        N = N,
         reps_per_ROsequence = 500)

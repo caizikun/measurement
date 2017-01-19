@@ -35,14 +35,14 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 200e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.823 #Not calibrated
+	hermite_pi_length = 190e-9#100e-9 #Not calibrated
+	hermite_pi_amp = 0.88 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
 
 	hermite_pi2_length = 76e-9 #Not calibrated
-	hermite_pi2_amp = 0.941 #Not calibrated
+	hermite_pi2_amp = 0.915 #Not calibrated
 
 else:
 	electron_transition_string = '_m1'
@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 98e-9
-	hermite_pi_amp = 0.896#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_amp = 0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.591
+	hermite_pi2_amp = 0.590
 
 
 ### General settings for AdwinSSRO
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      30e-9,#30e-9,
+		'yellow_repump_amplitude':      25e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -121,6 +121,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'MW_pulse_mod_risetime':                   10e-9,
 		'send_AWG_start':                          1,
 		'MW_pulse_mod_frequency' : 				   43e6,
+		'MW_switch_risetime':						1e-9, # 500e-9
 	}
 
 ##########################################
@@ -139,7 +140,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 		'nr_of_ROsequences':                        1,
 		'MW_pulse_mod_risetime':                    10e-9,
 		'mw2_pulse_mod_risetime':					10e-9,
-		'MW_switch_risetime':						500e-9,
+		
 		'AWG_to_adwin_ttl_trigger_duration':        2e-6,
 		'repump_after_MBI_duration':                150, 
 		'repump_after_MBI_amp':                     15e-9,
@@ -229,12 +230,17 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (443141.64 + 416544.29)/2,
-	'C4_freq_0' 		: 443141.64,
-	'C4_freq_1_m1' 		: 416544.29,
+	'C4_freq_0' 		: 443018.5,
+	'C4_freq_1_m1' 		: 416427.2,
+	'C4_freq_1_p1' 		: 416427.2,
 
-	'C4_Ren_tau_m1'    :   [6.406e-6],#[6.406e-6],##[6.386e-6],
-	'C4_Ren_N_m1'      :   [34], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [130.41] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_tau_m1'    :   [1.745e-6],#[6.406e-6],##[6.386e-6],
+	'C4_Ren_N_m1'      :   [56], #28
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [100.91] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+	'C4_Ren_tau_p1'    :   [1.755e-6],#[6.406e-6],##[6.386e-6],
+	'C4_Ren_N_p1'      :   [128], #28
+	'C4_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [100.91] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	# 'C4_unc_N_m1'		:  [40],
 	# 'C4_unc_tau_m1'		:  [6.93e-6],
@@ -409,7 +415,6 @@ cfg['protocols'][name]['pulses'] = {
 		'C13_Y_phase' 			:270,
 
 		'pulse_shape': pulse_shape,
-		'MW_switch_risetime'	:	500e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
 		'mw2_modulation_frequency'   :  0,
 		'MW_modulation_frequency'   :  0,
@@ -443,6 +448,9 @@ cfg['protocols'][name]['pulses'] = {
     	'BB1_fast_pi_amp':			0.529,#0.604,
     	'BB1_fast_pi_duration':		130e-9,#200e-9,#hermite_pi_length,
 
+    	### AXY4 pulses
+
+    	'AXY_f3DD':					0.1,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	0,

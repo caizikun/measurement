@@ -2915,6 +2915,38 @@ config['adwin_pro_processes'] = {
                     'amp'           : 12, # Amplification of sin
                     },
                 },
+                'fibre_stretcher_PID' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_PID.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint (output)
+                    },
+                },
+                'fibre_stretcher_setpoint' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_setpoint.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint
+                    },
+                },
+                'Phase_stable_pid' : {
+                'index' : 8,
+                'file' : 'Phase_stable_pid.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'V_in'          : 13, # Counts from APD
+                    'setpoint'      : 14, # setpoint
+                    'S'             : 15, # Output PID
+                    },
+                },
         }
 
 
@@ -3074,9 +3106,10 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate' : 8, #D
         'gate_2' : 9, #D
         'gate_mod': 10, #D
-        'yellow_aom_frq':11, #D
-        'phase_aom':12, #D
-        'yellow_current':13 #D
+        'yellow_aom_frq': 11, #D
+        'phase_aom': 12, #D
+        'yellow_current': 13, #D
+        'fibre_stretcher': 14 #D
         }
 
 config['adwin_m1_dacs'] = {
