@@ -2915,6 +2915,50 @@ config['adwin_pro_processes'] = {
                     'amp'           : 12, # Amplification of sin
                     },
                 },
+                'fibre_stretcher_PID' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_PID.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint (output)
+                    },
+                },
+                'fibre_stretcher_setpoint' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_setpoint.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint
+                    },
+                },
+                'Phase_stable_pid' : {
+                'index' : 8,
+                'file' : 'Phase_stable_pid.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                    'completed_reps' : 73,
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint
+                    'S'             : 15, # Output PID
+                    },
+                'params_long' : [
+                    ['PID_cycles'                   ,  50],
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'PID_counts' : 26,
+                    'sample_counts' : 25,
+                    },
+                },
         }
 
 
@@ -3074,9 +3118,10 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate' : 8, #D
         'gate_2' : 9, #D
         'gate_mod': 10, #D
-        'yellow_aom_frq':11, #D
-        'phase_aom':12, #D
-        'yellow_current':13 #D
+        'yellow_aom_frq': 11, #D
+        'phase_aom': 12, #D
+        'yellow_current': 13, #D
+        'fibre_stretcher': 14 #D
         }
 
 config['adwin_m1_dacs'] = {

@@ -9,10 +9,10 @@ Norbert Kalb, n.kalb@tudelft.nl
 import os
 import qt
 import numpy as np
-import measurement.lib.measurement2.p7889_2d_measurement
-reload(measurement.lib.measurement2.p7889_2d_measurement)
-from measurement.lib.measurement2.p7889_2d_measurement import DarkESR_p7889
-
+import measurement.lib.measurement2.p7889.p7889_2d_measurement
+reload(measurement.lib.measurement2.p7889.p7889_2d_measurement)
+from measurement.lib.measurement2.p7889.p7889_2d_measurement import DarkESR_p7889
+execfile(qt.reload_current_setup)
 # rabi_period = [1.25, 2.25, 0.75]
 # rabi_period = [3.8]
 # power = [17, 9]
@@ -40,7 +40,7 @@ for k in range(0,len(amplitude)):
 	nr_updates = 70
 	rabi_period = 1./0.222807
 	# amplitude = 0.9
-	m=DarkESR_p7889('Horst_scan29_NV1_pulse=%s_ampl=%s' % ( np.round(0.5 * 0.9/amplitude[k] * rabi_period,3) , amplitude[k]))
+	m=DarkESR_p7889('Frodo_scan6_NV1_pulse=%s_ampl=%s' % ( np.round(0.5 * 0.9/amplitude[k] * rabi_period,3) , amplitude[k]))
 
 	#parameter definition
 	m.params['repetitions']=100000			# nr of reps per datapoint per nr_of_update

@@ -72,7 +72,7 @@ class MW_IQmod_pulse(pulse.Pulse):
 
         self.phaselock = kw.pop('phaselock', True)
         self.risetime = kw.pop('risetime', max(self.PM_risetime,self.Sw_risetime))
-        
+
         self.length += 2*self.risetime
         self.start_offset = self.risetime
         self.stop_offset = self.risetime

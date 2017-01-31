@@ -249,8 +249,6 @@ class auto_optimizer_2(Instrument):
                 print 'NO'              
                 return self.flow(state = 4);                
         elif state == 2:
-            self.adwin.load_test_sin_scan()                      # Load broadening
-            self.adwin.start_test_sin_scan(delay=1000, amp=0.2)    # Start broadening
             print 'adwin process on'
             if (self._gate_iterations == self._max_gate_iterations):
                 print 'Should optimize gate, but maximum', self._max_gate_iterations, 'is reached. Try one newfocus optimization, then exit.'
@@ -269,8 +267,6 @@ class auto_optimizer_2(Instrument):
                 else:
                     # User exited ('q') optimization
                     return self.flow(state = -1);
-                self.adwin.stop_test_sin_scan()
-                self.adwin.set_dac_voltage(('yellow_current', 0)) 
         elif state == 3:
             if (self._yellow_iterations == self._max_yellow_iterations):
                 print 'Should optimize yellow, but maximum', self._max_yellow_iterations, 'is reached. Try one newfocus optimization, then exit.'
@@ -405,7 +401,11 @@ class auto_optimizer_2(Instrument):
         print 'Gate iters:', self._gate_iterations
 
         # Initialize
-        initial_time = time.time();        
+        initial_time = time.time();  
+
+        # Start broadening of yellow
+        self.adwin.load_test_sin_scan()                         # Load broadening
+        self.adwin.start_test_sin_scan(delay=1000, amp=0.10)    # Start broadening      
 
         # Create yellow sweep            
         yellow_start = self._get_freq_yellow();
@@ -492,10 +492,10 @@ class auto_optimizer_2(Instrument):
                     if len(gate_y) == 9 and max(yellow_y) > self._opt_yellow_good:
                         finishedYellow = True
                 else: # We are in NV0. Check if yellow is good
+                    time.sleep(2)
                     if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
                         # Debug
                         print 'Currently in NV0, but yellow is OK, so go on checking gate'
-
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
                         yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
@@ -513,7 +513,7 @@ class auto_optimizer_2(Instrument):
                         # Debug
                         print 'Currently in NV0, yellow is bad, optimize yellow'
 
-                        self.adwin.stop_test_sin_scan() #############################
+                        self.adwin.stop_test_sin_scan() 
                         self.adwin.set_dac_voltage(('yellow_current', 0))
 
                         while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
@@ -565,7 +565,6 @@ class auto_optimizer_2(Instrument):
                                 print 'Yellow: scan failed, set to best value ', max(yellow_y), 'at frequency', optFreq;
                                 self._set_freq_yellow(optFreq);
 
-
             if finishedGate:
                 break;                                                            
 
@@ -602,7 +601,11 @@ class auto_optimizer_2(Instrument):
             p3.clear()
             plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
             plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
-            plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))  
+            plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))
+
+        # Stop broadening
+        self.adwin.stop_test_sin_scan()
+        self.adwin.set_dac_voltage(('yellow_current', 0))   
 
         print 'Finished gate optimization.'
         return True;
