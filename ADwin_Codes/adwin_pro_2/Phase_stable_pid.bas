@@ -15,12 +15,19 @@
 
 
 ' Defining FPAR
-#DEFINE V_in            FPAR_13   
+ 
 #DEFINE setpoint        FPAR_14              ' Setpoint of PID process
 #DEFINE S               FPAR_15              '
 
 ' Defining PAR
-#DEFINE DELAY           PAR_10               ' Processdelay
+#DEFINE DELAY           PAR_10               ' Processdelay 
+
+#DEFINE max_pid       500000
+#DEFINE max_sample    500000
+
+DIM DATA_20[100] AS LONG
+DIM DATA_26[max_pid] AS LONG 
+DIM DATA_25[max_sample] AS LONG
 
 'Define variables
 DIM P, D,I, I_OLD                         AS FLOAT        ' PID terms
@@ -28,28 +35,33 @@ DIM GAIN,Kp,Kd,Ki                         AS FLOAT        ' PID parameters
 DIM e, e_old                              AS FLOAT        ' error term
 DIM V_out_old,V_out, value                AS FLOAT        ' Counts and outputs
 DIM counts, counts_min, counts_max        AS FLOAT        ' Counts 
-DIM mode,index,index1,index2,index3       AS LONG
-
+DIM mode,index,index1,pid_cycles,sample_cycles AS LONG
+DIM repetition_counter, max_repetitions   AS LONG
+DIM k,j, V_in                             AS LONG
 Init:
   'Init
-  mode = 0
-  index = 0
-
-  'SETPOINT init
-  setpoint = 0
+  PAR_73 = 0
+  mode = 1
+  index = 1
+  pid_cycles                  = DATA_20[1]
+  sample_cycles               = DATA_20[2]
+  max_repetitions             = DATA_20[3]
+  repetition_counter  = 0
   P2_DAC_2(14, 0)
   
-  'SETPOINT Init counts min and max
-  P2_CNT_LATCH(CTR_MODULE, 1111b)       ' Measure
-  counts_min = abs(P2_CNT_READ_LATCH(CTR_MODULE, 2) /2)
-  P2_CNT_ENABLE(CTR_MODULE,0000b)
-  P2_CNT_CLEAR(CTR_MODULE,1111b)
-  P2_CNT_ENABLE(CTR_MODULE,1111b) 
-  counts_max = 0
-
+  FOR j = 1 TO max_pid
+    DATA_26[j] = 1
+  NEXT j
+  FOR j = 1 TO max_sample
+    DATA_25[j] = 2
+  NEXT j
+  
+  k = 1
+  j = 1
+ 
   'PID characteristics
   GAIN = 1
-  Kp = 0.0012
+  Kp = 0.002
   Ki = 0.0000
   Kd = 0
   
@@ -57,51 +69,33 @@ Init:
   e = 0
   e_old = 0
   I_old = 0
+  S = 0 
   V_out = 0
   V_out_old = 0
   
+  'Latch onto and measure
+  P2_CNT_ENABLE(CTR_MODULE, 0000b)
+  P2_CNT_MODE(CTR_MODULE, 2,000010000b)
+  'CNT_SE_DIFF(0000b)
+  P2_CNT_CLEAR(CTR_MODULE, 0010b)
+  P2_CNT_ENABLE(CTR_MODULE, 0010b)
+  
   'TIME setpoints
-  processdelay = 300000*delay
-  index1 = 5000
-  index2 = 50
-  index3 = 100
-  
+  processdelay = 30000*delay
+
 Event:
-  Selectcase mode
-    case 0 'Find setpoint
-      
-      P2_CNT_LATCH(CTR_MODULE, 1111b)       ' Measure
-      counts = P2_CNT_READ_LATCH(CTR_MODULE, 2)
-      P2_CNT_ENABLE(CTR_MODULE,0000b)
-      P2_CNT_CLEAR(CTR_MODULE,1111b)
-      P2_CNT_ENABLE(CTR_MODULE,1111b) 
-  
-      if (counts > counts_max) then
-        counts_max = counts
-      endif
-  
-      if (counts < counts_min) then
-        counts_min = counts
-      endif
-  
-      setpoint = (counts_max + counts_min)/2
-      
-      'Do index1 rounds
-      inc(index)
-      if (index>index1) then
-        mode = 1
-        index = 0
-      endif
-      
+  Selectcase mode   
     case 1 'Do PID and save counts
-      
+
       ' Measure counts
-      P2_CNT_LATCH(CTR_MODULE, 1111b)
+      P2_CNT_LATCH(CTR_MODULE, 0010b)
       V_in = P2_CNT_READ_LATCH(CTR_MODULE, 2)
       P2_CNT_ENABLE(CTR_MODULE,0000b)
-      P2_CNT_CLEAR(CTR_MODULE,1111b)
-      P2_CNT_ENABLE(CTR_MODULE,1111b) 
-
+      P2_CNT_CLEAR(CTR_MODULE,0010b)
+      P2_CNT_ENABLE(CTR_MODULE,0010b) 
+      DATA_26[k] = V_in 
+      inc(k)
+      
       ' PID control
       e = SETPOINT - V_in
       P = Kp * e                                               ' Proportional term      
@@ -137,30 +131,34 @@ Event:
       
       'Do index2 rounds
       inc(index)
-      if (index>index2) then
+      if (index>pid_cycles) then
         mode = 2
-        index = 0
+        index = 1
       endif
       
     case 2 'Do nothing and save counts
       
       ' Measure counts
-      P2_CNT_LATCH(CTR_MODULE, 1111b)
+      P2_CNT_LATCH(CTR_MODULE, 0010b)
       V_in = P2_CNT_READ_LATCH(CTR_MODULE, 2)
       P2_CNT_ENABLE(CTR_MODULE,0000b)
-      P2_CNT_CLEAR(CTR_MODULE,1111b)
-      P2_CNT_ENABLE(CTR_MODULE,1111b) 
+      P2_CNT_CLEAR(CTR_MODULE,0010b)
+      P2_CNT_ENABLE(CTR_MODULE,0010b)
+      DATA_25[j] = V_in 
+      inc(j)
       
       'Do index3 rounds
       inc(index)
-      if (index>index3) then
+      if (index>sample_cycles) then
         mode = 1
-        index = 0
+        index = 1
+        
+        inc(repetition_counter)
+        Par_73 = repetition_counter
+        IF (repetition_counter = max_repetitions) THEN
+          END
+        ENDIF
+
+        
       endif
-      
   endselect
-  
-Finish:
-  'reset dac voltage
-  P2_DAC_2(14, 0)
-  mode = 0

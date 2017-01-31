@@ -250,9 +250,9 @@ def run_for_sweep_tail(name) :
     m.params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
     m.params['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
     m.params['MIN_SYNC_BIN'] =       int(2.2e6)#1500
-    m.params['MAX_SYNC_BIN'] =       int(3.3e6)#3000
+    m.params['MAX_SYNC_BIN'] =       int(3.e6)#3000
     m.params['MIN_HIST_SYNC_BIN'] =  int(2.2e6)#2600
-    m.params['MAX_HIST_SYNC_BIN'] =  int(3.3e6)#2900
+    m.params['MAX_HIST_SYNC_BIN'] =  int(3.e6)#2900
     m.params['TTTR_RepetitiveReadouts'] =  10 #
     m.params['TTTR_read_count'] =   m.PQ_ins.get_T2_READMAX() #(=131072)
     m.params['measurement_abort_check_interval']    = 2 #sec
@@ -341,6 +341,6 @@ if __name__ == '__main__':
         run_HBT(name) 
 
     elif seq == 'tail' :
-        run_for_sweep_tail('tail_LT3_SIL2')
+        run_for_sweep_tail('tail_LT3_SIL3')
 
     #elif seq == 'HOM_test' :

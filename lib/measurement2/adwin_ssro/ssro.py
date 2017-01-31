@@ -8,7 +8,7 @@ import logging
 import qt
 
 import measurement.lib.measurement2.measurement as m2
-reload(m2)
+
 
 class AdwinSSRO(m2.AdwinControlledMeasurement):
 

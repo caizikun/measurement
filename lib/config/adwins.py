@@ -2940,11 +2940,23 @@ config['adwin_pro_processes'] = {
                 'file' : 'Phase_stable_pid.TB8',
                 'par' :{
                     'delay'         : 10, # processdelay
+                    'completed_reps' : 73,
                 },
                 'fpar' : {
-                    'V_in'          : 13, # Counts from APD
                     'setpoint'      : 14, # setpoint
                     'S'             : 15, # Output PID
+                    },
+                'params_long' : [
+                    ['PID_cycles'                   ,  50],
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'PID_counts' : 26,
+                    'sample_counts' : 25,
                     },
                 },
         }
