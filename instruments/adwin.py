@@ -30,7 +30,7 @@ class adwin(Instrument):
         #     type = types.IntType)
 
 
-        self.dacs = kw.get('dacs', {})
+        self.dacs = kw.get('dacs', {}) 
         self.adcs = kw.get('adcs', {})
 
         self.use_cfg = use_cfg

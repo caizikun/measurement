@@ -3670,6 +3670,9 @@ config['adwin_cav1_processes'] = {
         'voltage_scan_sync' : {
             'index' : 5,
             'file' : 'voltage_scan_sync.TB5',
+            'fpar' : {
+                'curr_voltage' : 53, 
+                },
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],
@@ -3696,8 +3699,6 @@ config['adwin_cav1_processes'] = {
                 ],
             'params_float_index'  : 21,
             'params_float_length' : 100,
-            'par' : {
-                },
             'data_float' : {
                 'photodiode_voltage' : 24,
                 'laser_frequency' : 25,
