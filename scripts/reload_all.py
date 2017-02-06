@@ -22,7 +22,11 @@ reload(pq_measurement)
 from measurement.lib.measurement2.adwin_ssro import ssro
 reload(ssro)
 
-# pulsar measurements
+from measurement.lib.measurement2.adwin_pd import pd_msmt
+reload(pd_msmt)
+
+
+#pulsar measurements
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 reload(pulsar_msmt)
 
