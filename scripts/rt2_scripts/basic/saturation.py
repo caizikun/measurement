@@ -31,6 +31,7 @@ y_BG = zeros(steps,dtype = float)
 current_x = current_mos.get_x()
 current_y = current_mos.get_y()
 
+print 'x position = %s, y position = %s'%(current_x,current_y)
 current_aom.set_power(0)
 time.sleep(1)
 br=False
