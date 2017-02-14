@@ -66,7 +66,7 @@ class purify(PQPurifyMeasurement):
         self.params['pts']=1
         self.params['repetitions']=1
     
-    def save(self, name = 'adwinadata'):
+    def save(self, name = 'adwindata'):
         purify_slave.purify_single_setup.save(self)
         
     # def print_measurement_progress(self):
@@ -111,7 +111,7 @@ class purify(PQPurifyMeasurement):
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
 
-        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
+        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
         tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
@@ -580,7 +580,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -596,7 +596,7 @@ if __name__ == '__main__':
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
-    PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
+    # PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
     # PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 

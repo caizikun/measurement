@@ -2195,6 +2195,7 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom_frq':10,
         'lock_aom':11,
         'pulse_aom_frq':12,
+        'yellow_current':13,
         }
 
 config['adwin_lt3_dios'] = {
@@ -2886,6 +2887,7 @@ config['adwin_pro_processes'] = {
                     'stop_flag': 63,
                     'completed_reps' : 73,
                     'entanglement_events': 77,
+                    'invalid_data_marker': 55,
                     },
                 'data_long' : {
                     'CR_before'      : 22,
@@ -2899,6 +2901,7 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
                     'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 

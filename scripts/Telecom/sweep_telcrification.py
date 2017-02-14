@@ -108,7 +108,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['trigger_wait'] = 1
 
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,**kw):
 
     if autoconfig:
         m.autoconfig()    
@@ -123,7 +123,7 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        m.run(autoconfig=False, setup=False)
+        m.run(autoconfig=False, setup=False,**kw)
 
         if save_name != '':
             m.save(save_name)

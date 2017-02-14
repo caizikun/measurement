@@ -167,6 +167,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('Phase_correction_repetitions',1, reps), 
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
+                    ('invalid_data_markers'                  ,1,reps), 
                     ('counted_awg_reps'                      ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
                     ('attempts_second'                       ,1,reps), 

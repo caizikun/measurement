@@ -19,24 +19,24 @@ reload(telcrify_slave);reload(sweep_telcrification)
 
 name = qt.exp_params['protocols']['current']
 
-class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement ): # pq.PQ_Threaded_Measurement ): #
+class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'Telcrification'
     adwin_process = 'purification'
     
-    def __init__(self, name):
+    def __init__(self, name,hist_only = False):
         telcrify_slave.purify_single_setup.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
         self.params = m2.MeasurementParameters('LocalParameters')
         self.params['pts']=1
         self.params['repetitions']=1
-
+        self.params['TH_hist_only'] = hist_only
     def autoconfig(self):
         telcrify_slave.purify_single_setup.autoconfig(self)
-        pq.PQMultiDeviceMeasurement.autoconfig(self)
+        pq.PQMeasurement.autoconfig(self)
 
     def setup(self, **kw):
         telcrify_slave.purify_single_setup.setup(self,**kw)
-        pq.PQMultiDeviceMeasurement.setup(self,**kw)
+        pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
         qt.msleep(.5)
@@ -47,7 +47,7 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement 
         return self.adwin_process_running()
 
     def run(self, **kw):
-        pq.PQMultiDeviceMeasurement.run(self,**kw)
+        pq.PQMeasurement.run(self,**kw)
         
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    
@@ -60,9 +60,22 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement 
         print('Total completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['repetitions']))
 
-    def save(self, name = 'adwinadata'):
-        telcrify_slave.purify_single_setup.save(self)
-        
+    def save(self, name = 'adwindata'):
+        reps = self.adwin_var('completed_reps')
+        # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
+
+
+        self.save_adwin_data(name,
+                [   ('CR_before',1, reps),
+                    ('CR_after',1, reps),
+                    ('statistics', 10),  
+                    ('invalid_data_markers'                  ,1,reps),
+                    ('counted_awg_reps'                      ,1,reps),    
+                    ('attempts_first'                        ,1,reps),   
+                    ('ssro_results'                          ,1,reps), 
+                    'completed_reps'
+                    ])
+        return
     def finish(self):
         
         self.h5data.flush()
@@ -77,37 +90,36 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMultiDeviceMeasurement 
     def live_update_callback(self):
         ''' This is called when the measurement progress is printed in the PQMeasurement run function'''
         pass
-        # PQ_ins_key = 'TH_260N'
+        PQ_ins_key = 'TH_260N'
 
-        # if self.measurement_progress_first_run:
+        if self.measurement_progress_first_run:
         
-        #     self.no_of_cycles_for_live_update_reset = 100
-        #     self.hist_update = np.zeros((self.PQ_ins_params[PQ_ins_key].hist_length,2), dtype='u4')
-        #     self.last_sync_number_update = 0
-        #     self.measurement_progress_first_run = False
-        #     self.live_updates = 0
+            self.no_of_cycles_for_live_update_reset = 100
+            self.hist_update = np.zeros((self.hist_length,2), dtype='u4')
+            self.last_sync_number_update = 0
+            self.measurement_progress_first_run = False
+            self.live_updates = 0
 
-        # self.live_updates += 1
+        self.live_updates += 1
 
-        # if self.live_updates > self.no_of_cycles_for_live_update_reset:
-        #     self.hist_update = copy.deepcopy(self.PQ_ins_params[PQ_ins_key].hist)
-        #     self.last_sync_number_update = self.PQ_ins_params[PQ_ins_key].last_sync_number
+        if self.live_updates > self.no_of_cycles_for_live_update_reset:
+            self.hist_update = copy.deepcopy(self.hist)
+            self.last_sync_number_update = self.last_sync_number
 
-        # print 'current sync, marker_events, dset length:', self.PQ_ins_params[PQ_ins_key].last_sync_number,self.PQ_ins_params[PQ_ins_key].total_counted_markers, self.PQ_ins_params[PQ_ins_key].current_dset_length
-        # pulse_cts_ch0=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['pulse_start_bin']:self.params[PQ_ins_key]['pulse_stop_bin'],0])
-        # pulse_cts_ch1=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['pulse_start_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'] : self.params[PQ_ins_key]['pulse_stop_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'],1])
-        # tail_cts_ch0=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['tail_start_bin']  : self.params[PQ_ins_key]['tail_stop_bin'],0])
-        # tail_cts_ch1=np.sum((self.PQ_ins_params[PQ_ins_key].hist - self.hist_update)[self.params[PQ_ins_key]['tail_start_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'] : self.params[PQ_ins_key]['tail_stop_bin']+self.params[PQ_ins_key]['PQ_ch1_delay'],1])
-        # print 'duty_cycle', self.physical_adwin.Get_FPar(58)
+        pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
+        pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
+        tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
+        tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
+        print 'duty_cycle', self.physical_adwin.Get_FPar(58)
 
 
-        # #### update parameters in the adwin
-        # if (self.PQ_ins_params[PQ_ins_key].last_sync_number > 0) and (self.PQ_ins_params[PQ_ins_key].last_sync_number != self.last_sync_number_update): 
+        #### update parameters in the adwin
+        if (self.last_sync_number > 0) and (self.last_sync_number != self.last_sync_number_update): 
             
-        #         tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(self.PQ_ins_params[PQ_ins_key].last_sync_number-self.last_sync_number_update),3)
-        #         tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(self.PQ_ins_params[PQ_ins_key].last_sync_number-self.last_sync_number_update),3)
-        #         self.physical_adwin.Set_FPar(56, tail_psb_lt3)
-        #         self.physical_adwin.Set_FPar(57, tail_psb_lt4)
+                tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
+                tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
+                self.physical_adwin.Set_FPar(56, tail_psb_lt3)
+                self.physical_adwin.Set_FPar(57, tail_psb_lt4)
             
     
 
@@ -142,7 +154,8 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### --> for this measurement: none.
     m.params['LDE1_attempts'] = 250
 
-    m.params['opt_pi_pulses'] = 1
+    m.params['opt_pi_pulses'] = 2
+    m.params['opt_pulse_separation'] = 197e-9
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     if local:
@@ -150,8 +163,8 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
     ### need to find this out!
-    m.params['TH_260N']['MIN_SYNC_BIN'] =       000
-    m.params['TH_260N']['MAX_SYNC_BIN'] =       7000e3
+    m.params['MIN_SYNC_BIN'] =       000
+    m.params['MAX_SYNC_BIN'] =       7000e3
 
     # put sweep together:
     sweep_off_voltage = False
@@ -265,13 +278,13 @@ def TPQI(name,debug = False,upload_only=False):
     print 'Starting TPQI seq.'
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 50000
+    m.params['reps_per_ROsequence'] = 50000*2
     sweep_telcrification.turn_all_sequence_elements_off(m)
 
     #m.params['maximum_meas_time_in_min'] = 1
 
-    m.params['MIN_SYNC_BIN'] =      0.0e6
-    m.params['MAX_SYNC_BIN'] =       5.5e6
+    m.params['MIN_SYNC_BIN'] =      0.0e6 +5e6 # +5 us because of longer spin pumping interval!
+    m.params['MAX_SYNC_BIN'] =       5.5e6 +5e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 0
     m.params['do_general_sweep'] = 0
@@ -281,8 +294,8 @@ def TPQI(name,debug = False,upload_only=False):
 
     m.params['LDE_element_length'] = 6e-6
     m.params['opt_pi_pulses'] = 15
-    m.params['opt_pulse_separation'] = 198e-9 #199e-9 for the red , 190e-9 for telecom
-    m.params['LDE1_attempts'] = 50
+    m.params['opt_pulse_separation'] = 197e-9 #+ 50e-9 #199e-9 for the red , 190e-9 for telecom
+    m.params['LDE1_attempts'] = 200
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
@@ -290,19 +303,20 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
 
     if qt.current_setup == 'lt3':
+
         m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
         m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
         m.params['tail_start_bin'] = 2380e3 - m.params['MIN_SYNC_BIN']  
         m.params['tail_stop_bin'] = 2480e3  - m.params['MIN_SYNC_BIN'] 
-        m.params['MIN_SYNC_BIN'] =       2.38e3
-        m.params['MAX_SYNC_BIN'] =       2.48e3
+        m.params['MIN_SYNC_BIN'] =       5.88e3 #+5e3
+        m.params['MAX_SYNC_BIN'] =       5.95e3
         m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
         m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
         m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
     ### upload and run
-    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = True)
 
 
 
@@ -315,7 +329,7 @@ if __name__ == '__main__':
 
     ########### local measurements
 
-    tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.0, maxval=0.8, local=True)
     # TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
@@ -353,7 +367,7 @@ if __name__ == '__main__':
 
             AWG.clear_visa
             qt.msleep(2)
-            # qt.instruments['purification_optimizer'].start_babysit()
+            qt.instruments['purification_optimizer'].start_babysit()
             # #qt.telcrification_success = True
             
             for i in range(1):
@@ -384,7 +398,7 @@ if __name__ == '__main__':
 
 
 
-                TPQI(name+'_TPQI_telecom_'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
+                TPQI(name+'_TPQI_Ex_highstrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
                 AWG.clear_visa()
                 ## XZ measurement
                 print '-----------------------------------'            
@@ -398,7 +412,7 @@ if __name__ == '__main__':
                 
 
             # qt.instruments['purification_optimizer'].set_stop_optimize(True)
-            # qt.instruments['purification_optimizer'].stop_babysit()
+            qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False
             qt.telcrification_success = True
     # qt.mend()

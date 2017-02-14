@@ -16,8 +16,8 @@ params_lt3['do_LDE_1']                  = 1 # we always do this.
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
-params_lt3['LDE_SP_duration']           = 1.5e-6
+params_lt3['AWG_SP_power']              = 50e-9#1000e-9
+params_lt3['LDE_SP_duration']           = 5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
@@ -76,41 +76,28 @@ params_lt3['mw_second_pulse_amp']     = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_second_pulse_length']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
-params_lt3['TH_260N'] = {
-	'MAX_DATA_LEN' :       int(10e6), ## used to be 100e6
-	'BINSIZE' :            1, #2**BINSIZE*BASERESOLUTION 
- 	'MIN_SYNC_BIN' :       0,#2500
- 	'MAX_SYNC_BIN' :       8500,
- 	'MIN_HIST_SYNC_BIN' :  0,#2500
- 	'MAX_HIST_SYNC_BIN' :  8500,
- 	'TTTR_read_count' : 	qt.instruments['TH_260N'].get_T2_READMAX(), #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
- 	'count_marker_channel' : 4, ##### put plu marker on HH here! needs to be kept!
-}
 
-params_lt3['HH_400'] = {
-	'MAX_DATA_LEN' :       int(100e6), ## used to be 100e6
-	'BINSIZE' :            8, #2**BINSIZE*BASERESOLUTION 
- 	'MIN_SYNC_BIN' :       int(2e6),#2500
- 	'MAX_SYNC_BIN' :       int(5.7e6),
- 	'MIN_HIST_SYNC_BIN' :  int(2e6),#2500
- 	'MAX_HIST_SYNC_BIN' :  int(5.7e6),
- 	'TTTR_read_count' : 	 qt.instruments['HH_400'].get_T2_READMAX(), #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
- 	'count_marker_channel' : 1, ##### put plu marker on HH here! needs to be kept!
-}
+params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+params_lt3['MIN_SYNC_BIN'] =       0#2500
+params_lt3['MAX_SYNC_BIN'] =       8500
+params_lt3['MIN_HIST_SYNC_BIN'] =  0#2500
+params_lt3['MAX_HIST_SYNC_BIN'] =  8500
+params_lt3['TTTR_RepetitiveReadouts'] =  10 #
+params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['selected_PQ_ins'] =  ['TH_260N','HH_400']
 params_lt3['measurement_abort_check_interval']    = 2. #sec
-params_lt3['TTTR_RepetitiveReadouts']			  =  1
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
 params_lt3['maximum_meas_time_in_min'] = 60
 params_lt3['do_green_reset'] = False
 
-params_lt3['TH_260N']['pulse_start_bin'] = 2050-params_lt3['TH_260N']['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
-params_lt3['TH_260N']['pulse_stop_bin'] = 2050+2000-params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
-params_lt3['TH_260N']['tail_start_bin'] = 2050 -params_lt3['TH_260N']['MIN_SYNC_BIN']       #### BK: 2950
-params_lt3['TH_260N']['tail_stop_bin'] = 2050+2000 -params_lt3['TH_260N']['MIN_SYNC_BIN']    #### BK: 2950
-params_lt3['TH_260N']['PQ_ch1_delay'] = 55
+params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
+params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['tail_start_bin'] = 2050 -params_lt3['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['tail_stop_bin'] = 2050+2000 -params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10
 

@@ -114,14 +114,11 @@ class purification_optimizer(mo.multiple_optimizer):
 
     #--------------get_set   
 
-    #### no fiddling around wit adwin values yet. would not be a good idea!
     def _do_set_invalid_data_marker(self, value):
-        pass
-        # qt.instruments['physical_adwin'].Set_Par(55,value)
+        qt.instruments['physical_adwin'].Set_Par(55,value)
 
     def _do_get_invalid_data_marker(self):
-        pass
-        # return qt.instruments['physical_adwin'].Get_Par(55)
+        return qt.instruments['physical_adwin'].Get_Par(55)
 
 
     def publish_values(self):
@@ -426,7 +423,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pid_e_primer_running(False)
         # qt.instruments['nf_optimizer'].optimize()
         qt.instruments['auto_optimizer'].optimize_newfocus()
-        qt.msleep(0.5)
+        qt.msleep(2.5)
         self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_yellow(self):
@@ -523,6 +520,7 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def start_babysit(self):
         print 'Start'
+        self.set_invalid_data_marker(0)
         if self._babysitting:
             print 'Already running'
             return
@@ -534,6 +532,7 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def stop_babysit(self):
         print 'Stop'
+        self.set_invalid_data_marker(0)
         # if not self._babysitting:
         #     print 'Not running'
         self._babysitting = False
@@ -571,10 +570,11 @@ class purification_optimizer(mo.multiple_optimizer):
                 else:
                     print self.cr_counts, '<', self.get_min_cr_counts(), 'or', self.repump_counts, '<', self.get_min_repump_counts(), 'so start optimizer'
                     self.busy = True
-                    # e_primer_was_running = self.get_pid_e_primer_running()
+                    e_primer_was_running = self.get_pid_e_primer_running()
                     self.set_pid_e_primer_running(False)
                     self.set_pidyellowfrq_running(False)
-                    self.set_pidgate_running(False)   
+                    self.set_pidgate_running(False) 
+                    self.set_invalid_data_marker(1)  
                     if qt.instruments['auto_optimizer'].flow():
                         print 'Success!'
                     else:
@@ -582,15 +582,28 @@ class purification_optimizer(mo.multiple_optimizer):
                     qt.msleep(2)
                     self.set_pidyellowfrq_running(True)
                     self.set_pidgate_running(True)        
-                    #self.set_pid_e_primer_running(e_primer_was_running) 
+                    self.set_pid_e_primer_running(e_primer_was_running) 
                     self._busy = False
             else:
                 # Even if all counts are fine, the newfocus might still be off
                 if qt.instruments['auto_optimizer'].check_detuned_repump():
-                    self.busy = True                    
+                    e_primer_was_running = self.get_pid_e_primer_running()
+                    self.set_pid_e_primer_running(False) 
+                    self.busy = True     
+                    self.set_invalid_data_marker(1)               
                     self.optimize_nf()
-                    self._busy = False                    
+                    self._busy = False      
+                    qt.msleep(2.5)
+                    self.set_pid_e_primer_running(e_primer_was_running)   
+
+
+                ### are other benchmarks off? Such as the strain splitting?            
+                elif qt.instruments['e_primer'].get_strain_splitting() > self.get_max_strain_splitting():
+                    text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.\n'.format(qt.instruments['e_primer'].get_strain_splitting(), self.get_max_strain_splitting())
+                    print text
+                    self.set_invalid_data_marker(1)
                 else:
+                    self.set_invalid_data_marker(0)
                     print 'Everything OK'
         return True;
 
