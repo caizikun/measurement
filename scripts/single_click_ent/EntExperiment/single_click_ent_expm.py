@@ -145,6 +145,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
+        
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
@@ -152,11 +153,12 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
                     ('ssro_results'                          ,1,reps), 
-                    ('pid_counts'                            ,1,reps*self.params['pid_cycles']), 
-                    ('sampling_counts'                       ,1,reps*self.params['sample_cycles']), 
+                    ('pid_counts'                            ,1,reps*self.params['pid_points']), 
+                    ('sampling_counts'                       ,1,reps*self.params['sample_points']), 
                     ('invalid_data_markers'                  ,1,reps),  
                     'completed_reps'
                     ])
+        
         return
 
     
@@ -239,6 +241,8 @@ class SingleClickEntExpm(DD.MBI_C13):
         Tries to be as general as possible in order to suffice for multiple calibration measurements
         """
 
+        if self.params['only_meas_phase']:
+            pass # NO AWG NEEDED
 
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
@@ -371,11 +375,9 @@ class SingleClickEntExpm(DD.MBI_C13):
 
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
-
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-            self.dump_AWG_seq()
         else:
 
             print 'upload = false, no sequence uploaded to AWG'

@@ -32,7 +32,8 @@ class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasu
         pq.PQMeasurement.autoconfig(self)
 
     def setup(self, **kw):
-        single_click_ent_expm.SingleClickEntExpm.setup(self,**kw)
+        if not self.params['only_meas_phase']:
+            single_click_ent_expm.SingleClickEntExpm.setup(self,**kw)
         pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
@@ -89,7 +90,6 @@ class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasu
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
 
-        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
         tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
@@ -190,9 +190,9 @@ def MW_Position(name,debug = False,upload_only=False):
 
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def phase_stability(name,debug = True,upload_only=True):
+def phase_stability(name,debug = False,upload_only=False):
 
-     """
+    """
     Performs a tail_sweep in the LDE_1 element
     """
     m = PQSingleClickEntExpm(name)
@@ -204,7 +204,9 @@ def phase_stability(name,debug = True,upload_only=True):
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
-    
+    m.params['do_phase_stabilisation']  = 1
+    m.params['only_meas_phase']         = 1 
+
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
@@ -535,7 +537,10 @@ def EntangleXX(name,debug = False,upload_only=False):
 
 if __name__ == '__main__':
 
+
     ########### local measurements
+    phase_stability(name+'_phase_stab',upload_only=False)
+
     # MW_Position(name+'_MW_position',upload_only=False)
 
     #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)

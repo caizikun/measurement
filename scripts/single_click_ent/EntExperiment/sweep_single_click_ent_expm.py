@@ -6,7 +6,7 @@ NK 2016
 
 import numpy as np
 import qt 
-import purify_slave; reload(purify_slave)
+import single_click_ent_expm; reload(single_click_ent_expm)
 import msvcrt
 name = qt.exp_params['protocols']['current']
 
@@ -144,7 +144,11 @@ def turn_all_sequence_elements_off(m):
     m.params['PLU_during_LDE']          = 0
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
-    m.params['no_repump_after_LDE']    = 0
+    m.params['no_repump_after_LDE']     = 0
+    m.params['do_general_sweep']        = 0
+    m.params['do_phase_stabilisation']  = 0
+    m.params['only_meas_phase']         = 0
+    m.params['do_dynamical_decoupling'] = 0 
     
 def turn_all_sequence_elements_on(m):
     """
@@ -161,7 +165,11 @@ def turn_all_sequence_elements_on(m):
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
     m.params['no_repump_after_LDE']    = 0
-    
+    m.params['do_general_sweep']        = 0
+    m.params['do_phase_stabilisation']  = 1
+    m.params['only_meas_phase']         = 0
+    m.params['do_dynamical_decoupling'] = 0 # Not doing this yet (PH) 
     
 
 if __name__ == '__main__':
+    pass

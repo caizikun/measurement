@@ -1,5 +1,5 @@
 import qt
-import joint_params
+import single_click_ent_expm_joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -14,6 +14,7 @@ params_lt3['do_N_MBI']                  = 0 #practically not in use
 params_lt3['MW_before_LDE']            = 0
 params_lt3['LDE_is_init']             = 0
 params_lt3['do_LDE']                  = 1 # we always do this.
+    
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
@@ -21,6 +22,7 @@ params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
+params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 params_lt3['MW_opt_puls1_separation']   = 70e-9 #
 
 #adwin params defs:
@@ -90,3 +92,16 @@ params_lt3['PQ_ch1_delay'] = 55
 params_lt3['live_filter_queue_length'] = 10
 
 params_lt3['measurement_time'] = 24.*60.*60. 
+
+params_lt3['Phase_msmt_DAC_channel'] = 2 
+params_lt3['Phase_Msmt_voltage'] = 0.0
+params_lt3['Phase_Msmt_off_voltage'] = 0.0
+params_lt3['PID_GAIN'] = 1.0
+params_lt3['PID_Kp'] = 0.002
+params_lt3['PID_Ki'] = 0.0
+params_lt3['PID_Kd'] = 0.0
+
+params_lt3['count_int_cycles'] = 25 # How many cycles to integrate counts for
+params_lt3['pid_points'] = 10 # How many points to sample the phase at during the PID loop
+params_lt3['sample_points'] = 100 # How many points to sample the phase at during the expm part
+

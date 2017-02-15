@@ -5,12 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.1.0
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Stacksize                      = 1000
-' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
-' Bookmarks                      = 3,3,19,19,81,81,83,83,163,163,304,304,305,305,327,327,598,598,668,669,670
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,19,19,82,82,84,84,164,164,308,308,309,309,329,329,606,606,676,677,678
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -44,8 +43,8 @@
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
 #DEFINE max_single_click_ent_repetitions    20000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
-#DEFINE max_pid       500000 ' Max number of measured counts for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
-#DEFINE max_sample    500000 ' Max number of measured count for sampling - Note that can do fewer repetitions if want to sample for longer.
+#DEFINE max_pid       100000 ' Max number of measured counts for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
+#DEFINE max_sample    100000 ' Max number of measured count for sampling - Note that can do fewer repetitions if want to sample for longer.
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -69,6 +68,7 @@ DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO coun
 ' PH Fix this
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation
 DIM DATA_105[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time
+DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -190,11 +190,13 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   master_slave_awg_trigger_delay   = DATA_20[24]
   PLU_during_LDE                   = DATA_20[25]
   LDE_is_init                    = DATA_20[26] ' is the first LDE element for init? Then ignore the PLU
-  ' PH NEED TO FIX THIS
-  Phase_msmt_DAC_channel      = DATA_20[27]
-  pid_points                  = DATA_20[28]
-  sample_points               = DATA_20[29]
-  count_int_cycles            = DATA_20[30]
+  do_phase_stabilisation      = DATA_20[27]
+  only_meas_phase             = DATA_20[28]
+  do_dynamical_decoupling     = DATA_20[29]
+  Phase_msmt_DAC_channel      = DATA_20[30]
+  pid_points                  = DATA_20[31]
+  sample_points               = DATA_20[32]
+  count_int_cycles            = DATA_20[33]
    
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -238,11 +240,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' note: the MemCpy function only works for T11 processors.
   '  ' this is a faster way of filling up global data arrays in the external memory. See Adbasic manual
   array_step = 1
-  FOR i = 1 TO 520 ' 520 is derived from max_purification_length/100
+  FOR i = 1 TO 200 ' 520 is derived from max_purification_length/100
     MemCpy(Initializer[1],DATA_100[array_step],100)
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
     MemCpy(Initializer[1],DATA_103[array_step],100)
+    MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
     
@@ -274,7 +277,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_13 = -1
   par_14 = -1
   par_15 = -1
-  
+  PAR_55 = 0                      ' Invalid data marker
   Par_62 = 0
 '''''''''''''''''''''''''
   ' flow control: 
@@ -325,9 +328,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_DAC_2(14, 0) ' Set phase shifter voltage to zero
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
   P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)
-  
-  
-  
+    
 EVENT:
   
   'write information to parse for live monitoring
@@ -483,6 +484,12 @@ EVENT:
          
       CASE 0 ' Phase check
         IF (timer = 0) THEN 
+          
+          'Check if repetitions exceeded
+          IF ((only_meas_phase = 1) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
+            END
+          ENDIF
+          
           P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
@@ -554,7 +561,7 @@ EVENT:
           inc(index)
           
           if (timer>sample_points) then
-            mode = 7
+            mode = 6
             timer = -1
             P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
 
@@ -718,9 +725,9 @@ EVENT:
         
       CASE 6 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
-       
+        DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         mode = 7 'go to reinit and CR check
-        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
+        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
         inc(success_event_counter)
         PAR_77 = success_event_counter ' for the LabView live update
