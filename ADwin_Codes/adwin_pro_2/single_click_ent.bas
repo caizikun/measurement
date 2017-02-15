@@ -5,11 +5,10 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.1.0
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Stacksize                      = 1000
-' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,19,19,81,81,83,83,163,163,304,304,305,305,327,327,598,598,668,669,670
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
@@ -62,7 +61,7 @@ DIM DATA_21[100] AS FLOAT  ' float parameters from python
 '31 CR float parameters
 
 DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
-DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Phase_correction_repetitions needed to correct the phase of the carbon 
+DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will eventually hold data on dynamical decoupling repetitions
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
