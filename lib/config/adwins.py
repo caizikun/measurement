@@ -2918,6 +2918,50 @@ config['adwin_pro_processes'] = {
                     'amp'           : 12, # Amplification of sin
                     },
                 },
+                'fibre_stretcher_PID' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_PID.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint (output)
+                    },
+                },
+                'fibre_stretcher_setpoint' : {
+                'index' : 8,
+                'file' : 'fibre_stretcher_setpoint.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint
+                    },
+                },
+                'Phase_stable_pid' : {
+                'index' : 8,
+                'file' : 'Phase_stable_pid.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                    'completed_reps' : 73,
+                },
+                'fpar' : {
+                    'setpoint'      : 14, # setpoint
+                    'S'             : 15, # Output PID
+                    },
+                'params_long' : [
+                    ['PID_cycles'                   ,  50],
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'PID_counts' : 26,
+                    'sample_counts' : 25,
+                    },
+                },
         }
 
 
@@ -3077,9 +3121,10 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate' : 8, #D
         'gate_2' : 9, #D
         'gate_mod': 10, #D
-        'yellow_aom_frq':11, #D
-        'phase_aom':12, #D
-        'yellow_current':13 #D
+        'yellow_aom_frq': 11, #D
+        'phase_aom': 12, #D
+        'yellow_current': 13, #D
+        'fibre_stretcher': 14 #D
         }
 
 config['adwin_m1_dacs'] = {
@@ -3549,10 +3594,11 @@ config['adwin_cav1_dacs'] = {
         'newfocus_freqmod': 5,
         'scan_mirror_x' : 6,
         'scan_mirror_y': 7,
+        'PI_fine_tuning': 8,
         }
 
-config['adwin_cav1_dios'] = {
-        }
+# config['adwin_cav1_dios'] = {
+#         }
 
 config['adwin_cav1_adcs'] = {
         'photodiode': 16,
@@ -3563,9 +3609,13 @@ config['adwin_cav1_dios'] = {
         'montana_sync_ch': 21,
         }
 
-
 config['adwin_cav1_processes'] = {
 
+        # SvD: I removed a few unused processes: 
+        #laserscan_photodiode
+        #fine_piezo_jpe_scan_sync
+        #widerange_laserscan
+        
         'counter' : {
             'doc' : '',
             'info' : {
@@ -3633,7 +3683,7 @@ config['adwin_cav1_processes'] = {
             'file' : 'SetDac.TB3',
             'par' : {
                 'dac_no' : 20,
-                },
+                                },
             'fpar' : {
                 'dac_voltage' : 20,
                 },
@@ -3664,134 +3714,13 @@ config['adwin_cav1_processes'] = {
             'file' : 'init_data.TB5',
             },
 
-        'timeseries_photodiode' : {
-            'index' : 2,
-            'file' : 'timeseries_photodiode.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['ADC_channel'                 ,   1],
-                    ['ADC_ref_channel'             ,   2],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,   1],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'photodiode_reference' : 12,
-                    },
-                'data_long' : {
-                    'timer' : 13,
-                    },
-
-            },
-
-
-        'laserscan_photodiode' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'voltagescan_photodiode.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_channel'                 ,   8],
-                    ['ADC_channel'                 ,   1],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,  50],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage'               , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    },
-            },
-
-        'fine_piezo_jpe_scan' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'fine_piezo_jpe_scan.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_ch_fpz1'                 ,   0],
-                    ['DAC_ch_fpz2'                 ,   0],
-                    ['DAC_ch_fpz3'                 ,   0],
-                    ['ADC_channel'                 ,   1],
-                    ['ADC_ref_channel'             ,   2],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,  50],
-                    ['use_counter'                 ,   0],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage_1'            , 0.0],
-                    ['start_voltage_2'            , 0.0],
-                    ['start_voltage_3'            , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'photodiode_reference' : 12,
-                    },
-            },
-
-        'fine_piezo_jpe_scan_sync' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'fine_piezo_jpe_scan_sync.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_ch_fpz1'                 ,   0],
-                    ['DAC_ch_fpz2'                 ,   0],
-                    ['DAC_ch_fpz3'                 ,   0],
-                    ['ADC_channel'                 ,   1],
-                    ['montana_sync_channel'        ,   1],
-                    ['nr_steps'                    ,   1],
-                    ['nr_scans'                    ,   1],                    
-                    ['wait_cycles'                 ,  50],
-                    ['delay_us'                    ,   0],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage_1'            , 0.0],
-                    ['start_voltage_2'            , 0.0],
-                    ['start_voltage_3'            , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    },
-                'data_long'   : {
-                    'timestamps' : 12,
-                },
-            },
 
         'voltage_scan_sync' : {
             'index' : 5,
             'file' : 'voltage_scan_sync.TB5',
+            'fpar' : {
+                'curr_voltage' : 53, 
+                },
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],
@@ -3801,64 +3730,31 @@ config['adwin_cav1_processes'] = {
                     ['sync_ch'                     ,   1],
                     ['nr_steps'                    ,   1],
                     ['nr_scans'                    ,   1],                    
-                    ['wait_cycles'                 ,  50],
+                    ['wait_cycles'                 ,  10],
                     ['delay_us'                    ,   0],
-                    ['ADC_averaging_cycles'        ,   50],
-                    ['scan_auto_reverse'           ,   50],
+                    ['ADC_averaging_cycles'        ,   1],
+                    ['scan_auto_reverse'           ,    0],
+                    ['cycle_duration'              ,  1000], #1000 corresponds to 300kHz in adwin. this is slow enough for ADC
+                    ['save_cycles'                 ,  100]
                     ],
-                'params_long_index'  : 20,
-                'params_long_length' : 15,
-                'params_float' : [
-                    ['start_voltage_1'            ,  0.0],
-                    ['start_voltage_2'            ,  0.0],
-                    ['start_voltage_3'            ,  0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'laser_frequency' : 13,
-                    },
-                'data_long'   : {
-                    'timestamps' : 12,
+            'params_long_index'  : 20,
+            'params_long_length' : 100,
+            'params_float' : [
+                ['start_voltage_1'            ,  0.0],
+                ['start_voltage_2'            ,  0.0],
+                ['start_voltage_3'            ,  0.0],
+                ['voltage_step'               , 0.01],
+                ],
+            'params_float_index'  : 21,
+            'params_float_length' : 100,
+            'data_float' : {
+                'photodiode_voltage' : 24,
+                'laser_frequency' : 25,
+                'photodiode_voltage_ms' :27,
                 },
-            },
-
-
-        'widerange_laserscan' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
+            'data_long'   : {
+                'timestamps' : 26,
                 },
-            'index' : 2,
-            'file' : 'longrange_laserscan.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_coarse_ch'               ,   0],
-                    ['DAC_fine_ch'                 ,   0],
-                    ['ADC_ch'                      ,   0],
-                    ['nr_fine_steps'               ,   1],
-                    ['nr_coarse_steps'             ,   1],
-                    ['wait_cycles'                 ,   1],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_coarse_volt'          , 0.0],
-                    ['step_size_coarse'           , 0.0],
-                    ['start_fine_volt'            , 0.0],
-                    ['stop_fine_volt'             , 0.0],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage'    : 11,
-                    'wavemeter'             : 12,
-                    },
             },
 
 

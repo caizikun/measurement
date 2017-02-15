@@ -32,10 +32,10 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     print 'tau_list =' + str(tau_list)
 
     #inital and final pulse
-    m.params['Initial_Pulse'] ='x'
-    m.params['Final_Pulse'] ='-x' 
+    m.params['Initial_Pulse'] ='y'
+    m.params['Final_Pulse'] ='-y' 
     #Method to construct the sequence
-    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
+    m.params['Decoupling_sequence_scheme'] = 'AXY8' # repeating_T_elt
     
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
@@ -58,8 +58,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 6.406e-6
-    NoP1=np.arange(2,48,2)
+    tau = 10.67e-6 #6.406e-6 
+    NoP1=np.arange(2,80,2)
     SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
         NoP=NoP1,
         tau =tau, 

@@ -33,9 +33,12 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=0.9,
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=0.9,
     low=-0.9, offset=0., delay=(27+165)*1e-9, active=True)
 
-# p7889 start trigger
+
 qt.pulsar.define_channel(id='ch1_marker2', name='katana_trg', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
+# p7889 start trigger
+qt.pulsar.define_channel(id='ch4_marker1', name='p7889_start', type='marker', 
+    high=1.0, low=0, offset=0., delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='sync0', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker2', name='sync1', type='marker', 
@@ -43,21 +46,7 @@ qt.pulsar.define_channel(id='ch3_marker2', name='sync1', type='marker',
 
 # light (green)
 qt.pulsar.define_channel(id='ch2_marker2', name='AOM_Green', type='marker', 
-    high=0.3, low=0., offset=0., delay=0, active=True)
-
-
-#RND
-#qt.pulsar.define_channel(id='ch2_marker1', name='RND_halt', type='marker', 
- #   high=2.0, low=0, offset=0.0, delay=100e-9, active=True, skew=0.)
-
-#qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker', 
-#    high=2.0, low=0, offset=0., delay=0., active=True)   
-
-
-#qt.pulsar.define_channel(id='ch2', name='AOM_Newfocus', type='analog', 
-#    high=0.4, low=0, offset=0., delay=700e-9, active=True)
-#qt.pulsar.define_channel(id='ch2_marker2', name='YellowAOM', type='marker', 
-#    high=0.4, low=0, offset=0., delay=750e-9, active=True)
+    high=0.3, low=0., offset=0., delay=2.5e-6, active=True)
 
 
 qt.pulsar.AWG_sequence_cfg={

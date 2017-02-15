@@ -718,6 +718,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
 
         timestamps 	Timestamps of the last events in base units, see 
                         TDC_getTimebase . The array must have at least buffer_size 
+
                         elements, see TDC_setTimestampBufferSize . 
         channels 	Numbers of the channels where the events have been detected. 
                         Every array element belongs to the timestamp with the 

@@ -169,6 +169,8 @@ class scan2d_flim(scan2d_counts):
         if not self._is_running:
             return False
         t,c,valid_length = self._qutau.get_last_timestamps()
+        #print self._qutau.get_buffer_size()
+        #print t,c,valid_length
         if valid_length == 0:
             return True
         if valid_length == self._qutau.get_buffer_size():
@@ -203,7 +205,11 @@ class scan2d_flim(scan2d_counts):
 
     def _process_flim_data(self, event_time, channel, valid_length, pixel_clk_idxs):
         last_pixel_clk_idx = 0
+        print 'process flim data'
+        #print pixel_clk_idxs
+        #print valid_length
         for i,pixel_clk_idx in enumerate(np.append(pixel_clk_idxs,valid_length)): #we also take the data at the end, belonging to the next pixel. 
+            print 'process',i, pixel_clk_index
             tp,cp = event_time[last_pixel_clk_idx:pixel_clk_idx], channel[last_pixel_clk_idx:pixel_clk_idx]
             #Because we have to be fast here, we count only events where one photon directly followed a sync pulse.
             ph_idxs   = np.where(cp == self._apd_channel)[0]
@@ -225,7 +231,10 @@ class scan2d_flim(scan2d_counts):
 
     def save(self):
         scan2d_counts.save(self)
+        #print np.sum(self._flim_data)
+        #print self._saved_data_checksum
         if self.get_do_flim() and np.sum(self._flim_data)!=self._saved_data_checksum:
+            print 'SAVING DATA'
             if self._cur_pixel != self._pixel_pts:
                 logging.warning(self.get_name()+': number of pixels detected by qutau {:d} not equal total number of pixels {:d}'.format(self._cur_pixel,self._pixel_pts))
             #print 'total counts', np.sum(self.get_last_2d_qutau_data()), 'max counts',np.max(self.get_last_2d_qutau_data()),' at', np.where(self.get_last_2d_qutau_data() == np.max(self.get_last_2d_qutau_data()))
@@ -262,13 +271,12 @@ class scan2d_flim(scan2d_counts):
     def _temp_program_awg(self):
         awg = qt.instruments['AWG']
         pts=1#self._pixel_pts
-        
         if awg.get_runmode()=='SEQ' and int(awg.get_sq_length()) == pts:
             pass
         else:
             from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-            p_wait = pulse.SquarePulse('sync0', length=2e-6, amplitude = 0)
-            p_sync = pulse.SquarePulse('sync0', length=200e-9, amplitude = 1)
+            p_wait = pulse.SquarePulse('katana_trg', length=2e-6, amplitude = 0)
+            p_sync = pulse.SquarePulse('katana_trg', length=200e-9, amplitude = 1)
             elts=[]
             s= pulsar.Sequence('test_flim_seq')
             e=element.Element('sync_elt', pulsar=qt.pulsar)

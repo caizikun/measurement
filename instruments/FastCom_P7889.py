@@ -96,6 +96,7 @@ class FastCom_P7889(Instrument): #1
         self.add_parameter('range', flags=Instrument.FLAG_GETSET, type=types.IntType)
         self.add_parameter('ROI_max', flags=Instrument.FLAG_GETSET, type=types.IntType)
         self.add_parameter('ROI_min', flags=Instrument.FLAG_GETSET, type=types.IntType)
+        self.add_parameter('timebase', flags=Instrument.FLAG_GET, type=types.IntType)
         self.add_parameter('number_of_cycles', flags=Instrument.FLAG_GETSET, type=types.IntType)
         self.add_parameter('number_of_sequences', flags=Instrument.FLAG_GETSET, type=types.IntType)
         self.add_parameter('time_preset_length', flags=Instrument.FLAG_GETSET, type=types.IntType)
@@ -308,7 +309,12 @@ class FastCom_P7889(Instrument): #1
         '''        
         if get_from_dll:
             settings = self._get_settings()
-            self.a_range=settings.range
+            # I, NK, reverted tis from self.a_range = settings.range to the previous setting.
+            try:
+                self.a_range=settings.range/settings.cycles
+            except ZeroDivisionError:
+                self.a_range = 0.
+                print 'self.arange set to 0'
         else:
             pass
         return self.a_range
@@ -482,25 +488,33 @@ class FastCom_P7889(Instrument): #1
 ######### End STATUS SECTION ###################################################################################
 
 ######### Start DATA SECTION ###################################################################################
+    
+    def get_P7889data(self):
+        timerange =       self.get_timebase_ns()
+        length    =        int(self._do_get_range())
+        traces              =       int(self._do_get_number_of_cycles())
+        sleep(0.1)
+        data = numpy.zeros((traces, length), dtype = numpy.uint32) # could try uint64...?
+        self._DP7889_win32.LVGetDat(data.ctypes.data,0)
+        return timerange/(self._do_get_binwidth()*0.1), data
 
     def _do_get_timebase(self): #17
         length          =       int(self._do_get_range())
-        delta_t         =       self._do_get_binwidth()*0.1 #binwidth in ns
-        timerange       =       numpy.arange(length,dtype='int')#numpy.linspace(0, length, length, False)
+        # delta_t         =       self._do_get_binwidth()*0.1 #binwidth in ns
+        timerange       =       numpy.arange(length)#,dtype='int')#numpy.linspace(0, length, length, False)
         self.a_timebase =       timerange
-        return self.a_timebase
+        return length
 
     def get_timebase_ns(self): #17
-        
         delta_t         =       self._do_get_binwidth()*0.1 #binwidth in ns
-        timerange       =       self.get_timebase()*delta_t
+        timerange       =       numpy.arange(self.get_timebase())*delta_t
         return timerange
 
     def get_1Ddata(self,plot_data=False,time=0.2): #18
         '''
         Gets 1D start-stop data
         '''
-        timerange, length   =       self._do_get_timebase()
+        timerange, length   =       numpy.arange(self._do_get_timebase())
         data                =       numpy.array(numpy.zeros(length), dtype = numpy.uint32)
 
         self._DP7889_win32.LVGetDat(data.ctypes.data,0) #writes data into memory @ pointer data.ctypes.data
@@ -595,23 +609,26 @@ class FastCom_P7889(Instrument): #1
         '''
         Gets 2D start-stop data
         '''
-        timerange, length   =       self._do_get_timebase()
+        timerange =       self.get_timebase_ns()
         sleep(0.1)
-        #print 'timebase extracted'
+        length    =        int(self._do_get_range())
+        print 'timebase extracted'
         traces              =       int(self._do_get_number_of_cycles())
-        #print 'traces extracted'
+        print 'traces extracted'
         sleep(0.1)
+        # tracearray          =       numpy.array(numpy.linspace(0, traces-1, traces))
+        # data                =       numpy.array(numpy.zeros((traces, length)), dtype = numpy.uint32)
         tracearray          =       numpy.linspace(0, traces-1, traces, dtype='int')
-        data                =       numpy.zeros((traces, length), dtype = numpy.uint32)
-        #print 'exctracting actual data'
+        data                =       numpy.zeros((traces, length), dtype = numpy.uint32) # could try uint64...?
+        # print 'exctracting actual data'
         self._DP7889_win32.LVGetDat(data.ctypes.data,0)
-        #data = self.fake_data(traces, length)
-        #print 'data transferred'
-        sleep(0.1)
-        if traces>200:
-            sleep(2*traces/1000.)
+        # data = self.fake_data(traces, length)
+        print 'data transferred'
+        sleep(1.)
+        # if traces>200:
+        sleep(2*traces/1000.)
 
-        return timerange, tracearray, data
+        return timerange/(self._do_get_binwidth()*0.1), tracearray, data
     
     def fake_data(self, xl, yl):
         data = numpy.zeros((xl, yl))
@@ -742,10 +759,14 @@ class FastCom_P7889(Instrument): #1
         if IsLastChange:
             self._send_sweepmode_settings_to_server(Sweepmodesettingbitlist)
             Sweepmodesettingbitlist=self._get_sweepmode_settings_from_server()
-            while not Sweepmodesettingbitlist[Parnr]==int(state):
+            attempts = 0
+            while (not Sweepmodesettingbitlist[Parnr]==int(state)) and (attempts < 20):
                 print __name__ + ' Sweepmode not set!'
                 sleep(0.05)
+                attempts += 1
                 self._send_sweepmode_settings_to_server(Sweepmodesettingbitlist)
+            if attempts == 20:
+                raise ValueError('Failed to set Sweepmode Param %s' % Parnr)
             #print __name__ + ': Sweepmode Settings Updated'
     
     def _get_sweepmode_parameter_at_index(self,Parnr): #49

@@ -367,7 +367,6 @@ class AdwinControlledMeasurement(Measurement):
         qt.current_meas_name = name
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
-
     def start_adwin_process(self, load=True, stop_processes=[]):
         proc = getattr(self.adwin, 'start_'+self.adwin_process)
         proc(load=load, stop_processes=stop_processes,
@@ -408,7 +407,7 @@ class AdwinControlledMeasurement(Measurement):
         corresponding cr_process parameters are also set from the measurement params dictionary.
 
         '''
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:
             self.set_adwin_process_variable_from_params(key)
 
         for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            

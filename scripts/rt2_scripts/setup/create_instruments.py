@@ -49,9 +49,12 @@ PulsedAOM = qt.instruments.create('PulsedAOM', 'AOM', use_adwin='adwin', use_pm=
 p7889 = qt.instruments.create('p7889','FastCom_P7889')
 
 qutau=qt.instruments.create('qutau','QuTau')
-qutau_counter = qt.instruments.create('qutau_counter','qutau_simple_counter', qutau = 'qutau', physical_adwin='physical_adwin')
+qutau_counter = qt.instruments.create('qutau_counter','qutau_simple_counter', qutau = 'qutau', physical_adwin='physical_adwin',qutau_sync_channel=3)
 
-scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space',qutau = 'qutau',xdim='x', ydim='y', counters='counters', setup_controller='setup_controller')
+scan2d_flim = qt.instruments.create('scan2d', 'scan2d_flim', linescan='linescan_counts', mos='master_of_space',timetagger = 'qutau',xdim='x', ydim='y', counters='counters', setup_controller='setup_controller')
+
+#PH_300 = qt.instruments.create('PH_300','PicoHarp_PH300')
+
 # ###############
 # # Start setup #
 # ###############

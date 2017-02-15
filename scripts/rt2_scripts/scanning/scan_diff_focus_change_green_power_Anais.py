@@ -7,11 +7,11 @@ AOM = qt.instruments['GreenAOM']
 
 # counter = [0, 1, 2]
 # counter = [0]
-z_start = [42.6]#,37.5,36.5]
-xstart = [-100]*len(z_start)
-xstop = [0]*len(z_start)
-ystart = [0]*len(z_start)
-ystop = [100]*len(z_start)
+z_start = [53.42]#,54.5,57.5]#,37.5,36.5]
+xstart =[-90]#,-90,-40]#*len(z_start)
+xstop = [10]#,-40,10]#*len(z_start)
+ystart = [-10]#,50,50]#*len(z_start)
+ystop = [90]#100,100]#*len(z_start)
 xpx = 1001
 ypx = 1001
 bleaching = False
@@ -22,62 +22,43 @@ bleaching = False
 
 counter = 0
 
-for i,x in enumerate(xstart):
-  scan2d_flim.set_xstart(x)
-  scan2d_flim.set_xstop(xstop[i])
-  for jj,y in enumerate(ystart):
-    scan2d_flim.set_ystart(y)
-    scan2d_flim.set_ystop(ystop[jj])
-    zoom = np.array([1.,2.,3.])  # delta z compare to focus
-    # zoom = [2.00]
-    optical_power= np.ones(20)*500e-6#[300e-6,300e-6,300e-6,300e-6,300e-6]  # Optical power for the different scans
-    # optical_power = np.ones(4) * 50e-6
-    # optical_power[1:4] *= 2 
-    focus= z_start[counter] # z reference position
-    xsteps=[xpx]*len(zoom)
-    ysteps=[ypx]*len(zoom)
-    pixeltime =[10.]*len(zoom)
-    bleaching_pixeltime = [100.]*len(zoom)
-    j=0
-    k=0
-    stop_scan = False
-    for i in zoom:
-      print '%s_um'%i
+# for i,x in enumerate(xstart):
 
-      master_of_space.set_z(focus+i)
-      qt.msleep(5)
+for jj,y in enumerate(ystart):
+  scan2d_flim.set_xstart(xstart[jj])
+  scan2d_flim.set_xstop(xstop[jj])
+  scan2d_flim.set_ystart(ystart[jj])
+  scan2d_flim.set_ystop(ystop[jj])
+  zoom = np.array([2, 3, 4, 5, 6])  # delta z compared to focus
+  # zoom = [2.00]
+  # optical_power= [650.e-6,400.e-6,400.e-6]#np.ones(20)*400e-6#[300e-6,300e-6,300e-6,300e-6,300e-6]  # Optical power for the different scans
+  optical_power = np.ones(5) * 400e-6
+  # optical_power[1:4] *= 2
 
-      if bleaching:
-        AOM.turn_on()
-        setup_controller.set_keyword('Sophie_NVsearch_bleach_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+  focus= z_start[jj] # z reference position
+  xsteps=[xpx]*len(zoom)
+  ysteps=[ypx]*len(zoom)
+  pixeltime =[10.]*len(zoom)
+  bleaching_pixeltime = [100.]*len(zoom)
 
-        lastline_reached=False
-        #print 'xsteps[j]', xsteps[j]
-        scan2d_flim.set_xsteps(xsteps[j])
-        scan2d_flim.set_ysteps(ysteps[j])
-        scan2d_flim.set_pixel_time(bleaching_pixeltime[j])
-        qt.msleep(5)
+  j=0
+  k=0
+  stop_scan = False
+  for i in zoom:
+    print '%s_um'%i
 
-        scan2d_flim.set_is_running(True)
-        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
-        if stop_scan: break
+    master_of_space.set_z(focus+i)
+    qt.msleep(5)
 
-        while(scan2d_flim.get_is_running()):
-          qt.msleep(0.1)
-          if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
-          if stop_scan: break
-        qt.msleep(5)
-
-      AOM.set_power(optical_power[k])
-      print 'Green power = %.1f uW' % (AOM.get_power()*1e6)
-      
-      setup_controller.set_keyword('Sophie_NVsearch_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+    if bleaching:
+      AOM.turn_on()
+      setup_controller.set_keyword('Hillary_Scan9_highres_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
 
       lastline_reached=False
       #print 'xsteps[j]', xsteps[j]
       scan2d_flim.set_xsteps(xsteps[j])
       scan2d_flim.set_ysteps(ysteps[j])
-      scan2d_flim.set_pixel_time(pixeltime[j])
+      scan2d_flim.set_pixel_time(bleaching_pixeltime[j])
       qt.msleep(5)
 
       scan2d_flim.set_is_running(True)
@@ -90,10 +71,32 @@ for i,x in enumerate(xstart):
         if stop_scan: break
       qt.msleep(5)
 
-      j=j+1
-      k=k+1
-      print 'scan ready' 
-    counter += 1
+    AOM.set_power(optical_power[k])
+    print 'Green power = %.1f uW' % (AOM.get_power()*1e6)
+    
+    setup_controller.set_keyword('Hillary_NVsearch_scan8_highres_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+
+    lastline_reached=False
+    #print 'xsteps[j]', xsteps[j]
+    scan2d_flim.set_xsteps(xsteps[j])
+    scan2d_flim.set_ysteps(ysteps[j])
+    scan2d_flim.set_pixel_time(pixeltime[j])
+    qt.msleep(5)
+
+    scan2d_flim.set_is_running(True)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
+    if stop_scan: break
+
+    while(scan2d_flim.get_is_running()):
+      qt.msleep(0.1)
+      if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): stop_scan=True
+      if stop_scan: break
+    qt.msleep(5)
+
+    j=j+1
+    k=k+1
+    print 'scan ready' 
+  counter += 1
 
 AOM.set_power(0.1e-6)
 #print 'Current coarse position X1, Y_hoog'
