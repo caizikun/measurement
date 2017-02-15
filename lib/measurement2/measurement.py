@@ -408,8 +408,7 @@ class AdwinControlledMeasurement(Measurement):
         corresponding cr_process parameters are also set from the measurement params dictionary.
 
         '''
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:    
-            print key          
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:           
             self.set_adwin_process_variable_from_params(key)
 
         for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            

@@ -13,11 +13,10 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 
-
 ' Defining FPAR
- 
-#DEFINE setpoint        FPAR_14              ' Setpoint of PID process
-#DEFINE S               FPAR_15              '
+#DEFINE g_0             FPAR_13              ' Scalefactor ZPL APD 0
+#DEFINE g_1             FPAR_14              ' Scalefactor ZPL APD 1
+#DEFINE setpoint        FPAR_15              ' In degrees
 
 ' Defining PAR
 #DEFINE DELAY           PAR_10               ' Processdelay 
@@ -27,22 +26,25 @@
 
 DIM DATA_20[100] AS LONG
 DIM DATA_26[max_pid] AS LONG 
+DIM DATA_27[max_pid] AS LONG 
+DIM DATA_24[max_sample] AS LONG
 DIM DATA_25[max_sample] AS LONG
 
 'Define variables
-DIM P, D,I, I_OLD                         AS FLOAT        ' PID terms
+DIM P, D,I, I_OLD,S,                      AS FLOAT        ' PID terms
 DIM GAIN,Kp,Kd,Ki                         AS FLOAT        ' PID parameters
 DIM e, e_old                              AS FLOAT        ' error term
-DIM V_out_old,V_out, value                AS FLOAT        ' Counts and outputs
-DIM counts, counts_min, counts_max        AS FLOAT        ' Counts 
-DIM mode,index,index1,pid_cycles,sample_cycles AS LONG
+DIM V_out_old,V_out, value                AS FLOAT        ' outputs PID
+DIM n_0,n_1, n_setpoint                   AS FLOAT        ' Counts 
+DIM mode,index,pid_cycles,sample_cycles   AS LONG
 DIM repetition_counter, max_repetitions   AS LONG
-DIM k,j, V_in                             AS LONG
+DIM k,j                                   AS LONG
 Init:
   'Init
   PAR_73 = 0
   mode = 1
   index = 1
+  n_setpoint                  = (cos(setpoint))^2 / g_0
   pid_cycles                  = DATA_20[1]
   sample_cycles               = DATA_20[2]
   max_repetitions             = DATA_20[3]
@@ -50,12 +52,14 @@ Init:
   P2_DAC_2(14, 0)
   
   FOR j = 1 TO max_pid
-    DATA_26[j] = 1
+    DATA_26[j] = 0
+    DATA_27[j] = 0
   NEXT j
   FOR j = 1 TO max_sample
-    DATA_25[j] = 2
+    DATA_24[j] = 0
+    DATA_25[j] = 0
   NEXT j
-  
+
   k = 1
   j = 1
  
@@ -76,9 +80,10 @@ Init:
   'Latch onto and measure
   P2_CNT_ENABLE(CTR_MODULE, 0000b)
   P2_CNT_MODE(CTR_MODULE, 2,000010000b)
+  P2_CNT_MODE(CTR_MODULE, 3,000010000b)
   'CNT_SE_DIFF(0000b)
-  P2_CNT_CLEAR(CTR_MODULE, 0010b)
-  P2_CNT_ENABLE(CTR_MODULE, 0010b)
+  P2_CNT_CLEAR(CTR_MODULE, 0110b)
+  P2_CNT_ENABLE(CTR_MODULE, 0110b)
   
   'TIME setpoints
   processdelay = 30000*delay
@@ -88,16 +93,18 @@ Event:
     case 1 'Do PID and save counts
 
       ' Measure counts
-      P2_CNT_LATCH(CTR_MODULE, 0010b)
-      V_in = P2_CNT_READ_LATCH(CTR_MODULE, 2)
+      P2_CNT_LATCH(CTR_MODULE, 0110b)
+      DATA_26[k] = P2_CNT_READ_LATCH(CTR_MODULE, 2)
+      DATA_27[k] = P2_CNT_READ_LATCH(CTR_MODULE, 3)
       P2_CNT_ENABLE(CTR_MODULE,0000b)
-      P2_CNT_CLEAR(CTR_MODULE,0010b)
-      P2_CNT_ENABLE(CTR_MODULE,0010b) 
-      DATA_26[k] = V_in 
+      P2_CNT_CLEAR(CTR_MODULE,0110b)
+      P2_CNT_ENABLE(CTR_MODULE,0110b)
+      n_0 = g_0*DATA_26[k]
+      n_1 = g_1*DATA_27[k]
       inc(k)
       
       ' PID control
-      e = SETPOINT - V_in
+      e = n_setpoint - DATA_26[k-1]
       P = Kp * e                                               ' Proportional term      
       I = Ki * ( I_old + e * (delay/1000) )                    ' Integration term                                              ' 
       D = Kd * (( e - e_old ) / (delay/1000) )                 ' Differentiation term
@@ -139,12 +146,12 @@ Event:
     case 2 'Do nothing and save counts
       
       ' Measure counts
-      P2_CNT_LATCH(CTR_MODULE, 0010b)
-      V_in = P2_CNT_READ_LATCH(CTR_MODULE, 2)
+      P2_CNT_LATCH(CTR_MODULE, 0110b)
+      DATA_24[j] = P2_CNT_READ_LATCH(CTR_MODULE, 2)
+      DATA_25[j] = P2_CNT_READ_LATCH(CTR_MODULE, 3)
       P2_CNT_ENABLE(CTR_MODULE,0000b)
-      P2_CNT_CLEAR(CTR_MODULE,0010b)
-      P2_CNT_ENABLE(CTR_MODULE,0010b)
-      DATA_25[j] = V_in 
+      P2_CNT_CLEAR(CTR_MODULE,0110b)
+      P2_CNT_ENABLE(CTR_MODULE,0110b)
       inc(j)
       
       'Do index3 rounds

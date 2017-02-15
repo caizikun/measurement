@@ -8,6 +8,7 @@ import numpy as np
 import qt 
 import purify_slave; reload(purify_slave)
 import msvcrt
+import time
 name = qt.exp_params['protocols']['current']
 
 def show_stopper():
@@ -51,6 +52,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     name = qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
@@ -254,14 +256,14 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1 
 
-    m.joint_params['LDE1_attempts'] = 75
+    m.joint_params['LDE1_attempts'] = 150
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-0.5e-6,1e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.5e-6,1.8e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
@@ -333,7 +335,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 1000
+    maxReps = 500
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE1_attempts'
@@ -456,7 +458,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     for el_state in el_state_list:
         if breakst:
             break
-        for ro in ['positive']:
+        for ro in ['positive','negative']:
             breakst = show_stopper()
             if breakst:
                 break
@@ -814,13 +816,13 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 3.0
+    m.params['phase_detuning'] = 6.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     
     ### calculate sweep array
     minReps = 1
-    maxReps = 350.
+    maxReps = 350./2.
     step = int((maxReps-minReps)/pts)+1
 
 
@@ -992,15 +994,15 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
 
 if __name__ == '__main__':
 
-    #repump_speed(name+'_repump_speed',upload_only = False)
+    # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
 
-    #sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
 
-    characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = True)
+    # characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = False)
     # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
@@ -1008,8 +1010,20 @@ if __name__ == '__main__':
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
-    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    # AWG.clear_visa()
+
+    # start_time = time.time()
+    # optimize_time = time.time()
+    # while time.time()-start_time < 16*60*60:
+    #     if show_stopper():
+    #         break
+    #     if time.time()-optimize_time > 30*60:
+    #         GreenAOM.set_power(1e-5)
+    #         optimiz0r.optimize(dims=['x','y','z','y','x'])
+    #         GreenAOM.turn_off()
+    #         optimize_time = time.time()
+
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    AWG.clear_visa()
     # #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')

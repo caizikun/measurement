@@ -10,7 +10,7 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
-' Foldings                       = 593,616,644,697
+' Foldings                       = 593,616,644,697,927
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -937,7 +937,7 @@ EVENT:
         
       CASE 7 ' Phase synchronisation
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
-        ' Each adwin will count the number pulses and send a jump once a given phase has been reached.
+        ' Each adwin will count the number of pulses and send a jump once a given phase has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
 
           awg_repcount_was_low = 1
