@@ -398,7 +398,7 @@ if __name__ == '__main__':
 
 
 
-                TPQI(name+'_TPQI_Ex_highstrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
+                TPQI(name+'_TPQI_Ey_lowstrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
                 AWG.clear_visa()
                 ## XZ measurement
                 print '-----------------------------------'            

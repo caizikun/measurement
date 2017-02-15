@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         tel1_helper = qt.instruments['tel1_helper']
 
-        start_index = 33
+        start_index = 3
         skip_first=False
         optimize_index = 2
         cycles = 400

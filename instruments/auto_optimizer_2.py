@@ -36,6 +36,7 @@ class auto_optimizer_2(Instrument):
 
         self._yellow_went_up = False;
         self._gate_went_up = False;  
+        self._nf_went_up = False
 
         self._newfocus_iterations = 0;
         self._gate_iterations = 0;
@@ -338,9 +339,16 @@ class auto_optimizer_2(Instrument):
         scan_min = nf_start + self._opt_nf_scan_min/2.
         scan_max = nf_start + self._opt_nf_scan_max/2.
         steps=int((scan_max - scan_min) / self._opt_nf_step)
+
+
         nf_sweep=np.append(np.linspace(nf_start,scan_min+self._opt_nf_step,int(steps/2.)),
                 np.linspace(scan_min, scan_max, steps))
         nf_sweep=np.append(nf_sweep,np.linspace(scan_max-self._opt_nf_step,nf_start,int(steps/2.)))       
+        
+        if self._nf_went_up:
+            #if the laser went up the last time then invert the array
+            nf_sweep = nf_sweep[::-1]
+
         # Initialize data arrays
         nf_x = np.array([]);
         nf_y = np.array([]);
@@ -400,6 +408,12 @@ class auto_optimizer_2(Instrument):
             plt.plot(nf_t,nf_x,'O',name=(self._plot_name+'_nf')) 
             plt.plot(np.arange(len(nf_sweep))*self._opt_nf_dwell, nf_sweep,'O',name=(self._plot_name+'_nf'))             
             plt.plot(nf_t,nf_y,'O',name=(self._plot_name+'_nf'))  
+
+
+        if nf_start < self._get_freq_newfocus():
+            self._nf_went_up = True
+        else:
+            self.nf_went_up = False
 
         print 'Finished NewFocus optimization'
         return True;            
