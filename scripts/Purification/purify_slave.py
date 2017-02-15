@@ -160,12 +160,13 @@ class purify_single_setup(DD.MBI_C13):
         reps = self.adwin_var('completed_reps')
         # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
 
-
+        print 'what markers?'
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('Phase_correction_repetitions',1, reps), 
                     ('statistics', 10),
+                    ('invalid_data_markers'                  ,1,reps), 
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
@@ -175,8 +176,10 @@ class purify_single_setup(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('compensated_phase'                     ,1,reps), 
                     ('min_phase_deviation'                   ,1,reps), 
+                    
                     'completed_reps'
                     ])
+        print 'these markers'
         return
 
     

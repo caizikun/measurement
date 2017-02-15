@@ -1,5 +1,5 @@
 import qt
-#import joint_params
+import single_click_ent_expm_joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -11,13 +11,15 @@ params_lt3 = {}
 params_lt3['do_general_sweep']          = False
 params_lt3['is_two_setup_experiment']   = 1
 params_lt3['do_N_MBI']                  = 0 #practically not in use
-params_lt3['MW_before_LDE1']            = 0
-params_lt3['do_LDE_1']                  = 1 # we always do this.
+params_lt3['MW_before_LDE']            = 0
+params_lt3['LDE_is_init']             = 0
+params_lt3['do_LDE']                  = 1 # we always do this.
+    
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 50e-9#1000e-9
-params_lt3['LDE_SP_duration']           = 5e-6
+params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
+params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
@@ -31,10 +33,6 @@ params_lt3['Dynamical_stop_ssro_duration'] = qt.exp_params['protocols'][name]['A
 params_lt3['E_RO_durations']  = [params_lt3['Dynamical_stop_ssro_duration']] # only necessary for analysis
 params_lt3['Dynamical_stop_ssro_threshold'] = 1
 params_lt3['MBI_attempts_before_CR'] = 1 
-
-#### stuff the purification script requires but not useful for us
-params_lt3['phase_correct_max_reps'] = 72
-params_lt3['phase_feedback_resolution'] = 4.5
 
 # channels
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
@@ -70,13 +68,8 @@ params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
-
-params_lt3['mw_second_pulse_amp']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp']
-params_lt3['mw_second_pulse_length']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
-
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       0#2500
@@ -85,13 +78,10 @@ params_lt3['MIN_HIST_SYNC_BIN'] =  0#2500
 params_lt3['MAX_HIST_SYNC_BIN'] =  8500
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
-
 params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
-params_lt3['maximum_meas_time_in_min'] = 60
-params_lt3['do_green_reset'] = False
+params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
 params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
 params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
@@ -103,21 +93,15 @@ params_lt3['live_filter_queue_length'] = 10
 
 params_lt3['measurement_time'] = 24.*60.*60. 
 
-print params_lt3['LDE_final_mw_phase']
+params_lt3['Phase_msmt_DAC_channel'] = 2 
+params_lt3['Phase_Msmt_voltage'] = 0.0
+params_lt3['Phase_Msmt_off_voltage'] = 0.0
+params_lt3['PID_GAIN'] = 1.0
+params_lt3['PID_Kp'] = 0.002
+params_lt3['PID_Ki'] = 0.0
+params_lt3['PID_Kd'] = 0.0
 
-### parameters for LDE timing:
-params_lt3['TPQI_normalisation_measurement'] = False
-params_lt3['initial_delay']           = 10e-9 #DONT CHANGE THIS
-params_lt3['do_final_mw_LDE']         = 0 # only used for B&K
+params_lt3['count_int_cycles'] = 25 # How many cycles to integrate counts for
+params_lt3['pid_points'] = 10 # How many points to sample the phase at during the PID loop
+params_lt3['sample_points'] = 100 # How many points to sample the phase at during the expm part
 
-params_lt3['opt_pi_pulses'] = 1
-params_lt3['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for higher visibility of 
-
-params_lt3['LDE1_attempts'] = 1000 
-params_lt3['LDE2_attempts'] = 500
-
-params_lt3['LDE_element_length'] = 7.0e-6 #DO NOT CHANGE THIS
-
-
-#### added for the adwin process
-params_lt3['is_master'] = 1

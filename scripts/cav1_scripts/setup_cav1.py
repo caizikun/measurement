@@ -15,10 +15,10 @@ print 'reload all modules...'
 execfile(os.path.join(qt.config['startdir'],"reload_all.py"))
 
 ####
-#print 'reload all measurement parameters and calibrations...'
-#from measurement.scripts.lt3_scripts.setup import msmt_params as mcfg
-#reload(mcfg)
-#qt.exp_params=mcfg.cfg
+print 'reload all measurement parameters and calibrations...'
+from measurement.scripts.cav1_scripts.setup import msmt_params as mcfg
+reload(mcfg)
+qt.exp_params=mcfg.cfg
 ####
 print 'configure the setup-specific hardware...'
 # set all the static variables for lt3

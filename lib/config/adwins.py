@@ -2195,6 +2195,7 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom_frq':10,
         'lock_aom':11,
         'pulse_aom_frq':12,
+        'yellow_current':13,
         }
 
 config['adwin_lt3_dios'] = {
@@ -2886,6 +2887,7 @@ config['adwin_pro_processes'] = {
                     'stop_flag': 63,
                     'completed_reps' : 73,
                     'entanglement_events': 77,
+                    'invalid_data_marker': 55,
                     },
                 'data_long' : {
                     'CR_before'      : 22,
@@ -2899,12 +2901,94 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
                     'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
                     'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
                     },
                 },
+
+        'single_click_ent' : {
+                'index' : 9,
+                'file' : 'single_click_ent.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       ,   100],
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,   20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['PLU_during_LDE'                  ,   1],
+                    ['LDE_is_init'                     ,   1],
+                    ['do_phase_stabilisation'          ,   1],
+                    ['only_meas_phase'                 ,   0],
+                    ['do_dynamical_decoupling'         ,   1],
+                    ['Phase_msmt_DAC_channel'          ,   2],
+                    ['pid_points'                      ,   10],
+                    ['sample_points'                   ,   100],
+                    ['count_int_cycles'                ,   25],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['Phase_Msmt_voltage'         , 0.8],
+                    ['Phase_Msmt_off_voltage'         , 0.8],
+                    ['PID_GAIN'       , 1.0],
+                    ['PID_Kp'         , 0.002],
+                    ['PID_Ki'         , 0.0],
+                    ['PID_Kd'         , 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60, # PH This is the timer?
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    'DD_repetitions'            : 100, # Not used yet (PH) but eventually the number of reps needed for DD
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'ssro_results'              : 103,  # electron readout
+                    'pid_counts'                : 104, # Counts measured during the PID process
+                    'sampling_counts'           : 105, # Counts during the sample process
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    },
+                'data_float' : {
+                    },
+                },
+
                 'test_sin_scan' : {
                 'index' : 8,
                 'file' : 'test_sin_scan_wavelength.TB8',
@@ -3719,6 +3803,9 @@ config['adwin_cav1_processes'] = {
         'voltage_scan_sync' : {
             'index' : 5,
             'file' : 'voltage_scan_sync.TB5',
+            'fpar' : {
+                'curr_voltage' : 53, 
+                },
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],
@@ -3745,8 +3832,6 @@ config['adwin_cav1_processes'] = {
                 ],
             'params_float_index'  : 21,
             'params_float_length' : 100,
-            'par' : {
-                },
             'data_float' : {
                 'photodiode_voltage' : 24,
                 'laser_frequency' : 25,

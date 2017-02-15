@@ -7,7 +7,7 @@ import msvcrt
 #measurement parameters
 name = 'Pippin_SIL3_ZPL_optm_CR'
 steps=21
-max_power=200e-6       #[w]
+max_power=105e-6       #[w]
 counter=2 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 do_bg=True

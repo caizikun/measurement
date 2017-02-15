@@ -21,6 +21,11 @@ import numpy as np
 from lib import config
 from measurement.lib.config import adwins as adcfg
 
+
+import measurement.lib.measurement2.measurement as m2
+from measurement.lib.measurement2.adwin_pd import pd_msmt
+
+
 class cavity_scan_manager(CyclopeanInstrument):
     def __init__ (self, name, adwin, physical_adwin,use_cfg=True):
         CyclopeanInstrument.__init__(self,name, tags=[])
@@ -177,10 +182,7 @@ class cavity_scan_manager(CyclopeanInstrument):
 
         self.cycle_duration = 1000 #means running at 300 kHz ;  3000 here corresponds to 100 kHz
 
-        self.data = None
         self.PD_signal = None
-        self.tstamps_ms = None
-        self.scan_params = None
 
         #variable properties are saved in the cfg file 
         if use_cfg:
@@ -197,9 +199,6 @@ class cavity_scan_manager(CyclopeanInstrument):
 
         self.add_function('start_lengthscan')
         self.add_function('stop_lengthscan')
-        self.add_function('laser_scan')
-        self.add_function('length_scan')
-        self.add_function('save')
         self.add_function('run_new_length_scan')
         self.add_function('run_new_fine_laser_scan')
         self.add_function('run_new_sweep_msyncdelay')
@@ -303,8 +302,6 @@ class cavity_scan_manager(CyclopeanInstrument):
         if (self._running_task=='length_scan'):
             self.set_task_is_running(False)
             self.set_is_running(False)
-            if self.was_use_wavemeter:
-                self.use_wavemeter=True
         else:
             print('could not stop lengthscan; another task is running')
 
@@ -351,102 +348,145 @@ class cavity_scan_manager(CyclopeanInstrument):
         self.get_nr_repetitions()
 
     def run_new_length_scan(self, **kw):
-        self.run(**kw)
         self._running_task = 'length_scan'
 
-        self.minV_lengthscan=kw.pop('minV_lengthscan', self.minV_lengthscan)
-        self.maxV_lengthscan=kw.pop('maxV_lengthscan', self.maxV_lengthscan)
-        self.nr_steps_lengthscan = kw.pop('nr_steps_lengthscan',self.nr_steps_lengthscan)
-        self.get_minV_lengthscan()
-        self.get_maxV_lengthscan()
-        self.get_nr_steps_lengthscan()
-        
+        m = pd_msmt.AdwinPhotodiode('LengthScan_'+self.file_tag)
+
+        m.params.from_dict(qt.exp_params['protocols']['AdwinPhotodiode'])
+        m.params.from_dict(qt.exp_params['protocols']['AdwinPhotodiode']['cavlength_scan'])
+        m.params['ADC_averaging_cycles'] = self.ADC_averaging_cycles
+
+        m.params['start_voltage'] = self.minV_lengthscan
+        m.params['end_voltage'] = self.maxV_lengthscan
+
+        m.params['nr_scans'] = self.nr_avg_scans
+        m.params['nr_steps'] = self.nr_steps_lengthscan
+
+        # self.minV_lengthscan=kw.pop('minV_lengthscan', self.minV_lengthscan)
+        # self.maxV_lengthscan=kw.pop('maxV_lengthscan', self.maxV_lengthscan)
+        # self.nr_steps_lengthscan = kw.pop('nr_steps_lengthscan',self.nr_steps_lengthscan)
+
+        m.params['voltage_step'] = abs((m.params['end_voltage'] - m.params['start_voltage']))/float(m.params['nr_steps']-1)
+        m.params['start_voltage_1'] = m.params['start_voltage']
+        m.params['start_voltage_2'] = m.params['start_voltage']
+        m.params['start_voltage_3'] = m.params['start_voltage']
+
+        m.params['nr_ms_per_point'] = m.params['ADC_averaging_cycles']/m.params['save_cycles']
+
+        dac_channels = [m.params['DAC_ch_1']]
+        m.params['dac_names'] = ['jpe_fine_tuning_1','jpe_fine_tuning_2','jpe_fine_tuning_3']
+        m.params['start_voltages'] = [m.params['start_voltage'],m.params['start_voltage'],m.params['start_voltage']]
+
         if self.ADC_averaging_cycles>1000:
             print "ADC_averaging_cycles > 1000; aborting length scan"
             self.stop_lengthscan()
             self.set_task_is_running(False)
+            return
 
-        self.was_use_wavemeter= self.use_wavemeter
-        self.use_wavemeter=False
-
-        enable_autosave = kw.pop('enable_autosave',True)
         self.reset_data('PD_signal', (self.nr_steps_lengthscan))
         self.reset_data('v_vals',  (self.nr_steps_lengthscan))
-
-        # the core of the lengtscan function
         self.status_label = "<font style='color: red;'>length scan</font>"
         self.get_status_label()
-        self.length_scan (**kw)
 
-        #set data in order for the UI to connect to it.       
+        success = m.run()
+
         self.status_label = "<font style='color: red;'>idle</font>"
         self.get_status_label()
+        self.v_vals = np.linspace(self.minV_lengthscan, self.maxV_lengthscan, self.nr_steps_lengthscan)
+        raw_data = m.adwin_var(('photodiode_voltage',self.nr_avg_scans*self.nr_steps_lengthscan))
+        data = np.reshape (raw_data, (self.nr_avg_scans, self.nr_steps_lengthscan))
 
+        for j in np.arange (self.nr_avg_scans):
+            if (j==0):
+                values = data[0]
+            else:
+                values = values + data[j]
+        self.PD_signal = values/float(self.nr_avg_scans)
+        
         # self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
-        if self.success:
+        if success:
             self.set_data('v_vals', self.v_vals)
             qt.msleep(0.1)
             self.set_data('PD_signal', self.PD_signal)
             qt.msleep(0.1)
-
-            self.saveX_values = self.v_vals
-            self.saveY_values = self.PD_signal
-            self.save_tstamps_ms = self.tstamps_ms                  
-            self.saveX_label = 'piezo_voltage'
-            self.saveY_label = 'PD_signal'
-            self.save_scan_type = 'msync'
         else:        
-            print 'cannot sync to Montana'
-            # msg_text = 'Cannot Sync to Montana signal!'
-            # ex = MsgBox(msg_text = msg_text)
-            # ex.show()
+            print 'measurement unsuccesful'
             self.stop_lengthscan()
       
+        if self.autosave:
+            m.save('lengthscan')
+        m.finish(save_stack=False)
 
-        if self.autosave and enable_autosave:
-            self.save()
         if self.autostop:
             self.stop_lengthscan()
 
-            # self._exp_mngr.set_piezo_voltage (V = self._exp_mngr._fine_piezos)#SvD: this seems unnecessary
         self.set_task_is_running(False)
+
 
     def run_new_fine_laser_scan(self, **kw):
         self._running_task = 'fine_laser_scan'
 
-        self.minV_finelaser=kw.pop('minV_finelaser', self.minV_finelaser)
-        self.maxV_finelaser=kw.pop('maxV_finelaser', self.maxV_finelaser)
-        self.nr_steps_finelaser = kw.pop('nr_steps_finelaser',self.nr_steps_finelaser)
-        self.wait_cycles = kw.pop('wait_cycles', self.wait_cycles)
-        self.use_wavemeter = kw.pop('use_wavemeter', self.use_wavemeter)
-        self.get_minV_finelaser()
-        self.get_maxV_finelaser()
-        self.get_nr_steps_finelaser()
+        m = pd_msmt.AdwinPhotodiode('LaserScan_'+self.file_tag)
+
+        m.params.from_dict(qt.exp_params['protocols']['AdwinPhotodiode'])
+        m.params.from_dict(qt.exp_params['protocols']['AdwinPhotodiode']['laserfrq_scan'])
+        m.params['ADC_averaging_cycles'] = self.ADC_averaging_cycles
+
+        m.params['start_voltage'] = self.minV_finelaser
+        m.params['end_voltage'] = self.maxV_finelaser
+
+        m.params['nr_scans'] = self.nr_avg_scans
+        m.params['nr_steps'] = self.nr_steps_finelaser
+
+        # self.minV_lengthscan=kw.pop('minV_lengthscan', self.minV_lengthscan)
+        # self.maxV_lengthscan=kw.pop('maxV_lengthscan', self.maxV_lengthscan)
+        # self.nr_steps_lengthscan = kw.pop('nr_steps_lengthscan',self.nr_steps_lengthscan)
+
+        m.params['voltage_step'] = abs((m.params['end_voltage'] - m.params['start_voltage']))/float(m.params['nr_steps']-1)
+        m.params['start_voltage_1'] = m.params['start_voltage']
+        m.params['start_voltage_2'] = m.params['start_voltage']
+        m.params['start_voltage_3'] = m.params['start_voltage']
+
+        m.params['nr_ms_per_point'] = m.params['ADC_averaging_cycles']/m.params['save_cycles']
+
+        dac_channels = [m.params['DAC_ch_1']]
+        m.params['dac_names'] = ['newfocus_freqmod']
+        m.params['start_voltages'] = [m.params['start_voltage']]
 
         self.reset_data('PD_signal', (self.nr_steps_finelaser))
         self.reset_data('v_vals',  (self.nr_steps_finelaser))
-
-        self.status_label = "<font style='color: red;'>laser scan</font>"
+        self.status_label = "<font style='color: red;'>length scan</font>"
         self.get_status_label()
-        self.laser_scan()
 
-        self.set_data('PD_signal', self.data[0])
-        qt.msleep(0.1)
-        if self.use_wavemeter:
-            self.set_data('v_vals', self.freq_data)
-        else:
-            self.set_data('v_vals', self.v_vals)
-        qt.msleep(0.1)
+        success = m.run()
 
-        self.saveX_values = self.v_vals
-        self.saveY_values = self.PD_signal  
-        self.saveX_label = 'laser_tuning_voltage'
-        self.saveY_label = 'PD_signal'        
         self.status_label = "<font style='color: red;'>idle</font>"
         self.get_status_label()
+        self.v_vals = np.linspace(self.minV_finelaser, self.maxV_finelaser, self.nr_steps_finelaser)
+        raw_data = m.adwin_var(('photodiode_voltage',self.nr_avg_scans*self.nr_steps_finelaser))
+        data = np.reshape (raw_data, (self.nr_avg_scans, self.nr_steps_finelaser))
 
+        for j in np.arange (self.nr_avg_scans):
+            if (j==0):
+                values = data[0]
+            else:
+                values = values + data[j]
+        self.PD_signal = values/float(self.nr_avg_scans)
+        
+        # self.ui.label_status_display.setText("<font style='color: red;'>idle</font>")
+        if success:
+            self.set_data('v_vals', self.v_vals)
+            qt.msleep(0.1)
+            self.set_data('PD_signal', self.PD_signal)
+            qt.msleep(0.1)
+        else:        
+            print 'measurement unsuccesful'
+            self.stop_finelaser()
+      
         if self.autosave:
-            self.save()
+            m.save('laserscan')
+        m.finish(save_stack=False)
+
         if self.autostop:
             self.stop_finelaser()
 
@@ -454,6 +494,7 @@ class cavity_scan_manager(CyclopeanInstrument):
 
 
     def run_new_sweep_msyncdelay(self):
+        ##############SvD 31-1-2017: revise this function. It might not work anymore with the new m2-based msmt style
         self._running_task='sweep_msyncdelay'
         print "starting a new sweep of the montana sync delay"
         self.initialize_msmt_params()
@@ -499,145 +540,6 @@ class cavity_scan_manager(CyclopeanInstrument):
         self._running_task = None
 
 
-    def save(self, **kw):
-        '''
-        Function that saves the data obtained in a 1-dimensional scan into an HDF5 file.
-        Input:
-        -keywords:
-            data_index  -   the name of the to be saved data arrays
-            fName       -   name of the file in which the data will be saved. is created if doesn'e exist
-        Output:
-        fName  -    name of the file in which data has been saved
-
-        '''
-        data_index = kw.pop('data_index', '')
-        fName = kw.pop('fname', None)
-        if fName == None:
-            fName =  datetime.now().strftime ('%H%M%S') + '_' + str(self._running_task)
-            if self.file_tag:
-                fName = fName + '_' + self.file_tag
-        
-        f0 = os.path.join('D:/measuring/data/', time.strftime('%Y%m%d'))
-        directory = os.path.join(f0, fName)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        
-        f5 = h5py.File(os.path.join(directory, fName+'.hdf5'))
-
-        if fName not in f5.keys():
-            scan_grp = f5.create_group(fName)
-        else:
-            scan_grp = f5[fName]
-        scan_grp.create_dataset(self.saveX_label, data = self.saveX_values)
-        if self.use_wavemeter:
-            scan_grp.create_dataset('laser_frequency', data = self.freq_data)
-        scan_grp.create_dataset(self.saveY_label, data = self.saveY_values)
-        scan_grp.create_dataset('PD_signal_per_ms',data= self.PD_signal_per_ms)
-
-        try:
-            if 'raw_data_'+data_index not in f5.keys():
-                data_grp = f5.create_group('raw_data_'+data_index)
-            else:
-                data_grp = f5['raw_data_'+data_index]
-            for j in np.arange (self.nr_avg_scans):
-                data_grp.create_dataset('scannr_'+str(j+1), data = self.data [j,:])
-        except:
-            print 'Unable to save data'
-
-       
-        try:
-            if 'TimeStamps'+data_index not in f5.keys():
-                time_grp = f5.create_group('TimeStamps'+data_index)
-            else:
-                time_grp = f5['TimeStamps'+data_index]
-            time_grp.create_dataset('timestamps [ms]', data = self.tstamps_ms)
-        except:
-            print 'Unable to save timestamps'
-
-        #The below could be in a function save_msmt_params or so
-        try:
-            for k in self.scan_params:
-                f5.attrs [k] = self.scan_params[k]
-            for l in self.msmt_params: #ideally msmt_params should replace scan_params.
-                f5.attrs [l] = self.msmt_params[l]
-        except:
-            print 'Unable to save msmt params'
-
-        f5.close()
-        
-        fig = plt.figure(figsize = (15,10))
-        plt.plot (self.saveX_values, self.saveY_values, 'RoyalBlue')
-        plt.plot (self.saveX_values, self.saveY_values, 'ob')
-        plt.xlabel (self.saveX_label, fontsize = 15)
-        plt.ylabel (self.saveY_label, fontsize = 15)
-        plt.savefig (os.path.join(directory, fName+'_avg.png'))
-        plt.close(fig)
-
-        if (self.nr_avg_scans > 1):
-            fig = plt.figure(figsize = (15,10))
-            colori = cm.gist_earth(np.linspace(0,0.75, self.nr_avg_scans))
-            for j in np.arange(self.nr_avg_scans):
-                plt.plot (self.saveX_values, self.data[j,:], color = colori[j])
-                plt.plot (self.saveX_values, self.data[j,:], 'o', color = colori[j])
-            plt.xlabel (self.saveX_label, fontsize = 15)
-            plt.ylabel (self.saveY_label, fontsize = 15)
-            plt.savefig (os.path.join(directory, fName+'.png'))
-            plt.close(fig)     
-
-        return fName
-
-    def laser_scan (self, use_wavemeter = False, force_single_scan = True):
-        v_step = float(self.maxV_finelaser-self.minV_finelaser)/float(self.nr_steps_finelaser)
-        self.v_vals = np.linspace(self.minV_finelaser, self.maxV_finelaser, self.nr_steps_finelaser)
-        
-        self.frequencies = np.zeros (self.nr_steps_finelaser)
-        self.PD_signal = np.zeros (self.nr_steps_finelaser)
-        initial_voltage = self._adwin.get_dac_voltage('newfocus_freqmod')
-
-        self.success, self.data, self.tstamps_ms, self.freq_data, self.scan_params, self.data_ms = self.scan_photodiode (scan_type = 'laser',
-                nr_steps = self.nr_steps_finelaser, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
-                start_voltage = self.minV_finelaser, end_voltage = self.maxV_finelaser, initial_voltage = initial_voltage,
-                use_sync = self.use_sync, delay_ms = self.sync_delay_ms, scan_to_start = True, 
-                ADC_averaging_cycles=self.ADC_averaging_cycles, scan_auto_reverse=self.scan_auto_reverse,
-                cycle_duration=self.cycle_duration)
-
-        for j in np.arange (self.nr_avg_scans):
-            if (j==0):
-                values = self.data[0]
-                values_ms = self.data_ms[0]
-            else:
-                values = values + self.data[j]
-                values_ms = values_ms + self.data_ms[j]
-        self.PD_signal = values/float(self.nr_avg_scans)
-        self.PD_signal_per_ms = values_ms/float(self.nr_avg_scans)
-        
-
-
-    def length_scan (self, **kw):
-        v_step = float(self.maxV_lengthscan-self.minV_lengthscan)/float(self.nr_steps_lengthscan)
-        self.v_vals = np.linspace(self.minV_lengthscan, self.maxV_lengthscan, self.nr_steps_lengthscan)  
-        self.PD_signal = np.zeros (self.nr_steps_lengthscan)
-        initial_voltage = self._adwin.get_dac_voltage('jpe_fine_tuning_1')
-
-
-
-        scan_type = kw.pop('scan_type','fine_piezos')
-
-        self.success, self.data, self.tstamps_ms, self.freq_data, self.scan_params, self.data_ms = self.scan_photodiode (scan_type = scan_type,
-                nr_steps = self.nr_steps_lengthscan, nr_scans = self.nr_avg_scans, wait_cycles = self.wait_cycles, 
-                start_voltage = self.minV_lengthscan, end_voltage = self.maxV_lengthscan, initial_voltage=initial_voltage,
-                scan_to_start=True,ADC_averaging_cycles=self.ADC_averaging_cycles,scan_auto_reverse=self.scan_auto_reverse,
-                use_sync = self.use_sync, delay_ms = self.sync_delay_ms,cycle_duration=self.cycle_duration, **kw)
-
-        for j in np.arange (self.nr_avg_scans):
-            if (j==0):
-                values = self.data[0]
-                values_ms = self.data_ms[0] 
-            else:
-                values = values + self.data[j]
-                values_ms = values_ms + self.data_ms[j]
-        self.PD_signal = values/float(self.nr_avg_scans)
-        self.PD_signal_per_ms = values_ms/float(self.nr_avg_scans)
 
     ############
     ### get and set functions for parameters
@@ -788,135 +690,3 @@ class cavity_scan_manager(CyclopeanInstrument):
     def do_set_cycle_duration(self,value):
         self.cycle_duration = value
 
-
-    def scan_photodiode(self, scan_type, nr_steps = 100, nr_scans = 5, wait_cycles = 50, 
-            start_voltage = -3, end_voltage = 3, initial_voltage =0, use_sync = 0, 
-            delay_ms = 0, scan_to_start=False, ADC_averaging_cycles = 50,scan_auto_reverse=1,
-            cycle_duration=1000,**kw):
-        voltage_step = abs((end_voltage - start_voltage))/float(nr_steps-1)
-        montana_sync_ch = adcfg.config['adwin_cav1_dios']['montana_sync_ch']
-        ADC_ch = self._adwin.get_adc_channels()['photodiode']
-
-        delay_cycles = int(delay_ms/3.3e-6) # assumes running at 300 kHz (SvD: doesn't make sense to me that this is correct. should be 3.3e-3).
-        save_cycles = 100 #Hardcoded now -> save every ms. SvD. Solve better later?
-        nr_ms_per_point = int(ADC_averaging_cycles/save_cycles)
-        print 'nr_ms_per_point',nr_ms_per_point
-        do_scan = True
-
-        if (scan_type == 'fine_piezos'):
-            DAC_ch_1 = self._adwin.get_dac_channels()['jpe_fine_tuning_1']
-            DAC_ch_2 = self._adwin.get_dac_channels()['jpe_fine_tuning_2']
-            DAC_ch_3 = self._adwin.get_dac_channels()['jpe_fine_tuning_3']
-            DAC_channels = [DAC_ch_1,DAC_ch_2,DAC_ch_3]
-            dac_names = np.array(['jpe_fine_tuning_1', 'jpe_fine_tuning_2', 'jpe_fine_tuning_3'])
-            start_voltages = np.array([start_voltage,start_voltage,start_voltage])
-            stop_voltages = np.array([end_voltage,end_voltage,end_voltage])
-            final_voltages = np.array([initial_voltage,initial_voltage,initial_voltage])
-            if ((start_voltage <-2) or (end_voltage >10)):
-                do_scan = False
-                print 'Piezo voltage exceeds specifications! Scan aborted.'
-        elif (scan_type == 'laser'):
-            DAC_ch_1 = self._adwin.get_dac_channels()['newfocus_freqmod']
-            DAC_ch_2 = 0
-            DAC_ch_3 = 0
-            DAC_channels = [DAC_ch_1,DAC_ch_2,DAC_ch_3]
-            dac_names=np.array(['newfocus_freqmod'])
-            start_voltages=np.array([start_voltage])
-            stop_voltages = np.array([end_voltage])
-            final_voltages = np.array([initial_voltage])
-
-        elif scan_type == 'arbitrary':
-            DAC_ch_1 = kw.pop('DAC_ch_1',0)
-            DAC_ch_2 = kw.pop('DAC_ch_2',0)
-            DAC_ch_3 = kw.pop('DAC_ch_3',0)
-            DAC_channels = [DAC_ch_1,DAC_ch_2,DAC_ch_3]
-            ADC_ch = kw.pop('ADC_ch',self._adwin.get_adc_channels()['photodiode'])
-            scan_to_start = False
-        else: 
-            print "Scan type unknown! Scan aborted."
-            do_scan = False
-
-        if do_scan:
-            scan_params = {}
-            scan_params['DAC_ch_1'] = DAC_ch_1
-            scan_params['DAC_ch_2'] = DAC_ch_2
-            scan_params['DAC_ch_3'] = DAC_ch_3            
-            scan_params['ADC channels'] = ADC_ch
-            scan_params['use_montana_sync'] = use_sync
-            scan_params['sync_ch'] = montana_sync_ch
-            scan_params['sync_delay_ms'] = delay_ms            
-            scan_params['start_voltage'] = start_voltage
-            scan_params['end_voltage'] = end_voltage
-            scan_params['step_voltage'] = voltage_step
-            scan_params['nr_scans'] = nr_scans
-            scan_params['nr_steps'] = nr_steps
-            scan_params['ADC_averaging_cycles'] = ADC_averaging_cycles
-            scan_params['wait_cycles'] = wait_cycles
-            scan_params['cycle_duration'] = cycle_duration
-            scan_params['save_cycles'] = save_cycles
-            scan_params['nr_ms_per_point'] = nr_ms_per_point
-
-            # tstamps,raw_data,freq_data = self._adwin.photodiodeRO_voltagescan(dac_names,DAC_channels,ADC_ch,montana_sync_ch,
-            #     nr_steps,nr_scans,voltage_step,start_voltages,stop_voltages,final_voltages,
-            #     wait_cycles = wait_cycles,ADC_averaging_cycles = ADC_averaging_cycles,
-            #     use_sync = use_sync,delay_us = delay_cycles,
-            #     scan_to_start = scan_to_start,scan_auto_reverse = scan_auto_reverse)
-
-            if scan_to_start:
-                print 'scan to start'
-                if scan_type=='laser': #make sure the laser scans slowly to the start
-                    speed = 2000#mV/s
-                else:
-                    speed = 20000 #actually I also want to sweep the other ones a bit slowly
-                _steps,_pxtime = self._adwin.speed2px(dac_names, start_voltages,speed=speed)
-                print _steps,_pxtime
-                self._adwin.linescan(dac_names, self._adwin.get_dac_voltages(dac_names),
-                        start_voltages, _steps, _pxtime, value='none', 
-                        scan_to_start=False, blocking = True)
-
-            qt.msleep(0.1)
-            t0=time.time()
-            print 'performing voltage scan'
-            self._adwin.start_voltage_scan_sync(DAC_ch_1=DAC_ch_1, DAC_ch_2=DAC_ch_2, DAC_ch_3=DAC_ch_3, ADC_channel=ADC_ch, 
-                    nr_steps=nr_steps, nr_scans=nr_scans, wait_cycles=wait_cycles, voltage_step=voltage_step,
-                    start_voltage_1 = start_voltage, start_voltage_2 = start_voltage, start_voltage_3 = start_voltage,
-                    use_sync=use_sync, sync_ch=montana_sync_ch, delay_us=delay_cycles, ADC_averaging_cycles = ADC_averaging_cycles,
-                    scan_auto_reverse=scan_auto_reverse,cycle_duration=cycle_duration,save_cycles=save_cycles)
-
-            while (self._adwin.is_voltage_scan_sync_running()):
-                qt.msleep (0.1)
-
-            t1 = time.time()-t0
-            print 'voltage scan done, took ',t1
-
-            tstamps = self._adwin.get_voltage_scan_sync_var('timestamps',length=nr_scans+1) #self.physical_adwin.Get_Data_Long(timestamps_idx, 1, nr_scans) 
-            raw_data = self._adwin.get_voltage_scan_sync_var('photodiode_voltage',length=(nr_steps)*nr_scans)# self.physical_adwin.Get_Data_Float(data_idx, 1, nr_steps*nr_scans)
-            freq_data = self._adwin.get_voltage_scan_sync_var('laser_frequency',length=(nr_steps)*nr_scans)# self.physical_adwin.Get_Data_Float(freqs_idx, 1, nr_steps*nr_scans)
-            raw_ms_data = self._adwin.get_voltage_scan_sync_var('photodiode_voltage_ms',length=(nr_steps)*nr_scans*nr_ms_per_point)# self.physical_adwin.Get_Data_Float(freqs_idx, 1, nr_steps*nr_scans)
-
-            for i,n in enumerate(dac_names):
-                self._adwin.set_dac_voltage((n,stop_voltages[i]))
-
-            # after a piezo scan return the piezo voltage to the initial voltage.
-            if scan_type=='laser': #make sure the laser scans slowly to the start
-                speed = 2000#mV/s
-            else:
-                speed = 20000 #actually I also want to sweep the other ones a bit slowly
-            _steps,_pxtime = self._adwin.speed2px(dac_names, final_voltages,speed=speed)
-            self._adwin.linescan(dac_names, self._adwin.get_dac_voltages(dac_names),
-                    final_voltages, _steps, _pxtime, value='none', 
-                    scan_to_start=False, blocking = True)
-
-            tstamps_ms = tstamps [1:]*100# the adwin runs at 100 kHz = 10us per cycle.    #*3.3*1e-6
-            success = tstamps[0]
-
-            data = np.reshape (raw_data, (nr_scans, nr_steps))
-            data_ms = np.reshape(raw_ms_data, (nr_scans, nr_steps, nr_ms_per_point))
-            if success:
-                scan_params['scan_successfull'] = True
-            else:
-                scan_params['scan_successfull'] = False
-
-            self.save_cfg()
-
-            return success, data, tstamps_ms,freq_data, scan_params, data_ms

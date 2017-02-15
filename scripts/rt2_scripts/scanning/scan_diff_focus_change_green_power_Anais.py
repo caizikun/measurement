@@ -7,11 +7,11 @@ AOM = qt.instruments['GreenAOM']
 
 # counter = [0, 1, 2]
 # counter = [0]
-z_start = [35.79]#,54.5,57.5]#,37.5,36.5]
-xstart =[-20]#,-90,-40]#*len(z_start)
-xstop = [0]#,-40,10]#*len(z_start)
-ystart = [50]#,50,50]#*len(z_start)
-ystop = [70]#100,100]#*len(z_start)
+z_start = [53.42]#,54.5,57.5]#,37.5,36.5]
+xstart =[-90]#,-90,-40]#*len(z_start)
+xstop = [10]#,-40,10]#*len(z_start)
+ystart = [-10]#,50,50]#*len(z_start)
+ystop = [90]#100,100]#*len(z_start)
 xpx = 1001
 ypx = 1001
 bleaching = False
@@ -29,7 +29,7 @@ for jj,y in enumerate(ystart):
   scan2d_flim.set_xstop(xstop[jj])
   scan2d_flim.set_ystart(ystart[jj])
   scan2d_flim.set_ystop(ystop[jj])
-  zoom = np.array([1,1.5,2,2.5,3])  # delta z compared to focus
+  zoom = np.array([2, 3, 4, 5, 6])  # delta z compared to focus
   # zoom = [2.00]
   # optical_power= [650.e-6,400.e-6,400.e-6]#np.ones(20)*400e-6#[300e-6,300e-6,300e-6,300e-6,300e-6]  # Optical power for the different scans
   optical_power = np.ones(5) * 400e-6
@@ -52,7 +52,7 @@ for jj,y in enumerate(ystart):
 
     if bleaching:
       AOM.turn_on()
-      setup_controller.set_keyword('Hillary_Scan4_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+      setup_controller.set_keyword('Hillary_Scan9_highres_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
 
       lastline_reached=False
       #print 'xsteps[j]', xsteps[j]
@@ -74,7 +74,7 @@ for jj,y in enumerate(ystart):
     AOM.set_power(optical_power[k])
     print 'Green power = %.1f uW' % (AOM.get_power()*1e6)
     
-    setup_controller.set_keyword('Hillary_NVsearch_scan4_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
+    setup_controller.set_keyword('Hillary_NVsearch_scan8_highres_focus=%sum_zrel=%s_um'%(np.round(focus,2),i))
 
     lastline_reached=False
     #print 'xsteps[j]', xsteps[j]

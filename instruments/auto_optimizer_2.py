@@ -36,6 +36,7 @@ class auto_optimizer_2(Instrument):
 
         self._yellow_went_up = False;
         self._gate_went_up = False;  
+        self._nf_went_up = False
 
         self._newfocus_iterations = 0;
         self._gate_iterations = 0;
@@ -60,7 +61,7 @@ class auto_optimizer_2(Instrument):
 
                     'opt_gate_good'         :   {'type':types.FloatType,  'val':15,'flags':Instrument.FLAG_GETSET},                    
                     'opt_yellow_good'       :   {'type':types.FloatType,  'val':10,'flags':Instrument.FLAG_GETSET},                    
-                    'opt_nf_good'           :   {'type':types.FloatType,  'val':100,'flags':Instrument.FLAG_GETSET},                                        
+                    'opt_nf_good'           :   {'type':types.FloatType,  'val':25,'flags':Instrument.FLAG_GETSET},                                        
                     
                     'opt_gate_scan_min'     :   {'type':types.FloatType,  'val':-0.1,'flags':Instrument.FLAG_GETSET},                    
                     'opt_yellow_scan_min'   :   {'type':types.FloatType,  'val':-0.8,'flags':Instrument.FLAG_GETSET},                    
@@ -84,7 +85,10 @@ class auto_optimizer_2(Instrument):
                     }
         
         instrument_helper.create_get_set(self,ins_pars)
-                    
+
+        self.add_parameter('is_pidgate_running',type=types.BooleanType, flags = Instrument.FLAG_GETSET)
+        self.add_parameter('is_yellowfrq_running',type=types.BooleanType,flags = Instrument.FLAG_GETSET)   
+
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow')
         self.add_function('optimize_newfocus')
@@ -335,13 +339,25 @@ class auto_optimizer_2(Instrument):
         scan_min = nf_start + self._opt_nf_scan_min/2.
         scan_max = nf_start + self._opt_nf_scan_max/2.
         steps=int((scan_max - scan_min) / self._opt_nf_step)
+
+
         nf_sweep=np.append(np.linspace(nf_start,scan_min+self._opt_nf_step,int(steps/2.)),
                 np.linspace(scan_min, scan_max, steps))
         nf_sweep=np.append(nf_sweep,np.linspace(scan_max-self._opt_nf_step,nf_start,int(steps/2.)))       
+        
+        if self._nf_went_up:
+            #if the laser went up the last time then invert the array
+            nf_sweep = nf_sweep[::-1]
+
         # Initialize data arrays
         nf_x = np.array([]);
         nf_y = np.array([]);
         nf_t = np.array([]); 
+
+        # set the other pids to be running:
+        self.set_is_pidgate_running(True)
+        self.set_is_yellowfrq_running(True)
+        qt.msleep(0.1)
 
         # Start sweep
         finishedNF = False;  
@@ -393,6 +409,12 @@ class auto_optimizer_2(Instrument):
             plt.plot(np.arange(len(nf_sweep))*self._opt_nf_dwell, nf_sweep,'O',name=(self._plot_name+'_nf'))             
             plt.plot(nf_t,nf_y,'O',name=(self._plot_name+'_nf'))  
 
+
+        if nf_start < self._get_freq_newfocus():
+            self._nf_went_up = True
+        else:
+            self.nf_went_up = False
+
         print 'Finished NewFocus optimization'
         return True;            
        
@@ -405,7 +427,7 @@ class auto_optimizer_2(Instrument):
 
         # Start broadening of yellow
         self.adwin.load_test_sin_scan()                         # Load broadening
-        self.adwin.start_test_sin_scan(delay=1000, amp=0.10)    # Start broadening      
+        self.adwin.start_test_sin_scan(delay=1000, amp=0.20)    # Start broadening      
 
         # Create yellow sweep            
         yellow_start = self._get_freq_yellow();
@@ -439,6 +461,11 @@ class auto_optimizer_2(Instrument):
 
         finishedYellow = False;
         finishedGate = False;
+
+
+        self.set_is_pidgate_running(False)
+        self.set_is_yellowfrq_running(True)
+        qt.msleep(0.1)
 
         # Start yellow sweep
         currentYellowStep = 0;
@@ -474,6 +501,9 @@ class auto_optimizer_2(Instrument):
                 if (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros or len(gate_y) < 10):  
                     # Debug
                     #print 'Currently in NV-, checking gate'
+                    if self.get_is_pidgate_running():
+                        self.set_is_pidgate_running(False)
+                        self.set_is_yellowfrq_running(True)
 
                     # Get yellow val
                     yellow_x = np.append(yellow_x,self._get_freq_yellow())
@@ -492,10 +522,12 @@ class auto_optimizer_2(Instrument):
                     if len(gate_y) == 9 and max(yellow_y) > self._opt_yellow_good:
                         finishedYellow = True
                 else: # We are in NV0. Check if yellow is good
-                    time.sleep(2)
                     if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
                         # Debug
                         print 'Currently in NV0, but yellow is OK, so go on checking gate'
+                        if self.get_is_pidgate_running():
+                            self.set_is_pidgate_running(False)
+                            self.set_is_yellowfrq_running(True)
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
                         yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
@@ -512,9 +544,14 @@ class auto_optimizer_2(Instrument):
                     else: # Yellow is bad. Optimize yellow where we ended last time
                         # Debug
                         print 'Currently in NV0, yellow is bad, optimize yellow'
+                        if self.get_is_yellowfrq_running():
+                            self.set_is_pidgate_running(True)
+                            self.set_is_yellowfrq_running(False)
+
 
                         self.adwin.stop_test_sin_scan() 
                         self.adwin.set_dac_voltage(('yellow_current', 0))
+                        qt.msleep(1)
 
                         while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
                             # Allow to break
@@ -652,6 +689,10 @@ class auto_optimizer_2(Instrument):
         finishedYellow = False;
         finishedGate = False;
 
+
+        self.set_is_pidgate_running(True)
+        self.set_is_yellowfrq_running(False)
+        qt.msleep(0.1)
         # Start yellow sweep
         currentYellowStep = 0;
         currentGateStep = 0;
@@ -659,6 +700,7 @@ class auto_optimizer_2(Instrument):
         currentGateFreq = gate_start;
         yellowStepTime = time.time();
         gateStepTime = time.time();
+
 
         # Each for iteration is one sweep step (dwell)
         for currentYellowStep,currentYellowFreq in enumerate(yellow_sweep):
@@ -743,6 +785,8 @@ class auto_optimizer_2(Instrument):
                             # Debug
                             print 'Currently in NV-, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
 
+                            self.set_is_pidgate_running(False)
+                            qt.msleep(0.1)
                             while (time.time() - gateStepTime <= self._opt_gate_dwell) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):
                                 # Allow to break
                                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -837,3 +881,23 @@ class auto_optimizer_2(Instrument):
             # When there are zero attemps, should be distinguishable from zero counts
             return -1.  
         
+    def _do_set_is_pidgate_running(self,val):
+        if val:
+            qt.instruments['pidgate'].start()
+        else:
+            qt.instruments['pidgate'].stop()
+
+
+    def _do_get_is_pidgate_running(self):
+        return qt.instruments['pidgate'].get_is_running()
+
+
+
+    def _do_set_is_yellowfrq_running(self,val):
+        if val:
+            qt.instruments['pidyellowfrq'].start()
+        else:
+            qt.instruments['pidyellowfrq'].stop()
+
+    def _do_get_is_yellowfrq_running(self):
+        return qt.instruments['pidyellowfrq'].get_is_running()

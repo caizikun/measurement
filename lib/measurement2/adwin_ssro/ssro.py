@@ -21,7 +21,6 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     A_aom = None
     repump_aom = None
     adwin = None
-
     
         
     def autoconfig(self):

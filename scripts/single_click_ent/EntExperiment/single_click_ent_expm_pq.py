@@ -2,34 +2,38 @@ import qt
 import numpy as np
 import time
 import logging
-import purify_slave
 from collections import deque
 import measurement.lib.measurement2.measurement as m2
-import purify_slave, sweep_purification
+import single_click_ent_expm, sweep_single_click_ent_expm
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
 reload(T2_tools_v3)
 reload(pq)
-reload(purify_slave);reload(sweep_purification)
+reload(single_click_ent_expm);reload(sweep_single_click_ent_expm)
 
 name = qt.exp_params['protocols']['current']
 
-class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
-    mprefix = 'PQ_C13_Measurement'
-    adwin_process = 'purification'
+class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
+    mprefix = 'PQ_single_click_ent'
+    adwin_process = 'single_click_ent'
     
     def __init__(self, name):
-        purify_slave.purify_single_setup.__init__(self, name)
+        single_click_ent_expm.SingleClickEntExpm.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
+        self.joint_params = m2.MeasurementParameters('JointParameters')
+        self.params = m2.MeasurementParameters('LocalParameters')
+        self.params['pts']=1
+        self.params['repetitions']=1
 
     def autoconfig(self):
-        purify_slave.purify_single_setup.autoconfig(self)
+        single_click_ent_expm.SingleClickEntExpm.autoconfig(self)
         pq.PQMeasurement.autoconfig(self)
 
     def setup(self, **kw):
-        purify_slave.purify_single_setup.setup(self,**kw)
+        if not self.params['only_meas_phase']:
+            single_click_ent_expm.SingleClickEntExpm.setup(self,**kw)
         pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
@@ -53,32 +57,7 @@ class PQPurifyMeasurement(purify_slave.purify_single_setup,  pq.PQMeasurement ):
         reps_completed = self.adwin_var('completed_reps')
         print('Total completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['repetitions']))
-
-
-class purify(PQPurifyMeasurement):
-    mprefix = 'Purification'
-    adwin_process = 'purification'
-
-    def __init__(self, name):
-        PQPurifyMeasurement.__init__(self, name)
-        self.joint_params = m2.MeasurementParameters('JointParameters')
-        self.params = m2.MeasurementParameters('LocalParameters')
-        self.params['pts']=1
-        self.params['repetitions']=1
-    
-    def save(self, name = 'adwindata'):
-        purify_slave.purify_single_setup.save(self)
-        
-    # def print_measurement_progress(self):
-    #     pass
-        # tail_cts=np.sum(self.hist[self.params['tail_start_bin']  : self.params['tail_stop_bin']  ,:])
-        # self.physical_adwin.Set_Par(50, int(tail_cts))
-        
-        # reps_completed = self.adwin_var('completed_reps')    
-        # print('completed %s readout repetitions' % reps_completed)
-        
-
-    
+         
     def finish(self):
         h5_joint_params_group = self.h5basegroup.create_group('joint_params')
         joint_params = self.joint_params.to_dict()
@@ -92,7 +71,7 @@ class purify(PQPurifyMeasurement):
         self.repump_aom.turn_off()
 
 
-        PQPurifyMeasurement.finish(self)
+        pq.PQMeasurement.finish(self)
         
     def live_update_callback(self):
         ''' This is called when the measurement progress is printed in the PQMeasurement run function'''
@@ -111,7 +90,6 @@ class purify(PQPurifyMeasurement):
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
 
-        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
         tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
@@ -134,11 +112,6 @@ class purify(PQPurifyMeasurement):
                 Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
                 self.physical_adwin.Set_FPar(56, ZPL_tail)
                 self.physical_adwin.Set_FPar(57, Pulse_counts)
-
-
-    def stop_measurement_process(self):
-        PQPurifyMeasurement.stop_measurement_process(self)
-
 
 
 def load_TH_params(m):
@@ -178,8 +151,8 @@ def MW_Position(name,debug = False,upload_only=False):
     NK 2016
     """
 
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     # load_TH_params(m)
     #load_BK_params(m)
@@ -188,11 +161,11 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 2000
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
     
-    m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
+    m.params['MW_before_LDE'] = 1 # allows for init in -1 before LDE
     m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 1
 
@@ -200,7 +173,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['is_two_setup_experiment'] = 2
 
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
 
     m.params['LDE_SP_delay'] = 0e-6
 
@@ -215,14 +188,35 @@ def MW_Position(name,debug = False,upload_only=False):
 
     ### upload and run
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+def phase_stability(name,debug = False,upload_only=False):
+
+    """
+    Performs a tail_sweep in the LDE_1 element
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
+
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1000
+    
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    m.params['do_phase_stabilisation']  = 1
+    m.params['only_meas_phase']         = 1 
+
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
 
 def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = False):
     """
     Performs a tail_sweep in the LDE_1 element
     """
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     ### general params
     pts = 15
@@ -230,10 +224,10 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['reps_per_ROsequence'] = 1000
 
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
 
     m.joint_params['opt_pi_pulses'] = 1
     m.params['MW_during_LDE'] = 0
@@ -265,14 +259,14 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def optical_rabi(name,debug = True,upload_only=True, local = False):
     """
     Very similar to tail sweep.
     """
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     ### general params
     pts = 1
@@ -280,7 +274,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     m.params['reps_per_ROsequence'] = 10000
 
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
 
@@ -308,26 +302,26 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
-    m = purify(name)
+    m = PQSingleClickEntExpm(name)
     
-    sweep_purification.prepare(m)
+    sweep_single_click_ent_expm.prepare(m)
     load_TH_params(m) # has to be after prepare(m)
 
     ### general params
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 50000
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 0
-    m.joint_params['LDE1_attempts'] = 1
+    m.joint_params['LDE_attempts'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
@@ -340,25 +334,25 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
 
     ### upload
 
-    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     ### general params
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 2000
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
-    m.joint_params['LDE1_attempts'] = 500
+    m.joint_params['LDE_attempts'] = 500
 
     
 
@@ -371,24 +365,24 @@ def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
 
     m.joint_params['opt_pi_pulses'] = 2
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
 
     ### upload
 
-    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     ### general params
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 10000
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.joint_params['do_final_mw_LDE'] = 1
@@ -401,22 +395,22 @@ def Determine_eta(name, debug = False, upload_only = False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.params['no_repump_after_LDE1']    = 1
+    m.params['no_repump_after_LDE']    = 1
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
 
     ### upload
 
-    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
 
     """
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     load_BK_params(m)
 
@@ -428,7 +422,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 5000
 
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 1
@@ -443,17 +437,17 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
 
     ### upload
 
-    sweep_purification.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
 def TPQI(name,debug = False,upload_only=False):
     
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
 
     pts = 1
     m.params['reps_per_ROsequence'] = 50000
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
 
     m.params['MIN_SYNC_BIN'] =       1.5e6
@@ -467,7 +461,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['LDE_element_length'] = 10e-6
     m.joint_params['opt_pi_pulses'] = 5
     m.joint_params['opt_pulse_separation'] = 1400e-9
-    m.joint_params['LDE1_attempts'] = 100
+    m.joint_params['LDE_attempts'] = 100
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
@@ -487,17 +481,17 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
     ### upload and run
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 def EntangleZZ(name,debug = False,upload_only=False):
 
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
    
     pts = 1
     m.params['reps_per_ROsequence'] = 200
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
     load_BK_params(m)
 
@@ -506,22 +500,22 @@ def EntangleZZ(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
 
     m.params['LDE_final_mw_amplitude'] = 0
 
     ### upload and run
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 def EntangleXX(name,debug = False,upload_only=False):
-    m = purify(name)
-    sweep_purification.prepare(m)
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
    
     pts = 1
     m.params['reps_per_ROsequence'] = 200
-    sweep_purification.turn_all_sequence_elements_off(m)
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
     load_BK_params(m)
 
@@ -530,7 +524,7 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE1_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 250
     ### upload and run
 
     ### this can also be altered to the actual theta pulse by negating the if statement
@@ -538,49 +532,18 @@ def EntangleXX(name,debug = False,upload_only=False):
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
-
-def PurifyZZ(name,debug = False,upload_only=False):
-    m = purify(name)
-    sweep_purification.prepare(m)
-    
-    pts = 1
-    m.params['reps_per_ROsequence'] = 500
-    m.params['do_general_sweep'] = 0
-    m.params['Tomography_bases'] = ['Z']
-    sweep_purification.turn_all_sequence_elements_on(m)
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
-
-def PurifyXX(name,debug = False,upload_only=False): 
-    m = purify(name)
-    sweep_purification.prepare(m)
-    
-    pts = 1
-    m.params['reps_per_ROsequence'] = 500
-    m.params['do_general_sweep'] = 0
-    m.params['Tomography_bases'] = ['X']
-    sweep_purification.turn_all_sequence_elements_on(m)
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
-
-def PurifyYY(name,debug = False,upload_only=False):
-    m = purify(name)
-    sweep_purification.prepare(m)
-    
-    pts = 1
-    m.params['reps_per_ROsequence'] = 500
-    m.params['do_general_sweep'] = 0
-    m.params['Tomography_bases'] = ['Y']
-    sweep_purification.turn_all_sequence_elements_on(m)
-    sweep_purification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 if __name__ == '__main__':
 
+
     ########### local measurements
+    phase_stability(name+'_phase_stab',upload_only=False)
+
     # MW_Position(name+'_MW_position',upload_only=False)
 
-
-    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -595,10 +558,6 @@ if __name__ == '__main__':
   
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
-
-    # PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
-    # PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
-    # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 
     ###### non-local measurements // Barrett Kok parameters
     # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
@@ -632,22 +591,6 @@ if __name__ == '__main__':
             
             for i in range(1):
 
-                # print '-----------------------------------'            
-                # print 'press q to stop measurement cleanly'
-                # print '-----------------------------------'
-                # qt.msleep(1)
-                # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                #    break
-
-                # 
-                # qt.instruments['ZPLServo'].move_in()
-                # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
-                # qt.instruments['ZPLServo'].move_out()
-                # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
-                # qt.instruments['ZPLServo'].move_out()
-
-
-                ## XY measurement
                 print '-----------------------------------'            
                 print 'press q to stop measurement cleanly'
                 print '-----------------------------------'
@@ -656,66 +599,9 @@ if __name__ == '__main__':
                     qt.purification_succes = False
                     break
 
-                PurifyYY(name+'_Purify25_LT3X_LT4Y_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                PurifyYY(name+'_SingleClickEnt_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
                 AWG.clear_visa()
-                ## XZ measurement
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    qt.purification_succes = False
-                    break
-
-                PurifyZZ(name+'_Purify25_LT3X_LT4Z_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
-                ## YX measurement
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    qt.purification_succes = False
-                    break
-
-                PurifyXX(name+'_Purify25_LT3Y_LT4X_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
-
-                ## YZ measurement
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    qt.purification_succes = False
-                    break
-
-                PurifyZZ(name+'_Purify25_LT3Y_LT4Z_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
-                ## ZX measurement
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    qt.purification_succes = False
-                    break
-
-                PurifyXX(name+'_Purify25_LT3Z_LT4X_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
-                ## ZY measurement
-                print '-----------------------------------'            
-                print 'press q to stop measurement cleanly'
-                print '-----------------------------------'
-                qt.msleep(1)
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    qt.purification_succes = False
-                    break
-
-                PurifyYY(name+'_Purify25_LT3Z_LT4Y_'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
-
-
+            
             qt.instruments['purification_optimizer'].set_stop_optimize(True)
             qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False

@@ -53,7 +53,7 @@ def bell_check_powers():
 
 	names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
 	setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-				50e-9, # The amount for repumping in purification
+				700e-9, # The amount for repumping in purification
 				qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
 	relative_thresholds = [0.15,0.15,0.15]
 	qt.instruments['PMServo'].move_in()
@@ -66,7 +66,7 @@ def bell_check_powers():
 		if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
 			break
 		setpoint, value = qt.stools.check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
-		deviation =np.abs(1-setpoint/(value))
+		deviation =np.abs(1-setpoint/value)
 		print 'deviation', deviation
 		if deviation>t:
 			all_fine=False
@@ -92,6 +92,7 @@ def ssrocalibration(name, **additional_params):
 	m.params['SP_duration'] = m.params['SP_duration_ms0']
 	m.params['Ex_SP_amplitude'] = 0.
 	m.params['A_SP_amplitude'] = m.params['A_SP_amplitude']
+	m.params['SSRO_repetitions'] = 5000
 	if m.run():
 		m.save('ms0')
 		qt.msleep(2.)
@@ -122,7 +123,7 @@ if __name__ == '__main__':
 			if time.time()-last_time > 15*60:
 				qt.instruments['purification_optimizer'].stop_optimize_now()
 				break
-			qt.msleep(1.)
+			qt.msleep(1.)	
 			if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 				qt.instruments['purification_optimizer'].stop_optimize_now()
 				break
