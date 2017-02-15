@@ -14,7 +14,6 @@ params_lt4['do_N_MBI']                  = 0 #practically not in use
 params_lt4['MW_before_LDE']            = 0
 params_lt4['LDE_is_init']             = 0
 params_lt4['do_LDE']                  = 1 # we always do this.
-params_lt4['LDE_is_el_init']          = 0
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 

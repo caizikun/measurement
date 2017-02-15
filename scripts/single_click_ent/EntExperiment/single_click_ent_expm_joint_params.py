@@ -31,3 +31,16 @@ joint_params['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for high
 joint_params['LDE_attempts'] = 1000 
 
 joint_params['LDE_element_length'] = 7.0e-6 #DO NOT CHANGE THIS
+
+joint_params['Phase_msmt_DAC_channel'] = 2 
+joint_params['Phase_Msmt_voltage'] = 0.8
+joint_params['Phase_Msmt_off_voltage'] = 0.8
+joint_params['PID_GAIN'] = 1.0
+joint_params['PID_Kp'] = 0.002
+joint_params['PID_Ki'] = 0.0
+joint_params['PID_Kd'] = 0.0
+
+joint_params['count_int_cycles'] = 25 # How many cycles to integrate counts for
+joint_params['pid_points'] = 10 # How many points to sample the phase at during the PID loop
+joint_params['sample_points'] = 100 # How many points to sample the phase at during the expm part
+

@@ -145,23 +145,16 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
-        # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-
-        # PH EDIT
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
-                    ('Phase_correction_repetitions',1, reps), 
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
-                    ('attempts_first'                        ,1,reps),  
-                    ('attempts_second'                       ,1,reps), 
-                    ('carbon_readout_result'                 ,1,reps),
-                    ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps), 
-                    ('min_phase_deviation'                   ,1,reps), 
+                    ('pid_counts'                            ,1,reps*self.params['pid_cycles']), 
+                    ('sampling_counts'                       ,1,reps*self.params['sample_cycles']), 
+                    ('invalid_data_markers'                  ,1,reps),  
                     'completed_reps'
                     ])
         return
@@ -210,14 +203,6 @@ class SingleClickEntExpm(DD.MBI_C13):
         self.params['fast_pi_duration']     = self.params['stored_fast_pi_duration']
         self.params['fast_pi2_duration']    = self.params['stored_fast_pi2_duration']
 
-
-
-    def generate_LDE_rephasing_elt(self,Gate):
-        ### used in non-local msmts syncs master and slave AWGs
-        ### uses the scheme 'single_element' --> this will throw a warning in DD_2.py
-        
-        Gate.elements = [LDE_elt._LDE_rephasing_elt(self,Gate)]
-        Gate.wait_for_trigger = False
 
     def generate_LDE_element(self,Gate):
         """

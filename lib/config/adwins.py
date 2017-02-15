@@ -2909,7 +2909,7 @@ config['adwin_pro_processes'] = {
                     },
                 },
 
-                'single_click_ent' : {
+        'single_click_ent' : {
                 'index' : 9,
                 'file' : 'single_click_ent.TB9',
                 'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
@@ -2942,9 +2942,10 @@ config['adwin_pro_processes'] = {
                     ['phase_correct_max_reps'          ,   5],   
                     ['PLU_during_LDE'                  ,   1],
                     ['LDE_is_init'                     ,   1],
-                    ['Phase_msmt_DAC_channel'          ,   2], # PH To set
-                    ['pid_cycles'                      ,   100],
-                    ['sample_cycles'                   ,   100],
+                    ['Phase_msmt_DAC_channel'          ,   2],
+                    ['pid_points'                      ,   10],
+                    ['sample_points'                   ,   100],
+                    ['count_int_cycles'                ,   25],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,

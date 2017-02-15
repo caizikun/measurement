@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.1.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
 ' Bookmarks                      = 3,3,19,19,81,81,83,83,163,163,304,304,305,305,327,327,598,598,668,669,670
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
@@ -119,7 +120,7 @@ DIM Sig, setpoint, Prop, Dif,Int                   AS FLOAT        ' PID terms
 DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki                         AS FLOAT        ' PID parameters
 DIM e, e_old                              AS FLOAT        ' error term
 DIM pid_time_factor                       AS FLOAT        ' account for changes in the adwin clock cycle
-DIM offset_index,store_index,index,pid_cycles,sample_cycles AS LONG ' Keep track of how long to sample for etc.
+DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 
@@ -191,9 +192,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   LDE_is_init                    = DATA_20[26] ' is the first LDE element for init? Then ignore the PLU
   ' PH NEED TO FIX THIS
   Phase_msmt_DAC_channel      = DATA_20[27]
-  pid_cycles                  = DATA_20[28]
-  sample_cycles               = DATA_20[29]
-  
+  pid_points                  = DATA_20[28]
+  sample_points               = DATA_20[29]
+  count_int_cycles            = DATA_20[30]
    
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -486,7 +487,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
           old_counts = 0
-          offset_index = repetition_counter * pid_cycles ' PH CHECK
+          offset_index = repetition_counter * pid_points ' PH CHECK
           index = 0
           store_index = 0
         ELSE
@@ -521,7 +522,7 @@ EVENT:
           
           inc(index)
           
-          if (timer>pid_cycles) then
+          if (timer>pid_points) then
             mode = mode_after_phase_stab
             timer = -1
             P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
@@ -537,7 +538,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
           old_counts = 0
-          offset_index = repetition_counter * sample_cycles ' PH CHECK
+          offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
         ELSE
@@ -552,7 +553,7 @@ EVENT:
           
           inc(index)
           
-          if (timer>sample_cycles) then
+          if (timer>sample_points) then
             mode = 7
             timer = -1
             P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
