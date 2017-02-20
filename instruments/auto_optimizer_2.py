@@ -1,5 +1,6 @@
 import qt
 import numpy as np
+import math
 from instrument import Instrument
 import plot as plt
 import time
@@ -43,6 +44,9 @@ class auto_optimizer_2(Instrument):
         self._yellow_iterations = 0; 
        
         self.adwin = qt.get_instruments()['adwin']
+        self.labjack = qt.get_instruments()['labjack']
+        self.physical_adwin = qt.get_instruments()['physical_adwin']
+        self.pidyellow = qt.get_instruments()['pidyellow']
 
         ins_pars  ={'do_plot'               :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'plot_name'             :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
@@ -423,11 +427,7 @@ class auto_optimizer_2(Instrument):
         print 'Gate iters:', self._gate_iterations
 
         # Initialize
-        initial_time = time.time();  
-
-        # Start broadening of yellow
-        self.adwin.load_test_sin_scan()                         # Load broadening
-        self.adwin.start_test_sin_scan(delay=1000, amp=0.20)    # Start broadening      
+        initial_time = time.time();      
 
         # Create yellow sweep            
         yellow_start = self._get_freq_yellow();
@@ -467,9 +467,22 @@ class auto_optimizer_2(Instrument):
         self.set_is_yellowfrq_running(True)
         qt.msleep(0.1)
 
+        #Test Broadening
+        broadeningMaxStep = 50
+        broadeningTimeStep = 0.0015
+        gateTimeStep = broadeningMaxStep*broadeningTimeStep
+        broadeningAmp = 3
+        currentYellowVoltage = self.labjack.get_bipolar_dac3()
+        self.pidyellow.stop()
+        if currentYellowVoltage>broadeningAmp:
+            broadeningAmp = currentYellowVoltage
+
         # Start yellow sweep
         currentYellowStep = 0;
         currentGateStep = 0;
+        last_t_broadening = 0;
+        last_t_gate = 0;
+        broadeningStep = 0;
         currentYellowFreq = yellow_start;
         currentGateFreq = gate_start;
         yellowStepTime = time.time();
@@ -480,31 +493,58 @@ class auto_optimizer_2(Instrument):
             # Allow to break
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
                 self._set_freq_yellow(yellow_start);
-                self._set_freq_gate(gate_start);                
+                self._set_freq_gate(gate_start);
+                self.pidyellow.start();               
                 print 'Quit by user'
                 return False                 
-            # Set current gate frequency to gate sweep step            
-            self._set_freq_gate(currentGateFreq)
-            gateStepTime = time.time()   
+            
+            # Set current gate frequency to gate sweep step
+            if (time.time() - last_t_gate >= self._opt_gate_dwell):            
+                self._set_freq_gate(currentGateFreq)
+                gateStepTime = time.time()
+                last_t_gate = time.time()
+
+            #Test Broadening
+            if (time.time() - last_t_broadening >= broadeningTimeStep):
+                broadening = currentYellowVoltage + broadeningAmp*math.sin(2*np.pi*broadeningStep/broadeningMaxStep)
+                self.labjack.set_bipolar_dac3(broadening)
+                last_t_broadening = time.time()
+                broadeningStep += 1
+
             # Debug
             print 'Starting gate iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;           
 
-            # Each while iteration is one gate sweep substep
-            while (time.time() - gateStepTime <= self._opt_gate_dwell) and not finishedGate:
-                # Allow to break
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
-                    self._set_freq_yellow(yellow_start);
-                    self._set_freq_gate(gate_start);                
-                    print 'Quit by user'
-                    return False;                  
-                # Check if we are still in NV-: no more than self._NV0_zeros zero in last 10 vals on gate
-                if (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros or len(gate_y) < 10):  
+            # Check if we are still in NV-: no more than self._NV0_zeros zero in last 10 vals on gate
+            if (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros or len(gate_y) < 10):  
+                # Debug
+                print 'Currently in NV-, checking gate'
+                if self.get_is_pidgate_running():
+                    self.set_is_pidgate_running(False)
+                    self.set_is_yellowfrq_running(True)
+
+                # Get yellow val
+                yellow_x = np.append(yellow_x,self._get_freq_yellow())
+                yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
+                yellow_t = np.append(yellow_t, time.time() - initial_time);
+                # Get gate val
+                gate_x = np.append(gate_x,self._get_freq_gate())
+                gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
+                gate_t = np.append(gate_t, time.time() - initial_time);
+
+                if gate_y[-1] > self._opt_gate_good:
+                    self._set_freq_gate(gate_x[-1])                      
+                    finishedGate = True
+                    break;
+                # If yellow was good to begin with: leave it at current value, never scan it
+                if len(gate_y) == 9 and max(yellow_y) > self._opt_yellow_good:
+                    finishedYellow = True
+            else: # We are in NV0. Check if yellow is good
+                if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
                     # Debug
-                    #print 'Currently in NV-, checking gate'
+                    print 'Currently in NV0, but yellow is OK, so go on checking gate'
                     if self.get_is_pidgate_running():
                         self.set_is_pidgate_running(False)
                         self.set_is_yellowfrq_running(True)
-
                     # Get yellow val
                     yellow_x = np.append(yellow_x,self._get_freq_yellow())
                     yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
@@ -515,92 +555,67 @@ class auto_optimizer_2(Instrument):
                     gate_t = np.append(gate_t, time.time() - initial_time);
 
                     if gate_y[-1] > self._opt_gate_good:
-                        self._set_freq_gate(gate_x[-1])                      
+                        self._set_freq_gate(gate_x[-1])
                         finishedGate = True
                         break;
-                    # If yellow was good to begin with: leave it at current value, never scan it
-                    if len(gate_y) == 9 and max(yellow_y) > self._opt_yellow_good:
-                        finishedYellow = True
-                else: # We are in NV0. Check if yellow is good
-                    if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
+                else: # Yellow is bad. Optimize yellow where we ended last time
+                    # Debug
+
+                    self.pidyellow.start()
+
+                    print 'Currently in NV0, yellow is bad, optimize yellow'
+                    if self.get_is_yellowfrq_running():
+                        self.set_is_pidgate_running(True)
+                        self.set_is_yellowfrq_running(False)
+
+                    while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
+                        # Allow to break
+                        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
+                            self._set_freq_yellow(yellow_start);
+                            self._set_freq_gate(gate_start);                
+                            print 'Quit by user'
+                            return False;                                
+                        # Set current gate frequency to gate sweep step
+                        currentYellowFreq = yellow_sweep[currentYellowStep];
+                        self._set_freq_yellow(currentYellowFreq);
+                        yellowStepTime = time.time();
+
                         # Debug
-                        print 'Currently in NV0, but yellow is OK, so go on checking gate'
-                        if self.get_is_pidgate_running():
-                            self.set_is_pidgate_running(False)
-                            self.set_is_yellowfrq_running(True)
-                        # Get yellow val
-                        yellow_x = np.append(yellow_x,self._get_freq_yellow())
-                        yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
-                        yellow_t = np.append(yellow_t, time.time() - initial_time);
-                        # Get gate val
-                        gate_x = np.append(gate_x,self._get_freq_gate())
-                        gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
-                        gate_t = np.append(gate_t, time.time() - initial_time);
+                        print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
 
-                        if gate_y[-1] > self._opt_gate_good:
-                            self._set_freq_gate(gate_x[-1])
-                            finishedGate = True
-                            break;
-                    else: # Yellow is bad. Optimize yellow where we ended last time
-                        # Debug
-                        print 'Currently in NV0, yellow is bad, optimize yellow'
-                        if self.get_is_yellowfrq_running():
-                            self.set_is_pidgate_running(True)
-                            self.set_is_yellowfrq_running(False)
-
-
-                        self.adwin.stop_test_sin_scan() 
-                        self.adwin.set_dac_voltage(('yellow_current', 0))
-                        qt.msleep(1)
-
-                        while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
+                        while (time.time() - yellowStepTime <= self._opt_yellow_dwell) and not finishedYellow and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):
                             # Allow to break
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
                                 self._set_freq_yellow(yellow_start);
                                 self._set_freq_gate(gate_start);                
                                 print 'Quit by user'
-                                return False;                                
-                            # Set current gate frequency to gate sweep step
-                            currentYellowFreq = yellow_sweep[currentYellowStep];
-                            self._set_freq_yellow(currentYellowFreq);
-                            yellowStepTime = time.time();
+                                return False;                                 
+                            # Get yellow val
+                            yellow_x = np.append(yellow_x,self._get_freq_yellow())
+                            yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
+                            yellow_t = np.append(yellow_t, time.time() - initial_time);
+                            # Get gate val
+                            gate_x = np.append(gate_x,self._get_freq_gate())
+                            gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
+                            gate_t = np.append(gate_t, time.time() - initial_time);
 
-                            # Debug
-                            print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
+                            if yellow_y[-1] > self._opt_yellow_good:                                    
+                                qt.msleep(self._yellow_delay) # Stupid waiting time to correct for delayed readout of frequency                        
+                                self._set_freq_yellow(self._get_freq_yellow())                      
+                                finishedYellow = True
 
-                            while (time.time() - yellowStepTime <= self._opt_yellow_dwell) and not finishedYellow and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):
-                                # Allow to break
-                                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
-                                    self._set_freq_yellow(yellow_start);
-                                    self._set_freq_gate(gate_start);                
-                                    print 'Quit by user'
-                                    return False;                                 
-                                # Get yellow val
-                                yellow_x = np.append(yellow_x,self._get_freq_yellow())
-                                yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
-                                yellow_t = np.append(yellow_t, time.time() - initial_time);
-                                # Get gate val
-                                gate_x = np.append(gate_x,self._get_freq_gate())
-                                gate_y = np.append(gate_y,self.get_value_ext(self._data_time,0))
-                                gate_t = np.append(gate_t, time.time() - initial_time);
-
-                                if yellow_y[-1] > self._opt_yellow_good:                                    
-                                    qt.msleep(self._yellow_delay) # Stupid waiting time to correct for delayed readout of frequency                        
-                                    self._set_freq_yellow(self._get_freq_yellow())                      
-                                    finishedYellow = True
-
-                            currentYellowStep = currentYellowStep + 1; 
-                        # If yellow sweep has finished without exceeding the threshold: immediately set yellow to optimal value.
-                        if currentYellowStep == len(yellow_sweep):
-                            # Scan didn't exceed threshold at any point. Take optimum value from scan, taking delay into account.
-                            optTime = yellow_t[np.argmax(yellow_y)] + self._yellow_delay;
-                            optFreq = yellow_x[np.argmin(abs(yellow_t - optTime))];
-                            if abs(optFreq - yellow_start) > 10.:
-                                print 'Something is wrong! Large step in yellow frequency detected. Back to start for safety.'
-                                self._set_freq_yellow(yellow_start);
-                            else:
-                                print 'Yellow: scan failed, set to best value ', max(yellow_y), 'at frequency', optFreq;
-                                self._set_freq_yellow(optFreq);
+                        currentYellowStep = currentYellowStep + 1; 
+                    # If yellow sweep has finished without exceeding the threshold: immediately set yellow to optimal value.
+                    if currentYellowStep == len(yellow_sweep):
+                        # Scan didn't exceed threshold at any point. Take optimum value from scan, taking delay into account.
+                        optTime = yellow_t[np.argmax(yellow_y)] + self._yellow_delay;
+                        optFreq = yellow_x[np.argmin(abs(yellow_t - optTime))];
+                        if abs(optFreq - yellow_start) > 10.:
+                            print 'Something is wrong! Large step in yellow frequency detected. Back to start for safety.'
+                            self._set_freq_yellow(yellow_start);
+                        else:
+                            print 'Yellow: scan failed, set to best value ', max(yellow_y), 'at frequency', optFreq;
+                            self._set_freq_yellow(optFreq);
 
             if finishedGate:
                 break;                                                            
@@ -610,6 +625,8 @@ class auto_optimizer_2(Instrument):
         else:
             self._set_freq_gate(gate_x[np.argmax(gate_y)]);
             print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
+
+        self.pidyellow.start()
 
         if gate_x[np.argmax(gate_y)] > gate_start:
             self._gate_went_up = True;
@@ -639,10 +656,6 @@ class auto_optimizer_2(Instrument):
             plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
             plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
             plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))
-
-        # Stop broadening
-        self.adwin.stop_test_sin_scan()
-        self.adwin.set_dac_voltage(('yellow_current', 0))   
 
         print 'Finished gate optimization.'
         return True;
