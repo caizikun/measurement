@@ -2473,6 +2473,82 @@ class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+
+class ElectronT2NoTriggers(PulsarMeasurement):
+    """
+    General class to implement Ramsey sequence. 
+    generate_sequence needs to be supplied with a pi2_pulse as kw.
+    """
+    mprefix = 'ElectronT2NoTriggers'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        # rotations
+        pulse_pi2 = kw.get('pulse_pi2', None)
+        pulse_pi = kw.get('pulse_pi', None)
+
+        # waiting element        
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude = 2)
+
+        # self_trigger = pulse.SquarePulse(channel='self_trigger',
+        #     length = self.params['self_trigger_duration'],
+        #     amplitude = 2)
+
+        # make the elements, one for each evolution time
+        elements = []
+        for i in range(self.params['pts']):
+
+            e1 = element.Element('ElectronT2_notrigger_pt-%d_A' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e1.append(pulse.cp(T,
+                length = 1000e-9))
+
+            e1.append(pulse.cp(pulse_pi2,
+                phase = self.params['pulse_sweep_pi2_phases1'][i]))
+
+            e1.append(pulse.cp(T,
+                length = self.params['evolution_times'][i] / 2.))
+
+            e1.append(pulse.cp(pulse_pi,
+                phase = self.params['pulse_sweep_pi_phases'][i]))
+
+            e1.append(pulse.cp(T,
+                length = self.params['evolution_times'][i] / 2.))
+
+            e1.append(pulse.cp(pulse_pi2,
+                phase = self.params['pulse_sweep_pi2_phases2'][i]))
+
+            e1.append(adwin_sync)
+
+            elements.append(e1)
+        # return_e=e
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
         
 class DD_GeneralSequence(PulsarMeasurement):
     """

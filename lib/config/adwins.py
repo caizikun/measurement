@@ -2997,6 +2997,7 @@ config['adwin_pro_processes'] = {
                 },
                 'fpar' : {
                     'amp'           : 12, # Amplification of sin
+                    'setpoint'      : 13, # setpoint of the PID
                     },
                 },
                 'fibre_stretcher_PID' : {
@@ -3208,7 +3209,7 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate_mod': 10, #D
         'yellow_aom_frq': 11, #D
         'phase_aom': 12, #D
-        'yellow_current': 13, #D
+        'yellow_voltage': 13, #D
         'fibre_stretcher': 14 #D
         }
 
