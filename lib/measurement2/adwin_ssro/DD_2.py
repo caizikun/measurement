@@ -1319,7 +1319,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     pulsar = qt.pulsar, global_time=True)
             
             decoupling_elt.append(T_around_pi2)
-            decoupling_elt.append(initial_pulse)
+            if 'x' in self.params['Initial_Pulse']:
+                decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
             for n in range(N-1) :
                 if n !=0:
@@ -1355,7 +1356,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ## finish off with a pi/2 pulse.
 
             decoupling_elt.append(T_around_pi2)
-            decoupling_elt.append(final_pulse)
+            if 'x' in self.params['Final_Pulse']:
+                decoupling_elt.append(final_pulse)
             decoupling_elt.append(T_around_pi2)
             list_of_elements.append(decoupling_elt)
 
@@ -2622,14 +2624,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-                frequency = self.params['fast_pi_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                Sw_risetime = self.params['MW_switch_risetime'],
-                length = self.params['fast_pi_duration'],
-                amplitude = 0)
+            X = self._X_elt()
+
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse+20e-6, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -2638,7 +2634,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e = element.Element('%s_Pi_pulse' %(prefix),  pulsar=qt.pulsar,
                     global_time = True)
             e.append(T_before_p)
-            e.append(pulse.cp(X))
+            #e.append(pulse.cp(X),amplitude = 0 )
             e.append(T_after_p)
 
         elif Gate_operation == 'y':
@@ -3897,7 +3893,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 simple_el_dec.wait_for_trigger = True
                 # wait_gate = Gate('Sample_cooldown_'+str(pt),'passive_elt',wait_time = 50e-3)
                 # self.generate_passive_wait_element(wait_gate)
-                gate_seq = [simple_el_dec,wait_gate]
+                gate_seq = [simple_el_dec]#,wait_gate]
 
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq,explicit=False)

@@ -4,7 +4,6 @@ dummy file with local parameters for AWG sequence generation
 NK 2016
 '''
 import qt
-import joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']

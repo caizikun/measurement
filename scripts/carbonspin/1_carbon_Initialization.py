@@ -95,7 +95,7 @@ if __name__ == '__main__':
     carbons = [4]
     debug = False
     breakst = False
-    init_method = 'MBI'
+    init_method = 'swap'
 
     if init_method == 'both' or init_method == 'swap':
         for c in carbons:

@@ -3015,7 +3015,8 @@ config['adwin_pro_processes'] = {
                     'delay'         : 10, # processdelay
                 },
                 'fpar' : {
-                    'setpoint'      : 14, # setpoint
+                    'g_0'      : 13, # scalefactor ZPL APD 0
+                    'g_1'      : 14, # scalefactor ZPL APD 1
                     },
                 },
                 'Phase_stable_pid' : {
@@ -3026,8 +3027,9 @@ config['adwin_pro_processes'] = {
                     'completed_reps' : 73,
                 },
                 'fpar' : {
-                    'setpoint'      : 14, # setpoint
-                    'S'             : 15, # Output PID
+                    'g_0'      : 13, # scalefactor ZPL APD 0
+                    'g_1'      : 14, # scalefactor ZPL APD 1
+                    'setpoint' : 15, # setpoint PID in degrees (Input when running process)
                     },
                 'params_long' : [
                     ['PID_cycles'                   ,  50],
@@ -3038,8 +3040,10 @@ config['adwin_pro_processes'] = {
                 'params_long_index'  : 20,
                 'params_float_index' : 21,
                 'data_long' : {
-                    'PID_counts' : 26,
-                    'sample_counts' : 25,
+                    'PID_counts_1' : 26,
+                    'PID_counts_2' : 27,
+                    'sample_counts_1' : 24,
+                    'sample_counts_2' : 25,
                     },
                 },
         }

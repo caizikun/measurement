@@ -62,7 +62,6 @@ def NuclearHahnWithInitialization(name,
         m.params['free_evolution_time'] = np.linspace(2e-3,90e-3,12)
         m.params['pts'] = len(m.params['free_evolution_time'])
         
-    
 
     m.params['C_RO_phase'] = m.params['pts']*['X']        
 

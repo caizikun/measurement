@@ -19,7 +19,7 @@ SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def darkesr(name, **kw):
-    '''dark ESR on the 0 <-> -1 transition
+    '''dark ESR on the 0 <-> +/-1 transition
     '''
 
     m = pulsar_msmt.DarkESR(name)
