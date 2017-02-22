@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.716845e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.060413e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,8 +41,8 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 120e-9 #even
-	hermite_pi_amp = 0.658#0.70 # 06-02
+	hermite_pi_length = 140e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp = 0.7#0.658#0.70 # 06-02
 	hermite_pi2_length = 46e-9 # even
 	hermite_pi2_amp = 0.466#0.483 # 06-02 
 
@@ -57,7 +57,7 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.517
+	hermite_pi_amp = 0.363
 	hermite_pi2_length = 90e-9
 	hermite_pi2_amp = 0.208
 
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
