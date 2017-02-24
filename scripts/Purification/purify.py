@@ -198,7 +198,7 @@ def MW_Position(name,debug = False,upload_only=False):
 
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['is_two_setup_experiment'] = 2
+    m.params['is_two_setup_experiment'] = 0
 
     m.joint_params['LDE1_attempts'] = 250
 
@@ -577,10 +577,10 @@ def PurifyYY(name,debug = False,upload_only=False):
 if __name__ == '__main__':
 
     ########### local measurements
-    # MW_Position(name+'_MW_position',upload_only=False)
+    MW_Position(name+'_MW_position',upload_only=False)
 
 
-    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

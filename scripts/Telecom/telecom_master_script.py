@@ -82,7 +82,7 @@ def check_smb_errors():
     return ret_val
 
 if __name__ == '__main__':
-    if qt.current_setup =='lt3':
+    if (qt.current_setup == 'lt3' or qt.current_setup =='lt4'):
 
         tel1_helper = qt.instruments['tel1_helper']
 

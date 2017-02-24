@@ -1,7 +1,6 @@
 """
 executes the file sweep_purification.py repetitively
 utilizes the green laser for optimization purposes.
-
 """
 import numpy as np
 import qt

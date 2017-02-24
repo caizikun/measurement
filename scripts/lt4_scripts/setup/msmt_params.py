@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 98e-9
-	hermite_pi_amp = 0.98#0.952#0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_amp = 0.957#0.985#0.952#0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9
-	hermite_pi2_amp =  0.630#0.605
+	hermite_pi2_amp = 0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -462,16 +462,16 @@ cfg['protocols'][name]['pulses'] = {
       	'mw2_Square_pi2_length' :   0,
     	'mw2_Square_pi2_amp' :		0,
 
-    	'eom_pulse_amplitude'		 : 1.9,
+    	'eom_pulse_amplitude'		 : 2.5, # calibration PH 2017-02-24
     	'eom_pulse_duration'         : 2e-9,
     	'eom_off_duration'           : 50e-9,
-    	'eom_off_amplitude'          : -0.293, # calibration 2015-11-04
+    	'eom_off_amplitude'          : 0.43, # calibration PH 2017-02-24
     	'eom_overshoot_duration1'    : 20e-9,
     	'eom_overshoot1'             : -0.04,
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
-    	'aom_risetime'               : 28e-9, #17e-9
-    	'aom_amplitude'              : 0.431, #CR 31   AR 2016-05-26
+    	'aom_risetime'               : 20e-9, #17e-9
+    	'aom_amplitude'              : 0.5, 
 }
 
 cfg['protocols'][name]['cr_linescan'] = {

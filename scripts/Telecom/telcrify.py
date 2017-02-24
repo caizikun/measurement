@@ -89,8 +89,6 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_
 
     def live_update_callback(self):
         ''' This is called when the measurement progress is printed in the PQMeasurement run function'''
-        pass
-        PQ_ins_key = 'TH_260N'
 
         if self.measurement_progress_first_run:
         
@@ -154,7 +152,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### --> for this measurement: none.
     m.params['LDE1_attempts'] = 250
 
-    m.params['opt_pi_pulses'] = 2
+    m.params['opt_pi_pulses'] = 1
     m.params['opt_pulse_separation'] = 197e-9
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
@@ -168,13 +166,19 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     # put sweep together:
     sweep_off_voltage = False
+    sweep_on_voltage = False
 
     m.params['do_general_sweep']    = True
 
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.05,0.02,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(0.4,0.5,pts)#(-0.04,-0.02,pts)
+    elif sweep_on_voltage:
+        m.params['general_sweep_name'] = 'eom_pulse_amplitude'
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.linspace(0.0,4.0,pts)#(-0.04,-0.02,pts)
+    
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -270,6 +274,72 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
+
+
+def MW_Position(name,debug = False,upload_only=False):
+    """
+    Initializes the electron in ms = -1 
+    Put a very long repumper. Leave one MW pi pulse to find the microwave position.
+    THIS MEASUREMENT RUNS EXCLUSIVELY ON THE TIMEHARP!
+    NK 2016
+    """
+
+    m = Telcrify(name)
+    sweep_telcrification.prepare(m)
+
+    # load_TH_params(m)
+    #load_BK_params(m)
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 5000
+
+    sweep_telcrification.turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    
+    m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
+    m.params['input_el_state'] = 'mZ'
+    m.params['MW_during_LDE'] = 1
+
+    m.params['PLU_during_LDE'] = 0
+    m.params['opt_pi_pulses'] = 1
+    m.params['is_two_setup_experiment'] = 0
+    m.params['do_final_mw_LDE'] = 0
+    m.params['LDE1_attempts'] = 250
+
+    m.params['LDE_SP_delay'] = 0e-6
+
+    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       0#2500
+    m.params['MAX_SYNC_BIN'] =       8500
+    m.params['MIN_HIST_SYNC_BIN'] =  0#2500
+    m.params['MAX_HIST_SYNC_BIN'] =  8500
+    m.params['TTTR_RepetitiveReadouts'] =  10 #
+    m.params['TTTR_read_count'] =     1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+    m.params['measurement_abort_check_interval']    = 2. #sec
+    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
+    m.params['use_live_marker_filter']=True
+    m.params['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
+    m.params['pulse_start_bin'] = 2050-m.params['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
+    m.params['pulse_stop_bin'] = 2050+2000-m.params['MIN_SYNC_BIN']    #### BK: 2950
+    m.params['tail_start_bin'] = 2050 -m.params['MIN_SYNC_BIN']       #### BK: 2950
+    m.params['tail_stop_bin'] = 2050+2000 -m.params['MIN_SYNC_BIN']    #### BK: 2950
+
+    ### prepare sweep / necessary for the measurement that we under go.
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_SP_duration'
+    print 'sweeping the', m.params['general_sweep_name']
+    # m.params['general_sweep_pts'] = np.array([m.params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
+    m.params['general_sweep_pts'] = np.array([2e-6])
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
+
+    ### upload and run
+
+    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
+
 def TPQI(name,debug = False,upload_only=False):
     
     m = Telcrify(name)
@@ -278,13 +348,13 @@ def TPQI(name,debug = False,upload_only=False):
     print 'Starting TPQI seq.'
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 50000*2
+    m.params['reps_per_ROsequence'] = 100000
     sweep_telcrification.turn_all_sequence_elements_off(m)
 
     #m.params['maximum_meas_time_in_min'] = 1
 
-    m.params['MIN_SYNC_BIN'] =      0.0e6 +5e6 # +5 us because of longer spin pumping interval!
-    m.params['MAX_SYNC_BIN'] =       5.5e6 +5e6
+    # m.params['MIN_SYNC_BIN'] =      0.0e6 +5e6 # +5 us because of longer spin pumping interval!
+    # m.params['MAX_SYNC_BIN'] =       5.5e6 +5e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 0
     m.params['do_general_sweep'] = 0
@@ -315,8 +385,17 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
+    elif qt.current_setup == 'lt4':
+
+        m.params['pulse_start_bin'] = 3173- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] =  3173+100 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 3165 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 3173  - m.params['MIN_SYNC_BIN'] 
+        m.params['MIN_SYNC_BIN'] =       2000 #+5e3
+        m.params['MAX_SYNC_BIN'] =       8500
+        
     ### upload and run
-    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = True)
+    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = False)
 
 
 
@@ -329,7 +408,9 @@ if __name__ == '__main__':
 
     ########### local measurements
 
-    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.0, maxval=0.8, local=True)
+    # MW_Position(name+'_MW_position',upload_only=False)
+
+    tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.0, maxval=0.8, local=True)
     # TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
@@ -349,7 +430,7 @@ if __name__ == '__main__':
         print 'STATUS :',  qt.master_script_is_running
         if qt.master_script_is_running:
             # Experimental addition for remote running
-            if (qt.current_setup == 'lt3'): ## i moved this here (from the run function of the class purify), otherwise the loop would crash. NK
+            if (qt.current_setup == 'lt4' or qt.current_setup == 'lt3'): ## i moved this here (from the run function of the class purify), otherwise the loop would crash. NK
                 qt.instruments['tel1_helper'].set_is_running(False)
                 # qt.msleep(1.5)
                 qt.instruments['tel1_helper'].set_measurement_name(str(qt.telcrify_name_index))
@@ -398,7 +479,7 @@ if __name__ == '__main__':
 
 
 
-                TPQI(name+'_TPQI_Ey_lowstrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
+                TPQI(name+'_TPQI_LT4_Ex_2p5GHzStrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
                 AWG.clear_visa()
                 ## XZ measurement
                 print '-----------------------------------'            

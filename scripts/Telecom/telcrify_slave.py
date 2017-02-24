@@ -78,8 +78,8 @@ class purify_single_setup(DD.MBI_C13):
             print 'Omitting adwin load!!! Be wary of your changes!'
             # exec(loadstr)
 
-        self.params['LDE1_attempts'] = self.params['LDE1_attempts']
-        self.params['LDE2_attempts'] = self.params['LDE2_attempts']
+        # self.params['LDE1_attempts'] = self.params['LDE1_attempts']
+        # self.params['LDE2_attempts'] = self.params['LDE2_attempts']
         
         DD.MBI_C13.autoconfig(self)
 

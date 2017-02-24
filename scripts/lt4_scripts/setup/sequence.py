@@ -22,7 +22,7 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #nam
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
     low=-1.0, offset=0., delay=200e-9+MW_parallel_shift, active=True) #DD # note measured delay on fast scope 2014-10-13: 59 ns
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=(490e-9+ 5e-9), active=True) #DD #617 ns for normal pulses 458e-9
+    high=1.0, low=-1.0, offset=0.0, delay=(490e-9 + 76e-9), active=True) #PH Changed from (490e-9+ 5e-9)
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=(199e-9+100e-9-20e-9), active=True) #DD #measured delay on apd's (tail) 2014-10-13: 40 ns
 

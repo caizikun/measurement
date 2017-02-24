@@ -11,9 +11,6 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
-'-----------------------------------------------------------------'
-'                         Made By Jaco Morits                     '
-'-----------------------------------------------------------------'
 'Process makes array of sin values and outputs them, the freq
 ' is controlled by the processdelay.
 '
@@ -34,22 +31,23 @@
 'Define var's
 #DEFINE Delay       par_10                    'Procesdelay [micros]
 #DEFINE Amp         FPAR_12                   'Amplitude   [V]
+#DEFINE setpoint    FPAR_13                   'Current setpoint of PID
 DIM index           AS LONG                   'Index
 DIM sinus[360]      AS FLOAT                  'Array for sine values
 DIM pi              AS FLOAT
-dim value           AS LONG
+DIM value           AS LONG
 
 INIT:
   pi = 3.1415926
-  
-  FOR index = 1 TO 90                                      'Construct sin wave
-    sinus[index] = ( Amp * SIN( (index - 1) * 2*pi/90 )  )     '6 factor for conversion to voltage, offset for High-Z to 50 ohm conversion (no -)
+  FOR index = 1 TO 50                                       'Construct sin wave
+    sinus[index] = ( Amp * SIN( (index - 1) * 2*pi/50 )  )  
   NEXT index
+
   index = 1                                                 'Reset Index
-  processdelay = 300*delay                               'Delay between each event 
+  processdelay = 300*delay                                  'Delay between each event (us)
 EVENT:
-  value= sinus[index]*3276.8+32768                          'Convert voltage to bit value
+  value = (setpoint+sinus[index])*3276.8+32768                         'Convert voltage to bit value
   P2_DAC_2(13, value)                                       'Output the amplitude value to dac13
   INC index                                                 'Increase the count index
-  IF (index > 90) THEN index = 1                           'starts again at index 1 for full sin 
+  IF (index > 50) THEN index = 1                            'starts again at index 1 for full sin 
   
