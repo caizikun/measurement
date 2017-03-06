@@ -64,7 +64,6 @@ class SingleClickEntExpm(DD.MBI_C13):
             self.physical_adwin.Stop_Process(i+1)
             qt.msleep(0.3)
         qt.msleep(1)
-        # self.adwin.load_MBI()   
         # New functionality, now always uses the adwin_process specified as a class variables 
         loadstr = 'self.adwin.load_'+str(self.adwin_process)+'()'   
         latest_process = qt.instruments['adwin'].get_latest_process()
@@ -191,20 +190,13 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         return Trig_element
 
-
-    def restore_msmt_parameters(self):
+    def generate_LDE_rephasing_elt(self,Gate):
         """
-        Reloads the stored parameters for regular operation.
+        Is used to rephase the electron spin after a successful entanglement generation event.
+        uses the scheme 'single_element' --> this will throw a warning in DD_2.py
         """
-        self.params['min_phase_correct']    = self.params['stored_min_phase_correct']
-        self.params['min_dec_tau']          = self.params['stored_min_dec_tau']
-        self.params['max_dec_tau']          = self.params['stored_max_dec_tau'] 
-        self.params['dec_pulse_multiple']   = self.params['stored_dec_pulse_multiple'] 
-        self.params['Carbon_init_RO_wait']  = self.params['stored_carbon_init_RO_wait']
-        self.params['min_dec_duration']     = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
-        self.params['fast_pi_duration']     = self.params['stored_fast_pi_duration']
-        self.params['fast_pi2_duration']    = self.params['stored_fast_pi2_duration']
-
+        Gate.elements = [LDE_elt._LDE_rephasing_elt(self,Gate)]
+        Gate.wait_for_trigger = False
 
     def generate_LDE_element(self,Gate):
         """
@@ -237,7 +229,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def generate_sequence(self,upload=True,debug=False):
         """
-        generate the sequence for the purification experiment.
+        generate the sequence for the single click experiment.
         Tries to be as general as possible in order to suffice for multiple calibration measurements
         """
 
@@ -258,13 +250,11 @@ class SingleClickEntExpm(DD.MBI_C13):
             gate_seq = []
 
             LDE = DD.Gate('LDE'+str(pt),'LDE')
-            LDE.el_state_after_gate = 'sup'
 
             if self.params['LDE_attempts'] > 1:
                 LDE.reps = self.params['LDE_attempts']-1
                 LDE.is_final = False
                 LDE_final = DD.Gate('LDE_final_'+str(pt),'LDE')
-                LDE_final.el_state_after_gate = 'sup'
                 LDE_final.reps = 1
                 LDE_final.is_final = True
             else:
@@ -321,6 +311,9 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_repump.channel = 'AOM_Newfocus'
             LDE_repump.el_state_before_gate = '0' 
 
+            LDE_rephasing = DD.Gate('LDE_rephasing_1'+str(pt),'single_element',wait_time = self.params['LDE_decouple_time'])
+            LDE_rephasing.scheme = 'single_element'
+            self.generate_LDE_rephasing_elt(LDE_rephasing)
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
@@ -354,9 +347,16 @@ class SingleClickEntExpm(DD.MBI_C13):
                 ### append last adwin synchro element 
                 if not LDE.is_final:
                     gate_seq.append(LDE_final)
+                    gate_seq.append(LDE_rephasing)
 
                 elif self.params['LDE_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2 and self.params['no_repump_after_LDE'] == 0:
                     gate_seq.append(LDE_repump)
+
+                else:
+                    ### there is only a single LDE repetition in the LDE element and we do not repump. 
+                    ### --> add the rephasing element
+                    gate_seq.append(LDE_rephasing)
+
                    
             gate_seq.extend(e_RO)
 

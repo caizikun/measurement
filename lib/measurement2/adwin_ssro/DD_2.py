@@ -181,19 +181,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #print 'selecting mwsource 2 because el =m1'
                 return X
             else:
-                print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-
-
-        
-        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['X_phase'])     
+                print 'Please define the used transition: transition is (%s)' %self.params['electron_transition'] 
       
     def _mX_elt(self):
         '''
@@ -214,15 +202,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 return X
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['X_phase']+180)       
+      
 
     def _pi2_elt(self):
         '''
@@ -242,15 +222,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 return X
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['fast_pi2_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi2_duration'],
-        #     amplitude = self.params['fast_pi2_amp'],
-        #     phase = self.params['X_phase'])
 
     def _mpi2_elt(self):
         '''
@@ -271,14 +242,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
         
-        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['fast_pi2_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi2_duration'],
-        #     amplitude = self.params['fast_pi2_amp'],
-        #     phase = self.params['X_phase'])
+
 
     def _Ypi2_elt(self):
         '''

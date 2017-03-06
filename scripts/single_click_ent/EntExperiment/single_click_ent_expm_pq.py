@@ -304,7 +304,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
 
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
+def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
@@ -336,7 +336,7 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
 
     sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
-def SPCorrsPuri_ZPL_twoSetup(name, debug = False, upload_only = False):
+def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """

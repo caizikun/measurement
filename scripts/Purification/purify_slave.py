@@ -159,8 +159,6 @@ class purify_single_setup(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-
-        print 'what markers?'
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
@@ -179,7 +177,6 @@ class purify_single_setup(DD.MBI_C13):
                     
                     'completed_reps'
                     ])
-        print 'these markers'
         return
 
     
