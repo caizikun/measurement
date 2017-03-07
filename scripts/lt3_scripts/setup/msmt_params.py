@@ -513,7 +513,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.255e-6,#0.35e-6,
+		'max_dec_tau'         :     0.355e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

@@ -11,13 +11,11 @@ import qt
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
-import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD;reload(DD)
 import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
 import single_click_ent_LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
-
-
 
 class SingleClickEntExpm(DD.MBI_C13):
 
@@ -53,13 +51,6 @@ class SingleClickEntExpm(DD.MBI_C13):
                                     'ch4m1': 'ch4_marker1',
                                     'ch4m2': 'ch4_marker2',}
 
-
-        #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
-        # this is most of the time only necessary if you made a programming error ;)
-        # check variable declarations and definitions
-
-        qt.msleep(0.5)
-
         for i in range(10):
             self.physical_adwin.Stop_Process(i+1)
             qt.msleep(0.3)
@@ -75,7 +66,7 @@ class SingleClickEntExpm(DD.MBI_C13):
             qt.msleep(1)
         else:
             print 'Omitting adwin load!!! Be wary of your changes!'
-            # exec(loadstr)
+
 
         self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
         
@@ -195,7 +186,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         Is used to rephase the electron spin after a successful entanglement generation event.
         uses the scheme 'single_element' --> this will throw a warning in DD_2.py
         """
-        Gate.elements = [LDE_elt._LDE_rephasing_elt(self,Gate)]
+        LDE_elt.generate_LDE_rephasing_elt(self,Gate)
         Gate.wait_for_trigger = False
 
     def generate_LDE_element(self,Gate):
@@ -206,16 +197,16 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         LDE_elt.generate_LDE_elt(self,Gate)
 
-        if Gate.reps == 1:
+        if Gate.reps == 1: ### final LDe element has only one rep.
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
                 Gate.event_jump = 'next'
                 if self.params['PLU_during_LDE'] > 0:
-                    Gate.go_to = 'start'
+                    Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
                 else:
                     Gate.go_to = 'next'
             else:
                 Gate.event_jump = 'next'
-                Gate.go_to = 'start'
+                Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
 
                 if self.params['PLU_during_LDE'] == 0:
                     Gate.go_to = None
@@ -311,9 +302,13 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_repump.channel = 'AOM_Newfocus'
             LDE_repump.el_state_before_gate = '0' 
 
-            LDE_rephasing = DD.Gate('LDE_rephasing_1'+str(pt),'single_element',wait_time = self.params['LDE_decouple_time'])
+            LDE_rephasing = DD.Gate('LDE_rephasing_1'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
+
+            ### this is only used if the plu is also in the mix.
+            LDE_is_done =  [DD.Gate('LDE_done_'+str(pt),'Trigger',
+                wait_time = 10e-6)] 
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
@@ -357,7 +352,6 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
 
-                   
             gate_seq.extend(e_RO)
 
 
@@ -366,7 +360,6 @@ class SingleClickEntExpm(DD.MBI_C13):
             ###############################################
 
             #### insert elements here
-
             gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
             ### Convert elements to AWG sequence and add to combined list
@@ -377,7 +370,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                 combined_seq.append_element(seq_el)
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug,verbose=False)
         else:
 
             print 'upload = false, no sequence uploaded to AWG'

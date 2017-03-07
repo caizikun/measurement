@@ -69,6 +69,9 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt4['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+
+
 
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)

@@ -18,6 +18,7 @@ def show_stopper():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
     else: return False
+    
 def print_adwin_stuff(m):
     print m.params['cycle_duration']
     print m.params['SP_duration']
@@ -69,16 +70,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
         m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             m.params[k] = params_lt4.params_lt4[k]
-        # msmt.params['MW_BellStateOffset'] = 0.0
-        # bseq.pulse_defs_lt4(msmt)
+
     elif setup == 'lt3' :
          import single_click_ent_expm_params_lt3 as params_lt3
          reload(params_lt3)
          m.AWG_RO_AOM = qt.instruments['PulseAOM']
          for k in params_lt3.params_lt3:
              m.params[k] = params_lt3.params_lt3[k]
-         #msmt.params['MW_BellStateOffset'] = 0.0
-         #bseq.pulse_defs_lt3(msmt)
+
     else:
         print 'Sweep_purification.py: invalid setup:', setup
 
@@ -139,6 +138,7 @@ def turn_all_sequence_elements_off(m):
 
     m.params['is_two_setup_experiment'] = 0
     m.params['MW_before_LDE']          = 0
+    m.params['MW_pi_during_LDE']        = 1 # we always do this... has to be explicitly switched off
     m.params['do_N_MBI']                = 0 # we never do this (or might actually do this... depends)
     m.params['LDE_is_init']           = 0
     m.params['PLU_during_LDE']          = 0
@@ -150,6 +150,7 @@ def turn_all_sequence_elements_off(m):
     m.params['only_meas_phase']         = 0
     m.params['do_dynamical_decoupling'] = 0 
     
+    
 def turn_all_sequence_elements_on(m):
     """
     turns all parts of the AWG sequence on. except for do_LDE_1
@@ -159,6 +160,7 @@ def turn_all_sequence_elements_on(m):
 
     m.params['is_two_setup_experiment'] = 1
     m.params['MW_before_LDE']          = 0
+    m.params['MW_pi_during_LDE']        = 1
     m.params['do_N_MBI']                = 0 # we never do this (or might actually do this... depends)
     m.params['LDE_is_init']           = 0
     m.params['PLU_during_LDE']          = 1

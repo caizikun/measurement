@@ -71,23 +71,21 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
         for k in params_lt1.params_lt1:
             m.params[k] = params_lt1.params_lt1[k]
 
-        ### below: copied from bell and commented out for later
+
     elif setup == 'lt4' :
         import params_lt4
         reload(params_lt4)
         m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             m.params[k] = params_lt4.params_lt4[k]
-        # msmt.params['MW_BellStateOffset'] = 0.0
-        # bseq.pulse_defs_lt4(msmt)
+
     elif setup == 'lt3' :
          import params_lt3
          reload(params_lt3)
          m.AWG_RO_AOM = qt.instruments['PulseAOM']
          for k in params_lt3.params_lt3:
              m.params[k] = params_lt3.params_lt3[k]
-         #msmt.params['MW_BellStateOffset'] = 0.0
-         #bseq.pulse_defs_lt3(msmt)
+
     else:
         print 'Sweep_purification.py: invalid setup:', setup
 

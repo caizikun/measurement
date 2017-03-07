@@ -9,7 +9,6 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-reload(pulsar)
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt;
 import pulse_select as ps; reload(ps)
 
@@ -2283,7 +2282,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         N       = Gate.N
         prefix  = Gate.prefix
-
         tau     = Gate.tau
 
         tau_prnt= int(tau*1e9)
@@ -3025,6 +3023,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     gate.go_to = gate.elements[0].name
                 elif gate.go_to =='start':
                     gate.go_to = gate_seq[0].elements[0].name
+                elif gate.go_to == 'end':
+                    gate.go_to = gate_seq[-1].elements[0].name
                 else:
                     ind = self.find_gate_index(gate.go_to,gate_seq)
                     gate.go_to = gate_seq[ind].elements[0].name

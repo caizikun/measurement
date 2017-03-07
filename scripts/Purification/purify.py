@@ -10,7 +10,6 @@ import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
-reload(T2_tools_v3)
 reload(pq)
 reload(purify_slave);reload(sweep_purification)
 
@@ -165,9 +164,6 @@ def load_BK_params(m):
     m.params['PLU_during_LDE'] = 1
     m.params['LDE_SP_duration'] = 1.5e-6
 
-
-    #### compensate a change in plu windows.
-    ### insert parameter adjustment here.
 
 
 def MW_Position(name,debug = False,upload_only=False):
@@ -577,7 +573,7 @@ def PurifyYY(name,debug = False,upload_only=False):
 if __name__ == '__main__':
 
     ########### local measurements
-    MW_Position(name+'_MW_position',upload_only=False)
+    # MW_Position(name+'_MW_position',upload_only=False)
 
 
     # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
@@ -597,7 +593,7 @@ if __name__ == '__main__':
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
     # PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
-    # PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
+    PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 
     ###### non-local measurements // Barrett Kok parameters

@@ -1,8 +1,6 @@
 import qt
 import numpy as np
 import time
-import logging
-from collections import deque
 import measurement.lib.measurement2.measurement as m2
 import single_click_ent_expm, sweep_single_click_ent_expm
 import measurement.lib.measurement2.pq.pq_measurement as pq
@@ -19,13 +17,14 @@ class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasu
     mprefix = 'PQ_single_click_ent'
     adwin_process = 'single_click_ent'
     
-    def __init__(self, name):
+    def __init__(self, name,hist_only = False):
         single_click_ent_expm.SingleClickEntExpm.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
         self.joint_params = m2.MeasurementParameters('JointParameters')
         self.params = m2.MeasurementParameters('LocalParameters')
         self.params['pts']=1
         self.params['repetitions']=1
+        self.params['TH_hist_only'] = hist_only
 
     def autoconfig(self):
         single_click_ent_expm.SingleClickEntExpm.autoconfig(self)
@@ -128,19 +127,6 @@ def load_TH_params(m):
     m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
     m.params['use_live_marker_filter']=False
 
-
-def load_BK_params(m):
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['LDE_decouple_time'] = 0.50e-6
-    m.joint_params['opt_pulse_separation'] = 0.50e-6 
-    m.joint_params['LDE_element_length'] = 6e-6
-    m.joint_params['do_final_mw_LDE'] = 1
-    m.params['PLU_during_LDE'] = 1
-    m.params['LDE_SP_duration'] = 1.5e-6
-
-
-    #### compensate a change in plu windows.
-    ### insert parameter adjustment here.
 
 
 def MW_Position(name,debug = False,upload_only=False):
@@ -264,6 +250,12 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 def optical_rabi(name,debug = True,upload_only=True, local = False):
     """
     Very similar to tail sweep.
+
+
+
+    ...
+
+    Also, best doc string ever.
     """
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
@@ -285,9 +277,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-    ### need to find this out!
-    # m.params['MIN_SYNC_BIN'] =       5000
-    # m.params['MAX_SYNC_BIN'] =       9000 
+
 
     # put sweep together:
 
@@ -306,26 +296,30 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
 
 def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     """
-    Performs a regular Spin-photon correlation measurement.
+    Performs a Spin-photon correlation measurement in the PSB (therefore post selected).
     """
+    ### general params
     m = PQSingleClickEntExpm(name)
-    
     sweep_single_click_ent_expm.prepare(m)
     load_TH_params(m) # has to be after prepare(m)
 
     ### general params
-    m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 50000
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 0
-    m.joint_params['LDE_attempts'] = 1
 
-    m.joint_params['opt_pi_pulses'] = 2
-    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-    ### this can also be altered to the actual theta pulse by negating the if statement
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
+    m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
+    m.joint_params['do_final_mw_LDE'] = 0
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['LDE_attempts'] = 250
     if True:
         m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
         m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
@@ -336,35 +330,33 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
 
     sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
+
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
-    Performs a regular Spin-photon correlation measurement.
+    Performs a Spin-photon correlation measurement including the PLU!.
     """
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
 
     ### general params
-    m.params['pts'] = 1
     m.params['reps_per_ROsequence'] = 2000
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.joint_params['do_final_mw_LDE'] = 1
-    m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
-    m.joint_params['LDE_attempts'] = 500
 
-    
-
-    #m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
-    m.joint_params['LDE_element_length'] = 10e-6#m.joint_params['LDE_element_length']  + 1e-6
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
+    m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
 
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 0
 
-    m.joint_params['opt_pi_pulses'] = 2
-    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+    m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
 
     ### upload
@@ -373,73 +365,38 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
-    Performs a regular Spin-photon correlation measurement.
+    Performs a Spin-photon correlation measurement including the PLU!.
+    This msmt is effectively the same as a SPCorr msmt in the ZPL. 
+    Actual work is done by the analysis
     """
+
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
 
     ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 10000
+    m.params['reps_per_ROsequence'] = 2000
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.joint_params['do_final_mw_LDE'] = 1
-    # m.params['LDE_final_mw_amplitude'] = 0 ### dirty hack
-       
 
-    #m.params['LDE_decouple_time'] = m.params['LDE_decouple_time'] + 500e-9
-    m.joint_params['LDE_element_length'] = 10e-6#m.joint_params['LDE_element_length']  + 1e-6
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
+    m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
 
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    m.params['no_repump_after_LDE']    = 1
+    m.joint_params['do_final_mw_LDE'] = 0
+
     m.joint_params['opt_pi_pulses'] = 1
-    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
     m.joint_params['LDE_attempts'] = 250
 
-    ### upload
+    ### upload & run
 
     sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
-
-def BarretKok_SPCorrs(name, debug = False, upload_only = False):
-    """
-    Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
-
-    """
-    m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
-
-    load_BK_params(m)
-
-
-    m.joint_params['do_final_mw_LDE'] = 1
-    #m.params['LDE_final_mw_amplitude'] = 0
-
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 5000
-
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
-    ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 1
-    m.joint_params['opt_pi_pulses'] = 2
-
-    ### this can also be altered to the actual theta pulse by negating the if statement
-    if True:
-        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
-
-    m.params['is_two_setup_experiment'] = 1 # XXX this has to be changed once we use one EOM only
-
-    ### upload
-
-    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
-
-
 def TPQI(name,debug = False,upload_only=False):
     
     m = PQSingleClickEntExpm(name)
@@ -484,53 +441,37 @@ def TPQI(name,debug = False,upload_only=False):
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def EntangleZZ(name,debug = False,upload_only=False):
 
+
+
+def EntangleXY(name,debug = False,upload_only=False):
+    """
+    Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
+    stabilized phase of the entangled state.
+    """
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
    
-    pts = 1
-    m.params['reps_per_ROsequence'] = 200
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
-    load_BK_params(m)
-
-    m.params['do_general_sweep'] = 0
+    m.params['reps_per_ROsequence'] = 300
     m.params['MW_during_LDE'] = 1
-
+    m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
 
-    m.params['LDE_final_mw_amplitude'] = 0
-
+    if qt.current_setup == 'lt4':
+        m.params['do_general_sweep'] = 0
+    else:
+        m.params['do_general_sweep']    = 1
+        m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
+        m.params['general_sweep_pts'] = np.linspace(0,180,10) ## turn pi pulse on or off for spcorrs
+        m.params['sweep_name'] = m.params['general_sweep_name'] 
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+        m.params['pts'] = len(m.params['sweep_pts'])
     ### upload and run
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
-
-
-def EntangleXX(name,debug = False,upload_only=False):
-    m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
-   
-    pts = 1
-    m.params['reps_per_ROsequence'] = 200
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
-
-    load_BK_params(m)
-
-    m.params['do_general_sweep'] = 0
-    m.params['MW_during_LDE'] = 1
-
-    m.params['is_two_setup_experiment'] = 1
-    m.params['PLU_during_LDE'] = 1
-    m.joint_params['LDE_attempts'] = 250
-    ### upload and run
-
-    ### this can also be altered to the actual theta pulse by negating the if statement
-    if True:
-        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -539,34 +480,30 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_test',debug = False,upload_only=True, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
 
 
-    ###### non-local measurements // purification parameters
+    ###### non-local measurements
   
     # qt.instruments['ZPLServo'].move_in()
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=True)
     # qt.instruments['ZPLServo'].move_out()
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
-    # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
+    # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 
-    ###### non-local measurements // Barrett Kok parameters
-    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
-    # TPQI(name+'_TPQI',debug = False,upload_only=False)
-    # TPQI(name+'_ionisation',debug = False,upload_only=False)
-    #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
-    # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
+    # TPQI(name+'_TPQI',debug = False,upload_only=True)
 
-    # qt.mstart()
+    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=True)
+
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
             # Experimental addition for remote running
@@ -606,5 +543,4 @@ if __name__ == '__main__':
             qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False
             qt.purification_succes = True
-    # qt.mend()
             

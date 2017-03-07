@@ -60,6 +60,11 @@ class Pulsar:
             }
 
     def set_channel_opt(self, name, option, value):
+
+        ### check for NaN
+        if value != value:
+            raise ValueError('Trying to set NaN in %s for the option %s' %(name,option))
+
         self.channels[name][option] = value
 
     def get_subchannels(self, id):
@@ -387,6 +392,7 @@ class Pulsar:
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for i,element in enumerate(elements):
+
             if verbose==True:
                 print "%d / %d: %s (%d samples)... " % \
                     (i+1,elt_cnt, element.name, element.samples())
@@ -450,6 +456,7 @@ class Pulsar:
             % (sequence.name, sequence.element_count()),
 
         # determine which channels are involved in the sequence
+
         if channels  == 'all':
             chan_ids = self.get_used_channel_ids()
         else:
@@ -503,7 +510,6 @@ class Pulsar:
 
         if loop:
             goto_l[-1]=1
-
          # setting jump modes and loading the djump table
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
             raise Exception('pulsar: The AWG configured does not support dynamic jumping')
@@ -534,6 +540,7 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
+
         self.AWG.send_awg_file(filename,awg_file)
 
         self.AWG.load_awg_file(filename)
