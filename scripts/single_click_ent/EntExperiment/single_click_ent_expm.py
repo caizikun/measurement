@@ -242,7 +242,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         """
 
         if self.params['only_meas_phase']:
-            pass # NO AWG NEEDED
+            return # NO AWG NEEDED
 
         ### initialize empty sequence and elements
         combined_list_of_elements =[]

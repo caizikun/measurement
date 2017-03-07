@@ -93,15 +93,15 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 params_lt4['measurement_time'] = 24.*60.*60. 
 
-params_lt4['Phase_msmt_DAC_channel'] = 2 
-params_lt4['Phase_Msmt_voltage'] = 0.0
+params_lt4['Phase_msmt_DAC_channel'] = 12 
+params_lt4['Phase_Msmt_voltage'] = 6.0
 params_lt4['Phase_Msmt_off_voltage'] = 0.0
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 0.002
+params_lt4['PID_Kp'] = 0.000
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 
-params_lt4['count_int_cycles'] = 25 # How many cycles to integrate counts for
+params_lt4['count_int_cycles'] = 60000 # How many cycles to integrate counts for
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['sample_points'] = 100 # How many points to sample the phase at during the expm part
 

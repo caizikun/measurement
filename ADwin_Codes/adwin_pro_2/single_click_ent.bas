@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,19,19,82,82,84,84,164,164,308,308,309,309,329,329,606,606,676,677,678
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,19,19,82,82,84,84,164,164,310,310,331,331,614,614,684,685,686
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -43,8 +43,8 @@
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
 #DEFINE max_single_click_ent_repetitions    20000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
-#DEFINE max_pid       100000 ' Max number of measured counts for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
-#DEFINE max_sample    100000 ' Max number of measured count for sampling - Note that can do fewer repetitions if want to sample for longer.
+#DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
+#DEFINE max_sample    100000 ' Max number of measured points for sampling - Note that can do fewer repetitions if want to sample for longer.
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -121,7 +121,7 @@ DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki                         AS FLOAT        ' PID 
 DIM e, e_old                              AS FLOAT        ' error term
 DIM pid_time_factor                       AS FLOAT        ' account for changes in the adwin clock cycle
 DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
-DIM count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
+DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 
 Dim time as long
@@ -196,19 +196,19 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Phase_msmt_DAC_channel      = DATA_20[30]
   pid_points                  = DATA_20[31]
   sample_points               = DATA_20[32]
-  count_int_cycles            = DATA_20[33]
+  raw_count_int_cycles            = DATA_20[33]
    
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
-  A_SP_voltage                 = DATA_21[3]
-  E_RO_voltage                 = DATA_21[4]
-  A_RO_voltage                 = DATA_21[5]
-  Phase_Msmt_voltage           = DATA_21[6] 'PH Fix this
-  Phase_Msmt_off_voltage       = DATA_21[7]
-  PID_GAIN                     = DATA_21[8]
-  PID_Kp                       = DATA_21[9]
-  PID_Ki                       = DATA_21[10]
-  PID_Kd                       = DATA_21[11]
+  A_SP_voltage                 = DATA_21[2]
+  E_RO_voltage                 = DATA_21[3]
+  A_RO_voltage                 = DATA_21[4]
+  Phase_Msmt_voltage           = DATA_21[5] 'PH Fix this
+  Phase_Msmt_off_voltage       = DATA_21[6]
+  PID_GAIN                     = DATA_21[7]
+  PID_Kp                       = DATA_21[8]
+  PID_Ki                       = DATA_21[9]
+  PID_Kd                       = DATA_21[10]
   
    
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
@@ -226,6 +226,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   e_old = 0
   Sig = 0 
   pid_time_factor = count_int_cycles*cycle_duration/30000000
+  
+  count_int_cycles = raw_count_int_cycles / cycle_duration
   
 ''''''''''''''''''''''''''''''''''''''
   ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
@@ -298,7 +300,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   if (do_phase_stabilisation = 1) then
     init_mode = 0 'Phase stabilisation
   else
-    init_mode = 2 ' CR check
+    init_mode = mode_after_phase_stab
   endif
   
   
@@ -320,12 +322,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
    
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
-  
+
   P2_CNT_CLEAR(CTR_MODULE, sync_trigger_counter_pattern)    'clear and turn on sync trigger counter
   P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)
   
   ' Phase shifting defns
-  P2_DAC_2(14, 0) ' Set phase shifter voltage to zero
+  P2_DAC_2(14, 0) ' Set phase shifter voltage to zero PH Think about this
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
   P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)
     
@@ -492,7 +494,7 @@ EVENT:
           
           P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
+          P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
           old_counts = 0
           offset_index = repetition_counter * pid_points ' PH CHECK
           index = 0
@@ -503,7 +505,7 @@ EVENT:
             counts = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts 'read counter
             old_counts = old_counts + counts
             inc(store_index)
-            DATA_26[offset_index + store_index] = counts 
+            DATA_104[offset_index + store_index] = counts 
  
             ' PID control
             e = SETPOINT - counts
@@ -529,10 +531,10 @@ EVENT:
           
           inc(index)
           
-          if (timer>pid_points) then
+          if (store_index>=pid_points) then
             mode = mode_after_phase_stab
             timer = -1
-            P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+            P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
 
           endif
         
@@ -541,9 +543,15 @@ EVENT:
         
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter
+          
+          'Check if repetitions exceeded (here just in case not doing phase stabilisation)
+          IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
+            END
+          ENDIF
+          
+          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter 'zpl1_counter_pattern
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
-          P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
+          P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
           old_counts = 0
           offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
@@ -551,19 +559,19 @@ EVENT:
         ELSE
           if (index = count_int_cycles) then ' Only reads apds every count int cycles
             index = 0
-            counts = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts 'read counter
+            counts = P2_CNT_READ(CTR_MODULE, zpl1_counter_pattern) - old_counts 'read counter
             old_counts = old_counts + counts
             inc(store_index)
-            DATA_26[offset_index + store_index] = counts 
+            DATA_105[offset_index + store_index] = counts
             
           endif
           
           inc(index)
           
-          if (timer>sample_points) then
+          if (store_index >= sample_points) then
             mode = 6
             timer = -1
-            P2_DAC(DAC_MODULE,Phase_msmt_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn off phase msmt laser
+            P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
 
           endif
           
