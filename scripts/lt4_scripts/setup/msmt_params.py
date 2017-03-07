@@ -471,11 +471,11 @@ cfg['protocols'][name]['pulses'] = {
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
     	'aom_risetime'               : 20e-9, #17e-9
-    	'aom_amplitude'              : 0.5, 
+    	'aom_amplitude'              : 0.7, 
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 4.5e-9,
+		'A_CR_amplitude':				 3e-9,
 		'CR_duration' :				 	 70,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,

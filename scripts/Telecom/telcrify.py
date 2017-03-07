@@ -359,7 +359,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['LDE_element_length'] = 6e-6
     m.params['opt_pi_pulses'] = 15
     m.params['opt_pulse_separation'] = 197e-9 #+ 50e-9 #199e-9 for the red , 190e-9 for telecom
-    m.params['LDE1_attempts'] = 200
+    m.params['LDE1_attempts'] = 100
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
@@ -381,10 +381,10 @@ def TPQI(name,debug = False,upload_only=False):
 
     elif qt.current_setup == 'lt4':
 
-        m.params['pulse_start_bin'] = 3173- m.params['MIN_SYNC_BIN']  
-        m.params['pulse_stop_bin'] =  3173+100 - m.params['MIN_SYNC_BIN'] 
-        m.params['tail_start_bin'] = 3165 - m.params['MIN_SYNC_BIN']  
-        m.params['tail_stop_bin'] = 3173  - m.params['MIN_SYNC_BIN'] 
+        m.params['pulse_start_bin'] = 2900- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] =  2900+100 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2900 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2900+100  - m.params['MIN_SYNC_BIN'] 
         m.params['MIN_SYNC_BIN'] =       2000 #+5e3
         m.params['MAX_SYNC_BIN'] =       8500
         
@@ -429,10 +429,10 @@ if __name__ == '__main__':
                 # qt.msleep(1.5)
                 qt.instruments['tel1_helper'].set_measurement_name(str(qt.telcrify_name_index))
                 qt.instruments['tel1_helper'].set_script_path(r'D:/measuring/measurement/scripts/tel1_scripts/pq_telecom.py')
-                # qt.msleep(1.5)
+                qt.msleep(1.5)
                 print qt.instruments['tel1_helper']
                 qt.instruments['tel1_helper'].execute_script()
-                # qt.msleep(1.5)
+                qt.msleep(1.5)
             #     qt.instruments['lt4_helper'].set_is_running(True)
                 qt.instruments['tel1_helper'].set_is_running(True)
                 
@@ -442,7 +442,7 @@ if __name__ == '__main__':
 
             AWG.clear_visa
             qt.msleep(2)
-            qt.instruments['purification_optimizer'].start_babysit()
+            # qt.instruments['purification_optimizer'].start_babysit()
             # #qt.telcrification_success = True
             
             for i in range(1):
@@ -473,7 +473,7 @@ if __name__ == '__main__':
 
 
 
-                TPQI(name+'_TPQI_LT4_Ex_2p5GHzStrain_15optpi_200reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
+                TPQI(name+'_TPQI_LT4_PulseOnly_1APDDisc_15optpi_100reps'+str(qt.telcrify_name_index+i),debug = False,upload_only=False)
                 AWG.clear_visa()
                 ## XZ measurement
                 print '-----------------------------------'            
@@ -487,7 +487,7 @@ if __name__ == '__main__':
                 
 
             # qt.instruments['purification_optimizer'].set_stop_optimize(True)
-            qt.instruments['purification_optimizer'].stop_babysit()
+            # qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False
             qt.telcrification_success = True
     # qt.mend()
