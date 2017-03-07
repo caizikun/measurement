@@ -350,7 +350,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
-
+    m.params['do_phase_stabilisation'] = 1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -385,7 +385,7 @@ def Determine_eta(name, debug = False, upload_only = False):
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
-
+    m.params['do_phase_stabilisation'] = 1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -420,6 +420,11 @@ def TPQI(name,debug = False,upload_only=False):
     m.joint_params['opt_pulse_separation'] = 1400e-9
     m.joint_params['LDE_attempts'] = 100
 
+
+    #####################################################
+    #   These parameters have not beeen reviewed!!      #
+    #####################################################
+
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
     m.params['tail_start_bin'] = 2635e3 - m.params['MIN_SYNC_BIN']  
@@ -453,6 +458,8 @@ def EntangleXY(name,debug = False,upload_only=False):
     sweep_single_click_ent_expm.prepare(m)
    
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
 
     m.params['reps_per_ROsequence'] = 300
     m.params['MW_during_LDE'] = 1
@@ -502,7 +509,7 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=True)
 
-    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=True)
+    # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=True)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
