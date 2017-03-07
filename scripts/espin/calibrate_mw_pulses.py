@@ -86,11 +86,11 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     
     if pulse_shape == 'Square':
     
-        print 'This hasnt been written yet!'
+        raise KeyError('This hasnt been written for square pulses yet!')
     
     elif pulse_shape == 'Hermite':
 
-        m.params['Hermite_pi2_length'] =  m.params['Hermite_theta_length'] 
+        m.params['Hermite_pi_length'] =  m.params['Hermite_theta_length'] 
 
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
@@ -109,7 +109,7 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
     m.params['wait_for_AWG_done'] = 1
 
-    m.MW_pi = pulse.cp(ps.Xpi2_pulse(m),phase = 0)
+    m.MW_pi = pulse.cp(ps.X_pulse(m),phase = 0)
     espin_funcs.finish(m, debug=debug, pulse_pi=m.MW_pi)
 
 def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):

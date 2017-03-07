@@ -333,7 +333,7 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
 
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
-    Performs a Spin-photon correlation measurement including the PLU!.
+    Performs a Spin-photon correlation measurement including the PLU.
     """
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
@@ -365,9 +365,9 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
-    Performs a Spin-photon correlation measurement including the PLU!.
+    Performs a Spin-photon correlation measurement including the PLU.
     This msmt is effectively the same as a SPCorr msmt in the ZPL. 
-    Actual work is done by the analysis
+    Actual work is done by the analysis script.
     """
 
     m = PQSingleClickEntExpm(name)
