@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         tel1_helper = qt.instruments['tel1_helper']
 
-        start_index = 3
+        start_index = 27
         skip_first=False
         optimize_index = 2
         cycles = 400
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                 print 'Loading CR linescan'
                 execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
                 qt.instruments['ZPLServo'].move_in()
-                lt3_succes = optimize()
+                # lt3_succes = optimize()
             else:
                 lt3_succes = True
 

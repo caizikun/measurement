@@ -61,7 +61,7 @@ dimension_sets = {
 
             'lt4' : {
                 'x' : {
-                    'scan_length' : 0.6,
+                    'scan_length' : 1.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
@@ -71,7 +71,7 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 2.,
+                    'scan_length' : 3.,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },
