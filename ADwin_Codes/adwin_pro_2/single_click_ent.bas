@@ -10,7 +10,7 @@
 ' Optimize_Level                 = 1
 ' Stacksize                      = 1000
 ' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
-' Bookmarks                      = 3,3,19,19,82,82,164,164,311,311,344,344,665,665,726,733,734
+' Bookmarks                      = 3,3,82,82,164,164,311,311,329,329,648,648,709,716,717
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -22,19 +22,19 @@
 ' 
 ' 
 ' modes:
-' 100 : ADWIN communication
-' 200 : dynamical stop SSRO
+'   100 : Comms
+'   200 : SSRO
 
 '   0 : Phase check (master only)
 '   1 : Phase msmt (master only, not part of experimental seq.)
+'   20: Start counting time since phase check
 '   2 : CR check
 '   3 : E spin pumping into ms=+/-1
-'   4 : Send AWG trigger in case of success on both sides.
-'   5 : run entanglement sequence and count reps while waiting for PLU success signal
-'   6 : decoupling and counting reps
-'   7 : electron RO
-'   8 : Parameter reinitialization
-
+'   4 : run entanglement sequence and count reps while waiting for PLU success signal
+'   5 : decoupling and counting reps
+'   50: alternative if not doing decoupling
+'   6 : Store ro result
+'   7 : Parameter reinitialization
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -86,7 +86,7 @@ DIM SSRO_result AS LONG
 DIM Dynamical_stop_ssro_threshold, Dynamical_stop_ssro_duration, Success_of_SSRO_is_ms0 AS LONG
 DIM digin_this_cycle AS long
 DIM E_SP_voltage, A_SP_voltage, E_RO_voltage, A_RO_voltage, Phase_Msmt_voltage, Phase_Msmt_off_voltage AS FLOAT
-DIM Phase_msmt_laser_DAC_channel, Phase_stab_control_channel as Long
+DIM Phase_msmt_laser_DAC_channel, Phase_stab_DAC_channel as Long
 DIM time_spent_in_state_preparation, time_spent_in_sequence, time_spent_in_communication as LONG
 DIM duty_cycle as FLOAT
 DIM AWG_sequence_repetitions_LDE AS long
@@ -195,7 +195,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
   Phase_msmt_laser_DAC_channel = DATA_20[30]
-  Phase_stab_control_channel   = DATA_20[31]
+  Phase_stab_DAC_channel   = DATA_20[31]
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
   pid_points                  = DATA_20[34]
@@ -325,9 +325,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
    
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
 
-  P2_CNT_CLEAR(CTR_MODULE, sync_trigger_counter_pattern)    'clear and turn on sync trigger counter
-  P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)
-  
   ' Phase shifting defns
   P2_DAC_2(14, 0) ' Set phase shifter voltage to zero PH Think about this
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
@@ -341,18 +338,6 @@ EVENT:
   IF (wait_time > 0)  THEN
     wait_time = wait_time - 1
   ELSE
-    
-    '   100 : Comms
-    '   200 : SSRO
-    '   0 : Phase check (master only)
-    '   1 : Phase msmt (master only, not part of experimental seq.)
-    '   20: Start counting time since phase check
-    '   2 : CR check
-    '   3 : E spin pumping into ms=+/-1
-    '   4 : run entanglement sequence and count reps while waiting for PLU success signal
-    '   5 : decoupling and counting reps
-    '   6 : Store ro result
-    '   7 : Parameter reinitialization
     
     SELECTCASE mode
       
@@ -452,13 +437,12 @@ EVENT:
                      
         IF (timer = 0) THEN 
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE, counter_pattern OR sync_trigger_counter_pattern)    'turn on counter
+          P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_RO_voltage+32768) ' turn on Ex laser
         ELSE
           counts = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
           IF (counts >= Dynamical_stop_ssro_threshold) THEN ' photon detected
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-            P2_CNT_ENABLE(CTR_MODULE, sync_trigger_counter_pattern)  ' disable photon counter, keep sync trigger counter on
             wait_time = dynamical_stop_SSRO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase xxx to do: is this still accurate to the us?
             time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
@@ -478,7 +462,6 @@ EVENT:
             DATA_103[repetition_counter+1] = SSRO_result 'save as last electron readout
             if (timer = dynamical_stop_SSRO_duration) then ' no count after ssro duration -> failed  xxx to do: is this still accurate to the us?
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
-              P2_CNT_ENABLE(CTR_MODULE,sync_trigger_counter_pattern) 'disable photon counter, keep sync trigger counter on
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
               IF (Success_of_SSRO_is_ms0 = 0) THEN
@@ -551,7 +534,7 @@ EVENT:
             endif
         
             ' Output
-            P2_DAC_2(Phase_stab_control_channel, Sig*3276.8+32768 )
+            P2_DAC_2(Phase_stab_DAC_channel, Sig*3276.8+32768 )
   
             ' Values needed for next cycle
             e_old = e

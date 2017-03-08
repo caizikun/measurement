@@ -2986,6 +2986,9 @@ config['adwin_pro_processes'] = {
                     ['only_meas_phase'                 ,   0],
                     ['do_dynamical_decoupling'         ,   1],
                     ['Phase_msmt_DAC_channel'          ,   2],
+                    ['Phase_stab_DAC_channel'          ,   2],
+                    ['zpl1_counter_channel'            ,   14],
+                    ['zpl2_counter_channel'            ,   15],
                     ['pid_points'                      ,   10],
                     ['sample_points'                   ,   100],
                     ['count_int_cycles'                ,   25], # units of 3.3 ns
