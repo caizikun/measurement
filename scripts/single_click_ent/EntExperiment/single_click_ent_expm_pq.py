@@ -204,7 +204,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
-    m.params['do_phase_stabilisation']  = 0
+    m.params['do_phase_stabilisation']  = 1
     m.params['only_meas_phase']         = 1 
 
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)

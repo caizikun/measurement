@@ -95,7 +95,8 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def run(self, autoconfig=False, setup=False):
 
-        """
+        """)
+
         inherited from pulsar msmt.
         """
         if autoconfig:
