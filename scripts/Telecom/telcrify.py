@@ -342,7 +342,7 @@ def TPQI(name,debug = False,upload_only=False):
     print 'Starting TPQI seq.'
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 100000
+    m.params['reps_per_ROsequence'] = 20000
     sweep_telcrification.turn_all_sequence_elements_off(m)
 
     #m.params['maximum_meas_time_in_min'] = 1
@@ -357,9 +357,9 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['mw_second_pulse_length'] = 1e-9
 
     m.params['LDE_element_length'] = 6e-6
-    m.params['opt_pi_pulses'] = 15
+    m.params['opt_pi_pulses'] = 1
     m.params['opt_pulse_separation'] = 197e-9 #+ 50e-9 #199e-9 for the red , 190e-9 for telecom
-    m.params['LDE1_attempts'] = 100
+    m.params['LDE1_attempts'] = 200
 
     m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
     m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
@@ -405,7 +405,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
     # tail_sweep(name[:-1]+'tail',debug = False,upload_only=True, minval = 0.0, maxval=0.8, local=True)
-    TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
+    # TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
