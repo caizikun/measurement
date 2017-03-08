@@ -5,11 +5,12 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.1.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,19,19,82,82,84,84,164,164,310,310,331,331,614,614,684,685,686
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
+' Bookmarks                      = 3,3,19,19,82,82,84,84,165,165,313,313,334,334,657,657,727,728,729
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -123,6 +124,7 @@ DIM pid_time_factor                       AS FLOAT        ' account for changes 
 DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
+DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles AS LONG
 
 Dim time as long
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -188,16 +190,17 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   invalid_data_marker_do_channel   = DATA_20[22] 'marks timeharp data invalid
   No_of_sequence_repetitions       = DATA_20[23] 'how often do we run the sequence
   master_slave_awg_trigger_delay   = DATA_20[24]
-  PLU_during_LDE                   = DATA_20[25]
-  LDE_is_init                    = DATA_20[26] ' is the first LDE element for init? Then ignore the PLU
+  PLU_during_LDE              = DATA_20[25]
+  LDE_is_init                 = DATA_20[26] ' is the first LDE element for init? Then ignore the PLU
   do_phase_stabilisation      = DATA_20[27]
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
   Phase_msmt_DAC_channel      = DATA_20[30]
   pid_points                  = DATA_20[31]
   sample_points               = DATA_20[32]
-  raw_count_int_cycles            = DATA_20[33]
-   
+  raw_count_int_cycles        = DATA_20[33]
+  raw_phase_stab_max_cycles   = DATA_20[34]
+  
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   A_SP_voltage                 = DATA_21[2]
@@ -227,7 +230,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Sig = 0 
   pid_time_factor = count_int_cycles*cycle_duration/30000000
   
-  count_int_cycles = raw_count_int_cycles / cycle_duration
+  count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
   
 ''''''''''''''''''''''''''''''''''''''
   ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
@@ -487,7 +491,22 @@ EVENT:
       CASE 0 ' Phase check
         IF (timer = 0) THEN 
           
-          'Check if repetitions exceeded
+          if (is_master = 0) then ' The slave doesnt do anything useful during phase msmt.
+            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+              mode = mode_after_phase_stab 'crack on
+              timer = -1
+            ELSE ' two setups involved
+              
+              local_success = 1 'always succeeds
+              local_fail = 0
+              mode = 100 'go to communication step
+              fail_mode_after_adwin_comm = 100 ' Keeps waiting until gets a phase stab confirmation. Fail can be timeout.
+              success_mode_after_adwin_comm = 20 ' This guy never does a phase msmt, so CR check.
+              timer = -1
+            endif
+          endif
+          
+          'Check if repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
           IF ((only_meas_phase = 1) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
           ENDIF
@@ -532,15 +551,30 @@ EVENT:
           inc(index)
           
           if (store_index>=pid_points) then
-            mode = mode_after_phase_stab
-            timer = -1
-            P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
 
+            P2_DAC_2(Phase_msmt_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+            
+            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+              mode = mode_after_phase_stab 'crack on
+              timer = -1
+              
+            ELSE ' two setups involved
+              
+              local_success = 1 'always succeeds
+              local_fail = 0
+              mode = 100 'go to communication step
+              fail_mode_after_adwin_comm = 0 ' back to phase stab. Fail can be timeout.
+              success_mode_after_adwin_comm = 20 ' If two setup experiment, wont be a phase msmt, so on to CR check
+              timer = -1
+            endif
+
+            
           endif
         
           
         ENDIF
-        
+      
+      
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
           
@@ -577,7 +611,12 @@ EVENT:
           
         endif
         
-          
+      CASE 20 ' Set the timer check if still phase stable to zero
+        
+        elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
+        mode = 2
+        timer = -1
+        
       CASE 2 'CR check
       
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
@@ -586,6 +625,11 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
+
+        if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+          mode = init_mode 
+          timer = -1
+        endif
 
         if ( cr_result > 0 ) then
           ' In case the result is not positive, the CR check will be repeated/continued
@@ -765,6 +809,7 @@ EVENT:
     endselect
     
     INC(timer)
+    INC(elapsed_cycles_since_phase_stab)
     
   endif
 
