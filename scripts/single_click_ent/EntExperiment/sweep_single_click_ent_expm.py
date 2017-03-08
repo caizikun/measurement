@@ -173,19 +173,21 @@ def turn_all_sequence_elements_on(m):
     m.params['do_dynamical_decoupling'] = 0 # Not doing this yet (PH) 
     
 
-def calibrate_theta(name):
+def calibrate_theta(name, debug = False, upload_only = False):
     """
-    Seee espin/calibrate_mw_pulses.
-    Function is already there.
+    See espin/calibrate_mw_pulses.
     """
-    pass
+    from measurement.scripts.espin.calibrate_mw_pulses import calibrate_theta_pulse
 
-def lastpi2_measure_delay(name):
+    calibrate_theta_pulse(SAMPLE_CFG + 'theta',rng = 0.05,debug=debug,upload_only=upload_only)
+
+
+def lastpi2_measure_delay(name, debug = False, upload_only = False):
     """
     There is a finite timing offset between LDE element and the last pi/2 pulse that we do upon success.
     This measurement sweeps the timing of the last pi/2 to determine the best position.
     """
-    m = purify_slave.purify_single_setup(name)
+    m = single_click_ent_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -196,35 +198,90 @@ def lastpi2_measure_delay(name):
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    
-    m.params['LDE_1_is_init']  = 1
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
 
-    # m.params['is_two_setup_experiment'] = 1
-
-    # m.params['Hermite_pi_amp'] = 0
     ### prepare sweep
     m.params['do_general_sweep']    = True
-    m.params['general_sweep_name'] = 'LDE_SP_duration'
+    m.params['general_sweep_name'] = 'MW_final_delay_offset'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.0,2.e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.1e-6,0.1e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
-    m.params['is_two_setup_experiment']=0   #XXXX
 
     ### upload and run
 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def lastpi2_phase_vs_amplitude(name):
-    pass
+def lastpi2_phase_vs_amplitude(name, debug = False, upload_only = False):
+    """
+    This measurement sweeps the phase of the last pi/2 pulse while keeping the amplitude constant.
+    Is used as a sanity check --> are all our pi/2 pulses actually pi/2 pulses?
+    """
+    m = single_click_ent_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 0
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(0,180,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def lastpi2_phase_action(name):
-    pass
+def lastpi2_phase_action(name, debug = False, upload_only = False):
+    """
+    This measurement sweeps the phase of the last pi/2 pulse and includes MW pulses in the LDE element.
+    Is used as a sanity check --> how coherent are we at the last pi/2 pulse and what is the phase relation for the MW source.
+    """
+    m = single_click_ent_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(0,180,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
 
 if __name__ == '__main__':
     pass

@@ -24,6 +24,7 @@ params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 70e-9 #
 params_lt3['MW_repump_distance']		= 150e-9
 params_lt3['LDE_decouple_time']         = 1e-6
+params_lt4['MW_final_dleay_offset']		= 0e-9
 #adwin params defs:
 params_lt3['SP_duration'] = 30#10 #10
 params_lt3['wait_after_pulse_duration'] = 1
