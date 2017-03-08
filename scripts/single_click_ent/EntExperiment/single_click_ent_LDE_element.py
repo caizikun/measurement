@@ -314,7 +314,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
 
     ### calculate the time for the pi/2 pulse to come in
     echo_time = msmt.params['LDE_decouple_time'] - echo_time
-    echo_time += msmt.params['MW_final_delay_offset']
+    echo_time += msmt.params['MW_final_delay_offset'] # dirty hack. has to be calibrated once. See sweep_single_click_ent_expm.py
     end_delay_refpulse = 'initial_delay'
 
     if msmt.joint_params['do_final_mw_LDE'] == 1:
