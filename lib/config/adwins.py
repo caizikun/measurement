@@ -2195,7 +2195,8 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom_frq':10,
         'lock_aom':11,
         'pulse_aom_frq':12,
-        'yellow_current':13,
+        'yellow_voltage':13,
+        'delay_voltage':14
         }
 
 config['adwin_lt3_dios'] = {
@@ -2575,6 +2576,48 @@ config['adwin_pro_processes'] = {
                 'data_long' : {
                     'SP_hist' : 24,
                     'RO_data' : 25,
+                    },
+                },
+
+        'integrated_ssro_delay_timing' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_delay_timing.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['delay_voltage_DAC_channel'   ,  14],
+                    ['do_delay_voltage_control'    ,   1]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                'data_float' : {
+                    'delay_voltages' : 40,
                     },
                 },
 

@@ -54,12 +54,6 @@ class purify_single_setup(DD.MBI_C13):
                                     'ch4m2': 'ch4_marker2',}
 
 
-        #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
-        # this is most of the time only necessary if you made a programming error ;)
-        # check variable declarations and definitions
-
-        qt.msleep(0.5)
-
         for i in range(10):
             self.physical_adwin.Stop_Process(i+1)
             qt.msleep(0.3)
@@ -76,7 +70,6 @@ class purify_single_setup(DD.MBI_C13):
             qt.msleep(1)
         else:
             print 'Omitting adwin load!!! Be wary of your changes!'
-            # exec(loadstr)
 
         # self.params['LDE1_attempts'] = self.params['LDE1_attempts']
         # self.params['LDE2_attempts'] = self.params['LDE2_attempts']
@@ -556,6 +549,7 @@ class purify_single_setup(DD.MBI_C13):
             if not (self.params['do_purifying_gate'] > 0 and self.params['do_carbon_readout'] > 0):
                 gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
+            
 
             #### for carbon phase debbuging purposes.
             # for g in gate_seq:

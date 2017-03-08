@@ -33,8 +33,11 @@ qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker',
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0.0, delay=230e-9, active=True) # do not change delay! ASK NK before changing!
-qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=257e-9, active=True) #247
+# qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
+    # high=2.0, low=0, offset=0., delay=257e-9, active=True) #247
+
+qt.pulsar.define_channel(id='ch2_marker2', name='self_trigger', type='marker',
+    high = 2.0, low=0.0, offset=0.0, delay=0.0, active=True)
 
 
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_count', type='marker', 

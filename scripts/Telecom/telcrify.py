@@ -1,13 +1,8 @@
 import qt
 import numpy as np
 import time
-import logging
-#import telcrify_slave
-#import telcrify_slave 
-from collections import deque
 import measurement.lib.measurement2.measurement as m2
 import telcrify_slave, sweep_telcrification
-#import telcrify_slave, sweep_telcrification
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
@@ -15,7 +10,6 @@ import msvcrt
 reload(T2_tools_v3)
 reload(pq)
 reload(telcrify_slave);reload(sweep_telcrification)
-#reload(telcrify_slave);reload(sweep_telcrification)
 
 name = qt.exp_params['protocols']['current']
 
@@ -410,8 +404,8 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.0, maxval=0.8, local=True)
-    # TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
+    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=True, minval = 0.0, maxval=0.8, local=True)
+    TPQI(name+'_HOM_test_red',debug = False,upload_only=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

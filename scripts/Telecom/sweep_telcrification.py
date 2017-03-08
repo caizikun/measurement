@@ -18,6 +18,7 @@ def show_stopper():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
     else: return False
+    
 def print_adwin_stuff(m):
     print m.params['cycle_duration']
     print m.params['SP_duration']
