@@ -85,7 +85,8 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def run(self, autoconfig=False, setup=False):
 
-        """
+        """)
+
         inherited from pulsar msmt.
         """
         if autoconfig:
@@ -225,7 +226,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         """
 
         if self.params['only_meas_phase']:
-            pass # NO AWG NEEDED
+            return # NO AWG NEEDED
 
         ### initialize empty sequence and elements
         combined_list_of_elements =[]

@@ -185,7 +185,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_single_click_ent_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 100
     
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
