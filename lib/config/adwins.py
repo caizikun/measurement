@@ -2986,9 +2986,13 @@ config['adwin_pro_processes'] = {
                     ['only_meas_phase'                 ,   0],
                     ['do_dynamical_decoupling'         ,   1],
                     ['Phase_msmt_DAC_channel'          ,   2],
+                    ['Phase_stab_DAC_channel'          ,   2],
+                    ['zpl1_counter_channel'            ,   14],
+                    ['zpl2_counter_channel'            ,   15],
                     ['pid_points'                      ,   10],
                     ['sample_points'                   ,   100],
-                    ['count_int_cycles'                ,   25],
+                    ['count_int_cycles'                ,   25], # units of 3.3 ns
+                    ['phase_stab_max_cycles'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2997,15 +3001,15 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['Phase_Msmt_voltage'         , 0.8],
-                    ['Phase_Msmt_off_voltage'         , 0.8],
+                    ['Phase_Msmt_voltage'         , 0.0],
+                    ['Phase_Msmt_off_voltage'         , 0.0],
                     ['PID_GAIN'       , 1.0],
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
                     ],
                 'params_float_index'  : 21,
-                'params_float_length' : 10,
+                'params_float_length' : 12,
                 'par' : {
                     'remote_mode': 60, # PH This is the timer?
                     'local_mode': 61,

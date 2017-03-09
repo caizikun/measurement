@@ -24,7 +24,8 @@ params_lt4['average_repump_time'] 		= 0.3e-6#250e-9#250e-9#350e-9#213e-9
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
-params_lt4['MW_final_dleay_offset']		= 0e-9
+# params_lt4['MW_switch_risetime']		= 1e-9
+
 #adwin params defs:
 params_lt4['SP_duration'] = 30 #10
 params_lt4['wait_after_pulse_duration'] = 1
@@ -69,9 +70,6 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
-
-
 
 ### Everything HydraHarp
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
@@ -96,15 +94,16 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 params_lt4['measurement_time'] = 24.*60.*60. 
 
-params_lt4['Phase_msmt_DAC_channel'] = 2 
-params_lt4['Phase_Msmt_voltage'] = 0.0
+params_lt4['Phase_msmt_DAC_channel'] = 12 
+params_lt4['Phase_Msmt_voltage'] = 6.0
 params_lt4['Phase_Msmt_off_voltage'] = 0.0
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 0.002
+params_lt4['PID_Kp'] = 0.02
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 
-params_lt4['count_int_cycles'] = 25 # How many cycles to integrate counts for
+params_lt4['count_int_cycles'] = 60000 # How many cycles to integrate counts for
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['sample_points'] = 100 # How many points to sample the phase at during the expm part
+params_lt4['phase_stab_max_cycles'] = 15000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 
