@@ -393,6 +393,65 @@ def TPQI(name,debug = False,upload_only=False):
 
 
 
+def measureInterferometerDelay(name,debug = False,upload_only=False):
+    
+    m = Telcrify(name)
+    sweep_telcrification.prepare(m)
+
+    print 'Starting TPQI seq.'
+
+    pts = 1
+    m.params['reps_per_ROsequence'] = 100000
+    sweep_telcrification.turn_all_sequence_elements_off(m)
+
+    #m.params['maximum_meas_time_in_min'] = 1
+
+    # m.params['MIN_SYNC_BIN'] =      0.0e6 +5e6 # +5 us because of longer spin pumping interval!
+    # m.params['MAX_SYNC_BIN'] =       5.5e6 +5e6
+    m.params['is_TPQI'] = 1
+    m.params['is_two_setup_experiment'] = 0
+    m.params['do_general_sweep'] = 0
+    m.params['MW_during_LDE'] = 0
+    m.params['mw_first_pulse_length'] = 1e-9 
+    m.params['mw_second_pulse_length'] = 1e-9
+
+    m.params['LDE_element_length'] = 6e-6
+    m.params['opt_pi_pulses'] = 1
+    m.params['opt_pulse_separation'] = 197e-9 #+ 50e-9 #199e-9 for the red , 190e-9 for telecom
+    m.params['LDE1_attempts'] = 1000
+
+    m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+    m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+    m.params['tail_start_bin'] = 2635e3 - m.params['MIN_SYNC_BIN']  
+    m.params['tail_stop_bin'] = 2700e3  - m.params['MIN_SYNC_BIN'] 
+
+    if qt.current_setup == 'lt3':
+
+        m.params['pulse_start_bin'] = 2625e3- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2380e3 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2480e3  - m.params['MIN_SYNC_BIN'] 
+        m.params['MIN_SYNC_BIN'] =       5.88e3 #+5e3
+        m.params['MAX_SYNC_BIN'] =       5.95e3
+        m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
+        m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
+        m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
+
+    elif qt.current_setup == 'lt4':
+
+        m.params['pulse_start_bin'] = 2900- m.params['MIN_SYNC_BIN']  
+        m.params['pulse_stop_bin'] =  2900+100 - m.params['MIN_SYNC_BIN'] 
+        m.params['tail_start_bin'] = 2900 - m.params['MIN_SYNC_BIN']  
+        m.params['tail_stop_bin'] = 2900+100  - m.params['MIN_SYNC_BIN'] 
+        m.params['MIN_SYNC_BIN'] =       2000 #+5e3
+        m.params['MAX_SYNC_BIN'] =       8500
+        
+    ### upload and run
+    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = False)
+
+
+
 
 
 

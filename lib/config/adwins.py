@@ -2988,7 +2988,7 @@ config['adwin_pro_processes'] = {
                     ['Phase_msmt_DAC_channel'          ,   2],
                     ['pid_points'                      ,   10],
                     ['sample_points'                   ,   100],
-                    ['count_int_cycles'                ,   25],
+                    ['count_int_cycles'                ,   60000],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,

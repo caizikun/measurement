@@ -116,7 +116,6 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        print m.params['Phase_Msmt_voltage']
         m.run(autoconfig=False, setup=False)
 
         if save_name != '':
