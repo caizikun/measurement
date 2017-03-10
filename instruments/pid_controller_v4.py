@@ -60,6 +60,7 @@ class pid_controller_v4(Instrument):
                     'D'                         :   {'type':types.FloatType,  'val':0.,   'flags':Instrument.FLAG_GETSET}, #s
                     'read_interval'             :   {'type':types.FloatType,  'val':0.2,  'units':'s','flags':Instrument.FLAG_GETSET},
                     'write_interval'            :   {'type':types.IntType,    'val':1,    'maxval':100,'minval':1,'flags':Instrument.FLAG_GETSET},
+                    'ramp_time'                 :   {'type':types.FloatType,  'val':0.01,  'units':'s','flags':Instrument.FLAG_GETSET},
                     'value_offset'              :   {'type':types.FloatType,  'val':470.4,'flags':Instrument.FLAG_GETSET},
                     'value_factor'              :   {'type':types.FloatType,  'val':1e3,  'flags':Instrument.FLAG_GETSET},
                     'step_size'                 :   {'type':types.FloatType,  'val':0.01, 'flags':Instrument.FLAG_GETSET},
@@ -68,6 +69,7 @@ class pid_controller_v4(Instrument):
                     'min_value_deviation'       :   {'type':types.FloatType,  'val':0.0,'flags':Instrument.FLAG_GETSET},
                     'control_coarse_step'       :   {'type':types.FloatType, 'val':0.05,'flags':Instrument.FLAG_GETSET},
                     'do_plot'                  :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
+                    'do_save_data'              :   {'type':types.BooleanType, 'val':False,'flags':Instrument.FLAG_GETSET},
                     }
         instrument_helper.create_get_set(self,ins_pars)
         self.add_function('start')
@@ -88,7 +90,7 @@ class pid_controller_v4(Instrument):
             _f.close()
         
         self._parlist = ['P', 'I', 'D',
-                'setpoint', 'value_factor', 'value_offset','max_value',
+                'setpoint','ramp_time', 'value_factor', 'value_offset','max_value',
                 'min_value', 'max_control_deviation','use_stabilizor', 'step_size',
                 'control_coarse_step', 'do_plot', 'min_value_deviation']
         self.ins_cfg = config.Config(cfg_fn)
@@ -171,18 +173,19 @@ class pid_controller_v4(Instrument):
         
         self._t0 = time.time()
 
-        self._dat = qt.Data(name=self._name)
-        self._dat.add_coordinate('time')
-        self._dat.add_value('raw frequency')
-        self._dat.add_value('avg frequency')
-        self._dat.add_value('setpoint')
-        self._dat.add_value('control parameter')
-        self._dat.create_file()
-        if self.get_do_plot():
-            self._plt = qt.Plot2D(self._dat, 'r-', name=self._name, coorddim=0, 
-                    valdim=1, maxpoints=100, clear=True)
-            self._plt.add(self._dat, 'b-', coorddim=0, valdim=2, maxpoints=100)
-            self._plt.add(self._dat, 'k-', coorddim=0, valdim=3, maxpoints=100)
+        if self.get_do_save_data():
+            self._dat = qt.Data(name=self._name)
+            self._dat.add_coordinate('time')
+            self._dat.add_value('raw frequency')
+            self._dat.add_value('avg frequency')
+            self._dat.add_value('setpoint')
+            self._dat.add_value('control parameter')
+            self._dat.create_file()
+            if self.get_do_plot():
+                self._plt = qt.Plot2D(self._dat, 'r-', name=self._name, coorddim=0, 
+                        valdim=1, maxpoints=100, clear=True)
+                self._plt.add(self._dat, 'b-', coorddim=0, valdim=2, maxpoints=100)
+                self._plt.add(self._dat, 'k-', coorddim=0, valdim=3, maxpoints=100)
         if not(self._get_stabilizor == None): self._stabilizor_value = self._get_stabilizor()
         self.get_control_parameter()
         self.get_control_parameter_coarse()             
@@ -202,6 +205,12 @@ class pid_controller_v4(Instrument):
         if not self._is_running:
             return False
         
+        elapsed = time.time() - self._t0
+        if elapsed < self._ramp_time:
+            scale_fact = elapsed/self._ramp_time
+        else:
+            scale_fact = 1.0
+
         new_raw_value = self.get_value()
         if new_raw_value > self._max_value or new_raw_value < self._min_value or abs(new_raw_value-self._values[-1])<self._min_value_deviation:
             return True     
@@ -224,10 +233,19 @@ class pid_controller_v4(Instrument):
         self._integrator = self._integrator + self._error
         
         self._time = time.time() - self._t0
-        self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
-                self._setpoint, self._control_parameter)
+        if self.get_do_save_data():
+            try:
+                self._dat.add_data_point(self._time, new_raw_value, current_avg_value,
+                    self._setpoint, self._control_parameter)
+            except NameError:
+                self._dat = qt.Data(name=self._name)
+                self._dat.add_coordinate('time')
+                self._dat.add_value('raw frequency')
+                self._dat.add_value('avg frequency')
+                self._dat.add_value('setpoint')
+                self._dat.add_value('control parameter')
 
-        new_control_parameter = self._control_parameter + pval + dval + ival
+        new_control_parameter = self._control_parameter + scale_fact*(pval + dval + ival)
 
         if not self._try_set_control_parameter(new_control_parameter):
             print 'Could not set control parameter, quit.'
@@ -250,8 +268,8 @@ class pid_controller_v4(Instrument):
                         numpy.copysign(self._max_control_deviation,new_control_parameter-self._control_parameter)
                         
         if not(self.set_control_parameter(new_control_parameter)):
-            if self.set_control_parameter_coarse(self.get_control_parameter_coarse()+ \
-                    numpy.copysign(self._control_coarse_step,new_control_parameter-self._control_parameter)):
+            if (self._set_ctrl_coarse != None) and (self.set_control_parameter_coarse(self.get_control_parameter_coarse()+ \
+                    self._control_coarse_step*numpy.copysign(1,new_control_parameter-self._control_parameter))):
                 self.set_control_parameter(0)
             else:
                 return False

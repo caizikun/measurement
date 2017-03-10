@@ -187,32 +187,35 @@ class HydraHarp_HH400(Instrument): #1
  #       print ('HydraHarp serial no. %s'%self.SerialNo)            
 
         self.calibrate()
-        self._do_get_NumOfModules()
-        self._do_get_NumOfInputChannels()
-        self._do_set_ModuleIndex(0)
         
-        self._do_set_SyncCFDLevel(200)
-        self._do_set_SyncCFDZeroCross(10)
-        self._do_set_SyncChannelOffset(0)
 
-        self._do_set_Channel(0)
-        self._do_set_InputCFDLevel(200)
-        self._do_set_InputCFDZeroCross(10)
-        self._do_set_InputChannelOffset(0)
+    def _init_defaults(self):
+        self.get_NumOfModules()
+        self.get_NumOfInputChannels()
+        self.set_ModuleIndex(0)
         
-        self._do_set_Channel(1)
-        self._do_set_InputCFDLevel(200)
-        self._do_set_InputCFDZeroCross(10)
-        self._do_set_InputChannelOffset(0)
+        self.set_SyncCFDLevel(200)
+        self.set_SyncCFDZeroCross(10)
+        self.set_SyncChannelOffset(0)
+
+        self.set_Channel(0)
+        self.set_InputCFDLevel(40)
+        self.set_InputCFDZeroCross(10)
+        self.set_InputChannelOffset(0)
+        
+        self.set_Channel(1)
+        self.set_InputCFDLevel(200)
+        self.set_InputCFDZeroCross(10)
+        self.set_InputChannelOffset(0)
        
-        self._do_set_SyncDiv(1)
-        self._do_set_Binning(8)
-        self._do_set_HistoLen(MAXLENCODE)
-        self._do_set_Offset(0)
+        self.set_SyncDiv(1)
+        self.set_Binning(8)
+        
+        self.set_Offset(0)
         self.set_StopOverflow(0,STOPCNTMAX)
-        self._do_get_BaseResolutionPS()
-        self._do_get_MaxBinSteps()
-        self._do_get_ResolutionPS()
+        self.get_BaseResolutionPS()
+        self.get_MaxBinSteps()
+        self.get_ResolutionPS()
 
     def _load_dll(self): #3
 #        print __name__ +' : Loading HHLib.dll'
@@ -262,18 +265,22 @@ class HydraHarp_HH400(Instrument): #1
         if success != 0:
             logging.warning(__name__ + ' : Histogramming mode could not be started')
             self.get_ErrorString(success)
+        self._init_defaults()
+        self._do_set_HistoLen(MAXLENCODE)
 
     def start_T2_mode(self):
         success = self._HH400_win32.HH_Initialize(self.DevIdx, MODE_T2, self.RefClock)
         if success != 0:
             logging.warning(__name__ + ' : T2 mode could not be started')
             self.get_ErrorString(success)
+        self._init_defaults()
 
     def start_T3_mode(self):
         success = self._HH400_win32.HH_Initialize(self.DevIdx, MODE_T3, self.RefClock)
         if success != 0:
             logging.warning(__name__ + ' : T3 mode could not be started')
             self.get_ErrorString(success)
+        self._init_defaults()
 
     def _do_get_NumOfInputChannels(self):
         nchannels = c_int(0)

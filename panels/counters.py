@@ -34,6 +34,9 @@ class CounterPanel(Panel):
         self.ui.plot1.display_time = 20
         self.ui.plot2.display_time = 20
         self.ui.t_range.setValue(20)
+
+        # print adwin.Get_FPar(14)
+        # print adwin.get_read_adc_var('fpar')[0][1]
         
 
     def _instrument_changed(self, changes):

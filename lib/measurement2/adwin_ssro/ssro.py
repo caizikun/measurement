@@ -6,12 +6,9 @@ import numpy as np
 import logging
 
 import qt
-import hdf5_data as h5
-import measurement.lib.config.adwins as adwins_cfg
-reload(adwins_cfg)
 
 import measurement.lib.measurement2.measurement as m2
-reload(m2)
+
 
 class AdwinSSRO(m2.AdwinControlledMeasurement):
 
@@ -20,13 +17,10 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
     max_SP_bins = 500
     max_SSRO_dim = 1000000
     adwin_process = 'singleshot'
-    adwin_dict = adwins_cfg.config
-    adwin_processes_key = ''
     E_aom = None
     A_aom = None
     repump_aom = None
     adwin = None
-
     
         
     def autoconfig(self):
@@ -54,24 +48,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         self.params['Ex_SP_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_SP_amplitude'])
         self.params['A_SP_voltage'] = self.A_aom.power_to_voltage(self.params['A_SP_amplitude'])
         self.params['Ex_RO_voltage'] = self.E_aom.power_to_voltage(self.params['Ex_RO_amplitude'])
-        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])              
+        self.params['A_RO_voltage'] = self.A_aom.power_to_voltage(self.params['A_RO_amplitude'])
         self.params['repump_voltage'] = self.repump_aom.power_to_voltage(self.params['repump_amplitude'])
         self.params['repump_off_voltage'] = self.repump_aom.get_pri_V_off()
         self.params['A_off_voltage'] = self.A_aom.get_pri_V_off()
         self.params['Ex_off_voltage'] = self.E_aom.get_pri_V_off()
 
-       
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
-            self.set_adwin_process_variable_from_params(key)
-
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            
-            self.set_adwin_process_variable_from_params(key)
-
-        if 'include_cr_process' in self.adwin_dict[self.adwin_processes_key][self.adwin_process]:
-            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_long']:              
-                self.set_adwin_process_variable_from_params(key)
-            for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_dict[self.adwin_processes_key][self.adwin_process]['include_cr_process']]['params_float']:              
-                self.set_adwin_process_variable_from_params(key)
+        m2.AdwinControlledMeasurement.autoconfig(self)
 
 
     def setup(self):
@@ -99,8 +82,7 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
         except:
             logging.error("Cannot set adwin process variable '%s'" \
                     % key)
-            raise Exception('Adwin process variable {} has not been set \
-                                in the measurement params dictionary!'.format(key))
+            raise Exception('Adwin process variable {} has not been set in the measurement params dictionary!'.format(key))
 
     def run(self, autoconfig=True, setup=True):
         
@@ -156,23 +138,13 @@ class AdwinSSRO(m2.AdwinControlledMeasurement):
                     'completed_reps',
                     'total_CR_counts'])
 
-    def finish(self, save_params=True, save_stack=True, 
-            stack_depth=4, save_cfg=True, save_ins_settings=True):
-      
-        if save_params:
-            self.save_params()
-            
-        if save_stack:
-            self.save_stack(depth=stack_depth)
-           
-        if save_ins_settings:
-            self.save_instrument_settings_file()
+    def finish(self, **kw):
 
         self.repump_aom.set_power(0)
         self.E_aom.set_power(0)
         self.A_aom.set_power(0)
 
-        m2.AdwinControlledMeasurement.finish(self)
+        m2.AdwinControlledMeasurement.finish(self, **kw)
 
 class AdwinSSROAlternCR(AdwinSSRO):   
     adwin_process = 'singleshot_altern_CR'
@@ -185,7 +157,9 @@ class AdwinSSROAlternCR(AdwinSSRO):
 class IntegratedSSRO(AdwinSSRO):
     adwin_process = 'integrated_ssro'
     mprefix = 'IntegratedSSRO'
-    
+
+    # remote_helper = None
+
     def __init__(self, name):
         AdwinSSRO.__init__(self, name)
         
@@ -196,7 +170,11 @@ class IntegratedSSRO(AdwinSSRO):
         self.params['sweep_length'] = self.params['pts']
         
         AdwinSSRO.autoconfig(self)
-           
+        
+        ### broadcast msmt_params to QT Monitor for live plotting
+        ### needs a working instance of a remote_msmt_helper & qtlab monitor otherwise error!
+        # self.remote_helper.set_measurement_params(self.params)
+
     def save(self, name='ssro'):
         reps = self.adwin_var('completed_reps')
         self.save_adwin_data(name,

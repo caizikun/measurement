@@ -150,9 +150,9 @@ if __name__ == '__main__':
     # breakst = show_stopper()
     # if breakst: break
 
-    # every single_tau_block is pts*step_size = 200 us. 100 blocks is thus from 3.5 to 23.5
-    single_tau_blocks = 100
-    pulse_list = [8, 16, 32, 64]
+    # every single_tau_block is pts*step_size = 200 ns. 100 blocks is thus from 3.5 to 23.5
+    single_tau_blocks = 75
+    pulse_list = [8,16,32,64]#[8,16,32,64]
     # optimal combinations of step_size and N. tot*pts*step_size should be constant
     for N in pulse_list:
 
@@ -167,36 +167,4 @@ if __name__ == '__main__':
         SimpleDecoupling('Hermite_Fingerprint_ms'+ EL_TRANS[-2:] + '_' + SAMPLE + '_' + str(N),
             N = N, step_size = 4e-9, start_point= 0, tot = single_tau_blocks, 
             final_pulse = '-x', optimize=True, reps_per_RO = 500)
-
-
-    n = 0
-
-    # for start_point in [0,45,90,135]:
-        
-    #     for N in [64,128]:
-    #         if N in [128, 64]:
-    #             step_size = 4e-9
-    #         else:
-    #             step_size = 10e-9
-
-    #         if N == 64 and start_point ==0:
-    #             pulses = ['x']
-    #         if N == 64 and start_point ==45:
-    #             pulses = []
-    #         else:
-    #             pulses = ['-x','x']
-
-    #         for final_pulse in pulses:
-
-
-    #             print 'press q now to cleanly exit measurement loop'
-    #             qt.msleep(3)
-    #             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #                 n = 0
-
-        
-
-    #             if n == 1:
-    #                 SimpleDecoupling('Hermite_Fingerprint_msm1_' + SAMPLE + '_' + str(N) + final_pulse+str(start_point),
-    #                         N = N, step_size = step_size, start_point= start_point, tot = 50, final_pulse = final_pulse, optimize=True, reps_per_RO = 500)
 

@@ -5,13 +5,13 @@ import numpy as np
 import qt
 
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs; reload(funcs)
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16):
+def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N =16, reps_per_ROsequence=250):
 
     m = DD.SimpleDecoupling(name+'_tau_'+str(tau_min*1e9))
 
@@ -39,14 +39,14 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 250 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = reps_per_ROsequence
     m.params['Initial_Pulse'] ='x'
     if N%4 == 0: 
         m.params['Final_Pulse'] ='-x'
     else:
         m.params['Final_Pulse'] ='x'
-    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
-    #m.params['Decoupling_sequence_scheme'] = 'single_block'
+    m.params['Decoupling_sequence_scheme'] = 'AXY8'
+    # m.params['Decoupling_sequence_scheme'] = 'single_block'
     Number_of_pulses = N 
     tau_list = np.arange(tau_min,tau_max,tau_step) 
     print tau_list
@@ -57,6 +57,8 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
     m.params['sweep_pts']        = tau_list*1e6
     m.params['sweep_name']       = 'tau (us)'
 
+    m.params['DD_in_eigenstate'] = False
+
 
 
     m.autoconfig()
@@ -65,7 +67,8 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 if __name__ == '__main__':
 
     SimpleDecoupling_swp_tau(SAMPLE, 
-        tau_min=2.2e-6,
-        tau_max=2.3e-6,
-        tau_step = 2e-9,
-        N=32)
+        tau_min=(5.0/3.0)*6.3e-6,
+        tau_max=(5.0/3.0)*6.5e-6,
+        tau_step = (5.0/3.0)*5e-9,
+        N=16,
+        reps_per_ROsequence = 250)

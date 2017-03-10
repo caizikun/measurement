@@ -82,6 +82,8 @@ def SweepGates(name,**kw):
 	### RO bases,timing and number of pulses (sweep parameters) ###
 	##################################
 
+	m.params['carbon_gate_dd_scheme'] = 'repeating_T_elt'
+
 	# print m.params['electron_transition']
 	if N_list == None or tau_list == None:
 		# takes from msts.params
@@ -265,10 +267,10 @@ if __name__ == '__main__':
 		#######################
 		#### SIL 2 ###########
 		#####################
-		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
-										'C_tau_rng' : 20e-9, # steps of 2e-9
-										'C_N' 		: [10,10,10,10,10,10,14],
-										'C_N_steps' : 4} # steps of 2 	
+		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [10.884e-6],#[8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
+										'C_tau_rng' : 14e-9, # steps of 2e-9
+										'C_N' 		: [12],#[10,10,10,10,10,10,14],
+										'C_N_steps' : 6} # steps of 2 	
 
 		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [9.318e-6,10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
 										'C_tau_rng' : 12e-9, # steps of 2e-9
@@ -290,10 +292,10 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.35e-6],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :16e-9, # steps of 2e-9
-										'C_N' 		: [26], 
-										'C_N_steps' : 12} # steps of 2 	
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.02e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  : 8e-9, # steps of 2e-9
+										'C_N' 		: [28],#,24,26,30], 
+										'C_N_steps' : 8} # steps of 2 	
 
 
 		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
@@ -314,14 +316,14 @@ if __name__ == '__main__':
 										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [5,8]
+	carbons = [4]
 
 	### msmt loop begins here.
 	breakst = False
 	for c in carbons:
 
 		#get on NV before we start
-		optimize()
+		# optimize()
 
 		breakst = show_stopper()
 		if breakst: break
@@ -394,6 +396,6 @@ if __name__ == '__main__':
 										N_list = current_N_list,
 										debug = False)
 
-					optimize()
+					# optimize()
 
 			

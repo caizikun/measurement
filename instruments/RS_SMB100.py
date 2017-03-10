@@ -18,7 +18,7 @@
 #
 # 2012/09
 # modification by Wolfgang Pfaff <wolfgangpfff@gmail.com>:
-# added parameter max_cw_power: can not be surpassed if pulse-modulation is
+# added parameter max_cw_power: can not be surpassed if pulse-modulatmasion is
 # turned off.
 
 from instrument import Instrument
@@ -39,7 +39,7 @@ class RS_SMB100(Instrument):
         reset=<bool>)
     '''
 
-    def __init__(self, name, address, reset=False, max_cw_pwr=-5):
+    def __init__(self, name, address, reset=False, max_cw_pwr=-20):
         '''
         Initializes the RS_SMB100, and communicates with the wrapper.
 
@@ -55,7 +55,8 @@ class RS_SMB100(Instrument):
         Instrument.__init__(self, name, tags=['physical'])
 
         self._address = address
-        self._visainstrument = visa.instrument(self._address, timeout=300) #does this need to be so high (a 5 minuite wait after a wrong command?)
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address, timeout=300, read_termination='\n') #does this need to be so high (a 5 minuite wait after a wrong command?)
         print ' SMB timeout set to: %s s'%self._visainstrument.timeout
 
         self.add_parameter('frequency', type=types.FloatType,
@@ -111,11 +112,15 @@ class RS_SMB100(Instrument):
         self.add_function('get_all')
         self.add_function('get_errors')
         self.add_function('get_error_queue_length')
+        #self.add_function('get_visa')
 
         if reset:
             self.reset()
         else:
             self.get_all()
+
+    # def get_visa(self):
+    #     return self._visainstrument
 
     # Functions
     def reset(self):
@@ -350,6 +355,7 @@ class RS_SMB100(Instrument):
         elif stat == '0':
             return 'off'
         else:
+            print len(stat)
             raise ValueError('Output status not specified : %s' % stat)
 
     def _do_set_status(self,status):

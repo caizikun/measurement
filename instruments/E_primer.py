@@ -7,8 +7,7 @@ import gobject
 import instrument_helper
 import types
 from lib import config
-from analysis.lib.nv import nvlevels
-reload(nvlevels)
+from analysis.lib.nv import nvlevels;reload(nvlevels)
 
 class E_primer(Instrument):
 
@@ -102,15 +101,15 @@ class E_primer(Instrument):
         print 'E_prime_0 :', E_prime_0
         self._F_E_0 = self._get_E_func()
         self._F_Y_0 = self._get_Y_func()
-        
-        ms0_level=2 if self.get_E_y() else 3
-        #print 'ms0_level :', ms0_level
-        #print 'Ex : ', self._F_E_0
-        Ex, Ey = nvlevels.get_ExEy_from_two_levels(E_prime_0,0,self._F_E_0,ms0_level,precision=self.get_precision()) 
+   
+        ms0_level='Ey' if self.get_E_y() else 'Ex'
+        print 'ms0_level :', ms0_level
+        print 'Ex : ', self._F_E_0
+        Ex, Ey = nvlevels.get_ExEy_from_Eprime_and_Ex_or_Ey(E_prime_0,self._F_E_0,Ex_or_Ey = ms0_level, precision=self.get_precision())
         self._strain_split_0 = Ex-Ey
         self._strain_splitting = Ex-Ey
-        print 'Values taken for calculation :', E_prime_0, self._F_E_0
-        print 'strain splitting: {:.2f}, (Ex, Ey) = ({:.2f},{:.2f})'.format(self._strain_splitting, Ex, Ey)
+        #print 'Values taken for calculation :', E_prime_0, self._F_E_0
+        #print 'strain splitting: {:.2f}, (Ex, Ey) = ({:.2f},{:.2f})'.format(self._strain_splitting, Ex, Ey)
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),\
             self._optimize)
         #return True

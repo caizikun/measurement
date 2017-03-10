@@ -9,7 +9,7 @@ import qt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)
@@ -41,7 +41,7 @@ def Crosstalk(name, RO_phase=0, RO_Z=False, C13_init_method = 'swap', carbon_A =
     if tau_list == None:
         tau_list = m.params['C'+str(carbon_B)+'_Ren_tau']*len(N)
 
-    m.params['Rabi_tau_Sweep']= m.params['C'+str(carbon_B)+'_Ren_tau'] +  tau_list
+    m.params['Rabi_tau_Sweep']= tau_list
 
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
 
@@ -59,13 +59,13 @@ if __name__ == '__main__':
 
     # N_list=np.arange(2,100,16)
     # N_list=[32]
-    tau_list = np.arange[6.9e-6,7.1e-6,4e-9]
+    tau_list = np.arange(2.1e-6,2.5e-6,4e-9)
     N_list = [32]*len(tau_list)
-    Crosstalk(SAMPLE + '_condGate_C5_tau_'+str(tau_list[0]),
+    Crosstalk(SAMPLE + '_condGate_C1_tau_'+str(tau_list[0]),
         RO_phase = 0, 
         RO_Z =True, 
-        carbon_A = 4, 
-        carbon_B = 4, 
+        carbon_A = 1, 
+        carbon_B = 1, 
         tau_list=tau_list,
         N=N_list)
  

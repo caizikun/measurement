@@ -39,9 +39,10 @@ class Thorlabs_PM100(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
-        self._visa = visa.instrument(self._address,
-                        baud_rate=115200, data_bits=8, stop_bits=1,
-                        parity=visa.no_parity, term_chars='\r\n')
+        rm = visa.ResourceManager()
+        self._visa = rm.open_resource(self._address,write_termination ='\r\n', read_termination='\r\n', 
+                     baud_rate=115200, data_bits=8, stop_bits=visa.constants.StopBits.one,
+                     parity=visa.constants.Parity.none)
 
         self.add_parameter('identification',
             flags=Instrument.FLAG_GET,

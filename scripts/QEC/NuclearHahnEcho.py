@@ -13,7 +13,7 @@ import qt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 SAMPLE = qt.exp_params['samples']['current']
@@ -56,15 +56,15 @@ def NuclearHahnWithInitialization(name,
 
     if el_after_init == 0:
         m.params['reps_per_ROsequence'] = 1000
-        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,10) #np.arange(2e-3, 60e-3, 4e-3)
+        m.params['free_evolution_time'] = np.linspace(2e-3,60e-3,15) #np.arange(2e-3, 60e-3, 4e-3)
         m.params['pts'] = len(m.params['free_evolution_time'])
         m.params['use_shutter'] = 0
     if el_after_init == 1:
         # m.params['free_evolution_time'] = np.r_[4e-3,25e-3, 50e-3,100e-3, 200e-3, 350e-3, 600e-3, 1.]
         m.params['reps_per_ROsequence'] = 500
-        m.params['free_evolution_time'] =np.linspace(5e-3,0.7,8)[0:2]
+        m.params['free_evolution_time'] =np.linspace(5e-3,0.15,15)#[0:2]
         m.params['pts'] = len(m.params['free_evolution_time'])
-        
+        m.params['use_shutter'] = 0
     
 
     m.params['C_RO_phase'] = m.params['pts']*['X']        
@@ -112,7 +112,7 @@ def MBE(name, carbon            =   1,
     funcs.prepare(m)
 
 
-    m.params['el_after_init']                = '1'
+    m.params['el_after_init']                = '0'
 
 
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
@@ -202,10 +202,10 @@ if __name__ == '__main__':
     # el_after_init_list = [1,0,1]
     # shutter_list = [True, False, False]
 
-    carbon_list = [5]
-    el_RO_list = ['positive','negative']
-    el_after_init_list = [1,1]
-    shutter_list = [True, False]
+    carbon_list = [4]
+    el_RO_list = ['positive']
+    el_after_init_list = [0]
+    shutter_list = [False]
 
     for carbon in carbon_list:
         for ii, el_after_init in enumerate(el_after_init_list):
@@ -220,12 +220,12 @@ if __name__ == '__main__':
                     msmtstring =  '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+el_RO + '_SHUTTER'
                 else:
                     msmtstring =  '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+el_RO
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                ssrocalibration(SAMPLE)
-                GreenAOM.set_power(20e-6)
-                adwin.start_set_dio(dio_no=4,dio_val=0)
-                optimiz0r.optimize(dims=['x','y','z','x','y'])
-                adwin.start_set_dio(dio_no=4,dio_val=0)
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
+                #ssrocalibration(SAMPLE)
+                #GreenAOM.set_power(10e-6)
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
+                #optimiz0r.optimize(dims=['x','y','z','x','y'])
+                #adwin.start_set_dio(dio_no=4,dio_val=0)
                 # ssrocalibration(SAMPLE)
                 # adwin.start_set_dio(dio_no=4,dio_val=0)
                 # MBE(SAMPLE + '_C'+str(carbon)+'_el'+str(el_after_init)+'_'+ el_RO + '_MBI', el_RO= el_RO, carbon = carbon, carbon_init_list = [carbon],

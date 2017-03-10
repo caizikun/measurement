@@ -13,7 +13,14 @@ def turn_off_lasers(names):
 
 def turn_off_all_lasers():
     #set_simple_counting(['adwin'])
-    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM','PulseAOM']) ### XXX Still have to add yellow and pulse
+
+    turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])#,'PulseAOM']) ### XXX Still have to add and pulse
+    
+    if 'PhaseAOM' in qt.instruments.get_instrument_names():
+        turn_off_lasers(['PhaseAOM'])
+
+    if 'PulseAOM' in qt.instruments.get_instrument_names():
+        turn_off_lasers(['PulseAOM'])
 
 def turn_off_all_lt4_lasers():
     turn_off_all_lasers()
@@ -157,15 +164,23 @@ def quantum_random_number_status():
     qt.instruments['adwin'].start_get_dio(dio_no=17)
     return qt.instruments['adwin'].get_get_dio_var('dio_val') > 0
 
-def reset_plu():
-    if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
-        qt.msleep(0.1)
-        qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
-        qt.msleep(1.0)
-        qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
-        print 'Plu reset complete'
-    else:
-        print 'plu reset failed'
+# reset plu on BS
+# def reset_plu():   
+#     if qt.instruments['bs_relay_switch'].Turn_Off_Relay(3):
+#         qt.msleep(0.1)
+#         qt.instruments['bs_relay_switch'].Turn_On_Relay(3)
+#         qt.msleep(1.0)
+#         qt.instruments['bs_relay_switch'].Turn_Off_Relay(3)
+#         print 'Plu reset complete'
+#     else:
+#         print 'plu reset failed'
+
+def reset_plu(): 
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=1)
+    qt.msleep(0.1)
+    qt.instruments['adwin'].start_set_dio(dio_no=0, dio_val=0)
 
 
 def calibrate_aom_frq_max(name='YellowAOM', pts=21):
@@ -265,3 +280,15 @@ def load_regular_linescan():
     qt.instruments['linescan_counts'].set_scan_value('counts')
     qt.instruments['adwin'].load_linescan()
     
+def apply_awg_voltage(awg, chan, voltage):
+    """
+    applies a voltage on an awg channel;
+    if its a marker, by setting its LO-value to the given voltage.
+    if an analog channel, by setting the offset.
+    """
+    if 'marker' in chan:
+        return getattr(qt.instruments[awg], 'set_{}_low'.format(chan))(voltage)
+    else:
+        return getattr(qt.instruments[awg], 'set_{}_offset'.format(chan))(voltage)
+
+

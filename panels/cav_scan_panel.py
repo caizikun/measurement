@@ -41,20 +41,21 @@ class ScanPanel(Panel):
 
         #SETTINGS EVENTS
         self.ui.sb_avg.setRange(1, 999)
+        #XXXself.ui.sb_integration_cycles.setRange(1, 999)
         self.ui.dsb_minV_pzscan.setRange(-2, 10)
         self.ui.dsb_minV_pzscan.setDecimals(2)
         self.ui.dsb_minV_pzscan.setSingleStep(0.1)
         self.ui.dsb_maxV_pzscan.setRange(-2, 10)
         self.ui.dsb_maxV_pzscan.setDecimals(2)
         self.ui.dsb_maxV_pzscan.setSingleStep(0.1)
-        self.ui.dsb_minV_finelaser.setRange(-3, 4)
+        self.ui.dsb_minV_finelaser.setRange(-9, 9)
         self.ui.dsb_minV_finelaser.setDecimals(1)
         self.ui.dsb_minV_finelaser.setSingleStep(0.1)
-        self.ui.dsb_maxV_finelaser.setRange(-2, 10)
+        self.ui.dsb_maxV_finelaser.setRange(-9, 9)
         self.ui.dsb_maxV_finelaser.setDecimals(1)
         self.ui.dsb_maxV_finelaser.setSingleStep(0.1)
-        self.ui.sb_nr_steps_pzscan.setRange(1, 9999)
-        self.ui.sb_nr_steps_finelaser.setRange(1, 999)
+        self.ui.sb_nr_steps_pzscan.setRange(1, 99999)
+        self.ui.sb_nr_steps_finelaser.setRange(1, 99999)
         self.ui.sb_wait_cycles.setRange(1,9999)
         self.ui.sb_delay_msync.setRange(0, 9999)
         self.ui.sb_mindelay_msync.setRange(0, 9999)
@@ -68,6 +69,7 @@ class ScanPanel(Panel):
         #general:
         self.ui.cb_autosave.stateChanged.connect (self.autosave)
         self.ui.cb_autostop.stateChanged.connect (self.autostop)
+        #XXXself.ui.cb_scan_auto_reverse.stateChanged.connect(self.scan_auto_reverse)
         self.ui.sb_avg.valueChanged.connect(self.set_avg)
         self.ui.button_save.clicked.connect(self.save_single)
         #JPE piezo-Scan:
@@ -75,6 +77,7 @@ class ScanPanel(Panel):
         self.ui.dsb_maxV_pzscan.valueChanged.connect(self._ins.set_maxV_lengthscan)
         self.ui.sb_nr_steps_pzscan.valueChanged.connect(self._ins.set_nr_steps_lengthscan)
         self.ui.sb_wait_cycles.valueChanged.connect(self._ins.set_wait_cycles)
+        #XXXself.ui.sb_integration_cycles.valueChanged.connect(self._ins.set_ADC_averaging_cycles)
         self.ui.button_start_pzscan.clicked.connect(self.start_lengthscan)
         self.ui.button_stop_pzscan.clicked.connect(self.stop_lengthscan)
         #FineLaser-Scan:
@@ -109,10 +112,7 @@ class ScanPanel(Panel):
         self.ui.dsb_maxV_pzscan.setValue(self._ins.get_maxV_lengthscan())
         self.ui.sb_nr_steps_pzscan.setValue(self._ins.get_nr_steps_lengthscan())
         #general
-        self._ins.averaging_samples = 1
         self.ui.sb_avg.setValue(self._ins.get_nr_avg_scans())
-        self._ins.autosave = False
-        self._ins.autostop = False
         #fine laser scan
         self.ui.dsb_minV_finelaser.setValue(self._ins.get_minV_finelaser())
         self.ui.dsb_maxV_finelaser.setValue(self._ins.get_maxV_finelaser())
@@ -125,8 +125,6 @@ class ScanPanel(Panel):
         self.ui.sb_nr_steps_msyncdelay.setValue(self._ins.get_nr_steps_msyncdelay())
         #others
         self._ins.file_tag = ''
-        self._2D_scan_is_active = False
-        self._use_sync = False
         self.ui.sb_nr_scans_msync.setValue(self._ins.get_nr_avg_scans())
         self.set_nr_scans_msync(self._ins.get_nr_avg_scans())
         self.ui.sb_delay_msync.setValue(self._ins.get_sync_delay_ms())
@@ -156,7 +154,24 @@ class ScanPanel(Panel):
             self.ui.dsb_maxV_pzscan.setValue(changes['maxV_lengthscan'])
         if changes.has_key('nr_steps_lengthscan'): 
             self.ui.sb_nr_steps_pzscan.setValue(changes['nr_steps_lengthscan'])
-
+        if changes.has_key('minV_finelaser'): 
+            self.ui.dsb_minV_finelaser.setValue(changes['minV_finelaser'])
+        if changes.has_key('maxV_finelaser'): 
+            self.ui.dsb_maxV_finelaser.setValue(changes['maxV_finelaser'])
+        if changes.has_key('nr_steps_finelaser'): 
+            self.ui.sb_nr_steps_finelaser.setValue(changes['nr_steps_finelaser'])
+        if changes.has_key('wait_cycles'): 
+            self.ui.sb_wait_cycles.setValue(changes['wait_cycles'])
+        # if changes.has_key('autostop'): 
+        #     if changes['autostop'] == True:
+        #         self.ui.cb_autostop.setCheckState(True)
+        #     if changes['autostop'] == False:
+        #         self.ui.cb_autostop.setCheckState(False)
+        # if changes.has_key('autosave'): 
+        #     if changes['autosave'] == True:
+        #         self.ui.cb_autosave.setCheckState(True)
+        #     if changes['autosave'] == False:
+        #         self.ui.cb_autosave.setCheckState(False)
 
         if 'data_update' in changes:
             d = changes['data_update']
@@ -201,6 +216,12 @@ class ScanPanel(Panel):
             self._ins.set_autostop(True)
         else:
             self._ins.set_autostop(False)
+
+    def scan_auto_reverse (self, state):
+        if state == QtCore.Qt.Checked:
+            self._ins.set_scan_auto_reverse(True)
+        else:
+            self._ins.set_scan_auto_reverse(False)
 
     def montana_sync (self, state):
         if state == QtCore.Qt.Checked:

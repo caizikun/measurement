@@ -1,5 +1,3 @@
-
-
 ## SCRIPT SWAP GATE
 
 import numpy as np
@@ -42,7 +40,7 @@ def SWAP(name,
     funcs.prepare(m)
 
     ''' set experimental parameters '''
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 800
     m.params['C13_MBI_threshold_list'] = carbon_init_thresholds
     m.params['el_after_init']               = '0'
 
@@ -71,7 +69,7 @@ def SWAP(name,
     ##########################
 
     m.params['RO_after_swap']               = RO_after_swap
-
+    m.params['Repump_duration'] = 5e-6
 
     ####################
     ### MBE settings ###
@@ -120,17 +118,44 @@ if __name__ == '__main__':
 
     '''' NOTE REMOVE RO_after_swap from SWAP params '''
     breakst     = False
-    carbons     = [1]
-    el_state    = ['X','Y','Z']
+    carbons     = [4]
+    el_state    = ['X','mX','Y','mY','Z','mZ']
+    #el_state    = ['X','Y','Z']
     
     debug = False
     RO_after_swap = True
     swap_type = 'swap_w_init'
-    if swap_type == 'swap_wo_init' or swap_type == 'swap_wo_init_rot':
+    # swap_type = 'swap_wo_init_rot'
+    
+    if swap_type == 'swap_w_init':
+        
+        if RO_after_swap:
+            c_i_t = [0,1]
+        else:
+            c_i_t = [0]
 
-        c_i_t = [1] #its deterministic but still, there might be phase errors
+        carbon_init_methods     =   ['swap']
+
+    elif swap_type == 'swap_wo_init':
+        
+        if RO_after_swap:
+            c_i_t = [1] #its deterministic but still, there might be phase errors
+        else:
+            c_i_t = []
+    
+        carbon_init_methods     =   []
+   
+    elif swap_type == 'prob_init':
+
+        RO_after_swap = True
+
+        c_i_t = [1,1]
+        
+        carbon_init_methods     =   ['MBI']
+    
     else:
-        c_i_t = [0, 1]
+        print "Unsupported swap type"
+
 
     print 'carbon initialisation RO threshold = '+ str(c_i_t)
 
@@ -158,7 +183,9 @@ if __name__ == '__main__':
                 carbon = c,
                 debug = debug, 
                 elec_init_state = e, 
+                RO_after_swap = RO_after_swap,
                 carbon_init_thresholds = c_i_t,
+                carbon_init_methods = carbon_init_methods,
                 swap_type = swap_type)
 
             breakst = show_stopper(breakst = breakst)
@@ -170,7 +197,9 @@ if __name__ == '__main__':
                 carbon = c,
                 debug = debug, 
                 elec_init_state = e,
+                RO_after_swap = RO_after_swap,
                 carbon_init_thresholds = c_i_t,
+                carbon_init_methods = carbon_init_methods,
                 swap_type = swap_type)
 
     print 'Done with loop part' 

@@ -16,37 +16,45 @@ qt.pulsar.clock = 1e9
 
 
 # analog channels
+MW_parallel_shift = 0e-9
 qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0, #name = 'MW_1'
-    low=-1.0, offset=0., delay=200e-9, active=True) #DD
+    low=-1.0, offset=0., delay=200e-9+MW_parallel_shift, active=True) #DD
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,  #name = 'MW_2'
-    low=-1.0, offset=0., delay=200e-9, active=True) #DD # note measured delay on fast scope 2014-10-13: 59 ns
+    low=-1.0, offset=0., delay=200e-9+MW_parallel_shift, active=True) #DD # note measured delay on fast scope 2014-10-13: 59 ns
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=(490e-9+ 5e-9), active=True) #DD #617 ns for normal pulses 458e-9
+    high=1.0, low=-1.0, offset=0.0, delay=(490e-9 + 76e-9), active=True) #PH Changed from (490e-9+ 5e-9)
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=(199e-9+100e-9-20e-9), active=True) #DD #measured delay on apd's (tail) 2014-10-13: 40 ns
 
 
 # marker channels
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
-    high=2.0, low=0, offset=0., delay=268e-9, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
+    high=2.0, low=0, offset=0., delay=256e-9+MW_parallel_shift, active=True) ##267e-9#DD #previous 267e-9# previous:289; measured 242e-9 on the scope made an error??2014-10-13
 qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHarp Sync
     high=2.0, low=0, offset=0., delay=102e-9, active=True) #XX plug in/ calibrate delay
 
-qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
-   high=2.0, low=0, offset=0, delay=182e-9, active=True)
-
+# qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
+#    high=2.0, low=0, offset=0, delay=182e-9, active=True)
+qt.pulsar.define_channel(id='ch2_marker1', name='self_trigger', type='marker', 
+   high=2.0, low=0., offset=0., delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0.0, offset=0., delay=0., active=True) 
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_count', type='marker', 
     high=2.0, low=0, offset=0., delay=0e-9, active=True)
 
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
-    high=0.4, low=0.0, offset=0.0, delay=400e-9, active=True) #DD
+    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
+
+qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Matisse', type='marker',
+    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
 
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
+
+qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,

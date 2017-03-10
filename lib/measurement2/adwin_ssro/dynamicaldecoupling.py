@@ -483,7 +483,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         return
 
     def insert_transfer_gates(self,gate_seq,pt=0):
-        ext_gate_seq = [] # this is the list that also contains the connection elements
+        ext_gate_seq = [] # this is the list that also contains the trasnfer elements
         gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','electron_Gate']
 
         for i in range(len(gate_seq)-1):
@@ -694,7 +694,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         elif Gate.tau<=  pi_pulse_duration+20e-9: ## ERROR? shouldn't this be 1/2*pi_dur + 10?
             print 'Error: Gate(%s), tau (%s) too small: Pulses will overlap! \n Min tau = %s' %(Gate.name,Gate.tau,self.params['fast_pi_duration']+20e-9)
             return
-        elif Gate.tau<0.5e-6:
+        elif Gate.tau< 0.5e-6 :
             Gate.scheme = 'single_block'
         elif Gate.N%8:           ## ERROR? Should be N%8 == 0: ?
             Gate.scheme = 'XY8'
