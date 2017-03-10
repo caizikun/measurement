@@ -21,7 +21,7 @@ class counters_via_adwin(CyclopeanInstrument):
                            units='Hz',
                            type=types.FloatType,
                            tags=['measure'],
-                           channels=('cntr1', 'cntr2'),
+                           channels=('cntr1', 'cntr2','cntr3'),
                            channel_prefix='%s_',
                            doc="""
                            Returns the count rates for all counters.
@@ -39,7 +39,7 @@ class counters_via_adwin(CyclopeanInstrument):
                 type = types.IntType)
 
         # init parameters
-        self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, }
+        self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, 'cntr3': 0.0}
         self._integration_time = 1
         self._avg_periods = 100
         
@@ -90,7 +90,7 @@ class counters_via_adwin(CyclopeanInstrument):
     def _stop_running(self):
         #print 'counters stopped running'
         self._ins_adwin.stop_counter()
-        self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, }
+        self._countrate = {'cntr1': 0.0, 'cntr2': 0.0, 'cntr3': 0.0}
 
     # if this function returns False, the sampling timer gets stopped.
     # it gets re-started once set_is_running(True) gets called again.
@@ -111,11 +111,13 @@ class counters_via_adwin(CyclopeanInstrument):
         try:
             self._countrate['cntr1'] = cr[0]
             self._countrate['cntr2'] = cr[1]
+            self._countrate['cntr3'] = cr[2]
         except:
             self._countrate['cntr1'] = 0
             self._countrate['cntr2'] = 0
-        
+            self._countrate['cntr3'] = 0
         self.get_cntr1_countrate()
         self.get_cntr2_countrate()
+        self.get_cntr3_countrate()
             
         

@@ -401,74 +401,71 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
         stop_msmnt=False
         Signal=np.zeros(self.params['pts'])
         for i in np.arange(self.params['nr_of_cycles']):
-            print '#################################################' 
+            # print '#################################################' 
             print '#####           Cycle nr ', i+1 , ' / ', self.params['nr_of_cycles'] ,'        #####'
-            print '#################################################'
+            # print '#################################################'
             current_dset_length=0
             last_sync_number = 0
             t_ofl = 0
             t_lastsync = 0
             _length=0
             self.start_measurement_process()
+            # qt.msleep(1.)
             _timer=time.time() 
        
             while(self.measurement_process_running()):
             
-                if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-                    break
+                
 
                 if (time.time()-_timer)>self.params['measurement_abort_check_interval']:
                     if not self.measurement_process_running():
                         break
-                    '''
-                    self._keystroke_check('abort')
-                    if self.keystroke('abort') in ['q','Q']:
-                        print 'aborted.'
-                        self.stop_keystroke_monitor('abort')
-                        stop_msmnt=True
-                        break
-                    '''    
+
+                    self.print_measurement_progress()
+                    _timer = time.time()
+                    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+                        stop_msmnt = True
                 if stop_msmnt:
                     break        
-                self.print_measurement_progress()
-                # print i
-
-                qt.msleep(1)
-
+                
             
 
-            for i in np.arange(1):
+
                 
-                _timestamps, _channels, _length = qutau.get_last_timestamps(buffer_size=buffer_size) 
-  
+            _timestamps, _channels, _length = qutau.get_last_timestamps() 
+
+            
+            _npchannels=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
+            print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
+
+            if _length > 0:
+                if _length == buffer_size: #was previously T2_READMAX;
+                    logging.warning('extracted data length equal to the buffer_size, \
+                            could indicate too low transfer rate resulting in buffer overflow.')
+
+                #convert ctype arrays to numpy arrays for further data processing
+                _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
+                self.nr_of_syncs=len(np.where(_npchannels==3)[0])
                 
-                _npchannels=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
-                print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
+                _c, _s = QuTau_decode(channels=_channels[:_length])
 
-                if _length > 0:
-                    if _length == buffer_size: #was previously T2_READMAX;
-                        logging.warning('extracted data length equal to the buffer_size, \
-                                could indicate too low transfer rate resulting in buffer overflow.')
-
-                    #convert ctype arrays to numpy arrays for further data processing
-                    _nptimestamps=np.frombuffer(buffer(_timestamps), dtype=np.uint64).astype(np.uint32) #needs to be 64 bit!!! live filter cannot handle this right now.
-                    self.nr_of_syncs=len(np.where(_npchannels==3)[0])
-                    
-                    _c, _s = QuTau_decode(channels=_channels[:_length])
-
-                    hist0, hist1, \
-                        newlength, t_ofl, t_lastsync, last_sync_number = \
-                            T2_tools_v3.T2_live_filter_integrated_RT(_nptimestamps[:_length], _c, _s, hist0, hist1, t_ofl, 
-                                t_lastsync, last_sync_number,
-                                sweep_length,MIN_SYNC_BIN, MAX_SYNC_BIN,DT_SYNC_BIN,
-                                T2_WRAPAROUND,QuTau_timefactor)
-                    current_dset_length+=newlength
+                hist0, hist1, \
+                    newlength, t_ofl, t_lastsync, last_sync_number = \
+                        T2_tools_v3.T2_live_filter_integrated_RT(_nptimestamps[:_length], _c, _s, hist0, hist1, t_ofl, 
+                            t_lastsync, last_sync_number,
+                            sweep_length,MIN_SYNC_BIN, MAX_SYNC_BIN,DT_SYNC_BIN,
+                            T2_WRAPAROUND,QuTau_timefactor)
+                current_dset_length+=newlength
             print 'QuTau current datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number        
             
             
-            for i in np.arange(self.params['pts']):
-                Signal[i]=(sum(hist1[int(self.params['RO_start']/0.081):int(self.params['RO_stop']/.081),i]))
-            qt.Plot2D(self.params['sweep_pts'], Signal, 'bO-', name='Live_data', clear=True)
+            for j in np.arange(self.params['pts']):
+                Signal[j]=(sum(hist1[int(self.params['RO_start']/0.081):int(self.params['RO_stop']/.081),j]))
+
+            live_plot = qt.Plot2D(name='Live_data', clear=True)
+            live_plot.add(self.params['sweep_pts'], Signal, 'bO', yerr = np.sqrt(Signal))
+            live_plot.add(self.params['sweep_pts'], Signal, 'b-')
+
             self._keystroke_check('abort')
             if self.keystroke('abort') in ['q','Q']:
                 print 'aborted.'
@@ -485,13 +482,13 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
                 qt.msleep(2)
                 break
                 
-            if self.params['do_spatial_optimize']:
-                GreenAOM.set_power(70e-6)
+            if (self.params['do_spatial_optimize']) and i % 100 == 0: # every hundred cycles one spatial optimize
+                GreenAOM.set_power(600e-6)
                 qt.msleep(2)
                 optimiz0r.optimize(dims=['x','y','z','x','y'])
                 GreenAOM.turn_off()
                 qt.msleep(2)
-                qutau.get_last_timestamps(buffer_size=buffer_size) 
+                # qutau.get_last_timestamps(buffer_size=buffer_size) 
        
         print 'QuTau total datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number
 

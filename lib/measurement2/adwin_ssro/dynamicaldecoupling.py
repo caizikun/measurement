@@ -491,8 +491,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ext_gate_seq.append(gate_seq[i])
             if ((gate_seq[i].Gate_type in gates_in_need_of_transfer_elts) and
                     (gate_seq[i+1].Gate_type in gates_in_need_of_transfer_elts)):
-                if (gate_seq[i].specific_transition != gate_seq[i+1].specific_transition) and (gate_seq[i].el_state_before_gate == 'sup'):
-                     if not ((gate_seq[i+1].Gate_operation== 'pi') and ((gate_seq[i+2].Gate_type =='Trigger') or gate_seq[i+2].Gate_operation=='pi2')):
+                if (gate_seq[i].specific_transition != gate_seq[i+1].specific_transition) and (gate_seq[i+1].el_state_before_gate == 'sup'):
+                    if not ((gate_seq[i+1].Gate_operation== 'pi') and ((gate_seq[i+2].Gate_type =='Trigger') or gate_seq[i+2].Gate_operation=='pi2')):
                         if ~(gate_seq[i+1].name[0:4] !='Tomo' and  gate_seq[i+1].name[5] != gate_seq[i].name[5]):              
                             print 'These gates need a connection element in transition:%s and %s'%(gate_seq[i].name,gate_seq[i+1].name)
                             ext_gate_seq.append(Gate('Transfer_gate'+ gate_seq[i+1].name + str(i)+'_'+str(pt),'Transfer_element',
@@ -756,13 +756,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                 for g_b in Gate_sequence[i-1::-1]:  # Count back from current pos
                     g.tau_cut_before = 1e-6         # Default value in case it is the first element
+                    
                     if g_b.Gate_type =='Trigger':   # Checks if there is a trigger between the
                         found_trigger = True
                         g_t = g_b
+
                     elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
                         g_t.elements_duration = g_t.elements_duration + 1e-6
                         g.tau_cut_before = 1e-6
                         break #break statement was set by NK and THT 22102014 to make sure that g.tau_cut_before is not overwitten below
+                    
+                    elif g_b.Gate_type == 'Transfer_element':
+                        g_b.tau_cut_after = g.tau_cut_before
+                        break 
 
                     elif g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate':
                         print ( 'Error: There is no decoupling gate or trigger between %s and %s.') %(g.name,g_b.name)
@@ -771,12 +777,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     elif hasattr(g_b, 'tau_cut'):           #if Ren like gate is found
                         g.tau_cut_before = g_b.tau_cut
                         break
+                    
+
+
 
                 for g_b in Gate_sequence[i+1::]:
                     g.tau_cut_after = 1e-6          # Default value in case it is the first element
                     if g_b.Gate_type =='Trigger':   # Checks if there is a trigger between the
-                        found_trigger = True
+                        found_trigger = True                        
                         g_t = g_b
+
+                    elif g_b.Gate_type == 'Transfer_element':
+                        g_b.tau_cut_before = g.tau_cut_after
+                        break
+
                     elif (g_b.Gate_type =='Connection_element' or g_b.Gate_type=='electron_Gate') and found_trigger ==True:
                         g_t.elements_duration = g_t.elements_duration +1e-6
                         g.tau_cut_after = 1e-6
@@ -791,8 +805,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             #     if Gate_sequence[i+1].Gate_type == 'Connection_element':
             #         Gate_sequence[i+1].tau_cut_before= 0.5e-6
             #         g.tau_cut_after = 0.5e-6
-
-
 
         return Gate_sequence
 
@@ -945,7 +957,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     if g.dec_duration !=  None:
                         pass# print 'i am passing',g.name,g.dec_duration
                     else:
-                    g.dec_duration =0
+                        g.dec_duration =0
                 else:
                     desired_phase = Gate_sequence[i+1].phase/180.*np.pi
                     Carbon_index  = Gate_sequence[i+1].Carbon_ind
@@ -1785,6 +1797,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         tau_remaind = tau_remaind *1e-9 #convert back to seconds
         g.reps = n_wait_reps -2
         g.tau_cut = duration + tau_remaind/2.0
+       
         T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length = duration, amplitude = 0.)
         rep_wait_elt = element.Element('%s' %(g.prefix), pulsar = qt.pulsar, global_time=True)
@@ -1834,6 +1847,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         tau_prnt= int(tau*1e9)
         tau_cut_before  = Gate.tau_cut_before
         tau_cut_after   = Gate.tau_cut_after
+
+        if tau_cut_before != tau_cut_after:
+            print 'The tau cuts of the transfer gate are not equal!!!'
         # print 'these are the tau cuts for these gates',Gate.name,tau_cut_before,tau_cut_after,Gate.dec_duration
 
         ### the NV is in an eigenstate before we apply the phase gate add this time as additional waiting.
@@ -1890,6 +1906,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             decoupling_elt.append(T_initial)
             decoupling_elt.append(eP)
             decoupling_elt.append(T_final)
+
 
         else:
             if Gate.Gate_type == 'electron_Gate':
@@ -1988,13 +2005,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         second_pi.phase=Gate.second_pi_phase #120+36-180 Degrees
 
-        # Gate.delay = self.params['delay']
+        Gate.delay = self.params['delay']
         
-        # tau_cut_before  = self.params['shorten_factor']*Gate.tau_cut_before
-        # tau_cut_after   = self.params['shorten_factor']*Gate.tau_cut_after
+        tau_cut_before  = Gate.tau_cut_before
+        tau_cut_after   = Gate.tau_cut_after
           
         T_start = pulse.SquarePulse(channel='MW_Imod', name='Wait befor 1st pulse',
-            length =3*Gate.delay-first_mw_duration/2, amplitude = 0.)
+            length =3*Gate.delay-first_mw_duration/2-tau_cut_before+1e-6, amplitude = 0.)
 
         T_first = pulse.SquarePulse(channel='MW_Imod', name='wait after 1st pulse',
             length = Gate.delay -(first_mw_duration/2+second_mw_duration/2), amplitude = 0.)
@@ -2009,7 +2026,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             length = 2*Gate.delay -(first_mw_duration/2+first_mw_duration/2), amplitude = 0.)
 
         T_fifth = pulse.SquarePulse(channel='MW_Imod', name='wait after 5th pulse',
-            length = 1*Gate.delay -(second_mw_duration/2), amplitude = 0.)
+            length = 1*Gate.delay -(second_mw_duration/2)-tau_cut_after+1e-6, amplitude = 0.)
 
        
 
@@ -2035,7 +2052,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         decoupling_elt.append(T_fifth)
 
         Gate.elements = [decoupling_elt]
-        Gate.duration = 2*Gate.delay-first_mw_duration/2 + 3*(Gate.delay -(first_mw_duration/2+second_mw_duration/2)) + 2*Gate.delay -(first_mw_duration/2+second_mw_duration/2) 
+        Gate.duration = 2*Gate.delay-first_mw_duration/2 + 3*(Gate.delay -(first_mw_duration/2+second_mw_duration/2)) + 2*Gate.delay -(first_mw_duration/2+second_mw_duration/2)
 
 
 
@@ -2950,10 +2967,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_LDE_element(g)
         
         Gate_sequence = self.insert_transfer_gates(Gate_sequence,pt)
-        for g in Gate_sequence:
-            if (g.Gate_type == 'Transfer_element'):
-                self.generate_transfer_element(g)
-
         Gate_sequence = self.insert_phase_gates(Gate_sequence,pt)
         self.get_tau_cut_for_connecting_elts(Gate_sequence)
         self.track_and_calc_phase(Gate_sequence)
@@ -2962,6 +2975,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.determine_connection_element_parameters(g)
                 self.generate_connection_element(g)
                 #print 'I am a %s connection element: on this carbon %d' %g.Gate_type%g.Carbon_ind,g.name
+
+        for g in Gate_sequence:
+            if (g.Gate_type == 'Transfer_element'):
+                self.generate_transfer_element(g)
 
         return Gate_sequence
 
@@ -3541,19 +3558,23 @@ class Electrontransfercalibration_V2(DynamicalDecoupling):
             ### Wait for MBI to initialize electron####
 
             wait_after_mbi = Gate('Wait_after_mbi'+str(pt),'passive_elt',
-                    wait_time=0.0003,go_to_element = mbi,
+                    wait_time=3e-6,go_to_element = mbi,
                     specific_transition = self.params['transfer_begin'])
-           
+
             init_y = Gate('Initial_y_pt'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
                     phase = 0,
                     specific_transition = self.params['transfer_begin'],
-                    el_state_after_gate = 'sup')
+                    el_state_after_gate = 'sup')           
 
             final_y = Gate('Final_y_pt'+str(pt),'electron_Gate',
                     Gate_operation ='pi2',
                     phase = self.params['sweep_pts'][pt],
-                    specific_transition = self.params['transfer_end'])
+                    specific_transition = self.params['transfer_end'],
+                    el_state_before_gate = 'sup')
+
+            wait_before_RO = Gate('wait_before_RO'+str(pt),'passive_elt',
+                    wait_time=3e-6, specific_transition = self.params['transfer_end'])
 
             invert_RO = Gate('final_pi_pulse'+str(pt),'electron_Gate',
                     Gate_operation = 'pi',
@@ -3566,11 +3587,11 @@ class Electrontransfercalibration_V2(DynamicalDecoupling):
             
 
             
-            gate_seq.extend([wait_after_mbi,init_y,final_y])
+            gate_seq.extend([wait_after_mbi,init_y,final_y,wait_before_RO])
             
             ### cHECK ALL THREE POPULATIONS ###
 
-            if self.params['invert_pop_ro'] == True:
+            if self.params['invert_pop_ro']:
                 if self.params['readout_pop']=='_0':
                     print 'im not inverting anything'
                 elif self.params['readout_pop']=='_m1':

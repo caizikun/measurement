@@ -6,8 +6,11 @@ cfg={}
 ### Set current NV center ###
 #############################
 
-cfg['samples']      = {'current':'111_1_sil18'}
-cfg['protocols']    = {'current':'111_1_sil18'}
+cfg['samples']      = {'current':'Frodo'}
+cfg['protocols']    = {'current':'Frodo'}
+
+# cfg['samples']      = {'current':'111_1_sil18'}
+# cfg['protocols']    = {'current':'111_1_sil18'}
 
 # cfg['samples']      = {'current':'Hans_sil1'}
 # cfg['protocols']    = {'current':'Hans_sil1'}
@@ -15,6 +18,7 @@ cfg['protocols']    = {'current':'111_1_sil18'}
 cfg['protocols']['Hans_sil1'] = {}
 cfg['protocols']['Hans_sil4'] = {}
 cfg['protocols']['111_1_sil18'] = {}
+cfg['protocols']['Frodo'] = {}
 
 print 'updating msmt params lt2 for {}'.format(cfg['samples']['current'])
 
@@ -90,7 +94,7 @@ else:
 
 cfg['protocols']['AdwinSSRO+espin'] = {
 'send_AWG_start'        :          1,
-'MW_switch_risetime'    :       100e-9, # 500 XXXX
+'MW_switch_risetime'    :       40e-9, # 500 XXXX
 'MW_pulse_mod_risetime' :      10e-9,
 'mw2_pulse_mod_risetime' :     40e-9,
 'use_shutter'           :          0,
@@ -110,7 +114,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_wait_for_adwin_MBI_duration'       :    15e-6,
 'AWG_wait_duration_before_shelving_pulse':   100e-9,
 'nr_of_ROsequences'                     :    1, #setting this on anything except on 1 crahses the adwin?
-'MW_switch_risetime'                    :    500e-9, #500e-9  XXXX
+'MW_switch_risetime'                    :    40e-9, #500e-9  XXXX
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6,
 'max_MBI_attempts'                      :    1,
 'N_randomize_duration'                  :    50,
@@ -132,6 +136,76 @@ cfg['protocols']['Magnetometry']={
 
 
 
+cfg['protocols']['AdwinSSRO+PQ'] = {
+        'MAX_DATA_LEN':                             int(100e6),
+        'BINSIZE':                                  1, #2**BINSIZE*BASERESOLUTION
+        'MIN_SYNC_BIN':                             0,
+        'MAX_SYNC_BIN':                             1000,
+        'TTTR_read_count':                          1000, 
+        'measurement_time':                         1200,#sec
+        'measurement_abort_check_interval':         1,#sec
+        'pq_sync_length':                           75e-9,
+        'time_between_syncs':                       50e-9,
+        'syncs_per_sweep':                          2,
+        'summed_binsize':                           250,
+        'RO_start':                                 400,#700,#ns
+        'RO_stop':                                  1000,#700+2110, # in ns, should be start of RO + integration time
+        'do_spatial_optimize':                      False,
+        }
+
+cfg['protocols']['GreenRO+PQ'] = {
+    'sync_counter_idx':4,   # counter channel on ADwin that recieves pulse from AWG everytime a sync is sent to PQ, to compare sync nr's
+    'Green_RO_power'    : 1040e-6,
+
+        }
+cfg['protocols']['Magnetometry']={
+'ch1'                                   :   7,
+'ch2'                                   :   8,
+'ch3'                                   :   9,
+'ch4'                                   :   10,
+'ch5'                                   :   11,
+'ch6'                                   :   12,
+'ch7'                                   :   13,
+'ch8'                                   :   14,
+'AWG_to_adwin_ttl_trigger_duration'     :   5e-6,
+'threshold_majority_vote'               :   1}
+
+
+#####
+
+######
+
+
+cfg['samples']['Frodo'] = {
+'electron_transition' : '',
+'electron_transition_used' : '',
+'multiple_source'   :   False,
+'mw_mod_freq'   :       0.,
+'mw_frq'        :       0, # this is automatically changed to mw_freq if hermites are selected.
+'mw2_frq'        :      0,
+'mw_power'      :       20,
+'mw2_power'      :      -20,
+'ms-1_cntr_frq' :       2.696e9,
+'ms+1_cntr_frq' :       3.05e9,
+'zero_field_splitting': 0,
+'Q_splitting'   :       0,
+'g_factor'      :       2.8025e6, #Hz/Gauss
+'g_factor_C13'  :       1.0705e3, #Hz/Gauss
+'g_factor_N14'  :       0.3077e3, #Hz/Gauss
+'N_0-1_splitting_ms-1': 2.1e6,
+'N_HF_frq'      :       0,
+}
+cfg['protocols']['Frodo']['pulses'] ={
+    'MW_modulation_frequency'   :   0.,
+    'GreenAOM_pulse_length' :5e-6,
+    'MW_switch_channel'     :   'MW_switch', ### if you want to activate the switch, put to MW_switch// NOT TRUE, PMOD2 is used for switching AS 042016
+    'DESR_pulse_duration'       : 3e-6,
+    'DESR_pulse_amplitude'      : 0.01,
+    'X_phase'                   :   90,
+    'Y_phase'                   :   0,
+    'C13_X_phase' :0,
+    'C13_Y_phase' :270
+    }
 
 
 
@@ -265,6 +339,8 @@ else:
     mw2_Square_pi2_length = 28e-9#180e-9   #250 MHz slow
     mw2_electron_transition_string = '_p1'
 
+
+
 cfg['samples']['111_1_sil18'] = {
 'electron_transition' : electron_transition_string,
 'electron_transition_used' : electron_transition_string,
@@ -308,8 +384,8 @@ cfg['samples']['111_1_sil18'] = {
 
 
 'C1_freq_m1'        :  450166.28,##+-104.6 #450301.0, 
-'C1_freq_0' : 431921.84+161.19,##+-3.6,
-'C1_freq_1_m1' : 469014.16-89.03,##+-1.7,
+'C1_freq_0' : 431921.84+161.19-178,##+-3 AS 26-04-2016,
+'C1_freq_1_m1' : 469014.16-89.03+24+92,##+-3,
 # 'C1_gate_optimize_tau_list_m1' : [4.994e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
 #                                4.996e-6,4.998e-6,4.998e-6,4.998e-6],
 
@@ -382,7 +458,7 @@ cfg['samples']['111_1_sil18'] = {
     ### Dummy 4 ####
     ################
 'C4_freq_m1'        : 428171,#+-131  
-'C4_freq_1_m1' : 440516.96-3000-13249+38+15+159.7-34.0,#+-4
+'C4_freq_1_m1' : 440516.96-3000-13249+38+15+159.7-34.0,#+-4 AS 26/04/2016
                                 
 'C4_gate_optimize_tau_list_m1' :[14.326e-6],#14.326e-6,14.320e-6,14.320e-6,14.320e-6,14.320e-6,14.440e-6,14.440e-6], #[4.014e-6,15.474e-6,14.330e-6,15.472e-6,5.162e-6,6.304e-6,5.160e-6,14.326e-6],
 'C4_gate_optimize_N_list_m1': [34],#36,38,40,42,44,40,42,], 
@@ -467,7 +543,7 @@ cfg['samples']['111_1_sil18'] = {
 
 
 'C1_freq_p1'       :   413574,#+-181
-'C1_freq_1_p1' : 468994.63-77000+4172+118-45,
+'C1_freq_1_p1' : 468994.63-77000+4172+118-45-235+424, # +-4 AS 16/04/2016,
 'C1_gate_optimize_tau_list_p1' : [7.218e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
                                4.996e-6,4.998e-6,4.998e-6,7.214e-6],
 'C1_gate_optimize_N_list_p1': [40,34,36,32,34,36,34,36,42],
@@ -482,7 +558,7 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C2_freq_p1'       :   442602,#+-125,  
-'C2_freq_1_p1' : 413500.47-380-217,#+-3,
+'C2_freq_1_p1' : 453163,# AS Guess based on _p1 DD freq 17/05/2016
 'C2_gate_optimize_tau_list_p1' :  [13.612e-6,13.612e-6,13.612e-6,13.614e-6,13.614e-6,13.614e-6,13.616e-6
                                 ,13.616e-6,13.616e-6],
 'C2_gate_optimize_N_list_p1': [26,28,30,30,32,34,32,34,36],           
@@ -515,8 +591,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C4_freq_p1'        : 436426, #+-154,  
-'C4_freq_0' : 431946.59-64.26+38.0,#+-4,
-'C4_freq_1_p1' : 440739.81-541+2.56+223+157.8,#+- 4,
+'C4_freq_0' : 431946.59-64.26+38.0,#+-2.4 AS 26/04/2016,
+'C4_freq_1_p1' : 440739.81-541+2.56+223+157.8,#+-3.4 AS 26/04/2016,
                                 
 'C4_gate_optimize_tau_list_p1' :[14.326e-6,14.326e-6,14.320e-6,14.320e-6,14.320e-6,14.320e-6,14.440e-6,14.440e-6], #[4.014e-6,15.474e-6,14.330e-6,15.472e-6,5.162e-6,6.304e-6,5.160e-6,14.326e-6],
 'C4_gate_optimize_N_list_p1': [34,36,38,40,42,44,40,42,], 
@@ -534,8 +610,8 @@ cfg['samples']['111_1_sil18'] = {
     ### Carbon 5 ###
     ################
 
-'C5_freq_p1'       :   419.894e3,
-'C5_freq_1_p1' : 408334.78,
+'C5_freq_p1'       :   444.234e3, #+-116
+'C5_freq_1_p1' : 408334.78, #wrong,
 
 
 'C5_gate_optimize_tau_list_p1' :  [11.308e-6, 11.308e-6, 11.308e-6, 11.310e-6, 11.310e-6, 11.310e-6, 11.312e-6, 11.312e-6, 11.312e-6],
@@ -646,9 +722,11 @@ cfg['samples']['111_1_sil18']['mw_frq'] = mw_freq
 cfg['samples']['111_1_sil18']['mw2_frq'] = mw2_freq
 f_mod_0     = cfg['samples']['111_1_sil18']['mw_mod_freq']
 
+
 cfg['protocols']['111_1_sil18']['pulses'] ={
     'MW_modulation_frequency'   :   f_mod_0,
-    'MW_switch_channel'     :   'MW_switch', ### if you want to activate the switch, put to MW_switch
+    'GreenAOM_pulse_length' :5e-6,
+    'MW_switch_channel'     :   'MW_switch', ### if you want to activate the switch, put to MW_switch// NOT TRUE, PMOD2 is used for switching AS 042016
     'mw1_transition' : mw1_transition,
     'mw2_transition' : mw2_transition,
 

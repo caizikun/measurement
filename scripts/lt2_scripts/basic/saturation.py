@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Sil12'
+name = 'Scan2'
 steps=21
-max_power=30e-6       #[w]
+max_power=1300e-6       #[w]
 counter=1 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
-bg_x=2.0          #delta x position of background [um]
-bg_y=2.0           #delta y position of background [um]
+bg_x=0.5          #delta x position of background [um]
+bg_y=-0.5           #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -30,7 +30,7 @@ current_y = current_mos.get_y()
 
 current_aom.set_power(0)
 qt.msleep(1)
-br=False
+br=True
 for i,pwr in enumerate(x):
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
         br = True
@@ -42,14 +42,16 @@ for i,pwr in enumerate(x):
     else:
         y_NV[i] = getattr(current_PQ_ins,'get_CountRate'+str(counter-1))()
     print 'step %s, counts %s'%(i,y_NV[i])
-        
-current_mos.set_x(current_x + bg_x)
-qt.msleep(1)
-current_mos.set_y(current_y + bg_y)
-qt.msleep(1)
-current_aom.set_power(0)
-qt.msleep(1)
+
+  
 if not br:
+    current_mos.set_x(current_x + bg_x)
+    qt.msleep(1)
+    current_mos.set_y(current_y + bg_y)
+    qt.msleep(1)
+    current_aom.set_power(0)
+    qt.msleep(1)
+
     for i,pwr in enumerate(x):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): break
         current_aom.set_power(pwr)
@@ -74,8 +76,8 @@ dat.add_value('Counts [Hz]')
 dat.add_value('Counts fitted [Hz]')
 plt = qt.Plot2D(dat, 'rO', name='Saturation curve', coorddim=0, valdim=1, clear=True)
 plt.add_data(dat, coorddim=0, valdim=2)
-fd = zeros(len(x_axis))    
-if type(fitres) != type(False):
+fd = zeros(len(x_axis)) 
+if (type(fitres) != type(False)) and not (fitres == 1):
     fd = fitres['fitfunc'](x_axis)
     plt.set_plottitle(dat.get_time_name()+', Sat. cts: {:d}, sat. pwr: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
 else:

@@ -2,6 +2,7 @@ import ctypes
 import os, time, types, qt
 import numpy as np
 from instrument import Instrument
+from lib import config
 
 class QuTau(Instrument):
 
@@ -42,6 +43,8 @@ class QuTau(Instrument):
         self.add_function('start_write_timestamps')
         self.add_function('stop_write_timestamps')
         self.add_function('get_countrate')
+        # self.add_function('load_cfg')
+        # self.add_function('save_cfg')
 
         self.add_function('close')
 
@@ -91,7 +94,7 @@ class QuTau(Instrument):
         #Open a connection    
         self.initialize()
         self.set_is_writing(False)
-        self.switch_termination(True)
+        self.switch_termination(False)
         
         #Configure standard settings
         self.set_exposure_time(100)
@@ -101,12 +104,45 @@ class QuTau(Instrument):
         
         print "Initialized with QuTau DLL v%f"%(self.get_version())
 
+        # # override from config       
+        # cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
+
+        # if not os.path.exists(cfg_fn):
+        #     _f = open(cfg_fn, 'w')
+        #     _f.write('')
+        #     _f.close()
+
+        # self._ins_cfg = config.Config(cfg_fn)     
+        # self.load_cfg()
+        # self.save_cfg()
+
+
+
     #################################
     #################################
     ### SUPPORTING FUNCTIONS ########
     #################################
     #################################
     
+
+    # def load_cfg(self):
+    #     params_from_cfg = self._ins_cfg.get_all()
+
+    #     for p in params_from_cfg:
+    #         val = self._ins_cfg.get(p)
+    #         if type(val) == unicode:
+    #             val = str(val)
+            
+    #         self.set(p, value=val)
+
+
+    # def save_cfg(self):
+    #     parlist = self.get_parameters()
+    #     for param in parlist:
+    #         value = self.get(param)
+    #         self._ins_cfg[param] = value
+
+
     def convert_channelmask(self, channels):
         if len(channels) > 0:
             bitstring = ''
@@ -164,7 +200,10 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         return self.err_dict[ans]
 
-    def get_countrate():
+    def get_countrate(self):
+        """
+        Not implemented yet
+        """
         #self.initialize
         return 0
 
@@ -745,7 +784,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
             return timestamps, channels, valid.value
             #return np.ctypeslib.as_array(timestamps), np.ctypeslib.as_array(channels), valid.value
     
-    def do_get_is_writing(self):
+    def _do_get_is_writing(self):
         """
         Output:
         Write state
@@ -753,7 +792,7 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         return self.is_writing
 
 
-    def do_set_is_writing(self, val):
+    def _do_set_is_writing(self, val):
         """
         Input:
         Write state

@@ -1227,6 +1227,24 @@ config['adwin_lt2_processes'] = {
                     'statistics' : 26,
                     },
                 },
+
+
+        'green_readout' : {
+            'index' : 9,
+            'file'  : 'green_readout_lt2.TB9',
+            'params_long' : [
+                ['AWG_start_DO_channel'         ,   16],
+                ['AWG_event_jump_DO_channel'    ,   8 ],
+                ['total_sync_nr'                ,   5], 
+                ['sync_counter_idx'             ,   4],
+                ['AWG_done_DI_channel'          ,   16]
+            ],
+            'params_long_index' : 20,
+            'params_long_length': 10,
+            'par'               : {
+                'completed_reps'    : 73,
+            },
+        },
 # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
 # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
 # Not sure if this function is then needed. - Machiel 30-12-'13'
@@ -2138,7 +2156,6 @@ config['adwin_lt2_processes'] = {
                     'parity_RO_results': 43,
                     },
                 },
-
         }
 
 config['adwin_lt3_dacs'] = {

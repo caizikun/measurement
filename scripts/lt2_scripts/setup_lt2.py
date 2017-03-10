@@ -2,7 +2,7 @@ import os
 import qt
 
 qt.current_setup = "lt2"
-qt.reload_current_setup = r'D:/measuring/measurement/scripts/lt2_scripts/setup_lt2.py'
+qt.reload_current_setup = os.path.join(qt.config['startdir'],"lt2_scripts/setup_lt2.py")
 
 qt.get_setup_instrument = lambda x: qt.instruments[x] \
      if qt.config['instance_name'][-3:] == qt.current_setup \
@@ -13,7 +13,7 @@ from lt2_scripts.tools import stools
 reload(stools)
 
 print 'reload all modules...'
-execfile("lt2_scripts/setup/reload_all.py")
+execfile(os.path.join(qt.config['startdir'],"lt2_scripts/setup/reload_all.py"))
 
 ####
 print 'configure the setup-specific hardware...'
@@ -21,6 +21,6 @@ print 'configure the setup-specific hardware...'
 execfile(os.path.join(qt.config['startdir'],'lt2_scripts/setup/sequence.py'))
 
 # set all the static variables for lt2
-execfile('lt2_scripts/setup/lt2_statics.py')
+execfile(os.path.join(qt.config['startdir'],'lt2_scripts/setup/lt2_statics.py'))
 
 
