@@ -185,7 +185,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_single_click_ent_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 200
     
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -487,7 +487,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
