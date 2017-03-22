@@ -21,6 +21,8 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 
+import delay_pulsar_msmt
+
 execfile(qt.reload_current_setup)
 #reload(funcs)
 
@@ -30,7 +32,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 name=SAMPLE_CFG
 
 def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True):
-    m = pulsar_msmt.DummySelftriggerSequence(name)
+    m = delay_pulsar_msmt.DummySelftriggerSequence(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])

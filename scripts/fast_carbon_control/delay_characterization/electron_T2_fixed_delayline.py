@@ -21,6 +21,8 @@ from measurement.lib.measurement2.adwin_ssro import ssro
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 
+import delay_pulsar_msmt
+
 execfile(qt.reload_current_setup)
 #reload(funcs)
 
@@ -30,7 +32,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 name=SAMPLE_CFG
 
 def electronT2_NoTriggers(name, debug = False, range_start = 0e-6, range_end=1000e-6):
-    m = pulsar_msmt.ElectronT2NoTriggers(name)
+    m = delay_pulsar_msmt.ElectronT2NoTriggers(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
