@@ -179,7 +179,7 @@ def MW_Position(name,debug = False,upload_only=False):
 def phase_stability(name,debug = False,upload_only=False):
 
     """
-    Performs a tail_sweep in the LDE_1 element
+    Just runs a phase stability meausrement
     """
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)

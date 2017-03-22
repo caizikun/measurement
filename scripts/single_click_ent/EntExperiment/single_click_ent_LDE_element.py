@@ -24,11 +24,9 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
     
-    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
-        if Gate.first_pulse_is_pi2:
+    if msmt.params['first_pulse_is_pi2'] and hasattr(Gate,'first_mw_pulse_phase'):
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
-    elif hasattr(Gate,'first_pulse_is_pi2'):
-        if Gate.first_pulse_is_pi2:
+    elif msmt.params['first_pulse_is_pi2']:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
 
     if hasattr(Gate,'no_first_pulse'):
