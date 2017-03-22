@@ -3111,6 +3111,21 @@ config['adwin_pro_processes'] = {
                     'sample_counts_2' : 25,
                     },
                 },
+                'oscilloscope' : {
+                'index' : 8,
+                'file' : 'oscilloscope.TB8',
+                 'params_long' : [
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'sample_counts_1' : 24,
+                    'sample_counts_2' : 25,
+                },
+                }
         }
 
 

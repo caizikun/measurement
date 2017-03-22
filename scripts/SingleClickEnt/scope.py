@@ -1,47 +1,79 @@
 import qt
 import numpy as np
+import scipy.fftpack
 from matplotlib import pyplot as plt
 import msvcrt
+import time
 
+name='ZPLInterferoMsmt'
+
+# create data object
+qt.mstart()
+
+stop_scan = False
+
+d = qt.Data(name=name)
+d.add_coordinate('time [ms]')
+d.add_value('counts ZPL 1')
+d.add_value('counts ZPL 2')
+
+d.create_file()
+filename=d.get_filepath()[:-4]
 
 # variables
 timewindow = 10                   # total time window  [s]
-time_wait = 1                    # time per array     [s]
-int_time = 1                     #                    [ms]
-max_steps = 500
+time_wait = 2.01                 # time per array     [s]
+int_time = 1000                   #                    [us]
+max_steps = 2000                  #                    [us]
 t = 0                           
 i = 0
 
-# definitions
-
-# datapoints = max_steps*timewindow/time_wait
-# x_time = zeros(datapoints)
-# y_counts = zeros(datapoints)
-
 # plot
+xf = np.linspace(0, 1.0/(int_time*10**(-6)), max_steps/2)
+x_time = np.arange(max_steps)
+fig, (ax1, ax2) = plt.subplots(2,1)
+
 plt.ion()
 
 while True:
+    cur_time = time.time()
+
+    adwin.start_oscilloscope(cur_time, 
+            sample_cycles=int_time,
+            max_repetitions=max_steps
+            )
+    time_array = np.arange(cur_time,cur_time+(float(int_time)*float(max_steps)*10**(-6)), (float(int_time)*10**(-6)))
+
+    qt.msleep(time_wait)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         break
 
-                                           # clear plot
+    counts_1 = adwin.get_oscilloscope_var('sample_counts_1', start=0, length=max_steps)
+    counts_2 = adwin.get_oscilloscope_var('sample_counts_2', start=0, length=max_steps)
+    yf = scipy.fftpack.fft(counts_1)
+    yf = np.abs(yf[:len(yf)/2])
 
-    adwin.start_oscilloscope(
-            int_time=int_time,
-            max_steps=max_steps
-            )
-
-    qt.msleep(time_wait)
-
-    counts = adwin.get_oscilloscope_var('APD_counts', start=0, length=max_steps)
-    x_time = np.arange(max_steps)
-
-    plt.clf()
-    plt.ylim([0,800])
-    plt.plot(x_time, counts)
+    plt.sca(ax1)
+    plt.cla()
+    plt.ylim([0,200])
+    plt.plot(x_time*int_time/1000.0, counts_1)
     plt.show()
+    plt.draw()
+    plt.xlabel('Time (ms)')
+    
+    plt.sca(ax2)
+    plt.cla()
+    plt.plot(xf,yf)
+    ymax = 1.2*np.max(yf[5:])
+    plt.ylim([0,ymax])
+    plt.xlim([0,1500])
+    plt.show()
+    plt.draw()
 
+    for i in range(max_steps):
+        d.add_data_point(time_array[i], counts_1[i], counts_2[i])
+    
+    
     # while i in range(0,max_steps-1):
     #     y_counts[-1] = counts[i]
     #     x_time[-1] = t + i*time_wait/max_steps
@@ -53,3 +85,7 @@ while True:
 
 
     t= t+time_wait                        # new time for next iteration
+
+d.close_file()
+
+qt.mend()

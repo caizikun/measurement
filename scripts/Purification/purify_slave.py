@@ -675,7 +675,6 @@ class purify_single_setup(DD.MBI_C13):
             ################################
 
 
-
             final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
                     'Final_C13_correct_even'+str(pt),
                     'Carbon_Gate',
