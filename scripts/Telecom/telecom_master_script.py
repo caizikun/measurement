@@ -86,10 +86,10 @@ if __name__ == '__main__':
 
         tel1_helper = qt.instruments['tel1_helper']
 
-        start_index = 27
+        start_index = 1
         skip_first=False
         optimize_index = 2
-        cycles = 400
+        cycles = 1
 
         noof_cycles_for_green_reset = 4
         counter_for_green_reset = 0

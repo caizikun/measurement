@@ -202,7 +202,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_final_delay_offset'
@@ -236,7 +236,7 @@ def lastpi2_phase_vs_amplitude(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
@@ -270,7 +270,8 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
+    
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
@@ -284,4 +285,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 if __name__ == '__main__':
-    pass
+    lastpi2_measure_delay(name,debug=True,upload_only=True)
+    # lastpi2_phase_vs_amplitude(name,debug=True,upload_only=True)
+    # lastpi2_phase_action(name,debug=True,upload_only=True)
+    
