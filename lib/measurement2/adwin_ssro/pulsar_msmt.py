@@ -128,17 +128,6 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
 # class PulsarMeasurement
 
-class DelayTimedPulsarMeasurement(PulsarMeasurement):
-    adwin_process = "integrated_ssro_delay_timing"
-    mprefix = "DelayTiming"
-
-    def autoconfig(self):
-        PulsarMeasurement.autoconfig(self)
-        self.set_delay_voltages(self.params['delay_voltages'])
-
-    def set_delay_voltages(self, voltage_list):
-        self.adwin.set_integrated_ssro_delay_timing_var(delay_voltages = voltage_list)
-
 class SSRO_calibration_msp1(PulsarMeasurement):
     mprefix = 'SSRO_calib_msp1'
     # adwin_process = 'IntegratedSSRO_calibration'

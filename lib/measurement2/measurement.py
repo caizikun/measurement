@@ -145,6 +145,9 @@ class MeasurementParameters(object):
         
         return ret
 
+    def __contains__(self, item):
+        return self.parameters.has_key(item)
+
     def new(self, key, value, *arg, **kw):
         self.parameters[key] = MeasurementParameter(key, value, *arg, **kw)
         

@@ -1,21 +1,34 @@
-import msvcrt
 import numpy as np
 import qt
-import hdf5_data as h5
-import logging
-import sys
-import os
-import measurement.lib.measurement2.measurement as m2
-from measurement.lib.measurement2.adwin_ssro import ssro
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-import pulse_select as ps; reload(ps)
-import analysis.lib.sim.pulse_sim.pulse_sim as pulse_sim
-reload(pulse_sim)
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+import pulse_select as ps
+import sys
 
-from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import *
+class DelayTimedPulsarMeasurement(pulsar_msmt.PulsarMeasurement):
+    adwin_process = "integrated_ssro_delay_timing"
+    mprefix = "DelayTiming"
 
-class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
+    def autoconfig(self):
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+        if self.params['do_delay_voltage_control']:
+            if not 'delay_voltages' in self.params:
+                fitfunc = self.params['delay_to_voltage_fitfunc']
+                fitparams = self.params['delay_to_voltage_fitparams']
+                self.params['delay_voltages'] = fitfunc(self.params['self_trigger_delay'], *fitparams)
+
+                if (np.min(self.params['delay_voltages']) < 0 
+                    or np.max(self.params['delay_voltages']) > 4 
+                    or np.any(np.isnan(self.params['delay_voltages']))):
+                    raise Exception("Delay voltages out of bound!")
+            self.set_delay_voltages(self.params['delay_voltages'])
+
+    def set_delay_voltages(self, voltage_list):
+        self.adwin.set_integrated_ssro_delay_timing_var(delay_voltages = voltage_list)
+
+class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
     """
     General class to implement Ramsey sequence. 
     generate_sequence needs to be supplied with a pi2_pulse as kw.
@@ -27,7 +40,7 @@ class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
 
-        PulsarMeasurement.autoconfig(self)
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True, **kw):
 
@@ -89,7 +102,7 @@ class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
                 qt.pulsar.program_awg(seq,*elements)
 
 
-class ElectronT2NoTriggers(PulsarMeasurement):
+class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
     """
     Class to generate an electron Hahn echo sequence with a single refocussing pulse.
     generate_sequence needs to be supplied with a pi2_pulse as kw.
@@ -304,4 +317,4 @@ class DummySelftriggerSequence(DelayTimedPulsarMeasurement):
                 qt.pulsar.upload(*elements)
                 qt.pulsar.program_sequence(seq)
             else:
-                qt.pulsar.program_awg(seq,*elements)
+                qt.pulsar.program_awg(seq,*elements)         
