@@ -1,21 +1,34 @@
-import msvcrt
 import numpy as np
 import qt
-import hdf5_data as h5
-import logging
-import sys
-import os
-import measurement.lib.measurement2.measurement as m2
-from measurement.lib.measurement2.adwin_ssro import ssro
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
-import pulse_select as ps; reload(ps)
-import analysis.lib.sim.pulse_sim.pulse_sim as pulse_sim
-reload(pulse_sim)
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+import pulse_select as ps
+import sys
 
-from measurement.lib.measurement2.adwin_ssro.pulsar_msmt import *
+class DelayTimedPulsarMeasurement(pulsar_msmt.PulsarMeasurement):
+    adwin_process = "integrated_ssro_delay_timing"
+    mprefix = "DelayTiming"
 
-class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
+    def autoconfig(self):
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+        if self.params['do_delay_voltage_control']:
+            if not 'delay_voltages' in self.params:
+                fitfunc = self.params['delay_to_voltage_fitfunc']
+                fitparams = self.params['delay_to_voltage_fitparams']
+                self.params['delay_voltages'] = fitfunc(self.params['self_trigger_delay'], *fitparams)
+
+                if (np.min(self.params['delay_voltages']) < 0 
+                    or np.max(self.params['delay_voltages']) > 4 
+                    or np.any(np.isnan(self.params['delay_voltages']))):
+                    raise Exception("Delay voltages out of bound!")
+            self.set_delay_voltages(self.params['delay_voltages'])
+
+    def set_delay_voltages(self, voltage_list):
+        self.adwin.set_integrated_ssro_delay_timing_var(delay_voltages = voltage_list)
+
+class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
     """
     General class to implement Ramsey sequence. 
     generate_sequence needs to be supplied with a pi2_pulse as kw.
@@ -27,7 +40,7 @@ class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
 
-        PulsarMeasurement.autoconfig(self)
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True, **kw):
 
@@ -89,7 +102,7 @@ class GeneralElectronRamseySelfTriggered(PulsarMeasurement):
                 qt.pulsar.program_awg(seq,*elements)
 
 
-class ElectronT2NoTriggers(PulsarMeasurement):
+class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
     """
     Class to generate an electron Hahn echo sequence with a single refocussing pulse.
     generate_sequence needs to be supplied with a pi2_pulse as kw.
@@ -190,7 +203,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
 
         # waiting element        
-        T = pulse.SquarePulse(channel='MW_pulsemod', name='delay',
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
             length = 1000e-9, amplitude = 0.)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
@@ -202,6 +215,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             amplitude = 2)
 
         initial_pulse_delay = 3e-6
+        t_element_start_to_pulse_center = 200e-9
 
         # make the elements, one for each evolution time
         elements = []
@@ -215,10 +229,10 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             first_pulse_id = e.append(pulse.cp(pulse_pi2))
 
             if (evolution_1_self_trigger):
-
+                # tie the self trigger pulse to the center of the pi/2 pulse
                 e.add(pulse.cp(self_trigger), 
                     refpulse = first_pulse_id, 
-                    refpoint = 'end',
+                    refpoint = 'center', # used to be end during fixed delay runs
                     start = (
                         self.params['refocussing_time'][i] 
                         + self.params['defocussing_offset'][i] 
@@ -226,31 +240,48 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         ))
 
                 elements.append(e)
-
+                # we need to tie the start of the pi-pulse element to the center of the pi-pulse
+                # if we would do this naively by just starting the pi-pulse at the beginning of
+                # the element, the effective delay would change for different pulse lengths
+                # or pulsemod delays because they would shift the pi-pulse around with respect
+                # to the start of the element
                 e = element.Element('ElectronT2_triggered_pt-%d_B' % i, pulsar=qt.pulsar,
                     global_time = True)
+                second_pulse_id = e.append(pulse.cp(pulse_pi))
+                e.add(pulse.cp(T, length = 10e-9, amplitude = 0.),
+                    refpulse = second_pulse_id,
+                    refpoint = 'center',
+                    start = -t_element_start_to_pulse_center)
             else:
                 e.append(pulse.cp(T,
                     length = self.params['refocussing_time'][i] + self.params['defocussing_offset'][i]))
-            second_pulse_id = e.append(pulse.cp(pulse_pi))
+                second_pulse_id = e.append(pulse.cp(pulse_pi))
 
             if (evolution_2_self_trigger):
                 e.add(pulse.cp(self_trigger),
                     refpulse = second_pulse_id,
-                    refpoint = 'end',
+                    refpoint = 'center', # used to be end during fixed delay runs
                     start = (
                         self.params['refocussing_time'][i]
                         - self.params['self_trigger_delay'][i]
                         ))
                 elements.append(e)
 
+                # same story about tieing the start of the element to the center of the pulse
+                # applies here
                 e = element.Element('ElectronT2_triggered_pt-%d_C' % i, pulsar=qt.pulsar,
                     global_time = True)
+                final_pulse_id = e.append(pulse.cp(pulse_pi2))
+                e.add(pulse.cp(T, length =10e-9, amplitude = 0.),
+                    refpulse = final_pulse_id,
+                    refpoint = 'center',
+                    start = -t_element_start_to_pulse_center)
+
             else:
                 e.append(pulse.cp(T,
                     length = self.params['refocussing_time'][i]))
+                final_pulse_id = e.append(pulse.cp(pulse_pi2))
 
-            e.append(pulse.cp(pulse_pi2))
 
             e.append(adwin_sync)
             e.append(pulse.cp(T,
@@ -304,4 +335,4 @@ class DummySelftriggerSequence(DelayTimedPulsarMeasurement):
                 qt.pulsar.upload(*elements)
                 qt.pulsar.program_sequence(seq)
             else:
-                qt.pulsar.program_awg(seq,*elements)
+                qt.pulsar.program_awg(seq,*elements)         
