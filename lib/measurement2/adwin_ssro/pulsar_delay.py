@@ -203,7 +203,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
 
         # waiting element        
-        T = pulse.SquarePulse(channel='MW_pulsemod', name='delay',
+        T = pulse.SquarePulse(channel='MW_Qmod', name='delay',
             length = 1000e-9, amplitude = 0.)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
@@ -215,6 +215,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             amplitude = 2)
 
         initial_pulse_delay = 3e-6
+        t_element_start_to_pulse_center = 200e-9
 
         # make the elements, one for each evolution time
         elements = []
@@ -228,10 +229,10 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             first_pulse_id = e.append(pulse.cp(pulse_pi2))
 
             if (evolution_1_self_trigger):
-
+                # tie the self trigger pulse to the center of the pi/2 pulse
                 e.add(pulse.cp(self_trigger), 
                     refpulse = first_pulse_id, 
-                    refpoint = 'end',
+                    refpoint = 'center', # used to be end during fixed delay runs
                     start = (
                         self.params['refocussing_time'][i] 
                         + self.params['defocussing_offset'][i] 
@@ -239,31 +240,48 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         ))
 
                 elements.append(e)
-
+                # we need to tie the start of the pi-pulse element to the center of the pi-pulse
+                # if we would do this naively by just starting the pi-pulse at the beginning of
+                # the element, the effective delay would change for different pulse lengths
+                # or pulsemod delays because they would shift the pi-pulse around with respect
+                # to the start of the element
                 e = element.Element('ElectronT2_triggered_pt-%d_B' % i, pulsar=qt.pulsar,
                     global_time = True)
+                second_pulse_id = e.append(pulse.cp(pulse_pi))
+                e.add(pulse.cp(T, length = 10e-9, amplitude = 0.),
+                    refpulse = second_pulse_id,
+                    refpoint = 'center',
+                    start = -t_element_start_to_pulse_center)
             else:
                 e.append(pulse.cp(T,
                     length = self.params['refocussing_time'][i] + self.params['defocussing_offset'][i]))
-            second_pulse_id = e.append(pulse.cp(pulse_pi))
+                second_pulse_id = e.append(pulse.cp(pulse_pi))
 
             if (evolution_2_self_trigger):
                 e.add(pulse.cp(self_trigger),
                     refpulse = second_pulse_id,
-                    refpoint = 'end',
+                    refpoint = 'center', # used to be end during fixed delay runs
                     start = (
                         self.params['refocussing_time'][i]
                         - self.params['self_trigger_delay'][i]
                         ))
                 elements.append(e)
 
+                # same story about tieing the start of the element to the center of the pulse
+                # applies here
                 e = element.Element('ElectronT2_triggered_pt-%d_C' % i, pulsar=qt.pulsar,
                     global_time = True)
+                final_pulse_id = e.append(pulse.cp(pulse_pi2))
+                e.add(pulse.cp(T, length =10e-9, amplitude = 0.),
+                    refpulse = final_pulse_id,
+                    refpoint = 'center',
+                    start = -t_element_start_to_pulse_center)
+
             else:
                 e.append(pulse.cp(T,
                     length = self.params['refocussing_time'][i]))
+                final_pulse_id = e.append(pulse.cp(pulse_pi2))
 
-            e.append(pulse.cp(pulse_pi2))
 
             e.append(adwin_sync)
             e.append(pulse.cp(T,

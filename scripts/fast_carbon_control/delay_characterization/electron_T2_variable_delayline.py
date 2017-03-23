@@ -138,4 +138,4 @@ if __name__ == '__main__':
         range_end = 100e-9,
         vary_refocussing_time = False,
         evolution_1_self_trigger = True,
-        evolution_2_self_trigger = False)
+        evolution_2_self_trigger = True)

@@ -428,7 +428,7 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
-		'MW_switch_risetime'	:	10e-9,
+		'MW_switch_risetime'	:	1e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
