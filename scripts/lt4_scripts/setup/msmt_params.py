@@ -172,6 +172,9 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 	    'count_marker_channel':						1,
 		}
 
+cfg['protocols']['AdwinSSRO+delay'] = {
+	'delay_voltage_DAC_channel':		16
+}
 
 ###############################
 ### NV and field parameters ###

@@ -39,7 +39,7 @@ def V_c_from_dl_fit(dl_in_s, dl0, V_c0, A, B, C, D):
     return V_c0 + A / (dl0-dl) + B / (dl0-dl)**2 + C / (dl0-dl)**3 + D / (dl0-dl)**4
 
 def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True):
-    m = pulsar_delay.DummySelftriggerSequence(name)
+    m = pulsar_delay.DummySelftriggerSequence(name, save=False)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -48,14 +48,19 @@ def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=T
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+delay'])
 
     pts = 11
 
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
 
-    m.params['delay_voltages'] = np.linspace(2.5,2.7,pts)
-    m.params['delay_voltage_DAC_channel'] = 14
+    m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
+    m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
+
+    #m.params['delay_voltages'] = np.linspace(2.5,2.7,pts)
+    m.params['self_trigger_delay'] = np.linspace(200e-9, 1200e-9, pts)
+    # m.params['delay_voltage_DAC_channel'] = 16
     m.params['do_delay_voltage_control'] = 1
 
     # Start measurement
@@ -79,8 +84,9 @@ def hahn_echo_variable_delayline(name, debug=False,
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+delay'])
 
-    m.params['delay_to_voltage_fitparams'] = np.loadtxt('../V_c_from_delay_fitparams.csv')
+    m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
     m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
 
     m.params['pulse_type'] = 'Hermite'
@@ -92,7 +98,7 @@ def hahn_echo_variable_delayline(name, debug=False,
 
     m.params['self_trigger_duration'] = 100e-9
 
-    m.params['delay_voltage_DAC_channel'] = 14 # should be moved to msmt_params?
+    # m.params['delay_voltage_DAC_channel'] = 16 # should be moved to msmt_params?
     m.params['do_delay_voltage_control'] = 1
 
     pts = 11
@@ -131,11 +137,11 @@ def hahn_echo_variable_delayline(name, debug=False,
         m.finish()
 
 if __name__ == '__main__':
-    # upload_dummy_selftrigger_sequence("SHOULDNT_EXIST", period=200e-6, on_time=2e-6, debug=True)
-    hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
-        debug=True,
-        range_start = -100e-9,
-        range_end = 100e-9,
-        vary_refocussing_time = False,
-        evolution_1_self_trigger = True,
-        evolution_2_self_trigger = True)
+    upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=200e-6, on_time=2e-6, debug=False)
+    # hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
+    #     debug=True,
+    #     range_start = -100e-9,
+    #     range_end = 100e-9,
+    #     vary_refocussing_time = False,
+    #     evolution_1_self_trigger = True,
+    #     evolution_2_self_trigger = False)

@@ -3,6 +3,7 @@ import qt
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+import measurement.lib.measurement2.measurement as m2
 import pulse_select as ps
 import sys
 
@@ -212,7 +213,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
 
         self_trigger = pulse.SquarePulse(channel='self_trigger',
             length = self.params['self_trigger_duration'],
-            amplitude = 2)
+            amplitude = 3)
 
         initial_pulse_delay = 3e-6
         t_element_start_to_pulse_center = 200e-9
@@ -302,19 +303,59 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
-class DummySelftriggerSequence(DelayTimedPulsarMeasurement):
+class DummySelftriggerSequence(m2.LocalAdwinControlledMeasurement):
     """
     Class to upload a sequence that contains only self-trigger pulses, to be run in continuous mode by the AWG
     """
+    adwin_process = "dummy_selftrigger"
+
+    def autoconfig(self):
+        self.params['sweep_length'] = self.params['pts']
+
+        m2.AdwinControlledMeasurement.autoconfig(self)
+
+        if self.params['do_delay_voltage_control'] > 0:
+            if not 'delay_voltages' in self.params:
+                fitfunc = self.params['delay_to_voltage_fitfunc']
+                fitparams = self.params['delay_to_voltage_fitparams']
+                self.params['delay_voltages'] = fitfunc(self.params['self_trigger_delay'], *fitparams)
+
+                if (np.min(self.params['delay_voltages']) < 0 
+                    or np.max(self.params['delay_voltages']) > 4 
+                    or np.any(np.isnan(self.params['delay_voltages']))):
+                    raise Exception("Delay voltages out of bound!")
+            print(self.params['delay_voltages'])
+            self.set_delay_voltages(self.params['delay_voltages'])
+
+    def set_delay_voltages(self, voltage_list):
+        self.adwin.set_dummy_selftrigger_var(delay_voltages = voltage_list)
+
+    def run(self, autoconfig=True):
+        if autoconfig:
+            self.autoconfig()
+
+        self.start_adwin_process(stop_processes=['counter'])
+        qt.msleep(1)
+        self.start_keystroke_monitor('abort',timer=False)
+
+        while self.adwin_process_running():
+            self._keystroke_check('abort')
+            if self.keystroke('abort') in ['q','Q']:
+                print 'aborted.'
+                aborted = True
+                self.stop_keystroke_monitor('abort')
+                break
+
+        self.stop_adwin_process()
 
     def generate_sequence(self, upload=True, period=200e-6, on_time=2e-6):
 
         self_trigger = pulse.SquarePulse(channel='self_trigger',
             length = on_time,
-            amplitude = 2)
+            amplitude = 3.)
 
         T = pulse.SquarePulse(channel='self_trigger', name='delay',
-            length = period - on_time, amplitude = 0.)
+            length = period - on_time, amplitude = 0)
 
         elements = []
         period_element = element.Element('Dummy_selftrigger_element', pulsar=qt.pulsar, global_time=True)
@@ -336,3 +377,6 @@ class DummySelftriggerSequence(DelayTimedPulsarMeasurement):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)         
+
+    def finish(self):
+        m2.AdwinControlledMeasurement.finish(self, save_params = False, save_cfg_files = False, save_stack = False, save_ins_settings = False)

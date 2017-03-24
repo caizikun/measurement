@@ -2613,7 +2613,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
-                    ['delay_voltage_DAC_channel'   ,  14],
+                    ['delay_voltage_DAC_channel'   ,  16],
                     ['do_delay_voltage_control'    ,   1]
                     ],
                 'params_long_index'  : 20,
@@ -2632,6 +2632,32 @@ config['adwin_pro_processes'] = {
                 'data_long' : {
                     'SP_hist' : 24,
                     'RO_data' : 25,
+                    },
+                'data_float' : {
+                    'delay_voltages' : 40,
+                    },
+                },
+
+        'dummy_selftrigger' : {
+                'index' : 9,
+                'file' : 'dummy_selftrigger.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['delay_voltage_DAC_channel'   ,  16],
+                    ['do_delay_voltage_control'    ,   1]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float': [
+                    ],
+                'params_float_index': 21,
+                'par' : {
+                    'completed_reps' : 73,
                     },
                 'data_float' : {
                     'delay_voltages' : 40,
@@ -3288,7 +3314,8 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'yellow_aom_frq': 11, #D
         'phase_aom': 12, #D
         'yellow_voltage': 13, #D
-        'fibre_stretcher': 14 #D
+        'fibre_stretcher': 14, #D
+        'delay_voltage': 16         # Control voltage for self-trigger delay line
         }
 
 config['adwin_m1_dacs'] = {

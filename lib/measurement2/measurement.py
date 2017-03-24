@@ -476,6 +476,9 @@ class AdwinControlledMeasurement(Measurement):
         if adsrc != None:
             shutil.copy(adsrc, sdir)
 
+class LocalAdwinControlledMeasurement(AdwinControlledMeasurement):
+    pass
+
 def save_instrument_settings_file(parent):
     h5settingsgroup = parent.create_group('instrument_settings')
     inslist = dict_to_ordered_tuples(qt.instruments.get_instruments())
