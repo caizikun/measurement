@@ -38,7 +38,7 @@ def V_c_from_dl_fit(dl_in_s, dl0, V_c0, A, B, C, D):
     dl = dl_in_s * 1e9
     return V_c0 + A / (dl0-dl) + B / (dl0-dl)**2 + C / (dl0-dl)**3 + D / (dl0-dl)**4
 
-def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True):
+def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True, do_voltage_control=True):
     m = pulsar_delay.DummySelftriggerSequence(name, save=False)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -55,13 +55,17 @@ def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=T
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
 
-    m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
-    m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
+    if do_voltage_control:
+        m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
+        m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
+        # m.params['delay_voltage_DAC_channel'] = 16
+        m.params['do_delay_voltage_control'] = 1
+    else:
+        m.params['do_delay_voltage_control'] = 0
 
     #m.params['delay_voltages'] = np.linspace(2.5,2.7,pts)
     m.params['self_trigger_delay'] = np.linspace(200e-9, 1200e-9, pts)
-    # m.params['delay_voltage_DAC_channel'] = 16
-    m.params['do_delay_voltage_control'] = 1
+
 
     # Start measurement
     m.autoconfig()
@@ -137,7 +141,7 @@ def hahn_echo_variable_delayline(name, debug=False,
         m.finish()
 
 if __name__ == '__main__':
-    upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=200e-6, on_time=2e-6, debug=False)
+    upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=200e-6, on_time=100e-9, debug=True, do_voltage_control=False)
     # hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
     #     debug=True,
     #     range_start = -100e-9,
