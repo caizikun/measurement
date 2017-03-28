@@ -39,7 +39,12 @@ def _create_mw_pulses(msmt,Gate):
             Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
-
+    if msmt.params['do_only_opt_pi'] >0:
+        Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
 
@@ -137,6 +142,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
             )
 
     ##
+    sp_amp = 1
+    if msmt.params['do_only_opt_pi'] >0:
+        sp_amp = 0
 
     # 1 SP
     e.add(pulse.cp(Gate.AWG_repump, 
@@ -146,7 +154,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     
     e.add(pulse.cp( Gate.AWG_repump,
                     length          = msmt.params['LDE_SP_duration'], 
-                    amplitude       = 1.0), 
+                    amplitude       = sp_amp), 
                     start           = msmt.params['LDE_SP_delay'],
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
