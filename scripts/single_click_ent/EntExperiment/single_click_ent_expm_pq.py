@@ -225,6 +225,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### need to find this out!
     m.params['MIN_SYNC_BIN'] =       000
     m.params['MAX_SYNC_BIN'] =       7000e3
+    print m.params['do_phase_stabilisation']
 
     # put sweep together:
     sweep_off_voltage = False
@@ -487,11 +488,11 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_test',debug = False,upload_only=True, minval = 0.1, maxval=0.8, local=True)
+    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

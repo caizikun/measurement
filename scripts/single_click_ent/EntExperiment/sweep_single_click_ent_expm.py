@@ -52,6 +52,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     name = qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
