@@ -22,8 +22,8 @@ filename=d.get_filepath()[:-4]
 
 # variables
 timewindow = 10                   # total time window  [s]
-time_wait = 2.01                 # time per array     [s]
-int_time = 1000                   #                    [us]
+time_wait = 1.01                 # time per array     [s]
+int_time = 500                   #                    [us]
 max_steps = 2000                  #                    [us]
 t = 0                           
 i = 0
@@ -34,6 +34,9 @@ x_time = np.arange(max_steps)
 fig, (ax1, ax2) = plt.subplots(2,1)
 
 plt.ion()
+
+counters_running = qt.instruments['counters'].get_is_running()
+qt.instruments['counters'].set_is_running(False)
 
 while True:
     cur_time = time.time()
@@ -55,7 +58,7 @@ while True:
 
     plt.sca(ax1)
     plt.cla()
-    plt.ylim([0,200])
+    # plt.ylim([0,1500])
     plt.plot(x_time*int_time/1000.0, counts_1)
     plt.show()
     plt.draw()
@@ -64,7 +67,7 @@ while True:
     plt.sca(ax2)
     plt.cla()
     plt.plot(xf,yf)
-    ymax = 1.2*np.max(yf[5:])
+    ymax = 1.2*np.max(yf[10:])
     plt.ylim([0,ymax])
     plt.xlim([0,1500])
     plt.show()
@@ -85,6 +88,9 @@ while True:
 
 
     t= t+time_wait                        # new time for next iteration
+
+fig.close()
+qt.instruments['counters'].set_is_running(counters_running)
 
 d.close_file()
 

@@ -18,12 +18,16 @@ params_lt4['do_LDE']                  = 1 # we always do this.
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
 params_lt4['AWG_SP_power']              = 1000e-9#1000e-9
-params_lt4['LDE_SP_duration']           = 2e-6
+params_lt4['LDE_SP_duration']           = 1.5e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.3e-6#250e-9#250e-9#350e-9#213e-9 
-params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
+params_lt4['LDE_decouple_time']         = 1e-6
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
+params_lt4['MW_repump_distance']		= 150e-9
+params_lt4['MW_final_delay_offset']		= 10e-9
+params_lt4['first_mw_pulse_is_pi2']     = 0
+
 
 #adwin params defs:
 params_lt4['SP_duration'] = 30 #10
@@ -96,6 +100,10 @@ params_lt4['measurement_time'] = 24.*60.*60.
 params_lt4['Phase_msmt_DAC_channel'] = 12 
 params_lt4['Phase_Msmt_voltage'] = 0.6
 params_lt4['Phase_Msmt_off_voltage'] = 0.0
+params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
+params_lt4['zpl1_counter_channel'] = 2
+params_lt4['zpl2_counter_channel'] = 3
+
 params_lt4['PID_GAIN'] = 1.0
 params_lt4['PID_Kp'] = 15
 params_lt4['PID_Ki'] = 0.0

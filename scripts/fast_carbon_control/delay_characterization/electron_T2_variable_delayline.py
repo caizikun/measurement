@@ -32,13 +32,7 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 name=SAMPLE_CFG
 
-
-
-def V_c_from_dl_fit(dl_in_s, dl0, V_c0, A, B, C, D):
-    dl = dl_in_s * 1e9
-    return V_c0 + A / (dl0-dl) + B / (dl0-dl)**2 + C / (dl0-dl)**3 + D / (dl0-dl)**4
-
-def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True, do_voltage_control=True):
+def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=True, do_delay_control=True):
     m = pulsar_delay.DummySelftriggerSequence(name, save=False)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -55,16 +49,13 @@ def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=T
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
 
-    if do_voltage_control:
-        m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
-        m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
-        # m.params['delay_voltage_DAC_channel'] = 16
-        m.params['do_delay_voltage_control'] = 1
-    else:
-        m.params['do_delay_voltage_control'] = 0
+    m.params['self_trigger_delay'] = np.linspace(1500e-9, 2000e-9, pts)
 
-    #m.params['delay_voltages'] = np.linspace(2.5,2.7,pts)
-    m.params['self_trigger_delay'] = np.linspace(200e-9, 1200e-9, pts)
+    if do_delay_control:
+        m.params['delay_times'] = m.params['self_trigger_delay']
+        m.params['do_tico_delay_control'] = 1
+    else:
+        m.params['do_tico_delay_control'] = 0
 
 
     # Start measurement
@@ -78,7 +69,7 @@ def upload_dummy_selftrigger_sequence(name, period=200e-6, on_time=2e-6, debug=T
 def hahn_echo_variable_delayline(name, debug=False, 
     vary_refocussing_time=True, range_start=-2e-6, range_end=2e6,
     evolution_1_self_trigger=False, evolution_2_self_trigger=False,
-    refocussing_time=1e-6):
+    refocussing_time=10e-6):
     m = pulsar_delay.ElectronRefocussingTriggered(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -90,9 +81,6 @@ def hahn_echo_variable_delayline(name, debug=False,
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+delay'])
 
-    m.params['delay_to_voltage_fitparams'] = np.loadtxt('../lt4_V_c_from_dl_fit_20170323_1914.txt')
-    m.params['delay_to_voltage_fitfunc'] = V_c_from_dl_fit
-
     m.params['pulse_type'] = 'Hermite'
 
     m.params['Ex_SP_amplitude']=0
@@ -102,10 +90,7 @@ def hahn_echo_variable_delayline(name, debug=False,
 
     m.params['self_trigger_duration'] = 100e-9
 
-    # m.params['delay_voltage_DAC_channel'] = 16 # should be moved to msmt_params?
-    m.params['do_delay_voltage_control'] = 1
-
-    pts = 11
+    pts = 51
 
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
@@ -126,13 +111,16 @@ def hahn_echo_variable_delayline(name, debug=False,
         m.params['sweep_name'] = 'defocussing offset (us)'
         m.params['sweep_pts'] = (m.params['defocussing_offset']) * 1e6
 
+    m.params['delay_times'] = m.params['self_trigger_delay']
+    m.params['do_tico_delay_control'] = 1
+
     # MW pulses
     X_pi2 = ps.Xpi2_pulse(m)
     X_pi = ps.X_pulse(m)
 
     # Start measurement
     m.autoconfig()
-    print(m.params['delay_voltages'])
+    print(m.params['delay_cycles'])
     m.generate_sequence(upload=True, pulse_pi2 = X_pi2, pulse_pi = X_pi, evolution_1_self_trigger=evolution_1_self_trigger, evolution_2_self_trigger=evolution_2_self_trigger)
 
     if not debug:
@@ -141,11 +129,11 @@ def hahn_echo_variable_delayline(name, debug=False,
         m.finish()
 
 if __name__ == '__main__':
-    upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=200e-6, on_time=100e-9, debug=True, do_voltage_control=False)
-    # hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
-    #     debug=True,
-    #     range_start = -100e-9,
-    #     range_end = 100e-9,
-    #     vary_refocussing_time = False,
-    #     evolution_1_self_trigger = True,
-    #     evolution_2_self_trigger = False)
+    # upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=10e-6, on_time=100e-9, debug=False, do_delay_control=True)
+    hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
+        debug=True,
+        range_start = -200e-9,
+        range_end = 200e-9,
+        vary_refocussing_time = False,
+        evolution_1_self_trigger = True,
+        evolution_2_self_trigger = False)

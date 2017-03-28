@@ -5,12 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.1.0
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Stacksize                      = 1000
-' Info_Last_Save                 = TUD278094  DASTUD\TUD278094
-' Bookmarks                      = 3,3,82,82,164,164,311,311,329,329,648,648,709,716,717
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,82,82,164,164,314,314,332,332,651,651,712,719,720
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -66,7 +65,7 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
-' PH Fix this
+' PH Fix this. NK: fix what ???
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation
 DIM DATA_105[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
@@ -254,14 +253,16 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
-    
+  
+  array_step = 1
   FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_104[array_step],100)
     array_step = array_step + 100
   NEXT i
   
+  array_step = 1
   FOR i = 1 TO max_sample/100
-    MemCpy(Initializer[1],DATA_104[array_step],100)
+    MemCpy(Initializer[1],DATA_105[array_step],100)
     array_step = array_step + 100
   NEXT i
   
@@ -283,7 +284,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_62 = 0                      ' n_of_communication_timeouts for debugging
   PAR_65 = -1                     ' for debugging
   PAR_55 = 0                      ' Invalid data marker
-  Par_62 = 0                      ' n_comm_timeouts
+  Par_62 = do_phase_stabilisation ' n_comm_timeouts
 '''''''''''''''''''''''''
   ' flow control: 
 '''''''''''''''''''''''''
@@ -306,6 +307,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     init_mode = mode_after_phase_stab
   endif
   
+  mode = init_mode
   
 '''''''''''''''''''''''''''
   ' define channels etc

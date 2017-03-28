@@ -24,8 +24,8 @@ class SingleClickEntExpm(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'single_click_ent'
-    # adwin_process = 'single_click_ent'
-    adwin_process = 'MBI_multiple_C13'
+    adwin_process = 'single_click_ent'
+    # adwin_process = 'MBI_multiple_C13'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -142,12 +142,13 @@ class SingleClickEntExpm(DD.MBI_C13):
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('statistics', 10),
-                    # ('adwin_communication_time'              ,1,reps),  
-                    # ('counted_awg_reps'                      ,1,reps),  
+                    ('adwin_communication_time'              ,1,reps),  
+                    ('counted_awg_reps'                      ,1,reps),  
                     ('ssro_results'                          ,1,reps), 
+                    ('DD_repetitions'                        ,1,reps),
                     # ('pid_counts'                            ,1,reps*self.params['pid_points']), 
-                    ('sampling_counts'                       ,1,reps*self.params['sample_points']), 
-                    # ('invalid_data_markers'                  ,1,reps),  
+                    # ('sampling_counts'                       ,1,reps*self.params['sample_points']), 
+                    ('invalid_data_markers'                  ,1,reps),  
                     'completed_reps'
                     ])
         

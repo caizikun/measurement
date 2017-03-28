@@ -36,7 +36,7 @@ qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHa
 # qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
 #    high=2.0, low=0, offset=0, delay=182e-9, active=True)
 qt.pulsar.define_channel(id='ch2_marker2', name='self_trigger', type='marker', 
-   high=2.0, low=-1.0, offset=-1.0, delay=0., active=True)
+   high=2.0, low=0.0, offset=0.0, delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0.0, offset=0., delay=0., active=True) 
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_count', type='marker', 

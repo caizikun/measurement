@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUd277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -23,10 +23,8 @@ DIM tdrv_datatable[150] AS LONG
 #DEFINE TiCo_Trigger_Out          13 
 #DEFINE TiCo_Trigger_Count        14
 #DEFINE TiCo_Trigger_In_Pattern   15
-#DEFINE TiCo_Errors               16
-#DEFINE TiCo_Monitor              17
-#DEFINE TiCo_Start                20
-#DEFINE TiCo_Stop                 21
+#DEFINE TiCo_IrrelevantDetections 16
+#DEFINE TiCo_ShortDelayErrors     17
 
 #DEFINE Enable                    Par_10
 #DEFINE Delay                     Par_11
@@ -47,8 +45,8 @@ INIT:
   Delay = 60
   
   P2_Set_Par(DIO_MODULE, 1, TiCo_Delay, Delay) ' waiting time of 200 ns
-  P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In, 21)
-  P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In_Pattern, 2 ^ 21)
+  P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In, 20)
+  P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In_Pattern, 2 ^ 20)
   P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_Out, 12)
   
   P2_TiCo_Start_Process(tdrv_datatable, 1)
@@ -57,8 +55,6 @@ EVENT:
   
   Par_1 = P2_Get_Par(DIO_MODULE, 1, TiCo_Enable)
   Par_2 = P2_Get_Par(DIO_MODULE, 1, TiCo_Trigger_Count)
-  Par_3 = P2_Get_Par(DIO_MODULE, 1, TiCo_Errors)
-  Par_4 = P2_Get_Par(DIO_MODULE, 1, TiCo_Monitor)
   
   P2_Set_Par(DIO_MODULE, 1, TiCo_Enable, Enable)
   P2_Set_Par(DIO_MODULE, 1, TiCo_Delay, Delay)
