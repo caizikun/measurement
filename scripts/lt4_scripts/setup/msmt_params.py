@@ -172,8 +172,17 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 	    'count_marker_channel':						1,
 		}
 
+############################################
+### General settings for AdwinSSRO+delay ###
+############################################
+
 cfg['protocols']['AdwinSSRO+delay'] = {
-	'delay_voltage_DAC_channel':		16
+	'delay_trigger_DI_channel':					20,
+	'delay_trigger_DO_channel':					12,
+	'do_tico_delay_control':		 			0,
+	'minimal_delay_time':		  				1440e-9,
+	'minimal_delay_cycles':						15,
+	'delay_clock_cycle_time':					20e-9,
 }
 
 ###############################

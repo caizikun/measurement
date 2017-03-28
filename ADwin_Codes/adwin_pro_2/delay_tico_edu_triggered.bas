@@ -11,13 +11,13 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUd277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
 '
 ' This process is triggered on incoming edges saved in the FIFO
-' WARNING: the external trigger data may need to be changed if any hardware changes occur
+' WARNING: the external trigger settings may need to be changed if any hardware changes occur
 '
 ' Trigger source: external, on Digin_Fifo_Full() > 0
 ' see DIO32TiCo.inc for the definition of Digin_Fifo_Full:
@@ -28,7 +28,8 @@
 ' Parameters of the delay line need to be set from the ADwin
 ' Minimum absolute delay: 1120 ns + 0-20 ns jitter (56 clock cycles)
 ' Minimal delay setting: 15 cycles
-' Effective delay: (setting - 15) * 20ns + 1120ns
+' Effective delay on LT3 (rough measurement): (setting - 15) * 20ns + 1120ns
+' Effective delay on LT4 (nice measurement with OR-box etc connected): (setting - 15) * 20ns + 1440ns + [0-20]ns of jitter
 
 #INCLUDE C:\ADwin\TiCoBasic\inc\DIO32TiCo.inc
 #INCLUDE .\configuration.inc
@@ -47,9 +48,16 @@
 
 #DEFINE Output_Duration   10
 
-Dim current_time, time_past, cycles_past AS LONG
-Dim detected_bit_pattern, detected_time AS LONG
-Dim corrected_delay AS LONG
+' Dim current_time, time_past, cycles_past AS LONG
+' Dim detected_bit_pattern, detected_time AS LONG
+' Dim corrected_delay AS LONG
+
+#DEFINE current_time Par_30
+#DEFINE time_past Par_31
+#DEFINE cycles_past Par_32
+#DEFINE detected_bit_pattern Par_33
+#DEFINE detected_time Par_34
+#DEFINE corrected_delay Par_35
 
 INIT:
   Dig_Fifo_Mode(0)
@@ -63,7 +71,7 @@ INIT:
   Trigger_Count = 0
   IrrelevantDetections = 0
   ShortDelayErrors = 0
-  Started = 1
+  Started = Trigger_In_Pattern
 
 
 EVENT:  
