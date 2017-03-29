@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,164,164,314,314,332,332,651,651,712,719,720
+' Bookmarks                      = 3,3,82,82,165,165,320,320,338,338,657,657,736,743,744
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -41,7 +41,7 @@
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
-#DEFINE max_single_click_ent_repetitions    100000 ' high number needed to have good statistics in the phase msmt stuff
+#DEFINE max_single_click_ent_repetitions    50000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
 #DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
 #DEFINE max_sample    100000 ' Max number of measured points for sampling - Note that can do fewer repetitions if want to sample for longer.
@@ -124,7 +124,8 @@ DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycl
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles AS LONG
 
-Dim time as long
+Dim t0, t1 as long
+
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
@@ -275,16 +276,21 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   ' init parameters
 ''''''''''''''''''''''''''''
   
+  
+  
+  PAR_55 = 0                      ' Invalid data marker
   Par_60 = timer                  ' time
   Par_61 = mode                   ' current mode
+  PAR_62 = 0                      ' n_of_communication_timeouts for debugging
   PAR_63 = 0                      ' stop flag
+  PAR_65 = -1                     ' for debugging
   PAR_73 = repetition_counter     ' repetition counter
   PAR_77 = success_event_counter  ' number of successful runs
   PAR_80 = 0                      ' n_of timeouts when waiting for AWG done
-  PAR_62 = 0                      ' n_of_communication_timeouts for debugging
-  PAR_65 = -1                     ' for debugging
-  PAR_55 = 0                      ' Invalid data marker
-  Par_62 = do_phase_stabilisation ' n_comm_timeouts
+  
+  
+  
+
 '''''''''''''''''''''''''
   ' flow control: 
 '''''''''''''''''''''''''
@@ -669,6 +675,7 @@ EVENT:
         ' In case this is a single-setup (e.g. phase calibration) measurement, we go on, 
         ' otherwise getting a done trigger means failure of the sequence and we go to CR cheking
         ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
+        t0 = Read_Timer()
         IF (timer = 0) THEN ' first run: send triggers
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
@@ -685,8 +692,11 @@ EVENT:
             ENDIF
           endif 
         ENDIF
+        ' get some reading on actual time and estimated clock cycles
+
         ' monitor inputs
         digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
+
         if ((digin_this_cycle AND AWG_repcount_DI_pattern) >0) then 
           IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
             inc(AWG_sequence_repetitions_LDE) ' increase the number of attempts counter
@@ -695,7 +705,7 @@ EVENT:
         else
           AWG_repcount_was_low = 1
         endif
-          
+        
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
@@ -722,6 +732,20 @@ EVENT:
             endif
           ENDIF  
         endif
+        
+
+
+        '        t1 = Read_Timer()
+        '        IF (PAR_65 < t1-t0) THEN
+        '          PAR_65 = t1-t0
+        '          PAR_66 = timer
+        '
+        '        ENDIF
+        IF (PAR_65 < timer) THEN
+          PAR_65 = timer
+        ENDIF
+        
+
            
       CASE 50 ' This is a case for when don't do dynamical decoupling / more fancy stuff, to keep the code clean
       

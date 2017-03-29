@@ -121,7 +121,10 @@ def hahn_echo_variable_delayline(name, debug=False,
     # Start measurement
     m.autoconfig()
     print(m.params['delay_cycles'])
-    m.generate_sequence(upload=True, pulse_pi2 = X_pi2, pulse_pi = X_pi, evolution_1_self_trigger=evolution_1_self_trigger, evolution_2_self_trigger=evolution_2_self_trigger)
+    m.generate_sequence(upload=True, pulse_pi2 = X_pi2, pulse_pi = X_pi, 
+        evolution_1_self_trigger=evolution_1_self_trigger, 
+        evolution_2_self_trigger=evolution_2_self_trigger,
+        post_selftrigger_delay = 2e-6)
 
     if not debug:
         m.run(autoconfig=False)
@@ -130,10 +133,33 @@ def hahn_echo_variable_delayline(name, debug=False,
 
 if __name__ == '__main__':
     # upload_dummy_selftrigger_sequence("Dummy_Selftrigger", period=10e-6, on_time=100e-9, debug=False, do_delay_control=True)
-    hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
-        debug=True,
-        range_start = -200e-9,
-        range_end = 200e-9,
-        vary_refocussing_time = False,
+    # hahn_echo_variable_delayline("VariableDelay_Defocussing_0T_" + name, 
+    #     debug=False,
+    #     range_start = -200e-9,
+    #     range_end = 200e-9,
+    #     vary_refocussing_time = False,
+    #     evolution_1_self_trigger = False,
+    #     evolution_2_self_trigger = False)
+    # hahn_echo_variable_delayline("VariableDelay_Defocussing_1T_" + name, 
+    #     debug=False,
+    #     range_start = -500e-9,
+    #     range_end = 500e-9,
+    #     vary_refocussing_time = False,
+    #     evolution_1_self_trigger = True,
+    #     evolution_2_self_trigger = False)
+
+    # hahn_echo_variable_delayline("VariableDelay_HahnEcho_0T_" + name, 
+    #     debug=False,
+    #     range_start = 10e-6,
+    #     range_end = 100e-6,
+    #     vary_refocussing_time = True,
+    #     evolution_1_self_trigger = False,
+    #     evolution_2_self_trigger = False)
+
+    hahn_echo_variable_delayline("VariableDelay_HahnEcho_2T_" + name, 
+        debug=False,
+        range_start = 100e-6,
+        range_end = 1000e-6,
+        vary_refocussing_time = True,
         evolution_1_self_trigger = True,
-        evolution_2_self_trigger = False)
+        evolution_2_self_trigger = True)

@@ -231,16 +231,16 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### --> for this measurement: none.
     m.joint_params['LDE1_attempts'] = 250
 
-    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     if local:
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-    ### need to find this out!
-    m.params['MIN_SYNC_BIN'] =       000
-    m.params['MAX_SYNC_BIN'] =       7000e3
+    # ### need to find this out!
+    # m.params['MIN_SYNC_BIN'] =       000
+    # m.params['MAX_SYNC_BIN'] =       7000e3
 
     # put sweep together:
     sweep_off_voltage = False
@@ -576,7 +576,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -593,7 +593,7 @@ if __name__ == '__main__':
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
     # PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
-    PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
+    # PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 
     ###### non-local measurements // Barrett Kok parameters
