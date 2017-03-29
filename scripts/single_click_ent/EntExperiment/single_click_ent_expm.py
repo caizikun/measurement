@@ -202,13 +202,13 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         if Gate.reps == 1: ### final LDe element has only one rep.
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
-                Gate.event_jump = 'next'
+                # Gate.event_jump = 'next'
                 if self.params['PLU_during_LDE'] > 0:
                     Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
                 else:
                     Gate.go_to = 'next'
             else:
-                Gate.event_jump = 'next'
+                # Gate.event_jump = 'next'
                 Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
 
                 if self.params['PLU_during_LDE'] == 0:
@@ -219,7 +219,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     Gate.event_jump = None
         else:
             Gate.go_to = None
-            Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
+            # Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
 
     def generate_sequence(self,upload=True,debug=False):
         """
@@ -320,6 +320,8 @@ class SingleClickEntExpm(DD.MBI_C13):
             #######################################################################
             ### append all necessary gates according to the current measurement ###
             #######################################################################
+
+            gate_seq.append(DD.Gate('initial_wait_'+str(pt),'passive_elt',wait_time=4e-6,wait_for_trigger=True))
 
             if self.params['do_N_MBI'] > 0: 
                 ### Nitrogen MBI

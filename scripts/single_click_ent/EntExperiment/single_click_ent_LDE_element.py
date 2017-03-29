@@ -96,7 +96,7 @@ def _create_syncs_and_triggers(msmt,Gate):
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 1.5e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
-        length = 2e-6, amplitude = 2) 
+        length = 2.5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
@@ -169,7 +169,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
-        refpulse = 'initial_delay')
+        refpulse = 'initial_delay',
+        name = 'count_pulse')
 
 
         
@@ -261,7 +262,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
         if not boolean: ### if this is not the case then the measurement is PLU insensitive
             e.add(Gate.adwin_trigger_pulse, ### insert the trigger right at the start
                     start = 0,
-                    refpulse = 'initial_delay')
+                    refpulse = 'count_pulse',
+                    refpoint = 'end',
+                    refpoint_new = 'start')
 
         else:
             ## if we are dependent on the plu then the plu trigger has to come in before the done trigger.

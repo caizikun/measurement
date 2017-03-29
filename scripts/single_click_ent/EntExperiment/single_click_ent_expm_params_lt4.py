@@ -75,18 +75,19 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything HydraHarp
-params_lt4['MAX_DATA_LEN']        =   int(100e6)
+TH_HH_selector = 1e3 #set to 1 for HH
+params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(2.5e6) #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(5.5e6) #15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.5e6) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(5500*1e3)
+params_lt4['MIN_SYNC_BIN']        =   int(0e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(3e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(0e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(3*1e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
-params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
+params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H

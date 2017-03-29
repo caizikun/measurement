@@ -20,8 +20,8 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.717523e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 102e-9 # divisible by 2
-	hermite_pi_amp = 0.925#0.985#0.952#0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_amp = 0.910#0.925#0.985#0.952#0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.617 #0.634#0.605
+	hermite_pi2_amp = 0.642#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -183,6 +183,7 @@ cfg['protocols']['AdwinSSRO+delay'] = {
 	'minimal_delay_time':		  				1440e-9,
 	'minimal_delay_cycles':						15,
 	'delay_clock_cycle_time':					20e-9,
+	'awg_delay':								380e-9,
 }
 
 ###############################

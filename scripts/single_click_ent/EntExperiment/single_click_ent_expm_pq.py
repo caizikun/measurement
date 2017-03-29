@@ -222,10 +222,8 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-    ### need to find this out!
-    m.params['MIN_SYNC_BIN'] =       000
-    m.params['MAX_SYNC_BIN'] =       7000e3
-    print m.params['do_phase_stabilisation']
+
+
 
     # put sweep together:
     sweep_off_voltage = False
