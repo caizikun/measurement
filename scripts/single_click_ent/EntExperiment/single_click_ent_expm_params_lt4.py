@@ -99,14 +99,14 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 params_lt4['measurement_time'] = 24.*60.*60. 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 0.6
-params_lt4['Phase_Msmt_off_voltage'] = 0.0
+params_lt4['Phase_Msmt_voltage'] = 1.0
+params_lt4['Phase_Msmt_off_voltage'] = 0
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
 
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 15
+params_lt4['PID_Kp'] = 0.0		# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 

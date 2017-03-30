@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,165,165,320,320,338,338,657,657,736,743,744
+' Bookmarks                      = 3,3,82,82,165,165,322,322,340,340,661,661,740,747,748
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -225,13 +225,15 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_pattern =  2 ^ (zpl1_counter_channel - 1)
   zpl2_counter_pattern =  2 ^ (zpl2_counter_channel - 1)
   
+  count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
+  
   e = 0
   e_old = 0
   Sig = 0 
   pid_time_factor = count_int_cycles*cycle_duration/30000000
   
-  count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
-  phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
+  
   
 ''''''''''''''''''''''''''''''''''''''
   ' initialize the data arrays. set to -1 to discriminate between 0-readout and no-readout
@@ -511,6 +513,7 @@ EVENT:
             END
           ENDIF
           
+          P2_CNT_ENABLE(CTR_MODULE, 0000b)
           P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
@@ -540,7 +543,7 @@ EVENT:
             if (Sig < -9.5) then
               Sig = Sig + 11.0775
             endif
-        
+            
             ' Output
             P2_DAC_2(Phase_stab_DAC_channel, Sig*3276.8+32768 )
   
@@ -583,6 +586,7 @@ EVENT:
             END
           ENDIF
           
+          P2_CNT_ENABLE(CTR_MODULE, 0000b)
           P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter 'zpl1_counter_pattern
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser

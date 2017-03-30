@@ -186,6 +186,9 @@ def phase_stability(name,debug = False,upload_only=False):
 
     pts = 1
     m.params['reps_per_ROsequence'] = 200
+    m.params['PID_Kp'] = 0.0
+    m.params['PID_GAIN'] = 1.0
+    m.params['Phase_Msmt_voltage'] = 0.5
     
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -486,11 +489,11 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -549,4 +552,4 @@ if __name__ == '__main__':
             qt.instruments['purification_optimizer'].stop_babysit()
             qt.master_script_is_running = False
             qt.purification_succes = True
-            
+
