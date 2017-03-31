@@ -475,7 +475,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						12e-9,#40e-9
+        'aom_risetime':						35e-9,#40e-9
         'aom_amplitude':					1.0,#0.2
 }
 

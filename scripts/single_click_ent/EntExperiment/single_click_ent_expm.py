@@ -385,7 +385,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-
+            gate_seq.append(LDE_repump)
             gate_seq.extend(e_RO)
 
 
