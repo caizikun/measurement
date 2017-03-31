@@ -138,20 +138,30 @@ class SingleClickEntExpm(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         
-        self.save_adwin_data(name,
-                [   ('CR_before',1, reps),
+        toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
-                    # ('pid_counts'                            ,1,reps*self.params['pid_points']), 
-                    # ('sampling_counts'                       ,1,reps*self.params['sample_points']), 
                     ('invalid_data_markers'                  ,1,reps),  
                     'completed_reps'
-                    ])
+                    ]
+
+
         
+
+            
+        if self.params['do_phase_stabilisation']:
+            toSave.append(('pid_counts',1,reps*self.params['pid_points']))
+        
+        if self.params['only_meas_phase']: 
+            toSave.append(('sampling_counts',1,reps*self.params['sample_points']))
+
+        
+        self.save_adwin_data(name,toSave)
+
         return
 
     
@@ -330,7 +340,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     #self.joint_params['LDE_attempts_before_yellow']
                 else:
                     LDE_list = [LDE]
-
+            else:
+                LDE_list = [LDE]
 
             ### LDE elements need rephasing or repumping elements
             LDE_repump = DD.Gate('LDE_repump_'+str(pt),'Trigger')

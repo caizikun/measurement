@@ -17,7 +17,7 @@ params_lt4['do_LDE']                  = 1 # we always do this.
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 1000e-9#1000e-9
+params_lt4['AWG_SP_power']              = 1350e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 1.5e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.3e-6#250e-9#250e-9#350e-9#213e-9 
@@ -52,7 +52,7 @@ params_lt4['remote_adwin_di_fail_channel'] = 23
 params_lt4['remote_adwin_do_success_channel'] = 14
 params_lt4['remote_adwin_do_fail_channel'] = 15
 params_lt4['adwin_comm_safety_cycles'] = 15
-params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1 ms
+params_lt4['adwin_comm_timeout_cycles'] = 10000 # 10 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
@@ -78,10 +78,10 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 TH_HH_selector = 1e3 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(0e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(3e6)/TH_HH_selector#15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(0e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(3*1e6)/TH_HH_selector
+params_lt4['MIN_SYNC_BIN']        =   int(0.5e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(5.0e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(0.5e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(5.0e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
 params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
@@ -99,14 +99,14 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 params_lt4['measurement_time'] = 24.*60.*60. 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 0.6
-params_lt4['Phase_Msmt_off_voltage'] = 0.0
+params_lt4['Phase_Msmt_voltage'] = 1.0
+params_lt4['Phase_Msmt_off_voltage'] = 0
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
 
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 15
+params_lt4['PID_Kp'] = 0.0		# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 

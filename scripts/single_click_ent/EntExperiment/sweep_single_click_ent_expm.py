@@ -289,45 +289,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def ionization_study_LT4(name, debug = False, upload_only = False):
-    """
-    Two setup experiment where LT3 does optical pi pulses only
-    While LT4 repetitively runs the entire LDE element.
-    """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
-    prepare(m)
-
-    ### general params
-    pts = 21
-    m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
-
-    turn_all_sequence_elements_off(m)
-    if qt.current_setup == 'lt3':
-        m.params['do_only_opt_pi'] = 1
-        m.joint_params['opt_pi_pulses'] = 1
-
-    ### sequence specific parameters
-    m.params['MW_during_LDE'] = 1
-    m.params['is_two_setup_experiment'] = 1
-    m.joint_params['do_final_mw_LDE'] = 0
-   #m.params['first_pulse_is_pi2'] = True
-    
-    ### prepare sweep
-    m.params['do_general_sweep']    = True
-    m.params['general_sweep_name'] = 'LDE_attempts'
-    print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0,500,pts)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    m.params['do_yellow_with_AWG'] = use_yellow
-    ### upload and run
-
-    run_sweep(m,debug = debug,upload_only = upload_only)
-
-
-
-def ionization_study_non_local(name, debug = False, upload_only = False,use_yellow = False):
+def ionization_study_LT4(name, debug = False, upload_only = False, use_yellow = False):
     """
     Two setup experiment where LT3 does optical pi pulses only
     While LT4 repetitively runs the entire LDE element.
@@ -364,6 +326,43 @@ def ionization_study_non_local(name, debug = False, upload_only = False,use_yell
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 
+def ionization_study_non_local(name, debug = False, upload_only = False, use_yellow = False):
+    """
+    Two setup experiment where LT3 does optical pi pulses only
+    While LT4 repetitively runs the entire LDE element.
+    """
+    m = single_click_ent_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 5
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 0
+    m.joint_params['do_final_mw_LDE'] = 0
+   #m.params['first_pulse_is_pi2'] = True
+    m.params['mw_first_pulse_amp'] = 0
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(1,20,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['do_yellow_with_AWG'] = use_yellow
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
 if __name__ == '__main__':
     # lastpi2_measure_delay(name,debug=True,upload_only=True)
     # lastpi2_phase_vs_amplitude(name,debug=True,upload_only=True)
@@ -371,5 +370,5 @@ if __name__ == '__main__':
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
-    ionization_study_non_local(name+'ionization_opt_pi',debug=False, upload_only = False,use_yellow = False)
+    ionization_study_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
