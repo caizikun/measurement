@@ -250,9 +250,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_single_click_ent_expm.prepare(m)
 
     ### general params
-    pts = 15
+    pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 10000
 
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
@@ -422,6 +422,10 @@ def Determine_eta(name, debug = False, upload_only = False):
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
+    ### lt3 is only giving optical pi pulses at the moment (will change later.)
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
     m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
@@ -534,7 +538,7 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.6, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -545,7 +549,7 @@ if __name__ == '__main__':
     # qt.instruments['ZPLServo'].move_in()
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=True)
     # qt.instruments['ZPLServo'].move_out()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=True)
   
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups

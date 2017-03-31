@@ -311,7 +311,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
                 length = 3e-6
                 )
         )
-    # 1 SP
+
     e.add(pulse.cp(Gate.AWG_repump, 
         amplitude = 0, 
         length = msmt.joint_params['initial_delay']),
@@ -355,5 +355,6 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
             name = 'plu for adwin', 
             start = 1.2e-6, ## arbitrarily chosen number
             refpulse = 'initial_delay')
+
 
     Gate.elements = [e]
