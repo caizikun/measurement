@@ -337,7 +337,7 @@ def ionization_study_non_local(name, debug = False, upload_only = False, use_yel
     ### general params
     pts = 5
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 250
 
     turn_all_sequence_elements_off(m)
     if qt.current_setup == 'lt3':
@@ -354,7 +354,7 @@ def ionization_study_non_local(name, debug = False, upload_only = False, use_yel
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(1,20,pts)
+    m.params['general_sweep_pts'] = np.linspace(1,500,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['do_yellow_with_AWG'] = use_yellow

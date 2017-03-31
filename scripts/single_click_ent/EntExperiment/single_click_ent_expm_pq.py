@@ -145,36 +145,33 @@ def MW_Position(name,debug = False,upload_only=False):
     ### general params
     pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 1000
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    
-    m.params['MW_before_LDE'] = 1 # allows for init in -1 before LDE
-    m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 1
 
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['is_two_setup_experiment'] = 2
+    m.params['is_two_setup_experiment'] = 1
 
     m.joint_params['LDE_attempts'] = 250
 
-    m.params['LDE_SP_delay'] = 0e-6
-
     ### prepare sweep / necessary for the measurement that we under go.
-    m.params['do_general_sweep']    = True
-    m.params['general_sweep_name'] = 'LDE_SP_duration'
-    print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.array([m.joint_params['LDE_element_length']-200e-9-m.params['LDE_SP_delay']])
-    m.params['general_sweep_pts'] = np.array([2e-6])
-    m.params['sweep_name'] = m.params['general_sweep_name']
-    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
+    m.params['do_general_sweep']    = False
 
+    #### for this measurement we want the entire timeharp trace.
+
+
+    if qt.current_setup == 'lt4':
+        params_lt4['MIN_SYNC_BIN']        =   int(0e6) #5 us 
+        params_lt4['MAX_SYNC_BIN']        =   int(6e6) #15 us # XXX was 15us 
     ### upload and run
-
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+
 
 def phase_stability(name,debug = False,upload_only=False):
 
@@ -490,9 +487,9 @@ if __name__ == '__main__':
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
 
-    # MW_Position(name+'_MW_position',upload_only=False)
+    MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=True, minval = 0.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

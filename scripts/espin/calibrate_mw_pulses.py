@@ -307,7 +307,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
         sweep_axis =  m.params['Hermite_pi2_amp'] + np.linspace(-0.12, 0.12, pts)  
         m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
-    print 'this is the length',m.MW_pi2.length
+    # print 'this is the length',m.MW_pi2.length
     # we do actually two msmts for every sweep point, that's why the awg gets only half of the 
     # pts;
     m.params['pts'] = 2*pts

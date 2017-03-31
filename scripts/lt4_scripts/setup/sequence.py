@@ -51,7 +51,8 @@ qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Matisse', type='marker',
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
+# qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
+qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.5)
 
 qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())
