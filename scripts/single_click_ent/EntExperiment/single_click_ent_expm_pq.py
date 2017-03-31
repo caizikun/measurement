@@ -130,18 +130,25 @@ def load_TH_params(m):
 
 
 def MW_Position(name,debug = False,upload_only=False):
-    """
-    Initializes the electron in ms = -1 
-    Put a very long repumper. Leave one MW pi pulse to find the microwave position.
+    """ 
+    This script runs the usual LDE element and is used to check timings.
+
+    #############
+    # IMPORTANT #
+    #############
+
+    For optimal results insert the following line of code in sequence.py:
+    qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.5)
+
     THIS MEASUREMENT RUNS EXCLUSIVELY ON THE TIMEHARP!
-    NK 2016
+    NK 2017
     """
 
     m = PQSingleClickEntExpm(name)
     sweep_single_click_ent_expm.prepare(m)
 
-    # load_TH_params(m)
-    #load_BK_params(m)
+    load_TH_params(m)
+
     ### general params
     pts = 1
     m.params['pts'] = pts
@@ -162,11 +169,10 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['do_general_sweep']    = False
 
     #### for this measurement we want the entire timeharp trace.
-
-
     if qt.current_setup == 'lt4':
-        params_lt4['MIN_SYNC_BIN']        =   int(0e6) #5 us 
-        params_lt4['MAX_SYNC_BIN']        =   int(6e6) #15 us # XXX was 15us 
+        m.params['MIN_SYNC_BIN']        =   int(0e6)
+        m.params['MAX_SYNC_BIN']        =   int(6e6) 
+
     ### upload and run
     sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 

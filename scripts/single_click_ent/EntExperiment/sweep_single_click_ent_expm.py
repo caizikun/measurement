@@ -326,7 +326,7 @@ def ionization_study_LT4(name, debug = False, upload_only = False, use_yellow = 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def ionization_study_non_local(name, debug = False, upload_only = False, use_yellow = False):
+def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
     """
     Two setup experiment where LT3 does optical pi pulses only
     While LT4 repetitively runs the entire LDE element.
@@ -375,5 +375,5 @@ if __name__ == '__main__':
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
-    ionization_study_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
+    ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     

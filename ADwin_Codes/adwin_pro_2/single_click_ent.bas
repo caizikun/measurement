@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUd277299
-' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,657,657,726,727
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,657,657,725,726
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -31,9 +31,9 @@
 '   3 : E spin pumping into ms=+/-1
 '   4 : run entanglement sequence and count reps while waiting for PLU success signal
 '   5 : decoupling and counting reps
-'   6 : wait for RO trigger
-'   7 : Store ro result
-'   8 : Parameter reinitialization
+'   50: alternative if not doing decoupling
+'   6 : Store ro result
+'   7 : Parameter reinitialization
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
@@ -499,7 +499,7 @@ EVENT:
               local_fail = 0
               mode = 100 'go to communication step
               fail_mode_after_adwin_comm = 100 ' Keeps waiting until gets a phase stab confirmation. Fail can be timeout.
-              success_mode_after_adwin_comm = 20 ' This guy never does a phase msmt, so CR check.
+              success_mode_after_adwin_comm = 20 ' This guy never does a phase msmt, so CR check. ' comment NK: what does this mean? we are in the loop for the master right?
               timer = -1
             endif
           endif
@@ -692,7 +692,6 @@ EVENT:
             ENDIF
           endif 
         ENDIF
-        ' get some reading on actual time and estimated clock cycles
 
         ' monitor inputs
         digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
@@ -775,12 +774,26 @@ EVENT:
         
       CASE 6 ' This is a case for when don't do dynamical decoupling / more fancy stuff, to keep the code clean. Although we still want to wait for a RO trigger.
         ' monitor inputs 
-        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN
-          timer = -1
-          mode = 200 'SSRO
-          success_mode_after_SSRO = 7
-          fail_mode_after_SSRO = 7
+        
+        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
+          if (awg_done_was_low =1) then
+            timer = -1
+            mode = 200 'SSRO
+            success_mode_after_SSRO = 7
+            fail_mode_after_SSRO = 7
+          endif 
+          awg_done_was_low = 0 ' remember
+        ELSE ' awg done is low.
+          awg_done_was_low = 1
+          if( timer > wait_for_awg_done_timeout_cycles) then
+            inc(PAR_80) ' signal that we have an awg timeout
+            END ' terminate the process
+          endif
         ENDIF
+        
+          
+          
+          
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
