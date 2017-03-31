@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,657,657,725,726
+' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,659,659,727,728
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -394,14 +394,16 @@ EVENT:
                 'send combined success and then wait for confirmation
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
-              ELSE
-                '              no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
-                if (timer > adwin_comm_timeout_cycles) then
-                  inc(n_of_comm_timeouts) ' give to par for local debugging
-                  par_62 = n_of_comm_timeouts
-                  combined_success = 0 ' just to be sure
-                  adwin_comm_done = 1 ' below: reset everything and go on
-                endif                
+                
+                ' the communcation timeout causes the adwin to crash. It is overburdened. I therefore have one adwin wait for the other indefinitely.
+                '              ELSE
+                '                '              no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
+                '                if (timer > adwin_comm_timeout_cycles) then
+                '                  inc(n_of_comm_timeouts) ' give to par for local debugging
+                '                  par_62 = n_of_comm_timeouts
+                '                  combined_success = 0 ' just to be sure
+                '                  adwin_comm_done = 1 ' below: reset everything and go on
+                '                endif                
               ENDIF
               
             endif
@@ -417,21 +419,21 @@ EVENT:
                 P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 1) 'send confirmation
                 combined_success = remote_success
                 wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time to make sure the other setup has received our signal
-                adwin_comm_done = 1 ' below: reset everything and go on
-              else ' still no signal. Did the connection time out?
-                IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
-                  adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                  combined_success = 0
-                  inc(n_of_comm_timeouts) ' give to par for local debugging
-                  par_62 = n_of_comm_timeouts
-                ELSE ' should I request a timeout in the next round now?
-                  if (timer > adwin_comm_timeout_cycles) then
-                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
-                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
-                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
-                    adwin_timeout_requested = 1
-                  endif  
-                ENDIF
+                adwin_comm_done = 1 ' below: reset everything and go on. I have taken this out!!! NK 20170331 (causes master to crash).
+                '              else ' still no signal. Did the connection time out?
+                '                IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
+                '                  adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
+                '                  combined_success = 0
+                '                  inc(n_of_comm_timeouts) ' give to par for local debugging
+                '                  par_62 = n_of_comm_timeouts
+                '                ELSE ' should I request a timeout in the next round now?
+                '                  if (timer > adwin_comm_timeout_cycles) then
+                '                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
+                '                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
+                '                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+                '                    adwin_timeout_requested = 1
+                '                  endif  
+                '                ENDIF
               endif
             endif
           ENDIF
