@@ -178,6 +178,45 @@ def MW_Position(name,debug = False,upload_only=False):
 
 
 
+def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
+    """
+    Two setup experiment where LT3 does optical pi pulses only
+    While LT4 repetitively runs the entire LDE element.
+    We additionally monitor the fluorescence to see whether optical pi pulses actually arrive
+    at both setups
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
+
+    ### general params
+    pts = 10
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 250
+
+    turn_all_sequence_elements_off(m)
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.joint_params['do_final_mw_LDE'] = 0
+    # m.params['first_pulse_is_pi2'] = True
+    # m.params['mw_first_pulse_amp'] = 0
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(1,500,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['do_yellow_with_AWG'] = use_yellow
+    ### upload and run
+
+    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
 
 def phase_stability(name,debug = False,upload_only=False):
 
@@ -494,8 +533,8 @@ if __name__ == '__main__':
     # phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
-
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
+    ionization_non_local(name, debug = False, upload_only = True, use_yellow = False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
