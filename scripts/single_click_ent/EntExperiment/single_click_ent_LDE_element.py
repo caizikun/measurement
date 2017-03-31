@@ -271,7 +271,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             e.add(Gate.adwin_trigger_pulse, ### insert the trigger right at the start
                     start = 0,
                     refpulse = 'count_pulse',
-                    refpoint = 'end',
+                    refpoint = 'start',
                     refpoint_new = 'start')
 
         else:

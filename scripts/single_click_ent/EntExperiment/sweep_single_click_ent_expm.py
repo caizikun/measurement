@@ -326,7 +326,7 @@ def ionization_study_LT4(name, debug = False, upload_only = False, use_yellow = 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def ionization_study_non_local(name, debug = False, upload_only = False, use_yellow = False):
+def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
     """
     Two setup experiment where LT3 does optical pi pulses only
     While LT4 repetitively runs the entire LDE element.
@@ -335,7 +335,7 @@ def ionization_study_non_local(name, debug = False, upload_only = False, use_yel
     prepare(m)
 
     ### general params
-    pts = 5
+    pts = 1
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
@@ -354,7 +354,7 @@ def ionization_study_non_local(name, debug = False, upload_only = False, use_yel
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(1,500,pts)
+    m.params['general_sweep_pts'] = np.linspace(25,25,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['do_yellow_with_AWG'] = use_yellow
@@ -370,5 +370,5 @@ if __name__ == '__main__':
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
-    ionization_study_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
+    ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
