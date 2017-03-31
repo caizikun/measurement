@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      25e-9,#30e-9,
+		'yellow_repump_amplitude':      30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
