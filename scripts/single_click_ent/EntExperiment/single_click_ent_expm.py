@@ -340,7 +340,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     #self.joint_params['LDE_attempts_before_yellow']
                 else:
                     LDE_list = [LDE]
-
+            else:
+                LDE_list = [LDE]
 
             ### LDE elements need rephasing or repumping elements
             LDE_repump = DD.Gate('LDE_repump_'+str(pt),'Trigger')
@@ -395,7 +396,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-
+            gate_seq.append(LDE_repump)
             gate_seq.extend(e_RO)
 
 

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,165,165,322,322,340,340,661,661,740,747,748
+' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,657,657,726,727
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -123,8 +123,6 @@ DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track
 DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles AS LONG
-
-Dim t0, t1 as long
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -289,9 +287,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PAR_73 = repetition_counter     ' repetition counter
   PAR_77 = success_event_counter  ' number of successful runs
   PAR_80 = 0                      ' n_of timeouts when waiting for AWG done
-  
-  
-  
 
 '''''''''''''''''''''''''
   ' flow control: 
@@ -300,7 +295,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   if (do_dynamical_decoupling = 1) then
     mode_after_LDE = 5 ' dynamical decoupling
   else 
-    mode_after_LDE = 50 ' electron RO
+    mode_after_LDE = 6 ' electron RO
   endif
   
   if (only_meas_phase = 1) then
@@ -385,6 +380,7 @@ EVENT:
           endif
                 
           IF (is_master>0) THEN 
+
             if ((remote_success > 0 ) and (remote_fail > 0)) then ' own signal successfully communicated to other side -> go on to next mode
               adwin_comm_done = 1 ' go to next mode in cleanup step below
               wait_time = adwin_comm_safety_cycles ' make sure the other adwin is ready for counting etc.
@@ -399,7 +395,7 @@ EVENT:
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
               ELSE
-                ' no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
+                '              no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
                 if (timer > adwin_comm_timeout_cycles) then
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   par_62 = n_of_comm_timeouts
@@ -607,7 +603,7 @@ EVENT:
           inc(index)
           
           if (store_index >= sample_points) then
-            mode = 6
+            mode = 7
             timer = -1
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
 
@@ -679,7 +675,7 @@ EVENT:
         ' In case this is a single-setup (e.g. phase calibration) measurement, we go on, 
         ' otherwise getting a done trigger means failure of the sequence and we go to CR cheking
         ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
-        t0 = Read_Timer()
+
         IF (timer = 0) THEN ' first run: send triggers
           if (is_two_setup_experiment = 0) then  ' give AWG trigger
             P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
@@ -738,25 +734,8 @@ EVENT:
         endif
         
 
-
-        '        t1 = Read_Timer()
-        '        IF (PAR_65 < t1-t0) THEN
-        '          PAR_65 = t1-t0
-        '          PAR_66 = timer
-        '
-        '        ENDIF
-        IF (PAR_65 < timer) THEN
-          PAR_65 = timer
-        ENDIF
-        
-
            
-      CASE 50 ' This is a case for when don't do dynamical decoupling / more fancy stuff, to keep the code clean
-      
-        timer = -1
-        mode = 200 'SSRO
-        success_mode_after_SSRO = 6
-        fail_mode_after_SSRO = 6 
+
         
       CASE 5 ' Decoupling '' PH REWRITE!!
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
@@ -793,17 +772,26 @@ EVENT:
         '          
         '        ENDIF
         
-      CASE 6 'store the result of the e measurement and the sync number counter
+        
+      CASE 6 ' This is a case for when don't do dynamical decoupling / more fancy stuff, to keep the code clean. Although we still want to wait for a RO trigger.
+        ' monitor inputs 
+        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN
+          timer = -1
+          mode = 200 'SSRO
+          success_mode_after_SSRO = 7
+          fail_mode_after_SSRO = 7
+        ENDIF
+      CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
-        mode = 7 'go to reinit and CR check
+        mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
         inc(success_event_counter)
         PAR_77 = success_event_counter ' for the LabView live update
         
                               
-      CASE 7 ' reinit all variables and go to cr check
+      CASE 8 ' reinit all variables and go to cr check
         Par_73 = repetition_counter ' write to PAR
         cumulative_awg_counts = cumulative_awg_counts + AWG_sequence_repetitions_LDE 'remember sync counts, independent of success or failure
         'forget all parameters of previous runs
