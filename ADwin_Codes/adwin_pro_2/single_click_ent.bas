@@ -31,9 +31,9 @@
 '   3 : E spin pumping into ms=+/-1
 '   4 : run entanglement sequence and count reps while waiting for PLU success signal
 '   5 : decoupling and counting reps
-'   50: alternative if not doing decoupling
-'   6 : Store ro result
-'   7 : Parameter reinitialization
+'   6 : wait for AWG trigger to do SSRO
+'   7 : Store ro result
+'   8 : Parameter reinitialization
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
