@@ -335,26 +335,31 @@ def ionization_study_non_local(name, debug = False, upload_only = False, use_yel
     prepare(m)
 
     ### general params
-    pts = 5
+    pts = 1
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
     turn_all_sequence_elements_off(m)
-    if qt.current_setup == 'lt3':
-        m.params['do_only_opt_pi'] = 1
-        m.joint_params['opt_pi_pulses'] = 1
+
 
     ### sequence specific parameters
     m.params['MW_during_LDE'] = 1
-    m.params['is_two_setup_experiment'] = 0
+    m.params['is_two_setup_experiment'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
    #m.params['first_pulse_is_pi2'] = True
     m.params['mw_first_pulse_amp'] = 0
     ### prepare sweep
+    if qt.current_setup == 'lt3':
+        # m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+        m.params['mw_first_pulse_amp'] = 0
+        m.params['Hermite_pi_amp'] = 0
+        m.params['Hermite_pi2_amp'] = 0
+
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(1,500,pts)
+    m.params['general_sweep_pts'] = np.linspace(25,25,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['do_yellow_with_AWG'] = use_yellow

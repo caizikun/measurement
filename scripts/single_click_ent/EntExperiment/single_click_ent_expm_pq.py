@@ -153,7 +153,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_during_LDE'] = 1
 
     m.params['PLU_during_LDE'] = 0
-    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
     m.params['is_two_setup_experiment'] = 1
 
     m.joint_params['LDE_attempts'] = 250
@@ -487,9 +487,9 @@ if __name__ == '__main__':
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
 
-    MW_Position(name+'_MW_position',upload_only=False)
+    # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name+'_tail',debug = False,upload_only=True, minval = 0.0, maxval=1.0, local=False)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

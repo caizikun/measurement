@@ -142,9 +142,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
             )
 
     ##
-    sp_amp = 1
+    sp_amp = 1.0
     if msmt.params['do_only_opt_pi'] >0:
-        sp_amp = 0
+        sp_amp = 0.0
 
     # 1 SP
     e.add(pulse.cp(Gate.AWG_repump, 

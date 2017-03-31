@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUd277299
 ' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,657,657,726,727
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
@@ -31,9 +31,9 @@
 '   3 : E spin pumping into ms=+/-1
 '   4 : run entanglement sequence and count reps while waiting for PLU success signal
 '   5 : decoupling and counting reps
-'   50: alternative if not doing decoupling
-'   6 : Store ro result
-'   7 : Parameter reinitialization
+'   6 : wait for RO trigger
+'   7 : Store ro result
+'   8 : Parameter reinitialization
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
