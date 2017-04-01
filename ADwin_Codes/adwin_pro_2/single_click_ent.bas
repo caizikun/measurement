@@ -712,7 +712,7 @@ EVENT:
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
-          mode = mode_after_LDE   
+          mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
             if (awg_done_was_low =1) then
@@ -775,7 +775,7 @@ EVENT:
         '        ENDIF
         
         
-      CASE 6 ' This is a case for when don't do dynamical decoupling / more fancy stuff, to keep the code clean. Although we still want to wait for a RO trigger.
+      CASE 6 ' wait for RO trigger to come in
         ' monitor inputs 
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.

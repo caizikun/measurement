@@ -76,7 +76,7 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
-params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
+params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 params_lt4['MIN_SYNC_BIN']        =   int(0.5e6)/TH_HH_selector #5 us 
 params_lt4['MAX_SYNC_BIN']        =   int(3.0e6)/TH_HH_selector#15 us # XXX was 15us 

@@ -115,14 +115,14 @@ class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasu
 
 def load_TH_params(m):
     pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
-    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-    m.params['MIN_SYNC_BIN'] =       0
-    m.params['MAX_SYNC_BIN'] =       8e3
-    m.params['MIN_HIST_SYNC_BIN'] =  1
-    m.params['MAX_HIST_SYNC_BIN'] =  8000
-    m.params['TTTR_RepetitiveReadouts'] =  10 #
-    m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+    m.params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
+    m.params['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       1.5e3
+    m.params['MAX_SYNC_BIN'] =       1.8e3
+    m.params['MIN_HIST_SYNC_BIN'] =  0
+    m.params['MAX_HIST_SYNC_BIN'] =  3000
+    m.params['TTTR_RepetitiveReadouts'] =  1 #
+    m.params['TTTR_read_count'] =   131072 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
     m.params['measurement_abort_check_interval']    = 2. #sec
     m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
     m.params['use_live_marker_filter']=False
@@ -252,7 +252,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
@@ -269,7 +269,8 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
 
-
+    if qt.current_setup == 'lt4':
+        load_TH_params(m)
     # put sweep together:
     sweep_off_voltage = False
     m.params['do_general_sweep']    = True
@@ -382,25 +383,26 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     sweep_single_click_ent_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 500
 
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
-    m.params['do_general_sweep']    = False
+    m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
-    m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
+    m.params['general_sweep_pts'] = np.array([0,1])#,1]) ## turn pi pulse on or off for spcorrs
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
+    m.params['mw_first_pulse_amp'] = 0
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
 
     m.joint_params['opt_pi_pulses'] = 1
-    m.joint_params['LDE_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 50
 
     ### upload
 
