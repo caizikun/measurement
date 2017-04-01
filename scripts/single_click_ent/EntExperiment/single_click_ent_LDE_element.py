@@ -198,6 +198,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpoint        = 'end',
             refpoint_new    = 'center',
             name            = 'MW_Theta')
+
         if msmt.params['MW_pi_during_LDE'] == 1:
             e.add(Gate.mw_X,
                 start           = msmt.params['LDE_decouple_time'],

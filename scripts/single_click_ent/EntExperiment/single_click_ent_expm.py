@@ -209,8 +209,8 @@ class SingleClickEntExpm(DD.MBI_C13):
         """
 
         LDE_elt.generate_LDE_elt(self,Gate)
-        print Gate.is_final
-        if Gate.is_final: ### final LDe element has only one rep.
+
+        if Gate.is_final == 1: ### final LDe element has only one rep.
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
                 Gate.event_jump = 'next'
                 if self.params['PLU_during_LDE'] > 0:
@@ -219,7 +219,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     Gate.go_to = 'next'
             else:
                 Gate.event_jump = 'next'
-                Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
+                Gate.go_to = 'Fail_done'+str(self.pt)#'end' # go to the last trigger that signifies the Adwin you are done
 
                 if self.params['PLU_during_LDE'] == 0:
                     Gate.go_to = None
@@ -353,10 +353,13 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_rephasing = DD.Gate('LDE_rephasing_'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
-
+            LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
+            Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
+                wait_time = 10e-6)
+            Fail_done.go_to = LDE_list[0].name
 
 
             #######################################################################
@@ -388,6 +391,10 @@ class SingleClickEntExpm(DD.MBI_C13):
                 if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
                     gate_seq.append(LDE_rephasing)
+
+                    
+                    if self.params['PLU_during_LDE'] > 0:
+                        gate_seq.append(Fail_done)
 
                 elif self.params['LDE_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2 and self.params['no_repump_after_LDE'] == 0:
                     gate_seq.append(LDE_repump)
