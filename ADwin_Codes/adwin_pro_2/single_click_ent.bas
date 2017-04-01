@@ -10,6 +10,7 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,659,659,727,728
+' Foldings                       = 340,348,433,479,567,614,618,623,640
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -715,13 +716,13 @@ EVENT:
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
             if (awg_done_was_low =1) then
-              DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
+                DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
-                mode = 7 ' finalize and go to cr check
+                mode = 8 ' finalize and go to cr check
               endif
             endif 
             awg_done_was_low = 0 ' remember

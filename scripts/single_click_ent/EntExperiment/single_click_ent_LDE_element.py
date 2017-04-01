@@ -348,7 +348,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
         refpoint        = 'end',
         refpoint_new    = 'start')
 
-    if msmt.params['PLU_during_LDE'] == 1 :
+    if msmt.params['PLU_during_LDE'] == 1 and qt.current_setup == 'lt3':
         ### this pulse is supposed to turn off the plu signal to both adwins
         e.add(pulse.cp(Gate.plu_gate, 
             length = msmt.params['PLU_gate_3_duration']), 
