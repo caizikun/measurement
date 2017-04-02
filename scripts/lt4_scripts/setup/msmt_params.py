@@ -442,8 +442,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
-        'Hermite_theta_amp':		hermite_pi2_amp, #0.84,#0.83/3+0.07,
-		'Hermite_theta_length':		hermite_pi2_length, #50e-9,
+        'Hermite_theta_amp':		hermite_pi_amp, #0.84,#0.83/3+0.07,
+		'Hermite_theta_length':		hermite_pi_length, #50e-9,
 
 
         'Square_pi_length' :		square_pi_length, # 2014-12-01

@@ -395,14 +395,51 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
-    m.params['mw_first_pulse_amp'] = 0
+    # m.params['mw_first_pulse_amp'] = 0
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
 
     m.joint_params['opt_pi_pulses'] = 1
-    m.joint_params['LDE_attempts'] = 50
+    m.joint_params['LDE_attempts'] = 250
+
+    ### upload
+
+    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+
+def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_during_LDE = 1):
+    """
+    Performs a Spin-photon correlation measurement including the PLU.
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_single_click_ent_expm.prepare(m)
+
+    ### general params
+    m.params['reps_per_ROsequence'] = 500
+    pts = 15
+    
+    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['MW_pi_during_LDE'] = MW_pi_during_LDE ## turn pi pulse on or off for spcorrs
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'mw_first_pulse_amp' 
+    m.params['general_sweep_pts'] = np.linspace(0.2,0.6,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+    m.params['do_phase_stabilisation'] = 0
+
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 0
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['LDE_attempts'] = 250
 
     ### upload
 
@@ -547,13 +584,18 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements
-  
+    ### SPCorrs with Pi/2 pulse
     # qt.instruments['ZPLServo'].move_in()
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=True)
     # qt.instruments['ZPLServo'].move_out()
-    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
+    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+
+
+
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 
     # TPQI(name+'_TPQI',debug = False,upload_only=True)
