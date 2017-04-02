@@ -17,7 +17,7 @@ params_lt4['do_LDE']                  = 1 # we always do this.
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 1350e-9#1000e-9
+params_lt4['AWG_SP_power']              = 700e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 1.5e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.3e-6#250e-9#250e-9#350e-9#213e-9 
@@ -84,10 +84,10 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(0.5e6)/TH_HH_selector #XXXX was 5438*1
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(5.0e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
-params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['pulse_start_bin'] = 1780e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 1786e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 1790e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 1840e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H
