@@ -66,14 +66,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['Nr_parity_msmts'] = 0 # Not necessary (only for adwin: C13 MBI)
 
     if setup == 'lt4' :
-        import single_click_ent_expm_params_lt4 as params_lt4
+        import sce_expm_params_lt4 as params_lt4
         reload(params_lt4)
         m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             m.params[k] = params_lt4.params_lt4[k]
 
     elif setup == 'lt3' :
-         import single_click_ent_expm_params_lt3 as params_lt3
+         import sce_expm_params_lt3 as params_lt3
          reload(params_lt3)
          m.AWG_RO_AOM = qt.instruments['PulseAOM']
          for k in params_lt3.params_lt3:
@@ -84,7 +84,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
 
     if not(hasattr(m,'joint_params')):
         m.joint_params = {}
-    import single_click_ent_expm_joint_params as joint_params
+    import sce_expm_joint_params as joint_params
     reload(joint_params)
     for k in joint_params.joint_params:
         m.joint_params[k] = joint_params.joint_params[k]

@@ -1,5 +1,5 @@
 import qt
-import single_click_ent_expm_joint_params
+import sce_expm_joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']

@@ -2,14 +2,14 @@ import qt
 import numpy as np
 import time
 import measurement.lib.measurement2.measurement as m2
-import single_click_ent_expm, sweep_single_click_ent_expm
+import single_click_ent_expm, sweep_sce_expm
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
 reload(T2_tools_v3)
 reload(pq)
-reload(single_click_ent_expm);reload(sweep_single_click_ent_expm)
+reload(single_click_ent_expm);reload(sweep_sce_expm)
 
 name = qt.exp_params['protocols']['current']
 
@@ -145,7 +145,7 @@ def MW_Position(name,debug = False,upload_only=False):
     """
 
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     load_TH_params(m)
 
@@ -154,7 +154,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
     m.params['MW_during_LDE'] = 1
@@ -174,7 +174,7 @@ def MW_Position(name,debug = False,upload_only=False):
         m.params['MAX_SYNC_BIN']        =   int(6e6) 
 
     ### upload and run
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 
@@ -186,14 +186,14 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
     at both setups
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     pts = 10
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     if qt.current_setup == 'lt3':
         m.params['do_only_opt_pi'] = 1
         m.joint_params['opt_pi_pulses'] = 1
@@ -214,7 +214,7 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
     m.params['do_yellow_with_AWG'] = use_yellow
     ### upload and run
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 
@@ -224,7 +224,7 @@ def phase_stability(name,debug = False,upload_only=False):
     Just runs a phase stability meausrement
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     pts = 1
     m.params['reps_per_ROsequence'] = 200
@@ -232,13 +232,13 @@ def phase_stability(name,debug = False,upload_only=False):
     m.params['PID_GAIN'] = 1.0
     m.params['Phase_Msmt_voltage'] = 0.5
     
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     m.params['do_phase_stabilisation']  = 1
     m.params['only_meas_phase']         = 1 
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 
@@ -247,7 +247,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     Performs a tail_sweep in the LDE_1 element
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     pts = 15
@@ -255,7 +255,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['reps_per_ROsequence'] = 1000
 
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
     m.joint_params['LDE_attempts'] = 250
@@ -289,7 +289,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def optical_rabi(name,debug = True,upload_only=True, local = False):
     """
@@ -302,7 +302,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     Also, best doc string ever.
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     pts = 1
@@ -310,7 +310,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     m.params['reps_per_ROsequence'] = 10000
 
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
 
@@ -336,7 +336,7 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     """
@@ -344,13 +344,13 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     """
     ### general params
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
     load_TH_params(m) # has to be after prepare(m)
 
     ### general params
     m.params['reps_per_ROsequence'] = 50000
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
     m.params['do_general_sweep']    = True
@@ -372,7 +372,7 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
 
     ### upload
 
-    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
@@ -380,12 +380,12 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     Performs a Spin-photon correlation measurement including the PLU.
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     m.params['reps_per_ROsequence'] = 500
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
     m.params['do_general_sweep']    = True
@@ -395,31 +395,33 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
-    # m.params['mw_first_pulse_amp'] = 0
 
+    m.params['first_mw_pulse_is_pi2'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
 
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
-
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
     ### upload
 
-    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_during_LDE = 1):
     """
     Performs a Spin-photon correlation measurement including the PLU.
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     m.params['reps_per_ROsequence'] = 500
     pts = 15
     
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['MW_pi_during_LDE'] = MW_pi_during_LDE ## turn pi pulse on or off for spcorrs
     m.params['do_general_sweep']    = True
@@ -443,7 +445,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
 
     ### upload
 
-    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
@@ -453,12 +455,12 @@ def Determine_eta(name, debug = False, upload_only = False):
     """
 
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     ### general params
     m.params['reps_per_ROsequence'] = 2000
 
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
     ### lt3 is only giving optical pi pulses at the moment (will change later.)
@@ -482,15 +484,15 @@ def Determine_eta(name, debug = False, upload_only = False):
 
     ### upload & run
 
-    sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 def TPQI(name,debug = False,upload_only=False):
     
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
 
     pts = 1
     m.params['reps_per_ROsequence'] = 50000
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
 
 
     m.params['MIN_SYNC_BIN'] =       1.5e6
@@ -502,8 +504,8 @@ def TPQI(name,debug = False,upload_only=False):
 
 
     m.joint_params['LDE_element_length'] = 10e-6
-    m.joint_params['opt_pi_pulses'] = 5
-    m.joint_params['opt_pulse_separation'] = 1400e-9
+    m.joint_params['opt_pi_pulses'] = 10
+    m.joint_params['opt_pulse_separation'] = 500e-9
     m.joint_params['LDE_attempts'] = 100
 
 
@@ -529,7 +531,7 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
     ### upload and run
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 
@@ -541,9 +543,9 @@ def EntangleXY(name,debug = False,upload_only=False):
     stabilized phase of the entangled state.
     """
     m = PQSingleClickEntExpm(name)
-    sweep_single_click_ent_expm.prepare(m)
+    sweep_sce_expm.prepare(m)
    
-    sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
 
     m.params['do_phase_stabilisation'] = 1
 
@@ -566,7 +568,7 @@ def EntangleXY(name,debug = False,upload_only=False):
     ### upload and run
 
 
-    sweep_single_click_ent_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 if __name__ == '__main__':
@@ -591,14 +593,14 @@ if __name__ == '__main__':
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
 
 
 
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 
-    # TPQI(name+'_TPQI',debug = False,upload_only=True)
+    TPQI(name+'_TPQI',debug = False,upload_only=False)
 
     # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=True)
 
