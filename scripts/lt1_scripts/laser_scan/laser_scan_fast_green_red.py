@@ -115,14 +115,14 @@ class LaserScanGreenRed(m2.AdwinControlledMeasurement):
         m2.AdwinControlledMeasurement.finish(self)
 
 
-def laser_scan_green_red(name):
+def laser_scan_green_red(name,green_power,red_power):
 
-    m = LaserScanGreenRed(name)
+    m = LaserScanGreenRed(name+'_g_'+str(green_power*1.e6)+'_r_'+str(red_power*1.e9))
     m.params['freq_dac_channel'] = m.adwin.get_dac_channels()['newfocus_frq']
     m.params['plot_voltage'] = True
 
-    m.params['scan_start_voltage'] = 0.5
-    m.params['scan_stop_voltage'] = -4
+    m.params['scan_start_voltage'] =1.8# 0.2
+    m.params['scan_stop_voltage'] = -1.3#-1.3
     m.params['noof_pixels'] = int(20e9/10e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
     m.params['pixel_time'] = 100 *1000 #us
 
@@ -131,8 +131,8 @@ def laser_scan_green_red(name):
     m.params['red_time'] =  50 # us
     
     m.params['mw'] = False
-    m.params['green_amplitude'] = 12.5e-6
-    m.params['red_amplitude'] = 5e-9
+    m.params['green_amplitude'] = green_power#30e-6#12.5
+    m.params['red_amplitude'] = red_power#10e-9
 
     print 'expected time:', float(m.params['noof_pixels'])*m.params['pixel_time']*1e-6/60., 'minutes'
 
@@ -148,18 +148,28 @@ def long_fast_laser_scan_green_red(name):
     opt_ins = qt.instruments['optimiz0r']
     opt1d_ins = qt.instruments['opt1d_counts']
     mos_ins = qt.instruments['master_of_space']
+    green_powers = np.array([30.e-6,50.e-6,20.e-6])
+    red_powers = np.array([2.e-9,5.e-9,10.e-9,20.e-9])
+    red_power,green_power = np.meshgrid(red_powers,green_powers)
+    green_power= green_power.flatten()
+    red_power= red_power.flatten()
+    #green_power = np.array([10.e-6,10.e-6,10.e-6,20.e-6,20.e-6,20.e-6,])
+
+
 
     #fs = np.arange(-400,400,50)
     #wls = np.linspace(637.26,637.22,2)
     #print fs
-    for ii in range(0,50):
+
+    for ii in np.arange(len(green_power)):
         # for j in range(3):
         #     set_nf_frequency_coarse(f)
         #     qt.msleep(1)
-
-        
+        if i==0:
+            continue
+        print i+1,'out of',len(green_power)+1,green_power[ii],red_power[ii]
         #qt.msleep(1)
-        laser_scan_green_red(name+'_'+str(ii))
+        laser_scan_green_red(name,green_power[ii],red_power[ii])
         #mos_ins.set_x(mos_ins.get_x()-1)
         #opt_ins.optimize(dims=['z'], cycles = 1, int_time = 100)
         #opt1d_ins.run(dimension='z', scan_length=5, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True)
@@ -175,8 +185,8 @@ def long_fast_laser_scan_green_red(name):
 
 
 if __name__ == '__main__':
-   name = '_Harry_Scan1_NV2'
-   laser_scan_green_red(name)
+   name = 'SiriusII_NV3'
+   laser_scan_green_red(name, 30e-6,8e-9)
    #long_fast_laser_scan_green_red(name)
 
 

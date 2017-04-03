@@ -1,7 +1,7 @@
 import qt
 import time
 import msvcrt
-import setup
+#import setup
 import os
 import h5py
 import sys
@@ -434,9 +434,14 @@ def depthscan(zmin,zmax,steps):
             break
 
 def contopt(interval):
+    """
+    function that continuously optimizes. 
+    input: 
+    interval - sleep time in seconds
+    """
     opt_ins = qt.instruments['optimiz0r']
-    opt1d_ins = qt.instruments['opt1d_counts']
-    mos_ins = qt.instruments['master_of_space']
+    #opt1d_ins = qt.instruments['opt1d_counts']
+    #mos_ins = qt.instruments['master_of_space']
     aborted=False
     x=1
     while aborted==False:
@@ -444,11 +449,11 @@ def contopt(interval):
         # GreenAOM.set_power(200e-6)
         # mos_ins.set_x(mos_ins.get_x()-1)
         # qt.msleep(0.5)
-        opt1d_ins.run(dimension='z', scan_length=4, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True, blocking=True)
+        #opt1d_ins.run(dimension='z', scan_length=4, nr_of_points=31, pixel_time=100, return_data=False, gaussian_fit=True, blocking=True)
         # mos_ins.set_x(mos_ins.get_x()+1)
-        mos_ins.set_z(mos_ins.get_z()+0.3)
+        #mos_ins.set_z(mos_ins.get_z()+0.3)
         qt.msleep(3)
-        opt_ins.optimize(dims=['x','y'], cycles = 3, int_time = 100, cnt=3)
+        opt_ins.optimize(dims=['x','y'], cycles = 1, int_time = 100, cnt=2)
         t0=time.clock()
         while abs(t0-time.clock())<interval:
             qt.msleep(1)

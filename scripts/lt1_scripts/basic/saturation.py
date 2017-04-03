@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Harry_Scan1_NV2'
-steps=21
+name = 'Fritz_SIL'
+steps=16
 max_power=200e-6       #[w]
 counter=2  #number of counter
 PQ_count=False    # counting with the HH, assumes apd on channel 0
-bg_x=0        #delta x position of background [um]
-bg_y=1          #delta y position of background [um]
+bg_x=+0.6       #delta x position of background [um]
+bg_y=+0.4          #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -27,6 +27,8 @@ y_BG = zeros(steps,dtype = float)
 
 current_x = current_mos.get_x()
 current_y = current_mos.get_y()
+
+print 'x position= %s um, y position =  %s um'%(current_x,current_y)
 
 current_aom.set_power(0)
 qt.msleep(1)
