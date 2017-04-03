@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,163,163,317,317,335,335,659,659,727,728
-' Foldings                       = 340,348,433,479,567,614,618,623,640
+' Bookmarks                      = 3,3,82,82,163,163,318,318,336,336,669,669,737,738
+' Foldings                       = 341,349,434,624,628,633,650
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -328,6 +328,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel, 0)
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
+  
    
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
 
@@ -492,6 +493,9 @@ EVENT:
       CASE 0 ' Phase check
         IF (timer = 0) THEN 
           
+          P2_DIGOUT(DIO_MODULE, 10, 0)
+          P2_DIGOUT(DIO_MODULE, 11, 0)
+          
           if (is_master = 0) then ' The slave doesnt do anything useful during phase msmt.
             IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
               mode = mode_after_phase_stab 'crack on
@@ -580,6 +584,9 @@ EVENT:
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
           
+          P2_DIGOUT(DIO_MODULE, 10, 0)
+          P2_DIGOUT(DIO_MODULE, 11, 0)
+          
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
@@ -621,7 +628,10 @@ EVENT:
         timer = -1
         
       CASE 2 'CR check
-      
+        
+        P2_DIGOUT(DIO_MODULE, 10, 1)
+        P2_DIGOUT(DIO_MODULE, 11, 1)
+        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         
         'check for break put after such that the last run records a CR_after result

@@ -229,7 +229,7 @@ def phase_stability(name,debug = False,upload_only=False):
     pts = 1
     m.params['reps_per_ROsequence'] = 200
     m.params['PID_Kp'] = 0.0
-    m.params['PID_GAIN'] = 1.0
+    m.params['PID_GAIN'] = 0.0
     m.params['Phase_Msmt_voltage'] = 0.5
     
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
@@ -395,7 +395,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
-    # m.params['mw_first_pulse_amp'] = 0
+    m.params['first_mw_pulse_is_pi2'] = 1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -404,6 +404,9 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
 
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
     ### upload
 
     sweep_single_click_ent_expm.run_sweep(m, debug = debug, upload_only = upload_only)
@@ -418,7 +421,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     ### general params
     m.params['reps_per_ROsequence'] = 500
     pts = 15
-    
+
     sweep_single_click_ent_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['MW_pi_during_LDE'] = MW_pi_during_LDE ## turn pi pulse on or off for spcorrs
@@ -502,8 +505,8 @@ def TPQI(name,debug = False,upload_only=False):
 
 
     m.joint_params['LDE_element_length'] = 10e-6
-    m.joint_params['opt_pi_pulses'] = 5
-    m.joint_params['opt_pulse_separation'] = 1400e-9
+    m.joint_params['opt_pi_pulses'] = 10
+    m.joint_params['opt_pulse_separation'] = 500e-9
     m.joint_params['LDE_attempts'] = 100
 
 
@@ -573,7 +576,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
@@ -591,14 +594,14 @@ if __name__ == '__main__':
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
 
 
 
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 
-    # TPQI(name+'_TPQI',debug = False,upload_only=True)
+    # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
     # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=True)
 
