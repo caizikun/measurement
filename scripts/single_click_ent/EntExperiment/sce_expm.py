@@ -13,7 +13,7 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD;reload(DD)
 import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
-import single_click_ent_LDE_element as LDE_elt; reload(LDE_elt)
+import sce_expm_LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
 

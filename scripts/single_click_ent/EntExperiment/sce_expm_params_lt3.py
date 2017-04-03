@@ -1,5 +1,5 @@
 import qt
-import single_click_ent_expm_joint_params
+import sce_expm_joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -21,7 +21,7 @@ params_lt3['MW_during_LDE']             = 1
 params_lt3['AWG_SP_power']              = 50e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['MW_opt_puls1_separation']   = 70e-9 #
+params_lt3['MW_opt_puls1_separation']   = 120e-9 #
 params_lt3['MW_repump_distance']		= 150e-9
 params_lt3['LDE_decouple_time']         = 1e-6
 params_lt3['MW_final_delay_offset']		= 10e-9
