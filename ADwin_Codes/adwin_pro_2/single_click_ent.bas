@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,163,163,318,318,336,336,669,669,737,738
-' Foldings                       = 341,349,434,624,628,633,650
+' Bookmarks                      = 3,3,82,82,163,163,326,326,344,344,677,677,745,746
+' Foldings                       = 349,357,442,632,641,658
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -113,7 +113,7 @@ DIM is_master,cumulative_awg_counts as long
 
 ' Sequence flow control
 DIM do_phase_stabilisation, only_meas_phase, do_dynamical_decoupling as long
-DIM init_mode, mode_after_phase_stab, mode_after_LDE as long
+DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
 DIM Sig, setpoint, Prop, Dif,Int                   AS FLOAT        ' PID terms
@@ -301,8 +301,16 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   if (only_meas_phase = 1) then
     mode_after_phase_stab = 1 'Phase stab msmt
+
+    if (do_phase_stabilisation = 1) then
+      mode_after_expm = 0
+    else
+      mode_after_expm = 1
+    endif
+    
   else
     mode_after_phase_stab = 2 ' CR check
+    mode_after_expm = 2
   endif
 
   if (do_phase_stabilisation = 1) then
@@ -810,6 +818,7 @@ EVENT:
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
+        
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
@@ -828,7 +837,7 @@ EVENT:
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
-        mode = 2 ' go to CR check
+        mode = mode_after_expm ' go to CR check or to relevant starting mode.
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
