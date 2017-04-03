@@ -6,19 +6,20 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Fritz_green'#'The111No2_enlarged_SIL2_DM_off'
+name = 'Hillary_scan3_Spot5'#'The111No2_enlarged_SIL2_DM_off'
 steps=16
-max_power=250e-6       #[w]
+max_power=650e-6       #[w]
 counter=1    #number of counter
 PQ_count=False   # counting with the HH, assumes apd on channel 0
-bg_x=2.         #delta x position of background [um]
-bg_y=-1.            #delta y position of background [um]
+bg_x=1.         #delta x position of background [um]
+bg_y=1.            #delta y position of background [um]
 
 #instruments
 if PQ_count:
     current_PQ_ins=qt.instruments['TH_260N']
 
 current_aom = qt.instruments['GreenAOM']
+#current_aom = qt.instruments['PulsedAOM']
 current_mos = qt.instruments['master_of_space']
 current_adwin = qt.instruments['adwin']
 counters.set_is_running(True)
@@ -30,6 +31,7 @@ y_BG = zeros(steps,dtype = float)
 current_x = current_mos.get_x()
 current_y = current_mos.get_y()
 
+print 'x position = %s, y position = %s'%(current_x,current_y)
 current_aom.set_power(0)
 time.sleep(1)
 br=False
@@ -91,4 +93,6 @@ current_mos.set_x(current_x)
 current_mos.set_y(current_y)
 
 current_aom.turn_off()
+
+
 print 'Done with saturation scan!'

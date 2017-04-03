@@ -24,7 +24,7 @@ params_lt3['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
+params_lt3['AWG_SP_power']              = 20e-9#1000e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
@@ -100,7 +100,7 @@ params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_
 params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
-params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
 params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
 params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950

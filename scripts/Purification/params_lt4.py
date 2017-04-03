@@ -30,10 +30,10 @@ params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 1000e-9#1000e-9
+params_lt4['AWG_SP_power']              = 1350e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 0.2e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['average_repump_time'] 		= 0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -110,13 +110,14 @@ params_lt4['dynamic_phase_N']			= 2
 params_lt4['phase_feedback_resolution']	= 4.5
 
 ### Everything HydraHarp
-params_lt4['MAX_DATA_LEN']        =   int(100e6)
+TH_HH_selector = 1e3 #set to 1 for HH
+params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(2.5e6) #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(5.5e6) #15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.5e6) #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(5500*1e3)
-params_lt4['entanglement_marker_number'] = 1
+params_lt4['MIN_SYNC_BIN']        =   int(1.6e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(2.0e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(0e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(6*1e6)/TH_HH_selector
+params_lt4['count_marker_channel'] = 1
 
 params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
 params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 

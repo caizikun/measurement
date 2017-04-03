@@ -7,10 +7,10 @@ import numpy as np
 def optimize():
     print 'Starting to optimize.'
 
-    print 'checking for SMB errors'
-    if not(check_smb_errors()):
-        print 'SMB gave errors!!'
-        return False
+    # print 'checking for SMB errors'
+    # if not(check_smb_errors()):
+    #     print 'SMB gave errors!!'
+    #     return False
     powers_ok=False
     for i in range(5):
     	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -25,22 +25,20 @@ def optimize():
    
     qt.msleep(3)
     print 'mash q now to stop the measurement'
-    optimize_ok = False
+    optimize_ok = True
     for i in range(1):
         print 'press q now to stop measuring!'
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
             break
-            qt.msleep(2)
-            qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
-            qt.msleep(2)
-            optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=50, cycles =2)
+        qt.instruments['optimiz0r'].optimize(dims=['x','y'],cnt=1, int_time=50, cycles =1)
+        optimize_ok=qt.instruments['optimiz0r'].optimize(dims=['z','x','y'],cnt=1, int_time=50, cycles =2)
         qt.msleep(1)
     if not(optimize_ok):
         print 'Not properly optimized position'
         return False
     else: 
     	print 'Position is optimized!'
-    qt.msleep(3)
+    # qt.msleep(3)
     
     return True
     
@@ -50,7 +48,7 @@ def lt3_check_powers():
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-                700e-9, # The amount for repumping in purification
+                50e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.15,0.15,0.15]
     qt.instruments['PMServo'].move_in()
@@ -84,36 +82,45 @@ def check_smb_errors():
     return ret_val
 
 if __name__ == '__main__':
-    if qt.current_setup =='lt3':
+    if (qt.current_setup == 'lt3' or qt.current_setup =='lt4'):
 
         tel1_helper = qt.instruments['tel1_helper']
 
-        start_index = 0
+        start_index = 1
+        skip_first=False
+        optimize_index = 2
+        cycles = 1
 
-        skip_first=True
+        noof_cycles_for_green_reset = 4
+        counter_for_green_reset = 0
 
-        cycles = 50
+
+        for k in range(start_index,start_index+cycles):
+            # counter_for_green_reset += 1
+            # print '\ncounter for green reset = {}\n'.format(counter_for_green_reset)
+            # if counter_for_green_reset==noof_cycles_for_green_reset: 
+            #     execfile(r'D:/measuring/measurement/scripts/tel1_scripts/reset_NV_with_green.py')
+            #     counter_for_green_reset = 0
 
 
-        for i in range(start_index,start_index+cycles):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break
             if not(skip_first):
-                qt.telcrify_name_index = i
+                qt.telcrify_name_index = k
                 qt.master_script_is_running = True
                     
                 execfile(r'telcrify.py')
-                output_tel1= qt.instruments['tel1_helper'].get_measurement_name()
+                output_tel1=  tel1_helper.get_measurement_name()
 
 
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
                         not(qt.telcrification_success) : 
                     break
-                qt.msleep(20)
+                # qt.msleep(20)
                 qt.telcrification_success=False
             skip_first=False
 
-            print 'starting the measurement at tel1'
+            #print 'starting the measurement at tel1'
 
             #tel1_helper.set_script_path(r'D:/measuring/measurement/scripts/tel1_scripts/pq_acquisition.py')
             #qt.msleep(15)
@@ -121,34 +128,52 @@ if __name__ == '__main__':
             #qt.msleep(5)
 
 
-            tel1_helper.set_script_path(r'D:/measuring/measurement/scripts/Telecom/telcrification_master_script.py')
-            qt.msleep(15)
-            print 'trying to execute tel1 script'
+            tel1_helper.set_script_path(r'D:/measuring/measurement/scripts/Telecom/telecom_master_script.py')
+            qt.msleep(5)
+            print 'Executing telecom_master_script at tel1...'
             tel1_helper.execute_script()
 
-            qt.msleep(5)
+            qt.msleep(10)
             output = tel1_helper.get_measurement_name()         
 
             #print 'starting the measurement at lt3'
 
-            print 'Loading CR linescan'
-            execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
-            qt.instruments['ZPLServo'].move_in()
-            lt3_succes = optimize()
+            print k
+            print float(k) % optimize_index
+            if float(k) % optimize_index == 0:
+                print 'Loading CR linescan'
+                execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
+                qt.instruments['ZPLServo'].move_in()
+                # lt3_succes = optimize()
+            else:
+                lt3_succes = True
+
             qt.instruments['ZPLServo'].move_out()
 
 
     else:
-     	qt.instruments['remote_measurement_helper'].set_is_running(True)
-    #     execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
-    #     qt.instruments['ZPLServo'].move_in()
-    #     lt3_succes = optimize()
-    #     #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
-    #     qt.instruments['ZPLServo'].move_out()
-        qt.msleep(10) # when you resetart bell to early, it will crash
-    #     print 'Did the optimization procedure succeed? ', lt3_succes
 
-        qt.instruments['remote_measurement_helper'].set_measurement_name(True)
-        qt.instruments['remote_measurement_helper'].set_is_running(False)
-        qt.master_script_is_running = True
-    #     print 'All done. Ready to run Purification.'
+    #### XXXX Yo dude, this has to be copied from tel1 - I didnt't have time to do the push-pull !! AD
+        if False:
+             	qt.instruments['remote_measurement_helper'].set_is_running(True)
+            #     execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py')
+            #     qt.instruments['ZPLServo'].move_in()
+            #     lt3_succes = optimize()
+            #     #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
+            #     qt.instruments['ZPLServo'].move_out()
+                qt.msleep(10) # when you resetart bell to early, it will crash
+            #     print 'Did the optimization procedure succeed? ', lt3_succes
+
+                qt.instruments['remote_measurement_helper'].set_measurement_name(True)
+                qt.instruments['remote_measurement_helper'].set_is_running(False)
+                qt.master_script_is_running = True
+            #     print 'All done. Ready to run Purification.'
+
+        else:
+
+                qt.instruments['tel1_helper'].set_is_running(True)
+                qt.msleep(10) # when you resetart bell to early, it will crash
+
+                qt.instruments['tel1_helper'].set_measurement_name(True)
+                qt.instruments['tel1_helper'].set_is_running(False)
+                qt.master_script_is_running = True

@@ -45,4 +45,5 @@ print 'configure the setup-specific hardware...'
 execfile(os.path.join(qt.config['startdir'],'rt2_scripts/setup/sequence.py'))
 
 # set all the static variables for lt1
+print 'executing RT2 statics'
 execfile(os.path.join(qt.config['startdir'],'rt2_scripts/setup/rt2_statics.py'))

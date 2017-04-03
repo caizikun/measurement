@@ -1,5 +1,5 @@
 import qt
-#import joint_params
+# import joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -16,12 +16,13 @@ params_lt3['do_LDE_1']                  = 1 # we always do this.
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 1000e-9#1000e-9
-params_lt3['LDE_SP_duration']           = 1.5e-6
-params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['average_repump_time'] 		= 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
+params_lt3['AWG_SP_power']              = 50e-9#1000e-9
+params_lt3['LDE_SP_duration']           = 5e-6
+params_lt3['LDE_SP_delay']              = 0e-6 ### don't change this.
+params_lt3['average_repump_time']       = 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
 params_lt3['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
 params_lt3['MW_opt_puls1_separation']   = 70e-9 #
+
 
 #adwin params defs:
 params_lt3['SP_duration'] = 30#10 #10
@@ -70,12 +71,13 @@ params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt3['LDE_final_mw_phase']      = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['mw_second_pulse_amp']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp']
 params_lt3['mw_second_pulse_length']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
+
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       0#2500
@@ -83,11 +85,14 @@ params_lt3['MAX_SYNC_BIN'] =       8500
 params_lt3['MIN_HIST_SYNC_BIN'] =  0#2500
 params_lt3['MAX_HIST_SYNC_BIN'] =  8500
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
-params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+params_lt3['TTTR_read_count'] =     1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
+
 params_lt3['measurement_abort_check_interval']    = 2. #sec
 params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
 params_lt3['use_live_marker_filter']=True
-params_lt3['entanglement_marker_number'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt3['maximum_meas_time_in_min'] = 60
+params_lt3['do_green_reset'] = False
 
 params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
 params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950

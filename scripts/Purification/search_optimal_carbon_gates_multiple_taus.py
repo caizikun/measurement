@@ -82,6 +82,8 @@ def SweepGates(name,**kw):
 	### RO bases,timing and number of pulses (sweep parameters) ###
 	##################################
 
+	m.params['carbon_gate_dd_scheme'] = 'repeating_T_elt'
+
 	# print m.params['electron_transition']
 	if N_list == None or tau_list == None:
 		# takes from msts.params
@@ -290,10 +292,10 @@ if __name__ == '__main__':
 		# 								'C_N_steps' : 8} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.394e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  :10e-9, # steps of 2e-9
-										'C_N' 		: [34],#,24,26,30], 
-										'C_N_steps' : 14} # steps of 2 	
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.02e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  : 8e-9, # steps of 2e-9
+										'C_N' 		: [28],#,24,26,30], 
+										'C_N_steps' : 8} # steps of 2 	
 
 
 		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
@@ -314,7 +316,7 @@ if __name__ == '__main__':
 										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [1]
+	carbons = [4]
 
 	### msmt loop begins here.
 	breakst = False

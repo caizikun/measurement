@@ -9,8 +9,8 @@ import logging
 import time
 
 current_adwin = qt.instruments['adwin']
-counter=3
-int_time= 2500 # in ms XXXXXXXXXX200
+counter=2
+int_time= 150 # in ms XXXXXXXXXX200
 
 class Struct:
     pass
@@ -264,7 +264,7 @@ def optimize_zernike_amplitude_brent(i):
 
 def optimize_zernike_amplitude(name, zernike_mode, **kw):
     name = name + '_zernike_' + str(zernike_mode)
-    X,Y,Z_matrix = zernike.zernike_gridq_i(zernike_mode, 12)
+    X,Y,Z_matrix = zernike.zernike_grid_i(zernike_mode, 12)
     return optimize_matrix_amplitude(name,Z_matrix,**kw)
 
 def optimize_segments(name, imin,imax, jmin, jmax, **kw):
@@ -323,10 +323,10 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
     return max_cnts, opt_amp
 
 if __name__ == '__main__':
-    green_power = 150e-6
+    green_power = 75e-6
     GreenAOM.set_power(green_power)
 
-    name = 'PippinSil1_lt3_local_new_dm'
+    name = '111no2_lt4_localgreen_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
     dat_tot.create_file()
     dat_tot.add_coordinate('segment_zernike_nr')
@@ -339,8 +339,8 @@ if __name__ == '__main__':
     #plt.set_y2tics(True)
     #plt.set_y2label('Optimum amplitude')
 
-    # scan_mode = 'zernike'
-    scan_mode = 'extremum_seek'
+    scan_mode = 'zernike'
+    # scan_mode = 'extremum_seek'
 
     try:
         for j in np.arange(1):

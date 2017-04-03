@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL2'
+sil_name = 'SIL3'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.698965e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.057718e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.675#0.70 # 06-02
-	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.486#0.483 # 06-02 
+	hermite_pi_length = 140e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp = 0.63  # 28-02
+	hermite_pi2_length = 70e-9 # 46e-9 # even
+	hermite_pi2_amp = 0.459  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.368
+	hermite_pi_amp = 0.447
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.189
+	hermite_pi2_amp = 0.194
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 
@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#28e-9, #50e-9
-		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      28e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -117,7 +117,8 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
+
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -195,6 +196,9 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'count_marker_channel':						1,
 		}
 
+cfg['protocols']['AdwinSSRO+delay'] = {
+	'delay_voltage_DAC_channel':		16
+}
 
 ###############################
 ### NV and field parameters ###
@@ -273,7 +277,7 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_N_m1'      :   [12],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434421.63, #### don't change this unless you measure it! 
+	'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
 	'C1_freq_0' 		: 447747.11,
 	'C1_freq_1_p1' 		: 425341.4,
 
@@ -368,17 +372,17 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 5.5e-9,#2.5e-9,
+		'A_CR_amplitude':				 2e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2.0e-9,#2.0e-9,
+		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 12e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 14e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -427,7 +431,7 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
-		'MW_switch_risetime'	:	10e-9,
+		'MW_switch_risetime'	:	1e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
@@ -440,8 +444,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		0.585,#0.68,
-		'Hermite_theta_length':		46e-9,#0.68,
+        'Hermite_theta_amp':		hermite_pi2_amp,#0.585,#0.68,
+		'Hermite_theta_length':		hermite_pi2_length,#46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -464,15 +468,15 @@ cfg['protocols'][name]['pulses'] = {
     	'mw2_Square_pi2_amp' :		mw2_square_pi_amp,
 
     	'eom_pulse_duration':				2e-9,
-        'eom_off_duration':					50e-9, # 50e-9
-        'eom_off_amplitude':				-0.02, #-0.02
+        'eom_off_duration':					44e-9, # 50e-9
+        'eom_off_amplitude':				-0.02, # for 44 ns of off duration #-0.02
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.5,#0.2
+        'aom_risetime':						16e-9,#40e-9
+        'aom_amplitude':					0.8,#0.2
 }
 
 
@@ -512,7 +516,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.255e-6,#0.35e-6,
+		'max_dec_tau'         :     0.355e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

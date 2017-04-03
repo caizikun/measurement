@@ -170,8 +170,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpulse = 'initial_delay')
 
         ### one awg has to sync all yime-tagging devices.
-        if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
-            # print 'i added the thing' 
+        if setup == 'lt3': #and msmt.params['is_two_setup_experiment'] > 0: 
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization
@@ -349,7 +348,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
         c = str(msmt.params['carbon'])
         e_trans = msmt.params['electron_transition']
 
-        #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:
+        #### for concatenating LDE with a longer entangling sequence, see also telcrify_slave, function carbon_swap_gate:
         if 'ElectronDD_tau' in msmt.params.to_dict().keys():
             tau = msmt.params['ElectronDD_tau']
         else:

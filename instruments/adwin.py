@@ -30,7 +30,7 @@ class adwin(Instrument):
         #     type = types.IntType)
 
 
-        self.dacs = kw.get('dacs', {})
+        self.dacs = kw.get('dacs', {}) 
         self.adcs = kw.get('adcs', {})
 
         self.use_cfg = use_cfg
@@ -593,7 +593,7 @@ class adwin(Instrument):
             time.sleep(0.05)
 
         p = self.processes['linescan']
-        dacs = [ self.dacs[n] for n in dac_names ]
+        dacs = [ self.dacs[n] for n in dac_names ] 
         
         # set all the required input params for the adwin process
         # see the adwin process for details

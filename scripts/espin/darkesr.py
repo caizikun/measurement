@@ -19,7 +19,7 @@ SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def darkesr(name, **kw):
-    '''dark ESR on the 0 <-> -1 transition
+    '''dark ESR on the 0 <-> +/-1 transition
     '''
 
     m = pulsar_msmt.DarkESR(name)
@@ -129,7 +129,7 @@ def Generaldarkesr(name):
     m.params['MW_pi_duration'] = m.params['desr_pulse_duration']
     m.autoconfig()
     #m.params['sweep_pts']=m.params['pts']
-    #print m.params['MW_pi_duration']
+    #print m.params['MW_pi_duration']ex
     m.generate_sequence(upload=True,pulse_pi = desr_pi)
     m.run()
     m.save()
@@ -139,7 +139,7 @@ def Generaldarkesr(name):
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #darkesrp1(SAMPLE_CFG)
-    darkesr(SAMPLE_CFG, range=5e6, m1_transition = False)
+    darkesr(SAMPLE_CFG, range=5e6, m1_transition = True)
     # Range must be smaller than 30MHz because freq sweep is done via ssb mod at 43 MHz
 
     

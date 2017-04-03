@@ -145,6 +145,9 @@ class MeasurementParameters(object):
         
         return ret
 
+    def __contains__(self, item):
+        return self.parameters.has_key(item)
+
     def new(self, key, value, *arg, **kw):
         self.parameters[key] = MeasurementParameter(key, value, *arg, **kw)
         
@@ -197,7 +200,7 @@ class Measurement(object):
 
     def __init__(self, name, save=True):
         self.name = name
-
+        
         self.params = MeasurementParameters()
         
         if save:
@@ -251,7 +254,16 @@ class Measurement(object):
 
         params = self.params.to_dict()
         for k in params:
-            grp.attrs[k] = params[k]
+
+            if isinstance(params[k],dict): # Added by PH to deal with dicts
+                for key, val in params[k].iteritems():
+                    if grp.get(k+ '_' + key,None) != None:
+                        print logging.warning('Duplicate parameter in params dict')
+                    grp.attrs[k+ '_' + key] = val
+            else:
+                if grp.get(k,None) != None:
+                    print logging.warning('Duplicate parameter in params dict')
+                grp.attrs[k] = params[k]
         
         self.h5data.flush()
 
@@ -358,7 +370,6 @@ class AdwinControlledMeasurement(Measurement):
         qt.current_meas_name = name
 
         self.adwin_process_params = MeasurementParameters('AdwinParameters')
-
     def start_adwin_process(self, load=True, stop_processes=[]):
         proc = getattr(self.adwin, 'start_'+self.adwin_process)
         proc(load=load, stop_processes=stop_processes,
@@ -399,7 +410,7 @@ class AdwinControlledMeasurement(Measurement):
         corresponding cr_process parameters are also set from the measurement params dictionary.
 
         '''
-        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:              
+        for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_long']:
             self.set_adwin_process_variable_from_params(key)
 
         for key,_val in self.adwin_dict[self.adwin_processes_key][self.adwin_process]['params_float']:            
@@ -464,6 +475,9 @@ class AdwinControlledMeasurement(Measurement):
         adsrc = self.adwin_process_src_filepath()
         if adsrc != None:
             shutil.copy(adsrc, sdir)
+
+class LocalAdwinControlledMeasurement(AdwinControlledMeasurement):
+    pass
 
 def save_instrument_settings_file(parent):
     h5settingsgroup = parent.create_group('instrument_settings')

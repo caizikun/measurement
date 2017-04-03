@@ -4,13 +4,14 @@ import qt
 import hdf5_data as h5
 import logging
 import sys
-
+import os
 import measurement.lib.measurement2.measurement as m2
 from measurement.lib.measurement2.adwin_ssro import ssro
-reload(ssro)
+
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 import pulse_select as ps; reload(ps)
-
+import analysis.lib.sim.pulse_sim.pulse_sim as pulse_sim
+reload(pulse_sim)
 
 class PulsarMeasurement(ssro.IntegratedSSRO):
     mprefix = 'PulsarMeasurement'
@@ -22,8 +23,10 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         ssro.IntegratedSSRO.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
+
         ssro.IntegratedSSRO.setup(self)
+        
         # print 'this is the mw frequency!', self.params['mw_frq']
         self.mwsrc.set_iq('on')
         self.mwsrc.set_pulm('on')
@@ -74,6 +77,18 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
 
     def generate_sequence(self):
         pass
+
+    def dump_AWG_seq(self):
+
+        try:
+            if qt.dump_AWG_seq == True:
+                print('Saving pulse sequence')
+                sequence = qt.pulsar.last_programmed_sequence
+                elements = qt.pulsar.last_programmed_elements
+                grouped_seq = pulse_sim.group_seq_elems(sequence,elements)
+                pulse_sim.save_grouped_pulses_to_open_h5file(self.h5data,grouped_seq)
+        except:
+            pass
 
     def stop_sequence(self):
         self.awg.stop()
@@ -1729,6 +1744,8 @@ class GeneralPiCalibration(PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+
+
 class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 
     def generate_sequence(self, upload=True, **kw):
@@ -2321,8 +2338,6 @@ class GeneralElectronRamsey(PulsarMeasurement):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
-
-
         
 class DD_GeneralSequence(PulsarMeasurement):
     """

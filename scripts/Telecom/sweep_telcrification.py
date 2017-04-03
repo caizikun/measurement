@@ -6,7 +6,7 @@ NK 2016
 
 import numpy as np
 import qt 
-import purify_slave; reload(purify_slave)
+import telcrify_slave; reload(telcrify_slave)
 import msvcrt
 name = qt.exp_params['protocols']['current']
 
@@ -18,6 +18,7 @@ def show_stopper():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
     else: return False
+    
 def print_adwin_stuff(m):
     print m.params['cycle_duration']
     print m.params['SP_duration']
@@ -52,6 +53,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO'])
@@ -63,7 +65,22 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['Nr_MBE']          = 0 # Not necessary (only for adwin: C13 MBI)
     m.params['Nr_parity_msmts'] = 0 # Not necessary (only for adwin: C13 MBI)
 
-    if setup == 'lt3' :
+    if setup == 'lt1':
+        import params_lt1
+        reload(params_lt1)
+        for k in params_lt1.params_lt1:
+            m.params[k] = params_lt1.params_lt1[k]
+
+        ### below: copied from bell and commented out for later
+    elif setup == 'lt4' :
+        import params_lt4
+        reload(params_lt4)
+        m.AWG_RO_AOM = qt.instruments['PulseAOM']
+        for k in params_lt4.params_lt4:
+            m.params[k] = params_lt4.params_lt4[k]
+        # msmt.params['MW_BellStateOffset'] = 0.0
+        # bseq.pulse_defs_lt4(msmt)
+    elif setup == 'lt3' :
          import params_lt3
          reload(params_lt3)
          m.AWG_RO_AOM = qt.instruments['PulseAOM']
@@ -72,7 +89,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
          #msmt.params['MW_BellStateOffset'] = 0.0
          #bseq.pulse_defs_lt3(msmt)
     else:
-        print 'Sweep_purification.py: invalid setup:', setup
+        print 'sweep_telcrification.py: invalid setup:', setup
+
+    # if not(hasattr(m,'joint_params')):
+    #     m.joint_params = {}
+    # import joint_params
+    # reload(joint_params)
+    # for k in joint_params.joint_params:
+    #     m.joint_params[k] = joint_params.joint_params[k]
 
     # if setup == m.joint_params['master_setup']:
     #     m.params['is_master'] = 1
@@ -86,7 +110,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['trigger_wait'] = 1
 
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,**kw):
 
     if autoconfig:
         m.autoconfig()    
@@ -101,7 +125,7 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        m.run(autoconfig=False, setup=False)
+        m.run(autoconfig=False, setup=False,**kw)
 
         if save_name != '':
             m.save(save_name)
@@ -171,7 +195,7 @@ def repump_speed(name,debug = False,upload_only=False):
     and sweeps the repump duration at the beginning of LDE_1
     """
 
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -212,7 +236,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     sweeps the average repump time.
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -287,7 +311,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -363,7 +387,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -454,7 +478,7 @@ def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
     """
     Sweeps the number of actual LDE attempts before doing the carbon swap via the final LDE attempt
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -531,7 +555,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     Sweeps the number of repetitions (LDE2) and performs tomography of X.
     Is used to calibrate the acquired phase per LDE repetition.
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -598,7 +622,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     sweep the number of repetitions of that element.
     Serves as a calibration for the adwin
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -670,7 +694,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
     initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
     Has the option to either sweep the repetitions of LDE2 (easy mode)
     """
-    m = purify_slave.purify_single_setup(name+'_'+input_state)
+    m = telcrify_slave.purify_single_setup(name+'_'+input_state)
     prepare(m)
 
     ### general params
@@ -745,7 +769,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     Such that a Y rotation gives maximum Z RO and an X rotation for the purfiying gate returns 0 contrast. 
     This measurement sweeps this offset phase
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params
@@ -808,7 +832,7 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
     perform purification gate
     perform final carbon RO (with branching depending on the electron RO result!)
     """
-    m = purify_slave.purify_single_setup(name)
+    m = telcrify_slave.purify_single_setup(name)
     prepare(m)
 
     ### general params

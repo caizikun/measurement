@@ -396,7 +396,6 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.finish()
 
 
-
 def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     """
     same as calibrate LDE_phase but here we add a dynamic phase correct element and
@@ -738,6 +737,7 @@ def phase_compensation_with_PLU(name,debug=False,upload_only = False,PLU = False
 
     run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 
+
 def check_classical_correlations(name,debug=False,upload_only = False,inputState = 'X'):
     """
     Does the full sequence in non-local mode.
@@ -790,7 +790,7 @@ def check_classical_correlations(name,debug=False,upload_only = False,inputState
     ### loop over RO directions upload & run
     breakst = False
     autoconfig = True
-    for ro in ['positive','negative']:
+    for ro in ['positive']:
         breakst = show_stopper()
         if breakst:
             break
@@ -801,7 +801,6 @@ def check_classical_correlations(name,debug=False,upload_only = False,inputState
         autoconfig = False
 
     m.finish()
-
 if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
@@ -811,14 +810,12 @@ if __name__ == '__main__':
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    
-
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
 
 
-    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
+    #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
@@ -827,4 +824,4 @@ if __name__ == '__main__':
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
     for inputstate in ['X','Y','Z']:
-        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = False, inputState = inputstate)
+        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

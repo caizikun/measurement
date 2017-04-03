@@ -48,10 +48,12 @@ def _create_mw_pulses(msmt,Gate):
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
 
 def _create_laser_pulses(msmt,Gate):
-    Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
+    if 'msmt_based_reset' in msmt.params.parameters and msmt.params['msmt_based_reset'] == 1:
+        Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Matisse',name = 'repump',
             length = msmt.params['LDE_SP_duration'],amplitude = 1.)
-
-
+    else:
+        Gate.AWG_repump = pulse.SquarePulse(channel ='AOM_Newfocus',name = 'repump',
+            length = msmt.params['LDE_SP_duration'],amplitude = 1.)
 
     if (msmt.params['is_two_setup_experiment'] > 0 and msmt.current_setup == 'lt4'):
         ### The LT4 eom is not connected for this measurement. set amplitudes to 0.

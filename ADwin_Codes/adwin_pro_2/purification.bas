@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
-' Foldings                       = 593,616,644,697,857
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,424,424,425,425,440,440,666,666,737,737,916,917,918,925,926,927
+' Foldings                       = 596,619,647,700
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -44,13 +44,13 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-#INCLUDE .\cr_mod_Bell.inc
+'#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
-#DEFINE max_purification_repetitions    52000 ' high number needed to have good statistics in the repump_speed calibration measurement
+#DEFINE max_purification_repetitions    500000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins       2000  
 
 'init
@@ -84,7 +84,9 @@ DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via
 DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
 DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
-   
+
+DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data marker
+
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
@@ -280,7 +282,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' note: the MemCpy function only works for T11 processors.
   '  ' this is a faster way of filling up global data arrays in the external memory. See Adbasic manual
   array_step = 1
-  FOR i = 1 TO 520 ' 520 is derived from max_purification_length/100
+  FOR i = 1 TO 5000 ' 520 is derived from max_purification_length/100
     MemCpy(Initializer[1],DATA_100[array_step],100)
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
@@ -289,6 +291,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_105[array_step],100)
     MemCpy(Initializer[1],DATA_106[array_step],100)
     MemCpy(Initializer[1],DATA_107[array_step],100)
+    MemCpy(Initializer[1],DATA_114[array_step],100)
     '    MemCpy(Initializer[1],DATA_108[array_step],100)
     '    MemCpy(Initializer[1],DATA_109[array_step],100)
     
@@ -368,7 +371,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_13 = -1
   par_14 = -1
   par_15 = -1
-  
+  PAR_55 = 0                      ' invalid data marker
   Par_62 = 0
 '''''''''''''''''''''''''
   ' flow control: 
@@ -835,7 +838,7 @@ EVENT:
           timer = -1
           if (AWG_done_was_low >0) then ' prevents double jump in case the awg trigger is long
             IF (do_SSRO_after_electron_carbon_SWAP = 0) then
-              mode = mode_after_swap ' see flow control
+              mode = 51 ' see flow control
             ELSE
               mode = 200   ' dsSSRO
               is_mbi_readout = 1 ' ... in MBI mode
@@ -1051,7 +1054,7 @@ EVENT:
       CASE 10 'store the result of the tomography and the sync number counter
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
-       
+        DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
