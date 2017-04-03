@@ -6,7 +6,7 @@ NK 2016
 
 import numpy as np
 import qt 
-import single_click_ent_expm; reload(single_click_ent_expm)
+import sce_expm; reload(sce_expm)
 import msvcrt
 name = qt.exp_params['protocols']['current']
 
@@ -191,7 +191,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     There is a finite timing offset between LDE element and the last pi/2 pulse that we do upon success.
     This measurement sweeps the timing of the last pi/2 to determine the best position.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -225,7 +225,7 @@ def lastpi2_phase_vs_amplitude(name, debug = False, upload_only = False):
     This measurement sweeps the phase of the last pi/2 pulse while keeping the amplitude constant.
     Is used as a sanity check --> are all our pi/2 pulses actually pi/2 pulses?
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -259,7 +259,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     This measurement sweeps the phase of the last pi/2 pulse and includes MW pulses in the LDE element.
     Is used as a sanity check --> how coherent are we at the last pi/2 pulse and what is the phase relation for the MW source.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -294,7 +294,7 @@ def ionization_study_LT4(name, debug = False, upload_only = False, use_yellow = 
     Two setup experiment where LT3 does optical pi pulses only
     While LT4 repetitively runs the entire LDE element.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -331,7 +331,7 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
     Two setup experiment where LT3 does optical pi pulses only
     While LT4 repetitively runs the entire LDE element.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params

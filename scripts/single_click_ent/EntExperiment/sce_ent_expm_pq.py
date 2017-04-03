@@ -2,23 +2,23 @@ import qt
 import numpy as np
 import time
 import measurement.lib.measurement2.measurement as m2
-import single_click_ent_expm, sweep_sce_expm
+import sce_expm, sweep_sce_expm
 import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
 reload(T2_tools_v3)
 reload(pq)
-reload(single_click_ent_expm);reload(sweep_sce_expm)
+reload(sce_expm);reload(sweep_sce_expm)
 
 name = qt.exp_params['protocols']['current']
 
-class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
+class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'PQ_single_click_ent'
     adwin_process = 'single_click_ent'
     
     def __init__(self, name,hist_only = False):
-        single_click_ent_expm.SingleClickEntExpm.__init__(self, name)
+        sce_expm.SingleClickEntExpm.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
         self.joint_params = m2.MeasurementParameters('JointParameters')
         self.params = m2.MeasurementParameters('LocalParameters')
@@ -27,12 +27,12 @@ class PQSingleClickEntExpm(single_click_ent_expm.SingleClickEntExpm,  pq.PQMeasu
         self.params['TH_hist_only'] = hist_only
 
     def autoconfig(self):
-        single_click_ent_expm.SingleClickEntExpm.autoconfig(self)
+        sce_expm.SingleClickEntExpm.autoconfig(self)
         pq.PQMeasurement.autoconfig(self)
 
     def setup(self, **kw):
         if not self.params['only_meas_phase']:
-            single_click_ent_expm.SingleClickEntExpm.setup(self,**kw)
+            sce_expm.SingleClickEntExpm.setup(self,**kw)
         pq.PQMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
