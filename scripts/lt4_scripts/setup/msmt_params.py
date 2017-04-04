@@ -20,8 +20,8 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
-f_msp1_cntr = 4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.717523e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
@@ -49,14 +49,14 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 98e-9
-	hermite_pi_amp = 0.957#0.985#0.952#0.874#0.93#0.8#0.818#0.818 #0.861 for a single pi pulse
+	hermite_pi_length = 102e-9 # divisible by 2
+	hermite_pi_amp = 0.897 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
-	hermite_pi2_length = 50e-9
-	hermite_pi2_amp = 0.617 #0.634#0.605
+	hermite_pi2_length = 50e-9 # divisible by 2
+	hermite_pi2_amp = 0.632#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.03,
 		'A_off_voltage':                -0.2,
-		'yellow_repump_amplitude':      25e-9,#30e-9,
+		'yellow_repump_amplitude':      30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -172,6 +172,19 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 	    'count_marker_channel':						1,
 		}
 
+############################################
+### General settings for AdwinSSRO+delay ###
+############################################
+
+cfg['protocols']['AdwinSSRO+delay'] = {
+	'delay_trigger_DI_channel':					20,
+	'delay_trigger_DO_channel':					12,
+	'do_tico_delay_control':		 			0,
+	'minimal_delay_time':		  				1440e-9,
+	'minimal_delay_cycles':						15,
+	'delay_clock_cycle_time':					20e-9,
+	'awg_delay':								380e-9,
+}
 
 ###############################
 ### NV and field parameters ###
@@ -429,8 +442,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		90e-9, #pi/4 45e-9
         'Hermite_Npi4_amp':			0.844 + 0.0185,#2015-12-28
-        'Hermite_theta_amp':		0.84,#0.84,#0.83/3+0.07,
-		'Hermite_theta_length':		50e-9,
+        'Hermite_theta_amp':		hermite_pi_amp, #0.84,#0.83/3+0.07,
+		'Hermite_theta_length':		hermite_pi_length, #50e-9,
 
 
         'Square_pi_length' :		square_pi_length, # 2014-12-01

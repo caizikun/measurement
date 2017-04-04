@@ -196,6 +196,9 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'count_marker_channel':						1,
 		}
 
+cfg['protocols']['AdwinSSRO+delay'] = {
+	'delay_voltage_DAC_channel':		16
+}
 
 ###############################
 ### NV and field parameters ###
@@ -428,7 +431,7 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
-		'MW_switch_risetime'	:	10e-9,
+		'MW_switch_risetime'	:	1e-9,
 		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
@@ -441,8 +444,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		0.585,#0.68,
-		'Hermite_theta_length':		46e-9,#0.68,
+        'Hermite_theta_amp':		hermite_pi2_amp,#0.585,#0.68,
+		'Hermite_theta_length':		hermite_pi2_length,#46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -466,14 +469,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					44e-9, # 50e-9
-        'eom_off_amplitude':				-0.008, # for 44 ns of off duration #-0.02
+        'eom_off_amplitude':				-0.02, # for 44 ns of off duration #-0.02
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.6,#0.2
+        'aom_risetime':						16e-9,#40e-9
+        'aom_amplitude':					0.8,#0.2
 }
 
 

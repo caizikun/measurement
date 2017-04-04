@@ -13,7 +13,7 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 reload(pulsar)
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD;reload(DD)
 import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
-import single_click_ent_LDE_element as LDE_elt; reload(LDE_elt)
+import sce_expm_LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
 
@@ -25,6 +25,7 @@ class SingleClickEntExpm(DD.MBI_C13):
     """
     mprefix = 'single_click_ent'
     adwin_process = 'single_click_ent'
+    # adwin_process = 'MBI_multiple_C13'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -76,7 +77,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         self.params['SP_voltage_AWG'] = \
                 self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
-        qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
+        # qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
         ### Adwin LT4 is connected to the plu. Needs to reset it.
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
@@ -137,19 +138,35 @@ class SingleClickEntExpm(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         
-        self.save_adwin_data(name,
-                [   ('CR_before',1, reps),
+        toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
                     ('ssro_results'                          ,1,reps), 
-                    ('pid_counts'                            ,1,reps*self.params['pid_points']), 
-                    ('sampling_counts'                       ,1,reps*self.params['sample_points']), 
+                    ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
                     'completed_reps'
-                    ])
+                    ]
+
+        if self.params['record_expm_params']::
+            toSave.extend(
+                    [('expm_mon_taper_freq'          ,1,reps), 
+                     ('expm_mon_nf_freq'             ,1,reps), 
+                     ('expm_mon_yellow_freq'         ,1,reps), 
+                     ('expm_mon_gate_voltage'        ,1,reps), 
+                     ('expm_mon_cr_counts'           ,1,reps), 
+                     ('expm_mon_repump_counts'       ,1,reps)]) 
+            
+        if self.params['do_phase_stabilisation']:
+            toSave.append(('pid_counts',1,reps*self.params['pid_points']))
         
+        if self.params['only_meas_phase']: 
+            toSave.append(('sampling_counts',1,reps*self.params['sample_points']))
+
+        
+        self.save_adwin_data(name,toSave)
+
         return
 
     
@@ -198,7 +215,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         LDE_elt.generate_LDE_elt(self,Gate)
 
-        if Gate.reps == 1: ### final LDe element has only one rep.
+        if Gate.is_final == 1: ### final LDe element has only one rep.
             if self.joint_params['opt_pi_pulses'] == 2:#i.e. we do barret & kok or SPCorrs etc.
                 Gate.event_jump = 'next'
                 if self.params['PLU_during_LDE'] > 0:
@@ -207,7 +224,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     Gate.go_to = 'next'
             else:
                 Gate.event_jump = 'next'
-                Gate.go_to = 'end' # go to the last trigger that signifies the Adwin you are done
+                Gate.go_to = 'Fail_done'+str(self.pt)#'end' # go to the last trigger that signifies the Adwin you are done
 
                 if self.params['PLU_during_LDE'] == 0:
                     Gate.go_to = None
@@ -217,7 +234,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     Gate.event_jump = None
         else:
             Gate.go_to = None
-            Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
+            Gate.event_jump ='LDE_rephasing_'+str(self.pt) ### the repeated LDE element has to jump to the rephasing element upon trigger.
 
     def generate_sequence(self,upload=True,debug=False):
         """
@@ -234,7 +251,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         ### create a list of gates according to the current sweep.
         for pt in range(self.params['pts']):
-
+            self.pt = pt
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
@@ -292,9 +309,44 @@ class SingleClickEntExpm(DD.MBI_C13):
 
             ### if more than 1 reps then we need to take the final element into account
             elif self.params['LDE_attempts'] != 1:
-                LDE.reps = self.params['LDE_attempts'] - 1
-            
 
+                ############ do the yellow check here!
+                LDE.reps = self.params['LDE_attempts'] - 1
+
+                if self.params['do_yellow_with_AWG'] > 0:
+                    LDE_list = []
+                    LDE_reionize = DD.Gate('LDE_reionize_'+str(pt),'Trigger')
+                    LDE_reionize.duration = self.joint_params['Yellow_AWG_duration']
+                    LDE_reionize.elements_duration = LDE_reionize.duration
+                    LDE_reionize.channel = 'AOM_Newfocus' #### this needs to change
+
+                    LDE_rounds, remaining_LDE_reps = divmod(LDE.reps,self.joint_params['LDE_attempts_before_yellow'])
+
+                    for i in range(LDE_rounds):
+                        #### when putting more stuff in the AWG have to make sure that names are unique
+                        ## LDE elts
+                        L = copy.deepcopy(LDE)
+                        L.name = L.name + '_' + str(i)
+                        L.reps = self.joint_params['LDE_attempts_before_yellow']
+                        LDE_list.append(L)
+
+                        ### yellow elts
+                        Y = copy.deepcopy(LDE_reionize)
+                        Y.name = Y.name + '_' + str(i)
+
+                        LDE_list.append(Y)
+
+
+                    LDE.reps = remaining_LDE_reps
+                    LDE.name = LDE.name + str(1+i)
+                    LDE_list.append(LDE)
+
+                    ### shelf in a reionization element after so and so many LDE attempts
+                    #self.joint_params['LDE_attempts_before_yellow']
+                else:
+                    LDE_list = [LDE]
+            else:
+                LDE_list = [LDE]
 
             ### LDE elements need rephasing or repumping elements
             LDE_repump = DD.Gate('LDE_repump_'+str(pt),'Trigger')
@@ -303,16 +355,16 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_repump.channel = 'AOM_Newfocus'
             LDE_repump.el_state_before_gate = '0' 
 
-            LDE_rephasing = DD.Gate('LDE_rephasing_1'+str(pt),'single_element')
+            LDE_rephasing = DD.Gate('LDE_rephasing_'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
-
-            ### this is only used if the plu is also in the mix.
-            LDE_is_done =  [DD.Gate('LDE_done_'+str(pt),'Trigger',
-                wait_time = 10e-6)] 
+            LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
+            Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
+                wait_time = 10e-6)
+            Fail_done.go_to = LDE_list[0].name
 
 
             #######################################################################
@@ -337,13 +389,17 @@ class SingleClickEntExpm(DD.MBI_C13):
             if self.params['do_LDE'] > 0:
                 ### needs corresponding adwin parameter 
                 if gate_seq == []:
-                    LDE.wait_for_trigger = True
-                gate_seq.append(LDE)
+                    LDE_list[0].wait_for_trigger = True
+                gate_seq.extend(LDE_list)
 
                 ### append last adwin synchro element 
-                if not LDE.is_final:
+                if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
                     gate_seq.append(LDE_rephasing)
+
+                    
+                    if self.params['PLU_during_LDE'] > 0:
+                        gate_seq.append(Fail_done)
 
                 elif self.params['LDE_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2 and self.params['no_repump_after_LDE'] == 0:
                     gate_seq.append(LDE_repump)
@@ -352,7 +408,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-
+            # gate_seq.append(LDE_repump)
             gate_seq.extend(e_RO)
 
 

@@ -112,6 +112,7 @@ class Gate(object):
         If there are any attributes being used frequently that are still missing here please add them for documentation
         '''
 
+
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
     '''
@@ -2846,8 +2847,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ### Possible TODO:
         ### Add an AOM delay time at the end! then there is no overlap between the following pi/2 and the repumper.
         ### note that this is not strictly necessary if the Switch risetime at the beginning of the element is long enough.
-        ### and it is at te moment
-
 
         ###################
         ## Set paramters ##

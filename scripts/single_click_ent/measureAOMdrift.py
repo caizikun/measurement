@@ -1,7 +1,7 @@
 import qt
 import msvcrt
 import numpy as np
-import lt3_scripts.tools.stools as stools
+# import lt3_scripts.tools.stools as stools
 import time
 
 name='AOMfreqStabMsmt'

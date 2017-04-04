@@ -161,6 +161,7 @@ def turn_all_sequence_elements_off(m):
     m.params['is_TPQI']                 = 0
     m.params['force_LDE_attempts_before_init'] = 0
     m.params['no_repump_after_LDE1']    = 0
+    m.params['do_phase_fb_delayline']   = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -223,12 +224,103 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['general_sweep_pts'] = np.linspace(0.0,2.e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
-    m.params['is_two_setup_experiment']=0   #XXXX
+    m.params['is_two_setup_experiment']=0  
 
     ### upload and run
 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
+
+def sweep_number_of_reps_ionization(name,do_Z = False, upload_only = False, debug=False, ms0 = False):
+    """
+    Initializes the electron in ms = -1 or ms = 0
+    and sweeps the number of LDE repetitions: used to measure ionization
+    """
+
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    pts = 15
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+
+    m.params['LDE_1_is_init']  = 1
+    m.params['input_el_state'] = 'mZ' ### mZ or Z!
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE1_attempts'] = 1
+    m.params['do_LDE_2'] = 1
+
+
+    if ms0:
+        m.params['mw_first_pulse_amp'] = 0
+
+    # else: ## do not manipulate the pi/2 pulse yet.
+        # m.params['mw_first_pulse_amp'] = 0
+        # m.params['mw_first_pulse_length'] = 100e-9
+    ### calculate the sweep array
+    minReps = 1
+    maxReps = 2000
+    step = int((maxReps-minReps)/pts)+1
+    ### define sweep
+    m.params['general_sweep_name'] = 'LDE2_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    print 'sweep pts', np.arange(minReps,maxReps,step)
+    ### loop over tomography bases and RO directions upload & run
+
+    breakst = False
+    run_sweep(m,debug = debug, upload_only = upload_only)
+    m.finish()
+
+def ionzation_sweep_pi_amp(name,upload_only = False, debug = False):
+    """
+    Initializes the electron in ms = -1 or ms = 0
+    and sweeps the number of LDE repetitions: used to measure ionization
+    """
+
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    sweep_array  = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.925])
+    pts = len(sweep_array)
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+
+    m.params['LDE_1_is_init']  = 1
+    m.params['input_el_state'] = 'mZ' ### mZ or Z!
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE1_attempts'] = 1
+    m.joint_params['LDE2_attempts'] = 1700
+    m.params['do_LDE_2'] = 1
+    m.params['mw_first_pulse_amp'] = 0
+
+    ### calculate the sweep array
+
+    ### define sweep
+    m.params['general_sweep_name'] = 'Hermite_pi_amp'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = sweep_array
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    ### loop over tomography bases and RO directions upload & run
+
+    breakst = False
+    run_sweep(m,debug = debug, upload_only = upload_only)
+    m.finish()
 
 def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False):
     """
@@ -990,6 +1082,85 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
         autoconfig = False
     m.finish()
 
+
+
+def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,input_state = 'Z'):
+    """
+    combines all carbon parts of the sequence in order to 
+    verify that all parts of the sequence work correctly.
+    Can be used to calibrate the phase per LDE attempt!
+    Here the adwin performs dynamic phase correction such that an
+    initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
+    Has the option to either sweep the repetitions of LDE2 (easy mode)
+    """
+    m = purify_slave.purify_single_setup(name+'_'+input_state)
+    prepare(m)
+
+    ### general params
+    pts = 17
+    
+    m.params['reps_per_ROsequence'] = 1050
+
+    turn_all_sequence_elements_off(m)
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_carbon_init'] = 1
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2'] = 1
+    m.params['do_phase_correction'] = 1
+    
+    m.params['do_purifying_gate'] = 1
+    m.params['do_carbon_readout']  = 0
+    m.params['do_repump_after_LDE2'] = 1
+    ####
+
+    m.params['do_phase_fb_delayline'] = 1
+    m.params['self_trigger_duration'] = 100e-9
+
+
+
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0 
+    m.params['input_el_state'] =  input_state
+
+    tomo_dict = { 'X' : ['Z'],
+                  'mX': ['Z'],
+                  'Y' : ['Y'],
+                  'mY': ['Y'],
+                  'Z' : ['X'],
+                  'mZ': ['X']}
+
+    m.params['Tomography_bases'] = tomo_dict[input_state]
+    # m.params['mw_first_pulse_phase'] = m.params['X_phase']
+
+    #### increase the detuning for more precise measurements
+    m.params['phase_detuning'] = 6.0
+    phase_per_rep = m.params['phase_per_sequence_repetition']
+    m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
+    
+    ### calculate sweep array
+    minReps = 1
+    maxReps = 350./2.
+    step = int((maxReps-minReps)/pts)+1
+
+
+    ### define sweep
+    m.params['do_general_sweep']    = 1
+    m.params['general_sweep_name'] = 'LDE2_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
+    m.params['pts'] = len(m.params['general_sweep_pts'])
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+                     
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+
+
+    run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 if __name__ == '__main__':
 
     # repump_speed(name+'_repump_speed',upload_only = False)
@@ -1020,10 +1191,17 @@ if __name__ == '__main__':
     #         GreenAOM.turn_off()
     #         optimize_time = time.time()
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    AWG.clear_visa()
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    # AWG.clear_visa()
     # #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
+    # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=True,input_state = 'Z')
+
+
+    #### ionization studies:
+    # sweep_number_of_reps_ionization(name+'_ionization_check_ms0',upload_only=False,ms0=True)
+    # sweep_number_of_reps_ionization(name+'_ionization_check',upload_only=False,ms0=False)
+    ionzation_sweep_pi_amp(name+'_ionization_sweep_pi_amp', upload_only = False)

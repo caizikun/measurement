@@ -11,8 +11,8 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 4.,
-                    'nr_of_points' : 31,
+                    'scan_length' : 5.,
+                    'nr_of_points' : 41,
 #                    'pixel_time' : 50,
                     },
                 'zyx' : ['z','y','x'],

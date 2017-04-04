@@ -35,8 +35,8 @@ qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHa
 
 # qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
 #    high=2.0, low=0, offset=0, delay=182e-9, active=True)
-qt.pulsar.define_channel(id='ch2_marker1', name='self_trigger', type='marker', 
-   high=2.0, low=0., offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch2_marker2', name='self_trigger', type='marker', 
+   high=2.0, low=0.0, offset=0.0, delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0.0, offset=0., delay=0., active=True) 
 qt.pulsar.define_channel(id='ch3_marker2', name='adwin_count', type='marker', 
@@ -52,6 +52,7 @@ qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Matisse', type='marker',
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
+# qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.5)
 
 qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())

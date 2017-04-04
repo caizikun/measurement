@@ -1,5 +1,5 @@
 import qt
-import joint_params
+# import joint_params
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']

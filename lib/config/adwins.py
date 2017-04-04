@@ -1268,6 +1268,24 @@ config['adwin_lt2_processes'] = {
                     'statistics' : 26,
                     },
                 },
+
+
+        'green_readout' : {
+            'index' : 9,
+            'file'  : 'green_readout_lt2.TB9',
+            'params_long' : [
+                ['AWG_start_DO_channel'         ,   16],
+                ['AWG_event_jump_DO_channel'    ,   8 ],
+                ['total_sync_nr'                ,   5], 
+                ['sync_counter_idx'             ,   4],
+                ['AWG_done_DI_channel'          ,   16]
+            ],
+            'params_long_index' : 20,
+            'params_long_length': 10,
+            'par'               : {
+                'completed_reps'    : 73,
+            },
+        },
 # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
 # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
 # Not sure if this function is then needed. - Machiel 30-12-'13'
@@ -2179,7 +2197,6 @@ config['adwin_lt2_processes'] = {
                     'parity_RO_results': 43,
                     },
                 },
-
         }
 
 config['adwin_lt3_dacs'] = {
@@ -2596,7 +2613,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
-                    ['delay_voltage_DAC_channel'   ,  14],
+                    ['delay_voltage_DAC_channel'   ,  16],
                     ['do_delay_voltage_control'    ,   1]
                     ],
                 'params_long_index'  : 20,
@@ -2618,6 +2635,100 @@ config['adwin_pro_processes'] = {
                     },
                 'data_float' : {
                     'delay_voltages' : 40,
+                    },
+                },
+
+        'integrated_ssro_tico_delay_timing' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_tico_delay_timing.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['do_tico_delay_control'       ,   0],
+                    ['delay_trigger_DI_channel'    ,  20],
+                    ['delay_trigger_DO_channel'    ,  12],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'delay_cycles': 41,
+                    },
+                },
+
+        'dummy_selftrigger' : {
+                'index' : 9,
+                'file' : 'dummy_selftrigger.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['delay_voltage_DAC_channel'   ,  16],
+                    ['do_delay_voltage_control'    ,   1]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float': [
+                    ],
+                'params_float_index': 21,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_float' : {
+                    'delay_voltages' : 40,
+                    },
+                },
+
+        'dummy_tico_selftrigger' : {
+                'index' : 9,
+                'file' : 'dummy_tico_selftrigger.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['do_tico_delay_control'       ,   0],
+                    ['delay_trigger_DI_channel'    ,  20],
+                    ['delay_trigger_DO_channel'    ,  12],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float': [
+                    ],
+                'params_float_index': 21,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'delay_cycles' : 41,
                     },
                 },
 
@@ -2983,9 +3094,12 @@ config['adwin_pro_processes'] = {
                     ['PLU_during_LDE'                  ,   1],
                     ['LDE_is_init'                     ,   1],
                     ['do_phase_stabilisation'          ,   1],
-                    ['only_meas_phase'                 ,   0],
+                    ['only_meas_phase'                 ,   1],
                     ['do_dynamical_decoupling'         ,   1],
                     ['Phase_msmt_DAC_channel'          ,   2],
+                    ['Phase_stab_DAC_channel'          ,   2],
+                    ['zpl1_counter_channel'            ,   2],
+                    ['zpl2_counter_channel'            ,   3],
                     ['pid_points'                      ,   10],
                     ['sample_points'                   ,   100],
                     ['count_int_cycles'                ,   25], # units of 3.3 ns
@@ -2998,7 +3112,7 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['Phase_Msmt_voltage'         , 0.0],
+                    ['Phase_Msmt_voltage'         , 2.0],
                     ['Phase_Msmt_off_voltage'         , 0.0],
                     ['PID_GAIN'       , 1.0],
                     ['PID_Kp'         , 0.002],
@@ -3029,6 +3143,12 @@ config['adwin_pro_processes'] = {
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
+                    'expm_mon_taper_freq'       : 40,
+                    'expm_mon_nf_freq'          : 41,
+                    'expm_mon_yellow_freq'      : 42,
+                    'expm_mon_gate_voltage'     : 43,
+                    'expm_mon_cr_counts'        : 44,
+                    'expm_mon_repump_counts'    : 45, 
                     },
                 },
 
@@ -3091,6 +3211,21 @@ config['adwin_pro_processes'] = {
                     'sample_counts_2' : 25,
                     },
                 },
+                'oscilloscope' : {
+                'index' : 8,
+                'file' : 'oscilloscope.TB8',
+                 'params_long' : [
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'sample_counts_1' : 24,
+                    'sample_counts_2' : 25,
+                },
+                }
         }
 
 
@@ -3253,7 +3388,8 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'yellow_aom_frq': 11, #D
         'phase_aom': 12, #D
         'yellow_voltage': 13, #D
-        'fibre_stretcher': 14 #D
+        'fibre_stretcher': 14, #D
+        'delay_voltage': 16         # Control voltage for self-trigger delay line
         }
 
 config['adwin_m1_dacs'] = {

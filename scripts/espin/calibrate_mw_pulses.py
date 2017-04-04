@@ -34,14 +34,14 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     pulse_shape = m.params['pulse_shape']
-    pts = 12
+    pts = 21
 
     m.params['pts'] = pts
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
     m.params['repetitions'] = 1600 if multiplicity == 1 else 2000
-    rng = 0.1 if multiplicity == 1 else 0.02
+    rng = 0.1 if multiplicity == 1 else 0.05
 
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
@@ -80,7 +80,7 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     pulse_shape = m.params['pulse_shape']
-    pts = 12
+    pts = 51
 
     m.params['pts'] = pts
     
@@ -88,16 +88,13 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     
         raise KeyError('This hasnt been written for square pulses yet!')
     
-    elif pulse_shape == 'Hermite':
-
-        m.params['Hermite_pi_length'] =  m.params['Hermite_theta_length'] 
 
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
-    m.params['repetitions'] = 5000
+    m.params['repetitions'] = 2500
     rng = kw.pop('rng',0.2)
 
-    m.params['MW_pulse_amplitudes'] = m.params['Hermite_theta_amp'] + np.linspace(-rng, rng, pts)  
+    m.params['MW_pulse_amplitudes'] = np.linspace(0.05, 0.95, pts)  
             
             
     
@@ -307,7 +304,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
         sweep_axis =  m.params['Hermite_pi2_amp'] + np.linspace(-0.12, 0.12, pts)  
         m.params['pulse_pi2_sweep_amps'] = sweep_axis
 
-    print 'this is the length',m.MW_pi2.length
+    # print 'this is the length',m.MW_pi2.length
     # we do actually two msmts for every sweep point, that's why the awg gets only half of the 
     # pts;
     m.params['pts'] = 2*pts
@@ -410,9 +407,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
 
 if __name__ == '__main__':
     # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
-    # calibrate_theta_pulse(SAMPLE_CFG + 'theta',rng = 0.05)
+    calibrate_theta_pulse(SAMPLE_CFG + 'theta')#,rng = 0.05)
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
+    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
     #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

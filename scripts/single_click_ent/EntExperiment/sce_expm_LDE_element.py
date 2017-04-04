@@ -24,11 +24,9 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
     
-    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
-        if Gate.first_pulse_is_pi2:
+    if msmt.params['first_mw_pulse_is_pi2'] > 0 and hasattr(Gate,'first_mw_pulse_phase'):
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
-    elif hasattr(Gate,'first_pulse_is_pi2'):
-        if Gate.first_pulse_is_pi2:
+    elif msmt.params['first_mw_pulse_is_pi2']:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
 
     if hasattr(Gate,'no_first_pulse'):
@@ -41,7 +39,12 @@ def _create_mw_pulses(msmt,Gate):
             Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
-
+    if msmt.params['do_only_opt_pi'] >0:
+        Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+        Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
 
@@ -87,7 +90,7 @@ def _create_syncs_and_triggers(msmt,Gate):
 
 
     # PLU comm
-    if setup == 'lt3': #XXX get rid of LT1 later on.
+    if setup == 'lt3': 
         plu_amp = 1.0
     else:
         plu_amp = 0.0
@@ -98,7 +101,7 @@ def _create_syncs_and_triggers(msmt,Gate):
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
         length = 1.5e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
-        length = 2e-6, amplitude = 2) 
+        length = 2.5e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
@@ -139,6 +142,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
             )
 
     ##
+    sp_amp = 1.0
+    if msmt.params['do_only_opt_pi'] >0:
+        sp_amp = 0.0
 
     # 1 SP
     e.add(pulse.cp(Gate.AWG_repump, 
@@ -148,7 +154,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     
     e.add(pulse.cp( Gate.AWG_repump,
                     length          = msmt.params['LDE_SP_duration'], 
-                    amplitude       = 1.0), 
+                    amplitude       = sp_amp), 
                     start           = msmt.params['LDE_SP_delay'],
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
@@ -171,7 +177,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
-        refpulse = 'initial_delay')
+        refpulse = 'initial_delay',
+        name = 'count_pulse')
 
 
         
@@ -191,6 +198,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             refpoint        = 'end',
             refpoint_new    = 'center',
             name            = 'MW_Theta')
+
         if msmt.params['MW_pi_during_LDE'] == 1:
             e.add(Gate.mw_X,
                 start           = msmt.params['LDE_decouple_time'],
@@ -212,47 +220,49 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #4 opt. pi pulses
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
 
-    if not ((msmt.params['LDE_is_init'] > 0) and 'LDE' in Gate.name):
+    if not (msmt.params['LDE_is_init'] > 0):
 
         if msmt.params['is_TPQI'] > 0:
             initial_reference = 'spinpumping'
             msmt.params['MW_opt_puls1_separation'] = 1e-6
         else:
             initial_reference = 'MW_Theta'
-        for i in range(msmt.joint_params['opt_pi_pulses']):
-            name = 'opt pi {}'.format(i+1)
-            refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
-            start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
-            refpoint = 'start' if i > 0 else 'end'
 
-            e.add(Gate.eom_pulse,        
-                name = name,
-                start = start,
-                refpulse = refpulse,
-                refpoint = refpoint,)
+        if qt.current_setup == 'lt3': ### only LT3 gives out the pi pulses
+            for i in range(msmt.joint_params['opt_pi_pulses']):
+                name = 'opt pi {}'.format(i+1)
+                refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
+                start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
+                refpoint = 'start' if i > 0 else 'end'
 
-
-        #5 Plu gates
-        if msmt.params['PLU_during_LDE'] == 1 :
-            e.add(Gate.plu_gate, name = 'plu gate 1', 
-                refpulse = 'opt pi 1',
-                start = msmt.params['PLU_1_delay'])
-
-            plu_ref_name = 'plu gate 1'
-
-            ## the name plu 3 is historic... see bell.
-            e.add(pulse.cp(Gate.plu_gate, 
-                    length = msmt.params['PLU_gate_3_duration']), 
-                name = 'plu gate 3', 
-                start = msmt.params['PLU_3_delay'], 
-                refpulse = plu_ref_name)
+                e.add(Gate.eom_pulse,        
+                    name = name,
+                    start = start,
+                    refpulse = refpulse,
+                    refpoint = refpoint,)
 
 
-            e.add(pulse.cp(Gate.plu_gate, 
-                    length = msmt.params['PLU_gate_3_duration']), 
-                    name = 'plu gate 4', 
-                    start = msmt.params['PLU_4_delay'],
-                    refpulse = 'plu gate 3')
+            #5 Plu gates
+            if msmt.params['PLU_during_LDE'] == 1 :
+                e.add(Gate.plu_gate, name = 'plu gate 1', 
+                    refpulse = 'opt pi 1',
+                    start = msmt.params['PLU_1_delay'])
+
+                plu_ref_name = 'plu gate 1'
+
+                ## the name plu 3 is historic... see bell.
+                e.add(pulse.cp(Gate.plu_gate, 
+                        length = msmt.params['PLU_gate_3_duration']), 
+                    name = 'plu gate 3', 
+                    start = msmt.params['PLU_3_delay'], 
+                    refpulse = plu_ref_name)
+
+
+                e.add(pulse.cp(Gate.plu_gate, 
+                        length = msmt.params['PLU_gate_3_duration']), 
+                        name = 'plu gate 4', 
+                        start = msmt.params['PLU_4_delay'],
+                        refpulse = 'plu gate 3')
     #### gives a done trigger that has to be timed accordingly, is referenced to the PLU if the PLU is used by this setup.
     if Gate.is_final:
         ## one can time accurately if we use the plu during the experiment
@@ -261,7 +271,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
         if not boolean: ### if this is not the case then the measurement is PLU insensitive
             e.add(Gate.adwin_trigger_pulse, ### insert the trigger right at the start
                     start = 0,
-                    refpulse = 'initial_delay')
+                    refpulse = 'count_pulse',
+                    refpoint = 'start',
+                    refpoint_new = 'start')
 
         else:
             ## if we are dependent on the plu then the plu trigger has to come in before the done trigger.
@@ -300,7 +312,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
                 length = 3e-6
                 )
         )
-    # 1 SP
+
     e.add(pulse.cp(Gate.AWG_repump, 
         amplitude = 0, 
         length = msmt.joint_params['initial_delay']),
@@ -337,12 +349,13 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
         refpoint        = 'end',
         refpoint_new    = 'start')
 
-    if msmt.params['PLU_during_LDE'] == 1 :
+    if msmt.params['PLU_during_LDE'] == 1 and qt.current_setup == 'lt3':
         ### this pulse is supposed to turn off the plu signal to both adwins
         e.add(pulse.cp(Gate.plu_gate, 
             length = msmt.params['PLU_gate_3_duration']), 
             name = 'plu for adwin', 
             start = 1.2e-6, ## arbitrarily chosen number
             refpulse = 'initial_delay')
+
 
     Gate.elements = [e]

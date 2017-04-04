@@ -165,8 +165,7 @@ class PQMeasurement(m2.Measurement):
             #ll[self.PQ_ins_params[PQ_ins_key]._length]+=1 #XXX
             if _length > 0:
                 if  _length ==  TTTR_RepetitiveReadouts * TTTR_read_count:
-                    logging.warning('TTTR record length is maximum length, \
-                            could indicate too low transfer rate resulting in buffer overflow.')
+                    logging.warning('TTTR record length is maximum length, could indicate too low transfer rate resulting in buffer overflow.')
 
                 if self.PQ_ins.get_Flag_FifoFull():
                     print 'Aborting the measurement: Fifo full!'

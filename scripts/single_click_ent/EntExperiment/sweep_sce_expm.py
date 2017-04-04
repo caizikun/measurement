@@ -6,7 +6,7 @@ NK 2016
 
 import numpy as np
 import qt 
-import single_click_ent_expm; reload(single_click_ent_expm)
+import sce_expm; reload(sce_expm)
 import msvcrt
 name = qt.exp_params['protocols']['current']
 
@@ -52,6 +52,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     name = qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
@@ -65,14 +66,14 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['Nr_parity_msmts'] = 0 # Not necessary (only for adwin: C13 MBI)
 
     if setup == 'lt4' :
-        import single_click_ent_expm_params_lt4 as params_lt4
+        import sce_expm_params_lt4 as params_lt4
         reload(params_lt4)
         m.AWG_RO_AOM = qt.instruments['PulseAOM']
         for k in params_lt4.params_lt4:
             m.params[k] = params_lt4.params_lt4[k]
 
     elif setup == 'lt3' :
-         import single_click_ent_expm_params_lt3 as params_lt3
+         import sce_expm_params_lt3 as params_lt3
          reload(params_lt3)
          m.AWG_RO_AOM = qt.instruments['PulseAOM']
          for k in params_lt3.params_lt3:
@@ -83,7 +84,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
 
     if not(hasattr(m,'joint_params')):
         m.joint_params = {}
-    import single_click_ent_expm_joint_params as joint_params
+    import sce_expm_joint_params as joint_params
     reload(joint_params)
     for k in joint_params.joint_params:
         m.joint_params[k] = joint_params.joint_params[k]
@@ -116,7 +117,6 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        print m.params['Phase_Msmt_voltage']
         m.run(autoconfig=False, setup=False)
 
         if save_name != '':
@@ -150,7 +150,8 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_stabilisation']  = 0
     m.params['only_meas_phase']         = 0
     m.params['do_dynamical_decoupling'] = 0 
-    
+    m.params['do_only_opt_pi']          = 0
+    m.params['do_yellow_with_AWG']      = 0
     
 def turn_all_sequence_elements_on(m):
     """
@@ -172,6 +173,8 @@ def turn_all_sequence_elements_on(m):
     m.params['do_phase_stabilisation']  = 1
     m.params['only_meas_phase']         = 0
     m.params['do_dynamical_decoupling'] = 0 # Not doing this yet (PH) 
+    m.params['do_only_opt_pi']          = 0 # for single setup testing!
+    m.params['do_yellow_with_AWG']      = 0
     
 
 def calibrate_theta(name, debug = False, upload_only = False):
@@ -188,7 +191,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     There is a finite timing offset between LDE element and the last pi/2 pulse that we do upon success.
     This measurement sweeps the timing of the last pi/2 to determine the best position.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -203,7 +206,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_final_delay_offset'
@@ -222,7 +225,7 @@ def lastpi2_phase_vs_amplitude(name, debug = False, upload_only = False):
     This measurement sweeps the phase of the last pi/2 pulse while keeping the amplitude constant.
     Is used as a sanity check --> are all our pi/2 pulses actually pi/2 pulses?
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -237,7 +240,7 @@ def lastpi2_phase_vs_amplitude(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
@@ -256,7 +259,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     This measurement sweeps the phase of the last pi/2 pulse and includes MW pulses in the LDE element.
     Is used as a sanity check --> how coherent are we at the last pi/2 pulse and what is the phase relation for the MW source.
     """
-    m = single_click_ent_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name)
     prepare(m)
 
     ### general params
@@ -271,7 +274,8 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-
+    m.params['first_pulse_is_pi2'] = True
+    
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
@@ -284,5 +288,92 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
+
+def ionization_study_LT4(name, debug = False, upload_only = False, use_yellow = False):
+    """
+    Two setup experiment where LT3 does optical pi pulses only
+    While LT4 repetitively runs the entire LDE element.
+    """
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+    if qt.current_setup == 'lt3':
+        m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.joint_params['do_final_mw_LDE'] = 0
+   #m.params['first_pulse_is_pi2'] = True
+    
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(5,500,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['do_yellow_with_AWG'] = use_yellow
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
+    """
+    Two setup experiment where LT3 does optical pi pulses only
+    While LT4 repetitively runs the entire LDE element.
+    """
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 10
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 250
+
+    turn_all_sequence_elements_off(m)
+
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.joint_params['do_final_mw_LDE'] = 0
+    # m.params['first_pulse_is_pi2'] = True
+    # m.params['mw_first_pulse_amp'] = 0
+    ### prepare sweep
+    if qt.current_setup == 'lt3':
+        # m.params['do_only_opt_pi'] = 1
+        m.joint_params['opt_pi_pulses'] = 1
+        m.params['mw_first_pulse_amp'] = 0
+        m.params['Hermite_pi_amp'] = 0
+        m.params['Hermite_pi2_amp'] = 0
+
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_attempts'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(1,500,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['do_yellow_with_AWG'] = use_yellow
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
 if __name__ == '__main__':
-    pass
+    # lastpi2_measure_delay(name,debug=True,upload_only=True)
+    # lastpi2_phase_vs_amplitude(name,debug=True,upload_only=True)
+    # lastpi2_phase_action(name,debug=True,upload_only=True)
+
+    # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
+
+    ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
+    

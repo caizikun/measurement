@@ -18,7 +18,7 @@ import measurement.lib.config.adwins as adwins_cfg
 import measurement.lib.measurement2.measurement as m2
 
 from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt, pulsar_delay
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
 
 execfile(qt.reload_current_setup)
@@ -30,7 +30,7 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 name=SAMPLE_CFG
 
 def electronT2_NoTriggers(name, debug = False, range_start = 0e-6, range_end=1000e-6):
-    m = pulsar_msmt.ElectronT2NoTriggers(name)
+    m = pulsar_delay.ElectronT2NoTriggers(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -85,7 +85,7 @@ def electronT2_NoTriggers(name, debug = False, range_start = 0e-6, range_end=100
 def electronRefocussingTriggered(name, debug = False, range_start = -2e-6, range_end = 2e-6, 
     evolution_1_self_trigger=True, evolution_2_self_trigger=False, vary_refocussing_time=False,
     refocussing_time = 200e-6):
-    m = pulsar_msmt.ElectronRefocussingTriggered(name)
+    m = pulsar_delay.ElectronRefocussingTriggered(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -103,6 +103,7 @@ def electronRefocussingTriggered(name, debug = False, range_start = -2e-6, range
     m.params['sequence_wait_time']=1
 
     m.params['do_delay_voltage_control']=0
+    m.params['delay_voltage_DAC_channel'] = 14
 
     pts = 51
     m.params['pts'] = pts
@@ -177,13 +178,13 @@ if __name__ == '__main__':
     hahn_echo_range = [3.5e-6, 53.5e-6]
     defocussing_range = [-0.5e-6, 0.5e-6]
 
-    electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
+    # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
     # reoptimize()
-    # electronRefocussingTriggered("HahnEchoNoTrigger_" + name, debug=False, 
-    #     range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
-    #     evolution_1_self_trigger = False, evolution_2_self_trigger=False,
-    #     vary_refocussing_time = True)
+    electronRefocussingTriggered("HahnEchoNoTrigger_" + name, debug=True, 
+        range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
+        evolution_1_self_trigger = False, evolution_2_self_trigger=False,
+        vary_refocussing_time = True)
     
     # reoptimize()    
     # electronRefocussingTriggered("DefocussingNoTrigger_" + name, debug=False, 
