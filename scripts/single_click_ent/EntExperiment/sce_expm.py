@@ -149,9 +149,14 @@ class SingleClickEntExpm(DD.MBI_C13):
                     'completed_reps'
                     ]
 
-
-        
-
+        if self.params['record_expm_params']::
+            toSave.extend(
+                    [('expm_mon_taper_freq'          ,1,reps), 
+                     ('expm_mon_nf_freq'             ,1,reps), 
+                     ('expm_mon_yellow_freq'         ,1,reps), 
+                     ('expm_mon_gate_voltage'        ,1,reps), 
+                     ('expm_mon_cr_counts'           ,1,reps), 
+                     ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
             toSave.append(('pid_counts',1,reps*self.params['pid_points']))

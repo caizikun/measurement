@@ -3143,6 +3143,12 @@ config['adwin_pro_processes'] = {
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
+                    'expm_mon_taper_freq'       : 40,
+                    'expm_mon_nf_freq'          : 41,
+                    'expm_mon_yellow_freq'      : 42,
+                    'expm_mon_gate_voltage'     : 43,
+                    'expm_mon_cr_counts'        : 44,
+                    'expm_mon_repump_counts'    : 45, 
                     },
                 },
 
