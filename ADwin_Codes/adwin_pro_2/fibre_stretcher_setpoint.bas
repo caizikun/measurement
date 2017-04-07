@@ -28,8 +28,7 @@
 #INCLUDE .\configuration.inc
 
 ' Defining FPAR
-#DEFINE g_0             FPAR_13              ' Scalefactor ZPL APD 0
-#DEFINE g_1             FPAR_14              ' Scalefactor ZPL APD 1
+#DEFINE g_0             FPAR_77              ' Scalefactor ZPL APD 0
 
 ' Defining PAR
 #DEFINE DELAY           PAR_10               ' Processdelay
@@ -71,5 +70,4 @@ Event:
   if (n_1 > n_max_1) then
     n_max_1 = n_1
   endif
-  g_0 = 1/n_max_0
-  g_1 = 1/n_max_1
+  g_0 = n_max_1/n_max_0

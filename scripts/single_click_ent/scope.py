@@ -58,7 +58,7 @@ while True:
 
     plt.sca(ax1)
     plt.cla()
-    # plt.ylim([0,1500])
+    plt.ylim([0,800])
     plt.plot(x_time*int_time/1000.0, counts_1)
     plt.show()
     plt.draw()

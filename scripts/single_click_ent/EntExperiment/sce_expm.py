@@ -154,10 +154,12 @@ class SingleClickEntExpm(DD.MBI_C13):
 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts',1,reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,reps*self.params['pid_points']))
+            toSave.append(('pid_counts_2',1,reps*self.params['pid_points']))
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_2',1,reps*self.params['sample_points']))
 
         
         self.save_adwin_data(name,toSave)

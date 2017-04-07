@@ -3118,6 +3118,7 @@ config['adwin_pro_processes'] = {
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
+                    ['setpoint'       , 3.14],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 12,
@@ -3138,8 +3139,10 @@ config['adwin_pro_processes'] = {
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'ssro_results'              : 103,  # electron readout
-                    'pid_counts'                : 104, # Counts measured during the PID process
-                    'sampling_counts'           : 105, # Counts during the sample process
+                    'pid_counts_1'                : 104, # Counts measured during the PID process
+                    'pid_counts_2'                : 105, # Counts measured during the PID process
+                    'sampling_counts_1'           : 106, # Counts during the sample process
+                    'sampling_counts_2'           : 107, # Counts during the sample process
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {

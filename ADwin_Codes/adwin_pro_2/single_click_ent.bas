@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,82,82,163,163,326,326,344,344,677,677,745,746
-' Foldings                       = 349,357,442,632,641,658
+' Bookmarks                      = 3,3,84,84,165,165,345,345,363,363,706,706,774,775
+' Foldings                       = 368,376,661,670
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -67,8 +67,10 @@ DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spen
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
 ' PH Fix this. NK: fix what ???
-DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation
-DIM DATA_105[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time
+DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
+DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
+DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
+DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
@@ -90,7 +92,7 @@ DIM Phase_msmt_laser_DAC_channel, Phase_stab_DAC_channel as Long
 DIM time_spent_in_state_preparation, time_spent_in_sequence, time_spent_in_communication as LONG
 DIM duty_cycle as FLOAT
 DIM AWG_sequence_repetitions_LDE AS long
-DIM old_counts, counts AS LONG
+DIM old_counts_1, old_counts_2, counts, counts_1, counts_2 AS Float
 
 ' Channels & triggers
 dim AWG_done_was_low, AWG_repcount_was_low, PLU_event_di_was_high, master_slave_awg_trigger_delay as long
@@ -116,10 +118,10 @@ DIM do_phase_stabilisation, only_meas_phase, do_dynamical_decoupling as long
 DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
-DIM Sig, setpoint, Prop, Dif,Int                   AS FLOAT        ' PID terms
-DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki                         AS FLOAT        ' PID parameters
-DIM e, e_old                              AS FLOAT        ' error term
-DIM pid_time_factor                       AS FLOAT        ' account for changes in the adwin clock cycle
+DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
+DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki,g_0               AS FLOAT        ' PID parameters
+DIM e, e_old                                        AS FLOAT        ' error term
+DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
 DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
@@ -202,6 +204,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   raw_count_int_cycles        = DATA_20[36]
   raw_phase_stab_max_cycles   = DATA_20[37]
   
+  
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
   A_SP_voltage                 = DATA_21[2]
@@ -213,7 +216,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PID_Kp                       = DATA_21[8]
   PID_Ki                       = DATA_21[9]
   PID_Kd                       = DATA_21[10]
+  SETPOINT_angle               = DATA_21[11]
   
+  setpoint = (cos(SETPOINT_angle/2))^2
+  FPAR_76 = setpoint
+  g_0 = FPAR_77                       'count ratios of APD's
    
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -263,8 +270,20 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   NEXT i
   
   array_step = 1
-  FOR i = 1 TO max_sample/100
+  FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_105[array_step],100)
+    array_step = array_step + 100
+  NEXT i
+  
+  array_step = 1
+  FOR i = 1 TO max_sample/100
+    MemCpy(Initializer[1],DATA_106[array_step],100)
+    array_step = array_step + 100
+  NEXT i
+  
+  array_step = 1
+  FOR i = 1 TO max_sample/100
+    MemCpy(Initializer[1],DATA_107[array_step],100)
     array_step = array_step + 100
   NEXT i
   
@@ -458,8 +477,8 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, counter_pattern)    'turn on counter
           P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_RO_voltage+32768) ' turn on Ex laser
         ELSE
-          counts = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
-          IF (counts >= Dynamical_stop_ssro_threshold) THEN ' photon detected
+          counts_1 = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
+          IF (counts_1 >= Dynamical_stop_ssro_threshold) THEN ' photon detected
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
             wait_time = dynamical_stop_SSRO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase xxx to do: is this still accurate to the us?
             time_spent_in_sequence = time_spent_in_sequence + timer
@@ -525,28 +544,34 @@ EVENT:
           ENDIF
           
           P2_CNT_ENABLE(CTR_MODULE, 0000b)
-          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
+          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
+          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
-          old_counts = 0
+          old_counts_1 = 0
+          old_counts_2 = 0
           offset_index = repetition_counter * pid_points ' PH CHECK
           index = 0
           store_index = 0
         ELSE
           if (index = count_int_cycles) then ' Only reads apds every count int cycles
             index = 0
-            counts = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts 'read counter
-            old_counts = old_counts + counts
+            counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
+            counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
+            old_counts_1 = old_counts_1 + counts_1
+            old_counts_2 = old_counts_2 + counts_2
             inc(store_index)
-            DATA_104[offset_index + store_index] = counts 
+            DATA_104[offset_index + store_index] = counts_1
+            DATA_105[offset_index + store_index] = counts_2
+            
+            counts = ((counts_1) * g_0) / ((counts_1) * g_0 + (counts_2)*1.0)
  
             ' PID control
-            e = SETPOINT - counts
+            e = setpoint - counts
             Prop = PID_Kp * e'                   ' Proportional term      
             Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
             Dif = PID_Kd * ( e - e_old )             ' Differentiation term
             Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
-  
+            FPAR_73 = Sig
             ' Output inside reach of fibre stretcher?
             if (Sig > 9.5) then
               Sig = Sig - 11.0775 ' PH Shouldnt be hard coded
@@ -601,20 +626,24 @@ EVENT:
           ENDIF
           
           P2_CNT_ENABLE(CTR_MODULE, 0000b)
-          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)    'clear counter 'zpl1_counter_pattern
-          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern)    'turn on counter
+          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter 'zpl1_counter_pattern
+          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
-          old_counts = 0
+          old_counts_1 = 0
+          old_counts_2 = 0
           offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
         ELSE
           if (index = count_int_cycles) then ' Only reads apds every count int cycles
             index = 0
-            counts = P2_CNT_READ(CTR_MODULE, zpl1_counter_pattern) - old_counts 'read counter
-            old_counts = old_counts + counts
+            counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
+            counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
+            old_counts_1 = old_counts_1 + counts_1
+            old_counts_2 = old_counts_2 + counts_2
             inc(store_index)
-            DATA_105[offset_index + store_index] = counts
+            DATA_106[offset_index + store_index] = counts_1
+            DATA_107[offset_index + store_index] = counts_2
             
           endif
           
@@ -674,11 +703,11 @@ EVENT:
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)                       ' turn on counter
-          old_counts = 0
+          old_counts_1 = 0
         ELSE
-          counts = P2_CNT_READ(CTR_MODULE,counter_channel)
-          DATA_29[timer] = DATA_29[timer] + counts - old_counts    ' for spinpumping arrival time histogram
-          old_counts = counts
+          counts_1 = P2_CNT_READ(CTR_MODULE,counter_channel)
+          DATA_29[timer] = DATA_29[timer] + counts_1 - old_counts_1    ' for spinpumping arrival time histogram
+          old_counts_1 = counts_1
                     
           IF (timer = SP_duration) THEN
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
