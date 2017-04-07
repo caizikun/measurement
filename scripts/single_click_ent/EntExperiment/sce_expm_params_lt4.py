@@ -14,6 +14,7 @@ params_lt4['do_N_MBI']                  = 0 #practically not in use
 params_lt4['MW_before_LDE']            = 0
 params_lt4['LDE_is_init']             = 0
 params_lt4['do_LDE']                  = 1 # we always do this.
+params_lt3['record_expm_params']  = False # by default we dont record this, only useful if a long run
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 

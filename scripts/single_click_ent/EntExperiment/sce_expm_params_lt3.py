@@ -14,6 +14,7 @@ params_lt3['do_N_MBI']                  = 0 #practically not in use
 params_lt3['MW_before_LDE']            = 0
 params_lt3['LDE_is_init']             = 0
 params_lt3['do_LDE']                  = 1 # we always do this.
+params_lt3['record_expm_params']  = False # by default we dont record this, only useful if a long run
     
 
 # LDE element
@@ -71,6 +72,7 @@ params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 

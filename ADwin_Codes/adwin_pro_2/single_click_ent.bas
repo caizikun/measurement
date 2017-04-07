@@ -39,6 +39,7 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
+#INCLUDE .\monitor_expm_params.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
@@ -66,7 +67,7 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
-' PH Fix this. NK: fix what ???
+' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
 DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
@@ -130,6 +131,7 @@ DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_c
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
+  init_expm_param_monitor()
   
   n_of_comm_timeouts = 0 ' used for debugging, goes to a par   
   repetition_counter  = 0 ' adwin arrays start at 1, but this counter starts at 0 -> we have to write to rep counter +1 all the time
@@ -658,7 +660,7 @@ EVENT:
           
         endif
         
-      CASE 20 ' Set the timer check if still phase stable to zero
+      CASE 20 ' Set the timer to check if still phase stable to zero
         
         elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
         mode = 2
@@ -670,6 +672,7 @@ EVENT:
         P2_DIGOUT(DIO_MODULE, 11, 1)
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
+        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
@@ -847,6 +850,8 @@ EVENT:
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
+        
+        record_expm_params(repetition_counter+1) '' For the expm monitor
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
