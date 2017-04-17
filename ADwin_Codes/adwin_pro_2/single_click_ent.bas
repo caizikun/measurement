@@ -8,9 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,84,84,165,165,345,345,363,363,706,706,774,775
-' Foldings                       = 370,378,463
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
+' Bookmarks                      = 3,3,84,84,167,167,347,347,365,365,712,712,780,781
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -25,7 +24,7 @@
 '   100 : Comms
 '   200 : SSRO
 
-'   0 : Phase check (master only)
+'   0 : Phase check (master controlled only)
 '   1 : Phase msmt (master only, not part of experimental seq.)
 '   20: Start counting time since phase check
 '   2 : CR check
@@ -104,7 +103,7 @@ DIM invalid_data_marker_do_channel AS LONG
 ' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
 DIM remote_adwin_do_success_channel, remote_adwin_do_fail_channel, remote_awg_trigger_channel  as long
-DIM local_success, remote_success, local_fail, remote_fail, combined_success as long
+DIM local_flag_1, remote_flag_1, local_flag_2, remote_flag_2, combined_success as long
 DIM success_mode_after_adwin_comm, fail_mode_after_adwin_comm as long
 DIM success_mode_after_SSRO, fail_mode_after_SSRO as long
 DIM adwin_comm_safety_cycles as long 'msmt param that tells how long the adwins should wait to guarantee bidirectional communication is successful
@@ -112,7 +111,7 @@ DIM adwin_comm_timeout_cycles, wait_for_awg_done_timeout_cycles as long ' if one
 DIM adwin_comm_done, adwin_timeout_requested as long
 DIM n_of_comm_timeouts, is_two_setup_experiment as long
 DIM PLU_during_LDE, LDE_is_init as long
-DIM is_master,cumulative_awg_counts as long
+DIM is_master,cumulative_awg_counts, timeout_mode_after_adwin_comm, mode_flag as long
 
 ' Sequence flow control
 DIM do_phase_stabilisation, only_meas_phase, do_dynamical_decoupling as long
@@ -149,16 +148,18 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   AWG_repcount_was_low =1
   AWG_sequence_repetitions_LDE = 0
   
-  local_success = 0
-  remote_success = 0
-  remote_fail = 0
-  local_fail = 0
+  local_flag_1 = 0
+  remote_flag_1 = 0
+  remote_flag_2 = 0
+  local_flag_2 = 0
   combined_success = 0
   adwin_comm_done = 0
   adwin_timeout_requested = 0
   success_mode_after_adwin_comm = 1 'SpinPumping
   fail_mode_after_adwin_comm = 0 'CR check
-      
+  timeout_mode_after_adwin_comm = 0
+  mode_flag = 1
+  
   success_event_counter = 0
   SSRO_result = 0
   
@@ -197,7 +198,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_stabilisation      = DATA_20[27]
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
-  Phase_msmt_laser_DAC_channel = DATA_20[30]
+  Phase_msmt_laser_DAC_channel = DATA_20[30] 
   Phase_stab_DAC_channel   = DATA_20[31]
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
@@ -321,21 +322,21 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   endif
   
   if (only_meas_phase = 1) then
-    mode_after_phase_stab = 1 'Phase stab msmt
+    mode_after_phase_stab = 1 'Phase msmt
 
     if (do_phase_stabilisation = 1) then
-      mode_after_expm = 0
+      mode_after_expm = 0 ' Go back to phase stabilisation
     else
-      mode_after_expm = 1
+      mode_after_expm = 1 ' Just continuously measure phase
     endif
     
   else
-    mode_after_phase_stab = 2 ' CR check
-    mode_after_expm = 2
+    mode_after_phase_stab = 2 ' Go to CR check
+    mode_after_expm = 2 ' Go back to CR check until phase stabilisation needed
   endif
 
   if (do_phase_stabilisation = 1) then
-    init_mode = 0 'Phase stabilisation
+    init_mode = 0 ' First mode is phase stabilisation / comm before phase stab
   else
     init_mode = mode_after_phase_stab
   endif
@@ -385,16 +386,20 @@ EVENT:
           adwin_timeout_requested = 0
           combined_success = 0
           adwin_comm_done = 0
-          remote_success = 0
-          remote_fail = 0
+          remote_flag_1 = 0
+          remote_flag_2 = 0
         endif
         
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
-          if (combined_success > 0) then ' both successful: continue
-            mode = success_mode_after_adwin_comm
-          else 'fail: go to fail mode
-            mode = fail_mode_after_adwin_comm
-          endif
+          Selectcase combined_success
+            Case 0 'fail: go to fail mode
+              mode = fail_mode_after_adwin_comm
+            Case 1 ' both successful: continue
+              mode = success_mode_after_adwin_comm
+            Case 2 ' local timeout
+              mode = timeout_mode_after_adwin_comm
+          endselect
+          
           time_spent_in_communication = time_spent_in_communication + timer
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
@@ -404,37 +409,37 @@ EVENT:
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
           if ( (digin_this_cycle AND remote_adwin_di_success_pattern) > 0) then
-            remote_success = 1
+            remote_flag_1 = 1
           endif
           if ( (digin_this_cycle AND remote_adwin_di_fail_pattern) > 0) then
-            remote_fail = 1
+            remote_flag_2 = 1
           endif
                 
           IF (is_master>0) THEN 
 
-            if ((remote_success > 0 ) and (remote_fail > 0)) then ' own signal successfully communicated to other side -> go on to next mode
+            if ((remote_flag_1 > 0 ) and (remote_flag_2 > 0)) then ' own signal successfully communicated to other side -> go on to next mode
               adwin_comm_done = 1 ' go to next mode in cleanup step below
               wait_time = adwin_comm_safety_cycles ' make sure the other adwin is ready for counting etc.
             else ' own signal not yet received on other side -> send it or wait for slave's signal to decide what to do
-              IF ((remote_success >0) or (remote_fail >0)) then ' remote signal received: decide whether both setups were successful
-                if ((local_success > 0) and (remote_success >0)) then
-                  combined_success = 1
+              IF ((remote_flag_1 >0) or (remote_flag_2 >0)) then ' remote signal received: decide whether both setups were successful
+                if (((mode_flag = 1) and ((local_flag_1 > 0) and (remote_flag_1 >0))) or ((mode_flag = 2) and ((local_flag_2 > 0) and (remote_flag_2 >0)))) then
+                  combined_success = 1 ' success
                 else
-                  combined_success = 0
+                  combined_success = 0 ' failure (wrong mode!)
                 endif
                 'send combined success and then wait for confirmation
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, combined_success)
                 P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-combined_success)
                 
-                ' the communcation timeout causes the adwin to crash. It is overburdened. I therefore have one adwin wait for the other indefinitely.
-                '              ELSE
-                '                '              no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
-                '                if (timer > adwin_comm_timeout_cycles) then
-                '                  inc(n_of_comm_timeouts) ' give to par for local debugging
-                '                  par_62 = n_of_comm_timeouts
-                '                  combined_success = 0 ' just to be sure
-                '                  adwin_comm_done = 1 ' below: reset everything and go on
-                '                endif                
+                ' the communcation timeout causes the adwin to crash. It is overburdened. I therefore have one adwin wait for the other indefinitely
+              ELSE
+                '              no signal received. Did the connection time out? (we only get here in case we have 00 on the inputs)
+                if (timer > adwin_comm_timeout_cycles) then
+                  inc(n_of_comm_timeouts) ' give to par for local debugging
+                  par_62 = n_of_comm_timeouts
+                  combined_success = 2 ' flag for timeout
+                  adwin_comm_done = 1 ' below: reset everything and go on
+                endif                
               ENDIF
               
             endif
@@ -442,29 +447,29 @@ EVENT:
                     
           ELSE ' I'm the slave, and the communication is not yet done.
             if (timer = 0) then ' first round: send my signal
-              P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, local_success)
-              P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 1-local_success) 
+              P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, local_flag_1)
+              P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, local_flag_2) 
             else 'Did the master tell me what to do?
-              if ((remote_success >0 ) or (remote_fail >0)) then 'signal received
+              if ((remote_flag_1 >0 ) or (remote_flag_2 >0)) then 'signal received
                 P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 1) 'send confirmation: both channels high
                 P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 1) 'send confirmation
-                combined_success = remote_success
+                combined_success = remote_flag_1
                 wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time to make sure the other setup has received our signal
                 adwin_comm_done = 1 ' below: reset everything and go on. I have taken this out!!! NK 20170331 (causes master to crash).
-                '              else ' still no signal. Did the connection time out?
-                '                IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
-                '                  adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                '                  combined_success = 0
-                '                  inc(n_of_comm_timeouts) ' give to par for local debugging
-                '                  par_62 = n_of_comm_timeouts
-                '                ELSE ' should I request a timeout in the next round now?
-                '                  if (timer > adwin_comm_timeout_cycles) then
-                '                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
-                '                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
-                '                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
-                '                    adwin_timeout_requested = 1
-                '                  endif  
-                '                ENDIF
+              else ' still no signal. Did the connection time out?
+                IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
+                  adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
+                  combined_success = 3
+                  inc(n_of_comm_timeouts) ' give to par for local debugging
+                  par_62 = n_of_comm_timeouts
+                ELSE ' should I request a timeout in the next round now?
+                  if (timer > adwin_comm_timeout_cycles) then
+                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
+                    P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
+                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+                    adwin_timeout_requested = 1
+                  endif  
+                ENDIF
               endif
             endif
           ENDIF
@@ -488,12 +493,12 @@ EVENT:
             SSRO_result = 1
             DATA_103[repetition_counter+1] = SSRO_result 'save as last electron readout
             if (Success_of_SSRO_is_ms0>0) then ' Success_of_SSRO_is_ms0 is usually 1, but could be dynamically inverted here
-              local_success = 1 
-              local_fail = 0
+              local_flag_1 = 1 
+              local_flag_2 = 0
               mode = success_mode_after_SSRO
             else 
-              local_success = 0
-              local_fail = 1
+              local_flag_1 = 0
+              local_flag_2 = 1
               mode = fail_mode_after_SSRO
             endif 
           ELSE 'no photon detected
@@ -504,12 +509,12 @@ EVENT:
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
               IF (Success_of_SSRO_is_ms0 = 0) THEN
-                local_success = 1 'remember for adwin communication in next mode. Success_of_SSRO_is_ms0 is usually 1, but could be inverted here
-                local_fail =0
+                local_flag_1 = 1 'remember for adwin communication in next mode. Success_of_SSRO_is_ms0 is usually 1, but could be inverted here
+                local_flag_2 =0
                 mode = success_mode_after_SSRO
               ELSE 
-                local_success = 0
-                local_fail = 1
+                local_flag_1 = 0
+                local_flag_2 = 1
                 mode = fail_mode_after_SSRO
               ENDIF
             endif
@@ -518,97 +523,99 @@ EVENT:
         ENDIF
    
 
-         
-      CASE 0 ' Phase check
+      CASE 0 ' Setup comm before phase stabilisation
+      
+        IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+          mode = 10 'crack on with phase stab.
+          timer = -1
+        ELSE ' two setups involved
+              
+          local_flag_1 = 1 'flag 1 communicates that phase stabilising
+          local_flag_2 = 0
+          mode_flag = 1
+          mode = 100 'go to communication step
+          timeout_mode_after_adwin_comm = 0 ' Keeps waiting until gets confirmation that ready for phase stab.
+          fail_mode_after_adwin_comm = 0 ' If wrong mode, still just go back to waiting for confirmation
+          success_mode_after_adwin_comm = 10 ' After communication, go on to phase stab
+          timer = -1
+        endif
+        
+        
+      CASE 10 'Phase stabilisation
         IF (timer = 0) THEN 
           
-          P2_DIGOUT(DIO_MODULE, 10, 0)
-          P2_DIGOUT(DIO_MODULE, 11, 0)
-          
-          if (is_master = 0) then ' The slave doesnt do anything useful during phase msmt.
-            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-              mode = mode_after_phase_stab 'crack on
-              timer = -1
-            ELSE ' two setups involved
-              
-              local_success = 1 'always succeeds
-              local_fail = 0
-              mode = 100 'go to communication step
-              fail_mode_after_adwin_comm = 100 ' Keeps waiting until gets a phase stab confirmation. Fail can be timeout.
-              success_mode_after_adwin_comm = 20 ' This guy never does a phase msmt, so CR check. ' comment NK: what does this mean? we are in the loop for the master right?
-              timer = -1
-            endif
-          endif
-          
-          'Check if repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
-          IF ((only_meas_phase = 1) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
+          'Check if stop signal received, or repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
+          IF ((Par_63 > 0) or ((only_meas_phase = 1) and ((repetition_counter >= max_repetitions) or (repetition_counter >= No_of_sequence_repetitions)))) THEN ' stop signal received: stop the process
             END
           ENDIF
           
-          P2_CNT_ENABLE(CTR_MODULE, 0000b)
-          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
-          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
-          P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
-          old_counts_1 = 0
-          old_counts_2 = 0
-          offset_index = repetition_counter * pid_points ' PH CHECK
+          if (is_master > 0) then
+            P2_DIGOUT(DIO_MODULE, 10, 0)
+            P2_DIGOUT(DIO_MODULE, 11, 0) 'PH Why does this happen?
+            P2_CNT_ENABLE(CTR_MODULE, 0000b)
+            P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
+            P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
+            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
+            old_counts_1 = 0
+            old_counts_2 = 0
+            offset_index = repetition_counter * pid_points 
+          endif
+          
           index = 0
           store_index = 0
         ELSE
-          if (index = count_int_cycles) then ' Only reads apds every count int cycles
-            index = 0
-            counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
-            counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
-            old_counts_1 = old_counts_1 + counts_1
-            old_counts_2 = old_counts_2 + counts_2
-            inc(store_index)
-            DATA_104[offset_index + store_index] = counts_1
-            DATA_105[offset_index + store_index] = counts_2
+          if (is_master > 0) then
+            if (index = count_int_cycles) then ' Only reads apds every count int cycles
+              index = 0
+              counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
+              counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
+              old_counts_1 = old_counts_1 + counts_1
+              old_counts_2 = old_counts_2 + counts_2
+              inc(store_index)
+              DATA_104[offset_index + store_index] = counts_1
+              DATA_105[offset_index + store_index] = counts_2
             
-            counts = ((counts_1) * g_0) / ((counts_1) * g_0 + (counts_2)*1.0)
+              counts = ((counts_1) * g_0) / ((counts_1) * g_0 + (counts_2)*1.0)
  
-            ' PID control
-            e = setpoint - counts
-            Prop = PID_Kp * e'                   ' Proportional term      
-            Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
-            Dif = PID_Kd * ( e - e_old )             ' Differentiation term
-            Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
-            FPAR_73 = Sig
-            ' Output inside reach of fibre stretcher?
-            if (Sig > 9.5) then
-              Sig = Sig - 11.0775 ' PH Shouldnt be hard coded
-            endif
-            if (Sig < -9.5) then
-              Sig = Sig + 11.0775
-            endif
+              ' PID control
+              e = setpoint - counts
+              Prop = PID_Kp * e'                   ' Proportional term      
+              Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
+              Dif = PID_Kd * ( e - e_old )             ' Differentiation term
+              Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
+              FPAR_73 = Sig
+              ' Output inside reach of fibre stretcher?
+              if (Sig > 9.5) then
+                Sig = Sig - 11.0775 ' PH Shouldnt be hard coded
+              endif
+              if (Sig < -9.5) then
+                Sig = Sig + 11.0775
+              endif
             
-            ' Output
-            P2_DAC_2(Phase_stab_DAC_channel, Sig*3276.8+32768 )
+              ' Output
+              P2_DAC_2(Phase_stab_DAC_channel, Sig*3276.8+32768 )
   
-            ' Values needed for next cycle
-            e_old = e
+              ' Values needed for next cycle
+              e_old = e
+            endif
+          
+          else
+            if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
+              index = 0
+              inc(store_index)
+            endif
           endif
           
           inc(index)
           
           if (store_index>=pid_points) then
-
-            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
-            
-            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-              mode = mode_after_phase_stab 'crack on
-              timer = -1
-              
-            ELSE ' two setups involved
-              
-              local_success = 1 'always succeeds
-              local_fail = 0
-              mode = 100 'go to communication step
-              fail_mode_after_adwin_comm = 0 ' back to phase stab. Fail can be timeout.
-              success_mode_after_adwin_comm = 20 ' If two setup experiment, wont be a phase msmt, so on to CR check
-              timer = -1
+            if (is_master > 0) then
+              P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
-
+            
+            elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
+            mode = mode_after_phase_stab 'crack on
+            timer = -1
             
           endif
         
@@ -660,12 +667,6 @@ EVENT:
           
         endif
         
-      CASE 20 ' Set the timer to check if still phase stable to zero
-        
-        elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
-        mode = 2
-        timer = -1
-        
       CASE 2 'CR check
         
         P2_DIGOUT(DIO_MODULE, 10, 1)
@@ -691,11 +692,15 @@ EVENT:
           IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
             mode = 3 'go to spin pumping directly
           ELSE ' two setups involved
-            local_success = 1 ' remember for communication step
-            local_fail = 0
+            
+            local_flag_1 = 0
+            local_flag_2 = 1  'flag 2 communicates that CR checking
+            mode_flag = 2
             mode = 100 'go to communication step
-            fail_mode_after_adwin_comm = 2 ' back to cr check. Fail can be timeout. This allows to keep the NV on resonance in case the other setup has jumped
-            success_mode_after_adwin_comm = 3 ' go to spin pumping 
+            timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+            fail_mode_after_adwin_comm = 0 ' If wrong mode,  go back to phase stabilistation
+            success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+          
           ENDIF
         endif  
         
