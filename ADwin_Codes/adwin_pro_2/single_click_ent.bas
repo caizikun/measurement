@@ -8,9 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
 ' Bookmarks                      = 3,3,84,84,165,165,345,345,363,363,706,706,774,775
-' Foldings                       = 368,376,661,670
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -25,7 +24,7 @@
 '   100 : Comms
 '   200 : SSRO
 
-'   0 : Phase check (master only)
+'   0 : Phase check (master controlled only)
 '   1 : Phase msmt (master only, not part of experimental seq.)
 '   20: Start counting time since phase check
 '   2 : CR check
@@ -197,7 +196,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_stabilisation      = DATA_20[27]
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
-  Phase_msmt_laser_DAC_channel = DATA_20[30]
+  Phase_msmt_laser_DAC_channel = DATA_20[30] 
   Phase_stab_DAC_channel   = DATA_20[31]
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
@@ -321,21 +320,21 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   endif
   
   if (only_meas_phase = 1) then
-    mode_after_phase_stab = 1 'Phase stab msmt
+    mode_after_phase_stab = 1 'Phase msmt
 
     if (do_phase_stabilisation = 1) then
-      mode_after_expm = 0
+      mode_after_expm = 0 ' Go back to phase stabilisation
     else
-      mode_after_expm = 1
+      mode_after_expm = 1 ' Just continuously measure phase
     endif
     
   else
-    mode_after_phase_stab = 2 ' CR check
-    mode_after_expm = 2
+    mode_after_phase_stab = 20 ' Go to CR check (first set timer since phase stab to zero)
+    mode_after_expm = 2 ' Go back to CR check until phase stabilisation needed
   endif
 
   if (do_phase_stabilisation = 1) then
-    init_mode = 0 'Phase stabilisation
+    init_mode = 0 ' First mode is phase stabilisation
   else
     init_mode = mode_after_phase_stab
   endif
@@ -519,7 +518,7 @@ EVENT:
    
 
          
-      CASE 0 ' Phase check
+      CASE 0 ' Phase stabilisation
         IF (timer = 0) THEN 
           
           P2_DIGOUT(DIO_MODULE, 10, 0)
@@ -534,14 +533,14 @@ EVENT:
               local_success = 1 'always succeeds
               local_fail = 0
               mode = 100 'go to communication step
-              fail_mode_after_adwin_comm = 100 ' Keeps waiting until gets a phase stab confirmation. Fail can be timeout.
-              success_mode_after_adwin_comm = 20 ' This guy never does a phase msmt, so CR check. ' comment NK: what does this mean? we are in the loop for the master right?
+              fail_mode_after_adwin_comm = 0 ' Keeps waiting until gets a phase stab confirmation. Fail can be timeout.
+              success_mode_after_adwin_comm = 20 ' After communication, reset the timer and go on to CR check.
               timer = -1
             endif
           endif
           
-          'Check if repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
-          IF ((only_meas_phase = 1) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
+          'Check if stop signal received, or repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
+          IF ((Par_63 > 0) or ((only_meas_phase = 1) and ((repetition_counter >= max_repetitions) or (repetition_counter >= No_of_sequence_repetitions)))) THEN ' stop signal received: stop the process
             END
           ENDIF
           
@@ -605,7 +604,7 @@ EVENT:
               local_fail = 0
               mode = 100 'go to communication step
               fail_mode_after_adwin_comm = 0 ' back to phase stab. Fail can be timeout.
-              success_mode_after_adwin_comm = 20 ' If two setup experiment, wont be a phase msmt, so on to CR check
+              success_mode_after_adwin_comm = 20 ' If two setup experiment, on to CR check
               timer = -1
             endif
 
@@ -660,7 +659,7 @@ EVENT:
           
         endif
         
-      CASE 20 ' Set the timer to check if still phase stable to zero
+      CASE 20 ' Set the timer used to check if still phase stable to zero
         
         elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
         mode = 2
