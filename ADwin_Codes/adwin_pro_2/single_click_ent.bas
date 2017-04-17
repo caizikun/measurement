@@ -8,8 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277246  DASTUD\TUD277246
-' Bookmarks                      = 3,3,84,84,167,167,347,347,365,365,712,712,780,781
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,713,713,781,782
+' Foldings                       = 516,533,615
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -37,7 +38,7 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE .\monitor_expm_params.inc
 #INCLUDE math.inc
 
@@ -237,6 +238,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
   
+  elapsed_cycles_since_phase_stab = 0
   e = 0
   e_old = 0
   Sig = 0 
@@ -669,11 +671,11 @@ EVENT:
         
       CASE 2 'CR check
         
-        P2_DIGOUT(DIO_MODULE, 10, 1)
-        P2_DIGOUT(DIO_MODULE, 11, 1)
+        '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
+        '        P2_DIGOUT(DIO_MODULE, 11, 1)
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
-        record_cr_counts()
+        '        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
