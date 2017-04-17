@@ -10,7 +10,7 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,84,84,165,165,345,345,363,363,706,706,774,775
-' Foldings                       = 368,376,661,670
+' Foldings                       = 370,378,463
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -630,7 +630,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE, 0000b)
           P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter 'zpl1_counter_pattern
           P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
-          P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
+          P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
           old_counts_1 = 0
           old_counts_2 = 0
           offset_index = repetition_counter * sample_points ' PH CHECK
@@ -654,7 +654,7 @@ EVENT:
           if (store_index >= sample_points) then
             mode = 7
             timer = -1
-            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
 
           endif
           

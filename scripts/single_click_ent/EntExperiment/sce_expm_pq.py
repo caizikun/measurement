@@ -236,11 +236,11 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['setpoint'] = (3.1415/4)
+    m.params['Mach_Zehnder_setpoint'] = (3.1415/2)
     m.params['reps_per_ROsequence'] = 200
-    m.params['PID_Kp'] = 300
+    m.params['PID_Kp'] = 50         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
     m.params['PID_GAIN'] = 1.0
-    m.params['Phase_Msmt_voltage'] = 0.34
+    m.params['Phase_Msmt_voltage'] = 0.95
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -262,7 +262,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 250
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -586,11 +586,11 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

@@ -3118,7 +3118,7 @@ config['adwin_pro_processes'] = {
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
-                    ['setpoint'       , 3.14],
+                    ['Mach_Zehnder_setpoint', 3.14],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 12,

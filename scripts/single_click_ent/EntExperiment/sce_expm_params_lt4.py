@@ -14,7 +14,7 @@ params_lt4['do_N_MBI']                  = 0 #practically not in use
 params_lt4['MW_before_LDE']            = 0
 params_lt4['LDE_is_init']             = 0
 params_lt4['do_LDE']                  = 1 # we always do this.
-params_lt3['record_expm_params']  = False # by default we dont record this, only useful if a long run
+params_lt4['record_expm_params']  = False # by default we dont record this, only useful if a long run
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
@@ -110,9 +110,11 @@ params_lt4['PID_GAIN'] = 1.0
 params_lt4['PID_Kp'] = 0.0		# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
+params_lt4['Mach_Zehnder_setpoint'] = 3.14
 
-params_lt4['count_int_cycles'] = 60000 # How many cycles to integrate counts for
+
+params_lt4['count_int_cycles'] = 300000 # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['sample_points'] = 100 # How many points to sample the phase at during the expm part
-params_lt4['phase_stab_max_cycles'] = 15000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
+params_lt4['phase_stab_max_cycles'] = 150000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 
