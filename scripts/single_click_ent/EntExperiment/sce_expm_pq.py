@@ -26,6 +26,8 @@ class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # p
         self.params['repetitions']=1
         self.params['TH_hist_only'] = hist_only
 
+        
+
     def autoconfig(self):
         sce_expm.SingleClickEntExpm.autoconfig(self)
         pq.PQMeasurement.autoconfig(self)
@@ -223,14 +225,22 @@ def phase_stability(name,debug = False,upload_only=False):
     """
     Just runs a phase stability meausrement
     """
+    # adwin = qt.get_instruments()['adwin']
+    # PhaseAOM = qt.get_instruments()['PhaseAOM']
+    # PhaseAOM.set_power(0.08e-9)
+    # adwin.start_fibre_stretcher_setpoint(delay=2)       # delay in 1/10 ms
+    # qt.msleep(10)                                       # wait and get count ratios of APD detectors 
+    # adwin.stop_fibre_stretcher_setpoint()
+
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
 
     pts = 1
+    m.params['Mach_Zehnder_setpoint'] = (3.1415/2)
     m.params['reps_per_ROsequence'] = 200
-    m.params['PID_Kp'] = 0.0
-    m.params['PID_GAIN'] = 0.0
-    m.params['Phase_Msmt_voltage'] = 0.5
+    m.params['PID_Kp'] = 50         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
+    m.params['PID_GAIN'] = 1.0
+    m.params['Phase_Msmt_voltage'] = 0.95
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -580,7 +590,7 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=True)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     

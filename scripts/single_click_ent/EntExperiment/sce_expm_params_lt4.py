@@ -53,7 +53,7 @@ params_lt4['remote_adwin_di_fail_channel'] = 23
 params_lt4['remote_adwin_do_success_channel'] = 14
 params_lt4['remote_adwin_do_fail_channel'] = 15
 params_lt4['adwin_comm_safety_cycles'] = 15
-params_lt4['adwin_comm_timeout_cycles'] = 10000 # 10 ms
+params_lt4['adwin_comm_timeout_cycles'] = 50000 # 10 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
@@ -110,9 +110,11 @@ params_lt4['PID_GAIN'] = 1.0
 params_lt4['PID_Kp'] = 0.0		# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
+params_lt4['Mach_Zehnder_setpoint'] = 3.14
 
-params_lt4['count_int_cycles'] = 60000 # How many cycles to integrate counts for
+
+params_lt4['count_int_cycles'] = 300000 # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['sample_points'] = 100 # How many points to sample the phase at during the expm part
-params_lt4['phase_stab_max_cycles'] = 15000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
+params_lt4['phase_stab_max_cycles'] = 150000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 
