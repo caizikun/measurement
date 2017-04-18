@@ -20,10 +20,10 @@ if False: #m1 transition
     mw_power    = -20#-13      #in dBm
     center_f    =  1.705#4.055#3.95#1.74666#2.828#2.861
 else: #p1 transition
-    range_f     =  0.1 # 0.03 in GHz
+    range_f     =  0.05 # 0.03 in GHz
     steps       = 101      #101
     mw_power    = -18     #in dBm
-    center_f    = 2.88#25
+    center_f    = 4.06#25
 #generate list of frequencies
 f_list = np.linspace((center_f-range_f)*1e9, (center_f+range_f)*1e9, steps)
 

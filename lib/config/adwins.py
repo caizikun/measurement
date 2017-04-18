@@ -2377,7 +2377,7 @@ config['adwin_pro_processes'] = {
          'cr_check_mod' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
-            'file' : 'cr_mod.inc',
+            'file' : 'cr_mod_Bell.inc',
             'par' : {
                     'CR_preselect'              : 75,
                     'CR_probe'                  : 68,

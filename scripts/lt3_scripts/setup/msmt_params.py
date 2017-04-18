@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.698965e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.057718e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.698848e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.0595e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_amplitude':      23e-9,#XXx28e-9,#28e-9, #50e-9
 		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:

@@ -149,7 +149,7 @@ class SingleClickEntExpm(DD.MBI_C13):
                     'completed_reps'
                     ]
 
-        if self.params['record_expm_params']::
+        if self.params['record_expm_params']:
             toSave.extend(
                     [('expm_mon_taper_freq'          ,1,reps), 
                      ('expm_mon_nf_freq'             ,1,reps), 

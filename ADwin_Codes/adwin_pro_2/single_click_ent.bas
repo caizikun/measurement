@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUd277299
-' Bookmarks                      = 3,3,83,83,165,165,328,328,346,346,680,680,748,749
-' Foldings                       = 351,359,444,490,581,635,644,661
+' Bookmarks                      = 3,3,83,83,167,167,331,331,349,349,683,683,751,752
+' Foldings                       = 354,362,447,493,584,664
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -38,8 +38,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
-#INCLUDE .\monitor_expm_params.inc
+#INCLUDE .\cr_mod_Bell.inc
+'#INCLUDE .\monitor_expm_params.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
@@ -129,7 +129,7 @@ DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_c
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
-  init_expm_param_monitor()
+  '  init_expm_param_monitor()
   
   n_of_comm_timeouts = 0 ' used for debugging, goes to a par   
   repetition_counter  = 0 ' adwin arrays start at 1, but this counter starts at 0 -> we have to write to rep counter +1 all the time
@@ -162,6 +162,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   mode = 0
   timer = 0
+  
+  
   
 ''''''''''''''''''''''''''''''''''''''
   'read params from python script 
@@ -229,6 +231,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
   
+  elapsed_cycles_since_phase_stab = 0
   e = 0
   e_old = 0
   Sig = 0 
@@ -639,21 +642,21 @@ EVENT:
         
       CASE 2 'CR check
         
-        P2_DIGOUT(DIO_MODULE, 10, 1)
-        P2_DIGOUT(DIO_MODULE, 11, 1)
+        '        P2_DIGOUT(DIO_MODULE, 10, 1)
+        '        P2_DIGOUT(DIO_MODULE, 11, 1)
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
-        record_cr_counts()
+        '        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
 
-        if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-          mode = init_mode 
-          timer = -1
-        endif
+        '        if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+        '          mode = init_mode 
+        '          timer = -1
+        '        endif
 
         if ( cr_result > 0 ) then
           ' In case the result is not positive, the CR check will be repeated/continued
@@ -822,7 +825,7 @@ EVENT:
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         
-        record_expm_params(repetition_counter+1) '' For the expm monitor
+        '        record_expm_params(repetition_counter+1) '' For the expm monitor
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
@@ -845,8 +848,8 @@ EVENT:
         mode = mode_after_expm ' go to CR check or to relevant starting mode.
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
-        duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
-        FPAR_58 = duty_cycle
+        '        duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
+        '        FPAR_58 = duty_cycle
         if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
           time_spent_in_state_preparation = 0
           time_spent_in_sequence = 0 
