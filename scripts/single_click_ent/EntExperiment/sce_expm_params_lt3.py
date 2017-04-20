@@ -111,6 +111,7 @@ params_lt3['PID_GAIN'] = 1.0
 params_lt3['PID_Kp'] = 0.000
 params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
+params_lt3['Mach_Zehnder_setpoint'] = 3.14
 
 
 params_lt3['count_int_cycles'] = 60000 # How many cycles to integrate counts for

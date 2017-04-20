@@ -260,9 +260,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts = 15
+    pts =1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 20000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -278,9 +278,6 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
-
-    if qt.current_setup == 'lt4':
-        load_TH_params(m)
     # put sweep together:
     sweep_off_voltage = False
     m.params['do_general_sweep']    = True
@@ -347,6 +344,37 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     ### upload
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+
+def test_pulses(name,debug = True,upload_only=True, local = False):
+    """
+    Generically chuck in some pulses, for e.g. measuring optical path length difference between two setups.
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 20000
+
+
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    ### --> for this measurement: none.
+    m.joint_params['LDE_attempts'] = 250
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['MW_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 0
+    if local:
+        m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    else:
+        m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     """
@@ -590,11 +618,10 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 1.0, maxval=1.0, local=False)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
-    
-
+    test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
 
     ###### non-local measurements
     ### SPCorrs with Pi/2 pulse
