@@ -579,6 +579,8 @@ EVENT:
               if ((store_index >= (pidpoints-2))) then            
                 DATA_104[offset_index + store_index] = counts_1
                 DATA_105[offset_index + store_index] = counts_2
+              endif
+
             
               counts = ARCCOS((0.5 -(((counts_1) * 1.0) / ((counts_1) * 1.0 + (counts_2)*g_0)) )/Visibility)
  
