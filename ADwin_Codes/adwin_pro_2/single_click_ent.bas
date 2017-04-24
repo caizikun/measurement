@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,713,713,781,782
-' Foldings                       = 516,533,615
+' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,709,709,777,778
+' Foldings                       = 516,536
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -552,8 +552,7 @@ EVENT:
           ENDIF
           
           if (is_master > 0) then
-            P2_DIGOUT(DIO_MODULE, 10, 0)
-            P2_DIGOUT(DIO_MODULE, 11, 0) 'PH Why does this happen?
+
             P2_CNT_ENABLE(CTR_MODULE, 0000b)
             P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
             P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
@@ -627,10 +626,7 @@ EVENT:
       
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-          
-          P2_DIGOUT(DIO_MODULE, 10, 0)
-          P2_DIGOUT(DIO_MODULE, 11, 0)
-          
+                  
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END

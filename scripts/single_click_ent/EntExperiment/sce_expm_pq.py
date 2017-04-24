@@ -240,7 +240,7 @@ def phase_stability(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 200
     m.params['PID_Kp'] = 50         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
     m.params['PID_GAIN'] = 1.0
-    m.params['Phase_Msmt_voltage'] = 0.95
+    m.params['Phase_Msmt_voltage'] = 4.0
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -262,7 +262,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -279,8 +279,8 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
 
-    if qt.current_setup == 'lt4':
-        load_TH_params(m)
+    # if qt.current_setup == 'lt4':
+    #     load_TH_params(m)
     # put sweep together:
     sweep_off_voltage = False
     m.params['do_general_sweep']    = True
@@ -345,6 +345,36 @@ def optical_rabi(name,debug = True,upload_only=True, local = False):
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+
+def test_pulses(name,debug = True,upload_only=True, local = False):
+    """
+    Generically chuck in some pulses, for e.g. measuring optical path length difference between two setups.
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 20000
+
+
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    ### --> for this measurement: none.
+    m.joint_params['LDE_attempts'] = 1000
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['MW_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 0
+    if local:
+        m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    else:
+        m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -430,14 +460,14 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
 
     ### general params
     m.params['reps_per_ROsequence'] = 500
-    pts = 15
+    pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['MW_pi_during_LDE'] = MW_pi_during_LDE ## turn pi pulse on or off for spcorrs
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'mw_first_pulse_amp' 
-    m.params['general_sweep_pts'] = np.linspace(0.2,0.6,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.2,0.7,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
@@ -451,7 +481,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     m.params['PLU_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
 
-    m.joint_params['opt_pi_pulses'] = 1
+    # m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
 
     ### upload
@@ -587,25 +617,24 @@ if __name__ == '__main__':
 
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
-
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=1.0, local=False)
-    # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
-    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
-    
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
+    # optical_rabi(name+'_optical_rabi',debug = False,upload_only=False, local=False)
+    # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
 
 
     ###### non-local measurements
     ### SPCorrs with Pi/2 pulse
     # qt.instruments['ZPLServo'].move_in()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=True)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
-    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
-    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
 
 
 

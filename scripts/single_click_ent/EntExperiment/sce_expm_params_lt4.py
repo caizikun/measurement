@@ -26,7 +26,7 @@ params_lt4['LDE_decouple_time']         = 1e-6
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 params_lt4['MW_repump_distance']		= 150e-9
-params_lt4['MW_final_delay_offset']		= 10e-9
+params_lt4['MW_final_delay_offset']		= 0e-9
 params_lt4['first_mw_pulse_is_pi2']     = 0
 
 
@@ -74,15 +74,18 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+params_lt4['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+
+
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(0.5e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(3.0e6)/TH_HH_selector#15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(0.5e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(5.0e6)/TH_HH_selector
+params_lt4['MIN_SYNC_BIN']        =   int(1.25e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(2.5e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.65e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(2.0e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
 params_lt4['pulse_start_bin'] = 1815e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX

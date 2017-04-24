@@ -223,7 +223,7 @@ def optimize_matrix_amplitude(name, Z_matrix, do_fit=True):
 
 if __name__ == '__main__':
     green_power = 40e-6
-    GreenAOM.set_power(green_power)
+    GreenAOM.turn_on()#set_power(green_power)
 
     name = '111no2_lt4_localgreen_new_dm'
     dat_tot = qt.Data(name='DM_total_curve_'+name)
@@ -260,7 +260,7 @@ if __name__ == '__main__':
             elif scan_mode == 'zernike':
                 # for i in np.arange(2,38): #first half of the 75 zernike modes!
                 #for i in np.arange(38,75): #second half of the 75 zernike modes!
-                for i in np.arange(2,20): #2,38#array can go up to 75 zernike modes!
+                for i in np.arange(38,75): #2,38#array can go up to 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True

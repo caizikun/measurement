@@ -20,14 +20,14 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717523e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr = 1.717627e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
 C_split  = 0.847e6 
 pulse_shape = 'Hermite'
-electron_transition = '-1'
+electron_transition = '+1'
 
 
 if electron_transition == '+1':
@@ -49,14 +49,14 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 102e-9 # divisible by 2
-	hermite_pi_amp = 0.897 # for a single pi pulse
+	hermite_pi_length = 98e-9 # divisible by 2
+	hermite_pi_amp = 0.95 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.632#0.617 #0.634#0.605
+	hermite_pi2_amp = 0.614#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -484,7 +484,7 @@ cfg['protocols'][name]['pulses'] = {
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
     	'aom_risetime'               : 20e-9, #17e-9
-    	'aom_amplitude'              : 0.7, 
+    	'aom_amplitude'              : 0.9, 
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
