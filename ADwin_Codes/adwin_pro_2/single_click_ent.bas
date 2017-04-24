@@ -120,7 +120,7 @@ DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
-DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki,g_0               AS FLOAT        ' PID parameters
+DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki,g_0,Visibility    AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
 DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
 DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
@@ -223,8 +223,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   SETPOINT_angle               = DATA_21[11]
   
   setpoint = (cos(SETPOINT_angle/2))^2
-  FPAR_76 = setpoint
-  g_0 = FPAR_77                       'count ratios of APD's
+  
+  g_0 = FPAR_75                       'count ratios of APD's
+  Visibility = FPAR_76                'visibility of signal
    
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -576,7 +577,7 @@ EVENT:
               DATA_104[offset_index + store_index] = counts_1
               DATA_105[offset_index + store_index] = counts_2
             
-              counts = ((counts_1) * g_0) / ((counts_1) * g_0 + (counts_2)*1.0)
+              counts = ARCCOS((0.5 -(((counts_1) * 1.0) / ((counts_1) * 1.0 + (counts_2)*g_0)) )/Visibility)
  
               ' PID control
               e = setpoint - counts
