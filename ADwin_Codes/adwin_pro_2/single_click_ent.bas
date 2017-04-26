@@ -9,8 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,709,709,778,779
-' Foldings                       = 516
+' Bookmarks                      = 3,3,84,84,168,168,351,351,369,369,718,718,787,788
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -120,13 +119,14 @@ DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
-DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki,g_0,Visibility    AS FLOAT        ' PID parameters
+DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
 DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
-DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
+DIM offset_index,store_index,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
-DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles AS LONG
+DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
+DIM stretcher_V_2pi, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -204,10 +204,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
   pid_points                  = DATA_20[34]
-  sample_points               = DATA_20[35]
-  raw_count_int_cycles        = DATA_20[36]
-  raw_phase_stab_max_cycles   = DATA_20[37]
-  
+  pid_points_to_store         = DATA_20[35]
+  sample_points               = DATA_20[36]
+  raw_count_int_cycles        = DATA_20[37]
+  raw_phase_stab_max_cycles   = DATA_20[38]
+  modulate_stretcher_during_phase_msmt = DATA_20[39]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -221,12 +222,13 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PID_Ki                       = DATA_21[9]
   PID_Kd                       = DATA_21[10]
   SETPOINT_angle               = DATA_21[11]
+  stretcher_V_2pi              = DATA_21[12]
+  stretcher_V_max              = DATA_21[13]
+  Phase_Msmt_g_0               = DATA_21[14] ' Scaling factor to match APD channels
+  Phase_Msmt_Vis               = DATA_21[15] ' Vis of interference
   
   setpoint = (cos(SETPOINT_angle/2))^2
   
-  g_0 = FPAR_75                       'count ratios of APD's
-  Visibility = FPAR_76                'visibility of signal
-   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
   PLU_event_di_pattern = 2 ^ PLU_event_di_channel
@@ -560,8 +562,7 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            'offset_index = repetition_counter * pid_points
-            offset_index = repetition_counter * 2           'changed to show last 2 points
+            offset_index = repetition_counter * pid_points_to_store           'changed to show last points only
           endif
           
           index = 0
@@ -575,14 +576,14 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
-              if ((store_index >= (pidpoints-2))) then            
+              if ((store_index > (pid_points-pid_points_to_store))) then            
                 DATA_104[offset_index + store_index] = counts_1
                 DATA_105[offset_index + store_index] = counts_2
               endif
 
             
-              counts = ARCCOS((0.5 -(((counts_1) * 1.0) / ((counts_1) * 1.0 + (counts_2)*g_0)) )/Visibility)
- 
+              counts = ARCCOS(((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5)/Phase_Msmt_Vis)
+    
               ' PID control
               e = setpoint - counts
               Prop = PID_Kp * e'                   ' Proportional term      
@@ -591,11 +592,11 @@ EVENT:
               Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
               FPAR_73 = Sig
               ' Output inside reach of fibre stretcher?
-              if (Sig > 9.5) then
-                Sig = Sig - 11.0775 ' PH Shouldnt be hard coded
+              if (Sig > stretcher_V_max) then
+                Sig = Sig - stretcher_V_2pi
               endif
-              if (Sig < -9.5) then
-                Sig = Sig + 11.0775
+              if (Sig < -stretcher_V_max) then
+                Sig = Sig + stretcher_V_2pi
               endif
             
               ' Output
@@ -646,7 +647,14 @@ EVENT:
           offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
+          
+          total_cycles = count_int_cycles*sample_points
         ELSE
+          if (modulate_stretcher_during_phase_msmt = 1) THEN
+            ' Linearly ramp output
+            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles - 1)* stretcher_V_max*3276.8+32768 )
+          endif
+                       
           if (index = count_int_cycles) then ' Only reads apds every count int cycles
             index = 0
             counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter

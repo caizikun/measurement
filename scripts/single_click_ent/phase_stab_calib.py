@@ -1,48 +1,57 @@
-### test ###
-
 import qt
-import os
-import traceback
-from instrument import Instrument
-import numpy as np
-from collections import deque
-import gobject
-import instrument_helper
-from lib import config
-from analysis.lib.fitting import common,fit
-import multiple_optimizer as mo
-reload(mo)
+import data
+from analysis.lib.fitting import fit, common
+from numpy import *
+import msvcrt
 
+#measurement parameters
+name = 'PhaseMsmtCalibration'
+steps=21
+counter=1 #number of counter
+Vmax = 0.1
 
-class phase_stab_calib(class):
-    def __init__(self, name):
-        ins_pars  ={'min_cr_counts'              :   {'type':types.FloatType,'flags':Instrument.FLAG_GETSET, 'val':10},
-                    }           
-        instrument_helper.create_get_set(self,ins_pars)
+phase_aom = qt.instruments['PhaseAOM']
+current_adwin = qt.instruments['adwin']
 
-        qt.instruments['counters'].set_is_running(True) 
-        V_max = qt.instruments['PhaseAOM'].get_V_max()
+dat = qt.Data(name='Saturation_curve_'+name)
+dat.create_file()
+dat.add_coordinate('Power [uW]')
+dat.add_value('Counts [Hz]')
+plt = qt.Plot2D(dat, 'rO', name='Saturation curve', coorddim=0, valdim=1, clear=True)
+plt.add_data(dat, coorddim=0, valdim=2)
+plt.set_plottitle(dat.get_time_name()+', Sat. cts: {:d}, sat. pwr: {:.2f} uW'.format(int(fitres['params_dict']['A']),fitres['params_dict']['xsat']))
 
-    def measure_counts(self):
-        print 'Calibrating PhaseAOM countrate'
-        for i in xrange(100):
-            qt.instruments['PhaseAOM'].apply_voltage(V_max*i/1000)
-            qt.msleep(0.1)
-            counts = qt.instruments['counters'].get_countrate()
-            if (counts > 1e6):
-                self.V_setpoint = V_max*i/1000
-                return False
+plt.save_png(dat.get_filepath()+'png')
+dat.close_file()
 
-            
-    def measure_interferometer(self):
-        qt.instruments['adwin'].load_fibre_stretcher_setpoint()
-        qt.instruments['adwin'].start_fibre_stretcher_setpoint(delay = 4)
-        print 'Calibrating Interferometer'
-        qt.msleep(20)
-        qt.instruments['adwin'].stop_fibre_stretcher_setpoint()
+def measure_counts():
 
+    phase_aom.set_power(0)
+    qt.msleep(1)
 
-if __name__ == '__main__':
+    V_setpoint = -1
+
+    print 'Calibrating PhaseAOM countrate'
+    for v in linspace(0,Vmax,steps):
+        phase_aom.apply_voltage(v)
+        qt.msleep(0.2)
+        counts = current_adwin.get_countrates()[counter-1]
+        if (counts > 1e6):
+            V_setpoint = v
+            break
+
+    phase_aom.set_power(0)
+
+    return V_setpoint
+
+def measure_interferometer():
+
+    print 'Calibrating Interferometer'
+    
+    current_adwin.load_fibre_stretcher_setpoint()
+    current_adwin.start_fibre_stretcher_setpoint(delay = 4)
+    qt.msleep(10)
+    current_adwin.stop_fibre_stretcher_setpoint()
 
     print 'Start Phase stability Calibration'
     self.measure_counts()
@@ -55,6 +64,3 @@ if __name__ == '__main__':
                                 ('Visibility',1, visibility),
                                 ])
     print 'Finished'
-
-
-
