@@ -32,7 +32,7 @@ C_split  = 0.847e6
 
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
-electron_transition = '-1'
+electron_transition = '+1'
 multiple_source = False
 
 mw1_source = ''

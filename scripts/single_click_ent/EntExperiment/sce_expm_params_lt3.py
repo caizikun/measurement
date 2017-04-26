@@ -19,7 +19,7 @@ params_lt3['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 50e-9#1000e-9
+params_lt3['AWG_SP_power']              = 150e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
