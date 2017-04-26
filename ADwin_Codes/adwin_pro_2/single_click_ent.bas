@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,84,84,168,168,351,351,369,369,718,718,787,788
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,720,720,789,790
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -126,7 +126,7 @@ DIM offset_index,store_index,index,pid_points,pid_points_to_store,sample_points 
 DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
-DIM stretcher_V_2pi, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
+DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -240,6 +240,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
+  
+  stretcher_V_correct = floor(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
   e = 0
@@ -547,6 +549,7 @@ EVENT:
         
         
       CASE 10 'Phase stabilisation
+        
         IF (timer = 0) THEN 
           
           'Check if stop signal received, or repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
@@ -582,7 +585,7 @@ EVENT:
               endif
 
             
-              counts = ARCCOS(((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5)/Phase_Msmt_Vis)
+              counts = ARCCOS(2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis)
     
               ' PID control
               e = setpoint - counts
@@ -590,13 +593,12 @@ EVENT:
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
               Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
-              FPAR_73 = Sig
               ' Output inside reach of fibre stretcher?
               if (Sig > stretcher_V_max) then
-                Sig = Sig - stretcher_V_2pi
+                Sig = Sig - stretcher_V_correct
               endif
               if (Sig < -stretcher_V_max) then
-                Sig = Sig + stretcher_V_2pi
+                Sig = Sig + stretcher_V_correct
               endif
             
               ' Output

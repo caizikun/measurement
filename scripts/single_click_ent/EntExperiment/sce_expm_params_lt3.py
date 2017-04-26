@@ -106,16 +106,23 @@ params_lt3['Phase_Msmt_off_voltage'] = 0.0
 params_lt3['Phase_stab_DAC_channel'] = 0 ### not in use at LT3. This will throw an error on the adwin if used accidentally (channel 0 does not exist)
 params_lt3['zpl1_counter_channel'] = 4 ## not in use
 params_lt3['zpl2_counter_channel'] = 4 ## not in use
+params_lt3['modulate_stretcher_during_phase_msmt'] = 0
+
+params_lt3['stretcher_V_2pi'] = 11
+params_lt3['stretcher_V_max'] = 9.5
+params_lt3['Phase_Msmt_g_0'] = 1 # Scaling factor to match APD channels
+params_lt3['Phase_Msmt_Vis'] = 1 # Vis of interference'
 
 params_lt3['PID_GAIN'] = 1.0
 params_lt3['PID_Kp'] = 0.000
 params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
-params_lt3['Mach_Zehnder_setpoint'] = 3.14
+params_lt3['phase_setpoint'] = 3.14
 
 
 params_lt3['count_int_cycles'] = 60000 # How many cycles to integrate counts for
 params_lt3['pid_points'] = 10 # How many points to sample the phase at during the PID loop
+params_lt3['pid_points_to_store'] = 10 # How many points to store
 params_lt3['sample_points'] = 200 # How many points to sample the phase at during the expm part
 params_lt3['phase_stab_max_cycles'] = 15000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 
