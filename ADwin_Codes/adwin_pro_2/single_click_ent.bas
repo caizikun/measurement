@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,713,713,781,782
-' Foldings                       = 516,533,615
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,709,709,778,779
+' Foldings                       = 516
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -552,8 +552,7 @@ EVENT:
           ENDIF
           
           if (is_master > 0) then
-            P2_DIGOUT(DIO_MODULE, 10, 0)
-            P2_DIGOUT(DIO_MODULE, 11, 0) 'PH Why does this happen?
+
             P2_CNT_ENABLE(CTR_MODULE, 0000b)
             P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
             P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
@@ -627,10 +626,7 @@ EVENT:
       
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-          
-          P2_DIGOUT(DIO_MODULE, 10, 0)
-          P2_DIGOUT(DIO_MODULE, 11, 0)
-          
+
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
@@ -700,7 +696,7 @@ EVENT:
             mode_flag = 2
             mode = 100 'go to communication step
             timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-            fail_mode_after_adwin_comm = 0 ' If wrong mode,  go back to phase stabilistation
+            fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
             success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
           ENDIF
@@ -769,6 +765,7 @@ EVENT:
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
+          par_65 = AWG_repcount_was_low
           mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.

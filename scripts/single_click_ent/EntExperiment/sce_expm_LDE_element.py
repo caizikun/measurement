@@ -99,9 +99,9 @@ def _create_syncs_and_triggers(msmt,Gate):
 
     # adwin comm
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
-        length = 1.5e-6, amplitude = 2) 
+        length = 2.2e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
-        length = 2.5e-6, amplitude = 2) 
+        length = 2.0e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
@@ -178,7 +178,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay',
-        name = 'count_pulse')
+        name = 'count_pulse')#,start = 1e-6)
 
 
         

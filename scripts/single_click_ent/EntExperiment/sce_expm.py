@@ -86,8 +86,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def run(self, autoconfig=False, setup=False):
 
-        """)
-
+        """
         inherited from pulsar msmt.
         """
         if autoconfig:
@@ -366,13 +365,15 @@ class SingleClickEntExpm(DD.MBI_C13):
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = LDE_list[0].name
+            Fail_done.go_to = 'wait_for_adwin_'+str(pt)#LDE_list[0].name
 
 
             #######################################################################
             ### append all necessary gates according to the current measurement ###
             #######################################################################
-
+            waiting_for_adwin = DD.Gate('wait_for_adwin_'+str(pt),'passive_elt',wait_time = 10e-6)
+            waiting_for_adwin.wait_for_trigger = True
+            gate_seq.append(waiting_for_adwin)
             if self.params['do_N_MBI'] > 0: 
                 ### Nitrogen MBI
                 mbi = DD.Gate('MBI_'+str(pt),'MBI')

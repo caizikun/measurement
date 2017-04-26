@@ -56,7 +56,7 @@ qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM']
 # qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', 0.5)
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
-
+# qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.2)
 
 
 qt.pulsar.AWG_sequence_cfg={

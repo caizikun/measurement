@@ -149,7 +149,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
 
-    load_TH_params(m)
+    # load_TH_params(m)
 
     ### general params
     pts = 1
@@ -162,8 +162,8 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['MW_during_LDE'] = 1
 
     m.params['PLU_during_LDE'] = 0
-    m.joint_params['opt_pi_pulses'] = 0
-    m.params['is_two_setup_experiment'] = 1
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['is_two_setup_experiment'] = 0
 
     m.joint_params['LDE_attempts'] = 250
 
@@ -260,9 +260,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts =1
+    pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 20000
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -298,54 +298,6 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
-def optical_rabi(name,debug = True,upload_only=True, local = False):
-    """
-    Very similar to tail sweep.
-
-
-
-    ...
-
-    Also, best doc string ever.
-    """
-    m = PQSingleClickEntExpm(name)
-    sweep_sce_expm.prepare(m)
-
-    ### general params
-    pts = 1
-    m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 10000
-
-
-    sweep_sce_expm.turn_all_sequence_elements_off(m)
-    ### which parts of the sequence do you want to incorporate.
-    ### --> for this measurement: none.
-
-    m.joint_params['opt_pi_pulses'] = 1
-    m.params['MW_during_LDE'] = 0
-    m.params['PLU_during_LDE'] = 0
-    if local:
-        m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
-    else:
-        m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-
-
-    # put sweep together:
-
-    m.params['do_general_sweep']    = True
-    m.params['general_sweep_name'] = 'eom_pulse_duration'
-    print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(39e-9,40e-9,pts)
-
-
-
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    ### upload
-
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
-
-
 
 def test_pulses(name,debug = True,upload_only=True, local = False):
     """
@@ -353,14 +305,20 @@ def test_pulses(name,debug = True,upload_only=True, local = False):
     """
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
 
     ### general params
     pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 20000
+    m.params['reps_per_ROsequence'] = 10000
 
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'aom_amplitude'
+    m.params['general_sweep_pts'] = [m.params['aom_amplitude']]
 
-    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
     m.joint_params['LDE_attempts'] = 250
@@ -420,7 +378,12 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
 
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
     ### general params
+
     m.params['reps_per_ROsequence'] = 500
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -442,38 +405,42 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
 
-    if qt.current_setup == 'lt3':
-        m.params['do_only_opt_pi'] = 1
-        m.joint_params['opt_pi_pulses'] = 1
+    # if qt.current_setup == 'lt3':
+    #     m.params['do_only_opt_pi'] = 1
+    #     m.joint_params['opt_pi_pulses'] = 1
     ### upload
 
-    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
 
 def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_during_LDE = 1):
     """
     Performs a Spin-photon correlation measurement including the PLU.
     """
-    m = PQSingleClickEntExpm(name)
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+    m = PQSingleClickEntExpm(name)    
+
     sweep_sce_expm.prepare(m)
 
     ### general params
     m.params['reps_per_ROsequence'] = 500
-    pts = 15
+    pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['MW_pi_during_LDE'] = MW_pi_during_LDE ## turn pi pulse on or off for spcorrs
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'mw_first_pulse_amp' 
-    m.params['general_sweep_pts'] = np.linspace(0.2,0.6,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.0,0.35,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
 
-    if qt.current_setup == 'lt3':
-        m.params['do_only_opt_pi'] = 1
-        m.joint_params['opt_pi_pulses'] = 1
+
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -484,7 +451,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
 
     ### upload
 
-    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
@@ -502,10 +469,11 @@ def Determine_eta(name, debug = False, upload_only = False):
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
 
-    ### lt3 is only giving optical pi pulses at the moment (will change later.)
     if qt.current_setup == 'lt3':
-        m.params['do_only_opt_pi'] = 1
-        m.joint_params['opt_pi_pulses'] = 1
+        hist_only = True
+    else:
+        hist_only = False
+
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_pi_during_LDE' 
     m.params['general_sweep_pts'] = np.array([0,1]) ## turn pi pulse on or off for spcorrs
@@ -523,7 +491,7 @@ def Determine_eta(name, debug = False, upload_only = False):
 
     ### upload & run
 
-    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
 def TPQI(name,debug = False,upload_only=False):
     
     m = PQSingleClickEntExpm(name)
@@ -541,6 +509,10 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['do_general_sweep'] = 0
     m.params['MW_during_LDE'] = 0
 
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
 
     m.joint_params['LDE_element_length'] = 10e-6
     m.joint_params['opt_pi_pulses'] = 10
@@ -570,7 +542,7 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['tail_stop_bin'] = m.params['tail_stop_bin']/1e3
 
     ### upload and run
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
 
@@ -595,7 +567,13 @@ def EntangleXY(name,debug = False,upload_only=False):
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
 
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
     if qt.current_setup == 'lt4':
+        ### only one setup is allowed to sweep the phase.
         m.params['do_general_sweep'] = 0
     else:
         m.params['do_general_sweep']    = 1
@@ -607,7 +585,7 @@ def EntangleXY(name,debug = False,upload_only=False):
     ### upload and run
 
 
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
 if __name__ == '__main__':
@@ -618,23 +596,38 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 1.0, maxval=1.0, local=False)
-    # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
-    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
-    test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
+    # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
 
     ###### non-local measurements
     ### SPCorrs with Pi/2 pulse
-    # qt.instruments['ZPLServo'].move_in()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=True)
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_out()
+    # else:
+    #     qt.instruments['ZPLServo'].move_in()
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_in()
+    # else:
+    #     qt.instruments['ZPLServo'].move_out()
+    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
-  
     
+    # #### Sweep theta!
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_out()
+    # else:
+    #     qt.instruments['ZPLServo'].move_in()
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_in()
+    # else:
+    #     qt.instruments['ZPLServo'].move_out()
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
-
-
+    # qt.instruments['ZPLServo'].move_out()
 
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 
