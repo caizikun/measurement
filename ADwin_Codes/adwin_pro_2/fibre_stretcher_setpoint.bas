@@ -28,21 +28,24 @@
 #INCLUDE .\configuration.inc
 
 ' Defining FPAR
-#DEFINE g_0             FPAR_77              ' Scalefactor ZPL APD 0
+#DEFINE g_0             FPAR_75              ' Scalefactor ZPL APD 0
+#DEFINE Visiblity       FPAR_76              ' Visibility factor
 
 ' Defining PAR
 #DEFINE DELAY           PAR_10               ' Processdelay
 
 ' Defining var
-DIM n_0, n_max_0           AS FLOAT        ' ZPL APD 0 
-DIM n_1, n_max_1           AS FLOAT        ' ZPL APD 1
+DIM n_0, n_0_max, n_0_min  AS FLOAT        ' ZPL APD 0
+DIM n_1, n_1_max, n_1_min  AS FLOAT        ' ZPL APD 1
 
 INIT:
   PROCESSDELAY = 30000*DELAY               ' Processdelay
   
   P2_DAC_2(14, 0)
-  n_max_0 = 0
-  n_max_1 = 0
+  n_0_max = 0
+  n_1_max = 0
+  n_0_min = 10000
+  n_1_min = 10000
   
   ' init counter
   P2_CNT_ENABLE(CTR_MODULE, 0000b)
@@ -63,11 +66,21 @@ Event:
   P2_CNT_ENABLE(CTR_MODULE,0110b) 
   
   'find coefficients
-  if (n_0 > n_max_0) then
-    n_max_0 = n_0
+  if (n_0 > n_0_max) then
+    n_0_max_ = n_0
+  endif
+
+  if (n_0 < n_0_min) then
+    n_0_min = n_0
   endif
   
-  if (n_1 > n_max_1) then
-    n_max_1 = n_1
+  if (n_1 > n_1_max) then
+    n_1_max = n_1
   endif
-  g_0 = n_max_1/n_max_0
+
+  if (n_1 < n_1_min) then
+    n_1_min = n_1
+  endif
+
+  g_0 = n_max_0/n_max_1
+  visiblity = n_max_0 - g_0*n_min_1 
