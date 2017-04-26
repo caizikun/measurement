@@ -3120,7 +3120,7 @@ config['adwin_pro_processes'] = {
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
-                    ['phase_setpoint', 3.14/4],
+                    ['phase_setpoint', 3.14/2],
                     ['stretcher_V_2pi', 11],
                     ['stretcher_V_max', 9.5],
                     ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels

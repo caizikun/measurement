@@ -236,11 +236,11 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['Mach_Zehnder_setpoint'] = (3.1415/2)
+    m.params['phase_setpoint'] = (3.1415/2)
     m.params['reps_per_ROsequence'] = 200
     m.params['PID_Kp'] = 50         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
     m.params['PID_GAIN'] = 1.0
-    m.params['Phase_Msmt_voltage'] = 0.95
+    m.params['Phase_Msmt_voltage'] = 4.0
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -251,6 +251,38 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
+
+def phase_calibration(name,debug = False,upload_only=False):
+
+    """
+    Calibrate the interferometer parameters
+
+    """
+    # adwin = qt.get_instruments()['adwin']
+    # PhaseAOM = qt.get_instruments()['PhaseAOM']
+    # PhaseAOM.set_power(0.08e-9)
+    # adwin.start_fibre_stretcher_setpoint(delay=2)       # delay in 1/10 ms
+    # qt.msleep(10)                                       # wait and get count ratios of APD detectors 
+    # adwin.stop_fibre_stretcher_setpoint()
+
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1
+    
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    m.params['do_phase_stabilisation']  = 0
+    m.params['only_meas_phase']         = 1 
+    m.params['modulate_stretcher_during_phase_msmt'] = 1
+
+    m.params['stretcher_V_max'] = 2.0*m.params['stretcher_V_2pi']
+    m.params['count_int_cycles'] = 1000000 # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
+    m.params['sample_points'] = 20 # How many points to sample the phase at during the expm part
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = False):
     """
@@ -592,11 +624,11 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=True)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
 
@@ -611,7 +643,7 @@ if __name__ == '__main__':
     #     qt.instruments['ZPLServo'].move_in()
     # else:
     #     qt.instruments['ZPLServo'].move_out()
-    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
     # #### Sweep theta!
