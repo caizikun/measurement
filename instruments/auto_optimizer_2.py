@@ -427,10 +427,10 @@ class auto_optimizer_2(Instrument):
         initial_time = time.time();  
 
         # Start broadening of yellow
-        self.pidyellow.stop()
-        setpoint_yellow = self.adwin.get_dac_voltage(('yellow_voltage'))
-        self.adwin.load_test_sin_scan()                           # Load broadening
-        self.adwin.start_test_sin_scan(delay=5000, amp=0.20, setpoint=setpoint_yellow)    # Start broadening      
+        # self.pidyellow.stop()
+        # setpoint_yellow = self.adwin.get_dac_voltage(('yellow_voltage'))
+        # self.adwin.load_test_sin_scan()                           # Load broadening
+        # self.adwin.start_test_sin_scan(delay=5000, amp=0.20, setpoint=setpoint_yellow)    # Start broadening      
 
         # Create yellow sweep            
         yellow_start = self._get_freq_yellow();
@@ -484,10 +484,10 @@ class auto_optimizer_2(Instrument):
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
                 self._set_freq_yellow(yellow_start);
                 self._set_freq_gate(gate_start);
-                self.adwin.stop_test_sin_scan();
-                self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow));
-                qt.msleep(0.3);
-                self.pidyellow.start();                 
+                # self.adwin.stop_test_sin_scan();
+                # self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow));
+                # qt.msleep(0.3);
+                # self.pidyellow.start();                 
                 print 'Quit by user'
                 return False                 
             # Set current gate frequency to gate sweep step            
@@ -502,10 +502,10 @@ class auto_optimizer_2(Instrument):
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
                     self._set_freq_yellow(yellow_start);
                     self._set_freq_gate(gate_start);
-                    self.adwin.stop_test_sin_scan();
-                    self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow));
-                    qt.msleep(0.3);
-                    self.pidyellow.start();                 
+                    # self.adwin.stop_test_sin_scan();
+                    # self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow));
+                    # qt.msleep(0.3);
+                    # self.pidyellow.start();                 
                     print 'Quit by user'
                     return False;                  
                 # Check if we are still in NV-: no more than self._NV0_zeros zero in last 10 vals on gate
@@ -560,10 +560,10 @@ class auto_optimizer_2(Instrument):
                             self.set_is_yellowfrq_running(False)
 
 
-                        self.adwin.stop_test_sin_scan()
-                        self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow))
+                        # self.adwin.stop_test_sin_scan()
+                        # self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow))
                         qt.msleep(0.3)
-                        self.pidyellow.start()  
+                        # self.pidyellow.start()  
 
                         while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
                             # Allow to break
@@ -653,10 +653,10 @@ class auto_optimizer_2(Instrument):
             plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))
 
         # Stop broadening
-        self.adwin.stop_test_sin_scan()
-        self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow))
+        # self.adwin.stop_test_sin_scan()
+        # self.adwin.set_dac_voltage(('yellow_voltage', setpoint_yellow))
         qt.msleep(0.3)
-        self.pidyellow.start()   
+        # self.pidyellow.start()   
 
         print 'Finished gate optimization.'
         return True;

@@ -3101,9 +3101,11 @@ config['adwin_pro_processes'] = {
                     ['zpl1_counter_channel'            ,   2],
                     ['zpl2_counter_channel'            ,   3],
                     ['pid_points'                      ,   10],
+                    ['pid_points_to_store'             ,   10],
                     ['sample_points'                   ,   100],
                     ['count_int_cycles'                ,   25], # units of 3.3 ns
                     ['phase_stab_max_cycles'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['modulate_stretcher_during_phase_msmt' , 0]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3118,7 +3120,11 @@ config['adwin_pro_processes'] = {
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
-                    ['Mach_Zehnder_setpoint', 3.14],
+                    ['phase_setpoint', 3.14/4],
+                    ['stretcher_V_2pi', 11],
+                    ['stretcher_V_max', 9.5],
+                    ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
+                    ['Phase_Msmt_Vis', 1], # Vis of interference'
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 12,

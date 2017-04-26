@@ -23,7 +23,7 @@ params_lt3['AWG_SP_power']              = 50e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
-params_lt3['MW_repump_distance']		= 150e-9
+params_lt3['MW_repump_distance']		= 250e-9
 params_lt3['LDE_decouple_time']         = 1e-6
 params_lt3['MW_final_delay_offset']		= 10e-9
 params_lt3['first_mw_pulse_is_pi2']     = 0
@@ -63,9 +63,9 @@ params_lt3['sync_during_LDE']           = 1
 params_lt3['PLU_during_LDE']          = 1
 params_lt3['PLU_gate_duration']       = 100e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
-params_lt3['PLU_1_delay']             = 18e-9+18e-9 ### optimized to deselect the pulse w. plu
+params_lt3['PLU_1_delay']             = 26e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9
-params_lt3['PLU_4_delay']             = 150e-9 # taken from bell 
+params_lt3['PLU_4_delay']             = 250e-9 # it was 150e-9 for bell 
 
 params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp']
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
@@ -75,11 +75,11 @@ params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-params_lt3['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       0#2500
-params_lt3['MAX_SYNC_BIN'] =       1 ### XXXX change me!
-params_lt3['MIN_HIST_SYNC_BIN'] =  0#2500
-params_lt3['MAX_HIST_SYNC_BIN'] =  1 ### XXXX change me!
+params_lt3['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
+params_lt3['MIN_SYNC_BIN'] =       1600 #2500
+params_lt3['MAX_SYNC_BIN'] =       1900 ### XXXX change me!
+params_lt3['MIN_HIST_SYNC_BIN'] =  1600#2500
+params_lt3['MAX_HIST_SYNC_BIN'] =  1900 ### XXXX change me!
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec
@@ -111,6 +111,7 @@ params_lt3['PID_GAIN'] = 1.0
 params_lt3['PID_Kp'] = 0.000
 params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
+params_lt3['Mach_Zehnder_setpoint'] = 3.14
 
 
 params_lt3['count_int_cycles'] = 60000 # How many cycles to integrate counts for

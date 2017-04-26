@@ -58,7 +58,7 @@ joint_params['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for high
 joint_params['LDE1_attempts'] = 1000 
 joint_params['LDE2_attempts'] = 500
 
-joint_params['LDE_element_length'] = 7.0e-6 #DO NOT CHANGE THIS
+joint_params['LDE_element_length'] = 3.0e-6 #DO NOT CHANGE THIS
 
 
 #change params to LT3 and LT4 later on.
