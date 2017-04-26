@@ -10,7 +10,6 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,709,709,777,778
-' Foldings                       = 516,536
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -697,7 +696,7 @@ EVENT:
             mode_flag = 2
             mode = 100 'go to communication step
             timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-            fail_mode_after_adwin_comm = 0 ' If wrong mode,  go back to phase stabilistation
+            fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation
             success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
           ENDIF

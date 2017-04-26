@@ -264,45 +264,47 @@ def generate_LDE_elt(msmt,Gate, **kw):
             msmt.params['MW_opt_puls1_separation'] = 1e-6
         else:
             initial_reference = 'MW_Theta'
-        for i in range(msmt.joint_params['opt_pi_pulses']):
-            name = 'opt pi {}'.format(i+1)
-            refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
-            start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
-            refpoint = 'start' if i > 0 else 'end'
 
-            e.add(Gate.eom_pulse,        
-                name = name,
-                start = start,
-                refpulse = refpulse,
-                refpoint = refpoint,)
+        if qt.current_setup == 'lt3':
+            for i in range(msmt.joint_params['opt_pi_pulses']):
+                name = 'opt pi {}'.format(i+1)
+                refpulse = 'opt pi {}'.format(i) if i > 0 else initial_reference
+                start = msmt.joint_params['opt_pulse_separation'] if i > 0 else msmt.params['MW_opt_puls1_separation']
+                refpoint = 'start' if i > 0 else 'end'
+
+                e.add(Gate.eom_pulse,        
+                    name = name,
+                    start = start,
+                    refpulse = refpulse,
+                    refpoint = refpoint,)
 
 
-        #5 Plu gates
-        if msmt.params['PLU_during_LDE'] == 1 :
-            e.add(Gate.plu_gate, name = 'plu gate 1', 
-                refpulse = 'opt pi 1',
-                start = msmt.params['PLU_1_delay'])
+            #5 Plu gates
+            if msmt.params['PLU_during_LDE'] == 1 :
+                e.add(Gate.plu_gate, name = 'plu gate 1', 
+                    refpulse = 'opt pi 1',
+                    start = msmt.params['PLU_1_delay'])
 
-            plu_ref_name = 'plu gate 1'
+                plu_ref_name = 'plu gate 1'
 
-            if msmt.joint_params['opt_pi_pulses'] > 1:
-                e.add(Gate.plu_gate, 
-                    name = 'plu gate 2',
-                    refpulse = 'opt pi {}'.format(msmt.joint_params['opt_pi_pulses']),
-                    start = msmt.params['PLU_2_delay']) 
-                plu_ref_name = 'plu gate 2'
+                if msmt.joint_params['opt_pi_pulses'] > 1:
+                    e.add(Gate.plu_gate, 
+                        name = 'plu gate 2',
+                        refpulse = 'opt pi {}'.format(msmt.joint_params['opt_pi_pulses']),
+                        start = msmt.params['PLU_2_delay']) 
+                    plu_ref_name = 'plu gate 2'
 
-            e.add(pulse.cp(Gate.plu_gate, 
-                    length = msmt.params['PLU_gate_3_duration']), 
-                name = 'plu gate 3', 
-                start = msmt.params['PLU_3_delay'], 
-                refpulse = plu_ref_name)
+                e.add(pulse.cp(Gate.plu_gate, 
+                        length = msmt.params['PLU_gate_3_duration']), 
+                    name = 'plu gate 3', 
+                    start = msmt.params['PLU_3_delay'], 
+                    refpulse = plu_ref_name)
 
-            e.add(pulse.cp(Gate.plu_gate, 
-                    length = msmt.params['PLU_gate_3_duration']), 
-                    name = 'plu gate 4', 
-                    start = msmt.params['PLU_4_delay'],
-                    refpulse = 'plu gate 3')
+                e.add(pulse.cp(Gate.plu_gate, 
+                        length = msmt.params['PLU_gate_3_duration']), 
+                        name = 'plu gate 4', 
+                        start = msmt.params['PLU_4_delay'],
+                        refpulse = 'plu gate 3')
     
     #### gives a done trigger that has to be timed accordingly, is referenced to the PLU if the PLU is used by this setup.
     if Gate.is_final:
@@ -324,7 +326,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     Gate.elements_duration = msmt.joint_params['LDE_element_length']
 
     # consistent?
-    e_len = e.length()
+    # e_len = e.length()
 
     # uncomment for thourogh checks.
     # e.print_overview()

@@ -576,7 +576,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -585,7 +585,7 @@ if __name__ == '__main__':
     ###### non-local measurements // purification parameters
   
     # qt.instruments['ZPLServo'].move_in()
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+    SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   

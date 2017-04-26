@@ -27,7 +27,7 @@ N_frq    = 7.13429e6        #not calibrated
 N_HF_frq = 2.19e6        #calibrated 20140320/181319
 C_split  = 0.847e6 
 pulse_shape = 'Hermite'
-electron_transition = '+1'
+electron_transition = '-1'
 
 
 if electron_transition == '+1':
@@ -35,8 +35,8 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 190e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.88 #Not calibrated
+	hermite_pi_length = 100e-9#100e-9 #Not calibrated
+	hermite_pi_amp = 0.92 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 98e-9 # divisible by 2
-	hermite_pi_amp = 0.95 # for a single pi pulse
+	hermite_pi_amp = 0.94 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.614#0.617 #0.634#0.605
+	hermite_pi2_amp = 0.606#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
