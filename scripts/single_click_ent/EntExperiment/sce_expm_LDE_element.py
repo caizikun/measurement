@@ -23,7 +23,6 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
-    
     if msmt.params['first_mw_pulse_is_pi2'] > 0 and hasattr(Gate,'first_mw_pulse_phase'):
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
     elif msmt.params['first_mw_pulse_is_pi2']:
@@ -94,6 +93,7 @@ def _create_syncs_and_triggers(msmt,Gate):
         plu_amp = 1.0
     else:
         plu_amp = 0.0
+
     Gate.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = plu_amp, 
                                     length = msmt.params['PLU_gate_duration'])
 

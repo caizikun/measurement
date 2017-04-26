@@ -9,6 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Foldings                       = 28
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 3
