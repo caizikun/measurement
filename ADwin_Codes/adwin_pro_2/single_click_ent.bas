@@ -559,7 +559,8 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            offset_index = repetition_counter * pid_points 
+            'offset_index = repetition_counter * pid_points
+            offset_index = repetition_counter * 2           'changed to show last 2 points
           endif
           
           index = 0
@@ -573,8 +574,11 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
-              DATA_104[offset_index + store_index] = counts_1
-              DATA_105[offset_index + store_index] = counts_2
+              if ((store_index >= (pidpoints-2))) then            
+                DATA_104[offset_index + store_index] = counts_1
+                DATA_105[offset_index + store_index] = counts_2
+              endif
+
             
               counts = ARCCOS((0.5 -(((counts_1) * 1.0) / ((counts_1) * 1.0 + (counts_2)*g_0)) )/Visibility)
  
