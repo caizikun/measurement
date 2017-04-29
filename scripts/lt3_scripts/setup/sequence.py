@@ -20,7 +20,7 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0,
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,
     low=-1.0, offset=0., delay=230e-9, active=True)
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=464e-9, active=True) #546e-9
+    high=1.0, low=-1.0, offset=0.0, delay=464e-9+17e-9, active=True) #546e-9
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 

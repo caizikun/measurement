@@ -21,6 +21,13 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_X = ps.X_pulse(msmt)
     Gate.mw_pi2 = ps.Xpi2_pulse(msmt)
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
+
+    if msmt.params['do_calc_theta'] > 0:
+        fit_a  = msmt.params['sin2_theta_fit_a']      
+        fit_x0 = msmt.params['sin2_theta_fit_x0']     
+        fit_of = msmt.params['sin2_theta_fit_of']
+        p0 = msmt.params['sin2_theta']    
+        msmt.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
     if msmt.params['first_mw_pulse_is_pi2'] > 0 and hasattr(Gate,'first_mw_pulse_phase'):
@@ -32,17 +39,17 @@ def _create_mw_pulses(msmt,Gate):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
 
-    if hasattr(Gate,'no_mw_pulse'):
+    if hasattr(Gate,'no_mw_pulse') or msmt.params['do_only_opt_pi'] >0:
         if Gate.no_mw_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
-    if msmt.params['do_only_opt_pi'] >0:
-        Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        if msmt.params['do_only_opt_pi'] >0:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
         
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))

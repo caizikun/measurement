@@ -73,13 +73,17 @@ params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
+params_lt3['sin2_theta']			=0.5
+params_lt3['sin2_theta_fit_of']		=0.998
+params_lt3['sin2_theta_fit_a']		=1.96
+params_lt3['sin2_theta_fit_x0']		=0.815
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
 params_lt3['MIN_SYNC_BIN'] =       1600 #2500
-params_lt3['MAX_SYNC_BIN'] =       1900 ### XXXX change me!
+params_lt3['MAX_SYNC_BIN'] =       2400 ### XXXX change me!
 params_lt3['MIN_HIST_SYNC_BIN'] =  1600#2500
-params_lt3['MAX_HIST_SYNC_BIN'] =  1900 ### XXXX change me!
+params_lt3['MAX_HIST_SYNC_BIN'] =  2400 ### XXXX change me!
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec
