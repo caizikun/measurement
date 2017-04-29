@@ -152,6 +152,8 @@ def turn_all_sequence_elements_off(m):
     m.params['do_dynamical_decoupling'] = 0 
     m.params['do_only_opt_pi']          = 0
     m.params['do_yellow_with_AWG']      = 0
+    m.params['do_calc_theta']           = 0
+
     
 def turn_all_sequence_elements_on(m):
     """
