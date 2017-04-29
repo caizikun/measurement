@@ -76,13 +76,16 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
-
+params_lt4['sin2_theta']			= 0.5
+params_lt4['sin2_theta_fit_of']		= 1.008
+params_lt4['sin2_theta_fit_a']		= 1.758
+params_lt4['sin2_theta_fit_x0']		= 0.887
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(1.25e6)/TH_HH_selector #5 us 
+params_lt4['MIN_SYNC_BIN']        =   int(1.75e6)/TH_HH_selector #5 us 
 params_lt4['MAX_SYNC_BIN']        =   int(2.5e6)/TH_HH_selector#15 us # XXX was 15us 
 params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.65e6)/TH_HH_selector #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(2.0e6)/TH_HH_selector

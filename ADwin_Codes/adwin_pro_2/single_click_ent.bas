@@ -241,7 +241,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
   
-  stretcher_V_correct = floor(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
+  stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
   e = 0
