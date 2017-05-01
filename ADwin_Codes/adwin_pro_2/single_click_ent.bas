@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,83,83,166,166,351,351,369,369,728,728,796,797
+' Bookmarks                      = 3,3,83,83,166,166,351,351,369,369,732,732,800,801
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -122,9 +122,9 @@ DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
 DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
 DIM offset_index,store_index,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
-DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
+DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
-DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
+DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
 DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -204,8 +204,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   pid_points                  = DATA_20[34]
   pid_points_to_store         = DATA_20[35]
   sample_points               = DATA_20[36]
-  raw_count_int_cycles        = DATA_20[37]
-  raw_phase_stab_max_cycles   = DATA_20[38]
+  raw_count_int_time        = DATA_20[37]
+  raw_phase_stab_max_time   = DATA_20[38]
   modulate_stretcher_during_phase_msmt = DATA_20[39]
   
   ' float params from python
@@ -236,9 +236,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_pattern =  2 ^ (zpl1_counter_channel - 1)
   zpl2_counter_pattern =  2 ^ (zpl2_counter_channel - 1)
   
-  count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
-  phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
-  
+  count_int_cycles = (300*raw_count_int_time) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  phase_stab_max_cycles = (300*raw_phase_stab_max_time) / cycle_duration
+
   stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
@@ -697,31 +697,35 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-
-        if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-          mode = init_mode 
-          timer = -1
-          reset_CR() ' Need to reset the CR check variables.
-        else
+        
+        if ((cr_result = -1) or (cr_result = 1)) then
+          ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
+          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+            mode = init_mode 
+            timer = -1
+            reset_CR() ' For optimal robustness, reset the CR check variables.
+          else
           
-          if ( cr_result > 0 ) then
-            ' In case the result is not positive, the CR check will be repeated/continued
-            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-            timer = -1     
-            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-              mode = 3 'go to spin pumping directly
-            ELSE ' two setups involved
+            if ( cr_result > 0 ) then
+              ' In case the result is not positive, the CR check will be repeated/continued
+              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+              timer = -1     
+              IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+                mode = 3 'go to spin pumping directly
+              ELSE ' two setups involved
             
-              local_flag_1 = 0
-              local_flag_2 = 1  'flag 2 communicates that CR checking
-              mode_flag = 2
-              mode = 100 'go to communication step
-              timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-              fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
-              success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+                local_flag_1 = 0
+                local_flag_2 = 1  'flag 2 communicates that CR checking
+                mode_flag = 2
+                mode = 100 'go to communication step
+                timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+                fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+                success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
-            ENDIF
+              ENDIF
+            endif
           endif
+          
         endif
           
         
