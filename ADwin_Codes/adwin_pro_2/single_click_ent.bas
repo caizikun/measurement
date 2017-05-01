@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,720,720,789,790
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,719,719,787,788
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -387,7 +387,7 @@ EVENT:
       
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
-        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
+        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if succesful
 
         if (timer = 0) then ' forget values from previous runs
           adwin_timeout_requested = 0
@@ -473,7 +473,7 @@ EVENT:
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
-                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+                    wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
                     adwin_timeout_requested = 1
                   endif  
                 ENDIF
@@ -621,7 +621,6 @@ EVENT:
             if (is_master > 0) then
               P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
-            
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
@@ -780,7 +779,6 @@ EVENT:
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
-          par_65 = AWG_repcount_was_low
           mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
@@ -912,4 +910,6 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
-
+  if (is_master > 0) then
+    P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+  endif
