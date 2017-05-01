@@ -93,7 +93,8 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     m.params['repetitions'] = 2500
 
-    m.params['MW_pulse_amplitudes'] = np.linspace(0.2, 0.9, pts)  
+
+    m.params['MW_pulse_amplitudes'] = np.linspace(0.2, 0.92, pts)  
             
             
     

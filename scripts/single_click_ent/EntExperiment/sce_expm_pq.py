@@ -160,9 +160,10 @@ def MW_Position(name,debug = False,upload_only=False):
 
     ### sequence specific parameters
     m.params['MW_during_LDE'] = 0
-
+    m.params['do_phase_stabilisation'] = 1
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
+    m.params['is_two_setup_experiment'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['do_phase_stabilisation'] = 1
 
@@ -240,11 +241,11 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['Mach_Zehnder_setpoint'] = (3.1415/2)
+    m.params['Mach_Zehnder_setpoint'] = (np.pi/2)
     m.params['reps_per_ROsequence'] = 200
-    m.params['PID_Kp'] = 50         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
+    m.params['PID_Kp'] = 10         # 220 at 200 us steps, 150 at 400 us steps and 50 at 1 ms steps
     m.params['PID_GAIN'] = 1.0
-    m.params['Phase_Msmt_voltage'] = 0.95
+    m.params['Phase_Msmt_voltage'] = 4.0#0.95
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -493,7 +494,7 @@ def Determine_eta(name, debug = False, upload_only = False):
 
 
     m.params['is_two_setup_experiment'] = 1
-    m.params['PLU_during_LDE'] = 1
+    m.params['PLU_during_LDE'] = 0
     m.joint_params['do_final_mw_LDE'] = 0
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -502,6 +503,8 @@ def Determine_eta(name, debug = False, upload_only = False):
     ### upload
 
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
+
+
 
 def TPQI(name,debug = False,upload_only=False):
     

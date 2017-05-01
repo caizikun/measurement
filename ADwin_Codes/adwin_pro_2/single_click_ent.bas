@@ -8,9 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,718,718,786,787
-' Foldings                       = 387
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,719,719,787,788
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -388,7 +387,7 @@ EVENT:
       
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
-        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
+        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if succesful
 
         if (timer = 0) then ' forget values from previous runs
           adwin_timeout_requested = 0
@@ -397,6 +396,7 @@ EVENT:
           remote_flag_1 = 0
           remote_flag_2 = 0
         endif
+        
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
           Selectcase combined_success
             Case 0 'fail: go to fail mode
@@ -466,14 +466,14 @@ EVENT:
               else ' still no signal. Did the connection time out?
                 IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                  combined_success = 2
+                  combined_success = 3
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   par_62 = n_of_comm_timeouts
                 ELSE ' should I request a timeout in the next round now?
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
-                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+                    wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
                     adwin_timeout_requested = 1
                   endif  
                 ENDIF
@@ -570,8 +570,6 @@ EVENT:
           
           index = 0
           store_index = 0
-
-          
         ELSE
           if (is_master > 0) then
             if (index = count_int_cycles) then ' Only reads apds every count int cycles
@@ -623,20 +621,19 @@ EVENT:
             if (is_master > 0) then
               P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
-            
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
             
           endif
-
+        
           
         ENDIF
       
       
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-          
+
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
@@ -684,6 +681,9 @@ EVENT:
         
       CASE 2 'CR check
         
+        '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
+        '        P2_DIGOUT(DIO_MODULE, 11, 1)
+        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         '        record_cr_counts()
         
@@ -691,7 +691,7 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-        
+
         if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
           mode = init_mode 
           timer = -1
@@ -910,4 +910,6 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
-
+  if (is_master > 0) then
+    P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+  endif

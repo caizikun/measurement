@@ -18,7 +18,7 @@ params_lt4['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 700e-9#1000e-9
+params_lt4['AWG_SP_power']              = 150e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 1.5e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.3e-6#250e-9#250e-9#350e-9#213e-9 
@@ -76,13 +76,16 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
-
+params_lt4['sin2_theta']			= 0.5
+params_lt4['sin2_theta_fit_of']		= 1.008
+params_lt4['sin2_theta_fit_a']		= 1.758
+params_lt4['sin2_theta_fit_x0']		= 0.887
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(1.25e6)/TH_HH_selector #5 us 
+params_lt4['MIN_SYNC_BIN']        =   int(1.75e6)/TH_HH_selector #5 us 
 params_lt4['MAX_SYNC_BIN']        =   int(2.5e6)/TH_HH_selector#15 us # XXX was 15us 
 params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.65e6)/TH_HH_selector #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(2.0e6)/TH_HH_selector
@@ -103,29 +106,29 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 params_lt4['measurement_time'] = 24.*60.*60. 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 4.0
+params_lt4['Phase_Msmt_voltage'] = 0.0 # 3.0 V = approx. 200 nW seems okay
 params_lt4['Phase_Msmt_off_voltage'] = 0
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
 params_lt4['modulate_stretcher_during_phase_msmt'] = 0
 
-params_lt4['stretcher_V_2pi'] = 2.14
+params_lt4['stretcher_V_2pi'] = 2.67
 params_lt4['stretcher_V_max'] = 9.5
-params_lt4['Phase_Msmt_g_0'] = -0.74
-params_lt4['Phase_Msmt_Vis'] = -14.42
+params_lt4['Phase_Msmt_g_0'] = 0.94
+params_lt4['Phase_Msmt_Vis'] = 1.32
 
 
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 0.0		# was 15
+params_lt4['PID_Kp'] = 0.0	#10	# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 params_lt4['phase_setpoint'] = 3.14
 
 
-params_lt4['count_int_cycles'] = 600000 # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
+params_lt4['count_int_cycles'] = int(9e5) # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['pid_points_to_store'] = 10 # How many points to store
-params_lt4['sample_points'] = 100 # How many points to sample the phase at during the expm part
-params_lt4['phase_stab_max_cycles'] = 150000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
+params_lt4['sample_points'] = 33 # How many points to sample the phase at during the expm part
+params_lt4['phase_stab_max_cycles'] = 1000000#150000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 

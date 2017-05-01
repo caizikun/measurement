@@ -49,14 +49,14 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 98e-9 # divisible by 2
-	hermite_pi_amp = 0.94 # for a single pi pulse
+	hermite_pi_length = 100e-9 # divisible by 2
+	hermite_pi_amp = 0.941 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.606#0.617 #0.634#0.605
+	hermite_pi2_amp = 0.621#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
