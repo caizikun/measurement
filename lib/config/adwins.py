@@ -3103,8 +3103,8 @@ config['adwin_pro_processes'] = {
                     ['pid_points'                      ,   10],
                     ['pid_points_to_store'             ,   10],
                     ['sample_points'                   ,   100],
-                    ['count_int_cycles'                ,   25], # units of 3.3 ns
-                    ['phase_stab_max_cycles'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['count_int_time'                ,   25], # units of 3.3 ns
+                    ['phase_stab_max_time'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
                     ['modulate_stretcher_during_phase_msmt' , 0]
                     ],
                 'params_long_index'  : 20,

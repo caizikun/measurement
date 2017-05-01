@@ -160,10 +160,10 @@ def MW_Position(name,debug = False,upload_only=False):
 
     ### sequence specific parameters
     m.params['MW_during_LDE'] = 0
-    m.params['do_phase_stabilisation'] = 1
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['is_two_setup_experiment'] = 1
+    m.params['is_two_setup_experiment'] = 0
+    m.params['do_phase_stabilisation'] = 1
 
     m.joint_params['LDE_attempts'] = 250
 
@@ -500,6 +500,7 @@ def Determine_eta(name, debug = False, upload_only = False):
     ### upload
 
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
+
 
 
 def TPQI(name,debug = False,upload_only=False):

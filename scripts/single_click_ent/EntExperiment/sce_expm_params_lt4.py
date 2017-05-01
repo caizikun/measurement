@@ -125,10 +125,9 @@ params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 params_lt4['phase_setpoint'] = 3.14
 
-
-params_lt4['count_int_cycles'] = int(9e5) # How many cycles to integrate counts for (60000 = 200 us steps, 300000 = 1 ms steps etc)
+params_lt4['count_int_time'] = 3000 # How long to integrate counts for in microseconds
 params_lt4['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt4['pid_points_to_store'] = 10 # How many points to store
 params_lt4['sample_points'] = 33 # How many points to sample the phase at during the expm part
-params_lt4['phase_stab_max_cycles'] = 1000000#150000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
+params_lt4['phase_stab_max_time'] = 1000000 # How long in microseconds to run the expm for after phase stabilisation
 
