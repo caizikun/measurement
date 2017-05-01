@@ -260,7 +260,7 @@ if __name__ == '__main__':
             elif scan_mode == 'zernike':
                 # for i in np.arange(2,38): #first half of the 75 zernike modes!
                 #for i in np.arange(38,75): #second half of the 75 zernike modes!
-                for i in np.arange(38,75): #2,38#array can go up to 75 zernike modes!
+                for i in np.arange(2,38): #2,38#array can go up to 75 zernike modes!
                     if msvcrt.kbhit():
                         if msvcrt.getch() == 'c': 
                             stop_scan=True

@@ -34,13 +34,13 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     pulse_shape = m.params['pulse_shape']
-    pts = 21
+    pts = 15
 
     m.params['pts'] = pts
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
-    m.params['repetitions'] = 1600 if multiplicity == 1 else 2000
+    m.params['repetitions'] = 1600 if multiplicity == 1 else 1000
     rng = 0.1 if multiplicity == 1 else 0.03
 
 

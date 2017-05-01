@@ -7,7 +7,7 @@ import msvcrt
 #measurement parameters
 name = '111no2_SIL2_PSB_MM'
 steps=15
-max_power=18e-6       #[w]
+max_power=60e-6       #[w]
 counter=1 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
 bg_x=0        #delta x position of background [um]

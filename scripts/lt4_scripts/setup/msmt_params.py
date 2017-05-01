@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.941 # for a single pi pulse
+	hermite_pi_amp = 0.869 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.621#0.617 #0.634#0.605
+	hermite_pi2_amp = 0.604#0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -488,10 +488,10 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 3e-9,
-		'CR_duration' :				 	 70,
+		'A_CR_amplitude':				 2.2e-9,
+		'CR_duration' :				 	 80,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 1.0e-9,
 		}
