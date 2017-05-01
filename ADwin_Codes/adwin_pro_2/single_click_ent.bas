@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,719,719,787,788
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,83,83,166,166,351,351,369,369,728,728,796,797
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -38,7 +38,6 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod_Bell.inc
-#INCLUDE .\monitor_expm_params.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
@@ -131,7 +130,6 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
-  init_expm_param_monitor()
   
   n_of_comm_timeouts = 0 ' used for debugging, goes to a par   
   repetition_counter  = 0 ' adwin arrays start at 1, but this counter starts at 0 -> we have to write to rep counter +1 all the time
@@ -347,7 +345,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   else
     init_mode = mode_after_phase_stab
   endif
-  
+ 
   mode = init_mode
   
 '''''''''''''''''''''''''''
@@ -466,7 +464,7 @@ EVENT:
               else ' still no signal. Did the connection time out?
                 IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                  combined_success = 3
+                  combined_success = 2
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   par_62 = n_of_comm_timeouts
                 ELSE ' should I request a timeout in the next round now?
@@ -624,7 +622,7 @@ EVENT:
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
-            
+
           endif
         
           
@@ -684,6 +682,14 @@ EVENT:
         '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
         '        P2_DIGOUT(DIO_MODULE, 11, 1)
         
+        '        IF (timer = 0) then
+        '          par_65 = elapsed_cycles_since_phase_stab
+        '          Fpar_25 = mode_after_phase_stab
+        '          Fpar_26 = 
+        '          Fpar_27 = 
+        '        endif
+        
+        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         '        record_cr_counts()
         
@@ -695,26 +701,29 @@ EVENT:
         if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
           mode = init_mode 
           timer = -1
-        endif
-
-        if ( cr_result > 0 ) then
-          ' In case the result is not positive, the CR check will be repeated/continued
-          time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-          timer = -1     
-          IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-            mode = 3 'go to spin pumping directly
-          ELSE ' two setups involved
-            
-            local_flag_1 = 0
-            local_flag_2 = 1  'flag 2 communicates that CR checking
-            mode_flag = 2
-            mode = 100 'go to communication step
-            timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-            fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
-            success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+          reset_CR() ' Need to reset the CR check variables.
+        else
           
-          ENDIF
-        endif  
+          if ( cr_result > 0 ) then
+            ' In case the result is not positive, the CR check will be repeated/continued
+            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+            timer = -1     
+            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+              mode = 3 'go to spin pumping directly
+            ELSE ' two setups involved
+            
+              local_flag_1 = 0
+              local_flag_2 = 1  'flag 2 communicates that CR checking
+              mode_flag = 2
+              mode = 100 'go to communication step
+              timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+              fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+              success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+          
+            ENDIF
+          endif
+        endif
+          
         
       CASE 3    ' E spin pumping
         
@@ -868,7 +877,6 @@ EVENT:
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         
-        record_expm_params(repetition_counter+1) '' For the expm monitor
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!

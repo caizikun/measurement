@@ -128,7 +128,7 @@ params_lt3['count_int_cycles'] = int(9e5) # How many cycles to integrate counts 
 params_lt3['pid_points'] = 10 # How many points to sample the phase at during the PID loop
 params_lt3['pid_points_to_store'] = 10 # How many points to store
 params_lt3['sample_points'] = 33 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_cycles'] = 1000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
+params_lt3['phase_stab_max_cycles'] = 100000000 # How long (in units of 3.3ns) to run the expm for after phase stabilisation
 
 
 

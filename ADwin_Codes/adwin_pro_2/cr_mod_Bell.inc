@@ -267,6 +267,12 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
   
 ENDFUNCTION
   
+SUB reset_CR()
+  cr_timer = 0  
+  cr_mode = 0
+  cr_counts = 0
+ENDSUB
+
 SUB finish_CR()
   DATA_26[1] = repumps
   DATA_26[2] = total_repump_counts
