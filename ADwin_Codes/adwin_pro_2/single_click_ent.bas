@@ -9,7 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,720,720,789,790
+' Bookmarks                      = 3,3,84,84,168,168,353,353,371,371,718,718,786,787
+' Foldings                       = 387
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -396,7 +397,6 @@ EVENT:
           remote_flag_1 = 0
           remote_flag_2 = 0
         endif
-        
         IF (adwin_comm_done > 0) THEN 'communication run was successful. Decide what to do next and clear memory. Second if statement (rather than ELSE) saves one clock cycle
           Selectcase combined_success
             Case 0 'fail: go to fail mode
@@ -466,7 +466,7 @@ EVENT:
               else ' still no signal. Did the connection time out?
                 IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                  combined_success = 3
+                  combined_success = 2
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   par_62 = n_of_comm_timeouts
                 ELSE ' should I request a timeout in the next round now?
@@ -570,6 +570,8 @@ EVENT:
           
           index = 0
           store_index = 0
+
+          
         ELSE
           if (is_master > 0) then
             if (index = count_int_cycles) then ' Only reads apds every count int cycles
@@ -627,14 +629,14 @@ EVENT:
             timer = -1
             
           endif
-        
+
           
         ENDIF
       
       
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-
+          
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
@@ -682,9 +684,6 @@ EVENT:
         
       CASE 2 'CR check
         
-        '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
-        '        P2_DIGOUT(DIO_MODULE, 11, 1)
-        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         '        record_cr_counts()
         
@@ -692,7 +691,7 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-
+        
         if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
           mode = init_mode 
           timer = -1
@@ -780,7 +779,6 @@ EVENT:
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
-          par_65 = AWG_repcount_was_low
           mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
