@@ -30,13 +30,15 @@ class QuTauPulsarMeasurement(PulsarMeasurement,  qutau.QuTauMeasurement ):
         qutau.QuTauMeasurement.setup(self,**kw)
 
     def start_measurement_process(self):
-        qt.msleep(.5)
+        qt.msleep(.1)
         self.start_adwin_process(stop_processes=['counter'])
-        qt.msleep(.5)
+        qt.msleep(.1)
 
     def measurement_process_running(self):
+        
         if not(self.adwin_process_running()):
-            qt.msleep(1)
+            print 'checking'
+            qt.msleep(1.5)
         return self.adwin_process_running()
 
     def run(self, **kw):

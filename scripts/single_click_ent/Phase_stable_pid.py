@@ -1,6 +1,7 @@
 """
 LT2 script for adwin ssro.
 """
+import numpy as np
 import qt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
@@ -15,6 +16,7 @@ def Phase_stable_pid(name, **additional_params):
     m = Timing_PID.PIDtiming('PIDmsmt_'+name)
 
     m.params['PhaseAOMvoltage'] = 1
+    m.params['setpoint'] = np.pi/4
     m.params['PID_cycles'] = 500
     m.params['sample_cycles'] = 5000
     m.params['delay'] = 2
@@ -28,7 +30,7 @@ def Phase_stable_pid(name, **additional_params):
 
 if __name__ == '__main__':
     for i in range(10):
-        # stools.turn_off_all_lasers()
+        stools.turn_off_all_lasers()
         Phase_stable_pid(SAMPLE_CFG)
 
     

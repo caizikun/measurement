@@ -629,6 +629,7 @@ class adwin(Instrument):
         # if the scan is not finished properly
         for i,n in enumerate(dac_names):
             self._dac_voltages[n] = stop_voltages[i]
+
         self.save_cfg()
 
     def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,

@@ -9,6 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Foldings                       = 28
 '<Header End>
 ' primary purpose of this program: 
 ' get count rates of internal ADwin counters 3
@@ -21,57 +22,66 @@
 ' Output:
 ' - Setpoint (setpoint) (
 
-
+  
 
 ' Including packages
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 
 ' Defining FPAR
-#DEFINE setpoint        FPAR_14              ' Setpoint of PID process
+#DEFINE g_0             FPAR_75              ' Scalefactor ZPL APD 0
+#DEFINE Visiblity       FPAR_76              ' Visibility factor
 
 ' Defining PAR
 #DEFINE DELAY           PAR_10               ' Processdelay
 
 ' Defining var
-DIM counts, counts_min, counts_max           AS FLOAT        ' Setpoint 
+DIM n_0, n_0_max, n_0_min  AS FLOAT        ' ZPL APD 0
+DIM n_1, n_1_max, n_1_min  AS FLOAT        ' ZPL APD 1
 
 INIT:
   PROCESSDELAY = 30000*DELAY               ' Processdelay
   
-  setpoint = 0
   P2_DAC_2(14, 0)
+  n_0_max = 0
+  n_1_max = 0
+  n_0_min = 10000
+  n_1_min = 10000
   
   ' init counter
   P2_CNT_ENABLE(CTR_MODULE, 0000b)
   P2_CNT_MODE(CTR_MODULE, 2,000010000b)
+  P2_CNT_MODE(CTR_MODULE, 3,000010000b)
   'CNT_SE_DIFF(0000b)
-  P2_CNT_CLEAR(CTR_MODULE, 0010b)
-  P2_CNT_ENABLE(CTR_MODULE, 0010b)
-  
-  
-  ' Init counts min and max
-  P2_CNT_LATCH(CTR_MODULE, 0010b)       ' Measure
-  counts_min = P2_CNT_READ_LATCH(CTR_MODULE, 2)
-  P2_CNT_ENABLE(CTR_MODULE,0000b)
-  P2_CNT_CLEAR(CTR_MODULE,0010b)
-  P2_CNT_ENABLE(CTR_MODULE,0010b) 
-  counts_max = 0
+  P2_CNT_CLEAR(CTR_MODULE, 0110b)
+  P2_CNT_ENABLE(CTR_MODULE, 0110b)
+ 
   
 Event:
-      
-  P2_CNT_LATCH(CTR_MODULE, 0010b)       ' Measure
-  counts = P2_CNT_READ_LATCH(CTR_MODULE, 2) 
+  'measure    
+  P2_CNT_LATCH(CTR_MODULE, 0110b)       
+  n_0 = P2_CNT_READ_LATCH(CTR_MODULE, 2)
+  n_1 = P2_CNT_READ_LATCH(CTR_MODULE, 3) 
   P2_CNT_ENABLE(CTR_MODULE,0000b)
-  P2_CNT_CLEAR(CTR_MODULE,0010b)
-  P2_CNT_ENABLE(CTR_MODULE,0010b) 
+  P2_CNT_CLEAR(CTR_MODULE,0110b)
+  P2_CNT_ENABLE(CTR_MODULE,0110b) 
   
-  if (counts > counts_max) then
-    counts_max = counts
+  'find coefficients
+  if (n_0 > n_0_max) then
+    n_0_max_ = n_0
+  endif
+
+  if (n_0 < n_0_min) then
+    n_0_min = n_0
   endif
   
-  if (counts < counts_min) then
-    counts_min = counts
+  if (n_1 > n_1_max) then
+    n_1_max = n_1
   endif
-  
-  setpoint = (counts_max + counts_min)/2
+
+  if (n_1 < n_1_min) then
+    n_1_min = n_1
+  endif
+
+  g_0 = n_max_0/n_max_1
+  visiblity = n_max_0 - g_0*n_min_1 

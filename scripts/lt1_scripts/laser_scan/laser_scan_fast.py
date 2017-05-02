@@ -4,12 +4,11 @@ import time
 import scipy
 import numpy as np
 
-def fast_laser_scan(name,grpower,redpower,mw):
+def fast_laser_scan(name,grpower,redpower,mw,vstart,vstop,steps):
     dac_names = ['newfocus_frq']
-    start_voltages = [0]
-    stop_voltages = [-4]
-    steps = int(20e9/100e6) # 60 GHz (approx newfocus range) / (stepsize 100 MHz)
-    px_time= 1000#ms
+    start_voltages = [vstart]
+    stop_voltages = [vstop]
+    px_time= 100#ms
     plot_voltage=True
     adwin_ins = qt.instruments['adwin']
 
@@ -39,8 +38,8 @@ def fast_laser_scan(name,grpower,redpower,mw):
 
     if mw:
         print 'MW!'
-        SMB100.set_frequency(2.878e9)
-        SMB100.set_power(15)
+        SMB100.set_frequency(2.878e9)#8e9)
+        SMB100.set_power(18)
         SMB100.set_status('on')
     prev_px_clock = 0
     while 1:
@@ -77,7 +76,7 @@ def fast_laser_scan(name,grpower,redpower,mw):
     if mw:
         SMB100.set_status('off')
 
-def long_fast_laser_scan(name,grpower,redpower,mw):
+def long_fast_laser_scan(name,grpower,redpower,mw,vstart,vstop,steps):
     '''
     Repeats full voltage range scans for coarse wavelength steps
     '''
@@ -93,15 +92,36 @@ def long_fast_laser_scan(name,grpower,redpower,mw):
         # for j in range(3):
         #     set_nf_frequency_coarse(f)
         #     qt.msleep(1)
-        fast_laser_scan(name+'_'+str(ii),grpower,redpower,mw)
+
         GreenAOM.set_power(20e-6)
         qt.msleep(1)
         opt_ins.optimize(dims=['x','y','z','x','y'], cycles = 1, int_time = 100, cnt=2)
         qt.msleep(1)
-        
+                
+        fast_laser_scan(name+'_'+str(ii),grpower,redpower,mw,vstart,vstop)
+
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
             break
-    
+
+def repeat_scan(name,grpower,redpower,mw,vstart,vstop,steps,nr_reps):
+    '''
+    Repeats scan on a single peak several times
+    '''
+    opt_ins = qt.instruments['optimiz0r']
+
+    for i in np.arange(nr_reps):
+        print 'scan nr ',i+1,'out of ',nr_reps
+        GreenAOM.set_power(260e-6)
+        if i%10==0:
+            opt_ins.optimize(dims=['x','y','z'], cycles = 1,cnt=2, int_time = 20,order=['xyz'])
+        qt.msleep(1)
+        GreenAOM.set_power(0e-6)
+
+        fast_laser_scan(name+'_'+str(i),grpower,redpower,mw,vstart,vstop,steps)
+        if (msvcrt.kbhit() and (msvcrt.getch()=='q')):
+            break
+
+
 def set_nf_frequency_coarse(f): # GHz wrt 470.4 THz
 
     cur_f = get_cur_frequency()
@@ -122,14 +142,21 @@ def get_cur_frequency():
 if __name__ == '__main__':
     mw=True
     grpower = 0e-6
-    redpower = 2e-9
-    name = 'Harry_Scan1_NV2'+'_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
+    redpower = 20e-9
+    vstart = 1.8
+    vstop = -1.0
+    steps = int(20e9/10e6) # 60 GHz (approx newfocus range) / (stepsize 10 MHz)
+
+    name = 'Sirius_day2spot3'+'_g_'+str(grpower*1.e6)+'_r_'+str(redpower*1.e9)
     
     counters.set_is_running(False)
     if mw:
         GreenAOM.set_power(100e-6)
         qt.msleep(1)
         GreenAOM.set_power(0e-6)
-    fast_laser_scan(name,grpower,redpower,mw)
+    nr_reps = 1
+
+    #fast_laser_scan(name,grpower,redpower,mw,vstart,vstop,steps)
+    repeat_scan(name,grpower,redpower,mw,vstart,vstop,steps,nr_reps)
     #long_fast_laser_scan(name,grpower,redpower,mw)
     

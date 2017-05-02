@@ -48,7 +48,7 @@ def lt3_check_powers():
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-                700e-9, # The amount for repumping in purification
+                50e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.15,0.15,0.15]
     qt.instruments['PMServo'].move_in()
@@ -82,20 +82,20 @@ def check_smb_errors():
     return ret_val
 
 if __name__ == '__main__':
-    if qt.current_setup =='lt3':
+    if (qt.current_setup == 'lt3' or qt.current_setup =='lt4'):
 
         tel1_helper = qt.instruments['tel1_helper']
 
-        start_index = 20
+        start_index = 1
         skip_first=False
-        optimize_index = 3
-        cycles = 200
+        optimize_index = 2
+        cycles = 1
 
         noof_cycles_for_green_reset = 4
         counter_for_green_reset = 0
 
 
-        for i in range(start_index,start_index+cycles):
+        for k in range(start_index,start_index+cycles):
             # counter_for_green_reset += 1
             # print '\ncounter for green reset = {}\n'.format(counter_for_green_reset)
             # if counter_for_green_reset==noof_cycles_for_green_reset: 
@@ -106,11 +106,11 @@ if __name__ == '__main__':
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
                 break
             if not(skip_first):
-                qt.telcrify_name_index = i
+                qt.telcrify_name_index = k
                 qt.master_script_is_running = True
                     
                 execfile(r'telcrify.py')
-                output_tel1= qt.instruments['tel1_helper'].get_measurement_name()
+                output_tel1=  tel1_helper.get_measurement_name()
 
 
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
@@ -138,12 +138,13 @@ if __name__ == '__main__':
 
             #print 'starting the measurement at lt3'
 
-            print 'Loading CR linescan'
-            execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
-            qt.instruments['ZPLServo'].move_in()
-
-            if cycles % optimize_index == 0:
-                lt3_succes = optimize()
+            print k
+            print float(k) % optimize_index
+            if float(k) % optimize_index == 0:
+                print 'Loading CR linescan'
+                execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
+                qt.instruments['ZPLServo'].move_in()
+                # lt3_succes = optimize()
             else:
                 lt3_succes = True
 
@@ -170,9 +171,9 @@ if __name__ == '__main__':
 
         else:
 
-                qt.instruments['lt4_helper'].set_is_running(True)
+                qt.instruments['tel1_helper'].set_is_running(True)
                 qt.msleep(10) # when you resetart bell to early, it will crash
 
-                qt.instruments['lt4_helper'].set_measurement_name(True)
-                qt.instruments['lt4_helper'].set_is_running(False)
+                qt.instruments['tel1_helper'].set_measurement_name(True)
+                qt.instruments['tel1_helper'].set_is_running(False)
                 qt.master_script_is_running = True

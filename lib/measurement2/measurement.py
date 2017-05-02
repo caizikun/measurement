@@ -145,6 +145,9 @@ class MeasurementParameters(object):
         
         return ret
 
+    def __contains__(self, item):
+        return self.parameters.has_key(item)
+
     def new(self, key, value, *arg, **kw):
         self.parameters[key] = MeasurementParameter(key, value, *arg, **kw)
         
@@ -472,6 +475,9 @@ class AdwinControlledMeasurement(Measurement):
         adsrc = self.adwin_process_src_filepath()
         if adsrc != None:
             shutil.copy(adsrc, sdir)
+
+class LocalAdwinControlledMeasurement(AdwinControlledMeasurement):
+    pass
 
 def save_instrument_settings_file(parent):
     h5settingsgroup = parent.create_group('instrument_settings')

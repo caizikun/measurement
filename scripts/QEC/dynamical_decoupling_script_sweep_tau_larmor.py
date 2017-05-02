@@ -9,7 +9,7 @@ import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)
@@ -33,15 +33,16 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     m.params['use_shutter'] = shutter
     m.params['reps_per_ROsequence'] = reps #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
-
+    m.params['DD_in_eigenstate'] = False # overwrites the use of pi/2 pulses.
     
     if N==1:
-        m.params['Final_Pulse'] ='x'
+        m.params['Final_Pulse'] = 'x'
     else:
-        m.params['Final_Pulse'] ='-x'
+        m.params['Final_Pulse'] = '-x'
     ### Calculate tau larmor
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = 1/f_larmor#rounds to ns
+    # f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    # tau_larmor = 1/f_larmor#rounds to ns
+    tau_larmor = 1/442960.96
     #tau_larmor =9.668e-6
     # tau_larmor= 9.52e-6+2*2.314e-6
     
@@ -105,13 +106,13 @@ def SimpleDecoupling_Single_Block(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], 
     m.params['Number of pulses in XY scheme'] = XY_scheme
     m.params['DD_in_eigenstate'] = False
     ### Calculate tau larmor
-    f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
-    tau_larmor = round(1/f_larmor,9)#rounds to ns
+    # f_larmor = (m.params['ms+1_cntr_frq']-m.params['zero_field_splitting'])*m.params['g_factor_C13']/m.params['g_factor']
+    # tau_larmor = round(1/f_larmor,9)#rounds to ns
     #tau_larmor =9.668e-6
     # tau_larmor= 9.52e-6+2*2.314e-6
-
+    tau_larmor = 1/442960.96
     print 'tau_larmor = %s' %tau_larmor
-    tau_larmor = 2.316e-6
+    # tau_larmor = 2.316e-6
     #tau_larmor = 2.524e-6
 
 
@@ -345,11 +346,12 @@ if __name__ == '__main__':
 
 
     if n==1 and Cont:
-        N = 1
-        pts = 70
-        larmor_max = 602
+        debug = False
+        N = 256
+        pts = 50/4
+        larmor_max = 30
         larmor_min = 2
-        larmor_step = 10
+        larmor_step = 1
         reps = 800
 
         Number_of_pulses = N

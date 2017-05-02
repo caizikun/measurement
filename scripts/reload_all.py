@@ -33,6 +33,9 @@ reload(pulsar_msmt)
 from measurement.lib.measurement2.adwin_ssro import pulsar_mbi_espin
 reload(pulsar_mbi_espin)
 
+from measurement.lib.measurement2.adwin_ssro import pulsar_delay
+reload(pulsar_delay)
+
 from measurement.lib.measurement2.adwin_ssro import pulsar_pq
 reload(pulsar_pq)
 from measurement.lib.measurement2.adwin_ssro import dynamicaldecoupling
@@ -42,3 +45,4 @@ from measurement.lib.measurement2.adwin_ssro import DD_2; reload(DD_2)
 
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps 
 reload(ps)
+

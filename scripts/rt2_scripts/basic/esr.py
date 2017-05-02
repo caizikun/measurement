@@ -2,13 +2,13 @@ import qt
 import msvcrt
 # from measurement.AWG_HW_sequencer_v2 import Sequence
 
-name='Hillary_scan3_spot5'
-start_f = 2.807 -0.02 # #0.0#    2.853 #2.85 #  #in GHz
-stop_f  = 2.807 +0.02 # #0.05#   2.864 #2.905 #   #in GHz
-steps   = 120
-mw_power = 18#15 #in dBm
-green_power = 250e-6 #20e-6
-int_time = 30       #in ms
+name='Hillary_scan9_spot2'
+start_f = 2.80 #-0.014 # #0.0#    2.853 #2.85 #  #in GHz
+stop_f  = 2.88 #+0.014 # #0.05#   2.864 #2.905 #   #in GHz
+steps   = 91
+mw_power = 15 #in dBm
+green_power = 50e-6 #20e-6
+int_time = 50       #in ms
 reps = 500
 
 #generate list of frequencies
@@ -53,7 +53,7 @@ for cur_rep in range(reps):
 
         ins_smb.set_frequency(cur_f)
         
-        qt.msleep(0.05)
+        qt.msleep(0.01)
 
         total_cnts[i]+=ins_adwin.measure_counts(int_time)[counter-1]
         # qt.msleep(0.01)
@@ -63,9 +63,9 @@ for cur_rep in range(reps):
     p_c.add(f_list, total_cnts, 'b-')
 
     
-    if cur_rep%5 == 0 and cur_rep!=0:
+    if cur_rep%20 == 0 and cur_rep!=0:
         qt.msleep(2)
-        opt_ins.optimize(dims=['x','y'], cycles=1)
+        opt_ins.optimize(dims=['x','y','z'], cycles=1)
         qt.msleep(2)
 
 
@@ -78,7 +78,7 @@ for cur_rep in range(reps):
 
 ins_smb.set_status('off')
 
-d = qt.Data(name=name)
+d = qt.Data(name=name+'_esr')
 d.add_coordinate('frequency [GHz]')
 d.add_value('counts')
 d.create_file()

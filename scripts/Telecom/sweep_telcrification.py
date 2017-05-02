@@ -18,6 +18,7 @@ def show_stopper():
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
         return True
     else: return False
+    
 def print_adwin_stuff(m):
     print m.params['cycle_duration']
     print m.params['SP_duration']
@@ -52,6 +53,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+C13'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO+MBI'])
     m.params.from_dict(qt.exp_params['protocols'][name]['AdwinSSRO'])
@@ -108,7 +110,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['trigger_wait'] = 1
 
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,**kw):
 
     if autoconfig:
         m.autoconfig()    
@@ -123,7 +125,7 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        m.run(autoconfig=False, setup=False)
+        m.run(autoconfig=False, setup=False,**kw)
 
         if save_name != '':
             m.save(save_name)

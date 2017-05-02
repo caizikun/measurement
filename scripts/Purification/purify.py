@@ -10,7 +10,6 @@ import measurement.lib.measurement2.pq.pq_measurement as pq
 from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
 import copy
 import msvcrt
-reload(T2_tools_v3)
 reload(pq)
 reload(purify_slave);reload(sweep_purification)
 
@@ -66,7 +65,7 @@ class purify(PQPurifyMeasurement):
         self.params['pts']=1
         self.params['repetitions']=1
     
-    def save(self, name = 'adwinadata'):
+    def save(self, name = 'adwindata'):
         purify_slave.purify_single_setup.save(self)
         
     # def print_measurement_progress(self):
@@ -111,7 +110,7 @@ class purify(PQPurifyMeasurement):
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
 
-        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
+        print 'current sync, marker_events, dset length:', self.last_sync_number,self.total_counted_markers
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
         tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
@@ -166,9 +165,6 @@ def load_BK_params(m):
     m.params['LDE_SP_duration'] = 1.5e-6
 
 
-    #### compensate a change in plu windows.
-    ### insert parameter adjustment here.
-
 
 def MW_Position(name,debug = False,upload_only=False):
     """
@@ -198,7 +194,7 @@ def MW_Position(name,debug = False,upload_only=False):
 
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['is_two_setup_experiment'] = 2
+    m.params['is_two_setup_experiment'] = 0
 
     m.joint_params['LDE1_attempts'] = 250
 
@@ -235,16 +231,16 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### --> for this measurement: none.
     m.joint_params['LDE1_attempts'] = 250
 
-    m.joint_params['opt_pi_pulses'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     if local:
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-    ### need to find this out!
-    m.params['MIN_SYNC_BIN'] =       000
-    m.params['MAX_SYNC_BIN'] =       7000e3
+    # ### need to find this out!
+    # m.params['MIN_SYNC_BIN'] =       000
+    # m.params['MAX_SYNC_BIN'] =       7000e3
 
     # put sweep together:
     sweep_off_voltage = False
@@ -580,7 +576,7 @@ if __name__ == '__main__':
     # MW_Position(name+'_MW_position',upload_only=False)
 
 
-    #tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name+'_test',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
@@ -589,14 +585,14 @@ if __name__ == '__main__':
     ###### non-local measurements // purification parameters
   
     # qt.instruments['ZPLServo'].move_in()
-    # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
+    SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     # SPCorrsPuri_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
   
     
     # Determine_eta(name+'_eta_XX_35percent',debug = False,upload_only=False)
 
-    PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
+    # PurifyXX(name+'_Purify_XX',debug = False, upload_only = False)
     # PurifyYY(name+'_Purify_YY',debug = False, upload_only = True)
     # PurifyZZ(name+'_Purify_ZZ',debug = False, upload_only = True)
 

@@ -42,7 +42,7 @@ class PIDtiming(m2.AdwinControlledMeasurement):
             self.setup()
         print 'Phase_stable_pid'
         print self.adwin_process
-        self.start_adwin_process(stop_processes=['counter'])
+        self.start_adwin_process(stop_processes=['counter'],setpoint = m.params['setpoint'])
         qt.msleep(1)
         self.start_keystroke_monitor('abort',timer=False)
         
@@ -73,9 +73,13 @@ class PIDtiming(m2.AdwinControlledMeasurement):
     def save(self, name='pidfs'):
         reps = self.adwin_var('completed_reps')
         self.save_adwin_data(name,
-                [   ('PID_counts', reps * self.params['PID_cycles']),
-                    ('sample_counts', reps * self.params['sample_cycles']),
+                [   ('PID_counts_1', reps * self.params['PID_cycles']),
+                    ('PID_counts_2', reps * self.params['PID_cycles']),
+                    ('sample_counts_1', reps * self.params['sample_cycles']),
+                    ('sample_counts_2', reps * self.params['sample_cycles']),
                     'completed_reps',
+                    'g_0',
+                    'g_1',
                     'setpoint'])
 
     def finish(self, **kw):

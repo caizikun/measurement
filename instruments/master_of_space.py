@@ -385,7 +385,7 @@ class master_of_space(CyclopeanInstrument):
                 return
             
             target_voltages.append(tv)
- 
+
         self._adwin.move_to_xyz_U(target_voltages, speed=speed,
                 blocking=blocking)
         

@@ -8,7 +8,7 @@ import numpy as np
 import qt, time, logging, os
 import measurement.lib.measurement2.measurement as m2
 from multiprocessing import Process, Queue
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+from measurement.lib.cython.PQ_T2_tools.T2_tools_src import T2_tools_v3
 import hdf5_data as h5
 
 class PQMeasurement(m2.Measurement):
@@ -65,7 +65,7 @@ class PQMeasurement(m2.Measurement):
 
         self.stop_measurement_process()
 
-    def run(self, autoconfig=True, setup=True, debug=False,  live_filter_on_marker=False):
+    def run(self, autoconfig=True, setup=True, debug=False,  live_filter_on_marker=False,hist_only = False):
 
         if debug:
             self.run_debug()
@@ -77,7 +77,7 @@ class PQMeasurement(m2.Measurement):
         if setup:
             self.setup()
 
-        wait_for_late_data= self.params['wait_for_late_data'] if 'wait_for_late_data' in self.params else 1e8 
+        wait_for_late_data= self.params['wait_for_late_data'] if self.params.parameters.has_key('wait_for_late_data') else 1e8 
 
 
         rawdata_idx = 1
@@ -148,25 +148,24 @@ class PQMeasurement(m2.Measurement):
                     ii+=1
                     print 'Retreiving late data from PQ, for {} seconds. Press x to stop'.format(ii*self.params['measurement_abort_check_interval'])
                     self._keystroke_check('abort')
-                    if self.PQ_ins_params[PQ_ins_key]._length == 0 or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
+                    if _length == 0 or self.keystroke('abort') in ['x'] or ii>wait_for_late_data: 
                         break 
                 print 'current sync,marker_events, dset length:', self.last_sync_number,self.total_counted_markers, current_dset_length
 
                 _timer=time.time()
 
             #self.PQ_ins_params[PQ_ins_key]._length, self.PQ_ins_params[PQ_ins_key]._data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-            self.PQ_ins_params[PQ_ins_key]._length = 0
-            self.PQ_ins_params[PQ_ins_key]._data = np.array([],dtype = 'uint32')
+            _length = 0
+            _data = np.array([],dtype = 'uint32')
             for j in range(TTTR_RepetitiveReadouts):
                 cur_length, cur_data = self.PQ_ins.get_TTTR_Data(count = TTTR_read_count)
-                self.PQ_ins_params[PQ_ins_key]._length += cur_length 
-                self.PQ_ins_params[PQ_ins_key]._data = np.hstack((self.PQ_ins_params[PQ_ins_key]._data,cur_data[:cur_length]))
+                _length += cur_length 
+                _data = np.hstack((_data,cur_data[:cur_length]))
            
             #ll[self.PQ_ins_params[PQ_ins_key]._length]+=1 #XXX
-            if self.PQ_ins_params[PQ_ins_key]._length > 0:
-                if self.PQ_ins_params[PQ_ins_key]._length == T2_READMAX or self.PQ_ins_params[PQ_ins_key]._length ==  TTTR_RepetitiveReadouts * TTTR_read_count:
-                    logging.warning('TTTR record length is maximum length, \
-                            could indicate too low transfer rate resulting in buffer overflow.')
+            if _length > 0:
+                if  _length ==  TTTR_RepetitiveReadouts * TTTR_read_count:
+                    logging.warning('TTTR record length is maximum length, could indicate too low transfer rate resulting in buffer overflow.')
 
                 if self.PQ_ins.get_Flag_FifoFull():
                     print 'Aborting the measurement: Fifo full!'
@@ -178,7 +177,7 @@ class PQMeasurement(m2.Measurement):
                     print 'Aborting the measurement: SyncLost flag is high.'
                     break
 
-                _t, _c, _s = PQ_decode(self.PQ_ins_params[PQ_ins_key]._data[:self.PQ_ins_params[PQ_ins_key]._length])
+                _t, _c, _s = PQ_decode(_data[:_length])
 
                 
 
@@ -196,7 +195,8 @@ class PQMeasurement(m2.Measurement):
                         _queue_hhspecial.append(hhspecial)  
                         _queue_sync_number.append(sync_number)  
                         _queue_newlength.append(newlength)   
-                    else:
+                        
+                    elif not hist_only:
                         self.total_counted_markers += counted_markers
                         if live_filter_on_marker:
                             for i in range(len(_queue_newlength)):
