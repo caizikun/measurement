@@ -1,5 +1,5 @@
 '<ADbasic Header, Headerversion 001.001>
-' Process_Number                 = 1
+' Process_Number                 = 2
 ' Initial_Processdelay           = 1000
 ' Eventsource                    = Timer
 ' Control_long_Delays_for_Stop   = No
@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
