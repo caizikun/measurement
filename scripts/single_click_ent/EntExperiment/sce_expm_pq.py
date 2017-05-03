@@ -159,7 +159,7 @@ def MW_Position(name,debug = False,upload_only=False):
     sweep_sce_expm.turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    m.params['MW_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
     m.params['PLU_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -222,6 +222,36 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
+def phase_calibration(name,debug = False,upload_only=False):
+
+    """
+    Calibrate the interferometer parameters
+
+    """
+    # adwin = qt.get_instruments()['adwin']
+    # PhaseAOM = qt.get_instruments()['PhaseAOM']
+    # PhaseAOM.set_power(0.08e-9)
+    # adwin.start_fibre_stretcher_setpoint(delay=2)       # delay in 1/10 ms
+    # qt.msleep(10)                                       # wait and get count ratios of APD detectors 
+    # adwin.stop_fibre_stretcher_setpoint()
+
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+
+    pts = 1
+    m.params['reps_per_ROsequence'] = 1
+    
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
+    m.params['do_phase_stabilisation']  = 0
+    m.params['only_meas_phase']         = 1 
+    m.params['modulate_stretcher_during_phase_msmt'] = 1
+
+    m.params['stretcher_V_max'] = 1.1*m.params['stretcher_V_2pi']
+    m.params['sample_points'] = 10 # How many points to sample the phase at during the expm part
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 def phase_stability(name,debug = False,upload_only=False):
 
@@ -239,7 +269,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 2
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -294,8 +324,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
-    # m.params['mw_first_pulse_amp'] = 0.92
-    # m.params['mw_first_pulse_length'] =  110e-9
+
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
@@ -574,9 +603,9 @@ def EntangleXY(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['do_calc_theta']           = 1
     m.params['sin2_theta'] = 0.15
-    
+    m.params['do_calc_theta'] = 1
+
     if qt.current_setup == 'lt3':
         hist_only = True
     else:
@@ -586,7 +615,7 @@ def EntangleXY(name,debug = False,upload_only=False):
         ### only one setup is allowed to sweep the phase.
         m.params['do_general_sweep'] = 1
         m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.array([0.0]*15)## turn pi pulse on or off for spcorrs
+        m.params['general_sweep_pts'] = np.array([0]*15)## turn pi pulse on or off for spcorrs
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])
@@ -597,6 +626,7 @@ def EntangleXY(name,debug = False,upload_only=False):
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])
+    ### upload and run
 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
@@ -610,12 +640,12 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
 
-    ###### non-local measurements
-    ## SPCorrs with Pi/2 pulse
+    ##### non-local measurements
+    # ## SPCorrs with Pi/2 pulse
     # if (qt.current_setup == 'lt3'):
     #     qt.instruments['ZPLServo'].move_out()
     # else:
@@ -680,7 +710,9 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     qt.purification_succes = False
                     break
-                TPQI(name+'_TPQI' + str(qt.purification_name_index+i),debug = False,upload_only=False)
+
+                TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
+                # PurifyYY(name+'_SingleClickEnt_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
                 AWG.clear_visa()
             
             qt.instruments['purification_optimizer'].set_stop_optimize(True)
