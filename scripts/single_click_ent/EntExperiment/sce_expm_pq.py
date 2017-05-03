@@ -636,7 +636,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
@@ -677,7 +677,7 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
+    # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

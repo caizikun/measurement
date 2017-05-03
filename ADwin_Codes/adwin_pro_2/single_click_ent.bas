@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,743,743,813,814
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,743,743,815,816
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -813,6 +813,8 @@ EVENT:
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
                 DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
+                DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
                 mode = 8 ' finalize and go to cr check
