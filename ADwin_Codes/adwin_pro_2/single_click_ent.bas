@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,83,83,166,166,352,352,370,370,736,736,804,805
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,743,743,813,814
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -65,11 +65,14 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
+
 ' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
 DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
 DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elapsed time since phase stab when succes ent.
+DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
@@ -268,6 +271,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
     MemCpy(Initializer[1],DATA_103[array_step],100)
+    MemCpy(Initializer[1],DATA_108[array_step],100)
+    MemCpy(Initializer[1],DATA_109[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
@@ -576,6 +581,7 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index_stab)
+              FPAR_74 = store_index_stab
               if ((store_index_stab > (pid_points-pid_points_to_store))) then            
                 DATA_104[store_index_stab] = counts_1
                 DATA_105[store_index_stab] = counts_2
@@ -616,6 +622,7 @@ EVENT:
             if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
               index = 0
               inc(store_index_stab)
+              FPAR_74 = store_index_stab
             endif
           endif
           
@@ -794,6 +801,8 @@ EVENT:
         
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
+          DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+          DATA_109[repetition_counter+1] = store_index_stab
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_LDE

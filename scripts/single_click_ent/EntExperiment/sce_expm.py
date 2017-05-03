@@ -136,6 +136,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
+        stab_reps = self.adwin_var('store_index_stab')
         
         toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
@@ -158,12 +159,12 @@ class SingleClickEntExpm(DD.MBI_C13):
         #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts_1',1,reps*self.params['pid_points']))
-            toSave.append(('pid_counts_2',1,reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,stab_reps*self.params['pid_points']))
+            toSave.append(('pid_counts_2',1,stab_reps*self.params['pid_points']))
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
-            toSave.append(('sampling_counts_2',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,stab_reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_2',1,stab_reps*self.params['sample_points']))
 
         
         self.save_adwin_data(name,toSave)
