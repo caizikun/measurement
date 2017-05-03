@@ -3866,9 +3866,10 @@ config['adwin_cav1_dacs'] = {
         'jpe_fine_tuning_3': 3,
         'green_aom' : 4,
         'newfocus_freqmod': 5,
-        'scan_mirror_x' : 6,
-        'scan_mirror_y': 7,
         'PI_fine_tuning': 8,
+        'PI_scan_x': 13,
+        'PI_scan_y': 14,
+        'PI_scan_z': 15,
         }
 
 # config['adwin_cav1_dios'] = {
@@ -3943,7 +3944,7 @@ config['adwin_cav1_processes'] = {
                 },
             'data_long' : {
                 'set_dac_numbers' : 200,
-                'get_counts' : [11,12,13],
+                'get_counts' : [11,12,13,14],
                 },
             'data_float' : {
                 'set_start_voltages' : 199,

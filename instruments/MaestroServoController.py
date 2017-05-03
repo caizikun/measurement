@@ -1,5 +1,5 @@
 from instrument import Instrument
-import serial
+import visa
 #
 # These functions provide access to many of the Maestro's capabilities using the
 # Pololu serial protocol. Adapted code taken from 
@@ -21,18 +21,21 @@ class MaestroServoController(Instrument):
         Instrument.__init__(self, name)
 
         self._address = address
+        rm = visa.ResourceManager()
+        self._visainstrument = rm.open_resource(self._address,
+                       baud_rate=19200, data_bits=8, stop_bits=visa.constants.StopBits.one,
+                       parity=visa.constants.Parity.none, write_termination='',read_termination = '')
+
         #self._ser = serial.Serial(address,19200, timeout = 3)
         self.add_function('Set_Range')
         self.add_function('Get_Min')
         self.add_function('Get_Max')
         self.add_function('Set_Position')
-        self.add_function('Get_Position')
+#        self.add_function('Get_Position')
         self.add_function('Set_Speed')
         self.add_function('Set_Acceleration')
         self.add_function('Close')
 
-        comPort = 'COM' + str(address)
-        self.usb = serial.Serial(comPort)
         # Command lead-in and device 12 are sent for each Pololu serial commands.
         self.PololuCmd = chr(0xaa) + chr(0xc)
         # Servo minimum and maximum targets can be restricted to protect components.
@@ -63,21 +66,23 @@ class MaestroServoController(Instrument):
         msb = (position >> 7) & 0x7f #shift 7 and take next 7 bits for msb
         # Send Pololu intro, device number, command, channel, and position lsb/msb
         cmd = self.PololuCmd + chr(0x04) + chr(chan) + chr(lsb) + chr(msb)
-        self.usb.write(cmd)
+        self._visainstrument.write_raw(cmd)
 
-    def Get_Position(self,channel):
-        cmd = self.PololuCmd + chr(0x10) + chr(channel)
-        self.usb.write(cmd)
-        lsb = ord(self.usb.read())
-        msb = ord(self.usb.read())
-        return (msb << 8) + lsb
+#    #does not work with either pyserial or pyvisa...
+#    def Get_Position(self,channel):
+#        cmd = self.PololuCmd + chr(0x10) + chr(channel)
+#        self._visainstrument.write_raw(cmd)
+#        answer = self._visainstrument.read_raw()
+#        lsb = ord(answer[0])
+#        msb = ord(answer[1])
+#        return (msb << 8) + lsb
 
     def Set_Speed(self, chan, speed):
         lsb = speed & 0x7f #7 bits for least significant byte
         msb = (speed >> 7) & 0x7f #shift 7 and take next 7 bits for msb
         # Send Pololu intro, device number, command, channel, speed lsb, speed msb
         cmd = self.PololuCmd + chr(0x07) + chr(chan) + chr(lsb) + chr(msb)
-        self.usb.write(cmd)
+        self._visainstrument.write_raw(cmd)
 
 
     def Set_Acceleration(self, chan, accel):
@@ -85,15 +90,15 @@ class MaestroServoController(Instrument):
         msb = (accel >> 7) & 0x7f #shift 7 and take next 7 bits for msb
         # Send Pololu intro, device number, command, channel, accel lsb, accel msb
         cmd = self.PololuCmd + chr(0x09) + chr(chan) + chr(lsb) + chr(msb)
-        self.usb.write(cmd)
+        self._visainstrument.write_raw(cmd)
 
     def Close(self):
-        self.usb.close()
+        self._visainstrument.close()
 
     def reload(self):
-        self.Close(self)
+        self.Close()
         Intrument.reload(self)
         
     def remove(self):
-        self.Close(self)
+        self.Close()
         Intrument.remove(self)

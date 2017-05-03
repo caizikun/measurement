@@ -110,6 +110,12 @@ dimension_sets = {
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
+                'z' : {
+                    'scan_length' : 6.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'zyx' : ['z','y','x'],
                 'xyonly':['y','x'],
                 },
 
