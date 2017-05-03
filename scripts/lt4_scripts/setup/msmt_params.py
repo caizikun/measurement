@@ -36,7 +36,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.92 #Not calibrated
+	hermite_pi_amp = 0.935 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -50,7 +50,7 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.869 # for a single pi pulse
+	hermite_pi_amp = 0.94 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
