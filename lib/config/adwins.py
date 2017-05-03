@@ -3134,6 +3134,7 @@ config['adwin_pro_processes'] = {
                     'timeout_events': 62,
                     'stop_flag': 63,
                     'completed_reps' : 73,
+                    'store_index_stab' : 74, #amount of phase stabilization points (array length)
                     'entanglement_events': 77,
                     'invalid_data_marker': 55,
                     },
@@ -3149,6 +3150,8 @@ config['adwin_pro_processes'] = {
                     'pid_counts_2'                : 105, # Counts measured during the PID process
                     'sampling_counts_1'           : 106, # Counts during the sample process
                     'sampling_counts_2'           : 107, # Counts during the sample process
+                    'elapsed_since_phase_stab'  : 108, #
+                    'last_phase_stab_index'     : 109, #
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
