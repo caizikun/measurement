@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,743,743,815,816
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,748,748,820,821
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -124,7 +124,7 @@ DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT    
 DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
 DIM pid_time_factor, cosarg                                 AS FLOAT        ' account for changes in the adwin clock cycle
-DIM store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
+DIM store_index, store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
@@ -569,6 +569,7 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
+            store_index = 0
           endif
           
           index = 0
@@ -581,7 +582,8 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index_stab)
-              FPAR_74 = store_index_stab
+              inc(store_index)
+              PAR_74 = store_index_stab
               if ((store_index_stab > (pid_points-pid_points_to_store))) then            
                 DATA_104[store_index_stab] = counts_1
                 DATA_105[store_index_stab] = counts_2
@@ -622,13 +624,14 @@ EVENT:
             if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
               index = 0
               inc(store_index_stab)
+              inc(store_index)
               FPAR_74 = store_index_stab
             endif
           endif
           
           inc(index)
           
-          if (store_index_stab>=pid_points) then
+          if (store_index>=pid_points) then
             if (is_master > 0) then
               P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
@@ -657,6 +660,7 @@ EVENT:
           old_counts_1 = 0
           old_counts_2 = 0
           index = 0
+          store_index = 0
           
           total_cycles = count_int_cycles*sample_points
         ELSE
@@ -672,6 +676,7 @@ EVENT:
             old_counts_1 = old_counts_1 + counts_1
             old_counts_2 = old_counts_2 + counts_2
             inc(store_index_msmt)
+            inc(store_index)
             DATA_106[store_index_msmt] = counts_1
             DATA_107[store_index_msmt] = counts_2
             
@@ -679,7 +684,7 @@ EVENT:
           
           inc(index)
           
-          if (store_index_msmt >= sample_points) then
+          if (store_index >= sample_points) then
             mode = 7
             timer = -1
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
