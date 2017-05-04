@@ -248,8 +248,8 @@ def phase_calibration(name,debug = False,upload_only=False):
     m.params['only_meas_phase']         = 1 
     m.params['modulate_stretcher_during_phase_msmt'] = 1
 
-    m.params['stretcher_V_max'] = 1.1*m.params['stretcher_V_2pi']
-    m.params['sample_points'] = 10 # How many points to sample the phase at during the expm part
+    m.params['stretcher_V_max'] = 1.8*m.params['stretcher_V_2pi']
+    m.params['sample_points'] = 20 # How many points to sample the phase at during the expm part
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -597,7 +597,7 @@ def EntangleXY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 100
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -615,14 +615,14 @@ def EntangleXY(name,debug = False,upload_only=False):
         ### only one setup is allowed to sweep the phase.
         m.params['do_general_sweep'] = 1
         m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.array([0]*15)## turn pi pulse on or off for spcorrs
+        m.params['general_sweep_pts'] = np.array([0]*10)## turn pi pulse on or off for spcorrs
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])
     else:
         m.params['do_general_sweep']    = 1
         m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.linspace(0,360,15) ## turn pi pulse on or off for spcorrs
+        m.params['general_sweep_pts'] = np.linspace(0,180,10) ## turn pi pulse on or off for spcorrs
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])
@@ -636,7 +636,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
@@ -677,7 +677,7 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
+    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

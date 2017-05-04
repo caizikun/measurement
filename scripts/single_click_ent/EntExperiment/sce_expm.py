@@ -146,7 +146,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
-                    'completed_reps'
+                    'completed_reps',
+                    'store_index_stab'
                     ]
 
         # if self.params['record_expm_params']::
@@ -163,8 +164,8 @@ class SingleClickEntExpm(DD.MBI_C13):
             toSave.append(('pid_counts_2',1,stab_reps*self.params['pid_points']))
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts_1',1,stab_reps*self.params['sample_points']))
-            toSave.append(('sampling_counts_2',1,stab_reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_2',1,reps*self.params['sample_points']))
 
         
         self.save_adwin_data(name,toSave)

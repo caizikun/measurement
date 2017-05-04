@@ -595,14 +595,7 @@ class adwin(Instrument):
 
         p = self.processes['linescan']
         dacs = [ self.dacs[n] for n in dac_names ] 
-        
-        ### Nasty change below. breaks some of the LT scanning scripts. 
-        ### If you want to change the way you scan or get error 100 on random occasions
-        ### check out the following file
-        ### testing/load_cr_linescan.py
-        ### nk 2017-05-03        
-        ###self.physical_adwin.Load(os.path.join(self.process_dir, p['file'])) #SvD: added this to prevent error 100
-        
+
         # set all the required input params for the adwin process
         # see the adwin process for details
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
