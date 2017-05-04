@@ -146,7 +146,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
-                    'completed_reps'
+                    'completed_reps',
+                    'store_index_stab'
                     ]
 
         # if self.params['record_expm_params']::

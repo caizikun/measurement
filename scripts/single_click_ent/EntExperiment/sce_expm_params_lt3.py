@@ -75,9 +75,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.9973779304990319
-params_lt3['sin2_theta_fit_a']		= 2.4373025679395601
-params_lt3['sin2_theta_fit_x0']		= 0.74951551127860316
+params_lt3['sin2_theta_fit_of']		= 1.0065809948224373
+params_lt3['sin2_theta_fit_a']		= 2.4478060723068857
+params_lt3['sin2_theta_fit_x0']		= 0.75545704978475203
 
 
 

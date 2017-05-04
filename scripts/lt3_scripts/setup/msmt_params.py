@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 110e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.791  # 28-02
+	hermite_pi_amp =  0.8046  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.390  # 28-02 
+	hermite_pi2_amp = 0.397  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -476,7 +476,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.9,#0.2
+        'aom_amplitude':					0.7,#0.2
 }
 
 
