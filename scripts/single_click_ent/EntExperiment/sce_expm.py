@@ -257,7 +257,18 @@ class SingleClickEntExpm(DD.MBI_C13):
             self.pt = pt
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
-                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
+        
+                if self.params['general_sweep_name'] == 'sin2_theta':
+
+                    fit_a  = self.params['sin2_theta_fit_a']      
+                    fit_x0 = self.params['sin2_theta_fit_x0']     
+                    fit_of = self.params['sin2_theta_fit_of']
+
+                    p0 = self.params['general_sweep_pts'][pt]   
+                    self.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
+                    
+                else:        
+                    self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
 
