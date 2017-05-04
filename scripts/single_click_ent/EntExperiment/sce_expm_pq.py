@@ -597,7 +597,7 @@ def EntangleXY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -670,6 +670,48 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
+
+
+def EntangleXX(name,debug = False,upload_only=False):
+    """
+    Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
+    stabilized phase of the entangled state.
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
+
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 250
+    m.params['sin2_theta'] = 0.15
+    m.params['do_calc_theta'] = 1
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+    ### only one setup is allowed to sweep the phase.
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
+    m.params['general_sweep_pts'] = np.array([1]*m.params['LDE_final_mw_phase'])## turn pi pulse on or off for spcorrs
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
+    ### upload and run
+
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
+
+
+
 if __name__ == '__main__':
 
 
@@ -715,7 +757,7 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
+    # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
 
     EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 

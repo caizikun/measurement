@@ -72,7 +72,7 @@ params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt3['LDE_final_mw_phase']  = 0#qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['sin2_theta']			= 0.5
 params_lt3['sin2_theta_fit_of']		= 0.9965057306086007
