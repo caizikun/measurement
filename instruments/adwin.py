@@ -575,6 +575,7 @@ class adwin(Instrument):
             if True, check if linescan is running, and if so, quit right away
         
         """
+
         if abort_if_running and self.is_linescan_running():
             return
                
@@ -594,6 +595,13 @@ class adwin(Instrument):
 
         p = self.processes['linescan']
         dacs = [ self.dacs[n] for n in dac_names ] 
+        
+        ### Nasty change below. breaks some of the LT scanning scripts. 
+        ### If you want to change the way you scan or get error 100 on random occasions
+        ### check out the following file
+        ### testing/load_cr_linescan.py
+        ### nk 2017-05-03        
+        ###self.physical_adwin.Load(os.path.join(self.process_dir, p['file'])) #SvD: added this to prevent error 100
         
         # set all the required input params for the adwin process
         # see the adwin process for details
@@ -627,6 +635,7 @@ class adwin(Instrument):
         # if the scan is not finished properly
         for i,n in enumerate(dac_names):
             self._dac_voltages[n] = stop_voltages[i]
+
         self.save_cfg()
 
     def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,

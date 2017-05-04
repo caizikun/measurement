@@ -21,9 +21,15 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_X = ps.X_pulse(msmt)
     Gate.mw_pi2 = ps.Xpi2_pulse(msmt)
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
+
+    if msmt.params['do_calc_theta'] > 0:
+        fit_a  = msmt.params['sin2_theta_fit_a']      
+        fit_x0 = msmt.params['sin2_theta_fit_x0']     
+        fit_of = msmt.params['sin2_theta_fit_of']
+        p0 = msmt.params['sin2_theta']    
+        msmt.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
-    
     if msmt.params['first_mw_pulse_is_pi2'] > 0 and hasattr(Gate,'first_mw_pulse_phase'):
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
     elif msmt.params['first_mw_pulse_is_pi2']:
@@ -33,17 +39,17 @@ def _create_mw_pulses(msmt,Gate):
         if Gate.no_first_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
 
-    if hasattr(Gate,'no_mw_pulse'):
+    if hasattr(Gate,'no_mw_pulse') or msmt.params['do_only_opt_pi'] >0:
         if Gate.no_mw_pulse:
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
             Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
-    if msmt.params['do_only_opt_pi'] >0:
-        Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-        Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        if msmt.params['do_only_opt_pi'] >0:
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
         
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
@@ -94,14 +100,15 @@ def _create_syncs_and_triggers(msmt,Gate):
         plu_amp = 1.0
     else:
         plu_amp = 0.0
+
     Gate.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = plu_amp, 
                                     length = msmt.params['PLU_gate_duration'])
 
     # adwin comm
     Gate.adwin_trigger_pulse = pulse.SquarePulse(channel = 'adwin_sync',
-        length = 1.5e-6, amplitude = 2) 
+        length = 2.2e-6, amplitude = 2) 
     Gate.adwin_count_pulse = pulse.SquarePulse(channel = 'adwin_count',
-        length = 2.5e-6, amplitude = 2) 
+        length = 2.0e-6, amplitude = 2) 
 
 def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
@@ -178,7 +185,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # 2b adwin syncronization
     e.add(Gate.adwin_count_pulse,
         refpulse = 'initial_delay',
-        name = 'count_pulse')
+        name = 'count_pulse')#,start = 1e-6)
 
 
         

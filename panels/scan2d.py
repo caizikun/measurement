@@ -15,7 +15,7 @@ from PyQt4 import QtCore
 class Scan2dPanel(Panel):
     def __init__(self, parent, *arg, **kw):
         Panel.__init__(self, parent, *arg, **kw)
-
+        print 'initializing scan panel'
         # designer ui  
         self.ui = Ui_Panel()
         self.ui.setupUi(self)
@@ -73,8 +73,11 @@ class Scan2dPanel(Panel):
     def zoom(self):
         size = self.ui.zoomsize.value()
         x, y = self.position['x_position'], self.position['y_position']
+        print x-size/2, x+size/2, y-size/2, y+size/2
+
         self.ui.xstart.setValue(x-size/2)
         self.ui.xstop.setValue(x+size/2)
+        print x-size/2, x+size/2, y-size/2, y+size/2
         self.ui.ystart.setValue(y-size/2)
         self.ui.ystop.setValue(y+size/2)
         self.start_scan()

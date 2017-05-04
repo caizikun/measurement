@@ -26,12 +26,14 @@ class adwin_cav1(adwin):
 
    
     def get_xyz_U(self):
-        return self.get_dac_voltages(['scan_mirror_x','scan_mirror_y'])
+        return self.get_dac_voltages(['PI_scan_x','PI_scan_y','PI_scan_z'])
 
     def move_to_xyz_U(self, target_voltages, speed=5000, blocking=False):
         current_voltages = self.get_xyz_U()
-        dac_names = ['scan_mirror_x','scan_mirror_y']
+        dac_names = ['PI_scan_x','PI_scan_y', 'PI_scan_z']
+
         steps, pxtime = self.speed2px(dac_names, target_voltages, speed)
+
         self.linescan(dac_names, current_voltages, target_voltages,
                 steps, pxtime, value='none', scan_to_start=False,
                 blocking=blocking)

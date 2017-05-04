@@ -86,8 +86,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def run(self, autoconfig=False, setup=False):
 
-        """)
-
+        """
         inherited from pulsar msmt.
         """
         if autoconfig:
@@ -137,6 +136,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
+        stab_reps = self.adwin_var('store_index_stab')
         
         toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
@@ -149,20 +149,22 @@ class SingleClickEntExpm(DD.MBI_C13):
                     'completed_reps'
                     ]
 
-        if self.params['record_expm_params']::
-            toSave.extend(
-                    [('expm_mon_taper_freq'          ,1,reps), 
-                     ('expm_mon_nf_freq'             ,1,reps), 
-                     ('expm_mon_yellow_freq'         ,1,reps), 
-                     ('expm_mon_gate_voltage'        ,1,reps), 
-                     ('expm_mon_cr_counts'           ,1,reps), 
-                     ('expm_mon_repump_counts'       ,1,reps)]) 
+        # if self.params['record_expm_params']::
+        #     toSave.extend(
+        #             [('expm_mon_taper_freq'          ,1,reps), 
+        #              ('expm_mon_nf_freq'             ,1,reps), 
+        #              ('expm_mon_yellow_freq'         ,1,reps), 
+        #              ('expm_mon_gate_voltage'        ,1,reps), 
+        #              ('expm_mon_cr_counts'           ,1,reps), 
+        #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts',1,reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,stab_reps*self.params['pid_points']))
+            toSave.append(('pid_counts_2',1,stab_reps*self.params['pid_points']))
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,stab_reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_2',1,stab_reps*self.params['sample_points']))
 
         
         self.save_adwin_data(name,toSave)
@@ -364,13 +366,15 @@ class SingleClickEntExpm(DD.MBI_C13):
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = LDE_list[0].name
+            Fail_done.go_to = 'wait_for_adwin_'+str(pt)#LDE_list[0].name
 
 
             #######################################################################
             ### append all necessary gates according to the current measurement ###
             #######################################################################
-
+            waiting_for_adwin = DD.Gate('wait_for_adwin_'+str(pt),'passive_elt',wait_time = 10e-6)
+            waiting_for_adwin.wait_for_trigger = True
+            gate_seq.append(waiting_for_adwin)
             if self.params['do_N_MBI'] > 0: 
                 ### Nitrogen MBI
                 mbi = DD.Gate('MBI_'+str(pt),'MBI')

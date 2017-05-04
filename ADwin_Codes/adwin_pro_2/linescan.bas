@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277562  DASTUD\TUD277562
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' This program does a multidimensional line scan; it needs to be given the 
 ' involved DACs, their start voltage, their end voltage and the number of steps
@@ -26,15 +26,15 @@ DIM PxAction AS INTEGER
 dim gate_good_phase as integer
 
 ' The numbers of the involved DACs (adwin only has 8)
-DIM DATA_200[8] AS INTEGER
+DIM DATA_200[16] AS INTEGER
 ' The start voltages
-DIM DATA_199[8] AS FLOAT
+DIM DATA_199[16] AS FLOAT
 ' The end voltages
-DIM DATA_198[8] AS FLOAT
+DIM DATA_198[16] AS FLOAT
 ' The stepsizes
-DIM DATA_197[8] AS FLOAT
+DIM DATA_197[16] AS FLOAT
 ' The current position
-DIM DATA_1[8] AS FLOAT
+DIM DATA_1[16] AS FLOAT
 
 ' keeping track of timing
 DIM TimeCntROStart, TimeCntROStop AS INTEGER
@@ -81,11 +81,12 @@ INIT:
     DACVoltage = DATA_199[i]
     DACBinaryVoltage = DACVoltage * 3276.8 + 32768    
     
-    P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
+    P2_DAC_2(DATA_200[i], DACBinaryVoltage)
     DATA_1[DATA_200[i]]   = DACVoltage 
     DATA_197[i] = (DATA_198[i] - DATA_199[i]) / (NoOfSteps - 1) 
   
     ' debug;
+    PAR_7 = i
     PAR_5 = DATA_200[i]
     FPar_5 = DATA_199[i]
     FPar_6 = DATA_197[i]
@@ -100,10 +101,11 @@ INIT:
   NEXT i
   
   IF ((PxAction = 1) OR (PxAction = 2)) THEN
-    P2_CNT_ENABLE(CTR_Module,000b)                                        'Stop counter 1, 2 and 3
+    P2_CNT_ENABLE(CTR_Module,000b)                                        'Stop counter 1, 2 and 3, SvD 24-3-2017: and 4
     P2_CNT_MODE(CTR_Module,1, 000010000b)                                  '
     P2_CNT_MODE(CTR_Module,2, 000010000b)
     P2_CNT_MODE(CTR_Module,3, 000010000b)
+    P2_CNT_MODE(CTR_Module,4, 000010000b)
     P2_SE_DIFF(CTR_Module,000b)                                           'All counterinputs single ended (not differential)
     P2_CNT_CLEAR(CTR_Module,111b)                                         'Set all counters to zero
     P2_CNT_ENABLE(CTR_Module,111b)                                        'Start counter 1 and 2 
@@ -179,7 +181,7 @@ EVENT:
       FPar_8 = CurrentStep-1
       FPar_9 = DATA_197[i]   
       DACBinaryVoltage = DACVoltage * 3276.8 + 32768
-      P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
+      P2_DAC_2(DATA_200[i], DACBinaryVoltage)
       DATA_1[DATA_200[i]]   = DACVoltage
       FPar_5 = DACVoltage
 
@@ -191,7 +193,7 @@ EVENT:
       'FOR i = 1 TO NoOfDACs
       '  DACVoltage = (DATA_199[i])
       '  DACBinaryVoltage = DACVoltage * 3276.8 + 32768        ' Go back to start of the line
-      '  P2_DAC(DAC_Module,DATA_200[i], DACBinaryVoltage)
+      '  P2_DAC_2(DATA_200[i], DACBinaryVoltage)
       '  DATA_1[DATA_200[i]]   = DACVoltage
       '
       'NEXT i

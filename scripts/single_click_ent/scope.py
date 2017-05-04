@@ -23,8 +23,8 @@ filename=d.get_filepath()[:-4]
 # variables
 timewindow = 10                   # total time window  [s]
 time_wait = 1.01                 # time per array     [s]
-int_time = 500                   #                    [us]
-max_steps = 2000                  #                    [us]
+int_time = 2000                   #                    [us]
+max_steps = 500                #                    [us]
 t = 0                           
 i = 0
 
@@ -58,7 +58,7 @@ while True:
 
     plt.sca(ax1)
     plt.cla()
-    # plt.ylim([0,1500])
+    plt.ylim([0,600])
     plt.plot(x_time*int_time/1000.0, counts_1)
     plt.show()
     plt.draw()

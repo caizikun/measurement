@@ -43,9 +43,11 @@ newfocus1 = qt.instruments.create('newfocus1', 'NewfocusVelocity', address='GPIB
 master_of_cavity = qt.instruments.create('master_of_cavity','master_of_cavity', 
         jpe= 'jpe', adwin='adwin', laser = 'newfocus1', use_cfg = True)
 
-master_of_char_cavity = qt.instruments.create('master_of_char_cavity','master_of_char_cavity', adwin='adwin')
+master_of_char_cavity = qt.instruments.create('master_of_char_cavity',
+        'master_of_char_cavity', adwin='adwin')
 
-cavity_scan_manager = qt.instruments.create('cavity_scan_manager', 'cavity_scan_manager', adwin='adwin', physical_adwin='physical_adwin')
+cavity_scan_manager = qt.instruments.create('cavity_scan_manager', 
+        'cavity_scan_manager', adwin='adwin', physical_adwin='physical_adwin')
 
 # instruments for the cavity GUI
 # cavity_scan_manager = qt.instruments.create('cavity_scan_manager', 'cavity_scan_manager', )
@@ -59,4 +61,22 @@ cavity_scan_manager = qt.instruments.create('cavity_scan_manager', 'cavity_scan_
 #xy_scan_jpe = qt.instruments.create ('xy_scan_jpe', 'xy_scan_jpe', adwin = physical_adwin_cav1, moc=master_of_cavity, point_manager = point_mngr_jpe)
 
 #lockin = qt.instruments.create('lockin','SR830', address='GPIB0::9::INSTR')
-cavity_slow_lock = qt.instruments.create('cavity_slow_lock','CavitySlowLock',adwin = 'adwin',master_of_cavity = 'master_of_cavity',control_adc_no=32, value_adc_no=16)
+cavity_slow_lock = qt.instruments.create('cavity_slow_lock','CavitySlowLock',
+    adwin = 'adwin',master_of_cavity = 'master_of_cavity',control_adc_no=32, value_adc_no=16)
+
+if True:
+    powermeter = qt.instruments.create('powermeter', 'Thorlabs_PM100D', address = 'USB0::0x1313::0x8078::P0007936::INSTR')
+    print('use powermeter.remove() before disconnecting USB cable from Thorlabs powermeter!')
+
+GreenAOM = qt.instruments.create('GreenAOM', 'AOM')
+
+# servo controller and power meter
+if False:
+    # check section Ports in Windows Device Manager and the com port nr for the 
+    # Pololu Mini Maestro 12-Channel USB Servo Controller COMMAND PORT
+    servo_ctrl=qt.instruments.create('ServoController', 'MaestroServoController', address='COM18')
+    servo_ctrl.Set_Acceleration(0, 40)  # 0 is set to max
+    servo_ctrl.Set_Speed(0, 0)         # 0 is set to max
+    PMServo = qt.instruments.create('PMServo','ServoMotor',
+            servo_controller='ServoController', min_pos=4000, max_pos=6400)
+    PMServo.move_out()
