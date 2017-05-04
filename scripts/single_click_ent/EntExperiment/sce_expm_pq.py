@@ -671,7 +671,6 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
 
 
 
-
 def EntangleXX(name,debug = False,upload_only=False):
     """
     Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
@@ -697,6 +696,7 @@ def EntangleXX(name,debug = False,upload_only=False):
         hist_only = True
     else:
         hist_only = False
+
     ### only one setup is allowed to sweep the phase.
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
@@ -757,11 +757,11 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    # EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
+    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
 
-    EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
+    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
-    
+
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
             # Experimental addition for remote running
