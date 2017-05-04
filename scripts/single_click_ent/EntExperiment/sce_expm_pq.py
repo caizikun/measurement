@@ -632,6 +632,44 @@ def EntangleXY(name,debug = False,upload_only=False):
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
+
+
+def EntangleSweepTheta(name,debug = False,upload_only=False):
+    """
+    Sweeps the superposition angle of the states
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
+
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 250
+    m.params['do_calc_theta'] = 1
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
+    m.params['do_general_sweep']    = 1
+    m.params['general_sweep_name'] = 'sin2_theta' 
+    m.params['general_sweep_pts'] = np.linspace(0.05,0.5,8) ## turn pi pulse on or off for spcorrs
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+    ### upload and run
+
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
+
+
 if __name__ == '__main__':
 
 
@@ -679,6 +717,9 @@ if __name__ == '__main__':
 
     EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
 
+    EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
+
+    
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
             # Experimental addition for remote running
