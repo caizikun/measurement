@@ -248,8 +248,8 @@ def phase_calibration(name,debug = False,upload_only=False):
     m.params['only_meas_phase']         = 1 
     m.params['modulate_stretcher_during_phase_msmt'] = 1
 
-    m.params['stretcher_V_max'] = 1.1*m.params['stretcher_V_2pi']
-    m.params['sample_points'] = 10 # How many points to sample the phase at during the expm part
+    m.params['stretcher_V_max'] = 1.8*m.params['stretcher_V_2pi']
+    m.params['sample_points'] = 20 # How many points to sample the phase at during the expm part
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 

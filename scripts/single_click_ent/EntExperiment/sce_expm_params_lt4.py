@@ -77,9 +77,9 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.006
-params_lt4['sin2_theta_fit_a']		= 1.868
-params_lt4['sin2_theta_fit_x0']		= 0.867
+params_lt4['sin2_theta_fit_of']		= 1.0236097121757941
+params_lt4['sin2_theta_fit_a']		= 1.6646905155410192
+params_lt4['sin2_theta_fit_x0']		= 0.91899228782765707
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -106,17 +106,17 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 params_lt4['measurement_time'] = 24.*60.*60. 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 4.0 # 3.0 V = approx. 200 nW seems okay
+params_lt4['Phase_Msmt_voltage'] = 3.4 # 3.0 V = approx. 200 nW seems okay
 params_lt4['Phase_Msmt_off_voltage'] = 0
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
 params_lt4['modulate_stretcher_during_phase_msmt'] = 0
 
-params_lt4['stretcher_V_2pi'] = 3.06
+params_lt4['stretcher_V_2pi'] = 2.75
 params_lt4['stretcher_V_max'] = 9.5
-params_lt4['Phase_Msmt_g_0'] = 1.04
-params_lt4['Phase_Msmt_Vis'] = 1.27
+params_lt4['Phase_Msmt_g_0'] = 0.94
+params_lt4['Phase_Msmt_Vis'] = 1.16
 
 
 params_lt4['PID_GAIN'] = 1.0
@@ -125,9 +125,9 @@ params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 params_lt4['phase_setpoint'] = np.pi/2
 
-params_lt4['count_int_time'] = 2000 # How long to integrate counts for in microseconds
+params_lt4['count_int_time'] = 1000 # How long to integrate counts for in microseconds
 params_lt4['pid_points'] = 7 # How many points to sample the phase at during the PID loop
-params_lt4['pid_points_to_store'] = 5 # How many points to store
+params_lt4['pid_points_to_store'] = 7 # How many points to store
 params_lt4['sample_points'] = 500 # How many points to sample the phase at during the expm part
 params_lt4['phase_stab_max_time'] = 400000 # How long in microseconds to run the expm for after phase stabilisation
 
