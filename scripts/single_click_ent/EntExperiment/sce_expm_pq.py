@@ -499,7 +499,7 @@ def Determine_eta(name, debug = False, upload_only = False):
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 600
     pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -597,7 +597,7 @@ def EntangleXY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -615,14 +615,14 @@ def EntangleXY(name,debug = False,upload_only=False):
         ### only one setup is allowed to sweep the phase.
         m.params['do_general_sweep'] = 1
         m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.array([0]*10)## turn pi pulse on or off for spcorrs
+        m.params['general_sweep_pts'] = np.array([0]*15)## turn pi pulse on or off for spcorrs
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])
     else:
         m.params['do_general_sweep']    = 1
         m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.linspace(0,180,10) ## turn pi pulse on or off for spcorrs
+        m.params['general_sweep_pts'] = np.linspace(0,360,15) ## turn pi pulse on or off for spcorrs
         m.params['sweep_name'] = m.params['general_sweep_name'] 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['sweep_pts'])

@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,746,746,818,819
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
@@ -582,9 +582,9 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
-              PAR_74 = store_index_stab
               if ((store_index > (pid_points-pid_points_to_store))) then            
                 inc(store_index_stab)
+                PAR_74 = store_index_stab
                 DATA_104[store_index_stab] = counts_1
                 DATA_105[store_index_stab] = counts_2
               endif
