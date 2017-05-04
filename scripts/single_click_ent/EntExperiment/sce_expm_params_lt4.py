@@ -74,12 +74,12 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase'] 	  = qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_phase'] 	  =  129.11#qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0236097121757941
-params_lt4['sin2_theta_fit_a']		= 1.6646905155410192
-params_lt4['sin2_theta_fit_x0']		= 0.91899228782765707
+params_lt4['sin2_theta_fit_of']		= 1.0162289114060792
+params_lt4['sin2_theta_fit_a']		= 1.7981652200255658
+params_lt4['sin2_theta_fit_x0']		= 0.88445626842059288
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -113,14 +113,14 @@ params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
 params_lt4['modulate_stretcher_during_phase_msmt'] = 0
 
-params_lt4['stretcher_V_2pi'] = 2.75
+params_lt4['stretcher_V_2pi'] = 2.67
 params_lt4['stretcher_V_max'] = 9.5
 params_lt4['Phase_Msmt_g_0'] = 0.94
-params_lt4['Phase_Msmt_Vis'] = 1.16
+params_lt4['Phase_Msmt_Vis'] = 1.24
 
 
 params_lt4['PID_GAIN'] = 1.0
-params_lt4['PID_Kp'] = 15.0	#10	# was 15
+params_lt4['PID_Kp'] = 70.0	#10	# was 15
 params_lt4['PID_Ki'] = 0.0
 params_lt4['PID_Kd'] = 0.0
 params_lt4['phase_setpoint'] = np.pi/2

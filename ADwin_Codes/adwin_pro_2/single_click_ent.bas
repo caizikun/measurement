@@ -582,9 +582,9 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
-              PAR_74 = store_index_stab
               if ((store_index > (pid_points-pid_points_to_store))) then            
                 inc(store_index_stab)
+                PAR_74 = store_index_stab
                 DATA_104[store_index_stab] = counts_1
                 DATA_105[store_index_stab] = counts_2
               endif

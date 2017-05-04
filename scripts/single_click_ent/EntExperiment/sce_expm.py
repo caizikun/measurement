@@ -160,8 +160,8 @@ class SingleClickEntExpm(DD.MBI_C13):
         #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts_1',1,stab_reps*self.params['pid_points']))
-            toSave.append(('pid_counts_2',1,stab_reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,stab_reps))
+            toSave.append(('pid_counts_2',1,stab_reps))
         
         if self.params['only_meas_phase']: 
             toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
