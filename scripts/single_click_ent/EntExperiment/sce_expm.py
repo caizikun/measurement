@@ -360,13 +360,27 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_rephasing = DD.Gate('LDE_rephasing_'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
-            LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+
+
+            ## decoupling sequence
+            tomography_pulse = DD.Gate('tomography_pulse'_+str(pt))
+            cond_decoupling = DD.Gate('dynamical_decoupling_'+str(pt),
+                                'Carbon_Gate',
+                                Carbon_ind = 1, # does not matter....
+                                event_jump = tomography_pulse.name,
+                                tau = self.params['dynamic_phase_tau'],
+                                N = self.params['dynamic_phase_N'],
+                                no_connection_elt = True)
+            cond_decoupling.scheme = 'carbon_phase_feedback'
+
+
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = 'wait_for_adwin_'+str(pt)#LDE_list[0].name
+            Fail_done.go_to = 'wait_for_adwin_'+str(pt)
 
 
             #######################################################################
@@ -399,8 +413,13 @@ class SingleClickEntExpm(DD.MBI_C13):
                 ### append last adwin synchro element 
                 if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
-                    gate_seq.append(LDE_rephasing)
 
+                    if self.params['do_dynamical_decoupling'] > 0:
+                        LDE_rephasing.go_to = 'conditional_decoupling_'+str(pt)
+                    else:
+                        LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+                    gate_seq.append(LDE_rephasing)
                     
                     if self.params['PLU_during_LDE'] > 0:
                         gate_seq.append(Fail_done)
@@ -412,7 +431,10 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-            # gate_seq.append(LDE_repump)
+
+            if self.params['do_dynamical_decoupling'] > 0:
+                gate_seq.append(cond_decoupling)
+
             gate_seq.extend(e_RO)
 
 
