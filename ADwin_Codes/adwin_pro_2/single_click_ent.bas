@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,748,748,820,821
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,746,746,818,819
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -569,9 +569,9 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            store_index = 0
+            
           endif
-          
+          store_index = 0
           index = 0
         ELSE
           if (is_master > 0) then
@@ -581,10 +581,10 @@ EVENT:
               counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
-              inc(store_index_stab)
               inc(store_index)
-              PAR_74 = store_index_stab
-              if ((store_index_stab > (pid_points-pid_points_to_store))) then            
+              if ((store_index > (pid_points-pid_points_to_store))) then            
+                inc(store_index_stab)
+                PAR_74 = store_index_stab
                 DATA_104[store_index_stab] = counts_1
                 DATA_105[store_index_stab] = counts_2
               endif
@@ -623,9 +623,7 @@ EVENT:
           else
             if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
               index = 0
-              inc(store_index_stab)
               inc(store_index)
-              FPAR_74 = store_index_stab
             endif
           endif
           

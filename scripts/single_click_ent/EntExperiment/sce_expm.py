@@ -146,7 +146,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
-                    'completed_reps'
+                    'completed_reps',
+                    'store_index_stab'
                     ]
 
         # if self.params['record_expm_params']::
@@ -159,12 +160,12 @@ class SingleClickEntExpm(DD.MBI_C13):
         #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts_1',1,stab_reps*self.params['pid_points']))
-            toSave.append(('pid_counts_2',1,stab_reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,stab_reps))
+            toSave.append(('pid_counts_2',1,stab_reps))
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts_1',1,stab_reps*self.params['sample_points']))
-            toSave.append(('sampling_counts_2',1,stab_reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_2',1,reps*self.params['sample_points']))
 
         
         self.save_adwin_data(name,toSave)
@@ -256,7 +257,18 @@ class SingleClickEntExpm(DD.MBI_C13):
             self.pt = pt
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
-                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
+        
+                if self.params['general_sweep_name'] == 'sin2_theta':
+
+                    fit_a  = self.params['sin2_theta_fit_a']      
+                    fit_x0 = self.params['sin2_theta_fit_x0']     
+                    fit_of = self.params['sin2_theta_fit_of']
+
+                    p0 = self.params['general_sweep_pts'][pt]   
+                    self.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
+                    
+                else:        
+                    self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
 
