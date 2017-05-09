@@ -3200,9 +3200,11 @@ config['adwin_pro_processes'] = {
                     ['zpl1_counter_channel'            ,   2],
                     ['zpl2_counter_channel'            ,   3],
                     ['pid_points'                      ,   10],
+                    ['pid_points_to_store'             ,   10],
                     ['sample_points'                   ,   100],
-                    ['count_int_cycles'                ,   25], # units of 3.3 ns
-                    ['phase_stab_max_cycles'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['count_int_time'                ,   25], # units of 3.3 ns
+                    ['phase_stab_max_time'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['modulate_stretcher_during_phase_msmt' , 0]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3217,7 +3219,11 @@ config['adwin_pro_processes'] = {
                     ['PID_Kp'         , 0.002],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
-                    ['Mach_Zehnder_setpoint', 3.14],
+                    ['phase_setpoint', 3.14/2],
+                    ['stretcher_V_2pi', 11],
+                    ['stretcher_V_max', 9.5],
+                    ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
+                    ['Phase_Msmt_Vis', 1], # Vis of interference'
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 12,
@@ -3227,6 +3233,7 @@ config['adwin_pro_processes'] = {
                     'timeout_events': 62,
                     'stop_flag': 63,
                     'completed_reps' : 73,
+                    'store_index_stab' : 74, #amount of phase stabilization points (array length)
                     'entanglement_events': 77,
                     'invalid_data_marker': 55,
                     },
@@ -3242,6 +3249,8 @@ config['adwin_pro_processes'] = {
                     'pid_counts_2'                : 105, # Counts measured during the PID process
                     'sampling_counts_1'           : 106, # Counts during the sample process
                     'sampling_counts_2'           : 107, # Counts during the sample process
+                    'elapsed_since_phase_stab'  : 108, #
+                    'last_phase_stab_index'     : 109, #
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
@@ -3959,9 +3968,10 @@ config['adwin_cav1_dacs'] = {
         'jpe_fine_tuning_3': 3,
         'green_aom' : 4,
         'newfocus_freqmod': 5,
-        'scan_mirror_x' : 6,
-        'scan_mirror_y': 7,
         'PI_fine_tuning': 8,
+        'PI_scan_x': 13,
+        'PI_scan_y': 14,
+        'PI_scan_z': 15,
         }
 
 # config['adwin_cav1_dios'] = {
@@ -4036,7 +4046,7 @@ config['adwin_cav1_processes'] = {
                 },
             'data_long' : {
                 'set_dac_numbers' : 200,
-                'get_counts' : [11,12,13],
+                'get_counts' : [11,12,13,14],
                 },
             'data_float' : {
                 'set_start_voltages' : 199,

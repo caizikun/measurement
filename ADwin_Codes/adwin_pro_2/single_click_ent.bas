@@ -9,8 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,84,84,167,167,348,348,366,366,713,713,781,782
-' Foldings                       = 516,533,615
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,746,746,818,819
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -39,7 +38,6 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod_Bell.inc
-#INCLUDE .\monitor_expm_params.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
@@ -67,11 +65,14 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
+
 ' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
 DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
 DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elapsed time since phase stab when succes ent.
+DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
@@ -120,18 +121,18 @@ DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
-DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki,g_0               AS FLOAT        ' PID parameters
+DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
-DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
-DIM offset_index,store_index,index,pid_points,sample_points AS LONG ' Keep track of how long to sample for etc.
-DIM count_int_cycles, raw_count_int_cycles              AS LONG ' Number of cycles to count for per PID / phase msmt cycle
+DIM pid_time_factor, cosarg                                 AS FLOAT        ' account for changes in the adwin clock cycle
+DIM store_index, store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
+DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
-DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_cycles, phase_stab_max_cycles AS LONG
+DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
+DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
-  init_expm_param_monitor()
   
   n_of_comm_timeouts = 0 ' used for debugging, goes to a par   
   repetition_counter  = 0 ' adwin arrays start at 1, but this counter starts at 0 -> we have to write to rep counter +1 all the time
@@ -204,10 +205,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
   pid_points                  = DATA_20[34]
-  sample_points               = DATA_20[35]
-  raw_count_int_cycles        = DATA_20[36]
-  raw_phase_stab_max_cycles   = DATA_20[37]
-  
+  pid_points_to_store         = DATA_20[35]
+  sample_points               = DATA_20[36]
+  raw_count_int_time        = DATA_20[37]
+  raw_phase_stab_max_time   = DATA_20[38]
+  modulate_stretcher_during_phase_msmt = DATA_20[39]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -221,11 +223,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   PID_Ki                       = DATA_21[9]
   PID_Kd                       = DATA_21[10]
   SETPOINT_angle               = DATA_21[11]
+  stretcher_V_2pi              = DATA_21[12]
+  stretcher_V_max              = DATA_21[13]
+  Phase_Msmt_g_0               = DATA_21[14] ' Scaling factor to match APD channels
+  Phase_Msmt_Vis               = DATA_21[15] ' Vis of interference
   
-  setpoint = (cos(SETPOINT_angle/2))^2
-  FPAR_76 = setpoint
-  g_0 = FPAR_77                       'count ratios of APD's
-   
+  
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
   PLU_event_di_pattern = 2 ^ PLU_event_di_channel
@@ -235,13 +238,17 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_pattern =  2 ^ (zpl1_counter_channel - 1)
   zpl2_counter_pattern =  2 ^ (zpl2_counter_channel - 1)
   
-  count_int_cycles = raw_count_int_cycles / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
-  phase_stab_max_cycles = raw_phase_stab_max_cycles / cycle_duration
+  count_int_cycles = (300*raw_count_int_time) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  phase_stab_max_cycles = (300*raw_phase_stab_max_time) / cycle_duration
+
+  stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
   e = 0
   e_old = 0
   Sig = 0 
+  store_index_stab = 0
+  store_index_msmt = 0
   pid_time_factor = count_int_cycles*cycle_duration/30000000
   
   
@@ -264,6 +271,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
     MemCpy(Initializer[1],DATA_103[array_step],100)
+    MemCpy(Initializer[1],DATA_108[array_step],100)
+    MemCpy(Initializer[1],DATA_109[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
@@ -342,7 +351,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   else
     init_mode = mode_after_phase_stab
   endif
-  
+ 
   mode = init_mode
   
 '''''''''''''''''''''''''''
@@ -382,7 +391,7 @@ EVENT:
       
       CASE 100 ' communication between adwins
         ' communication logic: there is a fail and a success trigger. Both 0 means no signal has been sent, both high on slave side means signal has been received from master
-        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if not succesful
+        ' The master decides if both setups are successful, sends this to the slave, and waits for the slave to go on 11 to confirm communication, and sends a jump to both awg if succesful
 
         if (timer = 0) then ' forget values from previous runs
           adwin_timeout_requested = 0
@@ -461,14 +470,14 @@ EVENT:
               else ' still no signal. Did the connection time out?
                 IF (adwin_timeout_requested > 0) THEN ' previous run: timeout requested.
                   adwin_comm_done = 1 ' communication done (timeout). Still: reset parameters below
-                  combined_success = 3
+                  combined_success = 2
                   inc(n_of_comm_timeouts) ' give to par for local debugging
                   par_62 = n_of_comm_timeouts
                 ELSE ' should I request a timeout in the next round now?
                   if (timer > adwin_comm_timeout_cycles) then
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' stop signalling
                     P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0)
-                    wait_time = 2* adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
+                    wait_time = adwin_comm_safety_cycles ' wait in event loop for adwin communication safety time
                     adwin_timeout_requested = 1
                   endif  
                 ENDIF
@@ -544,6 +553,7 @@ EVENT:
         
         
       CASE 10 'Phase stabilisation
+        
         IF (timer = 0) THEN 
           
           'Check if stop signal received, or repetitions exceeded if only doing phase measurement (otherwise happens in CR check)
@@ -552,19 +562,17 @@ EVENT:
           ENDIF
           
           if (is_master > 0) then
-            P2_DIGOUT(DIO_MODULE, 10, 0)
-            P2_DIGOUT(DIO_MODULE, 11, 0) 'PH Why does this happen?
+
             P2_CNT_ENABLE(CTR_MODULE, 0000b)
             P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter
             P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            offset_index = repetition_counter * pid_points 
+            
           endif
-          
-          index = 0
           store_index = 0
+          index = 0
         ELSE
           if (is_master > 0) then
             if (index = count_int_cycles) then ' Only reads apds every count int cycles
@@ -574,24 +582,35 @@ EVENT:
               old_counts_1 = old_counts_1 + counts_1
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
-              DATA_104[offset_index + store_index] = counts_1
-              DATA_105[offset_index + store_index] = counts_2
-            
-              counts = ((counts_1) * g_0) / ((counts_1) * g_0 + (counts_2)*1.0)
- 
+              if ((store_index > (pid_points-pid_points_to_store))) then            
+                inc(store_index_stab)
+                PAR_74 = store_index_stab
+                DATA_104[store_index_stab] = counts_1
+                DATA_105[store_index_stab] = counts_2
+              endif
+
+              cosarg = 2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis
+              if (cosarg >= 1) then
+                cosarg = 0.999
+              endif
+              if (cosarg <= -1) then
+                cosarg = -0.999
+              endif
+              
+              counts = ARCCOS(cosarg)
+    
               ' PID control
-              e = setpoint - counts
+              e = SETPOINT_angle - counts
               Prop = PID_Kp * e'                   ' Proportional term      
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
               Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
-              FPAR_73 = Sig
               ' Output inside reach of fibre stretcher?
-              if (Sig > 9.5) then
-                Sig = Sig - 11.0775 ' PH Shouldnt be hard coded
+              if (Sig > stretcher_V_max) then
+                Sig = Sig - stretcher_V_correct
               endif
-              if (Sig < -9.5) then
-                Sig = Sig + 11.0775
+              if (Sig < -stretcher_V_max) then
+                Sig = Sig + stretcher_V_correct
               endif
             
               ' Output
@@ -614,11 +633,10 @@ EVENT:
             if (is_master > 0) then
               P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
-            
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
-            
+
           endif
         
           
@@ -627,10 +645,7 @@ EVENT:
       
       CASE 1 ' Phase msmt
         IF (timer = 0) THEN 
-          
-          P2_DIGOUT(DIO_MODULE, 10, 0)
-          P2_DIGOUT(DIO_MODULE, 11, 0)
-          
+
           'Check if repetitions exceeded (here just in case not doing phase stabilisation)
           IF (((do_phase_stabilisation = 0) and (only_meas_phase = 1)) and (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions))) THEN ' stop signal received: stop the process
             END
@@ -642,19 +657,26 @@ EVENT:
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
           old_counts_1 = 0
           old_counts_2 = 0
-          offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
+          
+          total_cycles = count_int_cycles*sample_points
         ELSE
+          if (modulate_stretcher_during_phase_msmt = 1) THEN
+            ' Linearly ramp output
+            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles - 1)* stretcher_V_max*3276.8+32768 )
+          endif
+                       
           if (index = count_int_cycles) then ' Only reads apds every count int cycles
             index = 0
             counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
             counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
             old_counts_1 = old_counts_1 + counts_1
             old_counts_2 = old_counts_2 + counts_2
+            inc(store_index_msmt)
             inc(store_index)
-            DATA_106[offset_index + store_index] = counts_1
-            DATA_107[offset_index + store_index] = counts_2
+            DATA_106[store_index_msmt] = counts_1
+            DATA_107[store_index_msmt] = counts_2
             
           endif
           
@@ -674,6 +696,14 @@ EVENT:
         '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
         '        P2_DIGOUT(DIO_MODULE, 11, 1)
         
+        '        IF (timer = 0) then
+        '          par_65 = elapsed_cycles_since_phase_stab
+        '          Fpar_25 = mode_after_phase_stab
+        '          Fpar_26 = 
+        '          Fpar_27 = 
+        '        endif
+        
+        
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         '        record_cr_counts()
         
@@ -681,30 +711,37 @@ EVENT:
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-
-        if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-          mode = init_mode 
-          timer = -1
-        endif
-
-        if ( cr_result > 0 ) then
-          ' In case the result is not positive, the CR check will be repeated/continued
-          time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-          timer = -1     
-          IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-            mode = 3 'go to spin pumping directly
-          ELSE ' two setups involved
-            
-            local_flag_1 = 0
-            local_flag_2 = 1  'flag 2 communicates that CR checking
-            mode_flag = 2
-            mode = 100 'go to communication step
-            timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-            fail_mode_after_adwin_comm = 0 ' If wrong mode,  go back to phase stabilistation
-            success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+        
+        if ((cr_result = -1) or (cr_result = 1)) then
+          ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
+          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+            mode = init_mode 
+            timer = -1
+            reset_CR() ' For optimal robustness, reset the CR check variables.
+          else
           
-          ENDIF
-        endif  
+            if ( cr_result > 0 ) then
+              ' In case the result is not positive, the CR check will be repeated/continued
+              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+              timer = -1     
+              IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+                mode = 3 'go to spin pumping directly
+              ELSE ' two setups involved
+            
+                local_flag_1 = 0
+                local_flag_2 = 1  'flag 2 communicates that CR checking
+                mode_flag = 2
+                mode = 100 'go to communication step
+                timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+                fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+                success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+          
+              ENDIF
+            endif
+          endif
+          
+        endif
+          
         
       CASE 3    ' E spin pumping
         
@@ -767,6 +804,8 @@ EVENT:
         
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
+          DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+          DATA_109[repetition_counter+1] = store_index_stab
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_LDE
@@ -777,6 +816,8 @@ EVENT:
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
                 DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
+                DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
                 mode = 8 ' finalize and go to cr check
@@ -858,7 +899,6 @@ EVENT:
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         
-        record_expm_params(repetition_counter+1) '' For the expm monitor
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
@@ -900,4 +940,6 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
-
+  if (is_master > 0) then
+    P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
+  endif

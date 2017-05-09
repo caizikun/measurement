@@ -57,3 +57,20 @@ DO
   ENDIF
   
 UNTIL (0 = 1)
+
+
+
+
+
+
+DO  
+  IF (Enable > 0) THEN
+    DO 
+    UNTIL (Digin_Long() AND Trigger_In_Pattern) > 0)
+    NOPS(Delay)
+    ' Generate trigger output
+    Digout(Trigger_Out, 1)
+    NOPS(Output_Duration)
+    Digout(Trigger_Out, 0)
+  ENDIF
+UNTIL (0 = 1)

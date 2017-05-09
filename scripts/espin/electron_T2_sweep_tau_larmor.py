@@ -207,10 +207,10 @@ if __name__ == '__main__':
         N = 1 ### number of pulses
         pts = 50 ### number of points per loading of the AWG
         larmor_freq = 2.256e-6
-        larmor_max = 250 ### the order of the last revival
+        larmor_max = 50 ### the order of the last revival
         larmor_min = 2
-        larmor_step = 10
-        reps = 200
+        larmor_step = 4
+        reps = 2000
 
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))

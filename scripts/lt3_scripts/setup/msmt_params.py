@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.698965e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.057718e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.719319e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.037186e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 140e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp = 0.63  # 28-02
+	hermite_pi_length = 110e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp =  0.791  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.459  # 28-02 
+	hermite_pi2_amp = 0.390  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.799 # 02-19
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.447
+	hermite_pi_amp = 0.406
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.194
+	hermite_pi2_amp = 0.163
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 
@@ -83,7 +83,7 @@ mw2_square_pi2_amp  = 0.42
 cfg['protocols']['AdwinSSRO']={
 		'AWG_done_DI_channel':          17,
 		'AWG_start_DO_channel':         9,
-		'AWG_event_jump_DO_channel'	:   10,
+		'AWG_event_jump_DO_channel'	:   11,
 		'counter_channel':              1,
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_amplitude':      23e-9,#XXx28e-9,#28e-9, #50e-9
 		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -444,8 +444,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		hermite_pi2_amp,#0.585,#0.68,
-		'Hermite_theta_length':		hermite_pi2_length,#46e-9,#0.68,
+        'Hermite_theta_amp':		hermite_pi_amp,#0.585,#0.68,
+		'Hermite_theta_length':		hermite_pi_length,#46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -469,14 +469,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					44e-9, # 50e-9
-        'eom_off_amplitude':				-0.02, # for 44 ns of off duration #-0.02
+        'eom_off_amplitude':				-0.033, # for 44 ns of off duration #-0.058
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
         'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.8,#0.2
+        'aom_amplitude':					0.9,#0.2
 }
 
 

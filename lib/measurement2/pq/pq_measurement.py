@@ -8,7 +8,7 @@ import numpy as np
 import qt, time, logging, os
 import measurement.lib.measurement2.measurement as m2
 from multiprocessing import Process, Queue
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+from measurement.lib.cython.PQ_T2_tools.T2_tools_src import T2_tools_v3
 import hdf5_data as h5
 
 class PQMeasurement(m2.Measurement):

@@ -65,9 +65,9 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
         #selecting correct parameters
         if s == 'msm1':
             m.params['Hermite_pi_length'] = 100e-9
-            m.params['Hermite_pi_amp'] = 0.447
+            m.params['Hermite_pi_amp'] = 0.405
             m.params['electron_transition'] = '_m1'
-            m.params['mw_frq'] = 1.698965e9
+            m.params['mw_frq'] = 1.719319e9
 
         m.params['multiplicity'] = mult
         ### need to select the correct frequency

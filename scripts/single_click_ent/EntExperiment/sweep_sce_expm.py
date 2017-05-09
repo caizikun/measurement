@@ -101,7 +101,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['trigger_wait'] = 1
 
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,**kw):
 
     if autoconfig:
         m.autoconfig()    
@@ -117,7 +117,7 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug)
 
     if not debug:
-        m.run(autoconfig=False, setup=False)
+        m.run(autoconfig=False, setup=False,**kw)
 
         if save_name != '':
             m.save(save_name)
@@ -152,6 +152,8 @@ def turn_all_sequence_elements_off(m):
     m.params['do_dynamical_decoupling'] = 0 
     m.params['do_only_opt_pi']          = 0
     m.params['do_yellow_with_AWG']      = 0
+    m.params['do_calc_theta']           = 0
+
     
 def turn_all_sequence_elements_on(m):
     """
@@ -206,7 +208,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['first_pulse_is_pi2'] = True
+    m.params['first_mw_pulse_is_pi2'] = True
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_final_delay_offset'
@@ -265,7 +267,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     ### general params
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1500
 
     turn_all_sequence_elements_off(m)
 
@@ -274,13 +276,13 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['first_pulse_is_pi2'] = True
+    m.params['first_mw_pulse_is_pi2'] = True
     
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0,180,pts)
+    m.params['general_sweep_pts'] = np.linspace(0,360,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -369,11 +371,11 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
 
 
 if __name__ == '__main__':
-    # lastpi2_measure_delay(name,debug=True,upload_only=True)
-    # lastpi2_phase_vs_amplitude(name,debug=True,upload_only=True)
-    # lastpi2_phase_action(name,debug=True,upload_only=True)
+    # lastpi2_measure_delay(name,debug=False,upload_only=False)
+    # lastpi2_phase_vs_amplitude(name,debug=False,upload_only=False)
+    lastpi2_phase_action(name,debug=False,upload_only=False)
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
-    ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
+    # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
