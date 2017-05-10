@@ -1,5 +1,6 @@
 import qt
 import sce_expm_joint_params
+import numpy as np
 
 ### Hardware stuff
 name = qt.exp_params['protocols']['current']
@@ -24,8 +25,8 @@ params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
 params_lt3['MW_repump_distance']		= 250e-9
-params_lt3['LDE_decouple_time']         = 1e-6
-params_lt3['MW_final_delay_offset']		= 10e-9
+params_lt3['LDE_decouple_time']         = 2.2e-6
+params_lt3['MW_final_delay_offset']		= 0e-9
 params_lt3['first_mw_pulse_is_pi2']     = 0
 
 
@@ -68,15 +69,18 @@ params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 250e-9 # it was 150e-9 for bell 
 
 params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp']
-params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
+params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt3['LDE_final_mw_phase']  = qt.exp_params['protocols'][name]['pulses']['X_phase']
 
-params_lt3['sin2_theta']			=0.5
-params_lt3['sin2_theta_fit_of']		=0.998
-params_lt3['sin2_theta_fit_a']		=1.96
-params_lt3['sin2_theta_fit_x0']		=0.815
+params_lt3['sin2_theta']			= 0.5
+params_lt3['sin2_theta_fit_of']		= 0.9973779304990319
+params_lt3['sin2_theta_fit_a']		= 2.4373025679395601
+params_lt3['sin2_theta_fit_x0']		= 0.74951551127860316
+
+
+
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
@@ -91,10 +95,10 @@ params_lt3['wait_for_late_data'] = 1 #in units of measurement_abort_check_interv
 params_lt3['use_live_marker_filter']=True
 params_lt3['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
-params_lt3['pulse_start_bin'] = 2050-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
-params_lt3['pulse_stop_bin'] = 2050+2000-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
-params_lt3['tail_start_bin'] = 2050 -params_lt3['MIN_SYNC_BIN']       #### BK: 2950
-params_lt3['tail_stop_bin'] = 2050+2000 -params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['pulse_start_bin'] = 1750-params_lt3['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
+params_lt3['pulse_stop_bin'] = 1950-params_lt3['MIN_SYNC_BIN']    #### BK: 2950
+params_lt3['tail_start_bin'] = 1750 -params_lt3['MIN_SYNC_BIN']       #### BK: 2950
+params_lt3['tail_stop_bin'] = 1950 -params_lt3['MIN_SYNC_BIN']    #### BK: 2950
 params_lt3['PQ_ch1_delay'] = 55
 
 params_lt3['live_filter_queue_length'] = 10
@@ -121,12 +125,12 @@ params_lt3['PID_GAIN'] = 1.0
 params_lt3['PID_Kp'] = 0.000
 params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
-params_lt3['phase_setpoint'] = 3.14
+params_lt3['phase_setpoint'] = np.pi/2
 
-params_lt3['count_int_time'] = 3000 # How long to integrate counts for in microseconds
-params_lt3['pid_points'] = 10 # How many points to sample the phase at during the PID loop
+params_lt3['count_int_time'] = 2000 # How long to integrate counts for in microseconds
+params_lt3['pid_points'] = 7 # How many points to sample the phase at during the PID loop
 params_lt3['pid_points_to_store'] = 10 # How many points to store
-params_lt3['sample_points'] = 33 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_time'] = 1000000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt3['sample_points'] = 500 # How many points to sample the phase at during the expm part
+params_lt3['phase_stab_max_time'] = 400000 # How long in microseconds to run the expm for after phase stabilisation
 
 

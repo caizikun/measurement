@@ -40,7 +40,7 @@ def darkesr(name, **kw):
     p1_freq = m.params['ms+1_cntr_frq']-43e6
 
     m.params['mw_frq'] = m1_freq if m1_transition else p1_freq #MW source frequency
-    m.params['repetitions']  = 400
+    m.params['repetitions']  = 200
     m.params['pts'] = 151
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] =  m.params['DESR_pulse_amplitude'] if m1_transition else m.params['DESR_pulse_amplitude']*1.5

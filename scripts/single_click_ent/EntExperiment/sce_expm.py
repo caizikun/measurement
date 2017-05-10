@@ -136,6 +136,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
+        stab_reps = self.adwin_var('store_index_stab')
         
         toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
@@ -145,7 +146,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
-                    'completed_reps'
+                    'completed_reps',
+                    'store_index_stab'
                     ]
 
         # if self.params['record_expm_params']::
@@ -158,8 +160,8 @@ class SingleClickEntExpm(DD.MBI_C13):
         #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation']:
-            toSave.append(('pid_counts_1',1,reps*self.params['pid_points']))
-            toSave.append(('pid_counts_2',1,reps*self.params['pid_points']))
+            toSave.append(('pid_counts_1',1,stab_reps))
+            toSave.append(('pid_counts_2',1,stab_reps))
         
         if self.params['only_meas_phase']: 
             toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
@@ -255,6 +257,17 @@ class SingleClickEntExpm(DD.MBI_C13):
             self.pt = pt
             #sweep parameter
             if self.params['do_general_sweep'] == 1:
+                ## NK: the code below is redundant. Please delete if the experiment still works ;)
+                # if self.params['general_sweep_name'] == 'sin2_theta':
+
+                #     fit_a  = self.params['sin2_theta_fit_a']      
+                #     fit_x0 = self.params['sin2_theta_fit_x0']     
+                #     fit_of = self.params['sin2_theta_fit_of']
+
+                #     p0 = self.params['general_sweep_pts'][pt]   
+                #     self.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
+                    
+                # else:        
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
@@ -359,13 +372,27 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_rephasing = DD.Gate('LDE_rephasing_'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
-            LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+
+
+            ## decoupling sequence
+            tomography_pulse = DD.Gate('tomography_pulse'_+str(pt))
+            cond_decoupling = DD.Gate('dynamical_decoupling_'+str(pt),
+                                'Carbon_Gate',
+                                Carbon_ind = 1, # does not matter....
+                                event_jump = tomography_pulse.name,
+                                tau = self.params['dynamic_phase_tau'],
+                                N = self.params['dynamic_phase_N'],
+                                no_connection_elt = True)
+            cond_decoupling.scheme = 'carbon_phase_feedback'
+
+
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = 'wait_for_adwin_'+str(pt)#LDE_list[0].name
+            Fail_done.go_to = 'wait_for_adwin_'+str(pt)
 
 
             #######################################################################
@@ -398,8 +425,13 @@ class SingleClickEntExpm(DD.MBI_C13):
                 ### append last adwin synchro element 
                 if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
-                    gate_seq.append(LDE_rephasing)
 
+                    if self.params['do_dynamical_decoupling'] > 0:
+                        LDE_rephasing.go_to = 'conditional_decoupling_'+str(pt)
+                    else:
+                        LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+                    gate_seq.append(LDE_rephasing)
                     
                     if self.params['PLU_during_LDE'] > 0:
                         gate_seq.append(Fail_done)
@@ -411,7 +443,10 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-            # gate_seq.append(LDE_repump)
+
+            if self.params['do_dynamical_decoupling'] > 0:
+                gate_seq.append(cond_decoupling)
+
             gate_seq.extend(e_RO)
 
 

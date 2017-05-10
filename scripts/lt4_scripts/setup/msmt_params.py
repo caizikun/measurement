@@ -36,7 +36,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.92 #Not calibrated
+	hermite_pi_amp = 0.935 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.941 # for a single pi pulse
+	hermite_pi_amp = 0.956 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.621#0.617 #0.634#0.605
+	hermite_pi2_amp = 0.6265 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -177,13 +177,14 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ############################################
 
 cfg['protocols']['AdwinSSRO+delay'] = {
-	'delay_trigger_DI_channel':					20,
-	'delay_trigger_DO_channel':					12,
-	'do_tico_delay_control':		 			0,
-	'minimal_delay_time':		  				1440e-9,
-	'minimal_delay_cycles':						15,
-	'delay_clock_cycle_time':					20e-9,
-	'awg_delay':								380e-9,
+    'delay_trigger_DI_channel':                 20,
+    'delay_trigger_DO_channel':                 12,
+    'do_tico_delay_control':                    0,
+    'minimal_delay_time_bare':                  1440e-9,
+    'awg_delay':                                380e-9,
+    'minimal_delay_time':                       1440e-9 + 380e-9,
+    'minimal_delay_cycles':                     15,
+    'delay_clock_cycle_time':                   20e-9,
 }
 
 ###############################
@@ -488,10 +489,10 @@ cfg['protocols'][name]['pulses'] = {
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
-		'A_CR_amplitude':				 3e-9,
-		'CR_duration' :				 	 70,
+		'A_CR_amplitude':				 2.2e-9,
+		'CR_duration' :				 	 80,
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,
+		'Ex_CR_amplitude':				 1.0e-9,
 		}

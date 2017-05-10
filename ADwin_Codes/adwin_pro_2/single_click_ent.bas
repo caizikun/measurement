@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,83,83,166,166,351,351,369,369,732,732,800,801
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,746,746,818,819
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -65,11 +65,14 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
+
 ' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
 DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
 DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elapsed time since phase stab when succes ent.
+DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
@@ -120,8 +123,8 @@ DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
 DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
-DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
-DIM offset_index,store_index,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
+DIM pid_time_factor, cosarg                                 AS FLOAT        ' account for changes in the adwin clock cycle
+DIM store_index, store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
 DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
@@ -225,7 +228,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Phase_Msmt_g_0               = DATA_21[14] ' Scaling factor to match APD channels
   Phase_Msmt_Vis               = DATA_21[15] ' Vis of interference
   
-  setpoint = (cos(SETPOINT_angle/2))^2
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -245,6 +247,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   e = 0
   e_old = 0
   Sig = 0 
+  store_index_stab = 0
+  store_index_msmt = 0
   pid_time_factor = count_int_cycles*cycle_duration/30000000
   
   
@@ -267,6 +271,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
     MemCpy(Initializer[1],DATA_103[array_step],100)
+    MemCpy(Initializer[1],DATA_108[array_step],100)
+    MemCpy(Initializer[1],DATA_109[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
@@ -563,11 +569,10 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            offset_index = repetition_counter * pid_points_to_store           'changed to show last points only
+            
           endif
-          
-          index = 0
           store_index = 0
+          index = 0
         ELSE
           if (is_master > 0) then
             if (index = count_int_cycles) then ' Only reads apds every count int cycles
@@ -578,15 +583,24 @@ EVENT:
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
               if ((store_index > (pid_points-pid_points_to_store))) then            
-                DATA_104[offset_index + store_index] = counts_1
-                DATA_105[offset_index + store_index] = counts_2
+                inc(store_index_stab)
+                PAR_74 = store_index_stab
+                DATA_104[store_index_stab] = counts_1
+                DATA_105[store_index_stab] = counts_2
               endif
 
-            
-              counts = ARCCOS(2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis)
+              cosarg = 2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis
+              if (cosarg >= 1) then
+                cosarg = 0.999
+              endif
+              if (cosarg <= -1) then
+                cosarg = -0.999
+              endif
+              
+              counts = ARCCOS(cosarg)
     
               ' PID control
-              e = setpoint - counts
+              e = SETPOINT_angle - counts
               Prop = PID_Kp * e'                   ' Proportional term      
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
@@ -643,7 +657,6 @@ EVENT:
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
           old_counts_1 = 0
           old_counts_2 = 0
-          offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
           
@@ -660,9 +673,10 @@ EVENT:
             counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
             old_counts_1 = old_counts_1 + counts_1
             old_counts_2 = old_counts_2 + counts_2
+            inc(store_index_msmt)
             inc(store_index)
-            DATA_106[offset_index + store_index] = counts_1
-            DATA_107[offset_index + store_index] = counts_2
+            DATA_106[store_index_msmt] = counts_1
+            DATA_107[store_index_msmt] = counts_2
             
           endif
           
@@ -790,6 +804,8 @@ EVENT:
         
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
+          DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+          DATA_109[repetition_counter+1] = store_index_stab
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_LDE
@@ -800,6 +816,8 @@ EVENT:
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
                 DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
+                DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
                 mode = 8 ' finalize and go to cr check
