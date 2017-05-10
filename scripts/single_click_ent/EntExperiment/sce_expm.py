@@ -43,6 +43,11 @@ class SingleClickEntExpm(DD.MBI_C13):
 
     def autoconfig(self):
 
+        
+        self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
+        self.params['LDE_element_length'] = self.joint_params['LDE_element_length']
+
+
         self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
                                     'ch1m2': 'ch1_marker2',
                                     'ch2m1': 'ch2_marker1',
@@ -69,8 +74,7 @@ class SingleClickEntExpm(DD.MBI_C13):
             print 'Omitting adwin load!!! Be wary of your changes!'
 
 
-        self.params['LDE_attempts'] = self.joint_params['LDE_attempts']
-        
+
         DD.MBI_C13.autoconfig(self)
 
         # add values from AWG calibrations
@@ -137,12 +141,16 @@ class SingleClickEntExpm(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         stab_reps = self.adwin_var('store_index_stab')
-        
+        pid_points_to_store = self.params['pid_points_to_store']
+        sample_points = self.params['sample_points']
+
         toSave =   [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('statistics', 10),
                     ('adwin_communication_time'              ,1,reps),  
-                    ('counted_awg_reps'                      ,1,reps),  
+                    ('counted_awg_reps'                      ,1,reps), 
+                    ('elapsed_since_phase_stab'              ,1,reps),
+                    ('last_phase_stab_index'                 ,1,reps),
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
@@ -162,10 +170,12 @@ class SingleClickEntExpm(DD.MBI_C13):
         if self.params['do_phase_stabilisation']:
             toSave.append(('pid_counts_1',1,stab_reps))
             toSave.append(('pid_counts_2',1,stab_reps))
+            toSave.append(('calculated_phase',1,stab_reps))
+            
         
         if self.params['only_meas_phase']: 
-            toSave.append(('sampling_counts_1',1,reps*self.params['sample_points']))
-            toSave.append(('sampling_counts_2',1,reps*self.params['sample_points']))
+            toSave.append(('sampling_counts_1',1,reps*sample_points))
+            toSave.append(('sampling_counts_2',1,reps*sample_points))
 
         
         self.save_adwin_data(name,toSave)
@@ -207,8 +217,19 @@ class SingleClickEntExpm(DD.MBI_C13):
         Is used to rephase the electron spin after a successful entanglement generation event.
         uses the scheme 'single_element' --> this will throw a warning in DD_2.py
         """
+
         LDE_elt.generate_LDE_rephasing_elt(self,Gate)
         Gate.wait_for_trigger = False
+
+    def generate_tomography_pulse(self,Gate):
+        """
+        creates a final pi/2 pulse after decoupling.
+        Mainly used for entangling on demand and very similawr to generate_LDE_rephasing_elt
+        """
+
+        LDE_elt.generate_tomography_mw_pulse(self,Gate)
+
+
 
     def generate_LDE_element(self,Gate):
         """
@@ -256,7 +277,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         for pt in range(self.params['pts']):
             self.pt = pt
             #sweep parameter
-            if self.params['do_general_sweep'] == 1:       
+            if self.params['do_general_sweep'] == 1:      
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             gate_seq = []
@@ -361,13 +382,30 @@ class SingleClickEntExpm(DD.MBI_C13):
             LDE_rephasing = DD.Gate('LDE_rephasing_'+str(pt),'single_element')
             LDE_rephasing.scheme = 'single_element'
             self.generate_LDE_rephasing_elt(LDE_rephasing)
-            LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+
+
+            ## decoupling sequence
+            tomography_pulse = DD.Gate('tomography_pulse_'+str(pt),'single_element')
+            tomography_pulse.scheme = 'single_element'
+            self.generate_tomography_pulse(tomography_pulse) ### this is still wrong!!!
+
+            cond_decoupling = DD.Gate('dynamical_decoupling_'+str(pt),
+                                'Carbon_Gate',
+                                Carbon_ind = 1, # does not matter.
+                                event_jump = tomography_pulse.name,
+                                tau = self.params['dynamic_decoupling_tau'],
+                                N = self.params['dynamic_decoupling_N'],
+                                no_connection_elt = True)
+            cond_decoupling.scheme = 'carbon_phase_feedback'
+            cond_decoupling.reps = int(self.params['max_decoupling_reps'])
+
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = 'wait_for_adwin_'+str(pt)#LDE_list[0].name
+            Fail_done.go_to = 'wait_for_adwin_'+str(pt)
 
 
             #######################################################################
@@ -400,8 +438,13 @@ class SingleClickEntExpm(DD.MBI_C13):
                 ### append last adwin synchro element 
                 if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
-                    gate_seq.append(LDE_rephasing)
 
+                    if self.params['do_dynamical_decoupling'] > 0:
+                        LDE_rephasing.go_to = 'dynamical_decoupling_'+str(pt)
+                    else:
+                        LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
+
+                    gate_seq.append(LDE_rephasing)
                     
                     if self.params['PLU_during_LDE'] > 0:
                         gate_seq.append(Fail_done)
@@ -413,7 +456,11 @@ class SingleClickEntExpm(DD.MBI_C13):
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
-            # gate_seq.append(LDE_repump)
+
+            if self.params['do_dynamical_decoupling'] > 0:
+                gate_seq.append(cond_decoupling)
+                gate_seq.append(tomography_pulse)
+
             gate_seq.extend(e_RO)
 
 

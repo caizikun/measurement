@@ -334,7 +334,8 @@ class master_of_space(CyclopeanInstrument):
     def U_to_pos(self,dimname,val):
         pos=[]
         for dim in dimname:
-            pos.append(self.dimensions[dim]['micron_per_volt']*val[dimname.index(dim)])
+            pos.append(self.dimensions[dim]['micron_per_volt']*val[dimname.
+                (dim)])
         return pos
 
     def pos_to_U(self,dimname,val):
