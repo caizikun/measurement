@@ -26,13 +26,14 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
     def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
 
         ssro.IntegratedSSRO.setup(self)
-        
-        # print 'this is the mw frequency!', self.params['mw_frq']
-        self.mwsrc.set_iq('on')
-        self.mwsrc.set_pulm('on')
-        self.mwsrc.set_frequency(self.params['mw_frq'])
-        self.mwsrc.set_power(self.params['mw_power'])
-        self.mwsrc.set_status('on')
+
+        if mw:        
+            # print 'this is the mw frequency!', self.params['mw_frq']
+            self.mwsrc.set_iq('on')
+            self.mwsrc.set_pulm('on')
+            self.mwsrc.set_frequency(self.params['mw_frq'])
+            self.mwsrc.set_power(self.params['mw_power'])
+            self.mwsrc.set_status('on')
 
         if mw2:
             print 'switching second mw source on'
@@ -118,9 +119,13 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.awg.stop()
         self.awg.set_runmode('CONT')
 
-        self.mwsrc.set_status('off')
-        self.mwsrc.set_iq('off')
-        self.mwsrc.set_pulm('off')
+        try:
+            self.mwsrc.set_status('off')
+            self.mwsrc.set_iq('off')
+            self.mwsrc.set_pulm('off')
+        except:
+            print 'no first source ', sys.exc_info()
+
         try:
             self.mwsrc2.set_status('off')
         except:
@@ -1240,6 +1245,7 @@ class MBI(PulsarMeasurement):
 
         self.stop_adwin_process()
         reps_completed = self.adwin_var('completed_reps')
+        print('ADwin process finished')
         print('completed %s / %s readout repetitions' % \
                 (reps_completed, self.params['repetitions']))
 

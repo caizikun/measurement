@@ -2198,10 +2198,69 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
+        'cr_check_mod_dummy_lt34' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_mod_Bell.inc',
+            'par' : {
+                    'CR_preselect'              : 75,
+                    'CR_probe'                  : 68,
+                    'CR_repump'                 : 69,
+                    'total_CR_counts'           : 70,
+                    'noof_repumps'              : 71,
+                    'noof_cr_checks'            : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts'             : 76,
+                    'repump_mod_activate'       : 66,
+                    'cr_mod_activate'           : 67,
+                    },
+                    'fpar' : {
+                    'repump_mod_err' : 78,
+                    'cr_mod_err'     : 79,
+
+
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ['repump_mod_DAC_channel'      ,   7],
+                    ['cr_mod_DAC_channel'          ,   8],
+                    #['counter_ch_input_pattern'    ,   0]
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'           ,   0.8],
+                    ['repump_off_voltage'       ,  0.07],
+                    ['Ex_CR_voltage'            ,   0.8],
+                    ['A_CR_voltage'             ,   0.8],
+                    ['Ex_off_voltage'           ,   0.0],
+                    ['A_off_voltage'            , -0.08],
+                    ['repump_mod_control_offset',   0.0],
+                    ['repump_mod_control_amp'   ,   0.0],
+                    ['cr_mod_control_offset'    ,   0.0],
+                    ['cr_mod_control_amp'       ,   0.0],
+                    ['cr_mod_control_avg_pts'   ,   100000.],
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                },
+
         'purification_delayfb' : {
                 'index' : 9,
                 'file' : 'purification_delayfb_lt2.TB9',
-                'include_cr_process' : 'cr_check', #This process includes the CR check lib
+                'include_cr_process' : 'cr_check', # 'cr_check', #This process includes the CR check lib
                 'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['cycle_duration'                  ,   1],
                     ['SP_duration'                     ,   5],

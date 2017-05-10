@@ -457,6 +457,10 @@ class AdwinControlledMeasurement(Measurement):
                     str(v))
         return None
 
+    def adwin_set_var(self, var, data):
+        setfunc = getattr(self.adwin, 'set_' + self.adwin_process + '_var')
+        setfunc(**{var: data})
+
     def adwin_process_filepath(self):
         return self.adwin.process_path(self.adwin_process)
 
