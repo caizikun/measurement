@@ -72,12 +72,12 @@ params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['LDE_final_mw_phase']  = 0#qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt3['LDE_final_mw_phase']  = 0.0#qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.9965057306086007
-params_lt3['sin2_theta_fit_a']		= 2.2903547360064045
-params_lt3['sin2_theta_fit_x0']		= 0.7652331104229505
+params_lt3['sin2_theta_fit_of']		= 1.0018659636609024
+params_lt3['sin2_theta_fit_a']		= 2.3204662709239194
+params_lt3['sin2_theta_fit_x0']		= 0.76315545725601541
 
 
 
@@ -127,10 +127,10 @@ params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
 params_lt3['phase_setpoint'] = np.pi/2
 
-params_lt3['count_int_time'] = 1000 # How long to integrate counts for in microseconds
-params_lt3['pid_points'] = 7 # How many points to sample the phase at during the PID loop
-params_lt3['pid_points_to_store'] = 7 # How many points to store
+params_lt3['count_int_time'] = 6000 # How long to integrate counts for in microseconds
+params_lt3['pid_points'] = 5 # How many points to sample the phase at during the PID loop
+params_lt3['pid_points_to_store'] = 5 # How many points to store
 params_lt3['sample_points'] = 500 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_time'] = 400000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt3['phase_stab_max_time'] = 300000 # How long in microseconds to run the expm for after phase stabilisation
 
 
