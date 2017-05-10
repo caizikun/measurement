@@ -595,11 +595,7 @@ class adwin(Instrument):
 
         p = self.processes['linescan']
         dacs = [ self.dacs[n] for n in dac_names ] 
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 97eb58561d20b6f88487c22668fb16f83e8c7320
         # set all the required input params for the adwin process
         # see the adwin process for details
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
