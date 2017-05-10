@@ -3261,9 +3261,11 @@ config['adwin_pro_processes'] = {
                     ['pid_points'                      ,   10],
                     ['pid_points_to_store'             ,   10],
                     ['sample_points'                   ,   100],
-                    ['count_int_time'                ,   25], # units of 3.3 ns
-                    ['phase_stab_max_time'           ,   15000000], # units of 3.3 ns (currently set to 50 ms)
-                    ['modulate_stretcher_during_phase_msmt' , 0]
+                    ['count_int_time_stab'             ,   1000], # units of us
+                    ['count_int_time_meas'             , 1000], # units of us
+                    ['phase_stab_max_time'             ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['modulate_stretcher_during_phase_msmt' , 0],
+                    ['LDE_attempts'                     ,  1]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3283,9 +3285,11 @@ config['adwin_pro_processes'] = {
                     ['stretcher_V_max', 9.5],
                     ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
                     ['Phase_Msmt_Vis', 1], # Vis of interference'
+                    ['LDE_element_length', 2.2e-6],
+                    ['decoupling_element_duration', 8.8e-6]
                     ],
                 'params_float_index'  : 21,
-                'params_float_length' : 12,
+                'params_float_length' : 100,
                 'par' : {
                     'remote_mode': 60, # PH This is the timer?
                     'local_mode': 61,

@@ -248,8 +248,9 @@ def phase_calibration(name,debug = False,upload_only=False):
     m.params['only_meas_phase']         = 1 
     m.params['modulate_stretcher_during_phase_msmt'] = 1
 
-    m.params['stretcher_V_max'] = 1.8*m.params['stretcher_V_2pi']
-    m.params['sample_points'] = 20 # How many points to sample the phase at during the expm part
+    m.params['stretcher_V_max'] = 1.0*m.params['stretcher_V_2pi']
+    m.params['sample_points'] = 30 # How many points to sample the phase at during the expm part
+    m.params['count_int_time_meas'] = 1000 # How long to integrate counts for in microseconds for phase meas
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -269,7 +270,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 4
+    m.params['reps_per_ROsequence'] = 50
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -291,7 +292,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 15
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -499,15 +500,15 @@ def Determine_eta(name, debug = False, upload_only = False):
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 600
-    pts = 7
+    m.params['reps_per_ROsequence'] = 500
+    pts = 8
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['MW_pi_during_LDE'] = 0 ## turn pi pulse on or off for spcorrs
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'sin2_theta' 
-    m.params['general_sweep_pts'] = np.linspace(0.1,0.5,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.05,0.5,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
@@ -585,7 +586,7 @@ def TPQI(name,debug = False,upload_only=False):
 
 
 
-def EntangleXY(name,debug = False,upload_only=False):
+def EntangleXsweepY(name,debug = False,upload_only=False):
     """
     Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
     stabilized phase of the entangled state.
@@ -597,35 +598,31 @@ def EntangleXY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 1000
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.15
+    m.params['sin2_theta'] = 0.1
     m.params['do_calc_theta'] = 1
 
+
+    ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
         hist_only = True
+        m.params['general_sweep_pts'] = np.array([0]*10)
     else:
         hist_only = False
+        m.params['general_sweep_pts'] = np.linspace(0,360,10) 
 
-    if qt.current_setup == 'lt3':
-        ### only one setup is allowed to sweep the phase.
-        m.params['do_general_sweep'] = 1
-        m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.array([0]*15)## turn pi pulse on or off for spcorrs
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
-        m.params['pts'] = len(m.params['sweep_pts'])
-    else:
-        m.params['do_general_sweep']    = 1
-        m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-        m.params['general_sweep_pts'] = np.linspace(0,360,15) ## turn pi pulse on or off for spcorrs
-        m.params['sweep_name'] = m.params['general_sweep_name'] 
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
-        m.params['pts'] = len(m.params['sweep_pts'])
+    
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
     ### upload and run
 
 
@@ -642,33 +639,36 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
    
     sweep_sce_expm.turn_all_sequence_elements_off(m)
+    pts = 8
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 2000
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['do_calc_theta'] = 1
+    
 
     if qt.current_setup == 'lt3':
         hist_only = True
     else:
         hist_only = False
 
-    m.params['do_general_sweep']    = 1
+    m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'sin2_theta' 
-    m.params['general_sweep_pts'] = np.linspace(0.05,0.5,8) ## turn pi pulse on or off for spcorrs
+    m.params['general_sweep_pts'] = np.linspace(0.05,0.5,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
+    m.params['do_phase_stabilisation']  = 1
+    m.params['do_calc_theta']           = 1
+
+
     ### upload and run
 
-
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
-
 
 
 def EntangleXX(name,debug = False,upload_only=False):
@@ -700,7 +700,7 @@ def EntangleXX(name,debug = False,upload_only=False):
     ### only one setup is allowed to sweep the phase.
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-    m.params['general_sweep_pts'] = np.array([1]*m.params['LDE_final_mw_phase'])## turn pi pulse on or off for spcorrs
+    m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase']])
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
@@ -757,9 +757,11 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    EntangleXY(name+'_Entangle_XX',debug = False,upload_only=False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only=False)
 
-    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
+    #EntangleXX(name+'_EntangleXX',debug = False,upload_only=False)
+
+    #EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
 
     if hasattr(qt,'master_script_is_running'):

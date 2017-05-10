@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,86,86,169,169,357,357,375,375,746,746,818,819
+' Bookmarks                      = 3,3,87,87,174,174,359,359,379,379,758,758,830,831
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -44,7 +44,6 @@
 #DEFINE max_single_click_ent_repetitions    50000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
 #DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
-#DEFINE max_sample    100000 ' Max number of measured points for sampling - Note that can do fewer repetitions if want to sample for longer.
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -69,14 +68,16 @@ DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO coun
 ' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
-DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
-DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_106[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
+DIM DATA_107[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
 DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elapsed time since phase stab when succes ent.
 DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
+DIM DATA_110[max_pid] AS FLOAT at DRAM_Extern 'Hold the calculated phase during phase stabilisation
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
+DIM Float_Initializer[100] as Float AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
 
 'general paramters
@@ -125,10 +126,14 @@ DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
 DIM pid_time_factor, cosarg                                 AS FLOAT        ' account for changes in the adwin clock cycle
 DIM store_index, store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
-DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
+DIM count_int_cycles_stab, raw_count_int_time_stab, count_int_cycles_meas, raw_count_int_time_meas              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
 DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
+
+' On-demand decoupling stuff
+DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
+DIM max_LDE_attempts AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -200,16 +205,18 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_stabilisation      = DATA_20[27]
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
-  Phase_msmt_laser_DAC_channel = DATA_20[30] 
-  Phase_stab_DAC_channel   = DATA_20[31]
+  Phase_msmt_laser_DAC_channel= DATA_20[30] 
+  Phase_stab_DAC_channel      = DATA_20[31]
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
   pid_points                  = DATA_20[34]
   pid_points_to_store         = DATA_20[35]
   sample_points               = DATA_20[36]
-  raw_count_int_time        = DATA_20[37]
-  raw_phase_stab_max_time   = DATA_20[38]
-  modulate_stretcher_during_phase_msmt = DATA_20[39]
+  raw_count_int_time_stab     = DATA_20[37]
+  raw_count_int_time_meas     = DATA_20[38]
+  raw_phase_stab_max_time     = DATA_20[39]
+  modulate_stretcher_during_phase_msmt = DATA_20[40]
+  max_LDE_attempts                = DATA_20[41]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -227,7 +234,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   stretcher_V_max              = DATA_21[13]
   Phase_Msmt_g_0               = DATA_21[14] ' Scaling factor to match APD channels
   Phase_Msmt_Vis               = DATA_21[15] ' Vis of interference
+  LDE_element_duration         = DATA_21[16]
+  decoupling_element_duration  = DATA_21[17]
   
+  max_sequence_duration = LDE_element_duration*max_LDE_attempts
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -238,7 +248,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_pattern =  2 ^ (zpl1_counter_channel - 1)
   zpl2_counter_pattern =  2 ^ (zpl2_counter_channel - 1)
   
-  count_int_cycles = (300*raw_count_int_time) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  count_int_cycles_stab = (300*raw_count_int_time_stab) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  count_int_cycles_meas = (300*raw_count_int_time_meas) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = (300*raw_phase_stab_max_time) / cycle_duration
 
   stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
@@ -249,7 +260,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Sig = 0 
   store_index_stab = 0
   store_index_msmt = 0
-  pid_time_factor = count_int_cycles*cycle_duration/30000000
+  pid_time_factor = count_int_cycles_stab*cycle_duration/30000000
   
   
   
@@ -260,6 +271,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' enter desired values into the initializer array
   FOR i = 1 TO 100
     Initializer[i] = -1
+  NEXT i
+
+  '  ' enter desired values into the initializer array
+  FOR i = 1 TO 100
+    Float_Initializer[i] = -1.0
   NEXT i
   '  
   '  
@@ -280,24 +296,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   array_step = 1
   FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_104[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_105[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_sample/100
     MemCpy(Initializer[1],DATA_106[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_sample/100
     MemCpy(Initializer[1],DATA_107[array_step],100)
+    MemCpy(Float_Initializer[1],DATA_110[array_step],100)
     array_step = array_step + 100
   NEXT i
   
@@ -374,7 +376,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
 
   ' Phase shifting defns
-  P2_DAC_2(14, 0) ' Set phase shifter voltage to zero PH Think about this
+  P2_DAC_2(Phase_stab_DAC_channel, 0) ' Set phase shifter voltage to zero PH Think about this
+  
+  
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
   P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)
     
@@ -575,7 +579,7 @@ EVENT:
           index = 0
         ELSE
           if (is_master > 0) then
-            if (index = count_int_cycles) then ' Only reads apds every count int cycles
+            if (index = count_int_cycles_stab) then ' Only reads apds every count int cycles
               index = 0
               counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
               counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
@@ -598,7 +602,9 @@ EVENT:
               endif
               
               counts = ARCCOS(cosarg)
-    
+              
+              DATA_110[store_index_stab] = counts
+              
               ' PID control
               e = SETPOINT_angle - counts
               Prop = PID_Kp * e'                   ' Proportional term      
@@ -621,7 +627,7 @@ EVENT:
             endif
           
           else
-            if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
+            if (index = count_int_cycles_stab) then ' Just tick over waiting for the other adwin to phase stabilise.
               index = 0
               inc(store_index)
             endif
@@ -660,14 +666,14 @@ EVENT:
           index = 0
           store_index = 0
           
-          total_cycles = count_int_cycles*sample_points
+          total_cycles = count_int_cycles_meas*sample_points
         ELSE
           if (modulate_stretcher_during_phase_msmt = 1) THEN
             ' Linearly ramp output
-            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles - 1)* stretcher_V_max*3276.8+32768 )
+            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles ) * stretcher_V_max*3276.8+32768 )
           endif
                        
-          if (index = count_int_cycles) then ' Only reads apds every count int cycles
+          if (index = count_int_cycles_meas) then ' Only reads apds every count int cycles
             index = 0
             counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
             counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
@@ -683,6 +689,12 @@ EVENT:
           inc(index)
           
           if (store_index >= sample_points) then
+            
+            if (modulate_stretcher_during_phase_msmt = 1) THEN
+              ' Linearly ramp output
+              P2_DAC_2(Phase_stab_DAC_channel, 0 )
+            endif
+            
             mode = 7
             timer = -1
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
@@ -844,8 +856,10 @@ EVENT:
         '
         '          awg_repcount_was_low = 1
         '          
-        '          
-        '          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
+        '          DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
+        '          DIM max_LDE_attempts AS LONG
+        '        Round((max_LDE_attempts-attempts_this_round)*LDE_element_duration/decoupling_element_duration) + 1
+        '          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions ' need to reinvent this calculation.
         '          
         '          
         '        ENDIF 
@@ -862,13 +876,11 @@ EVENT:
         '        
         '        IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
         '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
-        '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
         '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
         '          time_spent_in_sequence = time_spent_in_sequence + timer
         '          timer = -1
-        '          mode = 200 'SSRO
-        '          success_mode_after_SSRO = 6
-        '          fail_mode_after_SSRO = 6 
+        '          mode = 6
         '          
         '        ENDIF
         

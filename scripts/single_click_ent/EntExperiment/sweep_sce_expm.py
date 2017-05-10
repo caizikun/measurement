@@ -369,13 +369,48 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
+def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
+    """
+    Sweeps the number of pulses in the decoupling sequence.
+    Calibration msmt. for entnaglement on demand
+    """
+
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 10
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 250
+
+
+    ### sequence specific parameters
+    turn_all_sequence_elements_off(m)
+    m.params['MW_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 0
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['first_pulse_is_pi2'] = True
+    m.params['do_dynamical_decoupling'] = 1
+    m.params['PLU_during_LDE'] = 1
+
+    ### sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'max_decoupling_reps'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(1,200,pts)
+    m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = 4*m.params['general_sweep_pts']*m.params['dynamic_decoupling_tau']*1e3
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 if __name__ == '__main__':
     # lastpi2_measure_delay(name,debug=False,upload_only=False)
     # lastpi2_phase_vs_amplitude(name,debug=False,upload_only=False)
-    lastpi2_phase_action(name,debug=False,upload_only=False)
+    # lastpi2_phase_action(name,debug=False,upload_only=False)
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
+    dynamical_decoupling_after_LDE(name,debug = False,upload_only=True)
