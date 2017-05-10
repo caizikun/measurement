@@ -177,13 +177,14 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ############################################
 
 cfg['protocols']['AdwinSSRO+delay'] = {
-	'delay_trigger_DI_channel':					20,
-	'delay_trigger_DO_channel':					12,
-	'do_tico_delay_control':		 			0,
-	'minimal_delay_time':		  				1440e-9,
-	'minimal_delay_cycles':						15,
-	'delay_clock_cycle_time':					20e-9,
-	'awg_delay':								380e-9,
+    'delay_trigger_DI_channel':                 20,
+    'delay_trigger_DO_channel':                 12,
+    'do_tico_delay_control':                    0,
+    'minimal_delay_time_bare':                  1440e-9,
+    'awg_delay':                                380e-9,
+    'minimal_delay_time':                       1440e-9 + 380e-9,
+    'minimal_delay_cycles':                     15,
+    'delay_clock_cycle_time':                   20e-9,
 }
 
 ###############################

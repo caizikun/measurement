@@ -5,7 +5,7 @@
 #  of conversion from xyz position to splindle movement. MOC includes a _jpe_cadm instrument,
 #  who physically talks to the JPE controller, and a _jpe_tracker, who keeps track of the 
 #  spindles' positions. 
-#  SvD: for functioning of the instrument with remote access, I am putting the JPE_pos_tracker
+#  SvD: for functioning of the instrument with remote access to the gui, I am putting the JPE_pos_tracker
 #  inside the master_of_cavity Instrument. I think there is no need to have it in a separate class.
 #
 #  To keep track of spindle length over time, avoiding end-of-range issues (in absence of
@@ -96,7 +96,7 @@ class master_of_cavity(CyclopeanInstrument):
         self.track_z2 = 0
         self.track_z3 = 0
 
-        #design properties in mm (see JPE datasheet).
+        #design properties in mm (see JPE Interface drawings).
         self.cfg_pars = moc_cfg.config['moc_cav1']
         self.fiber_z_offset = self.cfg_pars['fiber_z_offset'] #fiber offset with respect to fiber interface
         self.h = self.cfg_pars['h_mm']+self.fiber_z_offset#33.85+self.fiber_z_offset
