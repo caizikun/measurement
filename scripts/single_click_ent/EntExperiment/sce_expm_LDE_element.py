@@ -22,7 +22,7 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_pi2 = ps.Xpi2_pulse(msmt)
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
 
-    if msmt.params['do_calc_theta'] > 0:
+    if msmt.params['do_calc_theta'] > 0 or msmt.params['general_sweep_name'] == 'sin2_theta':
         fit_a  = msmt.params['sin2_theta_fit_a']      
         fit_x0 = msmt.params['sin2_theta_fit_x0']     
         fit_of = msmt.params['sin2_theta_fit_of']
@@ -305,7 +305,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
 def generate_LDE_rephasing_elt(msmt,Gate,**kw):
     """
     Attaches the LDE rephasing element to the a DD_2 gate object.
-    The element encompasses one pi pulse and an additional pi/2 pulse.
+    The element encompasses one pi pulse or a pi/2 pulse.
     Input: Gate object
     Output: None
     """
@@ -313,17 +313,6 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
     _create_syncs_and_triggers(msmt,Gate)
     _create_mw_pulses(msmt,Gate)
     _create_laser_pulses(msmt,Gate)
-    e = element.Element(Gate.name, pulsar = qt.pulsar)
-    e.add(pulse.cp(Gate.AWG_repump,
-                amplitude = 0,
-                length = 3e-6
-                )
-        )
-
-    e.add(pulse.cp(Gate.AWG_repump, 
-        amplitude = 0, 
-        length = msmt.joint_params['initial_delay']),
-        name = 'initial_delay')
 
     #### calculate the time after the first pi/2 pulse:
 
@@ -336,16 +325,41 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
     echo_time += msmt.params['MW_final_delay_offset'] # dirty hack. has to be calibrated once. See sweep_single_click_ent_expm.py
     end_delay_refpulse = 'initial_delay'
 
+    ### length of the element is calculated according to the required echo condition
+    e = element.Element(Gate.name, pulsar = qt.pulsar)
+    e.add(pulse.cp(Gate.AWG_repump,
+                amplitude = 0,
+                length = echo_time + 2*msmt.params['dynamic_decoupling_tau']
+                )
+        )
+
+    e.add(pulse.cp(Gate.AWG_repump, 
+        amplitude = 0, 
+        length = msmt.joint_params['initial_delay']),
+        name = 'initial_delay')
+
+
+
     if msmt.joint_params['do_final_mw_LDE'] == 1:
 
-        e.add(pulse.cp(Gate.mw_pi2,
-            phase           = msmt.params['LDE_final_mw_phase'],
-            amplitude       = msmt.params['LDE_final_mw_amplitude']),
-            start           = echo_time,
-            refpulse        = 'initial_delay',
-            refpoint        = 'start',
-            refpoint_new    = 'center',
-            name            = 'MW_RO_rotation')
+        if msmt.params['do_dynamical_decoupling'] > 0:
+            e.add(pulse.cp(Gate.mw_X,phase = msmt.params['Y_phase']),
+                start           = echo_time+msmt.params['dynamic_decoupling_tau'],
+                refpulse        = 'initial_delay',
+                refpoint        = 'start',
+                refpoint_new    = 'center',
+                name            = 'MW_RO_rotation')
+        else:
+            e.add(pulse.cp(Gate.mw_pi2,
+                phase           = msmt.params['LDE_final_mw_phase'],
+                amplitude       = msmt.params['LDE_final_mw_amplitude']),
+                start           = echo_time,
+                refpulse        = 'initial_delay',
+                refpoint        = 'start',
+                refpoint_new    = 'center',
+                name            = 'MW_RO_rotation')
+
+
         end_delay_refpulse = 'MW_RO_rotation'
 
     e.add(pulse.cp(Gate.AWG_repump, 
@@ -365,4 +379,55 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
             refpulse = 'initial_delay')
 
 
+    Gate.elements = [e]
+
+
+
+def generate_tomography_mw_pulse(msmt,Gate,**kw):
+    """
+    Attaches a last pi/2 pulse or no pulse to a DD_2 gate object.
+    The element encompasses one pi/2 pulse after the dynamical decoupling sequence.
+    Input: Gate object
+    Output: None
+    """
+    _create_wait_times(Gate)
+    _create_mw_pulses(msmt,Gate)
+    _create_laser_pulses(msmt,Gate)
+    
+    e = element.Element(Gate.name, pulsar = qt.pulsar)
+    e.add(pulse.cp(Gate.AWG_repump,
+                amplitude = 0,
+                length = 2*msmt.params['dynamic_decoupling_tau']
+                )
+        )
+
+    e.add(pulse.cp(Gate.AWG_repump, 
+        amplitude = 0, 
+        length = msmt.joint_params['initial_delay']),
+        name = 'initial_delay')
+
+    ### this contains our RO definitions
+    tomo_dict = {
+        'X': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']), #### check this!!!
+        'Y': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']+90),
+        'Z': pulse.cp(Gate.mw_pi2, amplitude = 0)
+    }
+
+
+    e.add(tomo_dict[msmt.params['tomography_basis']],
+        start           = msmt.params['dynamic_decoupling_tau'],
+        refpulse        = 'initial_delay',
+        refpoint        = 'start',
+        refpoint_new    = 'center',
+        name            = 'MW_RO_rotation')
+
+
+    end_delay_refpulse = 'MW_RO_rotation'
+    e.add(pulse.cp(Gate.AWG_repump, 
+        amplitude = 0, 
+        length = msmt.joint_params['initial_delay']),
+        name = 'output_delay',
+        refpulse        = end_delay_refpulse,
+        refpoint        = 'end',
+        refpoint_new    = 'start')
     Gate.elements = [e]

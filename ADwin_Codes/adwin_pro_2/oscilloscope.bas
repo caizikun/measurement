@@ -62,7 +62,7 @@ Event:
     inc(repetition_counter)  
     index = 0
     
-    IF (repetition_counter = max_repetitions) THEN
+    IF (repetition_counter = max_repetitions+1) THEN
       END
     ENDIF
 

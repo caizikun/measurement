@@ -2139,7 +2139,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Gate.no_connection_elt = True
             tau_cut = 1e-6
             Gate.tau_cut = 1e-6
-
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length      = pulse_tau, amplitude = 0.)
             T_twice = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -2166,8 +2165,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             for n in range(N-1):
 
-                if n != 0:
-                    decoupling_elt.append(T)
+                # if n != 0:
+                #     decoupling_elt.append(T)
 
                 if n%16 in x_list:
                     decoupling_elt.append(pulse.cp(X))
