@@ -42,9 +42,9 @@ use_queue = False
 
 f_ms0 = True
 
-f_ms1 = True
+f_ms1 = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
@@ -84,7 +84,7 @@ elif SETUP == 'lt3':
         '8' : detuning_basic}
 
 elif SETUP == 'lt4':
-    detuning_basic = 2e3
+    detuning_basic = 5e3
     detuning_dict = {
         '1' : detuning_basic,
         '3' : detuning_basic,

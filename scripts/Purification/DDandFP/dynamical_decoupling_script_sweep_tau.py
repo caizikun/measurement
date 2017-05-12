@@ -45,7 +45,7 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
         m.params['Final_Pulse'] ='-x'
     else:
         m.params['Final_Pulse'] ='x'
-    m.params['Decoupling_sequence_scheme'] = 'AXY8'
+    m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
     # m.params['Decoupling_sequence_scheme'] = 'single_block'
     Number_of_pulses = N 
     tau_list = np.arange(tau_min,tau_max,tau_step) 

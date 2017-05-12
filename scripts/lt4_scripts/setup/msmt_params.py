@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.942 # for a single pi pulse
+	hermite_pi_amp = 0.938 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =  0.6240 #0.617 #0.634#0.605
+	hermite_pi2_amp =  0.620 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -244,7 +244,7 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 26) #
 	###############
 	'C4_freq_m1'        : (443141.64 + 416544.29)/2,
-	'C4_freq_0' 		: 442960.96,
+	'C4_freq_0' 		: 442829.51,
 	'C4_freq_1_m1' 		: 416357.14,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
@@ -375,9 +375,9 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		#C13-MBI  
 		'C13_MBI_threshold_list':               [1],
 		'C13_MBI_RO_duration':                  40,  #25
-		'E_C13_MBI_RO_amplitude':               0.07e-9, #0.02e-9
+		'E_C13_MBI_RO_amplitude':               0.15e-9, #0.02e-9
 		'SP_duration_after_C13':                20, #use long repumping in case of swap init
-		'A_SP_amplitude_after_C13_MBI':         52e-9,
+		'A_SP_amplitude_after_C13_MBI':         25e-9,
 		'E_SP_amplitude_after_C13_MBI':         0e-9,
 		'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
 		                

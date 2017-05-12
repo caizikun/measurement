@@ -133,7 +133,7 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 
 ' On-demand decoupling stuff
 DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
-DIM max_LDE_attempts AS LONG
+DIM max_LDE_attempts,decoupling_repetitions AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -850,30 +850,31 @@ EVENT:
 
         
       CASE 5 ' Decoupling '' PH REWRITE!!
+        mode = 6
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once the specified time has been reached.
-        '        IF (timer =0) THEN 'first go: calculate required repetitions
-        '
-        '          awg_repcount_was_low = 1
-        '          
-        '          DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
-        '          DIM max_LDE_attempts AS LONG
-        '        Round((max_LDE_attempts-attempts_this_round)*LDE_element_duration/decoupling_element_duration) + 1
-        '          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions ' need to reinvent this calculation.
-        '          
-        '          
-        '        ENDIF 
-        '                
+        IF (timer =0) THEN 'first go: calculate required repetitions
+        
+          awg_repcount_was_low = 1
+          awg_done_was_low = 1
+          'Round((max_LDE_attempts-attempts_this_round)*LDE_element_duration/decoupling_element_duration) + 1
+          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions ' need to reinvent this calculation.
+                        
+        ENDIF 
+                        
         '        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
         '          if (awg_repcount_was_low = 1) then
-        '            inc(phase_compensation_repetitions)  
+        '            inc(decoupling_repetitions)  
         '            'Par_65 = phase_compensation_repetitions
         '          endif
         '          awg_repcount_was_low = 0
         '        ELSE
         '          awg_repcount_was_low = 1
         '        ENDIF
-        '        
+        
+        
+        
+                
         '        IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
         '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
         '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
@@ -881,12 +882,27 @@ EVENT:
         '          time_spent_in_sequence = time_spent_in_sequence + timer
         '          timer = -1
         '          mode = 6
-        '          
-        '        ENDIF
+                  
+        '      ENDIF
         
         
       CASE 6 ' wait for RO trigger to come in
         ' monitor inputs 
+        
+        
+        ' this should go into CASE 5. Here now for debugging purposes.
+        '--------------------------------
+        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
+          if (awg_repcount_was_low = 1) then
+            inc(decoupling_repetitions)  
+            'Par_65 = phase_compensation_repetitions
+          endif
+          awg_repcount_was_low = 0
+        ELSE
+          awg_repcount_was_low = 1
+        ENDIF
+        '----------------------------------
+        'everything above should go into case 5. Currently we are only counting the DD repetitions
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low =1) then
@@ -910,7 +926,7 @@ EVENT:
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
-        
+        DATA_100[repetition_counter+1] = decoupling_repetitions
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
@@ -926,7 +942,7 @@ EVENT:
         AWG_repcount_was_low = 1
         AWG_done_was_low = 1  
         AWG_sequence_repetitions_LDE = 0
-        
+        decoupling_repetitions = 0
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 

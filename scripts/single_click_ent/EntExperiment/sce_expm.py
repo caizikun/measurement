@@ -279,6 +279,8 @@ class SingleClickEntExpm(DD.MBI_C13):
             #sweep parameter
             if self.params['do_general_sweep'] == 1:      
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
+            else:
+                self.params['general_sweep_name'] = 'no_sweep'
 
             gate_seq = []
 
@@ -390,15 +392,23 @@ class SingleClickEntExpm(DD.MBI_C13):
             tomography_pulse.scheme = 'single_element'
             self.generate_tomography_pulse(tomography_pulse) ### this is still wrong!!!
 
-            cond_decoupling = DD.Gate('dynamical_decoupling_'+str(pt),
+            cond_decoupling = DD.Gate('dd_'+str(pt),
                                 'Carbon_Gate',
                                 Carbon_ind = 1, # does not matter.
-                                event_jump = tomography_pulse.name,
+                                event_jump = 'dd_end'+str(pt),
                                 tau = self.params['dynamic_decoupling_tau'],
                                 N = self.params['dynamic_decoupling_N'],
                                 no_connection_elt = True)
             cond_decoupling.scheme = 'carbon_phase_feedback'
             cond_decoupling.reps = int(self.params['max_decoupling_reps'])
+
+            cond_decoupling_end = DD.Gate('dd_end'+str(pt),
+                                'Carbon_Gate',
+                                Carbon_ind = 1, # does not matter.
+                                tau = self.params['dynamic_decoupling_tau'],
+                                N = self.params['dynamic_decoupling_N'],
+                                no_connection_elt = True)
+            cond_decoupling_end.scheme = 'carbon_phase_feedback_end_elt'
 
 
             e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
@@ -459,6 +469,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
             if self.params['do_dynamical_decoupling'] > 0:
                 gate_seq.append(cond_decoupling)
+                gate_seq.append(cond_decoupling_end)
                 gate_seq.append(tomography_pulse)
 
             gate_seq.extend(e_RO)

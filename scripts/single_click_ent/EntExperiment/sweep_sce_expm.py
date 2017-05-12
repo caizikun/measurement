@@ -198,7 +198,7 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
 
     ### general params
     pts = 21
-    m.params['pts'] = pts
+    m.params['pts'] = 1#pts
     m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
@@ -209,11 +209,12 @@ def lastpi2_measure_delay(name, debug = False, upload_only = False):
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
+    m.params['LDE_final_mw_phase'] = 90
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'MW_final_delay_offset'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-0.1e-6,0.1e-6,pts)
+    m.params['general_sweep_pts'] = np.array([10e-9])#np.linspace(-0.01e-6,0.01e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
@@ -375,11 +376,11 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     Calibration msmt. for entnaglement on demand
     """
 
-    m = sce_expm.SingleClickEntExpm(name)
+    m = sce_expm.SingleClickEntExpm(name+'_sweep_decoupling')
     prepare(m)
 
     ### general params
-    pts = 10
+    pts = 20
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
@@ -387,19 +388,67 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     ### sequence specific parameters
     turn_all_sequence_elements_off(m)
     m.params['MW_during_LDE'] = 1
-    m.params['is_two_setup_experiment'] = 0
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['first_pulse_is_pi2'] = True
+    m.params['first_mw_pulse_is_pi2'] = True
     m.params['do_dynamical_decoupling'] = 1
-    m.params['PLU_during_LDE'] = 1
 
+    m.joint_params['LDE_attempts'] = 1
+    m.params['LDE_final_mw_phase'] = 90
+    m.params['tomography_basis'] = 'X'
+    m.params['dynamic_decoupling_tau'] = m.params['dynamic_decoupling_tau']+10e-9
     ### sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'max_decoupling_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(1,200,pts)
+    m.params['general_sweep_pts'] = np.linspace(1,100,pts)
     m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = 4*m.params['general_sweep_pts']*m.params['dynamic_decoupling_tau']*1e3
+    m.params['sweep_pts'] = m.params['decoupling_element_duration']*m.params['general_sweep_pts']*1e3
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def dynamical_decoupling_sweep_tau(name, debug = False, upload_only = False):
+    """
+    Sweeps tau at a fixed number of decoupling repetitions
+    """
+
+    m = sce_expm.SingleClickEntExpm(name+'_sweep_decoupling')
+    prepare(m)
+
+    ### general params
+    sweep_pts  = np.arange(8.0e-6,9.0e-6,20e-9)
+    pts = len(sweep_pts)
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 250
+
+
+
+
+
+    ### sequence specific parameters
+    turn_all_sequence_elements_off(m)
+
+
+    m.joint_params['LDE_attempts'] = 1
+    m.params['LDE_final_mw_phase'] = 90
+    m.params['do_dynamical_decoupling'] = 1
+
+
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['max_decoupling_reps'] = 7
+    m.params['dynamic_decoupling_N'] = 4
+    m.params['tomography_basis'] = 'X'
+    m.params['first_mw_pulse_is_pi2'] = True
+
+
+    ### sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'dynamic_decoupling_tau'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = sweep_pts
+    m.params['sweep_name'] = 'tau (us)' #m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
     run_sweep(m,debug = debug,upload_only = upload_only)
 
@@ -413,4 +462,5 @@ if __name__ == '__main__':
 
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
-    dynamical_decoupling_after_LDE(name,debug = False,upload_only=True)
+    dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
+    # dynamical_decoupling_sweep_tau(name,debug = False, upload_only = False)

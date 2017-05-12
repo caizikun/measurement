@@ -29,6 +29,7 @@ def _create_mw_pulses(msmt,Gate):
         p0 = msmt.params['sin2_theta']    
         msmt.params['mw_first_pulse_amp'] = fit_x0 - np.sqrt((p0-1+fit_of)/fit_a) ### calc right pulse amp from theta calibration
     Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
+    
 
     if msmt.params['first_mw_pulse_is_pi2'] > 0 and hasattr(Gate,'first_mw_pulse_phase'):
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
@@ -329,7 +330,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
     e = element.Element(Gate.name, pulsar = qt.pulsar)
     e.add(pulse.cp(Gate.AWG_repump,
                 amplitude = 0,
-                length = echo_time + 2*msmt.params['dynamic_decoupling_tau']
+                length = echo_time + 2*msmt.params['dynamic_decoupling_tau'] 
                 )
         )
 
@@ -350,6 +351,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
                 refpoint_new    = 'center',
                 name            = 'MW_RO_rotation')
         else:
+
             e.add(pulse.cp(Gate.mw_pi2,
                 phase           = msmt.params['LDE_final_mw_phase'],
                 amplitude       = msmt.params['LDE_final_mw_amplitude']),
@@ -360,15 +362,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
                 name            = 'MW_RO_rotation')
 
 
-        end_delay_refpulse = 'MW_RO_rotation'
 
-    e.add(pulse.cp(Gate.AWG_repump, 
-        amplitude = 0, 
-        length = msmt.joint_params['initial_delay']),
-        name = 'output_delay',
-        refpulse        = end_delay_refpulse,
-        refpoint        = 'end',
-        refpoint_new    = 'start')
 
     if msmt.params['PLU_during_LDE'] == 1 and qt.current_setup == 'lt3':
         ### this pulse is supposed to turn off the plu signal to both adwins
@@ -397,7 +391,7 @@ def generate_tomography_mw_pulse(msmt,Gate,**kw):
     e = element.Element(Gate.name, pulsar = qt.pulsar)
     e.add(pulse.cp(Gate.AWG_repump,
                 amplitude = 0,
-                length = 2*msmt.params['dynamic_decoupling_tau']
+                length = 2*1e-6
                 )
         )
 
@@ -413,16 +407,18 @@ def generate_tomography_mw_pulse(msmt,Gate,**kw):
         'Z': pulse.cp(Gate.mw_pi2, amplitude = 0)
     }
 
+    if msmt.joint_params['do_final_mw_LDE'] > 0:
+        e.add(tomo_dict[msmt.params['tomography_basis']],
+            start           = 1e-6,
+            refpulse        = 'initial_delay',
+            refpoint        = 'start',
+            refpoint_new    = 'center',
+            name            = 'MW_RO_rotation')
 
-    e.add(tomo_dict[msmt.params['tomography_basis']],
-        start           = msmt.params['dynamic_decoupling_tau'],
-        refpulse        = 'initial_delay',
-        refpoint        = 'start',
-        refpoint_new    = 'center',
-        name            = 'MW_RO_rotation')
 
-
-    end_delay_refpulse = 'MW_RO_rotation'
+        end_delay_refpulse = 'MW_RO_rotation'
+    else:
+        end_delay_refpulse = 'initial_delay'
     e.add(pulse.cp(Gate.AWG_repump, 
         amplitude = 0, 
         length = msmt.joint_params['initial_delay']),
