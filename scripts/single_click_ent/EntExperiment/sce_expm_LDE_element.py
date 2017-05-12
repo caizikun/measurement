@@ -197,12 +197,21 @@ def generate_LDE_elt(msmt,Gate, **kw):
         # it however becomes more complicated from a programming point of view.
         
         # MW pi pulse
-
-
+        if msmt.params['check_EOM_projective_noise'] > 0:
+            e.add(Gate.mw_X,
+                start           = msmt.params['MW_repump_distance'],
+                refpulse        = 'spinpumping',
+                refpoint        = 'end',
+                refpoint_new    = 'center',
+                name            = 'invert_before_excitation')
+            mw_theta_ref_pulse  = 'invert_before_excitation'
+            msmt.params['MW_repump_distance'] = 500e-9 ### hardcoded botching. because why not.
+        else:
+            mw_theta_ref_pulse = 'spinpumping'
             #mw pi/2 pulse or 'theta'
         e.add(Gate.mw_first_pulse,
             start           = msmt.params['MW_repump_distance'],
-            refpulse        = 'spinpumping',
+            refpulse        = mw_theta_ref_pulse,
             refpoint        = 'end',
             refpoint_new    = 'center',
             name            = 'MW_Theta')

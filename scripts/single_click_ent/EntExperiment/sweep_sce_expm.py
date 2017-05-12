@@ -153,13 +153,13 @@ def turn_all_sequence_elements_off(m):
     m.params['do_only_opt_pi']          = 0
     m.params['do_yellow_with_AWG']      = 0
     m.params['do_calc_theta']           = 0
-
+    m.params['check_EOM_projective_noise'] = 0
     
 def turn_all_sequence_elements_on(m):
     """
     turns all parts of the AWG sequence on. except for do_LDE_1
     Running this function before generating the sequence
-    creates the full purification sequence (no special sequences such as TPQI etc.)
+    creates the full entangling_on_demand sequence (no special sequences such as TPQI etc.)
     """
 
     m.params['is_two_setup_experiment'] = 1
