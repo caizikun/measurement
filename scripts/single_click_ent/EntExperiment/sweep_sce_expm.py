@@ -278,8 +278,6 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
-    m.params['check_EOM_projective_noise'] = 1
-    m.joint_params['LDE_element_length'] = 5e-6
     
     ### prepare sweep
     m.params['do_general_sweep']    = True

@@ -164,7 +164,7 @@ def MW_Position(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['do_phase_stabilisation'] = 0
-
+    
     m.joint_params['LDE_attempts'] = 250
 
     ### prepare sweep / necessary for the measurement that we under go.
@@ -362,6 +362,44 @@ def test_pulses(name,debug = True,upload_only=True, local = False):
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+
+def check_for_projective_noise(name, debug = False, upload_only = False):
+    """
+    This measurement adds a pi pulse to take the NV dark, then optical pi, then immediately pi/2.
+    Used to check for projective noise.
+    """
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['first_mw_pulse_is_pi2'] = True
+    m.params['check_EOM_projective_noise'] = 1
+    m.params['MW_opt_puls1_separation']   = 120e-9 - 200e-9 #
+    m.joint_params['LDE_element_length'] = 5e-6
+    m.params['LDE_final_mw_phase'] = 90.0
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'MW_opt_puls1_separation'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = m.params['MW_opt_puls1_separation'] + np.linspace(-40e-9,40e-9,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
 
 
 def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
@@ -719,7 +757,7 @@ if __name__ == '__main__':
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
 
-    # MW_Position(name+'_MW_position',upload_only=False)
+    MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
     # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
