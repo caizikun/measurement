@@ -155,108 +155,11 @@ def ssrocalibration(name,RO_power=None,SSRO_duration=None):
 
 if __name__ == '__main__':
 
-    times = np.linspace(1e2,100e3,14)
-    ii = 999
+    times = np.linspace(1e2,200e3,14)
+
     
     T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
                     T1_readout_state = 'ms=0', debug=False)
     # T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
     #                 T1_readout_state = 'ms=-1', debug=False)
     
-    # times = np.r_[1e5,1e6,3e6,10e6,30e6, 60e6]
-    
-
-    # T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0')
-    # T1(SAMPLE+'_'+'init_1_RO_0', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True)
-
-    # T1(SAMPLE+'_'+'init_0_RO_0_SWITCH', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.r_[1e5,3e5, 1e6])
-
-    # T1(SAMPLE+'_'+'TEST_DONT_USE', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = [1e6])
-    # GreenAOM.set_power(20e-6)
-    # optimiz0r.optimize(dims = ['x','y','z'])
-    # stools.turn_off_all_lt2_lasers()
-    # ssrocalibration(SAMPLE_CFG)
-
-
-    # times = np.r_[1e5,1e6,10e6,30e6,60e6]
-    # for ii in range(200):
-    #     qt.msleep(2)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-    #     T1(SAMPLE+'_'+'init_0_RO_0_rep_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = times)
-    #     if (ii+1) % 40 == 0:
-    #         ssrocalibration(SAMPLE_CFG)
-    #         GreenAOM.set_power(20e-6)
-    #         optimiz0r.optimize(dims = ['x','y','z'])
-    #         stools.turn_off_all_lt2_lasers()
-    #         ssrocalibration(SAMPLE_CFG)
-
-
-
-    # T1_without_AWG(SAMPLE + 'T1_test_without_AWG') 
-
-
-
-
-
-
-
-    # times = np.r_[10e6]#,600e6]
-
-    # for ii in range(7):
-
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(2)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-    #     T1(SAMPLE+'_'+'init_1_RO_0_tau_5min_'+str(ii)+'_TEST', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True, wait_times = times)
-    #     T1(SAMPLE+'_'+'init_0_RO_0_tau_5min_+'+str(ii)+'+_TEST', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = times)
-
-    #     break
-    #     ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-    #     GreenAOM.set_power(20e-6)
-    #     optimiz0r.optimize(dims = ['x','y','z'])
-    #     stools.turn_off_all_lt2_lasers()
-    #     ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-
-    #     print '-----------------------------------'            
-    #     print 'press q to stop measurement cleanly'
-    #     print '-----------------------------------'
-    #     qt.msleep(2)
-    #     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #         break
-
-        
-    #     ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-    #     GreenAOM.set_power(20e-6)
-    #     optimiz0r.optimize(dims = ['x','y','z'])
-    #     stools.turn_off_all_lt2_lasers()
-    #     ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-
-    #     # print '-----------------------------------'            
-    #     # print 'press q to stop measurement cleanly'
-    #     # print '-----------------------------------'
-    #     # qt.msleep(2)
-    #     # if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-    #     #     break
-
-
-    #     # T1(SAMPLE+'_'+'init_1_RO_0_Ord_1_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', pump_to_1 = True, wait_times = np.roll(times,ii))  
-    #     # T1(SAMPLE+'_'+'init_0_RO_0_Ord_1_'+str(ii)+'_SHUTTER', T1_initial_state = 'ms=0', T1_readout_state = 'ms=0', wait_times = np.roll(times,ii))
-    #     # ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-    #     # GreenAOM.set_power(20e-6)
-    #     # # counters.set_is_running(1)
-    #     # optimiz0r.optimize(dims = ['x','y','z'])
-    #     # stools.turn_off_all_lt2_lasers()
-    #     # ssrocalibration(SAMPLE_CFG)
-    #     # ssroanal.ssrocalib()
-
-
-

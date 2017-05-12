@@ -279,7 +279,8 @@ class SingleClickEntExpm(DD.MBI_C13):
             #sweep parameter
             if self.params['do_general_sweep'] == 1:      
                 self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
-
+            else:
+                self.params['general_sweep_name'] = 'no_sweep'
             gate_seq = []
 
             LDE = DD.Gate('LDE'+str(pt),'LDE')

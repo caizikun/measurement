@@ -539,9 +539,10 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 50000
     sweep_sce_expm.turn_all_sequence_elements_off(m)
 
+    m.params['do_phase_stabilisation'] = 1
 
-    m.params['MIN_SYNC_BIN'] =       1.5e6
-    m.params['MAX_SYNC_BIN'] =       9e6
+    m.params['MIN_SYNC_BIN'] =       1e6
+    m.params['MAX_SYNC_BIN'] =       13e6
     m.params['is_TPQI'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['do_general_sweep'] = 0
@@ -552,10 +553,10 @@ def TPQI(name,debug = False,upload_only=False):
     else:
         hist_only = False
 
-    m.joint_params['LDE_element_length'] = 10e-6
+    m.joint_params['LDE_element_length'] = 13e-6
     m.joint_params['opt_pi_pulses'] = 10
-    m.joint_params['opt_pulse_separation'] = 500e-9
-    m.joint_params['LDE_attempts'] = 100
+    m.joint_params['opt_pulse_separation'] = 1000e-9
+    m.joint_params['LDE_attempts'] = 400
 
 
     #####################################################
@@ -572,8 +573,8 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
         m.params['tail_start_bin'] = 2100e3 - m.params['MIN_SYNC_BIN']  
         m.params['tail_stop_bin'] = 2800e3  - m.params['MIN_SYNC_BIN'] 
-        m.params['MIN_SYNC_BIN'] =       1.5e3
-        m.params['MAX_SYNC_BIN'] =       9e3
+        m.params['MIN_SYNC_BIN'] =       5e3
+        m.params['MAX_SYNC_BIN'] =       15e3
         m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
         m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
         m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3
@@ -598,13 +599,13 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 500
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.1
+    m.params['sin2_theta'] = 0.15
     m.params['do_calc_theta'] = 1
 
 
@@ -639,7 +640,7 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
    
     sweep_sce_expm.turn_all_sequence_elements_off(m)
-    pts = 8
+    pts = 5
 
     m.params['do_phase_stabilisation'] = 1
 
@@ -658,7 +659,7 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
 
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'sin2_theta' 
-    m.params['general_sweep_pts'] = np.linspace(0.05,0.5,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.05,0.3,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
@@ -683,13 +684,13 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 10000
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.15
+    m.params['sin2_theta'] = 0.05
     m.params['do_calc_theta'] = 1
 
     if qt.current_setup == 'lt3':
@@ -757,11 +758,11 @@ if __name__ == '__main__':
 
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
 
-    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only=False)
+    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only=False)
 
-    #EntangleXX(name+'_EntangleXX',debug = False,upload_only=False)
+    # EntangleXX(name+'_EntangleXX',debug = False,upload_only=False)
 
-    #EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
+    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
 
     if hasattr(qt,'master_script_is_running'):
