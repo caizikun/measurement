@@ -71,7 +71,7 @@ class Keithley_2000(Instrument):
         Instrument.__init__(self, name, tags=['physical'])
         # Add some global constants
         self._address = address
-         rm = visa.ResourceManager()
+        rm = visa.ResourceManager()
         self._visainstrument = rm.open_resource(self._address)
         self._modes = ['VOLT:AC', 'VOLT:DC', 'CURR:AC', 'CURR:DC', 'RES',
             'FRES', 'TEMP', 'FREQ']

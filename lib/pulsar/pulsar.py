@@ -389,6 +389,14 @@ class Pulsar:
         self.last_programmed_sequence = sequence
         self.last_programmed_elements = elements
 
+        # JS: AWG5014 type non-C takes offence to elements with names longer than 32 characters
+        # we optionally circumvent that by relabeling all elements just by their index
+        # the mapping from index-name to original name will be saved in
+        # qt.pulsar.simplified_wfnames_mapping and may be shown sortedly by invoking
+        # qt.pulsar.show_simplified_wfnames_mapping()
+        simplify_wfnames = kw.pop('simplify_wfnames', False)
+        simplified_wfnames = {}
+
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for i,element in enumerate(elements):
@@ -412,6 +420,10 @@ class Pulsar:
             for id in chan_ids:
                 wfname = element.name + '_%s' % id
 
+                if simplify_wfnames:
+                    simplified_wfnames[wfname] = "el_%05d_%s" % (i, id)
+                    wfname = simplified_wfnames[wfname]
+                    
                 # determine if we actually want to upload this channel
                 upload = False
                 if channels == 'all':
@@ -482,7 +494,11 @@ class Pulsar:
             el_wfnames=[]
             #add all wf names of channel
             for elt in sequence.elements:
-                el_wfnames.append(elt['wfname'] + '_%s' % id) #  should the name include id nr?
+                el_wfname = elt['wfname'] + '_%s' % id #  should the name include id nr?
+                if simplify_wfnames:
+                    el_wfname = simplified_wfnames[el_wfname]
+
+                el_wfnames.append(el_wfname)
 
             wfname_l.append(el_wfnames)
 
@@ -547,6 +563,9 @@ class Pulsar:
 
         self.activate_channels(channels)
 
+        if simplified_wfnames:
+            self.simplified_wfnames_mapping = {v: k for k, v in simplified_wfnames.iteritems()}
+
 
 
         _t = time.time() - _t0
@@ -567,6 +586,11 @@ class Pulsar:
                 el+=1
                 if wfname not in packed_waveforms.keys():
                     raise Exception('pulsar: waveform name '+ wfname + ' , in position ' + str(el) + ' , channel ' + str(ch) + ' does not exist in waveform dictionary')
+
+    def show_simplified_wfnames_mapping(self):
+        elnames_mapping = {v[:-4]: k[:-4] for v, k in self.simplified_wfnames_mapping.iteritems()}
+        for k in sorted(elnames_mapping):
+            print("%s --> %s" % (k, elnames_mapping[k]))
 
 class Sequence:
     """

@@ -11,8 +11,12 @@ try:
 except:
     pass
 qt.pulsar = pulsar.Pulsar()
-qt.pulsar.AWG_type = 'opt09'
+# qt.pulsar.AWG_type = 'opt09' This is no longer correct. NK
 qt.pulsar.clock = 1e9
+
+
+
+
 ### channels
 # RF
 # qt.pulsar.define_channel(id='ch2', name='RF', type='analog', high=1.0,

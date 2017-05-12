@@ -30,6 +30,10 @@
 ' Minimal delay setting: 15 cycles
 ' Effective delay on LT3 (rough measurement): (setting - 15) * 20ns + 1120ns
 ' Effective delay on LT4 (nice measurement with OR-box etc connected): (setting - 15) * 20ns + 1440ns + [0-20]ns of jitter
+'
+' TROUBLESHOOTING CHECKLIST:
+'   - Is the DIO module address set correctly in the compiler settings? (funnily enough it doesn't complain if it is not talking to a DIO)
+'   - Are the event trigger settings for the process correctly set corresponding to the hardware at hand?
 
 #INCLUDE C:\ADwin\TiCoBasic\inc\DIO32TiCo.inc
 #INCLUDE .\configuration.inc
@@ -42,7 +46,8 @@
 #DEFINE Trigger_In_Pattern    Par_15
 #DEFINE IrrelevantDetections  Par_16
 #DEFINE ShortDelayErrors      Par_17
-#DEFINE Started               Par_20
+#DEFINE Started               Par_18
+#DEFINE Awake                 Par_19
 
 #DEFINE Output_Duration   10
 
@@ -70,6 +75,7 @@ INIT:
   IrrelevantDetections = 0
   ShortDelayErrors = 0
   Started = Trigger_In_Pattern
+  Awake = 1
 
 
 EVENT:  

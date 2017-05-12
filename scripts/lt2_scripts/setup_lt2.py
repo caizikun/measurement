@@ -9,11 +9,20 @@ qt.get_setup_instrument = lambda x: qt.instruments[x] \
      else qt.instruments[x+'_'+qt.current_setup]
 
 print 'loading setup tools...'
-from lt2_scripts.tools import stools
+from measurement.scripts.lt2_scripts.tools import stools
+print(stools)
 reload(stools)
+qt.stools = stools
 
 print 'reload all modules...'
 execfile(os.path.join(qt.config['startdir'],"lt2_scripts/setup/reload_all.py"))
+
+####
+print 'reload all measurement parameters and calibrations...'
+from measurement.scripts.lt2_scripts.setup import msmt_params as mcfg
+reload(mcfg)
+qt.exp_params=mcfg.cfg
+
 
 ####
 print 'configure the setup-specific hardware...'
