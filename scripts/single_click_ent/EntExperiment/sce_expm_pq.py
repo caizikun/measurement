@@ -539,7 +539,7 @@ def TPQI(name,debug = False,upload_only=False):
     m.params['reps_per_ROsequence'] = 50000
     sweep_sce_expm.turn_all_sequence_elements_off(m)
 
-    m.params['do_phase_stabilisation'] = 1
+    m.params['do_phase_stabilisation']  = 1
 
     m.params['MIN_SYNC_BIN'] =       1e6
     m.params['MAX_SYNC_BIN'] =       13e6
@@ -573,8 +573,8 @@ def TPQI(name,debug = False,upload_only=False):
         m.params['pulse_stop_bin'] = 2635e3 - m.params['MIN_SYNC_BIN'] 
         m.params['tail_start_bin'] = 2100e3 - m.params['MIN_SYNC_BIN']  
         m.params['tail_stop_bin'] = 2800e3  - m.params['MIN_SYNC_BIN'] 
-        m.params['MIN_SYNC_BIN'] =       5e3
-        m.params['MAX_SYNC_BIN'] =       15e3
+        m.params['MIN_SYNC_BIN'] =       1e3
+        m.params['MAX_SYNC_BIN'] =       13e3
         m.params['pulse_start_bin'] = m.params['pulse_start_bin']/1e3
         m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']/1e3
         m.params['tail_start_bin'] = m.params['tail_start_bin']/1e3

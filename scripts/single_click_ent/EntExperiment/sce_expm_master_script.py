@@ -90,11 +90,11 @@ if __name__ == '__main__':
 
         lt3_helper = qt.instruments['lt3_helper']
 
-        start_index = 1
+        start_index = 3
         
-        skip_first=True
+        skip_first=False
 
-        cycles = 41
+        cycles = 201
 
 
         for i in range(start_index,start_index+cycles):
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                         (output_lt4 == 'purification_optimizer_failed') or \
                         (output_lt3 == 'purification_optimizer_failed'): 
                     break
-                qt.msleep(20)
+                qt.msleep(15)
                 qt.purification_succes=False
             skip_first=False
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
             # lt3_helper.set_measurement_name('optimizing')
             
             lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/single_click_ent/EntExperiment/sce_expm_master_script.py')
-            qt.msleep(5)
+            qt.msleep(2)
             print 'trying to execute optimization script'
             lt3_helper.execute_script()
             qt.msleep(5)
@@ -157,7 +157,7 @@ if __name__ == '__main__':
         lt3_succes = optimize()
         #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
         qt.instruments['ZPLServo'].move_out()
-        qt.msleep(5) # when you resetart bell to early, it will crash
+        qt.msleep(10) # when you resetart bell to early, it will crash
         print 'Did the optimization procedure succeed? ', lt3_succes
 
         qt.instruments['remote_measurement_helper'].set_measurement_name(str(lt3_succes))
