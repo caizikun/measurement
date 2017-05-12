@@ -15,7 +15,7 @@ class monitor_cryo(MonitorInstrument):
     def __init__(self, name, monitor_lt1=False, **kw):
 		
         MonitorInstrument.__init__(self, name)
-		rm = visa.ResourceManager()
+        rm = visa.ResourceManager()
         self._levelmeter = rm.open_resource('GPIB::8::INSTR')
         self._keithley =  rm.open_resource('GPIB::11::INSTR')
         self._mailer = qt.instruments['gmailer']

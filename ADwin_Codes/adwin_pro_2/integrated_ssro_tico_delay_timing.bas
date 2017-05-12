@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -24,20 +24,11 @@
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod.inc
+#INCLUDE .\control_tico_delay_line.inc
 
 #DEFINE max_SP_bins        500
 #DEFINE max_stat            10
 #DEFINE max_sweep           500000
-
-' TiCo parameter addresses used for communication
-#DEFINE TiCo_Enable               10
-#DEFINE TiCo_Delay                11
-#DEFINE TiCo_Trigger_In           12
-#DEFINE TiCo_Trigger_Out          13 
-#DEFINE TiCo_Trigger_Count        14
-#DEFINE TiCo_Trigger_In_Pattern   15
-#DEFINE TiCo_IrrelevantDetections 16
-#DEFINE TiCo_ShortDelayErrors     17
 
 'init general settings
 DIM DATA_20[100] AS LONG
@@ -125,15 +116,7 @@ INIT:
   
   ' set up tico delay control
   IF (do_tico_delay_control > 0) THEN
-    P2_TiCo_Restart(2 ^ DIO_MODULE)
-    P2_TDrv_Init(DIO_MODULE, 1, tdrv_datatable)
-    P2_TiCo_Stop_Process(tdrv_datatable, 1)
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Enable, 0)  
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Delay, 0)
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In, delay_trigger_DI_channel)
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_In_Pattern, delay_trigger_DI_pattern)
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Trigger_Out, delay_trigger_DO_channel)
-    P2_TiCo_Start_Process(tdrv_datatable, 1)
+    tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
   ENDIF
   
   sweep_index = 1
@@ -192,8 +175,8 @@ EVENT:
         IF (timer = 0) THEN
           ' set up the delay line
           IF (do_tico_delay_control > 0) THEN
-            P2_Set_Par(DIO_MODULE, 1, TiCo_Delay, DATA_41[sweep_index])
-            P2_Set_Par(DIO_MODULE, 1, TiCo_Enable, 1)
+            tico_delay_line_set_cycles(DATA_41[sweep_index])
+            tico_delay_line_set_enabled(1)
           ENDIF
           IF (send_AWG_start > 0) THEN
             P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
@@ -238,7 +221,7 @@ EVENT:
           
           ' disable delay line
           IF (do_tico_delay_control > 0) THEN
-            P2_Set_Par(DIO_MODULE, 1, TiCo_Enable, 0)
+            tico_delay_line_set_enabled(0)
           ENDIF
           
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter
@@ -281,8 +264,7 @@ EVENT:
 FINISH:
   finish_CR()
   IF (do_tico_delay_control > 0) THEN
-    P2_Set_Par(DIO_MODULE, 1, TiCo_Enable, 0)
-    P2_TiCo_Stop_Process(tdrv_datatable, 1)
+    tico_delay_line_finish()
   ENDIF
   
     
