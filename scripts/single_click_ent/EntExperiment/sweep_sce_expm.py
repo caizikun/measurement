@@ -278,6 +278,8 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
+    m.params['check_EOM_projective_noise'] = 1
+    m.joint_params['LDE_element_length'] = 5e-6
     
     ### prepare sweep
     m.params['do_general_sweep']    = True
@@ -456,11 +458,11 @@ def dynamical_decoupling_sweep_tau(name, debug = False, upload_only = False):
 if __name__ == '__main__':
     # lastpi2_measure_delay(name,debug=False,upload_only=False)
     # lastpi2_phase_vs_amplitude(name,debug=False,upload_only=False)
-    # lastpi2_phase_action(name,debug=False,upload_only=False)
+    lastpi2_phase_action(name,debug=False,upload_only=False)
 
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
-    dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
+    # dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
     # dynamical_decoupling_sweep_tau(name,debug = False, upload_only = False)

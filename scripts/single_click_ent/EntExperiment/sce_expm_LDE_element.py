@@ -205,14 +205,17 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 refpoint_new    = 'center',
                 name            = 'invert_before_excitation')
             mw_theta_ref_pulse  = 'invert_before_excitation'
-            msmt.params['MW_repump_distance'] = 500e-9 ### hardcoded botching. because why not.
+            mw_theta_delay =  500e-9 ### hardcoded botching. because why not.
+            mw_theta_refpoint = 'center'
         else:
             mw_theta_ref_pulse = 'spinpumping'
+            mw_theta_delay = msmt.params['MW_repump_distance']
+            mw_theta_refpoint = 'end'
             #mw pi/2 pulse or 'theta'
         e.add(Gate.mw_first_pulse,
-            start           = msmt.params['MW_repump_distance'],
+            start           = mw_theta_delay,
             refpulse        = mw_theta_ref_pulse,
-            refpoint        = 'end',
+            refpoint        = mw_theta_refpoint,
             refpoint_new    = 'center',
             name            = 'MW_Theta')
 
@@ -329,6 +332,8 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
     ### first: how far is the pi pulse in the sequence away from the end of the LDe element
     echo_time = msmt.joint_params['LDE_element_length']-msmt.params['MW_repump_distance']-msmt.params['LDE_SP_duration']
     echo_time -=  msmt.params['LDE_SP_delay'] + msmt.params['LDE_decouple_time']
+    if msmt.params['check_EOM_projective_noise'] > 0:
+        echo_time -= 500e-9 # bodged as above
 
     ### calculate the time for the pi/2 pulse to come in
     echo_time = msmt.params['LDE_decouple_time'] - echo_time
