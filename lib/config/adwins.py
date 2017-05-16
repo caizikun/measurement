@@ -3234,6 +3234,21 @@ config['adwin_pro_processes'] = {
                     'sample_counts_1' : 24,
                     'sample_counts_2' : 25,
                 },
+                },
+                'dynamic_jump' : {
+                'index' : 1,
+                'file' : 'dynamic_jump.TC1',
+                'par' :{
+                    'processdelay'         : 10, # Process delay in ns
+
+                    },
+                 'params_long' : [
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                },
                 }
         }
 
@@ -3399,6 +3414,10 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'yellow_voltage': 13, #D
         'fibre_stretcher': 14, #D
         'delay_voltage': 16         # Control voltage for self-trigger delay line
+        }
+
+
+config['adwin_qn1_dacs'] = {
         }
 
 config['adwin_m1_dacs'] = {
