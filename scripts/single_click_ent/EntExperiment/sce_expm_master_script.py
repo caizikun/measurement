@@ -8,9 +8,9 @@ def optimize():
     print 'Starting to optimize.'
 
     print 'checking for SMB errors'
-    if not(check_smb_errors()):
-        print 'SMB gave errors!!'
-        return False
+    # if not(check_smb_errors()):
+    #     print 'SMB gave errors!!'
+    #     return False
     powers_ok=False
     for i in range(5):
     	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -52,7 +52,7 @@ def bell_check_powers():
 
     names=['MatisseAOM', 'NewfocusAOM','YellowAOM']
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
-                700e-9, # The amount for repumping in purification
+                100e-9, # The amount for repumping in purification
                 qt.exp_params['protocols']['AdwinSSRO']['yellow_repump_amplitude']] #XXXXXXXXXXXXXXX #LT3 Yellow power fluctuates with setup steering LT3
     relative_thresholds = [0.15,0.15,0.15]
     qt.instruments['PMServo'].move_in()
@@ -90,11 +90,11 @@ if __name__ == '__main__':
 
         lt3_helper = qt.instruments['lt3_helper']
 
-        start_index = 24
+        start_index = 3
         
-        skip_first=True
+        skip_first=False
 
-        cycles = 41
+        cycles = 201
 
 
         for i in range(start_index,start_index+cycles):
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                 qt.purification_name_index = i
                 qt.master_script_is_running = True
                 
-                execfile(r'purify.py')
+                execfile(r'sce_expm_pq.py')
                 output_lt4 = qt.instruments['lt4_helper'].get_measurement_name()
                 output_lt3 = qt.instruments['lt3_helper'].get_measurement_name()     
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or \
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                         (output_lt4 == 'purification_optimizer_failed') or \
                         (output_lt3 == 'purification_optimizer_failed'): 
                     break
-                qt.msleep(20)
+                qt.msleep(15)
                 qt.purification_succes=False
             skip_first=False
 
@@ -121,8 +121,8 @@ if __name__ == '__main__':
             # lt3_helper.set_is_running(False)
             # lt3_helper.set_measurement_name('optimizing')
             
-            lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/Purification/purification_master_script.py')
-            qt.msleep(15)
+            lt3_helper.set_script_path(r'D:/measuring/measurement/scripts/single_click_ent/EntExperiment/sce_expm_master_script.py')
+            qt.msleep(2)
             print 'trying to execute optimization script'
             lt3_helper.execute_script()
             qt.msleep(5)

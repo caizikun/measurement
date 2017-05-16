@@ -16,26 +16,28 @@ class DelayTimedPulsarMeasurement(pulsar_msmt.PulsarMeasurement):
 
         if self.params['do_tico_delay_control']:
             if not 'delay_cycles' in self.params:
-                # convert delay times into number of cycles
-                delay_cycles = (
-                    (
-                        np.array(self.params['delay_times']) 
-                        - self.params['minimal_delay_time']
-                        - self.params['awg_delay']
-                    ) 
-                    / self.params['delay_clock_cycle_time'] 
-                    + self.params['minimal_delay_cycles']
-                )
-                self.params['delay_cycles'] = delay_cycles
-                if np.min(delay_cycles) < self.params['minimal_delay_cycles']:
-                    raise Exception("Desired delay times are too short")
-
+                self.calculate_delay_cycles()
+                
             self.set_delay_cycles(self.params['delay_cycles'])
+
+    def calculate_delay_cycles(self):
+        # convert delay times into number of cycles
+        delay_cycles = (
+            (
+                np.array(self.params['delay_times']) 
+                - self.params['minimal_delay_time']
+            ) 
+            / self.params['delay_clock_cycle_time'] 
+            + self.params['minimal_delay_cycles']
+        )
+        self.params['delay_cycles'] = delay_cycles
+        if np.min(delay_cycles) < self.params['minimal_delay_cycles']:
+            raise Exception("Desired delay times are too short")
 
     def set_delay_cycles(self, delay_cycles):
         int_delay_cycles = np.array(delay_cycles, dtype=np.int32)
         # print(int_delay_cycles)
-        self.adwin.set_dummy_tico_selftrigger_var(delay_cycles = int_delay_cycles)
+        self.adwin.set_dummy_tico_selftrigger_var(delay_cycles=int_delay_cycles)
 
 class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
     """
@@ -343,7 +345,6 @@ class DummySelftriggerSequence(m2.LocalAdwinControlledMeasurement):
                     (
                         np.array(self.params['delay_times']) 
                         - self.params['minimal_delay_time']
-                        - self.params['awg_delay']
                     ) 
                     / self.params['delay_clock_cycle_time'] 
                     + self.params['minimal_delay_cycles']

@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,83,83,166,166,351,351,369,369,732,732,800,801
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,87,87,174,174,359,359,379,379,758,758,830,831
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -44,7 +44,6 @@
 #DEFINE max_single_click_ent_repetitions    50000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
 #DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
-#DEFINE max_sample    100000 ' Max number of measured points for sampling - Note that can do fewer repetitions if want to sample for longer.
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -65,15 +64,20 @@ DIM DATA_100[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Will even
 DIM DATA_101[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' number of repetitions until the first succesful entanglement attempt 
 DIM DATA_103[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' SSRO counts electron spin readout performed in the adwin seuqnece 
+
 ' PH Fix this. NK: fix what ??? PH Cant remember :P
 DIM DATA_104[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 1
 DIM DATA_105[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the PID stabilisation 'APD 2
-DIM DATA_106[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
-DIM DATA_107[max_sample] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_106[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 1
+DIM DATA_107[max_pid] AS LONG at DRAM_Extern' Holds data on the measured counts during the sampling time  'APD 2
+DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elapsed time since phase stab when succes ent.
+DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
+DIM DATA_110[max_pid] AS FLOAT at DRAM_Extern 'Hold the calculated phase during phase stabilisation
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
+DIM Float_Initializer[100] as Float AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
 
 'general paramters
@@ -120,12 +124,16 @@ DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
 DIM PID_GAIN,PID_Kp,PID_Kd,PID_Ki  AS FLOAT        ' PID parameters
 DIM e, e_old                                        AS FLOAT        ' error term
-DIM pid_time_factor                                 AS FLOAT        ' account for changes in the adwin clock cycle
-DIM offset_index,store_index,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
-DIM count_int_cycles, raw_count_int_time              AS LONG ' Time to count for per PID / phase msmt cycle
+DIM pid_time_factor, cosarg                                 AS FLOAT        ' account for changes in the adwin clock cycle
+DIM store_index, store_index_stab, store_index_msmt,index,pid_points,pid_points_to_store,sample_points AS LONG ' Keep track of how long to sample for etc.
+DIM count_int_cycles_stab, raw_count_int_time_stab, count_int_cycles_meas, raw_count_int_time_meas              AS LONG ' Time to count for per PID / phase msmt cycle
 DIM zpl1_counter_channel,zpl2_counter_channel,zpl1_counter_pattern,zpl2_counter_pattern  AS LONG ' Channels for ZPL APDs
 DIM elapsed_cycles_since_phase_stab, raw_phase_stab_max_time, phase_stab_max_cycles, modulate_stretcher_during_phase_msmt AS LONG
 DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_Msmt_Vis, total_cycles AS FLOAT
+
+' On-demand decoupling stuff
+DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
+DIM max_LDE_attempts,decoupling_repetitions AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -197,16 +205,18 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_stabilisation      = DATA_20[27]
   only_meas_phase             = DATA_20[28]
   do_dynamical_decoupling     = DATA_20[29]
-  Phase_msmt_laser_DAC_channel = DATA_20[30] 
-  Phase_stab_DAC_channel   = DATA_20[31]
+  Phase_msmt_laser_DAC_channel= DATA_20[30] 
+  Phase_stab_DAC_channel      = DATA_20[31]
   zpl1_counter_channel        = DATA_20[32]
   zpl2_counter_channel        = DATA_20[33]
   pid_points                  = DATA_20[34]
   pid_points_to_store         = DATA_20[35]
   sample_points               = DATA_20[36]
-  raw_count_int_time        = DATA_20[37]
-  raw_phase_stab_max_time   = DATA_20[38]
-  modulate_stretcher_during_phase_msmt = DATA_20[39]
+  raw_count_int_time_stab     = DATA_20[37]
+  raw_count_int_time_meas     = DATA_20[38]
+  raw_phase_stab_max_time     = DATA_20[39]
+  modulate_stretcher_during_phase_msmt = DATA_20[40]
+  max_LDE_attempts                = DATA_20[41]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -224,8 +234,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   stretcher_V_max              = DATA_21[13]
   Phase_Msmt_g_0               = DATA_21[14] ' Scaling factor to match APD channels
   Phase_Msmt_Vis               = DATA_21[15] ' Vis of interference
+  LDE_element_duration         = DATA_21[16]
+  decoupling_element_duration  = DATA_21[17]
   
-  setpoint = (cos(SETPOINT_angle/2))^2
+  max_sequence_duration = LDE_element_duration*max_LDE_attempts
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -236,7 +248,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   zpl1_counter_pattern =  2 ^ (zpl1_counter_channel - 1)
   zpl2_counter_pattern =  2 ^ (zpl2_counter_channel - 1)
   
-  count_int_cycles = (300*raw_count_int_time) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  count_int_cycles_stab = (300*raw_count_int_time_stab) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
+  count_int_cycles_meas = (300*raw_count_int_time_meas) / cycle_duration ' Want integration time for measured counts to be the same independent of the cycle duration
   phase_stab_max_cycles = (300*raw_phase_stab_max_time) / cycle_duration
 
   stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
@@ -245,7 +258,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   e = 0
   e_old = 0
   Sig = 0 
-  pid_time_factor = count_int_cycles*cycle_duration/30000000
+  store_index_stab = 0
+  store_index_msmt = 0
+  pid_time_factor = count_int_cycles_stab*cycle_duration/30000000
   
   
   
@@ -257,6 +272,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   FOR i = 1 TO 100
     Initializer[i] = -1
   NEXT i
+
+  '  ' enter desired values into the initializer array
+  FOR i = 1 TO 100
+    Float_Initializer[i] = -1.0
+  NEXT i
   '  
   '  
   '  ' note: the MemCpy function only works for T11 processors.
@@ -267,6 +287,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
     MemCpy(Initializer[1],DATA_103[array_step],100)
+    MemCpy(Initializer[1],DATA_108[array_step],100)
+    MemCpy(Initializer[1],DATA_109[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
@@ -274,24 +296,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   array_step = 1
   FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_104[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_pid/100
     MemCpy(Initializer[1],DATA_105[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_sample/100
     MemCpy(Initializer[1],DATA_106[array_step],100)
-    array_step = array_step + 100
-  NEXT i
-  
-  array_step = 1
-  FOR i = 1 TO max_sample/100
     MemCpy(Initializer[1],DATA_107[array_step],100)
+    MemCpy(Float_Initializer[1],DATA_110[array_step],100)
     array_step = array_step + 100
   NEXT i
   
@@ -368,7 +376,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
 
   ' Phase shifting defns
-  P2_DAC_2(14, 0) ' Set phase shifter voltage to zero PH Think about this
+  P2_DAC_2(Phase_stab_DAC_channel, 0) ' Set phase shifter voltage to zero PH Think about this
+  
+  
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
   P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)
     
@@ -563,14 +573,13 @@ EVENT:
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser
             old_counts_1 = 0
             old_counts_2 = 0
-            offset_index = repetition_counter * pid_points_to_store           'changed to show last points only
+            
           endif
-          
-          index = 0
           store_index = 0
+          index = 0
         ELSE
           if (is_master > 0) then
-            if (index = count_int_cycles) then ' Only reads apds every count int cycles
+            if (index = count_int_cycles_stab) then ' Only reads apds every count int cycles
               index = 0
               counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
               counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
@@ -578,15 +587,26 @@ EVENT:
               old_counts_2 = old_counts_2 + counts_2
               inc(store_index)
               if ((store_index > (pid_points-pid_points_to_store))) then            
-                DATA_104[offset_index + store_index] = counts_1
-                DATA_105[offset_index + store_index] = counts_2
+                inc(store_index_stab)
+                PAR_74 = store_index_stab
+                DATA_104[store_index_stab] = counts_1
+                DATA_105[store_index_stab] = counts_2
               endif
 
-            
-              counts = ARCCOS(2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis)
-    
+              cosarg = 2*((counts_1 / (counts_1 + counts_2*Phase_Msmt_g_0)) - 0.5) * Phase_Msmt_Vis
+              if (cosarg >= 1) then
+                cosarg = 0.999
+              endif
+              if (cosarg <= -1) then
+                cosarg = -0.999
+              endif
+              
+              counts = ARCCOS(cosarg)
+              
+              DATA_110[store_index_stab] = counts
+              
               ' PID control
-              e = setpoint - counts
+              e = SETPOINT_angle - counts
               Prop = PID_Kp * e'                   ' Proportional term      
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
@@ -607,7 +627,7 @@ EVENT:
             endif
           
           else
-            if (index = count_int_cycles) then ' Just tick over waiting for the other adwin to phase stabilise.
+            if (index = count_int_cycles_stab) then ' Just tick over waiting for the other adwin to phase stabilise.
               index = 0
               inc(store_index)
             endif
@@ -643,32 +663,38 @@ EVENT:
           P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
           old_counts_1 = 0
           old_counts_2 = 0
-          offset_index = repetition_counter * sample_points ' PH CHECK
           index = 0
           store_index = 0
           
-          total_cycles = count_int_cycles*sample_points
+          total_cycles = count_int_cycles_meas*sample_points
         ELSE
           if (modulate_stretcher_during_phase_msmt = 1) THEN
             ' Linearly ramp output
-            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles - 1)* stretcher_V_max*3276.8+32768 )
+            P2_DAC_2(Phase_stab_DAC_channel, (2 * timer/total_cycles ) * stretcher_V_max*3276.8+32768 )
           endif
                        
-          if (index = count_int_cycles) then ' Only reads apds every count int cycles
+          if (index = count_int_cycles_meas) then ' Only reads apds every count int cycles
             index = 0
             counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) - old_counts_1 'read counter
             counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel) - old_counts_2
             old_counts_1 = old_counts_1 + counts_1
             old_counts_2 = old_counts_2 + counts_2
+            inc(store_index_msmt)
             inc(store_index)
-            DATA_106[offset_index + store_index] = counts_1
-            DATA_107[offset_index + store_index] = counts_2
+            DATA_106[store_index_msmt] = counts_1
+            DATA_107[store_index_msmt] = counts_2
             
           endif
           
           inc(index)
           
           if (store_index >= sample_points) then
+            
+            if (modulate_stretcher_during_phase_msmt = 1) THEN
+              ' Linearly ramp output
+              P2_DAC_2(Phase_stab_DAC_channel, 0 )
+            endif
+            
             mode = 7
             timer = -1
             P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
@@ -790,6 +816,8 @@ EVENT:
         
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
           DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
+          DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+          DATA_109[repetition_counter+1] = store_index_stab
           time_spent_in_sequence = time_spent_in_sequence + timer
           timer = -1
           mode = mode_after_LDE
@@ -800,6 +828,8 @@ EVENT:
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
                 DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
+                DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
                 mode = 8 ' finalize and go to cr check
@@ -820,43 +850,59 @@ EVENT:
 
         
       CASE 5 ' Decoupling '' PH REWRITE!!
+        mode = 6
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once the specified time has been reached.
-        '        IF (timer =0) THEN 'first go: calculate required repetitions
-        '
-        '          awg_repcount_was_low = 1
-        '          
-        '          
-        '          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions
-        '          
-        '          
-        '        ENDIF 
-        '                
+        IF (timer =0) THEN 'first go: calculate required repetitions
+        
+          awg_repcount_was_low = 1
+          awg_done_was_low = 1
+          'Round((max_LDE_attempts-attempts_this_round)*LDE_element_duration/decoupling_element_duration) + 1
+          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions ' need to reinvent this calculation.
+                        
+        ENDIF 
+                        
         '        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
         '          if (awg_repcount_was_low = 1) then
-        '            inc(phase_compensation_repetitions)  
+        '            inc(decoupling_repetitions)  
         '            'Par_65 = phase_compensation_repetitions
         '          endif
         '          awg_repcount_was_low = 0
         '        ELSE
         '          awg_repcount_was_low = 1
         '        ENDIF
-        '        
+        
+        
+        
+                
         '        IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
         '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
-        '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+        '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
         '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
         '          time_spent_in_sequence = time_spent_in_sequence + timer
         '          timer = -1
-        '          mode = 200 'SSRO
-        '          success_mode_after_SSRO = 6
-        '          fail_mode_after_SSRO = 6 
-        '          
-        '        ENDIF
+        '          mode = 6
+                  
+        '      ENDIF
         
         
       CASE 6 ' wait for RO trigger to come in
         ' monitor inputs 
+        
+        
+        ' this should go into CASE 5. Here now for debugging purposes.
+        '--------------------------------
+        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
+          if (awg_repcount_was_low = 1) then
+            inc(decoupling_repetitions)  
+            'Par_65 = phase_compensation_repetitions
+          endif
+          awg_repcount_was_low = 0
+        ELSE
+          awg_repcount_was_low = 1
+        ENDIF
+        '----------------------------------
+        'everything above should go into case 5. Currently we are only counting the DD repetitions
         
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low =1) then
@@ -880,7 +926,7 @@ EVENT:
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
-        
+        DATA_100[repetition_counter+1] = decoupling_repetitions
         
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
@@ -896,7 +942,7 @@ EVENT:
         AWG_repcount_was_low = 1
         AWG_done_was_low = 1  
         AWG_sequence_repetitions_LDE = 0
-        
+        decoupling_repetitions = 0
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 

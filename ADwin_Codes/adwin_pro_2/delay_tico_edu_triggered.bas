@@ -11,7 +11,7 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -43,8 +43,6 @@
 #DEFINE IrrelevantDetections  Par_16
 #DEFINE ShortDelayErrors      Par_17
 #DEFINE Started               Par_20
-
-' #DEFINE corrected_delay       Par_20
 
 #DEFINE Output_Duration   10
 

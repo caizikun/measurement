@@ -575,6 +575,7 @@ class adwin(Instrument):
             if True, check if linescan is running, and if so, quit right away
         
         """
+
         if abort_if_running and self.is_linescan_running():
             return
                
@@ -594,7 +595,7 @@ class adwin(Instrument):
 
         p = self.processes['linescan']
         dacs = [ self.dacs[n] for n in dac_names ] 
-        
+
         # set all the required input params for the adwin process
         # see the adwin process for details
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))

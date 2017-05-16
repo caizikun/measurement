@@ -211,23 +211,31 @@ config['mos_cav1'] = {
 
                 'rt_dimensions'  : {
                     'x' : {
-                        'dac' : 'scan_mirror_x',
-                        'micron_per_volt' : 131., #calculated but not checked, as f*(26.2mrad/10V), with f=5e-2 focus distance of the objective
+                        'dac' : 'PI_scan_x',
+                        'micron_per_volt' : 500./20., #calculated but not checked
                         'max_v' : 10., #change to 10 later
                         'min_v' : -10., #change to -10 later
                         'default' : 0.,
                         'origin' : 0.,
                         }, 
                     'y' : {
-                        'dac' : 'scan_mirror_y',
-                        'micron_per_volt' : 131., #calculated but not checked, as f*(26.2mrad/10V), with f=5e-2 focus distance of the objective
+                        'dac' : 'PI_scan_y',
+                        'micron_per_volt' : 500./20., #calculated but not checked
+                        'max_v' : 10., #change to 10 later
+                        'min_v' : -10., #change to -10 later
+                        'default' : 0.,
+                        'origin' : 0.,
+                        },
+                    'z' : {
+                        'dac' : 'PI_scan_z',
+                        'micron_per_volt' : 250./20., #calculated but not checked,
                         'max_v' : 10., #change to 10 later
                         'min_v' : -10., #change to -10 later
                         'default' : 0.,
                         'origin' : 0.,
                         },
                     },
-                'lt_dimensions'  : {},#the scan mirror is never at lt.
+                'lt_dimensions'  : {},#the objective is never at lt.
                 }
 
 config['mos_m1'] = {

@@ -5,6 +5,7 @@
 # 2015-01-05: edited by Sv Dto not respond to changed in z, but only x and y. This is necessary since we are using a scan mirror, in which there is no z movement
 # possible add this later again if we decided on how to scan in z.
 # marked the removed or passed commands and functions by #ZZZ
+# 20117-03-22 SvD: re-added z.
 
 from panel import Panel
 from ui_cav1_coordinator import Ui_Panel
@@ -13,8 +14,8 @@ from PyQt4 import QtCore
 
 class Cav1CoordinatorPanel(Panel):
 
-    # z_slide_changed = QtCore.pyqtSignal(int) #ZZZ
-    # z_changed = QtCore.pyqtSignal(float) #ZZZ
+    z_slide_changed = QtCore.pyqtSignal(int) #ZZZ
+    z_changed = QtCore.pyqtSignal(float) #ZZZ
     x_changed = QtCore.pyqtSignal(float)
     y_changed = QtCore.pyqtSignal(float)
 
@@ -30,8 +31,8 @@ class Cav1CoordinatorPanel(Panel):
         
         self.ui.x.setValue(self._ins.get_mos_x())
         self.ui.y.setValue(self._ins.get_mos_y())
-        # self.ui.z.setValue(self._ins.get_mos_z()) #ZZZ
-        # self.ui.z_slider.setValue(int(self._ins.get_mos_z()*10)) #ZZZ
+        self.ui.z.setValue(self._ins.get_mos_z()) #ZZZ
+        self.ui.z_slider.setValue(int(self._ins.get_mos_z()*10)) #ZZZ
 
         self.ui.keyword.setText(self._ins.get_keyword())
 
@@ -56,14 +57,14 @@ class Cav1CoordinatorPanel(Panel):
         self._ins.set_mos_y(self.ui.y.value())
     
     def new_z(self):
-        pass #ZZZ
-        # self._ins.set_mos_z(self.ui.z.value()) #ZZZ
-        # self.ui.z_slider.setValue(int(self._ins.get_mos_z()*10)) #ZZZ
+        # pass #ZZZ
+        self._ins.set_mos_z(self.ui.z.value()) #ZZZ
+        self.ui.z_slider.setValue(int(self._ins.get_mos_z()*10)) #ZZZ
 
     def slide_z(self, val):
-        pass #ZZZ
-        # self._ins.set_mos_z(val/10.) #ZZZ
-        # self.ui.z.setValue(val/10.) #ZZZ
+        # pass #ZZZ
+        self._ins.set_mos_z(val/10.) #ZZZ
+        self.ui.z.setValue(val/10.) #ZZZ
 
     def stage_up(self):
         step = self.ui.stage_step.value()
@@ -82,7 +83,8 @@ class Cav1CoordinatorPanel(Panel):
         self._ins.mos_step_stage_x(step)
 
     def up(self):
-        self._ins.mos.step_up()
+        print dir(self._ins) # modified by Wouter 24 3 2017    
+        self._ins.mos.step_up()         
         return
 
     def left(self):
@@ -110,11 +112,11 @@ class Cav1CoordinatorPanel(Panel):
         return
 
     def _set_z(self, val):
-        # self._ins.set_z(val) #ZZZ
+        self._ins.set_z(val) #ZZZ
         return
 
     def _set_z_slider(self, val):
-        # self._ins.set_z_slider(val) #ZZZ
+        self._ins.set_z_slider(val) #ZZZ
         return
 
     def _set_step(self, val):
@@ -131,7 +133,7 @@ class Cav1CoordinatorPanel(Panel):
                #'mos_detsm_y': getattr(self.ui.detsm_y, 'setValue'),
                #'mos_rearsm_x': getattr(self.ui.back_x, 'setValue'),
                #'mos_rearsm_y': getattr(self.ui.back_y, 'setValue'),
-               # 'mos_z': getattr(self, '_ui_set_z'), #ZZZ
+               'mos_z': getattr(self, '_ui_set_z'), #ZZZ
                #'mos_back_z': getattr(self, '_ui_set_back_z'),
                'keyword': getattr(self.ui.keyword, 'setText')
                }
@@ -142,7 +144,7 @@ class Cav1CoordinatorPanel(Panel):
                 pass
 
     def _ui_set_z(self, z):
-        # self.ui.z.setValue(z) #ZZZ
-        # self.ui.z_slider.setValue(int(z*10)) #ZZZ
-        pass
+        self.ui.z.setValue(z) #ZZZ
+        self.ui.z_slider.setValue(int(z*10)) #ZZZ
+        # pass
 

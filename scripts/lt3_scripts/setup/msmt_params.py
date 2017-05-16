@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.697298e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.060412e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.719319e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.037186e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -42,12 +42,12 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 110e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.912  # 28-02
+	hermite_pi_amp =  0.785  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.412  # 28-02 
+	hermite_pi2_amp = 0.386  # 28-02 
 
 	square_pi_length = 18e-9 # even
-	square_pi_amp = 0.799 # 02-19
+	square_pi_amp = 0.797 # 02-19
 	square_pi2_length = 16e-9 # even
 	square_pi2_amp = 0.88 # 02-19
 
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.406
+	hermite_pi_amp = 0.398
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.163
+	hermite_pi2_amp = 0.160
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 
@@ -270,88 +270,88 @@ cfg['samples'][sample_name] = {
 	################
 	#### C1 ~ -35 ###
 	################
-	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_1_m1' 		: 483714,
+	# 'C1_freq_m1'        : (447929.95 + 483714)/2., 
+	# 'C1_freq_1_m1' 		: 483714,
 
-	'C1_Ren_tau_m1'    :   [4.822e-6],
-	'C1_Ren_N_m1'      :   [12],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_Ren_tau_m1'    :   [4.822e-6],
+	# 'C1_Ren_N_m1'      :   [12],
+	# 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
-	'C1_freq_0' 		: 447747.11,
-	'C1_freq_1_p1' 		: 425341.4,
+	# 'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
+	# 'C1_freq_0' 		: 447747.11,
+	# 'C1_freq_1_p1' 		: 425341.4,
 
-	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
-	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [36.64] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
+	# 'C1_Ren_N_p1'      :   [12], #12
+	# 'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [36.64] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_unc_tau_p1'    :   [9.132e-6],
-	'C1_unc_N_p1'      :   [12],
-	'C1_unc_phase_offset_p1' : 82.6,
-	'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_unc_tau_p1'    :   [9.132e-6],
+	# 'C1_unc_N_p1'      :   [12],
+	# 'C1_unc_phase_offset_p1' : 82.6,
+	# 'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C2 ~ 15 ###
-	###############
-	'C2_freq_m1'        : (447774.53+432700)/2.,
-	'C2_freq_0' 		: 447725.47,
-	'C2_freq_1_m1' 		: 432700, 
+	# ###############
+	# #### C2 ~ 15 ###
+	# ###############
+	# 'C2_freq_m1'        : (447774.53+432700)/2.,
+	# 'C2_freq_0' 		: 447725.47,
+	# 'C2_freq_1_m1' 		: 432700, 
 
-	'C2_Ren_tau_m1'    :   [10.786e-6],
-	'C2_Ren_N_m1'      :   [24],
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C2_Ren_tau_m1'    :   [10.786e-6],
+	# 'C2_Ren_N_m1'      :   [24],
+	# 'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C2_freq_p1'        : 456025,
-	'C2_freq_0' 		: 447725.47,
-	'C2_freq_1_p1' 		: 464353.86,
+	# 'C2_freq_p1'        : 456025,
+	# 'C2_freq_0' 		: 447725.47,
+	# 'C2_freq_1_p1' 		: 464353.86,
 	
-	'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
-	'C2_Ren_N_p1'      :   [24],#[26],
-	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
+	# 'C2_Ren_N_p1'      :   [24],#[26],
+	# 'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C3 ~ 42 ###
-	###############
-	'C3_freq_m1'        : (447528.84*2 - 42e3)/2.,
-	'C3_freq_0' 		: 447528.84,
-	'C3_freq_1_m1' 		: 447e3-42e3, 
+	# ###############
+	# #### C3 ~ 42 ###
+	# ###############
+	# 'C3_freq_m1'        : (447528.84*2 - 42e3)/2.,
+	# 'C3_freq_0' 		: 447528.84,
+	# 'C3_freq_1_m1' 		: 447e3-42e3, 
 
-	'C3_Ren_tau_m1'    :   [4.11e-6],
-	'C3_Ren_N_m1'      :   [32],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C3_Ren_tau_m1'    :   [4.11e-6],
+	# 'C3_Ren_N_m1'      :   [32],
+	# 'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C4 ~ -80 ###
-	###############
-	'C4_freq_m1'        : (447953.99*2 + 42e3)/2.,
-	'C4_freq_0' 		: 447953.99,
-	'C4_freq_1_m1' 		: 447e3+82e3, 
+	# ###############
+	# #### C4 ~ -80 ###
+	# ###############
+	# 'C4_freq_m1'        : (447953.99*2 + 42e3)/2.,
+	# 'C4_freq_0' 		: 447953.99,
+	# 'C4_freq_1_m1' 		: 447e3+82e3, 
 
-	'C4_Ren_tau_m1'    :   [4.51e-6],
-	'C4_Ren_N_m1'      :   [66],
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C4_Ren_tau_m1'    :   [4.51e-6],
+	# 'C4_Ren_N_m1'      :   [66],
+	# 'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C5 ~-114 ###
-	###############
-	'C5_freq_m1'        : (446138*2 + 114e3)/2.,
-	'C5_freq_0' 		: 447479.34,
-	'C5_freq_1_m1' 		: 447e3+114e3, 
+	# ###############
+	# #### C5 ~-114 ###
+	# ###############
+	# 'C5_freq_m1'        : (446138*2 + 114e3)/2.,
+	# 'C5_freq_0' 		: 447479.34,
+	# 'C5_freq_1_m1' 		: 447e3+114e3, 
 
-	'C5_Ren_tau_m1'    :   [5.445e-6],
-	'C5_Ren_N_m1'      :   [38],
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C5_Ren_tau_m1'    :   [5.445e-6],
+	# 'C5_Ren_N_m1'      :   [38],
+	# 'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C6 ~ 14 ###
-	###############
-	'C6_freq_m1'        : (447765.59 +433431)/2.,
-	'C6_freq_0' 		: 447765.59,
-	'C6_freq_1_m1' 		: 433431, 
+	# ###############
+	# #### C6 ~ 14 ###
+	# ###############
+	# 'C6_freq_m1'        : (447765.59 +433431)/2.,
+	# 'C6_freq_0' 		: 447765.59,
+	# 'C6_freq_1_m1' 		: 433431, 
 
-	'C6_Ren_tau_m1'    :   [21.895e-6],
-	'C6_Ren_N_m1'      :   [26],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C6_Ren_tau_m1'    :   [21.895e-6],
+	# 'C6_Ren_N_m1'      :   [26],
+	# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	#########################
 	#####      SIL3    ######
@@ -360,13 +360,21 @@ cfg['samples'][sample_name] = {
 	# ###########
 	# #### C1 ###
 	# ###########
-	# 'C1_freq_m1'        : (447024.+1296429.)/2., # random
-	# 'C1_freq_0' 		: 447024.,
-	# 'C1_freq_1_m1' 		: 1296429.,
+	'C1_freq_p1'        : (443932.+428732.)/2., # random
+	'C1_freq_0' 		: 443932.,
+	'C1_freq_1_p1' 		: 428732.,
 
-	# 'C1_Ren_tau_m1'    :   [10.786e-6],
-	# 'C1_Ren_N_m1'      :   [26],
-	# 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_tau_p1'    :   [6.302e-6],
+	'C1_Ren_N_p1'      :   [30],
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+	'C2_freq_p1'        : (442681.+424544.)/2., # random
+	'C2_freq_0' 		: 442681.,
+	'C2_freq_1_p1' 		: 424544.,
+
+	'C2_Ren_tau_p1'    :   [6.356e-6],
+	'C2_Ren_N_p1'      :   [58],
+	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 }
@@ -444,8 +452,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		hermite_pi2_amp,#0.585,#0.68,
-		'Hermite_theta_length':		hermite_pi2_length,#46e-9,#0.68,
+        'Hermite_theta_amp':		hermite_pi_amp,#0.585,#0.68,
+		'Hermite_theta_length':		hermite_pi_length,#46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -476,7 +484,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.9,#0.2
+        'aom_amplitude':					0.8,#0.2
 }
 
 

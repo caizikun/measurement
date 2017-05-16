@@ -139,6 +139,7 @@ class qutau_simple_counter(Instrument):
             self._hist = np.zeros(len(self._hist_bins)-1, dtype =np.int)
             self._timer_id = gobject.timeout_add(int(self.get_integration_time()*1e3), self._update_countrates)
             print 'binsize in ns',self._hist_binsize_ns
+
     def stop(self):
         self._is_running = False
         return gobject.source_remove(self._timer_id)
@@ -165,8 +166,9 @@ class qutau_simple_counter(Instrument):
             logging.warning(self.get_name() + ': QuTau buffer full, decrease integration time or eventrates.')
         self._ts,self._cs= t[:v],c[:v]
         total_counts = np.sum(self._cs == self._qutau_apd_channel)
-        #print 'syncrate',float(np.sum(self._cs == self._qutau_sync_channel))/(t1- self._t0)
-
+        # print 'countrate',float(total_counts)/(t1- self._t0)
+        # print 'syncrate',float(np.sum(self._cs == self._qutau_sync_channel))/(t1- self._t0)
+        # print v
 
         #Because we have to be fast here, we count only events where one photon directly followed a sync pulse.
         ph_idxs   = np.where(self._cs == self._qutau_apd_channel)[0]

@@ -24,6 +24,7 @@ def measure_counts():
     current_adwin = qt.instruments['adwin']
     ZPLServo = qt.instruments['ZPLServo']
 
+    current_adwin.start_counter()
     ZPLServo.move_in() # PH for now we just look at the LT3 counts. Bit of a bodge.
 
     phase_aom.set_power(0)
@@ -47,11 +48,49 @@ def measure_counts():
 
     phase_aom.set_power(0)
     ZPLServo.move_out()
-
+    qt.msleep(1)
     write_to_msmt_params('Phase_Msmt_voltage', V_setpoint)
 
 
+
+def measure_g0():
+
+    #measurement parameters
+    counter1=2 #number of counter
+    counter2=3 #number of counter
+    Vset = 4.0
+
+    phase_aom = qt.instruments['PhaseAOM']
+    current_adwin = qt.instruments['adwin']
+    ZPLServo = qt.instruments['ZPLServo']
+
+    ZPLServo.move_in() # PH for now we just look at the LT3 counts. Bit of a bodge.
+
+    phase_aom.apply_voltage(Vset)
+    current_adwin.start_counter()
+    qt.msleep(1)
+
+    counts1 = 0
+    counts2 = 0
+
+    for v in range(20):
+        qt.msleep(0.2)
+        counts = current_adwin.get_countrates()
+        counts1 += counts[counter1-1]
+        counts2 += counts[counter2-1]
+        print counts1
+        print counts2
+    est_g0 = counts1/float(counts2)
+    phase_aom.apply_voltage(0.0)
+    ZPLServo.move_out()
+
+    print 'Est_g0 ', est_g0
+    write_to_msmt_params('Phase_Msmt_g_0', est_g0)
+
+
+
 def measure_interferometer(plot_fit = True):
+
     # run our msmst
     sce.phase_calibration('PhaseStabCalibration')
 
@@ -62,49 +101,46 @@ def measure_interferometer(plot_fit = True):
     sample_counts_1 = a.g['adwindata']['sampling_counts_1'].value
     sample_counts_2 = a.g['adwindata']['sampling_counts_2'].value
 
+    print 'Avg counts ', np.mean(sample_counts_1), np.mean(sample_counts_2)
     sample_cycles = a.g.attrs['sample_points']
     x = linspace(-a.g.attrs['stretcher_V_max'],a.g.attrs['stretcher_V_max'], sample_cycles)
 
+    g0 = a.g.attrs['Phase_Msmt_g_0']
+    rescaled = [n0/(float(n0) + float(n1)*g0) for n0,n1 in zip(sample_counts_1,sample_counts_2)]
+
 
     fig = plt.figure(figsize=(17,6))
-    ax1 = plt.subplot(211)
-    ax2 = plt.subplot(212)
-    ax1.plot(x,sample_counts_1)
-    ax2.plot(x,sample_counts_2)
+    ax1 = plt.subplot(212)
     
+    ax2 = plt.subplot(211)
+    ax1.plot(x,rescaled)
+    ax2.plot(x,sample_counts_1,x,sample_counts_2)
     frequency = 1/a.g.attrs['stretcher_V_2pi']
-    offset = 100
-    amplitude = 100
+    offset = 0.5
+    amplitude = 0.5
     phase = 0
 
     p0, fitfunc, fitfunc_str = common.fit_cos(frequency,offset, amplitude, phase)
-    fit_result1 = fit.fit1d(x,sample_counts_1, None, p0=p0, fitfunc=fitfunc, do_print=True, ret=True)
-
-
-    p0, fitfunc, fitfunc_str = common.fit_cos(frequency,offset, amplitude, phase+180)
-    fit_result2 = fit.fit1d(x,sample_counts_2, None, p0=p0, fitfunc=fitfunc, do_print=True, ret=True)
+    fit_result1 = fit.fit1d(x,rescaled, None, p0=p0, fitfunc=fitfunc, do_print=True, ret=True)
 
     ## plot data and fit as function of total time
     if plot_fit == True:
         plot.plot_fit1d(fit_result1, np.linspace(x[0],x[-1],1001), ax=ax1, plot_data=False)
-        plot.plot_fit1d(fit_result2, np.linspace(x[0],x[-1],1001), ax=ax2, plot_data=False)
 
     title = 'analyzed_result'
+    plt.ion()
+    plt.show()
     plt.savefig(os.path.join(folder, title + '.pdf'),
     format='pdf')
     plt.savefig(os.path.join(folder, title + '.png'),
     format='png')
     
-    est_V_2pi = 2.0/(fit_result1['params_dict']['f'] + fit_result2['params_dict']['f'])
+    est_V_2pi = 1.0/(fit_result1['params_dict']['f'])
     print 'Estimated V 2 pi ', est_V_2pi
 
-    est_g0 = np.abs(fit_result1['params_dict']['A'] / fit_result2['params_dict']['A'] )
-    print 'Estimated g0 ', est_g0
-
-    est_vis = 2.0/(np.abs(fit_result1['params_dict']['A'] / fit_result1['params_dict']['a']) +np.abs(fit_result2['params_dict']['A'] / fit_result2['params_dict']['a']) )
+    est_vis = 1.0/(np.abs(fit_result1['params_dict']['A'] / fit_result1['params_dict']['a']))
     print 'Estimated vis ', 1/est_vis
 
-    write_to_msmt_params('Phase_Msmt_g_0', est_g0)
     write_to_msmt_params('Phase_Msmt_Vis', est_vis)
     write_to_msmt_params('stretcher_V_2pi', est_V_2pi)
 
@@ -152,6 +188,6 @@ def write_to_file_subroutine(data,search_string,val):
 
 
 if __name__ == '__main__':
-
+    # measure_g0()
     # measure_counts()
     measure_interferometer()

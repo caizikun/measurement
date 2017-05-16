@@ -19,7 +19,7 @@ class QuTau(Instrument):
         qt.msleep(0.02)
         os.chdir(dir_before)
 
-        self.dev_nr = 0
+        self.dev_nr = -1 #accept any device
         self.err_dict = {0 : 'No error', 
                          1 : 'Receive timed out',
                          2 : 'No connection was established',
@@ -54,7 +54,7 @@ class QuTau(Instrument):
 
         self.add_parameter('data_lost', 
                            type = types.IntType, 
-                           flags = Instrument.FLAG_GET)
+                           flags = Instrument.FLAG_GET) 
 
         self.add_parameter('histogram_params', 
                            type = types.TupleType, 
@@ -103,7 +103,6 @@ class QuTau(Instrument):
         self.set_active_channels(range(8))
         
         print "Initialized with QuTau DLL v%f"%(self.get_version())
-
         # # override from config       
         # cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
 
@@ -154,7 +153,6 @@ class QuTau(Instrument):
         else:
             bitstring = '0'
             
-
         return int(bitstring, 2)
 
 

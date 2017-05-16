@@ -2139,7 +2139,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Gate.no_connection_elt = True
             tau_cut = 1e-6
             Gate.tau_cut = 1e-6
-
+            
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length      = pulse_tau, amplitude = 0.)
             T_twice = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -2147,6 +2147,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             T_out = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length      = pulse_tau-tau_cut, amplitude = 0.)
+
+
+            # pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
+            # pulse_tau_pi2_out = tau - self.params['fast_pi2_duration']/2.0
+            # T_pi2 =  pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+            #     length      = pulse_tau_pi2, amplitude = 0.)
+            # T_pi2_out =  pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+            #     length      = pulse_tau_pi2_out-tau_cut, amplitude = 0.)
+
+            # print 'important timing!', pulse_tau_pi2-tau_cut
+            # initial_pulse = self._mpi2_elt()
+            # final_p_pulse = self._pi2_elt()
+
 
             x_list = [0,2,5,7]
             y_list = [1,3,4,6]
@@ -2164,27 +2177,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 decoupling_elt.append(T)  
 
-            for n in range(N-1):
+            if N > 1:
+                for n in range(N-1):
 
-                if n != 0:
-                    decoupling_elt.append(T)
+                    # if n != 0:
+                    #     decoupling_elt.append(T)
 
-                if n%16 in x_list:
-                    decoupling_elt.append(pulse.cp(X))
-                    # print 'X'
-                elif n%16 in y_list:
-                    decoupling_elt.append(pulse.cp(Y))
-                    # print 'Y'
-                elif n%16 in mx_list:
-                    decoupling_elt.append(pulse.cp(mX))
-                    # print 'mX'
-                elif n%16 in my_list:
-                    decoupling_elt.append(pulse.cp(mY))
-                    # print 'mY'
-                else:
-                    raise Exception('Error in pulse sequence')
+                    if n%16 in x_list:
+                        decoupling_elt.append(pulse.cp(X))
+                        # print 'X'
+                    elif n%16 in y_list:
+                        decoupling_elt.append(pulse.cp(Y))
+                        # print 'Y'
+                    elif n%16 in mx_list:
+                        decoupling_elt.append(pulse.cp(mX))
+                        # print 'mX'
+                    elif n%16 in my_list:
+                        decoupling_elt.append(pulse.cp(mY))
+                        # print 'mY'
+                    else:
+                        raise Exception('Error in pulse sequence')
 
-                decoupling_elt.append(T_twice)
+                    decoupling_elt.append(T_twice)
 
 
             #### need to adapt for final pulse and the number of pulses
@@ -2202,20 +2216,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 P_type = 'X'
 
             #### the ending elements in a XY-4 sequence need to adapt to the number of repetitions.
-            if 'end' in Gate.scheme and 'even' in Gate.name:
-                final_pulse = mX
-                P_type = 'X'
-            elif 'end' in Gate.scheme and 'odd' in Gate.name:
-                final_pulse = Y
-                P_type = 'Y'
+            if N == 2:
+                if 'end' in Gate.scheme and 'even' in Gate.name:
+                    final_pulse = mX
+                    P_type = 'X'
+                elif 'end' in Gate.scheme and 'odd' in Gate.name:
+                    final_pulse = Y
+                    P_type = 'Y'
 
             decoupling_elt.append(pulse.cp(final_pulse))
 
             if (not 'end' in Gate.scheme):
-                decoupling_elt.append(T)
+                decoupling_elt.append(T) 
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 2.5e-6, amplitude = 2)
-                decoupling_elt.add(adwin_sync,start=2500e-9)
+                decoupling_elt.add(adwin_sync,start=500e-9)
             else:
                 decoupling_elt.append(T_out)  
 
