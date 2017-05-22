@@ -97,8 +97,6 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['multiple_source'] = False
     m.params['MW_switch_channel'] = 'None'
 
-    prepare_LT2_dummy_stuff(m)
-
     ### soon not necessary anymore.
     m.params['Nr_C13_init']     = 0 # Not necessary (only for adwin: C13 MBI)
     m.params['Nr_MBE']          = 0 # Not necessary (only for adwin: C13 MBI)
@@ -126,6 +124,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
             m.params[k] = params_lt3.params_lt3[k]
 
     elif setup == 'lt2' :
+        prepare_LT2_dummy_stuff(m)
         print "WARNING: LT2 has only been used as a debugging setup, all parameters currently only haves dummy values"
         import params_lt2
         reload(params_lt2)
