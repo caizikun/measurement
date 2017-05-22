@@ -268,7 +268,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     ### general params
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1500
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -277,7 +277,9 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['first_mw_pulse_is_pi2'] = True
+    m.params['first_mw_pulse_is_pi2'] = False
+    m.params['do_calc_theta'] = True
+    m.params['sin2_theta'] = 0.5
     
     ### prepare sweep
     m.params['do_general_sweep']    = True

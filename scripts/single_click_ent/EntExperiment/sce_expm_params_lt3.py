@@ -70,7 +70,7 @@ params_lt3['sync_during_LDE']           = 1
 params_lt3['PLU_during_LDE']          = 1
 params_lt3['PLU_gate_duration']       = 100e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
-params_lt3['PLU_1_delay']             = 26e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
+params_lt3['PLU_1_delay']             = 27e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 250e-9 # it was 150e-9 for bell 
 
@@ -81,10 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']  = 0.0#qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 1.0005374496129305
-params_lt3['sin2_theta_fit_a']		= 2.45386276844958
-params_lt3['sin2_theta_fit_x0']		= 0.7481340255739567
-
+params_lt3['sin2_theta_fit_of']		= 0.99812972360328012
+params_lt3['sin2_theta_fit_a']		= 2.3923148082256342
+params_lt3['sin2_theta_fit_x0']		= 0.75326599086240542
 
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
@@ -133,10 +132,10 @@ params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
 params_lt3['phase_setpoint'] = np.pi/2
 
-params_lt3['count_int_time_stab'] = 6000 # How long to integrate counts for in microseconds
+params_lt3['count_int_time_stab'] = 10000 # How long to integrate counts for in microseconds
 params_lt3['count_int_time_meas'] = 1000 # How long to integrate counts for in microseconds
-params_lt3['pid_points'] = 5 # How many points to sample the phase at during the PID loop
-params_lt3['pid_points_to_store'] = 5 # How many points to store
+params_lt3['pid_points'] = 4 # How many points to sample the phase at during the PID loop
+params_lt3['pid_points_to_store'] = 4 # How many points to store
 params_lt3['sample_points'] = 500 # How many points to sample the phase at during the expm part
 params_lt3['phase_stab_max_time'] = 300000 # How long in microseconds to run the expm for after phase stabilisation
 

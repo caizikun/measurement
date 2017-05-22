@@ -44,7 +44,7 @@ if electron_transition == '+1':
 	hermite_pi_length = 110e-9 #even #was 120e-9 for SIL 2.
 	hermite_pi_amp =  0.785  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.386  # 28-02 
+	hermite_pi2_amp = 0.390  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -361,20 +361,20 @@ cfg['samples'][sample_name] = {
 	# #### C1 ###
 	# ###########
 	'C1_freq_p1'        : (443932.+428732.)/2., # random
-	'C1_freq_0' 		: 443932.,
-	'C1_freq_1_p1' 		: 428732.,
+	'C1_freq_0' 		: 442464.63,
+	'C1_freq_1_p1' 		: 430394.93,
 
 	'C1_Ren_tau_p1'    :   [6.302e-6],
 	'C1_Ren_N_p1'      :   [30],
 	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C2_freq_p1'        : (442681.+424544.)/2., # random
-	'C2_freq_0' 		: 442681.,
-	'C2_freq_1_p1' 		: 424544.,
+	'C2_freq_0' 		: 442590.22,
+	'C2_freq_1_p1' 		: 422807.05,
 
 	'C2_Ren_tau_p1'    :   [6.356e-6],
 	'C2_Ren_N_p1'      :   [58],
-	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [8.82] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 }
@@ -484,7 +484,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.8,#0.2
+        'aom_amplitude':					0.7,#0.2
 }
 
 
