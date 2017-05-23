@@ -102,7 +102,7 @@ params_lt2['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt2['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt2['dps_carbons']                    = [4]
+params_lt2['dps_carbons']                    = [4] * 6
 params_lt2['carbon_init_method']            = 'swap'
 params_lt2['carbon_readout_orientation']    = 'positive'
 # we don't want the old feedback crap

@@ -177,6 +177,10 @@ class SingleClickEntExpm(DD.MBI_C13):
             toSave.append(('sampling_counts_1',1,reps*sample_points))
             toSave.append(('sampling_counts_2',1,reps*sample_points))
 
+        elif self.params['do_post_ent_phase_msmt']: 
+            toSave.append(('sampling_counts_1',1,reps))
+            toSave.append(('sampling_counts_2',1,reps))
+
         
         self.save_adwin_data(name,toSave)
 

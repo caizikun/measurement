@@ -186,7 +186,7 @@ cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DO_channel':                 12,
     'do_tico_delay_control':                    1,
     'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
-    'awg_delay':                                dl_awg_delay,
+    'awg_delay':                                0, # this parameter is not dfined@!!!!! dl_awg_delay,
     'delayed_element_run_up_time':              dl_delayed_element_run_up_time,
     'minimal_delay_time':                       dl_minimal_delay_time,
     'minimal_delay_cycles':                     15,
@@ -213,17 +213,20 @@ cfg['samples'][sample_name] = {
 	'N_HF_frq'      :       N_HF_frq,
 	'C_split'		:		C_split,
 
+
 ###############
 ### Carbons ###
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
-    'phase_per_compensation_repetition': 18.298,# adwin needs positive values
-    'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
+    # 'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    # 'phase_per_compensation_repetition': 18.298,# adwin needs positive values
+    # 'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
 ###############
+
+	'number_of_carbon_params':	6, # JS: should match with the list below
 
 	# ###############
 	# # C1 (A~ -350)#
@@ -236,16 +239,22 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_N_m1'      :   [28],
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [135.74] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
+	'C1_phase_per_LDE_sequence_m1'	:	0.0,
+	'C1_init_phase_correction_m1': 0.0,
+
 	###############
 	# C2(A ~ -26)  #
 	###############
 	'C2_freq_m1'        : (443015.21+475444.0)/2,
-	'C2_freq_0' 		: 442994.19,
-	'C2_freq_1_m1' 		: 475413.3,
+	'C2_freq_0' 		: 443002.18,
+	'C2_freq_1_m1' 		: 475430.27,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [48], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.29] + [20.11] + [15.67] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [201.26] + [20.11] + [19.47] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+
+	'C2_phase_per_LDE_sequence_m1'	:	30.0,
+	'C2_init_phase_correction_m1': 0.0,
 	
 	###############
 	# C3 (A ~ -55)#
@@ -257,18 +266,24 @@ cfg['samples'][sample_name] = {
 	'C3_Ren_tau_m1'    :   [3.66e-6],
 	'C3_Ren_N_m1'      :   [50],
 	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
+
+	'C3_phase_per_LDE_sequence_m1'	:	0.0,
+	'C3_init_phase_correction_m1': 0.0,
 	
 	###############
 	# C4 (A ~ 33) #
 	###############
 	'C4_freq_m1'        : (442773.49 + 416024.45)/2,
-	'C4_freq_0' 		: 442812.73,
-	'C4_freq_1_m1' 		: 416221.28,
+	'C4_freq_0' 		: 442822.02,
+	'C4_freq_1_m1' 		: 416228.08,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [24],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.35] + [0.0] + [-2.06] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.91] + [0.0] + [-1.1] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+	'C4_phase_per_LDE_sequence_m1'	:	-0.3,
+	'C4_init_phase_correction_m1': 0.0,
 
 
 	###############
@@ -282,6 +297,9 @@ cfg['samples'][sample_name] = {
 	'C5_Ren_N_m1'      :   [48], 
 	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.82] + [0.0] + [0.0] + [0.0] + [0.0]),
 
+	'C5_phase_per_LDE_sequence_m1'	:	0.0,
+	'C5_init_phase_correction_m1': 0.0,
+
 
 	###############
 	# C6(A ~ -72) #
@@ -293,6 +311,9 @@ cfg['samples'][sample_name] = {
 	'C6_Ren_tau_m1'    :   [4.935e-6],
 	'C6_Ren_N_m1'      :   [44],
 	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
+
+	'C6_phase_per_LDE_sequence_m1'	:	0.0,
+	'C6_init_phase_correction_m1': 0.0,
 
 	###############
 	# C7(A ~ 11)  #

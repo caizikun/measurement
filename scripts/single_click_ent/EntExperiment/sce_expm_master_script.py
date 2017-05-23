@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
         lt3_helper = qt.instruments['lt3_helper']
 
-        start_index = 3
+        start_index = 1
         
         skip_first=False
 

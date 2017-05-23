@@ -1163,7 +1163,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 if __name__ == '__main__':
 
-    # repump_speed(name+'_repump_speed',upload_only = False)
+    repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False)
@@ -1204,4 +1204,4 @@ if __name__ == '__main__':
     #### ionization studies:
     # sweep_number_of_reps_ionization(name+'_ionization_check_ms0',upload_only=False,ms0=True)
     # sweep_number_of_reps_ionization(name+'_ionization_check',upload_only=False,ms0=False)
-    ionzation_sweep_pi_amp(name+'_ionization_sweep_pi_amp', upload_only = False)
+    # ionzation_sweep_pi_amp(name+'_ionization_sweep_pi_amp', upload_only = False)
