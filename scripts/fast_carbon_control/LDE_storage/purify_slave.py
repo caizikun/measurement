@@ -27,7 +27,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'purification_delayfb'
+    adwin_process = 'purification'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -180,8 +180,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('carbon_readout_result'                 ,1,reps),
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps), 
-                    ('min_phase_deviation'                   ,1,reps), 
+                    ('compensated_phase'                     ,1,reps),
                     ('overlong_cycles_per_mode'              ,1,255),
                     'completed_reps'
                     ])
@@ -771,7 +770,7 @@ class purify_single_setup(DD.MBI_C13):
                 self.generate_delayline_phase_correction_elements(g1,g2,g3)
                 dynamic_phase_correct_list = [g1,g2,g3]
             else:
-                if (m.params['number_of_dps_carbons'] > 0):
+                if (self.params['number_of_dps_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
                 final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
                         'Final_C13_correct_even'+str(pt),
@@ -936,7 +935,8 @@ class purify_single_setup(DD.MBI_C13):
                     # gate_seq.append(DD.Gate('LDE_1_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 
             if self.params['do_swap_onto_carbon'] > 0:
-                print("WARNING: swapping doesn't make sense for multiple carbons")
+                if (self.params['number_of_dps_carbons'] > 1):
+                    print("WARNING: swapping doesn't make sense for multiple carbons")
                 ### Elementes for swapping
                 swap_with_init = self.carbon_swap_gate(
                                 go_to_element = 'start',
@@ -1096,7 +1096,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=True)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=False)
             self.dump_AWG_seq()
         else:
 

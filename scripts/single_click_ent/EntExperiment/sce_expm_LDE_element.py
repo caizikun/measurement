@@ -262,21 +262,25 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     refpulse = refpulse,
                     refpoint = refpoint,)
 
+                opt_ref_name = 'opt pi {}'.format(i+1)
 
+                if msmt.params['PLU_during_LDE'] == 1 :
+                    e.add(Gate.plu_gate, name = 'plu gate 1', 
+                        refpulse = opt_ref_name,
+                        start = msmt.params['PLU_1_delay'])
+
+                    plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
+
+
+            plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
             #5 Plu gates
-            if msmt.params['PLU_during_LDE'] == 1 :
-                e.add(Gate.plu_gate, name = 'plu gate 1', 
-                    refpulse = 'opt pi 1',
-                    start = msmt.params['PLU_1_delay'])
-
-                plu_ref_name = 'plu gate 1'
-
+            if msmt.params['PLU_during_LDE'] == 1:
                 ## the name plu 3 is historic... see bell.
                 e.add(pulse.cp(Gate.plu_gate, 
                         length = msmt.params['PLU_gate_3_duration']), 
                     name = 'plu gate 3', 
                     start = msmt.params['PLU_3_delay'], 
-                    refpulse = plu_ref_name)
+                    refpulse = plu_to_plu_ref_name)
 
 
                 e.add(pulse.cp(Gate.plu_gate, 

@@ -154,6 +154,8 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['do_general_sweep']= 1
     m.params['trigger_wait'] = 1
 
+    prepare_carbon_params(m)
+
 def extract_carbon_param_list(m, param, carbons, etrans = None):
     if etrans is None:
         etrans = m.params['electron_transition']
@@ -163,6 +165,9 @@ def prepare_carbon_params(m):
     m.params['number_of_dps_carbons'] = len(m.params['dps_carbons'])
     m.params['nuclear_frequencies'] = extract_carbon_param_list(m, 'freq', m.params['dps_carbons'])
     m.params['nuclear_phases_per_seqrep'] = extract_carbon_param_list(m, 'phase_per_LDE_sequence', m.params['dps_carbons'])
+
+    m.params['Carbon_LDE_phase_correction_list'] = np.array(extract_carbon_param_list(m, 'phase_per_LDE_sequence', list(range(1,m.params['number_of_carbon_params'] + 1))))
+    m.params['Carbon_LDE_init_phase_correction_list'] = np.array(extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
 def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,mw=True):
 
@@ -812,6 +817,11 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
     # m.params['mw_first_pulse_amp'] = 0
 
+    if len(m.params['dps_carbons']) > 1:
+        print("Warning: LDE phase calibration is only supported on one carbon at a time")
+
+    carbon = m.params['dps_carbons'][0]
+
 
     ### calculate sweep array
     minReps = 1
@@ -828,9 +838,9 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 8
-    phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']]
-    m.params['Carbon_LDE_phase_correction_list'][m.params['carbon']] = phase_per_rep + m.params['phase_detuning']
+    m.params['phase_detuning'] = 10
+    phase_per_rep = m.params['Carbon_LDE_phase_correction_list'][carbon]
+    m.params['Carbon_LDE_phase_correction_list'][carbon] = phase_per_rep + m.params['phase_detuning']
 
                      
     ### loop over tomography bases and RO directions upload & run
@@ -1151,7 +1161,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     """
     m = purify_slave.purify_single_setup(name+'_'+input_state)
     prepare(m)
-    prepare_carbon_params(m)
+    # prepare_carbon_params(m)
 
     ### general params
     pts = 1
@@ -1252,7 +1262,7 @@ if __name__ == '__main__':
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
-    # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
@@ -1275,7 +1285,7 @@ if __name__ == '__main__':
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
-    apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=False,input_state = 'Z')
+    # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=False,input_state = 'Z')
 
 
     #### ionization studies:
