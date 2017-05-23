@@ -212,7 +212,6 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         pulse_pi = kw.get('pulse_pi', None)
         evolution_1_self_trigger = kw.get('evolution_1_self_trigger', True)
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
-        post_selftrigger_delay = kw.pop('post_selftrigger_delay', 200e-9)
 
         # waiting element        
         empty_pulse = pulse.SquarePulse(channel='MW_Qmod', name='delay',
@@ -248,7 +247,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         self.params['refocussing_time'][i] 
                         + self.params['defocussing_offset'][i] 
                         - self.params['self_trigger_delay'][i]
-                        - post_selftrigger_delay
+                        - self.params['delayed_element_run_up_time']
                         ))
 
                 elements.append(e)
@@ -264,7 +263,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     refpulse = dummy_start_pulse_1,
                     refpoint = 'start',
                     refpoint_new = 'center',
-                    start = post_selftrigger_delay
+                    start = self.params['delayed_element_run_up_time']
                 )
             else:
                 second_pulse_id = e.add(pulse.cp(pulse_pi),
@@ -285,7 +284,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     start = (
                         self.params['refocussing_time'][i]
                         - self.params['self_trigger_delay'][i]
-                        - post_selftrigger_delay
+                        - self.params['delayed_element_run_up_time']
                         ))
                 elements.append(e)
 
@@ -298,7 +297,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     refpulse = dummy_start_pulse_2,
                     refpoint = 'start',
                     refpoint_new = 'center',
-                    start = post_selftrigger_delay
+                    start = self.params['delayed_element_run_up_time']
                 )
             else:
                 final_pulse_id = e.add(pulse.cp(pulse_pi2),

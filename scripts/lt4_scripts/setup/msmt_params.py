@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.938 # for a single pi pulse
+	hermite_pi_amp = 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =  0.620 #0.617 #0.634#0.605
+	hermite_pi2_amp =  0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -75,8 +75,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_after_pulse_duration':    3,
 		'cr_wait_after_pulse_duration': 3,
 		'wait_for_AWG_done':            0,
-		'Ex_off_voltage':               0.03,
-		'A_off_voltage':                -0.2,
+		'Ex_off_voltage':               -0.01,
+		'A_off_voltage':                -0.26,
 		'yellow_repump_amplitude':      30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
@@ -176,15 +176,22 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### General settings for AdwinSSRO+delay ###
 ############################################
 
+dl_minimal_delay_time_bare      = 1398e-9 #1820e-9
+dl_delayed_element_run_up_time  = 400e-9
+
+dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
+
 cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DI_channel':                 20,
     'delay_trigger_DO_channel':                 12,
-    'do_tico_delay_control':                    0,
-    'minimal_delay_time_bare':                  1440e-9,
-    'awg_delay':                                380e-9,
-    'minimal_delay_time':                       1440e-9 + 380e-9,
+    'do_tico_delay_control':                    1,
+    'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
+    'awg_delay':                                dl_awg_delay,
+    'delayed_element_run_up_time':              dl_delayed_element_run_up_time,
+    'minimal_delay_time':                       dl_minimal_delay_time,
     'minimal_delay_cycles':                     15,
     'delay_clock_cycle_time':                   20e-9,
+    'self_trigger_duration':                    100e-9,
 }
 
 ###############################
@@ -230,6 +237,17 @@ cfg['samples'][sample_name] = {
 	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [135.74] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	###############
+	# C2(A ~ -26)  #
+	###############
+	'C2_freq_m1'        : (443015.21+475444.0)/2,
+	'C2_freq_0' 		: 442994.19,
+	'C2_freq_1_m1' 		: 475413.3,
+
+	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
+	'C2_Ren_N_m1'      :   [48], #36
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.29] + [20.11] + [15.67] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	
+	###############
 	# C3 (A ~ -55)#
 	###############
 	'C3_freq_m1'        : (440252.25 + 516843)/2.,
@@ -241,41 +259,34 @@ cfg['samples'][sample_name] = {
 	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
 	
 	###############
-	# C4 (A ~ 26) #
+	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (443141.64 + 416544.29)/2,
-	'C4_freq_0' 		: 442829.51,
-	'C4_freq_1_m1' 		: 416357.14,
+	'C4_freq_m1'        : (442773.49 + 416024.45)/2,
+	'C4_freq_0' 		: 442812.73,
+	'C4_freq_1_m1' 		: 416221.28,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
-	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [21.49] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_N_m1'      :   [24],#[56], #28
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.35] + [0.0] + [-2.06] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	# 'C4_Ren_tau_p1'    :   [1.755e-6],#[6.406e-6],##[6.386e-6],
-	# 'C4_Ren_N_p1'      :   [128], #28
-	# 'C4_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [100.91] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	# 'C4_unc_N_m1'		:  [40],
-	# 'C4_unc_tau_m1'		:  [6.93e-6],
-	# 'C4_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [139.34] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-	# 'C4_unc_phase_offset_m1' : 126.74,
 	###############
-	# C5 (A ~ -26) #
+	# C5 (A ~ 26) #
 	###############
-	'C5_freq_m1'        : (426648.89+447931.8)/2,
-	'C5_freq_0' 		: 447931.8,
-	'C5_freq_1_m1' 		: 426648.89,
+	'C5_freq_m1'        : (443741.6+422796.72)/2,
+	'C5_freq_0' 		: 443691.58,
+	'C5_freq_1_m1' 		: 422786.11,
 
-	'C5_Ren_tau_m1'    :   [8.57e-6], #8.826
-	'C5_Ren_N_m1'      :   [36], 
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-44.9] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C5_Ren_tau_m1'    :   [10.964e-6], #8.826
+	'C5_Ren_N_m1'      :   [48], 
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.82] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 	###############
 	# C6(A ~ -72) #
 	###############
-	'C6_freq_m1'        : (438746.23 + 500e3)/2.,
+	'C6_freq_m1'        : (443762.23 + 500277.)/2.,
 	'C6_freq_0' 		: 443762.95,
 	'C6_freq_1_m1' 		: 500277.17,
 
@@ -294,22 +305,6 @@ cfg['samples'][sample_name] = {
 	# 'C7_Ren_N_m1'      :   [26],
 	# 'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	# C8(A ~ -33)  #
-	###############
-	'C8_freq_m1'        : (479173.5+446669.09)/2,
-	'C8_freq_0' 		: 446669.09,
-	'C8_freq_1_m1' 		: 479173.5,
-
-	'C8_Ren_tau_m1'    :   [4.852e-6], #3.87
-	'C8_Ren_N_m1'      :   [44], #36
-	'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [223.37] + [0.0]),
-	
-	'C8_unc_N_m1'		:  [40],
-	'C8_unc_tau_m1'		:  [6.93e-6],
-	'C8_unc_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [41.6] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-	'C8_unc_phase_offset_m1' : -55.29,
-
 
 	}
 
@@ -323,9 +318,9 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
-		'Ex_RO_amplitude':				 4.5e-9,#used to be 8e-9
+		'Ex_RO_amplitude':				 3.0e-9,#4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
-		'Ex_SP_calib_amplitude':		 5e-9,
+		'Ex_SP_calib_amplitude':		 2e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 1000,
