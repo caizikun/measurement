@@ -40,7 +40,7 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     else:
         m.params['Final_Pulse'] = '-x'
     ### Calculate tau larmor
-    tau_larmor = round(1/442829.51,9)
+    tau_larmor = round(1/442464.63,9)
 
     print 'tau_larmor = %s' %tau_larmor
 
@@ -100,7 +100,7 @@ def SimpleDecoupling_Single_Block(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], 
     m.params['DD_in_eigenstate'] = False
     ### Calculate tau larmor
 
-    tau_larmor = round(1/442829.51,9)
+    tau_larmor = round(1/442464.63,9)
     print 'tau_larmor = %s' %tau_larmor
 
 
@@ -208,11 +208,11 @@ if __name__ == '__main__':
     Cont = True
     Run_Msmt = True
     optimize = False
-
+    n = 1
     if n==1 and Cont:
-        N = 1024 ### number of pulses
-        pts = 2 ### number of points per loading of the AWG
-        larmor_max = 91 ### the order of the last revival
+        N = 256 ### number of pulses
+        pts = 15 ### number of points per loading of the AWG
+        larmor_max = 76 ### the order of the last revival
         larmor_min = 2
         larmor_step = 1
         reps = 800
@@ -224,15 +224,15 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
 
     n=0
     if n==1 and Cont:
         N = 64
-        pts = 30
-        larmor_max = 200
+        pts = 50
+        larmor_max = 120
         larmor_min = 2
-        larmor_step = 3
+        larmor_step = 2
         reps = 800
 
         Number_of_pulses = N
@@ -242,14 +242,15 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                                    Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
 
     if n==1 and Cont:
         N = 32
-        pts = 40
-        larmor_max = 222
+        pts = 100
+        larmor_max = 150
         larmor_min = 2
-        larmor_step = 5
+        larmor_step = 2
         reps = 800
 
         Number_of_pulses = N
@@ -259,15 +260,16 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                                    Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
 
     if n==1 and Cont:
         N = 16
-        pts = 60
-        larmor_max = 270
+        pts = 100
+        larmor_max = 160
         larmor_min = 2
-        larmor_step = 6
-        reps = 800
+        larmor_step = 2
+        reps = 400
 
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))
@@ -276,15 +278,16 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                            Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
 
     if n==1 and Cont:
         N = 8
-        pts = 70
-        larmor_max = 380
+        pts = 200
+        larmor_max = 200
         larmor_min = 2
-        larmor_step = 6
-        reps = 800
+        larmor_step = 2
+        reps = 400
 
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))
@@ -293,14 +296,15 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                        Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
 
     if n==1 and Cont:
         N = 4
-        pts = 70
-        larmor_max = 352
+        pts = 200
+        larmor_max = 150
         larmor_min = 2
-        larmor_step = 6
+        larmor_step = 1
         reps = 800
 
         Number_of_pulses = N
@@ -310,14 +314,16 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
-            
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                            Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
+
+
     if n==1 and Cont:
         N = 2
         pts = 70
-        larmor_max = 450
+        larmor_max = 200
         larmor_min = 2
-        larmor_step = 8
+        larmor_step = 4
         reps = 800
 
         Number_of_pulses = N
@@ -327,20 +333,21 @@ if __name__ == '__main__':
         print Total_time
 
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
+            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,
+                        Single_Block=False,shutter=False,XY_scheme=8,reps=reps,debug=debug)
          
 
-    n=1
+
 
 
     if n==1 and Cont:
         debug = False
-        N = 64
-        pts = 24
-        larmor_max = 60
+        N = 1
+        pts = 200
+        larmor_max = 350
         larmor_min = 2
-        larmor_step = 4
-        reps = 800
+        larmor_step = 5
+        reps = 400
 
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))

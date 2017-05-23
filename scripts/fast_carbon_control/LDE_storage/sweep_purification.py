@@ -97,8 +97,6 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     m.params['multiple_source'] = False
     m.params['MW_switch_channel'] = 'None'
 
-    prepare_LT2_dummy_stuff(m)
-
     ### soon not necessary anymore.
     m.params['Nr_C13_init']     = 0 # Not necessary (only for adwin: C13 MBI)
     m.params['Nr_MBE']          = 0 # Not necessary (only for adwin: C13 MBI)
@@ -126,6 +124,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
             m.params[k] = params_lt3.params_lt3[k]
 
     elif setup == 'lt2' :
+        prepare_LT2_dummy_stuff(m)
         print "WARNING: LT2 has only been used as a debugging setup, all parameters currently only haves dummy values"
         import params_lt2
         reload(params_lt2)
@@ -1225,8 +1224,9 @@ def get_overlong_cycles():
     return adwin.get_purification_delayfb_var('overlong_cycles_per_mode', start=1, length=100)
 
 def get_flowchart():
+    flowchart_length = 200
     cur_idx = adwin.get_purification_delayfb_var('flowchart_index')
-    return adwin.get_purification_delayfb_var('mode_flowchart', start=1, length=cur_idx-1), adwin.get_purification_delayfb_var('mode_flowchart_cycles', start=1, length=cur_idx-1)
+    return cur_idx, adwin.get_purification_delayfb_var('mode_flowchart', start=1, length=flowchart_length), adwin.get_purification_delayfb_var('mode_flowchart_cycles', start=1, length=flowchart_length)
 
 def check_LDE_attempts(reps=100000, exp_att=9):
     att = adwin.get_purification_delayfb_var('attempts_second', start=1, length=reps)

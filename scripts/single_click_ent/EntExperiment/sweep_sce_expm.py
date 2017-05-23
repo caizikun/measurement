@@ -154,6 +154,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_yellow_with_AWG']      = 0
     m.params['do_calc_theta']           = 0
     m.params['check_EOM_projective_noise'] = 0
+    m.params['do_post_ent_phase_msmt'] = 0
     
 def turn_all_sequence_elements_on(m):
     """

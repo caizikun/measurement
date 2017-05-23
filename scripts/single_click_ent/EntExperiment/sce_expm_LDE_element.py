@@ -23,7 +23,6 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
 
 
-
     if msmt.params['do_calc_theta'] > 0 or msmt.params['general_sweep_name'] == 'sin2_theta':
         fit_a  = msmt.params['sin2_theta_fit_a']      
         fit_x0 = msmt.params['sin2_theta_fit_x0']     

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,126,126,128,128,312,312,498,498,499,499,538,538,656,656,718,718,871,872,873,876,877
+' Bookmarks                      = 3,3,16,16,22,22,138,138,140,140,324,324,514,514,515,515,558,558,673,673,735,735,888,889,890,893,894
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -90,35 +90,47 @@ DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data 
 
 ' JS Debug stuff
 
-#DEFINE overlong_cycles_per_mode  DATA_115
+#DEFINE overlong_cycles_per_mode_OUT  DATA_115
 #DEFINE max_modes                 210
 
 DIM overlong_cycles_per_mode[max_modes] AS LONG AT DM_LOCAL
+
+DIM overlong_cycles_per_mode_OUT[max_modes] AS LONG AT DRAM_EXTERN
+
 DIM current_mode AS LONG
 DIM start_time AS LONG
 DIM overlong_cycle_threshold AS LONG
 
-#DEFINE mode_flowchart            DATA_110
-#DEFINE mode_flowchart_cycles     DATA_111
+#DEFINE mode_flowchart_OUT            DATA_110
+#DEFINE mode_flowchart_cycles_OUT     DATA_111
 #DEFINE max_flowchart_modes       200
 
 DIM mode_flowchart[max_flowchart_modes] AS LONG AT DM_LOCAL
 DIM mode_flowchart_cycles[max_flowchart_modes] AS LONG AT DM_LOCAL
+
+DIM mode_flowchart_OUT[max_flowchart_modes] AS LONG AT DRAM_EXTERN
+DIM mode_flowchart_cycles_OUT[max_flowchart_modes] AS LONG AT DRAM_EXTERN
+
 #DEFINE flowchart_index             Par_50
 ' DIM flowchart_index AS LONG
 
 ' JS Nuclear stuff
 
-#DEFINE nuclear_frequencies         DATA_120
-#DEFINE nuclear_phases              DATA_121
-#DEFINE nuclear_phases_per_seqrep   DATA_122
+#DEFINE nuclear_frequencies_IN         DATA_120
+#DEFINE nuclear_phases_OUT             DATA_121
+#DEFINE nuclear_phases_per_seqrep_IN   DATA_122
 
 DIM nuclear_frequencies[max_nuclei] AS FLOAT AT DM_LOCAL ' carbon frequencies
 DIM nuclear_phases[max_nuclei] AS FLOAT AT DM_LOCAL ' carbon phases
 DIM nuclear_phases_per_seqrep[max_nuclei] AS FLOAT AT DM_LOCAL
 
+DIM nuclear_frequencies_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
+DIM nuclear_phases_OUT[max_nuclei] AS FLOAT AT DRAM_EXTERN
+DIM nuclear_phases_per_seqrep_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
+
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
+DIM InitializerFloat[100] AS FLOAT AT EM_LOCAL
 DIM array_step as LONG
 
 'general paramters
@@ -141,7 +153,6 @@ DIM AWG_start_DO_channel, AWG_done_DI_channel, AWG_repcount_DI_channel, AWG_even
 DIM PLU_event_di_channel, PLU_event_di_pattern, PLU_which_di_channel, PLU_which_di_pattern AS LONG
 dim sync_trigger_counter_channel, sync_trigger_counter_pattern as long
 DIM invalid_data_marker_do_channel AS LONG
-DIM duty_cycle as FLOAT
 
 ' MBI
 dim mbi_timer, trying_mbi as long
@@ -215,9 +226,10 @@ SUB update_nuclear_phases_from_time(evolution_time)
 ENDSUB
 
 SUB reset_nuclear_phases()
-  FOR i = 1 TO max_nuclei
-    nuclear_phases[i] = 0
-  NEXT i
+  MemCpy(InitializerFloat[1], nuclear_phases[i], max_nuclei)
+  '  FOR i = 1 TO max_nuclei
+  '    nuclear_phases[i] = 0
+  '  NEXT i
 ENDSUB
 
 SUB sleep_for_trigger()
@@ -375,6 +387,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' enter desired values into the initializer array
   FOR i = 1 TO 100
     Initializer[i] = -1
+    InitializerFloat[i] = 0.0
   NEXT i
   '  
   '  
@@ -415,7 +428,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   
   reset_nuclear_phases()
-  
+  FOR i = 1 to max_nuclei
+    nuclear_frequencies[i] = nuclear_frequencies_IN[i]
+    nuclear_phases_per_seqrep[i] = nuclear_phases_per_seqrep_IN[i]
+  NEXT i
   
   AWG_sequence_repetitions_second_attempt = 0 ' reinit. otherwise error
   
@@ -529,18 +545,22 @@ EVENT:
   
   ' DATA_111[1000000000] = 3
   
-  '  IF (current_mode <> mode) THEN  
-  '    inc(flowchart_index)  
-  '    if (flowchart_index > max_flowchart_modes) THEN
-  '      flowchart_index = 1
-  '    endif
-  '    mode_flowchart[flowchart_index] = mode
-  '    mode_flowchart_cycles[flowchart_index] = 0
-  '  endif
-  '            
-  '  if (flowchart_index > 0) THEN
-  '    ' inc(mode_flowchart_cycles[flowchart_index])
-  '  endif
+  IF (current_mode <> mode) THEN  
+    inc(flowchart_index)  
+    if (flowchart_index > max_flowchart_modes) THEN
+      flowchart_index = 1
+    endif
+    mode_flowchart[flowchart_index] = mode
+    mode_flowchart_cycles[flowchart_index] = 0
+  endif
+                
+  if (flowchart_index > 0) THEN
+    inc(mode_flowchart_cycles[flowchart_index])
+  endif
+  '  
+  '  NOP
+  '  NOP
+  '  NOP
   
   current_mode = mode
   start_time = Read_Timer()
@@ -627,9 +647,6 @@ EVENT:
       CASE 1    ' E spin pumping
         
         IF (timer = 0) THEN
-          timer_tic()
-          reset_nuclear_phases() ' this takes 196 cycles
-          timer_toc()
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
@@ -1020,11 +1037,19 @@ EVENT:
         ' JS DLFB: reset number of tico delay cycles here
         ' tico_delay_line_set_cycles(0)
         'trying_mbi = 0
+        
+        timer_tic()
+        reset_nuclear_phases() ' this takes 55 cycles
+        timer_toc()
+        
         mbi_timer = 0 
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
-             
-        flowchart_index = 0
+        
+        '        IF (Par_63 = 0) THEN ' if we are about to stop the process, don't reset the flowchart        
+        '          flowchart_index = 0
+        '        ENDIF
+        
         mode = 0 ' go to cr
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
@@ -1046,6 +1071,10 @@ EVENT:
   IF (Par_36 > overlong_cycle_threshold) THEN
     INC(overlong_cycles_per_mode[current_mode + 1])
     INC(Par_34)
+    IF(current_mode = 1) THEN
+      Par_35 = Par_36
+    ENDIF
+    
   ENDIF
     
 FINISH:
@@ -1054,4 +1083,17 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
   
   tico_delay_line_finish()
+  
+  FOR i = 1 to max_modes
+    overlong_cycles_per_mode_OUT[i] = overlong_cycles_per_mode[i]
+  NEXT i
+  
+  FOR i = 1 to max_flowchart_modes
+    mode_flowchart_OUT[i] = mode_flowchart[i]
+    mode_flowchart_cycles_OUT[i] = mode_flowchart_cycles[i]
+  NEXT i
+  
+  FOR i = 1 to max_nuclei
+    nuclear_phases_OUT[i] = nuclear_phases[i]
+  NEXT i
 
