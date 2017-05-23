@@ -1157,7 +1157,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     ### general params
     pts = 1
     
-    m.params['reps_per_ROsequence'] = 1000000
+    m.params['reps_per_ROsequence'] = 400000
 
     turn_all_sequence_elements_off(m)
 
@@ -1228,6 +1228,11 @@ def get_flowchart():
     flowchart_length = 200
     cur_idx = adwin.get_purification_delayfb_var('flowchart_index')
     return cur_idx, adwin.get_purification_delayfb_var('mode_flowchart', start=1, length=flowchart_length), adwin.get_purification_delayfb_var('mode_flowchart_cycles', start=1, length=flowchart_length)
+
+def print_flowchart(length = 60):
+    a,b,c = get_flowchart()
+    for i in range(a-length,a):
+        print "%d\t%d"%( b[i],c[i])
 
 def check_LDE_attempts(reps=100000, exp_att=9):
     att = adwin.get_purification_delayfb_var('attempts_second', start=1, length=reps)

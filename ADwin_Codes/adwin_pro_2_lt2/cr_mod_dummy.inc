@@ -87,23 +87,23 @@ SUB init_CR()
   pos_mod_min_err              = DATA_31[16] '300
   
   FOR cr_i = 1 TO max_repetitions
-    DATA_22[i] = 0
-    DATA_23[i] = 0
+    DATA_22[cr_i] = 0
+    DATA_23[cr_i] = 0
   NEXT cr_i
   FOR cr_i = 1 TO max_stat
     DATA_26[cr_i] = 0
   NEXT cr_i
   'fill data_18 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO repump_duration
-    DATA_18[i] = Sin(-3.14+2*3.14*i/repump_duration)
+    DATA_18[cr_i] = Sin(-3.14+2*3.14*cr_i/repump_duration)
   NEXT cr_i
   'fill data_19 with a sine for cr mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO CR_duration
-    DATA_19[i] = Sin(-3.14+2*3.14*i/CR_duration)
+    DATA_19[cr_i] = Sin(-3.14+2*3.14*cr_i/CR_duration)
   NEXT cr_i
   'fill data_17 with a sine for repump mod control (calculating sines is slow --> cannot do it during the event cycle)
   FOR cr_i = 1 TO position_scan_length
-    DATA_17[i] = Sin(-3.14+2*3.14*i/position_scan_length)
+    DATA_17[cr_i] = Sin(-3.14+2*3.14*cr_i/position_scan_length)
   NEXT cr_i
   pos_mod_timer = 0
   
