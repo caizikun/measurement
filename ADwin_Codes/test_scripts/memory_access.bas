@@ -73,8 +73,13 @@ INIT:
   f3 = 1
   
 EVENT:
-  timer_tic()
   fl_arr[1] = fl_arr[2] + fl_arr[3]
+  
+  Par_1 = 11
+  Par_2 = 3
+  
+  timer_tic()
+  f1 = f2 / f3
   timer_toc()
   
 FINISH:
