@@ -7,9 +7,9 @@
 ' Version                        = 1
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
-' Optimize_Level                 = 1
+' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,144,144,146,146,421,421,628,628,629,629,672,672,788,788,850,850,1004,1005,1006,1009,1010
+' Bookmarks                      = 3,3,16,16,22,22,147,147,149,149,457,457,668,668,669,669,730,730,846,846,908,908,1061,1062,1063,1067
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -53,7 +53,8 @@
 #DEFINE max_purification_repetitions    500000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins                     2000  
 #DEFINE max_nuclei                      6
-#DEFINE phase_resolution_steps          360
+#DEFINE phase_feedback_resolution_steps 360
+#DEFINE phase_feedback_resolution       1.0
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -102,6 +103,8 @@ DIM current_mode AS LONG
 DIM start_time AS LONG
 DIM overlong_cycle_threshold AS LONG
 
+#DEFINE RECORD_FLOWCHART        0
+
 #DEFINE mode_flowchart_OUT            DATA_110
 #DEFINE mode_flowchart_cycles_OUT     DATA_111
 #DEFINE max_flowchart_modes       200
@@ -132,7 +135,7 @@ DIM nuclear_phases_per_seqrep_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 DIM excess_phase_360s AS LONG AT DM_LOCAL
 
 DIM phase_compensation_delay_cycles[2160] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
-DIM phase_compensation_delay_times[2160]  AS FLOAT AT DM_LOCAL
+DIM phase_compensation_feedback_times[2160]  AS FLOAT AT DM_LOCAL
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -180,6 +183,10 @@ DIM nuclear_feedback_angle, nuclear_feedback_time AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
 DIM minimal_delay_cycles AS LONG
 DIM minimal_delay_time AS FLOAT
+DIM nuclear_feedback_index AS LONG
+
+DIM calculate_phase_modulo_in_future_cycle AS LONG
+DIM update_delay_setting_in_future_cycle AS LONG
 
 ' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
@@ -221,7 +228,7 @@ SUB update_nuclear_phases_from_list(phase_list)
   ' unfortunately variable indexed array access takes twice as long as constant access
   ' ugly solution: unroll the loop by hand
   
-  ' note: max_nuclei is set at 6 now!
+  ' note: max_nuclei is set at 2 now!
   
   nuclear_phases[1] = nuclear_phases[1] + phase_list[1]
   nuclear_phases[2] = nuclear_phases[2] + phase_list[2]
@@ -230,7 +237,7 @@ SUB update_nuclear_phases_from_list(phase_list)
   nuclear_phases[5] = nuclear_phases[5] + phase_list[5]
   nuclear_phases[6] = nuclear_phases[6] + phase_list[6]
   
-  modulo_nuclear_phases() ' takes 122 cycles
+  ' modulo_nuclear_phases() ' takes 122 cycles
   
 ENDSUB
 
@@ -254,7 +261,7 @@ SUB update_nuclear_phases_from_time(evolution_time)
   nuclear_phases[5] = nuclear_phases[5] + (evolution_time * nuclear_frequencies[5] * 360)
   nuclear_phases[6] = nuclear_phases[6] + (evolution_time * nuclear_frequencies[6] * 360)
   
-  modulo_nuclear_phases()  
+  ' modulo_nuclear_phases()  
   
 ENDSUB
 
@@ -269,13 +276,13 @@ SUB modulo_nuclear_phases() ' takes 122 cycles
   
   excess_phase_360s = nuclear_phases[3] / 360
   nuclear_phases[3] = nuclear_phases[3] - (excess_phase_360s * 360)  
-  
+    
   excess_phase_360s = nuclear_phases[4] / 360
   nuclear_phases[4] = nuclear_phases[4] - (excess_phase_360s * 360)  
-  
+    
   excess_phase_360s = nuclear_phases[5] / 360
   nuclear_phases[5] = nuclear_phases[5] - (excess_phase_360s * 360)  
-  
+    
   excess_phase_360s = nuclear_phases[6] / 360
   nuclear_phases[6] = nuclear_phases[6] - (excess_phase_360s * 360)  
   
@@ -315,6 +322,35 @@ SUB modulo_nuclear_phases() ' takes 122 cycles
   '    UNTIL(nuclear_phases[6] < 360)
   '  ENDIF
 ENDSUB
+
+FUNCTION get_nuclear_feedback_index(phase_to_compensate, current_feedback_nucleus) AS LONG
+  
+  get_nuclear_feedback_index = Round(phase_to_compensate / phase_feedback_resolution) + 1
+  IF (get_nuclear_feedback_index > phase_feedback_resolution_steps) THEN
+    get_nuclear_feedback_index = get_nuclear_feedback_index - phase_feedback_resolution_steps
+  ENDIF
+  
+  get_nuclear_feedback_index = get_nuclear_feedback_index + (current_feedback_nucleus - 1) * phase_feedback_resolution_steps
+  
+    
+  ' we might speed up the line above by unrolling as below
+  
+  '  SELECTCASE current_feedback_nucleus
+  '    CASE 1
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index
+  '    CASE 2
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index + 360
+  '    CASE 3
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index + 720
+  '    CASE 4
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index + 1080
+  '    CASE 5
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index + 1440
+  '    CASE 6
+  '      get_nuclear_feedback_index = get_nuclear_feedback_index + 1800
+  '  ENDSELECT
+  '  
+ENDFUNCTION
 
 
 SUB reset_nuclear_phases()
@@ -531,19 +567,23 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   NEXT i
   
   FOR i = 1 to max_nuclei
-    FOR j = 1 to phase_resolution_steps
+    FOR j = 1 to phase_feedback_resolution_steps
       ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
       ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
       ' note: minimal feedback time is actually twice the minimal delay time
-      phase_to_compensate = j
-            
+      nuclear_feedback_index = (i-1)*phase_feedback_resolution_steps + j
+      
+      phase_to_compensate = ((j - 1) * 360.0) / phase_feedback_resolution_steps
       nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
-            
-      nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus]) ' 30 cycles
-             
-      tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods) ' 50 cycles
+      nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[i]) ' 30 cycles
+      
+      phase_compensation_delay_cycles[nuclear_feedback_index] = tico_delay_line_calculate_cycles(nuclear_feedback_time / 2)
+      phase_compensation_feedback_times[nuclear_feedback_index] = tico_delay_line_calculate_delay(phase_compensation_delay_cycles[nuclear_feedback_index]) * 2
     NEXT j
   NEXT i
+  
+  update_delay_setting_in_future_cycle = 0
+  calculate_phase_modulo_in_future_cycle = 0
   
     
   
@@ -648,7 +688,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Par_35 = 0
   
   current_mode = -1
-  overlong_cycle_threshold = cycle_duration - 10  ' cycle_duration - 10 ' 9 cycles seems to be the length of the okay-length cycle branch in the overlong check, +1 to be sure
+  overlong_cycle_threshold = cycle_duration - 20  ' cycle_duration - 10 ' 9 cycles seems to be the length of the okay-length cycle branch in the overlong check, +1 to be sure
   
 
 EVENT:
@@ -659,25 +699,43 @@ EVENT:
   
   ' DATA_111[1000000000] = 3
   
-  IF (current_mode <> mode) THEN  
-    inc(flowchart_index)  
-    if (flowchart_index > max_flowchart_modes) THEN
-      flowchart_index = 1
-    endif
-    mode_flowchart[flowchart_index] = mode
-    mode_flowchart_cycles[flowchart_index] = 0
-  endif
-                
-  if (flowchart_index > 0) THEN
-    inc(mode_flowchart_cycles[flowchart_index])
-  endif
-  '  
-  '  NOP
-  '  NOP
-  '  NOP
+  '  IF (current_mode <> mode) THEN  
+  '    inc(flowchart_index)  
+  '    if (flowchart_index > max_flowchart_modes) THEN
+  '      flowchart_index = 1
+  '    endif
+  '    mode_flowchart[flowchart_index] = mode
+  '    mode_flowchart_cycles[flowchart_index] = 0
+  '  endif
+  '                
+  '  if (flowchart_index > 0) THEN
+  '    inc(mode_flowchart_cycles[flowchart_index])
+  '  endif
+
   
   current_mode = mode
   start_time = Read_Timer()
+  
+  IF (calculate_phase_modulo_in_future_cycle > 0) THEN
+    DEC(calculate_phase_modulo_in_future_cycle)
+    
+    IF (calculate_phase_modulo_in_future_cycle = 0) THEN
+      modulo_nuclear_phases() ' 131 cycles
+    ENDIF
+    
+  ENDIF
+  
+  
+  IF (update_delay_setting_in_future_cycle > 0) THEN
+    Dec(update_delay_setting_in_future_cycle)
+    
+    IF (update_delay_setting_in_future_cycle = 0) THEN
+      nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles            
+      tico_delay_line_set_cycles(phase_compensation_delay_cycles[nuclear_feedback_index]) ' takes +/- 36 cycles
+      nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index] ' takes 4 cycles
+    ENDIF
+  ENDIF
+  
     
   IF (wait_time > 0)  THEN
     wait_time = wait_time - 1
@@ -962,31 +1020,33 @@ EVENT:
         ENDIF
                 
                 
+        
         ' monitor inputs
-        digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
+        digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE) ' 71 cycles
                 
         if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
           IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
             inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
             
             ' JS DLFB: update acquired nuclear phases
-            timer_tic()
             update_nuclear_phases_from_list(nuclear_phases_per_seqrep) ' 154 cycles  
-                                
+                                         
             ' JS DLFB: pre-emptively adjust the number of delay cycles
-            phase_to_compensate = nuclear_phases[current_feedback_nucleus] ' 8 cycles
+            ' we don't have enough processing time left to do that in this round, 
+            ' postpone it to the next round
+            calculate_phase_modulo_in_future_cycle = 1
+            update_delay_setting_in_future_cycle = 2
                
-            ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
-            ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
-            ' note: minimal feedback time is actually twice the minimal delay time
-            
-            nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
-            
-            nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus]) ' 30 cycles
-             
-            tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods) ' 50 cycles
-            
-            timer_toc()
+            '            phase_to_compensate = nuclear_phases[current_feedback_nucleus] ' 8 cycles
+            '            ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
+            '            ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
+            '            ' note: minimal feedback time is actually twice the minimal delay time
+            '            
+            '            nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
+            '            
+            '            nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus]) ' 30 cycles
+            '             
+            '            tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods) ' 50 cycles
             
             ' FPar_61 = nuclear_feedback_angle
             ' FPar_62 = nuclear_feedback_time * 1e9 ' communicate the nuclear feedback time in ns for debugging purposes
@@ -1000,9 +1060,6 @@ EVENT:
         else
           AWG_repcount_was_low = 1
         endif
-        
-        
-        
             
         IF ((digin_this_cycle AND AWG_done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
           if (awg_done_was_low > 0) then ' switched in this round
@@ -1027,6 +1084,7 @@ EVENT:
         ' the only thing left to do is update the nuclear phases based on feedback time
         
         update_nuclear_phases_from_time(nuclear_feedback_time) ' takes 215 cycles
+        modulo_nuclear_phases()
         
         ' awg_done_was_low = 1
         
@@ -1182,9 +1240,10 @@ EVENT:
   IF (Par_36 > overlong_cycle_threshold) THEN
     INC(overlong_cycles_per_mode[current_mode + 1])
     INC(Par_34)
-    IF(current_mode = 1) THEN
+    IF(current_mode = 6) THEN
       Par_35 = Par_36
       Par_37 = timer
+      Par_38 = Par_41
     ENDIF
     
   ENDIF
