@@ -545,7 +545,7 @@ def Do_BK_XX(name, debug = False, upload_only = False):
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
     pts = 1
     m.joint_params['LDE_element_length'] = 9e-6
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -553,9 +553,10 @@ def Do_BK_XX(name, debug = False, upload_only = False):
     m.params['MW_pi_during_LDE'] = 1 ## turn pi pulse on or off for spcorrs
     m.params['first_mw_pulse_is_pi2'] = 1
     m.params['LDE_final_mw_phase'] = m.params['X_phase']
-    # m.params['do_general_sweep']    = False
-    m.params['is_two_setup_experiment'] = 0
-    # m.params['PLU_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.params['do_general_sweep'] = False
+    
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -565,17 +566,11 @@ def Do_BK_XX(name, debug = False, upload_only = False):
         m.params['general_sweep_pts'] = np.linspace(0,360,10) 
 
     
-    m.params['do_general_sweep'] = 1
-    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    m.params['pts'] = len(m.params['sweep_pts'])
-
     m.joint_params['do_final_mw_LDE'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
     m.params['LDE_decouple_time'] = 2*m.params['LDE_decouple_time']
-    m.params['opt_pulse_separation'] = m.params['LDE_decouple_time']+200e-9
+    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']+200e-9
     m.joint_params['LDE_attempts'] = 250
 
     ### upload
@@ -863,7 +858,7 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
-    Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
+    # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
 
 
     if hasattr(qt,'master_script_is_running'):
@@ -884,7 +879,7 @@ if __name__ == '__main__':
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
 
-            AWG.clear_visa
+            
             qt.msleep(2)
             qt.instruments['purification_optimizer'].start_babysit()
             
@@ -898,9 +893,10 @@ if __name__ == '__main__':
                     qt.purification_succes = False
                     break
 
-                TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
-                # PurifyYY(name+'_SingleClickEnt_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
+                # TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
+                Do_BK_XX(name+'_BK_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+
+               
             
             qt.instruments['purification_optimizer'].set_stop_optimize(True)
             qt.instruments['purification_optimizer'].stop_babysit()

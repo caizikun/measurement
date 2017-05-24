@@ -265,11 +265,12 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 opt_ref_name = 'opt pi {}'.format(i+1)
 
                 if msmt.params['PLU_during_LDE'] == 1 :
-                    e.add(Gate.plu_gate, name = 'plu gate 1', 
+                    plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
+                    e.add(Gate.plu_gate, name = plu_to_plu_ref_name, 
                         refpulse = opt_ref_name,
                         start = msmt.params['PLU_1_delay'])
 
-                    plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
+                    
 
 
             plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
