@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,138,138,140,140,324,324,514,514,515,515,558,558,673,673,735,735,888,889,890,893,894
+' Bookmarks                      = 3,3,16,16,22,22,144,144,146,146,365,365,572,572,573,573,616,616,731,731,793,793,947,948,949,952,953
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,7 +43,7 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\..\adwin_pro_2\configuration.inc
-#INCLUDE .\cr_mod_dummy.inc
+#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE .\control_tico_delay_line.inc
 '#INCLUDE .\cr.inc
 '#INCLUDE .\cr_mod_Bell.inc
@@ -51,8 +51,9 @@
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
 #DEFINE max_purification_repetitions    500000 ' high number needed to have good statistics in the repump_speed calibration measurement
-#DEFINE max_SP_bins       2000  
-#DEFINE max_nuclei        10
+#DEFINE max_SP_bins                     2000  
+#DEFINE max_nuclei                      6
+#DEFINE phase_resolution_steps          360
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -70,7 +71,7 @@ DIM DATA_21[100] AS FLOAT  ' float parameters from python
 '31 CR float parameters
 'DIM DATA_37[max_purification_repetitions] AS LONG ' SSRO_after_electron_carbon_SWAP_result ' old
 
-DIM DATA_29[max_SP_bins] AS LONG     ' SP counts
+DIM DATA_29[max_SP_bins] AS LONG AT DM_LOCAL    ' SP counts
 DIM DATA_100[max_purification_repetitions] AS LONG at DRAM_Extern' Phase_correction_repetitions needed to correct the phase of the carbon 
 DIM DATA_101[max_purification_repetitions] AS LONG at DRAM_Extern' time spent for communication between adwins 
 DIM DATA_102[max_purification_repetitions] AS LONG at DRAM_Extern' Information which how many AWG attempts lie between successful events
@@ -128,6 +129,11 @@ DIM nuclear_frequencies_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 DIM nuclear_phases_OUT[max_nuclei] AS FLOAT AT DRAM_EXTERN
 DIM nuclear_phases_per_seqrep_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 
+DIM excess_phase_360s AS LONG AT DM_LOCAL
+
+DIM phase_compensation_delay_cycles[2160] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
+DIM phase_compensation_delay_times[2160]  AS FLOAT AT DM_LOCAL
+
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM InitializerFloat[100] AS FLOAT AT EM_LOCAL
@@ -136,7 +142,7 @@ DIM array_step as LONG
 'general paramters
 DIM cycle_duration AS LONG 'repetition rate of the event structure. Typically 1us
 DIM repetition_counter, No_of_sequence_repetitions, success_event_counter AS LONG 'counts how many repetitions of the experiment have been done
-DIM timer, wait_time, mode, i AS LONG 
+DIM timer, wait_time, mode, i, j AS LONG 
 DIM SP_duration AS LONG
 DIM wait_after_pulse_duration AS LONG
 DIM CR_result, first_CR AS LONG
@@ -202,28 +208,58 @@ DIM mode_after_spinpumping, mode_after_LDE, mode_after_LDE_2, mode_after_SWAP, m
 Dim time as long
 
 SUB update_nuclear_phases_from_list(phase_list)
-  FOR i = 1 TO number_of_dps_nuclei
-    nuclear_phases[i] = nuclear_phases[i] + phase_list[i]
-    
-    IF (nuclear_phases[i] > 360) THEN
-      DO
-        nuclear_phases[i] = nuclear_phases[i] - 360
-      UNTIL(nuclear_phases[i] < 360)
-    ENDIF
-  NEXT i
+  ' unfortunately variable indexed array access takes twice as long as constant access
+  ' ugly solution: unroll the loop by hand
+  
+  ' note: max_nuclei is set at 6 now!
+  
+  nuclear_phases[1] = nuclear_phases[1] + phase_list[1]
+  nuclear_phases[2] = nuclear_phases[2] + phase_list[2]
+  nuclear_phases[3] = nuclear_phases[3] + phase_list[3]
+  nuclear_phases[4] = nuclear_phases[4] + phase_list[4]
+  nuclear_phases[5] = nuclear_phases[5] + phase_list[5]
+  nuclear_phases[6] = nuclear_phases[6] + phase_list[6]
+  
+  modulo_nuclear_phases() ' takes 122 cycles
+  
 ENDSUB
 
-SUB update_nuclear_phases_from_time(evolution_time)
-  FOR i = 1 TO number_of_dps_nuclei
-    nuclear_phases[i] = nuclear_phases[i] + evolution_time * nuclear_frequencies[i] * 360
-    
-    IF (nuclear_phases[i] > 360) THEN
-      DO
-        nuclear_phases[i] = nuclear_phases[i] - 360
-      UNTIL(nuclear_phases[i] < 360)
-    ENDIF
-  NEXT i
+SUB update_nuclear_phases_from_time(evolution_time)  
+  ' I also unroll this loop to speed it up
+  
+  nuclear_phases[1] = nuclear_phases[1] + (evolution_time * nuclear_frequencies[1] * 360)
+  nuclear_phases[2] = nuclear_phases[2] + (evolution_time * nuclear_frequencies[2] * 360)
+  nuclear_phases[3] = nuclear_phases[3] + (evolution_time * nuclear_frequencies[3] * 360)
+  nuclear_phases[4] = nuclear_phases[4] + (evolution_time * nuclear_frequencies[4] * 360)
+  nuclear_phases[5] = nuclear_phases[5] + (evolution_time * nuclear_frequencies[5] * 360)
+  nuclear_phases[6] = nuclear_phases[6] + (evolution_time * nuclear_frequencies[6] * 360)
+  
+  modulo_nuclear_phases()  
+  
 ENDSUB
+
+SUB modulo_nuclear_phases() ' takes 122 cycles
+  
+  ' converting the floating point answer to a long truncates the decimal part, exactly what we want
+  excess_phase_360s = nuclear_phases[1] / 360
+  nuclear_phases[1] = nuclear_phases[1] - (excess_phase_360s * 360)
+  
+  excess_phase_360s = nuclear_phases[2] / 360
+  nuclear_phases[2] = nuclear_phases[2] - (excess_phase_360s * 360)  
+  
+  excess_phase_360s = nuclear_phases[3] / 360
+  nuclear_phases[3] = nuclear_phases[3] - (excess_phase_360s * 360)  
+  
+  excess_phase_360s = nuclear_phases[4] / 360
+  nuclear_phases[4] = nuclear_phases[4] - (excess_phase_360s * 360)  
+  
+  excess_phase_360s = nuclear_phases[5] / 360
+  nuclear_phases[5] = nuclear_phases[5] - (excess_phase_360s * 360)  
+  
+  excess_phase_360s = nuclear_phases[6] / 360
+  nuclear_phases[6] = nuclear_phases[6] - (excess_phase_360s * 360)  
+ENDSUB
+
 
 SUB reset_nuclear_phases()
   MemCpy(InitializerFloat[1], nuclear_phases[i], max_nuclei)
@@ -248,13 +284,18 @@ SUB sleep_for_trigger()
 ENDSUB
 
 SUB timer_tic()
-  Par_38 = Read_Timer()
   Par_39 = Read_Timer()
 ENDSUB
 
 SUB timer_toc()
   Par_40 = Read_Timer()
-  Par_41 = Par_40 - Par_39 - (Par_39 - Par_38) ' correct for the duration of the Read_Timer() call
+  Par_41 = Par_40 - Par_39 - 2 ' correct for the duration of the Read_Timer() call
+ENDSUB
+
+SUB strobe_tictoc()
+  Par_42 = Par_43
+  Par_43 = Read_Timer()
+  Par_44 = Par_43 - Par_42
 ENDSUB
 
 
@@ -433,6 +474,23 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     nuclear_phases_per_seqrep[i] = nuclear_phases_per_seqrep_IN[i]
   NEXT i
   
+  FOR i = 1 to max_nuclei
+    FOR j = 1 to phase_resolution_steps
+      ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
+      ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
+      ' note: minimal feedback time is actually twice the minimal delay time
+      phase_to_compensate = j
+            
+      nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
+            
+      nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus]) ' 30 cycles
+             
+      tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods) ' 50 cycles
+    NEXT j
+  NEXT i
+  
+    
+  
   AWG_sequence_repetitions_second_attempt = 0 ' reinit. otherwise error
   
 ''''''''''''''''''''''''''''
@@ -534,7 +592,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   Par_35 = 0
   
   current_mode = -1
-  overlong_cycle_threshold = cycle_duration - 10 ' 9 cycles seems to be the length of the okay-length cycle branch in the overlong check, +1 to be sure
+  overlong_cycle_threshold = cycle_duration - 10  ' cycle_duration - 10 ' 9 cycles seems to be the length of the okay-length cycle branch in the overlong check, +1 to be sure
   
 
 EVENT:
@@ -653,7 +711,7 @@ EVENT:
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern OR sync_trigger_counter_pattern)                       ' turn on counter
           old_counts = 0
           
-        ELSE
+        ELSE ' this branch takes 186 - 190 cycles
           counts = P2_CNT_READ(CTR_MODULE,counter_channel)
           DATA_29[timer] = DATA_29[timer] + counts - old_counts    ' for spinpumping arrival time histogram
           old_counts = counts
@@ -762,6 +820,7 @@ EVENT:
         
         ' monitor inputs
         digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
+        
         if ((digin_this_cycle AND AWG_repcount_DI_pattern) >0) then 
           IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
             inc(AWG_sequence_repetitions_first_attempt) ' increase the number of attempts counter
@@ -777,7 +836,7 @@ EVENT:
             DATA_103[repetition_counter+1] = AWG_sequence_repetitions_first_attempt 'save the result
             time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1
-            if ((LDE_1_is_init = 1)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
+            if ((PLU_during_LDE = 0) or (LDE_1_is_init = 1)) then ' this is a single-setup (e.g. phase calibration) measurement. Go on to next mode
               mode = mode_after_LDE
             else ' two setups involved: Done means failure of the sequence
               mode = 12 ' finalize and go to cr check
@@ -791,9 +850,7 @@ EVENT:
             PAR_30 = digin_this_cycle
             END ' terminate the process
           endif
-        ENDIF  
-        
-        
+        ENDIF       
        
       CASE 5  ' wait for the electron Carbon swap to be done and then read out the electron if this is specified in the msmt parameters
         IF (timer =0) THEN
@@ -855,29 +912,31 @@ EVENT:
           IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
             inc(AWG_sequence_repetitions_second_attempt) ' increase the number of attempts counter
             
-            '            ' JS DLFB: update acquired nuclear phases
-            '            update_nuclear_phases_from_list(nuclear_phases_per_seqrep)
-            '                        
-            '            ' JS DLFB: pre-emptively adjust the number of delay cycles
-            '            phase_to_compensate = nuclear_phases[current_feedback_nucleus] + DATA_110[current_ROseq]
-            '            
-            '            IF (phase_to_compensate > 360) THEN
-            '              DO
-            '                phase_to_compensate = phase_to_compensate - 360
-            '              UNTIL (phase_to_compensate < 360)
-            '            ENDIF
-            '            
-            '            ' overrotate by 3 rotations to ensure that the corresponding delay time is longer than the minimal delay time
-            '            ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
-            '            ' note: minimal feedback time is actually twice the minimal delay time
-            '            nuclear_feedback_angle = 1800 - phase_to_compensate 
-            '            nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus])
-            '            
-            '            tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods)
-            '            FPar_61 = nuclear_feedback_angle
-            '            FPar_62 = nuclear_feedback_time * 1e9 ' communicate the nuclear feedback time in ns for debugging purposes
+            ' JS DLFB: update acquired nuclear phases
+            timer_tic()
+            update_nuclear_phases_from_list(nuclear_phases_per_seqrep) ' 154 cycles  
+                                
+            ' JS DLFB: pre-emptively adjust the number of delay cycles
+            phase_to_compensate = nuclear_phases[current_feedback_nucleus] ' 8 cycles
+               
+            ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
+            ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
+            ' note: minimal feedback time is actually twice the minimal delay time
             
-            ' tico_delay_line_set_cycles(150)
+            nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
+            
+            nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[current_feedback_nucleus]) ' 30 cycles
+             
+            tico_delay_line_set_delay(nuclear_feedback_time / 2) ' delay time is half the feedback time (two triggered delay periods) ' 50 cycles
+            
+            timer_toc()
+            
+            ' FPar_61 = nuclear_feedback_angle
+            ' FPar_62 = nuclear_feedback_time * 1e9 ' communicate the nuclear feedback time in ns for debugging purposes
+                        
+            '            timer_tic()
+            '            tico_delay_line_set_cycles(150)
+            '            timer_toc()
             
           ENDIF
           AWG_repcount_was_low = 0
@@ -888,14 +947,14 @@ EVENT:
         
         
             
-        IF ((digin_this_cycle AND AWG_Done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
+        IF ((digin_this_cycle AND AWG_done_di_pattern) >0) THEN  'awg trigger tells us it is done with the entanglement sequence. This means failure of the protocol
           if (awg_done_was_low > 0) then ' switched in this round
             time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1            
             DATA_104[repetition_counter+1] = AWG_sequence_repetitions_second_attempt 'save the result
             mode = mode_after_LDE_2
-            
-          endif
+          ENDIF
+          
           awg_done_was_low = 0  ' remember
         ELSE ' AWG not done yet
           awg_done_was_low = 1
@@ -910,10 +969,9 @@ EVENT:
         ' as the delay has already been set while counting along
         ' the only thing left to do is update the nuclear phases based on feedback time
         
-        update_nuclear_phases_from_time(nuclear_feedback_time)
+        update_nuclear_phases_from_time(nuclear_feedback_time) ' takes 215 cycles
         
         ' awg_done_was_low = 1
-        Par_33 = 0
         
         timer = -1
         mode = mode_after_phase_correction
@@ -989,8 +1047,6 @@ EVENT:
         ' to avoid confilicts in AWG timing, the ADWIN has to wait for another trigger before starting the readout.
         ' after that, we go to case 10 to increment the repetition counter and then we clean up in case 12
         
-        Inc(Par_33)
-        
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern)>0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low>0) then
             mode = 200
@@ -1035,12 +1091,10 @@ EVENT:
         AWG_sequence_repetitions_second_attempt = 0
         current_MBI_attempt = 1
         ' JS DLFB: reset number of tico delay cycles here
-        ' tico_delay_line_set_cycles(0)
+        tico_delay_line_set_cycles(0)
         'trying_mbi = 0
         
-        timer_tic()
         reset_nuclear_phases() ' this takes 55 cycles
-        timer_toc()
         
         mbi_timer = 0 
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
@@ -1073,6 +1127,7 @@ EVENT:
     INC(Par_34)
     IF(current_mode = 1) THEN
       Par_35 = Par_36
+      Par_37 = timer
     ENDIF
     
   ENDIF

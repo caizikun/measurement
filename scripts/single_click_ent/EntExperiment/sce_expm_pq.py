@@ -545,7 +545,7 @@ def Do_BK_XX(name, debug = False, upload_only = False):
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
     pts = 1
     m.joint_params['LDE_element_length'] = 9e-6
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -553,24 +553,21 @@ def Do_BK_XX(name, debug = False, upload_only = False):
     m.params['MW_pi_during_LDE'] = 1 ## turn pi pulse on or off for spcorrs
     m.params['first_mw_pulse_is_pi2'] = 1
     m.params['LDE_final_mw_phase'] = m.params['X_phase']
-    # m.params['do_general_sweep']    = False
-    m.params['is_two_setup_experiment'] = 0
-    # m.params['PLU_during_LDE'] = 1
+    m.params['do_general_sweep']    = False
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
         hist_only = True
-        m.params['general_sweep_pts'] = np.array([0]*10)
+
     else:
         hist_only = False
-        m.params['general_sweep_pts'] = np.linspace(0,360,10) 
+        m.params['MIN_SYNC_BIN']        =   int(1.75e6) #5 us 
+        m.params['MAX_SYNC_BIN']        =   int(8.5e6)#15 us # XXX was 15us 
+        m.params['MIN_HIST_SYNC_BIN']   =   int(1.65e6) #XXXX was 5438*1e3
+        m.params['MAX_HIST_SYNC_BIN']   =   int(8.5e6)
 
     
-    m.params['do_general_sweep'] = 1
-    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    m.params['pts'] = len(m.params['sweep_pts'])
-
     m.joint_params['do_final_mw_LDE'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
@@ -581,6 +578,57 @@ def Do_BK_XX(name, debug = False, upload_only = False):
     ### upload
 
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
+
+def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
+    """
+    Performs the Barrett & Kok protocol.
+    WATCH OUT FOR THE PLU SCRIPT YOU ARE USING!
+    """
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+    m = PQSingleClickEntExpm(name)    
+
+    sweep_sce_expm.prepare(m)
+
+    ### general params
+    m.params['reps_per_ROsequence'] = 200
+    pts = 1
+    # m.joint_params['LDE_element_length'] = 9e-6
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['MW_pi_during_LDE'] = 1 ## turn pi pulse on or off for spcorrs
+    m.params['first_mw_pulse_is_pi2'] = 1
+    m.params['LDE_final_mw_phase'] = m.params['X_phase']
+    m.params['do_general_sweep']    = False
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    ### only one setup is allowed to sweep the phase.
+    if qt.current_setup == 'lt3':
+        hist_only = True
+
+    else:
+        hist_only = False
+        m.params['MIN_SYNC_BIN']        =   int(1.75e6) #5 us 
+        m.params['MAX_SYNC_BIN']        =   int(8.5e6)#15 us # XXX was 15us 
+        m.params['MIN_HIST_SYNC_BIN']   =   int(1.65e6) #XXXX was 5438*1e3
+        m.params['MAX_HIST_SYNC_BIN']   =   int(8.5e6)
+
+    
+    m.joint_params['do_final_mw_LDE'] = 1
+
+    m.joint_params['opt_pi_pulses'] = 2
+    m.params['LDE_decouple_time'] = 500e-9
+    m.params['MW_RO_pulse_in_LDE'] = 1
+    m.params['opt_pulse_separation'] = m.params['LDE_decouple_time']
+    m.joint_params['LDE_attempts'] = 250
+
+    ### upload
+
+    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
+
 
 def Determine_eta(name, debug = False, upload_only = False):
     """
@@ -863,7 +911,9 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
-    Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
+    # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
+
+    Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = True)
 
 
     if hasattr(qt,'master_script_is_running'):
@@ -884,7 +934,7 @@ if __name__ == '__main__':
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
 
-            AWG.clear_visa
+
             qt.msleep(2)
             qt.instruments['purification_optimizer'].start_babysit()
             
@@ -897,10 +947,9 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     qt.purification_succes = False
                     break
-
-                TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
+                Do_BK_XX(name+'_BK_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                # TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
                 # PurifyYY(name+'_SingleClickEnt_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
-                AWG.clear_visa()
             
             qt.instruments['purification_optimizer'].set_stop_optimize(True)
             qt.instruments['purification_optimizer'].stop_babysit()
