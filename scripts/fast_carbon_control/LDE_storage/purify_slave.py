@@ -27,7 +27,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'purification'
+    adwin_process = 'purification_delayfb'
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -1096,7 +1096,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=False)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=True)
             self.dump_AWG_seq()
         else:
 

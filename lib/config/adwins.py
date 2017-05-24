@@ -2342,6 +2342,7 @@ config['adwin_lt2_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
@@ -2349,7 +2350,6 @@ config['adwin_lt2_processes'] = {
                     }, 
                 'data_float' : {
                     'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
-                    # 'min_phase_deviation'           : 109, # accuracy that can be achieved in phase compensation                 
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
@@ -3305,14 +3305,14 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
                     'mode_flowchart_cycles'     : 111,
                     }, 
                 'data_float' : {
-                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
-                    # 'min_phase_deviation'           : 109, # accuracy that can be achieved in phase compensation                 
+                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
