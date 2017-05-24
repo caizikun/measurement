@@ -228,6 +228,15 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 refpoint_new    = 'center',
                 name            = 'MW_pi')
 
+
+            if msmt.params['MW_RO_pulse_in_LDE'] == 1:
+                e.add(pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']),
+                    start           = msmt.params['LDE_decouple_time'],
+                    refpulse        = 'MW_pi',
+                    refpoint        = 'center',
+                    refpoint_new    = 'center',
+                    name            = 'RO_pulse')
+
     else:
 
         #mw pi/2 pulse or 'theta'
@@ -361,7 +370,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
 
 
 
-    if msmt.joint_params['do_final_mw_LDE'] == 1:
+    if msmt.joint_params['do_final_mw_LDE'] == 1 and (not msmt.params['MW_RO_pulse_in_LDE'] == 1):
 
         if msmt.params['do_dynamical_decoupling'] > 0:
             e.add(pulse.cp(Gate.mw_X,phase = msmt.params['Y_phase']),
