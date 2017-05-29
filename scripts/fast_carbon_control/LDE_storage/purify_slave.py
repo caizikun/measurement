@@ -369,23 +369,23 @@ class purify_single_setup(DD.MBI_C13):
         manipulates the length of the C_init RO_wait in order to correctly synchronize both AWGs
         only does this on the side of the setup with the shorter carbon gate time!
         """
-        setup = qt.current_setup
-        master_setup = self.joint_params['master_setup']
-        # store this value as it is also important for the AWG/ADWIN communication
-        store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
-
-        # calculate sequence durations 
-        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
-        slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
-        
-        init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
-
-        # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
-        # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
-
         do_wait = False
         ### determine whether or not to wait for the other setup
         if self.params['is_two_setup_experiment'] > 0:
+            setup = qt.current_setup
+            master_setup = self.joint_params['master_setup']
+            # store this value as it is also important for the AWG/ADWIN communication
+            store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
+
+            # calculate sequence durations 
+            master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
+            slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
+            
+            init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
+
+            # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
+            # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
+
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + slave_seq_duration - master_seq_duration - init_RO_wait_diff
@@ -411,8 +411,9 @@ class purify_single_setup(DD.MBI_C13):
             seq[-1].event_jump = 'next'
             seq.append(wait_for_other_setup)
 
-        ### restore the old value
-        self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
+        if self.params['is_two_setup_experiment'] > 0:
+            ### restore the old value
+            self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
 
         return seq
 
@@ -895,11 +896,13 @@ class purify_single_setup(DD.MBI_C13):
 
             if self.params['do_carbon_init'] > 0:
                 # TODO: check if this generalization for >1 carbons actually works!
-                for c_id in self.params['dps_carbons']:
+                for i in range(self.params['number_of_dps_carbons']):
                     ### initialize carbon in +Z or +X
+                    c_id = self.params['dps_carbons'][i]
+                    init_method = self.params['carbon_init_method']
                     carbon_init_seq = self.initialize_carbon_sequence(go_to_element = 'start',
                             prefix = 'C_Init', pt =pt,
-                            addressed_carbon = c_id,initialization_method = self.params['carbon_init_method'])
+                            addressed_carbon = c_id,initialization_method = init_method)
 
                     if gate_seq != []:
                         carbon_init_seq[0].wait_for_trigger = False
@@ -935,31 +938,48 @@ class purify_single_setup(DD.MBI_C13):
                     # gate_seq.append(DD.Gate('LDE_1_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 
             if self.params['do_swap_onto_carbon'] > 0:
-                if (self.params['number_of_dps_carbons'] > 1):
-                    print("WARNING: swapping doesn't make sense for multiple carbons")
-                ### Elementes for swapping
-                swap_with_init = self.carbon_swap_gate(
-                                go_to_element = 'start',
-                                pt = pt,
-                                addressed_carbon = self.params['dps_carbons'][0], # only swap onto the first carbon (swapping doesn't make sense for multiple carbons)
-                                swap_type               = 'swap_w_init',
-                                RO_after_swap           = True)
+                if (self.params['number_of_dps_carbons'] == 1):
+                    # print("Using 1 carbon: encoding with SWAP")
+                    ### Elementes for swapping
+                    swap_with_init = self.carbon_swap_gate(
+                                    go_to_element = 'start',
+                                    pt = pt,
+                                    addressed_carbon = self.params['dps_carbons'][0], # only swap onto the first carbon (swapping doesn't make sense for multiple carbons)
+                                    swap_type               = 'swap_w_init',
+                                    RO_after_swap           = True)
 
 
-                if self.params['do_carbon_init'] > 0:
-                    ### important to realize that the tau_cut of a potential decoupling sequence can alter the
-                    ### electron rephasing element. --> Therefore the element has to be rebuilt
-                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+                    if self.params['do_carbon_init'] > 0:
+                        ### important to realize that the tau_cut of a potential decoupling sequence can alter the
+                        ### electron rephasing element. --> Therefore the element has to be rebuilt
+                        self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-                    gate_seq.extend(swap_with_init)
-                else:
-                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+                        gate_seq.extend(swap_with_init)
+                    else:
+                        self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-                    gate_seq.extend(swap_with_init)
-                    print '*'*20
-                    print 'Warning '*4
-                    print 'Swap without initialization not implemented'
-                    print '*'*20
+                        gate_seq.extend(swap_with_init)
+                        print '*'*20
+                        print 'Warning '*4
+                        print 'Swap without initialization not implemented'
+                        print '*'*20
+                elif (self.params['number_of_dps_carbons'] > 1):
+                    print("Using %d carbons: encoding with MBE" % self.params['number_of_dps_carbons'])
+
+                    probabilistic_MBE_seq = self.logic_init_seq(
+                        prefix              = 'Ent_state_init_',
+                        pt                  = pt,
+                        carbon_list         = self.params['dps_carbons'],
+                        RO_basis_list       = self.params['dps_MBE_bases'],
+                        RO_trigger_duration = 150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['dps_logical_state'] ,
+                        go_to_element       = 'start', # jump to the first element on failure
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                    gate_seq.extend(carbon_init_seq)
+
 
 
             if self.params['do_LDE_2'] > 0:
@@ -1057,9 +1077,10 @@ class purify_single_setup(DD.MBI_C13):
                             el_state_in         = 0,
                             carbon_list         = self.params['dps_carbons'],
                             # TODO: make the tomography bases thing compatible with multiple carbon spins
-                            RO_basis_list       = self.params['Tomography_bases'] * self.params['number_of_dps_carbons'],
+                            RO_basis_list       = self.params['Tomography_bases'],
                             readout_orientation = self.params['carbon_readout_orientation']) 
                     gate_seq.extend(carbon_tomo_seq)
+                    # print("Carbon tomography sequence added")
                     # e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                     #     wait_time = 20e-6)]
                     # gate_seq.extend(e_RO)
@@ -1096,7 +1117,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=True)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=False)
             self.dump_AWG_seq()
         else:
 

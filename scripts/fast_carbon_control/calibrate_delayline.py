@@ -127,7 +127,7 @@ if __name__ == '__main__':
     #     evolution_1_self_trigger = False,
     #     evolution_2_self_trigger = False)
 
-    msmt = "calibration"
+    msmt = "check_calibration"
 
     if msmt == "calibration":
         hahn_echo_variable_delayline("VariableDelay_Calibration_HahnEcho_1T_" + name, 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
             range_start = -200e-9,
             range_end = 200e-9,
             vary_refocussing_time = False,
-            refocussing_time = 10e-6,
+            refocussing_time = 20e-6 - 5e-9,
             evolution_1_self_trigger = True,
             evolution_2_self_trigger = False,
             is_calibration_msmt = True)

@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.884 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.248
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =  0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp = 0.612 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -176,7 +176,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### General settings for AdwinSSRO+delay ###
 ############################################
 
-dl_minimal_delay_time_bare      = 1398e-9 #1820e-9
+dl_minimal_delay_time_bare      = 1395e-9 #1820e-9
 dl_delayed_element_run_up_time  = 400e-9
 
 dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
@@ -186,7 +186,9 @@ cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DO_channel':                 12,
     'do_tico_delay_control':                    1,
     'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
-    'awg_delay':                                0, # this parameter is not dfined@!!!!! dl_awg_delay,
+    # JS: the following parameter shouldn't be defined and isn't used anywhere anymore
+    # I hope I got rid of all left-over occurrences.
+    # "awg_delay':                                0, # this parameter is not dfined@!!!!! dl_awg_delay,
     'delayed_element_run_up_time':              dl_delayed_element_run_up_time,
     'minimal_delay_time':                       dl_minimal_delay_time,
     'minimal_delay_cycles':                     15,
@@ -246,15 +248,15 @@ cfg['samples'][sample_name] = {
 	# C2(A ~ -26)  #
 	###############
 	'C2_freq_m1'        : (443015.21+475444.0)/2,
-	'C2_freq_0' 		: 443002.18,
-	'C2_freq_1_m1' 		: 475430.27,
+	'C2_freq_0' 		: 443006.1,
+	'C2_freq_1_m1' 		: 475454.12,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [48], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [201.26] + [20.11] + [19.47] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [200.91] + [20.11] + [17.26] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	:	30.0,
-	'C2_init_phase_correction_m1': 0.0,
+	'C2_phase_per_LDE_sequence_m1'	:	299.431,
+	'C2_init_phase_correction_m1': 270.0,
 	
 	###############
 	# C3 (A ~ -55)#
@@ -274,16 +276,16 @@ cfg['samples'][sample_name] = {
 	# C4 (A ~ 33) #
 	###############
 	'C4_freq_m1'        : (442773.49 + 416024.45)/2,
-	'C4_freq_0' 		: 442822.02,
-	'C4_freq_1_m1' 		: 416228.08,
+	'C4_freq_0' 		: 442822.3,
+	'C4_freq_1_m1' 		: 416225.75,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [24],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.91] + [0.0] + [-1.1] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.38] + [0.0] + [1.5] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	:	-0.3,
-	'C4_init_phase_correction_m1': 0.0,
+	'C4_phase_per_LDE_sequence_m1'	:	343.706,
+	'C4_init_phase_correction_m1': 180.0,
 
 
 	###############

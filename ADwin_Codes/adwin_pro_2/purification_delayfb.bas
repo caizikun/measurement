@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,144,144,146,146,365,365,572,572,573,573,616,616,731,731,793,793,947,948,949,952,953
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,366,366,575,575,576,576,622,622,737,737,799,799,956,957,958,961,962
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -89,6 +89,7 @@ DIM DATA_108[max_purification_repetitions] as FLOAT at DRAM_Extern' required pha
 ' DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
 
 DIM DATA_109[max_purification_repetitions] AS LONG AT DRAM_Extern ' feedback delay setting
+DIM DATA_125[max_purification_repetitions] AS LONG AT DRAM_Extern ' sweep delay cycles
 
 DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data marker
 
@@ -181,7 +182,7 @@ DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_atte
 DIM number_of_dps_nuclei, current_feedback_nucleus AS LONG
 DIM nuclear_feedback_angle, nuclear_feedback_time AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
-DIM minimal_delay_cycles AS LONG
+DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles AS LONG
 DIM minimal_delay_time AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 
@@ -410,6 +411,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   delay_trigger_DO_channel         = DATA_20[40]
   number_of_dps_nuclei             = DATA_20[41]
   minimal_delay_cycles             = DATA_20[42]
+  do_phase_fb_delayline            = DATA_20[43]
+  do_sweep_delay_cycles               = DATA_20[44]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -494,7 +497,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
       nuclear_feedback_index = (i-1) * phase_feedback_resolution_steps + j
       
       phase_to_compensate = (j - 1) * phase_feedback_resolution
-      nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
+      nuclear_feedback_angle = 1800 + phase_to_compensate ' 5 cycles
       nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[i]) ' 30 cycles
       
       nuclear_feedback_cycles = tico_delay_line_calculate_cycles(nuclear_feedback_time / 2)
@@ -595,9 +598,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
   
-  tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
-  tico_delay_line_set_enabled(1)
-  tico_delay_line_set_cycles(0)
+  IF (do_phase_fb_delayline > 0) THEN
+    tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
+    tico_delay_line_set_enabled(1)
+    tico_delay_line_set_cycles(0)
+  ENDIF
+  
    
   processdelay = cycle_duration   ' the event structure is repeated at this period. On T11 processor 300 corresponds to 1us. Can do at most 300 operations in one round.
   
@@ -945,7 +951,10 @@ EVENT:
               ' JS DLFB: pre-emptively adjust the number of delay cycles
               ' we don't have enough processing time left to do that in this round, 
               ' postpone it to the next round
-              dedicate_next_cycle_to_nuclear_calculations = 1
+              IF ((do_phase_fb_delayline > 0) AND (do_sweep_delay_cycles = 0)) THEN
+                dedicate_next_cycle_to_nuclear_calculations = 1
+              ENDIF
+              
             
             ENDIF
             AWG_repcount_was_low = 0
@@ -974,9 +983,12 @@ EVENT:
           ' With the delay line phase correction there is nothing really to do here
           ' as the delay has already been set while counting along
           ' the only thing left to do is update the nuclear phases based on feedback time
-        
-          update_nuclear_phases_from_time(nuclear_feedback_time) ' takes 215 cycles
-          modulo_nuclear_phases()
+          
+          IF (do_phase_fb_delayline > 0) THEN
+            update_nuclear_phases_from_time(nuclear_feedback_time) ' takes 215 cycles
+            modulo_nuclear_phases()  
+          ENDIF
+          
        
         
           timer = -1
@@ -1146,7 +1158,9 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
   
-  tico_delay_line_finish()
+  IF (do_phase_fb_delayline > 0) THEN
+    tico_delay_line_finish()
+  ENDIF
   
   FOR i = 1 to max_modes
     overlong_cycles_per_mode_OUT[i] = overlong_cycles_per_mode[i]

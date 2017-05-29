@@ -2304,6 +2304,7 @@ config['adwin_lt2_processes'] = {
                     ['delay_trigger_DO_channel'        ,   0],
                     ['number_of_dps_carbons'           ,   0],
                     ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3267,6 +3268,8 @@ config['adwin_pro_processes'] = {
                     ['delay_trigger_DO_channel'        ,   0],
                     ['number_of_dps_carbons'           ,   0],
                     ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
+                    ['do_sweep_delay_cycles'           ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3310,6 +3313,7 @@ config['adwin_pro_processes'] = {
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
                     'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
                     'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
