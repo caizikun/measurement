@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,147,147,149,149,458,458,669,669,670,670,727,727,843,843,905,905,1036,1037,1038,1042
+' Bookmarks                      = 3,3,16,16,22,22,147,147,149,149,458,458,667,667,668,668,725,725,841,841,903,903,1034,1035,1036,1040
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -616,8 +616,6 @@ EVENT:
   'write information to pars for live monitoring
   PAR_61 = mode   
   Par_60 = timer
-  
-  ' DATA_111[1000000000] = 3
   
   '  IF (current_mode <> mode) THEN  
   '    inc(flowchart_index)  
