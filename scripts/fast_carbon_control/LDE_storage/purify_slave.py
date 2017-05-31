@@ -45,6 +45,11 @@ class purify_single_setup(DD.MBI_C13):
 
     def autoconfig(self):
 
+        if self.params['use_old_feedback'] > 0:
+            purify_single_setup.adwin_process = "purification"
+        else:
+            purify_single_setup.adwin_process = "purification_delayfb"
+
         self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
                                     'ch1m2': 'ch1_marker2',
                                     'ch2m1': 'ch2_marker1',
@@ -98,14 +103,15 @@ class purify_single_setup(DD.MBI_C13):
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
 
-        # if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
-        #     length = self.params['pts']
-        #     self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts'])%360, 110, 1, length)
-        
-        # elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
-        #     length = self.params['pts']
-        #     self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
-        
+        if self.params['use_old_feedback'] > 0:
+            if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
+                length = self.params['pts']
+                self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts'])%360, 110, 1, length)
+            
+            elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
+                length = self.params['pts']
+                self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
+            
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
         # upload the carbon feedback parameters to the ADwin
         carbon_data_entries = ['nuclear_frequencies', 'nuclear_phases_per_seqrep']
@@ -181,6 +187,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('electron_readout_result'               ,1,reps),
                     ('ssro_results'                          ,1,reps), 
                     ('compensated_phase'                     ,1,reps),
+                    ('feedback_delay_cycles'                 ,1,reps),
                     ('overlong_cycles_per_mode'              ,1,255),
                     'completed_reps'
                     ])

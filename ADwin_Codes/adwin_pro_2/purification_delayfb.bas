@@ -493,11 +493,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     FOR j = 1 to phase_feedback_resolution_steps
       ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
       ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
-      ' note: minimal feedback time is actually twice the minimal delay time
+      ' note: minimal feedback time is actually twice the minimal delay time (because we delay twice)
       nuclear_feedback_index = (i-1) * phase_feedback_resolution_steps + j
       
       phase_to_compensate = (j - 1) * phase_feedback_resolution
-      nuclear_feedback_angle = 1800 + phase_to_compensate ' 5 cycles
+      nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
       nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[i]) ' 30 cycles
       
       nuclear_feedback_cycles = tico_delay_line_calculate_cycles(nuclear_feedback_time / 2)

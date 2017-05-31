@@ -50,10 +50,10 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.884 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.975 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
-	square_pi_amp = 0.248
+	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
 	hermite_pi2_amp = 0.612 #0.609 #0.632 #0.617 #0.634#0.605
@@ -176,7 +176,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### General settings for AdwinSSRO+delay ###
 ############################################
 
-dl_minimal_delay_time_bare      = 1395e-9 #1820e-9
+dl_minimal_delay_time_bare      = 1394e-9 #1820e-9
 dl_delayed_element_run_up_time  = 400e-9
 
 dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
@@ -221,8 +221,8 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    # 'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
-    # 'phase_per_compensation_repetition': 18.298,# adwin needs positive values
+    'phase_per_sequence_repetition'    : 61.124, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    'phase_per_compensation_repetition': 360.0 - 78.291, # 18.298,# adwin needs positive values
     # 'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
@@ -247,16 +247,16 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (443015.21+475444.0)/2,
-	'C2_freq_0' 		: 443006.1,
-	'C2_freq_1_m1' 		: 475454.12,
+	'C2_freq_m1'        : (442983.53+475449.99)/2,
+	'C2_freq_0' 		: 442983.53,
+	'C2_freq_1_m1' 		: 475449.99,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [48], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [200.91] + [20.11] + [17.26] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.58] + [20.11] + [15.13] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	:	299.431,
-	'C2_init_phase_correction_m1': 270.0,
+	'C2_phase_per_LDE_sequence_m1'	:	61.124, #299.431,
+	'C2_init_phase_correction_m1': 183.058, #270.0,
 	
 	###############
 	# C3 (A ~ -55)#
@@ -275,14 +275,14 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442773.49 + 416024.45)/2,
-	'C4_freq_0' 		: 442822.3,
-	'C4_freq_1_m1' 		: 416225.75,
+	'C4_freq_m1'        : (442783.04 + 416211.41)/2,
+	'C4_freq_0' 		: 442783.04,
+	'C4_freq_1_m1' 		: 416211.41,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [24],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.38] + [0.0] + [1.5] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-0.26] + [0.0] + [-0.37] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_phase_per_LDE_sequence_m1'	:	343.706,
 	'C4_init_phase_correction_m1': 180.0,
@@ -291,13 +291,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C5 (A ~ 26) #
 	###############
-	'C5_freq_m1'        : (443741.6+422796.72)/2,
-	'C5_freq_0' 		: 443691.58,
-	'C5_freq_1_m1' 		: 422786.11,
+	'C5_freq_m1'        : (443752.27+422804.48)/2,
+	'C5_freq_0' 		: 443752.27,
+	'C5_freq_1_m1' 		: 422804.48,
 
 	'C5_Ren_tau_m1'    :   [10.964e-6], #8.826
 	'C5_Ren_N_m1'      :   [48], 
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.82] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.22] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C5_phase_per_LDE_sequence_m1'	:	0.0,
 	'C5_init_phase_correction_m1': 0.0,
