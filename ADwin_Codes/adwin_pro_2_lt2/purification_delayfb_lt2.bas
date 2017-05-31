@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,147,147,149,149,458,458,667,667,668,668,725,725,841,841,903,903,1034,1035,1036,1040
+' Bookmarks                      = 3,3,16,16,22,22,147,147,149,149,459,459,668,668,669,669,726,726,842,842,904,904,1035,1036,1037,1041
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -95,7 +95,7 @@ DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data 
 ' JS Debug stuff
 
 #DEFINE overlong_cycles_per_mode_OUT  DATA_115
-#DEFINE max_modes                 210
+#DEFINE max_modes                 255
 
 DIM overlong_cycles_per_mode[max_modes] AS LONG AT DM_LOCAL
 
@@ -417,10 +417,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   A_SP_voltage                 = DATA_21[3]
   E_RO_voltage                 = DATA_21[4]
   A_RO_voltage                 = DATA_21[5]
+  minimal_delay_time           = DATA_21[6]
+  
   ' phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   ' phase_per_compensation_repetition = DATA_21[7] '
   ' phase_feedback_resolution = DATA_21[8]
-  minimal_delay_time           = DATA_21[9]
    
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel

@@ -173,25 +173,43 @@ class purify_single_setup(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-        self.save_adwin_data(name,
-                [   ('CR_before',1, reps),
-                    ('CR_after',1, reps),
-                    ('Phase_correction_repetitions',1, reps), 
-                    ('statistics', 10),
-                    ('invalid_data_markers'                  ,1,reps), 
-                    ('adwin_communication_time'              ,1,reps),  
-                    ('counted_awg_reps'                      ,1,reps),  
-                    ('attempts_first'                        ,1,reps),  
-                    ('attempts_second'                       ,1,reps), 
-                    ('carbon_readout_result'                 ,1,reps),
-                    ('electron_readout_result'               ,1,reps),
-                    ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps),
-                    ('feedback_delay_cycles'                 ,1,reps),
-                    ('overlong_cycles_per_mode'              ,1,255),
-                    'completed_reps'
-                    ])
-        return
+
+        base_data = [
+            ('CR_before',1, reps),
+            ('CR_after',1, reps), 
+            ('statistics', 10),
+            ('invalid_data_markers'                  ,1,reps), 
+            ('adwin_communication_time'              ,1,reps),  
+            ('counted_awg_reps'                      ,1,reps),  
+            ('attempts_first'                        ,1,reps),  
+            ('attempts_second'                       ,1,reps), 
+            ('carbon_readout_result'                 ,1,reps),
+            ('electron_readout_result'               ,1,reps),
+            ('ssro_results'                          ,1,reps), 
+            'completed_reps',
+        ]
+
+        new_fb_data = [
+            ('compensated_phase'                     ,1,reps),
+            ('feedback_delay_cycles'                 ,1,reps),
+            ('overlong_cycles_per_mode'              ,1,255),
+            ('mode_flowchart'                        ,1,200),
+            ('mode_flowchart_cycles'                 ,1,200),
+            'flowchart_index',
+        ]
+
+        old_fb_data = [
+            ('Phase_correction_repetitions',        1, reps),
+            ('compensated_phase',                   1, reps),
+            ('min_phase_deviation',                 1, reps),
+        ]
+
+        if self.params['use_old_feedback'] > 0:
+            save_data = base_data + old_fb_data
+        else:
+            save_data = base_data + new_fb_data
+
+        self.save_adwin_data(name, save_data)
 
     
     def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):

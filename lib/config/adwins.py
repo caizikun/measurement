@@ -2314,10 +2314,7 @@ config['adwin_lt2_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['phase_per_sequence_repetition'    , 0.],
-                    ['phase_per_compensation_repetition', 0.],
-                    ['phase_feedback_resolution', 4.5],
-                    ['minimal_delay_time', 0.0]
+                    ['minimal_delay_time'   , 0.0]
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2335,7 +2332,7 @@ config['adwin_lt2_processes'] = {
                     'CR_before'      : 22,
                     'CR_after'       : 23,
                     'SP_hist'                   : 29,    #SP histogram
-                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
@@ -2348,6 +2345,7 @@ config['adwin_lt2_processes'] = {
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
                     'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
                     'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
@@ -3279,10 +3277,7 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['phase_per_sequence_repetition'    , 0.],
-                    ['phase_per_compensation_repetition', 0.],
-                    ['phase_feedback_resolution', 4.5],
-                    ['minimal_delay_time', 0.0]
+                    ['minimal_delay_time'   , 0.0]
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -3300,7 +3295,7 @@ config['adwin_pro_processes'] = {
                     'CR_before'      : 22,
                     'CR_after'       : 23,
                     'SP_hist'                   : 29,    #SP histogram
-                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
