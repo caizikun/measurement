@@ -550,12 +550,10 @@ class purify_single_setup(DD.MBI_C13):
 
 
 
-    def generate_delayline_phase_correction_elements(self,g1,g2,g3):
+    def generate_delayline_phase_correction_elements(self,g1,g2,g3,pulse_pi):
         """
         generate the elements for doing phase correction using the delay line
         """
-
-        pulse_pi = ps.X_pulse(self)
 
         self_trigger = pulse.SquarePulse(channel='self_trigger',
             length = self.params['self_trigger_duration'],
@@ -796,7 +794,19 @@ class purify_single_setup(DD.MBI_C13):
                         )
                     g3.scheme = 'single_element'
 
-                    self.generate_delayline_phase_correction_elements(g1,g2,g3)
+                    fb_pulse_name = self.params['delay_feedback_pulse_seq'][pulse_i % len(self.params['delay_feedback_pulse_seq'])]
+                    if fb_pulse_name == 'X':
+                        fb_pulse = ps.X_pulse(self)
+                    elif fb_pulse_name == 'mX':
+                        fb_pulse = ps.mX_pulse(self)
+                    elif fb_pulse_name == 'Y':
+                        fb_pulse = ps.Y_pulse(self)
+                    elif fb_pulse_name == 'mY':
+                        fb_pulse = ps.mY_pulse(self)
+                    else:
+                        raise Exception("Unknown pulse selected for delay feedback: " + fb_pulse_name)
+
+                    self.generate_delayline_phase_correction_elements(g1,g2,g3,pulse_pi=fb_pulse)
                     dynamic_phase_correct_list += [g1,g2,g3]
             else:
                 if (self.params['number_of_dps_carbons'] > 1):

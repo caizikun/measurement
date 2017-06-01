@@ -109,7 +109,8 @@ params_lt2['carbon_readout_orientation']    = 'positive'
 params_lt2['dps_logical_state']             = 'X'
 params_lt2['dps_MBE_bases']                 = ['Y','Y']
 params_lt2['delay_feedback_N']              = 2
-params_lt2['delay_feedback_target_phase']   = 6*360.0
+params_lt2['delay_feedback_target_phase']   = params_lt2['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
+params_lt2['delay_feedback_pulse_seq']      = ['X','mX']
 # we don't want the old feedback crap
 params_lt2['use_old_feedback']          = 0
 params_lt2['dynamic_phase_tau']			= 2.298e-6#2.298e-6
