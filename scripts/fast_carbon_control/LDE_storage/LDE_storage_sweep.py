@@ -170,12 +170,12 @@ def prepare_carbon_params(m):
     m.params['Carbon_LDE_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'phase_per_LDE_sequence', list(range(1,m.params['number_of_carbon_params'] + 1))))
     m.params['Carbon_LDE_init_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,mw=True):
+def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,mw=True,simplify_wfnames=False):
 
     if autoconfig:
         m.autoconfig()    
 
-    m.generate_sequence()
+    m.generate_sequence(simplify_wfnames=simplify_wfnames)
     m.dump_AWG_seq()
     
     if upload_only:
@@ -1168,7 +1168,7 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
 
 
 
-def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,input_state = 'Z'):
+def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,input_state = 'Z',simplify_wfnames=False, dry_run=False):
     """
     combines all carbon parts of the sequence in order to 
     verify that all parts of the sequence work correctly.
@@ -1182,7 +1182,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # prepare_carbon_params(m)
 
     ### general params
-    pts = 15
+    pts = 5
 
     ### calculate sweep array
     minReps = 2
@@ -1194,16 +1194,30 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     turn_all_sequence_elements_off(m)
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    m.params['do_carbon_init'] = 1
-    m.params['do_swap_onto_carbon'] = 1
-    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
-    m.params['do_LDE_2'] = 1
-    m.params['do_phase_correction'] = 1
-    
-    m.params['do_purifying_gate'] = 0
-    m.params['do_carbon_readout']  = 1
-    m.params['do_repump_after_LDE2'] = 1
-    ####
+    if not dry_run:
+        m.params['do_carbon_init'] = 1
+        m.params['do_swap_onto_carbon'] = 1
+        m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+        m.params['do_LDE_2'] = 1
+        m.params['do_phase_correction'] = 1
+        
+        m.params['do_purifying_gate'] = 0
+        m.params['do_carbon_readout']  = 1
+        m.params['do_repump_after_LDE2'] = 1
+        mw = True
+        ####
+    else:
+        m.params['do_carbon_init'] = 0
+        m.params['do_swap_onto_carbon'] = 0
+        m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+        m.params['do_LDE_2'] = 1
+        m.params['do_phase_correction'] = 1
+        
+        m.params['do_purifying_gate'] = 0
+        m.params['do_carbon_readout'] = 1
+        m.params['do_repump_after_LDE2'] = 1
+        mw = False
+
 
     m.params['do_phase_fb_delayline'] = 1
 
@@ -1255,7 +1269,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         save_name = 'X_'+ro
         m.params['carbon_readout_orientation'] = ro
 
-        run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig)
+        run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
         autoconfig = False
     m.finish()
 
@@ -1414,8 +1428,8 @@ if __name__ == '__main__':
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=True,input_state = 'Z')
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=False,dry_run=True,input_state = 'Z', simplify_wfnames=True)
 
 
     #### ionization studies:

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,366,366,576,576,577,577,623,623,738,738,800,800,957,958,959,962,963
+' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,366,366,586,586,587,587,633,633,748,748,810,810,967,968,969,972,973
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -182,8 +182,8 @@ DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_atte
 DIM number_of_dps_nuclei, current_feedback_nucleus AS LONG
 DIM nuclear_feedback_angle, nuclear_feedback_time AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
-DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles AS LONG
-DIM minimal_delay_time AS FLOAT
+DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
+DIM minimal_delay_time, delay_feedback_target_phase AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 
 DIM dedicate_next_cycle_to_nuclear_calculations AS LONG
@@ -412,7 +412,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   number_of_dps_nuclei             = DATA_20[41]
   minimal_delay_cycles             = DATA_20[42]
   do_phase_fb_delayline            = DATA_20[43]
-  do_sweep_delay_cycles               = DATA_20[44]
+  do_sweep_delay_cycles            = DATA_20[44]
+  delay_feedback_N                 = DATA_20[45]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -421,6 +422,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   E_RO_voltage                 = DATA_21[4]
   A_RO_voltage                 = DATA_21[5]
   minimal_delay_time           = DATA_21[6]
+  delay_feedback_target_phase  = DATA_21[7]
   
   ' phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   ' phase_per_compensation_repetition = DATA_21[7] '
@@ -490,7 +492,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     nuclear_phases_per_seqrep[i] = nuclear_phases_per_seqrep_IN[i]
   NEXT i
   
-  FOR i = 1 to max_nuclei
+  FOR i = 1 to number_of_dps_nuclei ' don't calculate the stuff for nuclei slots that are not in use; those have bullshit frequency values that upset the calculation
     FOR j = 1 to phase_feedback_resolution_steps
       ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
       ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
@@ -498,12 +500,20 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
       nuclear_feedback_index = (i-1) * phase_feedback_resolution_steps + j
       
       phase_to_compensate = (j - 1) * phase_feedback_resolution
-      nuclear_feedback_angle = 1800 - phase_to_compensate ' 5 cycles
+      nuclear_feedback_angle = delay_feedback_target_phase - phase_to_compensate
       nuclear_feedback_time = nuclear_feedback_angle / (360 * nuclear_frequencies[i]) ' 30 cycles
       
-      nuclear_feedback_cycles = tico_delay_line_calculate_cycles(nuclear_feedback_time / 2)
+      nuclear_feedback_cycles = tico_delay_line_calculate_cycles(nuclear_feedback_time / (2*delay_feedback_N)) ' two triggers per pulse
+      IF (nuclear_feedback_cycles < minimal_delay_cycles) THEN
+        Par_40 = delay_feedback_N
+        FPar_40 = nuclear_feedback_time
+        FPar_41 = delay_feedback_target_phase
+        Par_65 = 0DEADBEEFh
+        EXIT ' we've arrived at an impossible number of delay cycles, abandon ship!
+      ENDIF
+      
       phase_compensation_delay_cycles[nuclear_feedback_index] = nuclear_feedback_cycles
-      phase_compensation_feedback_times[nuclear_feedback_index] = tico_delay_line_calculate_delay(nuclear_feedback_cycles) * 2.0
+      phase_compensation_feedback_times[nuclear_feedback_index] = tico_delay_line_calculate_delay(nuclear_feedback_cycles) * delay_feedback_N * 2.0
     NEXT j
   NEXT i
   

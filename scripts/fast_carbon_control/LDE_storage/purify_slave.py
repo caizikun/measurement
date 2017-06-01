@@ -27,7 +27,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'purification_delayfb'
+    # adwin_process = 'purification_delayfb' # we set this in the autoconfig based on the selected feedback method
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -77,7 +77,7 @@ class purify_single_setup(DD.MBI_C13):
         boolish = self.adwin_process in latest_process
 
         if not boolish:
-            print 'executing ADWin load'
+            print 'executing ADWin load: ' + self.adwin_process
             exec(loadstr)
             qt.msleep(1)
         else:
@@ -647,7 +647,7 @@ class purify_single_setup(DD.MBI_C13):
             Gate.go_to = None
             Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
 
-    def generate_sequence(self,upload=True,debug=False):
+    def generate_sequence(self,upload=True,debug=False,simplify_wfnames=False):
         """
         generate the sequence for the purification experiment.
         Tries to be as general as possible in order to suffice for multiple calibration measurements
@@ -770,31 +770,34 @@ class purify_single_setup(DD.MBI_C13):
             if self.params['do_phase_fb_delayline'] > 0:
                 #generate gates g1,g2,g3
 
-                g1 = DD.Gate(
-                    'carbon_phasefb_delay_init' +str(pt),
-                    'single_element',
-                    no_connection_elt = True
-                    )
-                g1.scheme = 'single_element'
+                dynamic_phase_correct_list = []
 
-                g2 = DD.Gate(
-                    'carbon_phasefb_delay_pi' + str(pt),
-                    'single_element',
-                    no_connection_elt = True,
-                    wait_for_trigger = True
-                    )
-                g2.scheme = 'single_element'
+                for pulse_i in range(self.params['delay_feedback_N']):
+                    g1 = DD.Gate(
+                        'C_phasefb_delay_init_pls_' + str(pulse_i) + '_pt' +str(pt),
+                        'single_element',
+                        no_connection_elt = True
+                        )
+                    g1.scheme = 'single_element'
 
-                g3 = DD.Gate(
-                    'carbon_phasefb_delay_finish' + str(pt),
-                    'single_element',
-                    no_connection_elt = True,
-                    wait_for_trigger = True
-                    )
-                g3.scheme = 'single_element'
+                    g2 = DD.Gate(
+                        'C_phasefb_delay_pi_pls_' + str(pulse_i) + '_pt' + str(pt),
+                        'single_element',
+                        no_connection_elt = True,
+                        wait_for_trigger = True
+                        )
+                    g2.scheme = 'single_element'
 
-                self.generate_delayline_phase_correction_elements(g1,g2,g3)
-                dynamic_phase_correct_list = [g1,g2,g3]
+                    g3 = DD.Gate(
+                        'C_phasefb_delay_finish_pls_' + str(pulse_i) + '_pt' + str(pt),
+                        'single_element',
+                        no_connection_elt = True,
+                        wait_for_trigger = True
+                        )
+                    g3.scheme = 'single_element'
+
+                    self.generate_delayline_phase_correction_elements(g1,g2,g3)
+                    dynamic_phase_correct_list += [g1,g2,g3]
             else:
                 if (self.params['number_of_dps_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
@@ -1142,7 +1145,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=False)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=simplify_wfnames)
             self.dump_AWG_seq()
         else:
 
