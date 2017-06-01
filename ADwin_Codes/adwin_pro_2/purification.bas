@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,424,424,425,425,440,440,666,666,737,737,916,917,918,925,926,927
-' Foldings                       = 596,619,647,700
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,425,425,426,426,441,441,667,667,738,738,917,918,919,926,927,928
+' Foldings                       = 597,620,648,701
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -314,6 +314,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     min_phase_deviation = 361
     acquired_phase_during_compensation = phase_per_compensation_repetition
     phase_repetitions = 1
+    FPar_62 = phase_per_compensation_repetition
     Do   
       inc(phase_repetitions)                           
       acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
@@ -394,7 +395,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     mode_after_phase_correction = mode_after_purification ' as defined above
   ENDIF
   
-  if ((do_phase_correction=1) and (do_purifying_gate = 1)) then ' special case: in the adwin do phase only makes sense in conjunction with do_purify
+  if ((do_phase_correction=1)) then ' and (do_purifying_gate = 1)) then ' special case: in the adwin do phase only makes sense in conjunction with do_purify
     mode_after_LDE_2 = 7 'phase correction
   else
     mode_after_LDE_2 = mode_after_phase_correction ' as defined above
@@ -974,6 +975,7 @@ EVENT:
         ENDIF
         
         IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
+          FPAR_62 = 12.0
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 

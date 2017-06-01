@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.975 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.936 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.612 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp = 0.620 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -176,7 +176,7 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ### General settings for AdwinSSRO+delay ###
 ############################################
 
-dl_minimal_delay_time_bare      = 1394e-9 #1820e-9
+dl_minimal_delay_time_bare      = 1395e-9 #1820e-9
 dl_delayed_element_run_up_time  = 400e-9
 
 dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
@@ -221,9 +221,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 61.124, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
-    'phase_per_compensation_repetition': 360.0 - 78.291, # 18.298,# adwin needs positive values
-    # 'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
+    'phase_per_sequence_repetition'    : 360.0 - 60.818, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    'phase_per_compensation_repetition': 78.375, #360.0 - 78.291, # 18.298,# adwin needs positive values
+    'total_phase_offset_after_sequence': 0.0, # 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
 ###############
@@ -247,16 +247,16 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (442983.53+475449.99)/2,
-	'C2_freq_0' 		: 442983.53,
-	'C2_freq_1_m1' 		: 475449.99,
+	'C2_freq_m1'        : (443003.14+475426.85)/2,
+	'C2_freq_0' 		: 443003.14,
+	'C2_freq_1_m1' 		: 475426.85,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [48], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.58] + [20.11] + [15.13] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.48] + [20.11] + [-1.63] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	:	61.124, #299.431,
-	'C2_init_phase_correction_m1': 183.058, #270.0,
+	'C2_phase_per_LDE_sequence_m1'	:	360.0-60.818,  #61.357, #61.124, #299.431,
+	'C2_init_phase_correction_m1': 181.041, # 185.919, #270.0,
 	
 	###############
 	# C3 (A ~ -55)#
@@ -275,14 +275,14 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442783.04 + 416211.41)/2,
-	'C4_freq_0' 		: 442783.04,
-	'C4_freq_1_m1' 		: 416211.41,
+	'C4_freq_m1'        : (442785.27 + 416205.37)/2,
+	'C4_freq_0' 		: 442785.27,
+	'C4_freq_1_m1' 		: 416205.37,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [24],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-0.26] + [0.0] + [-0.37] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.71] + [0.0] + [-0.7] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_phase_per_LDE_sequence_m1'	:	343.706,
 	'C4_init_phase_correction_m1': 180.0,

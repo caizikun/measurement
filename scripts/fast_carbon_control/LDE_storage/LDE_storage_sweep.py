@@ -950,10 +950,10 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
 
     ### calculate sweep array
     minReps = 2
-    maxReps = 300
-    step = int((maxReps-minReps)/pts)+1
+    maxReps = 12
+    step = 1#int((maxReps-minReps)/pts)+1
     
-    m.params['reps_per_ROsequence'] = 1050
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -987,7 +987,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
-    m.params['phase_detuning'] = 6.0
+    m.params['phase_detuning'] = 0.0
     phase_per_rep = m.params['phase_per_sequence_repetition']
     m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
 
@@ -1011,6 +1011,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
         save_name = 'X_'+ro
         m.params['carbon_readout_orientation'] = ro
 
+        print (m.params['phase_per_compensation_repetition'])
         run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig)
         autoconfig = False
     m.finish()
@@ -1181,11 +1182,11 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # prepare_carbon_params(m)
 
     ### general params
-    pts = 10
+    pts = 15
 
     ### calculate sweep array
     minReps = 2
-    maxReps = 300
+    maxReps = 65
     step = int((maxReps-minReps)/pts)+1
     
     m.params['reps_per_ROsequence'] = 1000
@@ -1229,7 +1230,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # m.params['phase_detuning'] = 6.0
     # # phase_per_rep = m.params['phase_per_sequence_repetition']
     # m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
-    m.params['phase_detuning'] = 6.0
+    m.params['phase_detuning'] = 12.0
     m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
     m.params['nuclear_phases_per_seqrep'] += m.params['phase_detuning']
 
@@ -1405,7 +1406,7 @@ if __name__ == '__main__':
     #         GreenAOM.turn_off()
     #         optimize_time = time.time()
 
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
     # AWG.clear_visa()
     # #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
@@ -1413,7 +1414,8 @@ if __name__ == '__main__':
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
-    # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=False,input_state = 'Z')
+    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=True,input_state = 'Z')
 
 
     #### ionization studies:

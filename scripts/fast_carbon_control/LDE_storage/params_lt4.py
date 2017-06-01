@@ -34,7 +34,7 @@ params_lt4['MW_during_LDE']             = 1
 params_lt4['AWG_SP_power']              = 950e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['average_repump_time'] 		= 500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -48,9 +48,9 @@ params_lt4['E_RO_durations']  = [params_lt4['Dynamical_stop_ssro_duration']] # o
 params_lt4['Dynamical_stop_ssro_threshold'] = 1
 params_lt4['MBI_attempts_before_CR'] = 1 
 
-params_lt4['phase_per_sequence_repetition'] =0.
-params_lt4['phase_per_compensation_repetition'] =0.
-params_lt4['total_phase_offset_after_sequence'] =0.
+# params_lt4['phase_per_sequence_repetition'] =0.
+# params_lt4['phase_per_compensation_repetition'] =0.
+# params_lt4['total_phase_offset_after_sequence'] =0.
 params_lt4['phase_correct_max_reps']    = 80
 
 # channels
@@ -97,8 +97,8 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 200e-9
 
-params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
-params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
+params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] #### needs to be changed back to regular pi/2 for most calibrations
+params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
