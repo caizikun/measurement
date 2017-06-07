@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,425,425,426,426,441,441,667,667,738,738,917,918,919,926,927,928
-' Foldings                       = 597,620,648,701
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,439,439,440,440,455,455,681,681,752,752,931,932,933,940,941,942
+' Foldings                       = 611,634
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -124,7 +124,7 @@ DIM C13_MBI_RO_duration, RO_duration as long
 DIM purify_RO_is_MBI_RO as long
 
 ' Phase compensation
-DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation AS FLOAT
+DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation,overall_phase AS FLOAT
 DIM phase_to_calculate, phase_compensation_repetitions, required_phase_compensation_repetitions,phase_correct_max_reps, phase_repetitions as long
 DIM current_phase_deviation, min_phase_deviation, phase_feedback_resolution as float
 DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
@@ -314,20 +314,34 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     min_phase_deviation = 361
     acquired_phase_during_compensation = phase_per_compensation_repetition
     phase_repetitions = 1
-    FPar_62 = phase_per_compensation_repetition
     Do   
       inc(phase_repetitions)                           
       acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
       IF (acquired_phase_during_compensation > 360) THEN
         acquired_phase_during_compensation =   acquired_phase_during_compensation-360
       ENDIF
+      
+      overall_phase = phase_to_calculate + acquired_phase_during_compensation 
+      IF (overall_phase > 360) THEN
+        overall_phase = overall_phase - 360
+      ENDIF
+      ' overall_phase should now satisfy 0 < overall_phase < 360
+      IF ((overall_phase > 360) OR (overall_phase < 0)) THEN
+        Par_65 = 0DEADBEEFh
+        EXIT ' hard break if this condition is not satisfied
+      ENDIF      
+      
+      IF (overall_phase > 180) THEN
+        current_phase_deviation = 360 - overall_phase
+      ELSE
+        current_phase_deviation = overall_phase
+      ENDIF
             
-      current_phase_deviation = Abs(phase_to_calculate-acquired_phase_during_compensation)
       IF (current_phase_deviation  < min_phase_deviation) THEN
         min_phase_deviation = current_phase_deviation
         required_phase_compensation_repetitions = phase_repetitions
       ENDIF
-    Until ((phase_repetitions = phase_correct_max_reps-1) or (min_phase_deviation <= phase_feedback_resolution))
+    Until ((phase_repetitions = phase_correct_max_reps-1)) ' or (min_phase_deviation <= phase_feedback_resolution)) ' just try to select the best feedback for every offset
           
     Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
      
@@ -347,7 +361,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
           
     ENDIF
     
-    Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate
+    Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate ' note that this converts a float to a long!
     
   Next AWG_sequence_repetitions_second_attempt
   AWG_sequence_repetitions_second_attempt = 0 ' reinit. otherwise error

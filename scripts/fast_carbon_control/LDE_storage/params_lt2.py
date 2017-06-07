@@ -27,6 +27,7 @@ params_lt2['do_LDE_2']                  = 1 # TODO finish the LDE element for no
 params_lt2['do_phase_correction']       = 1 
 params_lt2['do_purifying_gate']         = 1
 params_lt2['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
+params_lt2['do_sweep_delay_cycles']     = 0
 
 # LDE element
 params_lt2['MW_during_LDE']             = 1 
@@ -102,10 +103,16 @@ params_lt2['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt2['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt2['dps_carbons']                    = [2,4]
-params_lt2['carbon_init_method']            =  ['swap']
+params_lt2['dps_carbons']                    = [2]
+params_lt2['carbon_init_method']            =  'swap'
 params_lt2['carbon_readout_orientation']    = 'positive'
+params_lt2['dps_logical_state']             = 'X'
+params_lt2['dps_MBE_bases']                 = ['Y','Y']
+params_lt2['delay_feedback_N']              = 2
+params_lt2['delay_feedback_target_phase']   = params_lt2['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
+params_lt2['delay_feedback_pulse_seq']      = ['X','mX']
 # we don't want the old feedback crap
+params_lt2['use_old_feedback']          = 0
 params_lt2['dynamic_phase_tau']			= 2.298e-6#2.298e-6
 params_lt2['dynamic_phase_N']			= 2
 params_lt2['phase_feedback_resolution']	= 4.5
