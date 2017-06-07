@@ -1392,7 +1392,7 @@ if __name__ == '__main__':
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
+    calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
     # start_time = time.time()
@@ -1414,7 +1414,7 @@ if __name__ == '__main__':
     # full_sequence_local(name+'_full_sequence_local', upload_only = False,do_Z = False)
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
-    apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
+    # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
     # apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=True,input_state = 'Z')
 
 

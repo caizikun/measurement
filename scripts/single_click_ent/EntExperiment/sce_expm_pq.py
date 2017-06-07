@@ -446,6 +446,35 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
+def do_rejection(name,debug = False, upload_only = False):
+    """
+    does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
+    we only store the histogram on both sides to save some storage capacity
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    msmt.params['eom_pulse_duration'] = 5e-9
+    m.joint_params['LDE_attempts'] = 1000
+
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['AWG_SP_power'] = 0.
+    m.params['do_general_sweep']    = False
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
+
+
+    m.params['pulse_start_bin'] = m.params['pulse_start_bin']
+    m.params['pulse_stop_bin'] = m.params['pulse_stop_bin'] +3e3 
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
+
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     Performs a Spin-photon correlation measurement including the PLU.
@@ -459,7 +488,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
         hist_only = False
     ### general params
 
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 10000
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -471,7 +500,9 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
-    m.params['first_mw_pulse_is_pi2'] = 1
+    m.params['first_mw_pulse_is_pi2'] = 0
+    m.params['do_calc_theta']           = 1
+    m.params['sin2_theta'] = 0.1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -479,7 +510,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
 
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
-
+    m.params['AWG_SP_power'] = 0.
     # if qt.current_setup == 'lt3':
     #     m.params['do_only_opt_pi'] = 1
     #     m.joint_params['opt_pi_pulses'] = 1
@@ -515,7 +546,6 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
     m.params['do_calc_theta']           = 1
-
 
 
     m.params['is_two_setup_experiment'] = 1
@@ -861,7 +891,7 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=True)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
@@ -877,7 +907,7 @@ if __name__ == '__main__':
     #     qt.instruments['ZPLServo'].move_in()
     # else:
     #     qt.instruments['ZPLServo'].move_out()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
     #### Sweep theta!
