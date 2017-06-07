@@ -33,14 +33,16 @@ def darkesr(name, **kw):
 
     # m.params['ssmod_detuning'] = 250e6#m.params['MW_modulation_frequency']
     m1_transition = kw.get('m1_transition',True)
-    m.params['range']        = kw.get('range', 5e6) #5e6
+    m.params['range']        = kw.get('range', 1e6) #5e6
     # Range must be smaller than 30MHz because freq sweep is done via ssb mod
 
-    m1_freq = m.params['ms-1_cntr_frq']-43e6
-    p1_freq = m.params['ms+1_cntr_frq']-43e6
+    m1_freq = m.params['ms-1_cntr_frq']-43e6+0*0.002191e9
+    p1_freq = m.params['ms+1_cntr_frq']-43e6+0*0.002191e9
 
     m.params['mw_frq'] = m1_freq if m1_transition else p1_freq #MW source frequency
-    m.params['repetitions']  = 200
+
+    print 'mw_frq +43e6', p1_freq+43e6
+    m.params['repetitions']  = 400#200
     m.params['pts'] = 151
     m.params['pulse_length'] = m.params['DESR_pulse_duration'] # was 2.e-6 changed to msmt params # NK 2015-05 27
     m.params['ssbmod_amplitude'] =  m.params['DESR_pulse_amplitude'] if m1_transition else m.params['DESR_pulse_amplitude']*1.5
@@ -55,6 +57,8 @@ def darkesr(name, **kw):
     list_swp_pts =np.linspace(m.params['ssbmod_frq_start'],m.params['ssbmod_frq_stop'], m.params['pts'])
     m.params['sweep_pts'] = (np.array(list_swp_pts) +  m.params['mw_frq'])*1e-9
 
+
+    print 'mw_frq +43e6', m.params['mw_frq']+43e6
     m.autoconfig()
     #m.params['sweep_pts']=m.params['pts']
     m.generate_sequence(upload=True)
@@ -139,7 +143,7 @@ def Generaldarkesr(name):
 if __name__ == '__main__':
     #darkesr(SAMPLE_CFG)
     #darkesrp1(SAMPLE_CFG)
-    darkesr(SAMPLE_CFG, m1_transition = True)
+    darkesr(SAMPLE_CFG, m1_transition = False)
     # Range must be smaller than 30MHz because freq sweep is done via ssb mod at 43 MHz
 
     

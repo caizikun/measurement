@@ -70,7 +70,7 @@ params_lt3['sync_during_LDE']           = 1
 params_lt3['PLU_during_LDE']          = 1
 params_lt3['PLU_gate_duration']       = 100e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
-params_lt3['PLU_1_delay']             = 27e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
+params_lt3['PLU_1_delay']             = 28e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9
 params_lt3['PLU_4_delay']             = 250e-9 # it was 150e-9 for bell 
 
@@ -81,10 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']  = 0.0#qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.99812972360328012
-params_lt3['sin2_theta_fit_a']		= 2.3923148082256342
-params_lt3['sin2_theta_fit_x0']		= 0.75326599086240542
-
+params_lt3['sin2_theta_fit_of']		= 1.0043058291765545
+params_lt3['sin2_theta_fit_a']		= 1.756529298698732
+params_lt3['sin2_theta_fit_x0']		= 0.84023795212312735
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6

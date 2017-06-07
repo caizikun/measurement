@@ -187,6 +187,34 @@ def MW_Position(name,debug = False,upload_only=False):
     ### upload and run
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
+def do_rejection(name,debug = False, upload_only = False):
+    """
+    does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
+    we only store
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    msmt.params['eom_pulse_duration'] = 5e-9
+    m.joint_params['LDE_attempts'] = 1000
+
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1000
+
+    m.params['do_general_sweep']    = False
+
+    ### which parts of the sequence do you want to incorporate.
+    ### --> for this measurement: none.
+    m.joint_params['LDE_attempts'] = 250
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['PLU_during_LDE'] = 0
+    m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
@@ -296,9 +324,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts = 2
+    pts = 10
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 20000
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -319,9 +347,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['do_general_sweep']    = True
 
     if sweep_off_voltage:
-        m.params['general_sweep_name'] = 'eom_off_amplitude'
+        m.params['general_sweep_name'] = 'eom_overshoot_duration1'#'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(-0.1,0.06,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(-0.13,0.06,pts)#(-0.04,-0.02,pts)
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -459,7 +487,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
         hist_only = False
     ### general params
 
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 10000
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -477,8 +505,14 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['PLU_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 0
 
+
+    m.params['AWG_SP_power'] = 0.
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
+
+    ### CHANGE ME CHANGE ME
+    m.params['eom_pulse_amplitude'] = m.params['eom_off_amplitude']
+    m.params['eom_overshoot1'] = 0
 
     # if qt.current_setup == 'lt3':
     #     m.params['do_only_opt_pi'] = 1
@@ -501,7 +535,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 2000
     pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -585,10 +619,7 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
     WATCH OUT FOR THE PLU SCRIPT YOU ARE USING!
     """
 
-    if qt.current_setup == 'lt3':
-        hist_only = True
-    else:
-        hist_only = False
+    
     m = PQSingleClickEntExpm(name)    
 
     sweep_sce_expm.prepare(m)
@@ -605,7 +636,7 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
     m.params['do_general_sweep']    = False
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    ### only one setup is allowed to sweep the phase.
+    
     if qt.current_setup == 'lt3':
         hist_only = True
 
@@ -615,12 +646,11 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
         m.params['MAX_SYNC_BIN']        =   int(8.5e6)#15 us # XXX was 15us 
         m.params['MIN_HIST_SYNC_BIN']   =   int(1.65e6) #XXXX was 5438*1e3
         m.params['MAX_HIST_SYNC_BIN']   =   int(8.5e6)
-
     
     m.joint_params['do_final_mw_LDE'] = 1
 
     m.joint_params['opt_pi_pulses'] = 2
-    m.params['LDE_decouple_time'] = 500e-9
+    m.params['LDE_decouple_time'] = 480e-9
     m.params['MW_RO_pulse_in_LDE'] = 1
     m.params['opt_pulse_separation'] = m.params['LDE_decouple_time']
     m.joint_params['LDE_attempts'] = 250
@@ -867,13 +897,15 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.8, maxval=0.9, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.2, maxval=0.9, local=True)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
 
+
+
     ##### non-local measurements
-    # ## SPCorrs with Pi/2 pulse
+    ## SPCorrs with Pi/2 pulse
     # if (qt.current_setup == 'lt3'):
     #     qt.instruments['ZPLServo'].move_out()
     # else:
@@ -883,10 +915,10 @@ if __name__ == '__main__':
     #     qt.instruments['ZPLServo'].move_in()
     # else:
     #     qt.instruments['ZPLServo'].move_out()
-    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
-    # #### Sweep theta!
+    ### Sweep theta!
     # if (qt.current_setup == 'lt3'):
     #     qt.instruments['ZPLServo'].move_out()
     # else:
@@ -896,7 +928,7 @@ if __name__ == '__main__':
     # if (qt.current_setup == 'lt3'):
     #     qt.instruments['ZPLServo'].move_in()
     # else:
-    # qt.instruments['ZPLServo'].move_out()
+    #     qt.instruments['ZPLServo'].move_out()
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
     # qt.instruments['ZPLServo'].move_out()
@@ -913,7 +945,7 @@ if __name__ == '__main__':
 
     # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
 
-    Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = True)
+    # Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = True)
 
 
     if hasattr(qt,'master_script_is_running'):
@@ -947,7 +979,7 @@ if __name__ == '__main__':
                 if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
                     qt.purification_succes = False
                     break
-                Do_BK_XX(name+'_BK_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
+                Do_BK_XX_compressedSeq(name+'_BK_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
                 # TPQI(name+'_TPQI'+str(qt.purification_name_index+i),debug = False,upload_only=False)
                 # PurifyYY(name+'_SingleClickEnt_XX'+str(qt.purification_name_index+i),debug = False, upload_only = False)
             
