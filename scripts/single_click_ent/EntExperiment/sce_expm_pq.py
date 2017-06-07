@@ -79,7 +79,7 @@ class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # p
         
         if self.measurement_progress_first_run:
         
-            self.no_of_cycles_for_live_update_reset = 100
+            self.no_of_cycles_for_live_update_reset = 3
             self.hist_update = np.zeros((self.hist_length,2), dtype='u4')
             self.last_sync_number_update = 0
             self.measurement_progress_first_run = False
@@ -90,14 +90,16 @@ class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # p
         if self.live_updates > self.no_of_cycles_for_live_update_reset:
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
+            self.live_updates = 0
 
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
         tail_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']  : self.params['tail_stop_bin'],0])
         tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
         print 'duty_cycle', self.physical_adwin.Get_FPar(58)
-
-
+        print 'pulse start and stop bin', self.params['pulse_start_bin'], self.params['pulse_stop_bin']
+        print 'max number of counts in the histogram', np.amax(self.hist),' and index ', np.argmax(self.hist)
+        print self.last_sync_number, self.last_sync_number_update
         #### update parameters in the adwin
         if (self.last_sync_number > 0) and (self.last_sync_number != self.last_sync_number_update): 
             if qt.current_setup == 'lt3':
@@ -190,31 +192,32 @@ def MW_Position(name,debug = False,upload_only=False):
 def do_rejection(name,debug = False, upload_only = False):
     """
     does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
-    we only store
+    we only store the histogram on both sides to save some storage capacity
     """
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
-   
-    msmt.params['eom_pulse_duration'] = 5e-9
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['eom_pulse_duration'] = 5e-9
     m.joint_params['LDE_attempts'] = 1000
 
 
     ### general params
     pts = 1
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
-
+    m.params['reps_per_ROsequence'] = 30000
+    m.params['AWG_SP_power'] = 0.
     m.params['do_general_sweep']    = False
+    m.params['MW_during_LDE'] = 0
 
-    ### which parts of the sequence do you want to incorporate.
-    ### --> for this measurement: none.
-    m.joint_params['LDE_attempts'] = 250
-
+    
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['PLU_during_LDE'] = 0
+    m.params['PLU_during_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    m.params['pulse_stop_bin'] = m.params['pulse_start_bin'] + 2*m.params['eom_pulse_duration']*1e12
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
 
 
 def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
@@ -474,34 +477,7 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
-def do_rejection(name,debug = False, upload_only = False):
-    """
-    does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
-    we only store the histogram on both sides to save some storage capacity
-    """
-    m = PQSingleClickEntExpm(name)
-    sweep_sce_expm.prepare(m)
-   
-    msmt.params['eom_pulse_duration'] = 5e-9
-    m.joint_params['LDE_attempts'] = 1000
 
-
-    ### general params
-    pts = 1
-    m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
-    m.params['AWG_SP_power'] = 0.
-    m.params['do_general_sweep']    = False
-
-    m.joint_params['opt_pi_pulses'] = 1
-    m.params['PLU_during_LDE'] = 1
-    m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-
-
-    m.params['pulse_start_bin'] = m.params['pulse_start_bin']
-    m.params['pulse_stop_bin'] = m.params['pulse_stop_bin'] +3e3 
-
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
 
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
@@ -921,7 +897,7 @@ if __name__ == '__main__':
 
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
-
+    do_rejection(name+'_rejection', upload_only = False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
     # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
@@ -942,7 +918,7 @@ if __name__ == '__main__':
     #     qt.instruments['ZPLServo'].move_in()
     # else:
     #     qt.instruments['ZPLServo'].move_out()
-    SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
+    # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
     #### Sweep theta!

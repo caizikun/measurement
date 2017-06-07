@@ -92,14 +92,14 @@ params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 params_lt4['MIN_SYNC_BIN']        =   int(1.75e6)/TH_HH_selector #5 us 
 params_lt4['MAX_SYNC_BIN']        =   int(2.5e6)/TH_HH_selector#15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.65e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.55e6)/TH_HH_selector #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(2.0e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 1838e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
-params_lt4['pulse_stop_bin'] = 1842e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_start_bin'] = 1843e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_stop_bin'] = 1873e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['pulse_start_bin'] = 1854e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 1857e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 1857e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 1880e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 20e3
 
 params_lt4['measurement_time']    =   24.*60*60 #sec = 24H

@@ -340,8 +340,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
-		'Ex_RO_amplitude':				 3.0e-9,#4.5e-9,#used to be 8e-9
+		'Ex_CR_amplitude':				 0,#1.5e-9,#1.5e-9, #2e-9 
+		'Ex_RO_amplitude':				 0,#3.0e-9,#4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 2e-9,
 		'SP_duration':					 100,
