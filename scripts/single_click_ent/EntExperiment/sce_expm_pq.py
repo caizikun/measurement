@@ -217,7 +217,7 @@ def do_rejection(name,debug = False, upload_only = False):
 
     if qt.current_setup == 'lt4':
         m.params['pulse_start_bin'] = m.params['pulse_start_bin']
-        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']  + m.params['eom_pulse_duration']
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']  + 2*m.params['eom_pulse_duration']
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
 
