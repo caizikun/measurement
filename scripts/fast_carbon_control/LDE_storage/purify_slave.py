@@ -27,7 +27,7 @@ class purify_single_setup(DD.MBI_C13):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purifcation slave'
-    adwin_process = 'purification'
+    # adwin_process = 'purification_delayfb' # we set this in the autoconfig based on the selected feedback method
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
         self.joint_params = m2.MeasurementParameters('JointParameters')
@@ -44,6 +44,11 @@ class purify_single_setup(DD.MBI_C13):
         qt.msleep(0.1)
 
     def autoconfig(self):
+
+        if self.params['use_old_feedback'] > 0:
+            purify_single_setup.adwin_process = "purification"
+        else:
+            purify_single_setup.adwin_process = "purification_delayfb"
 
         self.channel_dictionary = { 'ch1m1': 'ch1_marker1',
                                     'ch1m2': 'ch1_marker2',
@@ -72,7 +77,7 @@ class purify_single_setup(DD.MBI_C13):
         boolish = self.adwin_process in latest_process
 
         if not boolish:
-            print 'executing ADWin load'
+            print 'executing ADWin load: ' + self.adwin_process
             exec(loadstr)
             qt.msleep(1)
         else:
@@ -98,14 +103,15 @@ class purify_single_setup(DD.MBI_C13):
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
 
-        # if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
-        #     length = self.params['pts']
-        #     self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts'])%360, 110, 1, length)
-        
-        # elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
-        #     length = self.params['pts']
-        #     self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
-        
+        if self.params['use_old_feedback'] > 0:
+            if (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] == 'total_phase_offset_after_sequence'):
+                length = self.params['pts']
+                self.physical_adwin.Set_Data_Float(np.array(self.params['general_sweep_pts'])%360, 110, 1, length)
+            
+            elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
+                length = self.params['pts']
+                self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
+            
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
         # upload the carbon feedback parameters to the ADwin
         carbon_data_entries = ['nuclear_frequencies', 'nuclear_phases_per_seqrep']
@@ -167,24 +173,43 @@ class purify_single_setup(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-        self.save_adwin_data(name,
-                [   ('CR_before',1, reps),
-                    ('CR_after',1, reps),
-                    ('Phase_correction_repetitions',1, reps), 
-                    ('statistics', 10),
-                    ('invalid_data_markers'                  ,1,reps), 
-                    ('adwin_communication_time'              ,1,reps),  
-                    ('counted_awg_reps'                      ,1,reps),  
-                    ('attempts_first'                        ,1,reps),  
-                    ('attempts_second'                       ,1,reps), 
-                    ('carbon_readout_result'                 ,1,reps),
-                    ('electron_readout_result'               ,1,reps),
-                    ('ssro_results'                          ,1,reps), 
-                    ('compensated_phase'                     ,1,reps),
-                    ('overlong_cycles_per_mode'              ,1,255),
-                    'completed_reps'
-                    ])
-        return
+
+        base_data = [
+            ('CR_before',1, reps),
+            ('CR_after',1, reps), 
+            ('statistics', 10),
+            ('invalid_data_markers'                  ,1,reps), 
+            ('adwin_communication_time'              ,1,reps),  
+            ('counted_awg_reps'                      ,1,reps),  
+            ('attempts_first'                        ,1,reps),  
+            ('attempts_second'                       ,1,reps), 
+            ('carbon_readout_result'                 ,1,reps),
+            ('electron_readout_result'               ,1,reps),
+            ('ssro_results'                          ,1,reps), 
+            'completed_reps',
+        ]
+
+        new_fb_data = [
+            ('compensated_phase'                     ,1,reps),
+            ('feedback_delay_cycles'                 ,1,reps),
+            ('overlong_cycles_per_mode'              ,1,255),
+            ('mode_flowchart'                        ,1,200),
+            ('mode_flowchart_cycles'                 ,1,200),
+            'flowchart_index',
+        ]
+
+        old_fb_data = [
+            ('Phase_correction_repetitions',        1, reps),
+            ('compensated_phase',                   1, reps),
+            ('min_phase_deviation',                 1, reps),
+        ]
+
+        if self.params['use_old_feedback'] > 0:
+            save_data = base_data + old_fb_data
+        else:
+            save_data = base_data + new_fb_data
+
+        self.save_adwin_data(name, save_data)
 
     
     def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):
@@ -369,23 +394,23 @@ class purify_single_setup(DD.MBI_C13):
         manipulates the length of the C_init RO_wait in order to correctly synchronize both AWGs
         only does this on the side of the setup with the shorter carbon gate time!
         """
-        setup = qt.current_setup
-        master_setup = self.joint_params['master_setup']
-        # store this value as it is also important for the AWG/ADWIN communication
-        store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
-
-        # calculate sequence durations 
-        master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
-        slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
-        
-        init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
-
-        # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
-        # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
-
         do_wait = False
         ### determine whether or not to wait for the other setup
         if self.params['is_two_setup_experiment'] > 0:
+            setup = qt.current_setup
+            master_setup = self.joint_params['master_setup']
+            # store this value as it is also important for the AWG/ADWIN communication
+            store_C_init_RO_wait = self.params['Carbon_init_RO_wait']
+
+            # calculate sequence durations 
+            master_seq_duration = self.calculate_C13_init_duration(master = True,verbose=False,**kw)
+            slave_seq_duration = self.calculate_C13_init_duration(master= False,verbose=False,**kw)
+            
+            init_RO_wait_diff = self.joint_params['master_carbon_init_RO_wait'] - self.joint_params['slave_carbon_init_RO_wait']
+
+            # print (master_seq_duration+self.joint_params['master_carbon_init_RO_wait'])*1e6,(slave_seq_duration+self.joint_params['slave_carbon_init_RO_wait'])*1e6
+            # print 'this is the RO wait before calculation', self.params['Carbon_init_RO_wait']
+
             if setup == master_setup and (master_seq_duration-slave_seq_duration + init_RO_wait_diff < 0):
                 # adjust the length of the element of the master RO wait time.
                 self.params['Carbon_init_RO_wait'] = self.params['Carbon_init_RO_wait'] + slave_seq_duration - master_seq_duration - init_RO_wait_diff
@@ -411,8 +436,9 @@ class purify_single_setup(DD.MBI_C13):
             seq[-1].event_jump = 'next'
             seq.append(wait_for_other_setup)
 
-        ### restore the old value
-        self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
+        if self.params['is_two_setup_experiment'] > 0:
+            ### restore the old value
+            self.params['Carbon_init_RO_wait'] = store_C_init_RO_wait
 
         return seq
 
@@ -524,12 +550,10 @@ class purify_single_setup(DD.MBI_C13):
 
 
 
-    def generate_delayline_phase_correction_elements(self,g1,g2,g3):
+    def generate_delayline_phase_correction_elements(self,g1,g2,g3,pulse_pi):
         """
         generate the elements for doing phase correction using the delay line
         """
-
-        pulse_pi = ps.X_pulse(self)
 
         self_trigger = pulse.SquarePulse(channel='self_trigger',
             length = self.params['self_trigger_duration'],
@@ -621,7 +645,7 @@ class purify_single_setup(DD.MBI_C13):
             Gate.go_to = None
             Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
 
-    def generate_sequence(self,upload=True,debug=False):
+    def generate_sequence(self,upload=True,debug=False,simplify_wfnames=False):
         """
         generate the sequence for the purification experiment.
         Tries to be as general as possible in order to suffice for multiple calibration measurements
@@ -744,31 +768,46 @@ class purify_single_setup(DD.MBI_C13):
             if self.params['do_phase_fb_delayline'] > 0:
                 #generate gates g1,g2,g3
 
-                g1 = DD.Gate(
-                    'carbon_phasefb_delay_init' +str(pt),
-                    'single_element',
-                    no_connection_elt = True
-                    )
-                g1.scheme = 'single_element'
+                dynamic_phase_correct_list = []
 
-                g2 = DD.Gate(
-                    'carbon_phasefb_delay_pi' + str(pt),
-                    'single_element',
-                    no_connection_elt = True,
-                    wait_for_trigger = True
-                    )
-                g2.scheme = 'single_element'
+                for pulse_i in range(self.params['delay_feedback_N']):
+                    g1 = DD.Gate(
+                        'C_phasefb_delay_init_pls_' + str(pulse_i) + '_pt' +str(pt),
+                        'single_element',
+                        no_connection_elt = True
+                        )
+                    g1.scheme = 'single_element'
 
-                g3 = DD.Gate(
-                    'carbon_phasefb_delay_finish' + str(pt),
-                    'single_element',
-                    no_connection_elt = True,
-                    wait_for_trigger = True
-                    )
-                g3.scheme = 'single_element'
+                    g2 = DD.Gate(
+                        'C_phasefb_delay_pi_pls_' + str(pulse_i) + '_pt' + str(pt),
+                        'single_element',
+                        no_connection_elt = True,
+                        wait_for_trigger = True
+                        )
+                    g2.scheme = 'single_element'
 
-                self.generate_delayline_phase_correction_elements(g1,g2,g3)
-                dynamic_phase_correct_list = [g1,g2,g3]
+                    g3 = DD.Gate(
+                        'C_phasefb_delay_finish_pls_' + str(pulse_i) + '_pt' + str(pt),
+                        'single_element',
+                        no_connection_elt = True,
+                        wait_for_trigger = True
+                        )
+                    g3.scheme = 'single_element'
+
+                    fb_pulse_name = self.params['delay_feedback_pulse_seq'][pulse_i % len(self.params['delay_feedback_pulse_seq'])]
+                    if fb_pulse_name == 'X':
+                        fb_pulse = ps.X_pulse(self)
+                    elif fb_pulse_name == 'mX':
+                        fb_pulse = ps.mX_pulse(self)
+                    elif fb_pulse_name == 'Y':
+                        fb_pulse = ps.Y_pulse(self)
+                    elif fb_pulse_name == 'mY':
+                        fb_pulse = ps.mY_pulse(self)
+                    else:
+                        raise Exception("Unknown pulse selected for delay feedback: " + fb_pulse_name)
+
+                    self.generate_delayline_phase_correction_elements(g1,g2,g3,pulse_pi=fb_pulse)
+                    dynamic_phase_correct_list += [g1,g2,g3]
             else:
                 if (self.params['number_of_dps_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
@@ -895,11 +934,13 @@ class purify_single_setup(DD.MBI_C13):
 
             if self.params['do_carbon_init'] > 0:
                 # TODO: check if this generalization for >1 carbons actually works!
-                for c_id in self.params['dps_carbons']:
+                for i in range(self.params['number_of_dps_carbons']):
                     ### initialize carbon in +Z or +X
+                    c_id = self.params['dps_carbons'][i]
+                    init_method = self.params['carbon_init_method']
                     carbon_init_seq = self.initialize_carbon_sequence(go_to_element = 'start',
                             prefix = 'C_Init', pt =pt,
-                            addressed_carbon = c_id,initialization_method = self.params['carbon_init_method'])
+                            addressed_carbon = c_id,initialization_method = init_method)
 
                     if gate_seq != []:
                         carbon_init_seq[0].wait_for_trigger = False
@@ -935,31 +976,48 @@ class purify_single_setup(DD.MBI_C13):
                     # gate_seq.append(DD.Gate('LDE_1_wait'+str(pt),'passive_elt',wait_time = 3e-6))
 
             if self.params['do_swap_onto_carbon'] > 0:
-                if (self.params['number_of_dps_carbons'] > 1):
-                    print("WARNING: swapping doesn't make sense for multiple carbons")
-                ### Elementes for swapping
-                swap_with_init = self.carbon_swap_gate(
-                                go_to_element = 'start',
-                                pt = pt,
-                                addressed_carbon = self.params['dps_carbons'][0], # only swap onto the first carbon (swapping doesn't make sense for multiple carbons)
-                                swap_type               = 'swap_w_init',
-                                RO_after_swap           = True)
+                if (self.params['number_of_dps_carbons'] == 1):
+                    # print("Using 1 carbon: encoding with SWAP")
+                    ### Elementes for swapping
+                    swap_with_init = self.carbon_swap_gate(
+                                    go_to_element = 'start',
+                                    pt = pt,
+                                    addressed_carbon = self.params['dps_carbons'][0], # only swap onto the first carbon (swapping doesn't make sense for multiple carbons)
+                                    swap_type               = 'swap_w_init',
+                                    RO_after_swap           = True)
 
 
-                if self.params['do_carbon_init'] > 0:
-                    ### important to realize that the tau_cut of a potential decoupling sequence can alter the
-                    ### electron rephasing element. --> Therefore the element has to be rebuilt
-                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+                    if self.params['do_carbon_init'] > 0:
+                        ### important to realize that the tau_cut of a potential decoupling sequence can alter the
+                        ### electron rephasing element. --> Therefore the element has to be rebuilt
+                        self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-                    gate_seq.extend(swap_with_init)
-                else:
-                    self.generate_LDE_rephasing_elt(LDE_rephase1)
+                        gate_seq.extend(swap_with_init)
+                    else:
+                        self.generate_LDE_rephasing_elt(LDE_rephase1)
 
-                    gate_seq.extend(swap_with_init)
-                    print '*'*20
-                    print 'Warning '*4
-                    print 'Swap without initialization not implemented'
-                    print '*'*20
+                        gate_seq.extend(swap_with_init)
+                        print '*'*20
+                        print 'Warning '*4
+                        print 'Swap without initialization not implemented'
+                        print '*'*20
+                elif (self.params['number_of_dps_carbons'] > 1):
+                    print("Using %d carbons: encoding with MBE" % self.params['number_of_dps_carbons'])
+
+                    probabilistic_MBE_seq = self.logic_init_seq(
+                        prefix              = 'Ent_state_init_',
+                        pt                  = pt,
+                        carbon_list         = self.params['dps_carbons'],
+                        RO_basis_list       = self.params['dps_MBE_bases'],
+                        RO_trigger_duration = 150e-6,
+                        el_RO_result        = '0',
+                        logic_state         = self.params['dps_logical_state'] ,
+                        go_to_element       = 'start', # jump to the first element on failure
+                        event_jump_element   = 'next',
+                        readout_orientation = 'positive')
+
+                    gate_seq.extend(carbon_init_seq)
+
 
 
             if self.params['do_LDE_2'] > 0:
@@ -1057,9 +1115,10 @@ class purify_single_setup(DD.MBI_C13):
                             el_state_in         = 0,
                             carbon_list         = self.params['dps_carbons'],
                             # TODO: make the tomography bases thing compatible with multiple carbon spins
-                            RO_basis_list       = self.params['Tomography_bases'] * self.params['number_of_dps_carbons'],
+                            RO_basis_list       = self.params['Tomography_bases'],
                             readout_orientation = self.params['carbon_readout_orientation']) 
                     gate_seq.extend(carbon_tomo_seq)
+                    # print("Carbon tomography sequence added")
                     # e_RO =  [DD.Gate('Tomo_Trigger_'+str(pt),'Trigger',
                     #     wait_time = 20e-6)]
                     # gate_seq.extend(e_RO)
@@ -1096,7 +1155,7 @@ class purify_single_setup(DD.MBI_C13):
 
         if upload:
             print ' uploading sequence'
-            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=False)
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug, simplify_wfnames=simplify_wfnames)
             self.dump_AWG_seq()
         else:
 

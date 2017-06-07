@@ -58,7 +58,7 @@ FUNCTION tico_delay_line_calculate_cycles(input_delay) AS LONG
   tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) + minimal_delay_cycles
 ENDFUNCTION
 
-FUNCTION tico_delay_line_calculate_delay(input_cycles) AS LONG
+FUNCTION tico_delay_line_calculate_delay(input_cycles) AS FLOAT
   tico_delay_line_calculate_delay = (input_cycles - minimal_delay_cycles) * dl_cycle_duration + minimal_delay_time
 ENDFUNCTION
 

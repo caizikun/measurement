@@ -68,9 +68,8 @@ def hahn_echo_variable_delayline(name, debug=False,
         m.params['sweep_pts'] = (m.params['refocussing_time']) * 1e6
 
     else:
-        m.params['refocussing_time'] = np.ones(pts) * refocussing_time
+        
         m.params['defocussing_offset'] = np.linspace(range_start,range_end,pts)
-        m.params['self_trigger_delay'] = m.params['refocussing_time']
 
         if is_calibration_msmt:
             m.params['sweep_name'] = 'effective delay (ns)'
@@ -78,9 +77,21 @@ def hahn_echo_variable_delayline(name, debug=False,
                 m.params['minimal_delay_time'] - m.params['delayed_element_run_up_time']
                 # - (m.params['minimal_delay_cycles'] * m.params['delay_clock_cycle_time']) 
                 - m.params['defocussing_offset']) * 1e9
+
+            # compatibilize the refocussing time and the delay time 
+            # (i.e. make the number of delay cycles integer)
+            delay_clock_cycle_time = m.params['delay_clock_cycle_time']
+            minimal_delay_time = m.params['minimal_delay_time']
+            delay_time_remainder = minimal_delay_time - int(minimal_delay_time / delay_clock_cycle_time) * delay_clock_cycle_time
+
+            refocussing_time = int(refocussing_time / delay_clock_cycle_time) * delay_clock_cycle_time
+            refocussing_time += delay_time_remainder
         else:
             m.params['sweep_name'] = 'defocussing offset (us)'
             m.params['sweep_pts'] = (m.params['defocussing_offset']) * 1e6
+
+        m.params['refocussing_time'] = np.ones(pts) * refocussing_time
+        m.params['self_trigger_delay'] = m.params['refocussing_time']
 
     m.params['delay_times'] = m.params['self_trigger_delay']
     m.params['do_tico_delay_control'] = 1
@@ -135,7 +146,7 @@ if __name__ == '__main__':
             range_start = -200e-9,
             range_end = 200e-9,
             vary_refocussing_time = False,
-            refocussing_time = 10e-6,
+            refocussing_time = 20e-6,
             evolution_1_self_trigger = True,
             evolution_2_self_trigger = False,
             is_calibration_msmt = True)

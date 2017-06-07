@@ -2304,6 +2304,9 @@ config['adwin_lt2_processes'] = {
                     ['delay_trigger_DO_channel'        ,   0],
                     ['number_of_dps_carbons'           ,   0],
                     ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
+                    ['do_sweep_delay_cycles'           ,   0],
+                    ['delay_feedback_N'                ,   1],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2313,10 +2316,8 @@ config['adwin_lt2_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['phase_per_sequence_repetition'    , 0.],
-                    ['phase_per_compensation_repetition', 0.],
-                    ['phase_feedback_resolution', 4.5],
-                    ['minimal_delay_time', 0.0]
+                    ['minimal_delay_time'   , 0.0],
+                    ['delay_feedback_target_phase'  , 1800.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2334,7 +2335,7 @@ config['adwin_lt2_processes'] = {
                     'CR_before'      : 22,
                     'CR_after'       : 23,
                     'SP_hist'                   : 29,    #SP histogram
-                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
@@ -2342,14 +2343,15 @@ config['adwin_lt2_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
                     'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
                     'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
-                    # 'min_phase_deviation'           : 109, # accuracy that can be achieved in phase compensation                 
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
@@ -3267,6 +3269,9 @@ config['adwin_pro_processes'] = {
                     ['delay_trigger_DO_channel'        ,   0],
                     ['number_of_dps_carbons'           ,   0],
                     ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
+                    ['do_sweep_delay_cycles'           ,   0],
+                    ['delay_feedback_N'                ,   1],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3276,10 +3281,8 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['phase_per_sequence_repetition'    , 0.],
-                    ['phase_per_compensation_repetition', 0.],
-                    ['phase_feedback_resolution', 4.5],
-                    ['minimal_delay_time', 0.0]
+                    ['minimal_delay_time'   , 0.0],
+                    ['delay_feedback_target_phase'  , 1800.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -3297,7 +3300,7 @@ config['adwin_pro_processes'] = {
                     'CR_before'      : 22,
                     'CR_after'       : 23,
                     'SP_hist'                   : 29,    #SP histogram
-                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
                     'adwin_communication_time'  : 101,  #time spent for communication between adwins
                     'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
                     'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
@@ -3305,14 +3308,15 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
                     'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     'overlong_cycles_per_mode'  : 115,
                     'mode_flowchart'            : 110,
                     'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
-                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
-                    # 'min_phase_deviation'           : 109, # accuracy that can be achieved in phase compensation                 
+                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition

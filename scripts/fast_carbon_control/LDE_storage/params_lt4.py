@@ -27,13 +27,14 @@ params_lt4['do_LDE_2']                  = 1 # TODO finish the LDE element for no
 params_lt4['do_phase_correction']       = 1 
 params_lt4['do_purifying_gate']         = 1
 params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
+params_lt4['do_sweep_delay_cycles'] 	= 0
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 300e-9#1000e-9
+params_lt4['AWG_SP_power']              = 950e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 0.71e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['average_repump_time'] 		= 500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -47,9 +48,9 @@ params_lt4['E_RO_durations']  = [params_lt4['Dynamical_stop_ssro_duration']] # o
 params_lt4['Dynamical_stop_ssro_threshold'] = 1
 params_lt4['MBI_attempts_before_CR'] = 1 
 
-params_lt4['phase_per_sequence_repetition'] =0.
-params_lt4['phase_per_compensation_repetition'] =0.
-params_lt4['total_phase_offset_after_sequence'] =0.
+# params_lt4['phase_per_sequence_repetition'] =0.
+# params_lt4['phase_per_compensation_repetition'] =0.
+# params_lt4['total_phase_offset_after_sequence'] =0.
 params_lt4['phase_correct_max_reps']    = 80
 
 # channels
@@ -58,7 +59,7 @@ params_lt4['PLU_event_di_channel'] = 21
 params_lt4['PLU_which_di_channel'] = 20
 # params_lt4['AWG_start_DO_channel'] = 1 defined in msmt params
 # params_lt4['AWG_done_DI_channel']= 1 defined in msmt params
-params_lt4['wait_for_awg_done_timeout_cycles'] = 1000000  # 10ms
+params_lt4['wait_for_awg_done_timeout_cycles'] = 1000000000  # 10ms
 # params_lt4['AWG_event_jump_DO_channel'] = 1 defined in msmt params
 params_lt4['AWG_repcount_DI_channel'] = 19
 params_lt4['remote_adwin_di_success_channel'] = 22
@@ -96,8 +97,8 @@ params_lt4['PLU_2_delay']             = 1e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 200e-9
 
-params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
-params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
+params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp'] #### needs to be changed back to regular pi/2 for most calibrations
+params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
@@ -105,8 +106,14 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['dps_carbons']                    = [2]
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
+params_lt4['dps_logical_state']				= 'X'
+params_lt4['dps_MBE_bases']					= ['Y','Y']
+params_lt4['delay_feedback_N']              = 2
+params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
+params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 # we don't want the old feedback crap
-params_lt4['dynamic_phase_tau']			= 2.298e-6#2.298e-6
+params_lt4['use_old_feedback']			= 0 
+params_lt4['dynamic_phase_tau']			= 2.296e-6#2.298e-6
 params_lt4['dynamic_phase_N']			= 2
 params_lt4['phase_feedback_resolution']	= 4.5
 

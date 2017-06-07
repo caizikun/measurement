@@ -347,7 +347,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['do_general_sweep']    = True
 
     if sweep_off_voltage:
-        m.params['general_sweep_name'] = 'eom_overshoot_duration1'#'eom_off_amplitude'
+        m.params['general_sweep_name'] = 'eom_overshoot1'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(-0.13,0.06,pts)#(-0.04,-0.02,pts)
     else:
@@ -474,6 +474,35 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
+def do_rejection(name,debug = False, upload_only = False):
+    """
+    does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
+    we only store the histogram on both sides to save some storage capacity
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    msmt.params['eom_pulse_duration'] = 5e-9
+    m.joint_params['LDE_attempts'] = 1000
+
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 1000
+    m.params['AWG_SP_power'] = 0.
+    m.params['do_general_sweep']    = False
+
+    m.joint_params['opt_pi_pulses'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
+
+
+    m.params['pulse_start_bin'] = m.params['pulse_start_bin']
+    m.params['pulse_stop_bin'] = m.params['pulse_stop_bin'] +3e3 
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
+
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
     Performs a Spin-photon correlation measurement including the PLU.
@@ -499,7 +528,9 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
-    m.params['first_mw_pulse_is_pi2'] = 1
+    m.params['first_mw_pulse_is_pi2'] = 0
+    m.params['do_calc_theta']           = 1
+    m.params['sin2_theta'] = 0.1
 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -509,7 +540,7 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.params['AWG_SP_power'] = 0.
     m.joint_params['opt_pi_pulses'] = 1
     m.joint_params['LDE_attempts'] = 250
-
+    m.params['AWG_SP_power'] = 0.
     ### CHANGE ME CHANGE ME
     m.params['eom_pulse_amplitude'] = m.params['eom_off_amplitude']
     m.params['eom_overshoot1'] = 0
@@ -549,7 +580,6 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation'] = 0
     m.params['do_calc_theta']           = 1
-
 
 
     m.params['is_two_setup_experiment'] = 1
@@ -618,8 +648,6 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
     Performs the Barrett & Kok protocol.
     WATCH OUT FOR THE PLU SCRIPT YOU ARE USING!
     """
-
-    
     m = PQSingleClickEntExpm(name)    
 
     sweep_sce_expm.prepare(m)
@@ -639,13 +667,12 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
     
     if qt.current_setup == 'lt3':
         hist_only = True
-
     else:
         hist_only = False
         m.params['MIN_SYNC_BIN']        =   int(1.75e6) #5 us 
-        m.params['MAX_SYNC_BIN']        =   int(8.5e6)#15 us # XXX was 15us 
+        m.params['MAX_SYNC_BIN']        =   int(4.0e6)#15 us # XXX was 15us 
         m.params['MIN_HIST_SYNC_BIN']   =   int(1.65e6) #XXXX was 5438*1e3
-        m.params['MAX_HIST_SYNC_BIN']   =   int(8.5e6)
+        m.params['MAX_HIST_SYNC_BIN']   =   int(4.0e6)
     
     m.joint_params['do_final_mw_LDE'] = 1
 
@@ -897,7 +924,7 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.2, maxval=0.9, local=True)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
@@ -918,7 +945,7 @@ if __name__ == '__main__':
     SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT4',debug = False,upload_only=False)
     # qt.instruments['ZPLServo'].move_out()
     
-    ### Sweep theta!
+    #### Sweep theta!
     # if (qt.current_setup == 'lt3'):
     #     qt.instruments['ZPLServo'].move_out()
     # else:
@@ -945,7 +972,7 @@ if __name__ == '__main__':
 
     # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
 
-    # Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = True)
+    # Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = False)
 
 
     if hasattr(qt,'master_script_is_running'):
