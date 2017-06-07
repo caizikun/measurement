@@ -210,14 +210,17 @@ def do_rejection(name,debug = False, upload_only = False):
     m.params['do_general_sweep']    = False
     m.params['MW_during_LDE'] = 0
 
-    
+
     m.joint_params['opt_pi_pulses'] = 1
     m.params['PLU_during_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
 
-    m.params['pulse_stop_bin'] = m.params['pulse_start_bin'] + 2*m.params['eom_pulse_duration']*1e12
+    if qt.current_setup == 'lt4':
+        m.params['pulse_start_bin'] = m.params['pulse_start_bin']
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']  + m.params['eom_pulse_duration']
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only, hist_only=True)
+
 
 
 def ionization_non_local(name, debug = False, upload_only = False, use_yellow = False):
@@ -478,6 +481,8 @@ def SPCorrs_PSB_singleSetup(name, debug = False, upload_only = False):
 
 
 
+
+    
 
 def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     """
@@ -897,10 +902,10 @@ if __name__ == '__main__':
 
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
-    do_rejection(name+'_rejection', upload_only = False)
+    do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=True)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
