@@ -54,10 +54,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 
-        # self.add_function('rejecter_half_plus')
-        # self.add_function('rejecter_half_min')
-        # self.add_function('rejecter_quarter_plus')
-        # self.add_function('rejecter_quarter_min')
+
         self.add_function('toggle_pid_gate')
         self.add_function('toggle_pid_nf')
         self.add_function('toggle_pid_yellowfrq')
@@ -65,7 +62,12 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('start_babysit')
         self.add_function('stop_babysit')  
         self.add_function('stop_optimize_now')         
+        self.add_function('rejecter_half_plus')
+        self.add_function('rejecter_half_min')
+        self.add_function('rejecter_quarter_plus')
+        self.add_function('rejecter_quarter_min')
 
+        
         self.setup_name = setup_name
 
         self._busy = False;
