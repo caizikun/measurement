@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.948 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.922 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.633 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp = 0.621 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               -0.01,
 		'A_off_voltage':                -0.26,
-		'yellow_repump_amplitude':      120e-9,#30e-9,
+		'yellow_repump_amplitude':      30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -221,7 +221,7 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 60.818, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    'phase_per_sequence_repetition'    : 360.0 - 60.818, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
     'phase_per_compensation_repetition': 78.375, #360.0 - 78.291, # 18.298,# adwin needs positive values
     'total_phase_offset_after_sequence': 0.0, # 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
@@ -255,7 +255,7 @@ cfg['samples'][sample_name] = {
 	'C2_Ren_N_m1'      :   [48], #36
 	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [197.8] + [20.11] + [-1.63] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	:	60.818,  #61.357, #61.124, #299.431,
+	'C2_phase_per_LDE_sequence_m1'	:	360-160.818,  #61.357, #61.124, #299.431,
 	'C2_init_phase_correction_m1': 181.041, # 185.919, #270.0,
 	
 	###############
@@ -340,8 +340,8 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 0,#1.5e-9,#1.5e-9, #2e-9 
-		'Ex_RO_amplitude':				 0,#3.0e-9,#4.5e-9,#used to be 8e-9
+		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
+		'Ex_RO_amplitude':				 3.0e-9,#4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
 		'Ex_SP_calib_amplitude':		 2e-9,
 		'SP_duration':					 100,
