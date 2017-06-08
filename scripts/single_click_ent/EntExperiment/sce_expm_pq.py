@@ -167,13 +167,12 @@ def MW_Position(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['do_phase_stabilisation'] = 0
     
-    m.joint_params['LDE_element_length'] = 5e-6
     m.joint_params['LDE_attempts'] = 250
     m.params['first_mw_pulse_is_pi2'] = 1
 
-    #### additional stuff from norbert for prjectivity:
-    m.params['check_EOM_projective_noise'] = 1
-    m.params['MW_opt_puls1_separation']   = 120e-9 - 220e-9 #
+    # #### additional stuff from norbert for prjectivity:
+    # m.params['check_EOM_projective_noise'] = 1
+    # m.params['MW_opt_puls1_separation']   = 120e-9 - 220e-9 #
 
     ### prepare sweep / necessary for the measurement that we under go.
     m.params['do_general_sweep']    = False
@@ -523,8 +522,8 @@ def SPCorrs_ZPL_twoSetup(name, debug = False, upload_only = False):
     m.joint_params['LDE_attempts'] = 250
     m.params['AWG_SP_power'] = 0.
     ### CHANGE ME CHANGE ME
-    m.params['eom_pulse_amplitude'] = m.params['eom_off_amplitude']
-    m.params['eom_overshoot1'] = 0
+    # m.params['eom_pulse_amplitude'] = m.params['eom_off_amplitude']
+    # m.params['eom_overshoot1'] = 0
 
     # if qt.current_setup == 'lt3':
     #     m.params['do_only_opt_pi'] = 1
@@ -905,7 +904,7 @@ if __name__ == '__main__':
     do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=True)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')

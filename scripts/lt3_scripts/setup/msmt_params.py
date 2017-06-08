@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.865  # 28-02
+	hermite_pi_amp =  0.866  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.397  # 28-02 
+	hermite_pi2_amp = 0.399  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -390,7 +390,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 14e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 4e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
