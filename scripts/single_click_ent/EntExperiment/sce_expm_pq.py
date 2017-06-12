@@ -363,7 +363,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     ### upload
 
-    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only)
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only=False)
 
 
 def test_pulses(name,debug = True,upload_only=True, local = False):
