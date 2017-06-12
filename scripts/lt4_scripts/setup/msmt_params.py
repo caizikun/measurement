@@ -20,7 +20,7 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717627e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
+f_msm1_cntr = 1.717521e9 #by JS #1.717212e9 #1.715936e9 #1.711414e9	#Electron spin ms=-1 frquency   ##Calib 2015-05-06
 f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -49,14 +49,14 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 100e-9 # divisible by 2
-	hermite_pi_amp = 0.922 # 0.893 # for a single pi pulse
+	hermite_pi_length = 104e-9 # divisible by 2
+	hermite_pi_amp = 0.88 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.621 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp = 0.636#0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -341,9 +341,9 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
 		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
-		'Ex_RO_amplitude':				 3.0e-9,#4.5e-9,#used to be 8e-9
+		'Ex_RO_amplitude':				 4.5e-9,#4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
-		'Ex_SP_calib_amplitude':		 2e-9,
+		'Ex_SP_calib_amplitude':		 4.5e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 1000,
